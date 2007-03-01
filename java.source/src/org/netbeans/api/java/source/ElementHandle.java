@@ -28,6 +28,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.ClassFileUtil;
@@ -144,6 +145,45 @@ public final class ElementHandle<T extends Element> {
                             }
                         }
                     }
+                }
+                break;
+            }
+            case TYPE_PARAMETER:
+            {
+                if (signatures.length == 2) {
+                     TypeElement type = getTypeElementByBinaryName (signatures[0], compilationInfo);
+                     if (type != null) {
+                         List<? extends TypeParameterElement> tpes = type.getTypeParameters();
+                         for (TypeParameterElement tpe : tpes) {
+                             if (tpe.getSimpleName().contentEquals(signatures[1])) {
+                                 return (T)tpe;
+                             }
+                         }
+                     }
+                }
+                else if (signatures.length == 4) {
+                    final TypeElement type = getTypeElementByBinaryName (signatures[0], compilationInfo);
+                    if (type != null) {
+                        final List<? extends Element> members = type.getEnclosedElements();
+                        for (Element member : members) {
+                            if (member.getKind() == ElementKind.METHOD || member.getKind() == ElementKind.CONSTRUCTOR) {
+                                String[] desc = ClassFileUtil.createExecutableDescriptor((ExecutableElement)member);
+                                assert desc.length == 3;
+                                if (this.signatures[1].equals(desc[1]) && this.signatures[2].equals(desc[2])) {
+                                    assert member instanceof ExecutableElement;
+                                    List<? extends TypeParameterElement> tpes =((ExecutableElement)member).getTypeParameters();
+                                    for (TypeParameterElement tpe : tpes) {
+                                        if (tpe.getSimpleName().contentEquals(signatures[3])) {
+                                            return (T) tpe;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    throw new IllegalStateException ();
                 }
                 break;
             }
@@ -279,6 +319,28 @@ public final class ElementHandle<T extends Element> {
             case ENUM_CONSTANT:
                 assert element instanceof VariableElement;
                 signatures = ClassFileUtil.createFieldDescriptor((VariableElement)element);
+                break;
+            case TYPE_PARAMETER:
+                assert element instanceof TypeParameterElement;
+                TypeParameterElement tpe = (TypeParameterElement) element;
+                Element ge = tpe.getGenericElement();
+                ElementKind gek = ge.getKind();
+                if (gek.isClass() || gek.isInterface()) {
+                    assert ge instanceof TypeElement;
+                    signatures = new String[2];
+                    signatures[0] = ClassFileUtil.encodeClassNameOrArray((TypeElement)ge);
+                    signatures[1] = tpe.getSimpleName().toString();
+                }
+                else if (gek == ElementKind.METHOD || gek == ElementKind.CONSTRUCTOR) {
+                    assert ge instanceof ExecutableElement;
+                    String[] _sigs = ClassFileUtil.createExecutableDescriptor((ExecutableElement)ge);
+                    signatures = new String[_sigs.length + 1];
+                    System.arraycopy(_sigs, 0, signatures, 0, _sigs.length);
+                    signatures[_sigs.length] = tpe.getSimpleName().toString();
+                }
+                else {
+                    throw new IllegalArgumentException(gek.toString());
+                }
                 break;
             default:
                 throw new IllegalArgumentException(kind.toString());

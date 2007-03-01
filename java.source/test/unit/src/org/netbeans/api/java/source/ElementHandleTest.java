@@ -34,6 +34,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -123,6 +124,8 @@ public class ElementHandleTest extends NbTestCase {
         final ElementHandle[] innerClassHandle = new ElementHandle[1];
         final ElementHandle[] collectionAddHandle = new ElementHandle[1];
         final ElementHandle[] annonClassHandle = new ElementHandle[1];
+        final ElementHandle[] genParList = new ElementHandle[1];
+        final ElementHandle[] genParColsMin = new ElementHandle[1];
         
         js.runUserActionTask(new CancellableTask<CompilationController>() {            
             public void run(CompilationController parameter) {
@@ -170,6 +173,22 @@ public class ElementHandleTest extends NbTestCase {
                 assertNotNull (annonClass);
                 annonClassHandle[0] = ElementHandle.create(annonClass);
                 assertNotNull (annonClassHandle[0]);
+                TypeElement listClass = elements.getTypeElementByBinaryName("java.util.List"); //NOI18N
+                assertNotNull(listClass);
+                List<? extends TypeParameterElement> tpes = listClass.getTypeParameters();
+                assertEquals(tpes.size(), 1);
+                genParList[0] = ElementHandle.create(tpes.get(0));
+                TypeElement collsClass = elements.getTypeElementByBinaryName("java.util.Collections"); //NOI18N
+                assertNotNull(collsClass);
+                for (Element member : collsClass.getEnclosedElements()) {
+                    if (member.getKind() == ElementKind.METHOD && member.getSimpleName().contentEquals("min")) {
+                        ExecutableElement ee = (ExecutableElement) member;
+                        if (ee.getParameters().size() == 1) {
+                            genParColsMin[0] = ElementHandle.create(ee.getTypeParameters().get(0));
+                        }
+                    }
+                }
+                assertNotNull(genParColsMin[0]);
             }
 
             public void cancel() {
@@ -236,6 +255,27 @@ public class ElementHandleTest extends NbTestCase {
                 TypeElement annonClass = elements.getTypeElementByBinaryName("java.lang.String$1"); //NOI18N
                 assertNotNull (annonClass);
                 assertEquals(resolved,annonClass);
+                
+                TypeElement listClass = elements.getTypeElementByBinaryName("java.util.List"); //NOI18N
+                assertNotNull(listClass);
+                TypeParameterElement tpe = listClass.getTypeParameters().get(0);
+                resolved = genParList[0].resolve(parameter);
+                assertEquals(tpe, resolved);
+                
+                tpe = null;
+                TypeElement collsClass = elements.getTypeElementByBinaryName("java.util.Collections"); //NOI18N
+                assertNotNull(collsClass);
+                for (Element member : collsClass.getEnclosedElements()) {
+                    if (member.getKind() == ElementKind.METHOD && member.getSimpleName().contentEquals("min")) {
+                        ExecutableElement ee = (ExecutableElement) member;
+                        if (ee.getParameters().size() == 1) {
+                            tpe = ee.getTypeParameters().get(0);
+                        }
+                    }
+                }
+                assertNotNull(tpe);
+                resolved = genParColsMin[0].resolve(parameter);
+                assertEquals(tpe, resolved);
             }
 
             public void cancel() {
