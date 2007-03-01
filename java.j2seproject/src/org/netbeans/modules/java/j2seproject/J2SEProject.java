@@ -111,7 +111,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final UpdateHelper updateHelper;
-//    private MainClassUpdater mainClassUpdater;
+    private MainClassUpdater mainClassUpdater;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     
@@ -438,9 +438,8 @@ public final class J2SEProject implements Project, AntProjectListener {
 
             //register updater of main.class
             //the updater is active only on the opened projects
-//XXX: to compile workaround            
-//	    mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, updateHelper,
-//                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
+	    mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, updateHelper,
+                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
 
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
