@@ -2144,7 +2144,8 @@ public class SelectionManager {
         if (!selectedComponents.isEmpty()) {
             Position startNode, endNode;
             for (SelectedComponent sc : selectedComponents) {
-                Element sourceElement = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement).getElement();
+//                Element sourceElement = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement).getElement();
+                Element sourceElement = WebForm.getHtmlDomProviderService().getSourceElement(sc.componentRootElement);
                 startNode = Position.create(sourceElement, false);
                 if(start == null || startNode.isEarlierThan(start)) {
                     start = startNode;
@@ -2414,10 +2415,14 @@ public class SelectionManager {
 
 //        SelectionManager sm = webform.getSelection();
 
-        DesignBean designBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
-        if (designBean == null) {
+//        DesignBean designBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//        if (designBean == null) {
+//            return;
+//        }
+        if (componentRootElement == null) {
             return;
         }
+        
 //        if (!canSelectParent(designBean)) {
         if (!canSelectParent(componentRootElement)) {
             if (!webform.isGridMode()) {
@@ -2431,14 +2436,17 @@ public class SelectionManager {
 
         // Find the closest selectable parent that is actually
         // selectable!
-        DesignBean parent = designBean.getBeanParent();
+//        DesignBean parent = designBean.getBeanParent();
+        Element parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(componentRootElement);
 //        ModelViewMapper mapper = webform.getMapper();
 
-        while (parent != null) {
+//        while (parent != null) {
+        while (parentComponentRootElement != null) {
             // Find the visual (non-form, non-root) parent and select it
 //            Element element = FacesSupport.getElement(parent);
 //            Element element = Util.getElement(parent);
-            Element element = WebForm.getHtmlDomProviderService().getElement(parent);
+//            Element element = WebForm.getHtmlDomProviderService().getElement(parent);
+            Element element = WebForm.getHtmlDomProviderService().getSourceElement(parentComponentRootElement);
 
             if (element != null) {
 //                CssBox box = mapper.findBox(element);
@@ -2446,17 +2454,15 @@ public class SelectionManager {
 
                 if (box != null) {
 //                    selectComponents(new DesignBean[] { parent }, true);
-                    if (parent instanceof MarkupDesignBean) {
-                        selectComponents(
-                                new Element[] {
-                                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent) },
-                                true);
+//                    if (parent instanceof MarkupDesignBean) {
+                        selectComponents(new Element[] { parentComponentRootElement }, true);
                         break;
-                    }
+//                    }
                 }
             }
 
-            parent = parent.getBeanParent();
+//            parent = parent.getBeanParent();
+            parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(parentComponentRootElement);
         }
     }
 
