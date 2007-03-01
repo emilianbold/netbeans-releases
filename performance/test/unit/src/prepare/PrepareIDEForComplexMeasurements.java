@@ -109,18 +109,6 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     }
     
     /**
-     * Close BluePrints.
-     */
-    public void closeBluePrints(){
-        try {
-            new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.blueprints.Bundle","LBL_Tab_Title")).close();
-        }catch(Exception exc){
-            test_failed = true;
-            fail(exc);
-        }
-    }
-    
-    /**
      * Close All Documents.
      */
     public void closeAllDocuments(){
