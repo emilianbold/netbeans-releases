@@ -125,6 +125,7 @@ public class CheckoutContentTest extends JellyTestCase {
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME); 
         }    
@@ -169,6 +170,7 @@ public class CheckoutContentTest extends JellyTestCase {
             close.push();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    

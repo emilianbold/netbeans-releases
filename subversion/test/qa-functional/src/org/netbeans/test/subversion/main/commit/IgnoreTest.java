@@ -181,6 +181,7 @@ public class IgnoreTest extends JellyTestCase {
             stream.close();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    
@@ -294,6 +295,7 @@ public class IgnoreTest extends JellyTestCase {
             stream.close();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    
@@ -403,6 +405,7 @@ public class IgnoreTest extends JellyTestCase {
             stream.close();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    

@@ -156,6 +156,7 @@ public class RevertUiTest extends JellyTestCase{
 
             rmo.cancel(); 
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         } 

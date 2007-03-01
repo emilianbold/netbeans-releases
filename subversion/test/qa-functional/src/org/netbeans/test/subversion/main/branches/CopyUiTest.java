@@ -129,6 +129,7 @@ public class CopyUiTest extends JellyTestCase{
 
             cto.cancel();
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME); 
         }    

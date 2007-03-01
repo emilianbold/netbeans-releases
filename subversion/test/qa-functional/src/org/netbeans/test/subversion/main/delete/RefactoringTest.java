@@ -210,6 +210,7 @@ public class RefactoringTest extends JellyTestCase {
             assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    

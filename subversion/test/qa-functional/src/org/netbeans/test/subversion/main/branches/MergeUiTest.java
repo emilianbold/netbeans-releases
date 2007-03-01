@@ -145,6 +145,7 @@ public class MergeUiTest extends JellyTestCase {
             assertEquals("Wrong folder selection!!!", "tags", moo.getRepositoryFolder());
             moo.cancel();
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    

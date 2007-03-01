@@ -132,6 +132,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
             ProjectSupport.waitScanFinished();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    

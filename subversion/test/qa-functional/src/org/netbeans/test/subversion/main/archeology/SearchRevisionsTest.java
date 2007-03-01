@@ -118,7 +118,8 @@ public class SearchRevisionsTest extends JellyTestCase {
 
             stream.flush();
             stream.close();
-        } catch (Exception e) { 
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e); 
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }   

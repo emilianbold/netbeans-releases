@@ -131,6 +131,7 @@ public class AnnotationsTest extends JellyTestCase {
             stream.flush();
             stream.close();
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }

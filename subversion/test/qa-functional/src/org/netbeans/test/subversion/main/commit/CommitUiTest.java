@@ -127,6 +127,7 @@ public class CommitUiTest extends JellyTestCase{
             //TestKit.removeAllData(PROJECT_NAME);
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);    
         }

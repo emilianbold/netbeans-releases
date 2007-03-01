@@ -97,6 +97,7 @@ public class ImportUITest extends JellyTestCase {
             iwo.cancel();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
@@ -152,6 +153,7 @@ public class ImportUITest extends JellyTestCase {
             iwo.cancel();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    
@@ -229,6 +231,7 @@ public class ImportUITest extends JellyTestCase {
             iwo.cancel();
            
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
@@ -284,6 +287,7 @@ public class ImportUITest extends JellyTestCase {
             iwo.cancel();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {    
             TestKit.closeProject(PROJECT_NAME);      
         }    
@@ -338,6 +342,7 @@ public class ImportUITest extends JellyTestCase {
             rso.verify();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }

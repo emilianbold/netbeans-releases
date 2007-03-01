@@ -110,6 +110,7 @@ public class SwitchUiTest extends JellyTestCase{
             so.cancel();
             
         } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    
