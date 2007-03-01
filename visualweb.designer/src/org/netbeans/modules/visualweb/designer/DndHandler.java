@@ -150,9 +150,9 @@ public class DndHandler /*extends TransferHandler*/ {
         }
     }
 
-    private static final DataFlavor FLAVOR_DISPLAY_ITEM = new DataFlavor(
-            DataFlavor.javaJVMLocalObjectMimeType + "; class=" + DisplayItem.class.getName(), // NOI18N
-            "RAVE_PALETTE_ITEM"); // TODO get rid of such name.
+//    private static final DataFlavor FLAVOR_DISPLAY_ITEM = new DataFlavor(
+//            DataFlavor.javaJVMLocalObjectMimeType + "; class=" + DisplayItem.class.getName(), // NOI18N
+//            "RAVE_PALETTE_ITEM"); // TODO get rid of such name.
     
     /**
      * This method causes a transfer to a component from a clipboard or a DND drop operation.  The
@@ -862,18 +862,18 @@ public class DndHandler /*extends TransferHandler*/ {
 //        webform.refresh(true);
 //    }
 
-    /**
-     * @return true iff the palette item was inserted successfully
-     * @param beans An empty list into which the created beans will be added, or null
-     *    if caller is not interested in the result
-     */
-    public boolean importItem(DisplayItem item, DesignBean parent, int nodePos, String facet,
-    List beans, HtmlDomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
-//        Location location = computePositions(parent, nodePos, facet, getDropPoint(), insertPos, true);
-        HtmlDomProvider.Location location = computeLocationForBean(parent, nodePos, facet, getDropPoint(), getDropSize(), webform);
-//        return doImportItem(item, parent, nodePos, facet, beans, location);
-        return importBean(new DisplayItem[] {item}, parent, nodePos, facet, beans, location, coordinateTranslator);
-    }
+//    /**
+//     * @return true iff the palette item was inserted successfully
+//     * @param beans An empty list into which the created beans will be added, or null
+//     *    if caller is not interested in the result
+//     */
+//    public boolean importItem(DisplayItem item, DesignBean parent, int nodePos, String facet,
+//    List beans, HtmlDomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
+////        Location location = computePositions(parent, nodePos, facet, getDropPoint(), insertPos, true);
+//        HtmlDomProvider.Location location = computeLocationForBean(parent, nodePos, facet, getDropPoint(), getDropSize(), webform);
+////        return doImportItem(item, parent, nodePos, facet, beans, location);
+//        return importBean(new DisplayItem[] {item}, parent, nodePos, facet, beans, location, coordinateTranslator);
+//    }
     
 //    private boolean doImportItem(DisplayItem item, DesignBean parent, int nodePos, String facet,
 //    List beans, Location location) throws IOException {
@@ -1363,91 +1363,91 @@ public class DndHandler /*extends TransferHandler*/ {
         
     }
     
-    private static HtmlDomProvider.Location computeLocationForBean(DesignBean bean, int where, String facet, Point canvasPos, Dimension dropSize, WebForm webform) {
-        if (bean == null) {
-            throw new NullPointerException("Bean can't be null!"); // NOI18N
-        }
-        
-        HtmlDomProvider.Location location = new HtmlDomProvider.Location();
-        location.facet = facet;
-        location.coordinates = canvasPos;
-//        location.size = getDropSize();
-        location.size = dropSize;
-
-//        if ((bean != null) && !LiveUnit.isCssPositionable(bean)) {
-        if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isCssPositionable(
-                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
-            location.coordinates = null;
-        }
-
-        DesignBean parent = null;
-        Node under = null;
-        Node before = null;
-
-        Element element = null;
-
-        if (bean != null) {
-//            element = FacesSupport.getElement(bean);
-//            element = Util.getElement(bean);
-            element = WebForm.getHtmlDomProviderService().getElement(bean);
-
-            // No, can still reposition these guys.
-            //if (element == null) {
-            //    bean = null;
-            //}
-            location.droppeeElement = element;
-        }
-
-        //location.droppeeChosen = true;
-        if (where == DROP_CENTER) { // child of bean
-            parent = bean;
-            under = element;
-            before = null;
-        } else if (where == DROP_ABOVE) { // before bean
-            parent = bean.getBeanParent();
-            before = element;
-
-            if (element != null) {
-                under = element.getParentNode();
-            } else { // after bean
-                under = null;
-            }
-        } else {
-            parent = bean.getBeanParent();
-            assert where == DROP_BELOW;
-            before = null;
-
-            for (int i = 0, n = parent.getChildBeanCount(); i < (n - 1); i++) {
-                if (parent.getChildBean(i) == bean) {
-                    DesignBean next = parent.getChildBean(i + 1);
-//                    Element nextElement = FacesSupport.getElement(next);
-//                    Element nextElement = Util.getElement(next);
-                    Element nextElement = WebForm.getHtmlDomProviderService().getElement(next);
-                    before = nextElement;
-
-                    break;
-                }
-            }
-
-            if (element != null) {
-                under = element.getParentNode();
-            } else { // after bean
-                under = null;
-            }
-        }
-
-        location.droppee = parent;
-
-        // If default-positioning, try to place the component before the <br/>, if
-        // the the br is the last element under the default parent.
-        if ((under == null) && (before == null)) {
-            location.pos = getDefaultMarkupPositionUnderParent(parent, webform);
-        } else {
-            location.pos = new MarkupPosition(under, before);
-        }
-
-        return location;
-    }
+//    private static HtmlDomProvider.Location computeLocationForBean(DesignBean bean, int where, String facet, Point canvasPos, Dimension dropSize, WebForm webform) {
+//        if (bean == null) {
+//            throw new NullPointerException("Bean can't be null!"); // NOI18N
+//        }
+//        
+//        HtmlDomProvider.Location location = new HtmlDomProvider.Location();
+//        location.facet = facet;
+//        location.coordinates = canvasPos;
+////        location.size = getDropSize();
+//        location.size = dropSize;
+//
+////        if ((bean != null) && !LiveUnit.isCssPositionable(bean)) {
+//        if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isCssPositionable(
+//                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
+//            location.coordinates = null;
+//        }
+//
+//        DesignBean parent = null;
+//        Node under = null;
+//        Node before = null;
+//
+//        Element element = null;
+//
+//        if (bean != null) {
+////            element = FacesSupport.getElement(bean);
+////            element = Util.getElement(bean);
+//            element = WebForm.getHtmlDomProviderService().getElement(bean);
+//
+//            // No, can still reposition these guys.
+//            //if (element == null) {
+//            //    bean = null;
+//            //}
+//            location.droppeeElement = element;
+//        }
+//
+//        //location.droppeeChosen = true;
+//        if (where == DROP_CENTER) { // child of bean
+//            parent = bean;
+//            under = element;
+//            before = null;
+//        } else if (where == DROP_ABOVE) { // before bean
+//            parent = bean.getBeanParent();
+//            before = element;
+//
+//            if (element != null) {
+//                under = element.getParentNode();
+//            } else { // after bean
+//                under = null;
+//            }
+//        } else {
+//            parent = bean.getBeanParent();
+//            assert where == DROP_BELOW;
+//            before = null;
+//
+//            for (int i = 0, n = parent.getChildBeanCount(); i < (n - 1); i++) {
+//                if (parent.getChildBean(i) == bean) {
+//                    DesignBean next = parent.getChildBean(i + 1);
+////                    Element nextElement = FacesSupport.getElement(next);
+////                    Element nextElement = Util.getElement(next);
+//                    Element nextElement = WebForm.getHtmlDomProviderService().getElement(next);
+//                    before = nextElement;
+//
+//                    break;
+//                }
+//            }
+//
+//            if (element != null) {
+//                under = element.getParentNode();
+//            } else { // after bean
+//                under = null;
+//            }
+//        }
+//
+//        location.droppee = parent;
+//
+//        // If default-positioning, try to place the component before the <br/>, if
+//        // the the br is the last element under the default parent.
+//        if ((under == null) && (before == null)) {
+//            location.pos = getDefaultMarkupPositionUnderParent(parent, webform);
+//        } else {
+//            location.pos = new MarkupPosition(under, before);
+//        }
+//
+//        return location;
+//    }
     
 //    /**
 //     * Compute the target markup and bean positions to be used for a
