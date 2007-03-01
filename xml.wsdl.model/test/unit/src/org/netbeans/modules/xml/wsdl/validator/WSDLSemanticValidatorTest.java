@@ -416,8 +416,67 @@ public class WSDLSemanticValidatorTest extends TestCase {
      }
       
      
-             
+     public void testRequestReplyOperationParameterOrderValid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/RequestResponse/portTypeRRFOperatorparamOrder_valid.wsdl";
+        URL url = getClass().getResource(fileName);
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+        
+        validate(uri, expectedErrors);
+     }
+     
+     
+     public void testRequestReplyOperationParameterOrderBogusPartsInvalid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/RequestResponse/portTypeRRFOperatorparamOrderBogusPartNames_error.wsdl";
+        URL url = getClass().getResource(fileName);
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+       expectedErrors.add(format(mMessages.getString("VAL_PARMETER_ORDER_CHECK_PART_EXISTENCE")));
+        
+        validate(uri, expectedErrors);
+     }
+      
+     public void testRequestReplyOperationParameterOrderMoreThanOnePartFromOutputMessageMissingInvalid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/RequestResponse/portTypeRRFOperatorparamOrderMoreThanOneOutputMessagePartMissing_error.wsdl";
+        URL url = getClass().getResource(fileName);
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+       expectedErrors.add(format(mMessages.getString("VAL_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING")));
+        
+        validate(uri, expectedErrors);
+     }
     
+     public void testSolicitResponseOperationParameterOrderValid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/SolicitResponse/portTypeSRFOperationparmOrder_valid.wsdl";
+                          
+        URL url = getClass().getResource(fileName);                                                                        
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+        
+        validate(uri, expectedErrors);
+     }
+     
+     
+     public void testSolicitResponseOperationParameterOrderBogusPartsInvalid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/SolicitResponse/portTypeSRFOperationparmOrderBogusPartNames_error.wsdl";
+        URL url = getClass().getResource(fileName);
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+       expectedErrors.add(format(mMessages.getString("VAL_PARMETER_ORDER_CHECK_PART_EXISTENCE")));
+        
+        validate(uri, expectedErrors);
+     }
+      
+     public void testSolicitResponseOperationParameterOrderMoreThanOnePartFromOutputMessageMissingInvalid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/SolicitResponse/portTypeSRFOperationparmOrderrMoreThanOneOutputMessagePartMissing_error.wsdl";
+        URL url = getClass().getResource(fileName);
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+       expectedErrors.add(format(mMessages.getString("VAL_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING")));
+        
+        validate(uri, expectedErrors);
+     }
+     
     private ValidationResult validate(URI relativePath) throws Exception {
         WSDLModel model = TestCatalogModel.getDefault().getWSDLModel(relativePath);
         Validation validation = new Validation();

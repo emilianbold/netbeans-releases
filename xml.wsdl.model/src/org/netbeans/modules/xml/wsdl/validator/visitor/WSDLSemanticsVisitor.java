@@ -228,6 +228,12 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     public static final String VAL_MULTIPLE_TYPES_IN_DEFINITION = "VAL_MULTIPLE_TYPES_IN_DEFINITION";
     public static final String FIX_MULTIPLE_TYPES_IN_DEFINITION = "FIX_MULTIPLE_TYPES_IN_DEFINITION";
    
+    public static final String VAL_PARMETER_ORDER_CHECK_PART_EXISTENCE = "VAL_PARMETER_ORDER_CHECK_PART_EXISTENCE";
+    public static final String FIX_PARMETER_ORDER_CHECK_PART_EXISTENCE = "FIX_PARMETER_ORDER_CHECK_PART_EXISTENCE";
+   
+    public static final String VAL_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING = "VAL_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING";
+    public static final String FIX_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING = "FIX_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING";
+   
     public List<ResultItem> mResultItems;
     private Validation mValidation;
     private List<Model> mValidatedModels;
@@ -460,6 +466,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         //The name of the fault element is unique within the set of faults defined for the operation
         validateFaultNames(operation);
         
+        validateParameterOrder(operation);
+        
         visitChildren(operation);
         // return true;
     }
@@ -486,6 +494,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         //2.4.5 Names of Elements within an Operation:
         //The name of the fault element is unique within the set of faults defined for the operation
         validateFaultNames(operation);
+        
+        validateParameterOrder(operation);
         
         visitChildren(operation);
         // return true;
@@ -958,4 +968,106 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     }
     
    
+    private void validateParameterOrder(Operation operation) {
+        List<String> parts = operation.getParameterOrder(); 
+        if(parts!= null) {
+            
+            Iterator<String> it = parts.iterator();
+            while(it.hasNext()) {
+                String partName = it.next();
+                validateParameterOrderPart(operation, partName);
+            }
+        }
+        
+        validateParameterOrderInOutput(operation);
+    }
+    
+    private void validateParameterOrderPart(Operation operation, String partName) {
+        Input input = operation.getInput();
+        Output output = operation.getOutput();
+        if(input != null && output != null) {
+            boolean foundPart = false;
+            
+            //check either input or output has this part
+            NamedComponentReference<Message> inputMessage =  input.getMessage();
+            NamedComponentReference<Message> outputMessage =  output.getMessage();
+           
+            if(inputMessage != null && inputMessage.get() != null) {
+                Message inMessage = inputMessage.get();
+                Collection<Part> parts =  inMessage.getParts();
+                Part part = findMatchingPart(parts, partName);
+                if(part != null) {
+                    foundPart = true;
+                }
+            }
+            
+            if(!foundPart && outputMessage != null && outputMessage.get() != null) {
+                Message outMessage = outputMessage.get();
+                Collection<Part> parts =  outMessage.getParts();
+                Part part = findMatchingPart(parts, partName);
+                if(part != null) {
+                    foundPart = true;
+                }
+            }
+            
+            if(!foundPart) {
+                 getValidateSupport().fireToDo(Validator.ResultType.ERROR, operation, 
+                                               mMsg.getString(VAL_PARMETER_ORDER_CHECK_PART_EXISTENCE, partName, operation.getName()),
+                                               mMsg.getString(FIX_PARMETER_ORDER_CHECK_PART_EXISTENCE));
+            }
+        }    
+    }
+    
+    private void validateParameterOrderInOutput(Operation operation) {
+        Output output = operation.getOutput();
+        if(output != null) {
+            NamedComponentReference<Message> outputMessage =  output.getMessage();
+           
+            if(outputMessage != null && outputMessage.get() != null) {
+                Message outMessage = outputMessage.get();
+                Collection<Part> outputParts =  outMessage.getParts();
+                List<String> parts = operation.getParameterOrder(); 
+                if(outputParts != null && parts!= null) {
+                    int matchedOutputPartsCount = 0;
+                    Iterator<Part> it = outputParts.iterator();
+                    while(it.hasNext()) {
+                        Part p = it.next();
+                        
+                        if(p.getName() != null) {
+                            boolean result = parts.contains(p.getName());
+                            if(result) {
+                                matchedOutputPartsCount++;
+                            }
+                        }
+                    }
+                    // basic profile R2305 A wsdl:operation element child of a wsdl:portType element in a DESCRIPTION
+                    //MUST be constructed so that the parameterOrder attribute, if present, omits at most 1 wsdl:part from the output message.
+                    
+                    if(matchedOutputPartsCount < (outputParts.size() -1)) {
+                        getValidateSupport().fireToDo(Validator.ResultType.ERROR, operation, 
+                                               mMsg.getString(VAL_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING,  operation.getName()),
+                                               mMsg.getString(FIX_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING));
+                        
+                    }
+                }
+            }
+            
+        }
+    }
+    
+    private Part findMatchingPart(Collection<Part> parts, String partName) {
+        Part part = null;
+        if(partName != null && parts != null) {
+            Iterator<Part> it = parts.iterator();
+            while(it.hasNext()) {
+                Part p = it.next();
+                if(partName.equals(p.getName())) {
+                    part = p;
+                    break;
+                }
+            }
+        }
+        
+        return part;
+    }
 }
