@@ -78,21 +78,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
     public MultiViewElement createElement() {
         return new PageFlowElement(context);
     }
-    
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        System.out.println("JSFPageFlowMultiviewDescriptor.writeObject: ");
-        out.writeObject(context);
-    }
-    
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        System.out.println("JSFPageFlowMultiviewDescriptor.readObject: " + in.readObject());
-        
-        Object object = in.readObject();
-        if (! (object instanceof JSFConfigEditorContext))
-            throw new ClassNotFoundException("JSFConfigEditorContext expected but not found");
-        context = (JSFConfigEditorContext) object;
-        
-    }
+   
     
     static class PageFlowElement implements MultiViewElement, Serializable {
         private transient JScrollPane panel;

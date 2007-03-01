@@ -47,6 +47,9 @@ public class PageFlowView  extends TopComponent{
         init();
     }
     
+    /*
+     * Initializes the Panel and the graph 
+     **/
     private void init(){
         setLayout(new BorderLayout());
         configModel = ConfigurationUtils.getConfigModel(context.getFacesConfigFile(),true);
@@ -65,6 +68,10 @@ public class PageFlowView  extends TopComponent{
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
     private static final Image IMAGE_LIST = null; // NOI18N
     
+    /* 
+     * Setup The Graph
+     * Should only be called by init();
+     **/
     private void setupGraph(){
         assert configModel!=null;
         
@@ -73,8 +80,6 @@ public class PageFlowView  extends TopComponent{
         List<NavigationRule> rules = facesConfig.getNavigationRules();        
         createAllPageNodes(rules);        
         createAllEdges(rules);       
-        
-        //        test();
         
         if(  scene instanceof PageFlowScene ) {
             ((PageFlowScene)scene).layoutScene();
@@ -105,23 +110,7 @@ public class PageFlowView  extends TopComponent{
             createNode((GraphPinScene)scene, IMAGE_LIST, page, null, null);
         }
     }
-    
-    
-    private void test(){
-        //        createNode((GraphPinScene)scene, IMAGE_LIST, "TestPage1", null, null);
-        //        createNode((GraphPinScene)scene, IMAGE_LIST, "TestPage2", null, null);
-        
-        
-        
-        //        //Testing
-        //        Link link;
-        ////            Link link = navModel.addLink(pages.get(0), pages.get(1), null);
-        ////            createEdge(graphScene, link);
-        //        if( navComponents != null){
-        //            link = navModel.addLink( pages.get(0), pages.get(1), navComponents.get(0));
-        //            createEdge(graphScene,link);
-        //        }
-    }
+
     
     
     private VMDNodeWidget createNode(GraphPinScene graphScene, Image image, String page, String type, List<Image> glyphs) {
