@@ -54,6 +54,7 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
+import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -493,7 +494,7 @@ public class CatalogModelImpl implements CatalogModel {
         }
         FileObject baseFO = null;
         //get the resolver object
-        CatalogModelImpl depRez = null;
+        CatalogModel depRez = null;
         try {
             baseFO = getFileObject(baseURIStr);
             depRez = getResolver(baseFO);
@@ -582,7 +583,10 @@ public class CatalogModelImpl implements CatalogModel {
     }
     
     
-    private CatalogModelImpl getResolver(FileObject baseFileObject) throws CatalogModelException{
+    private CatalogModel getResolver(FileObject baseFileObject) throws CatalogModelException{
+        if(baseFileObject != null && FileOwnerQuery.getOwner(baseFileObject) != null) {
+            return CatalogWriteModelFactory.getInstance().getCatalogWriteModelForProject(baseFileObject);
+        }
         return this;
     }
     
