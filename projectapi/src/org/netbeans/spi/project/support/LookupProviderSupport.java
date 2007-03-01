@@ -140,14 +140,6 @@ public final class LookupProviderSupport {
                 } else {
                     Lookup newone = elem.createAdditionalLookup(baseLookup);
                     assert newone != null;
-                    LookupMerger merg = newone.lookup(LookupMerger.class);
-                    if (merg != null) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                "LookupProvider " + elem.getClass().getName() + " provides LookupMerger for " +
-                                merg.getMergeableClass().getName() + 
-                                ". That can cause project behaviour changes not anticipated by the project type owner." +
-                                "Please consider making the LookupMerger a contract of the project type." );
-                    }
                     newLookups.add(newone);
                 }
             }
