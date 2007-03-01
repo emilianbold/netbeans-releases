@@ -53,9 +53,11 @@ public class CommentsTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(CommentsTest.class);
-//        suite.addTest(new CommentsTest("testAddStatement"));
-//        suite.addTest(new CommentsTest("testAddJavaDocToMethod"));
+//        suite.addTestSuite(CommentsTest.class);
+        suite.addTest(new CommentsTest("testAddStatement"));
+        suite.addTest(new CommentsTest("testAddJavaDocToMethod"));
+        suite.addTest(new CommentsTest("testGetComment1"));
+//        suite.addTest(new CommentsTest("testAddJavaDocToExistingMethod"));
         return suite;
     }
 
@@ -199,6 +201,52 @@ public class CommentsTest extends GeneratorTestMDRCompat {
         System.err.println(TestUtilities.copyFileToString(testFile));
         assertTrue(TestUtilities.copyFileToString(testFile).contains("nuevoMetodo"));
         assertTrue(TestUtilities.copyFileToString(testFile).contains("Comentario"));
+    }
+    
+    public void testAddJavaDocToExistingMethod() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void test(int a) {\n" +
+            "    }\n\n" +
+            "}\n"
+            );
+        
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(final WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+                
+                TreeMaker make = copy.getTreeMaker();
+                ClassTree node = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = null;
+                for (Tree tree : node.getMembers()) {
+                    if (tree.getKind() == Tree.Kind.METHOD && "test".contentEquals(((MethodTree) tree).getName())) {
+                        method = (MethodTree) tree;
+                        break;
+                    }
+                }
+                
+                assertNotNull(method);
+                
+                make.addComment(method, Comment.create(
+                        Comment.Style.JAVADOC, 
+                        Query.NOPOS, 
+                        Query.NOPOS, 
+                        Query.NOPOS, 
+                        "Comentario"), 
+                        true
+                );
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        System.err.println(TestUtilities.copyFileToString(testFile));
+        assertTrue(TestUtilities.copyFileToString(testFile), TestUtilities.copyFileToString(testFile).contains("Comentario"));
     }
 
     String getGoldenPckg() {
