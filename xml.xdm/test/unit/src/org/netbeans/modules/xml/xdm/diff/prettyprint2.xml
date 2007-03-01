@@ -4,6 +4,14 @@
 	<addOnlyChild name="test2">
 		<c name="c1"/>
 	</addOnlyChild>
+	<cutPastePretty name="test7">
+                <xs:annotation>
+                        <xs:documentation>A loan application xml schema</xs:documentation>
+                </xs:annotation>
+		<a name="a1"/>
+		<b name="b1"/>
+		<c name="c1"/>
+	</cutPastePretty>        
 	<addNthChildReplacePretty name="test3">
 		<a name="a1"/>
 		<b name="b1"/>

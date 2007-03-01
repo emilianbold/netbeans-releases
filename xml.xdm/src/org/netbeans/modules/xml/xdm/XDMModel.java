@@ -1110,7 +1110,7 @@ public class XDMModel {
             }
             
             //recurse pretty print
-            doPrettyPrintRecursive(newNode, parentIndent);//for children of node
+            doPrettyPrintRecursive(newNode, parentIndent, newParent);//for children of node
         }
     }
     
@@ -1154,35 +1154,80 @@ public class XDMModel {
         return indent;
     }
     
-    private void doPrettyPrintRecursive(Node parent, String indent) {
+    private void doPrettyPrintRecursive(Node parent, String indent, Node ancestor) {
         if ((getStatus() != Status.PARSING) && isPretty()) {
-            if(isSimpleContent(parent)  || isPretty(parent))
-                return; //skip if simpleContent or already pretty
-            List<Node> childList = new ArrayList<Node>();
-            List<Node> visitList = new ArrayList<Node>();
-            NodeList childs = parent.getChildNodes();
-            for(int i=0;i<childs.getLength();i++) {
-                childList.add((Node)childs.item(i));
-                if(childs.item(i) instanceof Element)
-                    visitList.add((Node)childs.item(i));
+            if(isSimpleContent(parent))
+                return; //skip if simpleContent
+            else if(parent instanceof Element && isPretty(parent)) {//adjust for pretty length difference
+                NodeList childs = parent.getChildNodes();
+                int len = childs.getLength();
+                Text postText = (Text)childs.item(len-1);
+                if(((NodeImpl)ancestor.getChildNodes().item(0)).getTokens().get(0).getValue().length() == 
+                        ((NodeImpl)postText).getTokens().get(0).getValue().length())
+                    return;
+                else {
+                    String parentIndent = indent+getIndentation();
+                    String childIndent = parentIndent+getIndentation();
+                    List<Node> childList2 = new ArrayList<Node>();
+                    List<Node> visitList2 = new ArrayList<Node>();
+                    NodeList childs2 = parent.getChildNodes();
+                    for(int i=0;i<childs2.getLength();i++) {
+                        childList2.add((Node)childs2.item(i));
+                        if(childs2.item(i) instanceof Element)
+                            visitList2.add((Node)childs2.item(i));
+                    }                    
+                    if(childList2.size() > 0) {
+                        if(checkPrettyText((Node) parent.getChildNodes().item(0)))
+                            parent.replaceChild(
+                                createPrettyText(childIndent), (Node) parent.getChildNodes().item(0)); 
+                        if(childList2.size() > 2) {
+                            for(int i=1;i<childList2.size()-1;i++) {
+                                Node txt = (Node)parent.getChildNodes().item(i);
+                                if(checkPrettyText(txt))
+                                    parent.replaceChild(
+                                            createPrettyText(childIndent+getIndentation()), txt);
+                            }
+                        }
+                        if(childList2.size() > 1) {
+                            Node txt = (Node)parent.getChildNodes().item(childList2.size()-1);
+                                if(checkPrettyText(txt))
+                                    parent.replaceChild(createPrettyText(parentIndent), txt);
+                        }
+                        for(int i=0;i<childList2.size();i++) {
+                            doPrettyPrintRecursive((Node)parent.getChildNodes().item(i), 
+                                    childIndent, parent);
+                        }
+                        childList2.clear(); //no need to keep it beyond here
+                        visitList2.clear(); //no need to keep it beyond here
+                    }
+                }
+            } else {
+                List<Node> childList = new ArrayList<Node>();
+                List<Node> visitList = new ArrayList<Node>();
+                NodeList childs = parent.getChildNodes();
+                for(int i=0;i<childs.getLength();i++) {
+                    childList.add((Node)childs.item(i));
+                    if(childs.item(i) instanceof Element)
+                        visitList.add((Node)childs.item(i));
+                }
+                String parentIndent = indent+getIndentation();
+                if(childList.size() > 0)
+                    parent.appendChild(createPrettyText(parentIndent));
+                String childIndent = parentIndent+getIndentation();
+                for(int i=childList.size()-1;i>=0;i--) {
+                    Node ref = (Node)childList.get(i);
+                    Text postText = createPrettyText(childIndent);
+                    parent.insertBefore(postText, ref);
+                }
+                childList.clear(); //no need to keep it beyond here
+                for(int i=0;i<visitList.size();i++) {
+                    doPrettyPrintRecursive((Node)visitList.get((i)), parentIndent, parent);
+                }
+                visitList.clear(); //no need to keep it beyond here
             }
-            String parentIndent = indent+getIndentation();
-            if(childList.size() > 0)
-                parent.appendChild(createPrettyText(parentIndent));
-            String childIndent = parentIndent+getIndentation();
-            for(int i=childList.size()-1;i>=0;i--) {
-                Node ref = (Node)childList.get(i);
-                Text postText = createPrettyText(childIndent);
-                parent.insertBefore(postText, ref);
-            }
-            childList.clear(); //no need to keep it beyond here
-            for(int i=0;i<visitList.size();i++) {
-                doPrettyPrintRecursive((Node)visitList.get((i)), parentIndent);
-            }
-            visitList.clear(); //no need to keep it beyond here
         }
     }
-    
+
     private Text createPrettyText(String indent) {
         String textChars = "\n"+indent;
         Text txt = (Text)this.getDocument().createTextNode(textChars);

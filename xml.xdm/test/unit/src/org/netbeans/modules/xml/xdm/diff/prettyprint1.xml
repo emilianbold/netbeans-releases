@@ -1,6 +1,14 @@
 <?xml version="1.0"?>
 <prettyprint>
+        <xs:annotation>
+                <xs:documentation>A loan application xml schema</xs:documentation>
+        </xs:annotation>
 	<addOnlyChild name="test2"></addOnlyChild>
+	<cutPastePretty name="test7">
+		<a name="a1"/>
+		<b name="b1"/>
+		<c name="c1"/>
+	</cutPastePretty>
 	<addNthChildReplacePretty name="test3">
 		<a name="a1"/>
 		<b name="b1"/>
