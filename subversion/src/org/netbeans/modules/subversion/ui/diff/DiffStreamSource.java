@@ -23,9 +23,17 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.versioning.util.Utils;
 
 import java.io.*;
+import java.util.*;
+
 import org.openide.util.*;
+import org.openide.util.lookup.Lookups;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Stream source for diffing CVS managed files.
@@ -39,7 +47,6 @@ public class DiffStreamSource extends StreamSource {
     private final String    title;
     private String          mimeType;
 
-    private IOException     failure;
     /**
      * Null is a valid value if base file does not exist in this revision. 
      */ 
@@ -77,7 +84,7 @@ public class DiffStreamSource extends StreamSource {
         return title;
     }
 
-    public String getMIMEType() {
+    public synchronized String getMIMEType() {
         if (baseFile.isDirectory()) {
             // http://www.rfc-editor.org/rfc/rfc2425.txt
             return "content/unknown"; // "text/directory";  //HACK no editor for directory MIME type => NPE while constructing EditorKit // NOI18N
@@ -91,7 +98,7 @@ public class DiffStreamSource extends StreamSource {
         return mimeType;
     }
 
-    public Reader createReader() throws IOException {
+    public synchronized Reader createReader() throws IOException {
         if (baseFile.isDirectory()) {
             // XXX return directory listing?
             // could be nice te return sorted directory content
@@ -112,6 +119,36 @@ public class DiffStreamSource extends StreamSource {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
+    public boolean isEditable() {
+        return Setup.REVISION_CURRENT.equals(revision) && isPrimary();
+    }
+
+    private boolean isPrimary() {
+        FileObject fo = FileUtil.toFileObject(baseFile);
+        if (fo != null) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                return fo.equals(dao.getPrimaryFile());
+            } catch (DataObjectNotFoundException e) {
+                // no dataobject, never mind
+            }
+        }
+        return true;
+    }
+
+    public synchronized Lookup getLookup() {
+        try {
+            init();
+        } catch (IOException e) {
+            return Lookups.fixed();
+        }
+        if (remoteFile == null || !isPrimary()) return Lookups.fixed();
+        FileObject remoteFo = FileUtil.toFileObject(remoteFile);
+        if (remoteFo == null) return Lookups.fixed();
+
+        return Lookups.fixed(remoteFo);
+    }
+    
     /**
      * Loads data over network.
      */
@@ -122,14 +159,37 @@ public class DiffStreamSource extends StreamSource {
         if (remoteFile != null || revision == null) return;
         mimeType = Subversion.getInstance().getMimeType(baseFile);
         try {
-            remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
+            if (isEditable()) {
+                // we cannot move editable documents because that would break Document sharing
+                remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
+            } else {
+                File tempFolder = Utils.getTempFolder();
+                // To correctly get content of the base file, we need to checkout all files that belong to the same
+                // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
+                // if it also finds associate .form file in the same directory
+                Set<File> allFiles = Utils.getAllDataObjectFiles(baseFile);
+                for (File file : allFiles) {
+                    boolean isBase = file.equals(baseFile);
+                    try {
+                        File rf = VersionsCache.getInstance().getFileRevision(file, revision);
+                        File newRemoteFile = new File(tempFolder, file.getName());
+                        Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
+                        newRemoteFile.deleteOnExit();
+                        if (isBase) {
+                            remoteFile = newRemoteFile;
+                        }
+                    } catch (Exception e) {
+                        if (isBase) throw e;
+                        // we cannot check out peer file so the dataobject will not be constructed properly
+                    }
+                }
+            }
             if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
                 mimeType = Subversion.getInstance().getMimeType(remoteFile);
             }
-            failure = null;
         } catch (Exception e) {
             // TODO detect interrupted IO (exception subclass), i.e. user cancel
-            failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
+            IOException failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
             failure.initCause(e);
             throw failure;
         }
