@@ -192,13 +192,18 @@ public class DndHandler /*extends TransferHandler*/ {
                     return false;
                 }
                 
-                DesignBean parent = selectionTopComp.getPasteParent();
-                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
+//                DesignBean parent = selectionTopComp.getPasteParent();
+                Element parentComponentRootElement = selectionTopComp.getPasteParentComponent();
+//                MarkupPosition pos = selectionTopComp.getPasteMarkupPosition();
                 Point location = selectionTopComp.getPastePosition();
-                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
+//                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
+                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
 
-                if ((beans != null) && (beans.length > 0)) {
-                    selectionTopComp.selectBeans(beans);
+//                if ((beans != null) && (beans.length > 0)) {
+//                    selectionTopComp.selectBeans(beans);
+//                }
+                if (componentRootElements.length > 0) {
+                    selectionTopComp.selectComponents(componentRootElements);
                 }
                 return true;
             } // TEMP
@@ -1753,7 +1758,9 @@ public class DndHandler /*extends TransferHandler*/ {
      * @param searchUp If true, you are permitted to search upwards
      *        as well.
      */
-    public int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp,
+//    public int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp,
+//        int nodePos) {
+    public int computeActions(Element dropeeComponentRootElement, Transferable transferable, boolean searchUp,
         int nodePos) {
 //        if(DesignerUtils.DEBUG) {
 //            DesignerUtils.debugLog(getClass().getName() + ".computeActions(DesignBean, Transferable, boolean, int)");
@@ -1888,7 +1895,8 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //
 //        return computeActions(droppee, classes, beans, action, searchUp, nodePos);
-        return webform.computeActions(droppee, transferable, searchUp, nodePos);
+//        return webform.computeActions(droppee, transferable, searchUp, nodePos);
+        return webform.computeActions(dropeeComponentRootElement, transferable, searchUp, nodePos);
     }
 
 //    private int computeActions(DesignBean origDroppee, String[] classes, DesignBean[] beans,

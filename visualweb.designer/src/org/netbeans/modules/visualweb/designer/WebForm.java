@@ -1632,8 +1632,11 @@ public class WebForm implements Designer {
         return htmlDomProvider.canImport(comp, transferFlavors);
     }
 
-    DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
-        return htmlDomProvider.pasteBeans(t, parent, pos, location, coordinateTranslator);
+//    DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+//        return htmlDomProvider.pasteBeans(t, parent, pos, location, coordinateTranslator);
+//    }
+    Element[] pasteComponents(Transferable t, Element parentComponentRootElement, Point location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+        return htmlDomProvider.pasteComponents(t, parentComponentRootElement, location, coordinateTranslator);
     }
 
     void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
@@ -1657,8 +1660,11 @@ public class WebForm implements Designer {
         return htmlDomProvider.getDefaultPositionUnderParent(parent);
     }
 
-    int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp, int nodePos) {
-        return htmlDomProvider.computeActions(droppee, transferable, searchUp, nodePos);
+//    int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp, int nodePos) {
+//        return htmlDomProvider.computeActions(droppee, transferable, searchUp, nodePos);
+//    }
+    int computeActions(Element dropeeComponentRootElement, Transferable transferable, boolean searchUp, int nodePos) {
+        return htmlDomProvider.computeActions(dropeeComponentRootElement, transferable, searchUp, nodePos);
     }
 
 //    DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
@@ -2407,6 +2413,10 @@ public class WebForm implements Designer {
         }
 
         public org.openide.nodes.Node getNodeRepresentation(Element componentRootElement) {
+            return null;
+        }
+
+        public Element getComponentRootElementFromNode(org.openide.nodes.Node node) {
             return null;
         }
     } // End of DummyHtmlDomProviderService.
