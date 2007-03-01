@@ -19,17 +19,20 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.soap.impl;
 
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
+import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Nam Nguyen
  */
-public abstract class SOAPComponentImpl extends GenericExtensibilityElement implements SOAPComponent {
+public abstract class SOAPComponentImpl extends GenericExtensibilityElement 
+        implements SOAPComponent, ExtensibilityElement.UpdaterProvider {
     
     /** Creates a new instance of SOAPComponentImpl */
     public SOAPComponentImpl(WSDLModel model, Element e) {
@@ -38,5 +41,9 @@ public abstract class SOAPComponentImpl extends GenericExtensibilityElement impl
     
     protected String getNamespaceURI() {
         return SOAPQName.SOAP_NS_URI;
+    }
+
+    public ComponentUpdater<SOAPComponent> getComponentUpdater() {
+        return new SOAPComponentUpdater();
     }
 }

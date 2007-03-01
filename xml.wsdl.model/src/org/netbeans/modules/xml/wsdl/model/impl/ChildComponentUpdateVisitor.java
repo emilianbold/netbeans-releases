@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.wsdl.model.impl;
 import org.netbeans.modules.xml.wsdl.model.*;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.xam.AbstractComponent;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 
@@ -29,7 +30,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
  * Visitor to add or remove a child of a WSDL component.
  * @author Nam Nguyen
  */
-public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSDLVisitor, ComponentUpdater<T> {
+public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSDLVisitor, ComponentUpdater<T>, ComponentUpdater.Query<T> {
     
     private Operation operation;
     private WSDLComponent parent;
@@ -42,7 +43,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
     public ChildComponentUpdateVisitor() {
     }
     
-    public boolean canAdd(WSDLComponent target, DocumentComponent child) {
+    public boolean canAdd(WSDLComponent target, Component child) {
         if (!(child instanceof WSDLComponent)) return false;
         update(target, (WSDLComponent) child, null);
         return canAdd;
@@ -344,13 +345,16 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
     
     public void visit(ExtensibilityElement child) {
         if (parent instanceof ExtensibilityElement.UpdaterProvider) {
-            if (operation != null) { 
-                ExtensibilityElement.UpdaterProvider target = (ExtensibilityElement.UpdaterProvider) parent;
-                    target.getComponentUpdater().update(target, child, index, operation);
+            ExtensibilityElement.UpdaterProvider target = (ExtensibilityElement.UpdaterProvider) parent;
+            ComponentUpdater<ExtensibilityElement> updater = target.getComponentUpdater();
+            if (operation != null) {
+                updater.update(target, child, index, operation);
+            } else if (updater instanceof ComponentUpdater.Query) {
+                canAdd = ((ComponentUpdater.Query) updater).canAdd(target, child);
             } else {
-                //TODO a separate API method for canAdd
-                canAdd = true;
+                canAdd = false;
             }
+            
         } else {
             if (operation == Operation.ADD) {
                 parent.addExtensibilityElement(child);

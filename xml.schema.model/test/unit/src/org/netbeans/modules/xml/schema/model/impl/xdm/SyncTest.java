@@ -581,8 +581,8 @@ public class SyncTest extends TestCase {
         Util.setDocumentContentTo(model, "resources/TwoSequences.xsd");
         model.sync();
         
-        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
-        clistener.assertNoEvents(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema());
+        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
+        clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema()); // maybe not
         
         String xpath = "/xsd:schema/xsd:complexType";
         GlobalComplexType gct = (GlobalComplexType) Util.findComponent(model.getSchema(), xpath);
@@ -604,7 +604,7 @@ public class SyncTest extends TestCase {
         model.sync();
 
         clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema());
-        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
+        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
     }
 
     public void testAppInfoHavingChildrenElementsWithXsdLocalName() throws Exception {
@@ -618,7 +618,7 @@ public class SyncTest extends TestCase {
         model.sync();
 
         clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, appInfo);
-        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, appInfo);
+        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, appInfo);
         clistener.assertNoEvents(ComponentEvent.EventType.CHILD_REMOVED, appInfo);
         clistener.assertNoEvents(ComponentEvent.EventType.CHILD_ADDED, appInfo);
     }

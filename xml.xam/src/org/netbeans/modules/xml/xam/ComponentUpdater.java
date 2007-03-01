@@ -47,4 +47,17 @@ public interface ComponentUpdater<C extends Component> {
      * query for possibility the update.
      */
     void update(C target, C child, int index, Operation operation);
+    
+    /**
+     *  Provide capability to query for updatability.
+     */
+    interface Query<C extends Component> {
+        /**
+         * Check if a component can be added to target component.
+         *
+         * @param target component to be updated
+         * @param child component to be added.
+         */
+        boolean canAdd(C target, Component child);
+    }
 }

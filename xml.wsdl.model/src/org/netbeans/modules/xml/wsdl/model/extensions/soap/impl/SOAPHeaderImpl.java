@@ -58,8 +58,4 @@ public class SOAPHeaderImpl extends SOAPHeaderBaseImpl implements SOAPHeader {
     public Collection<SOAPHeaderFault> getSOAPHeaderFaults() {
         return getChildren(SOAPHeaderFault.class);
     }
-
-    public ComponentUpdater<SOAPComponent> getComponentUpdater() {
-        return new SOAPComponentUpdater();
-    }
 }
