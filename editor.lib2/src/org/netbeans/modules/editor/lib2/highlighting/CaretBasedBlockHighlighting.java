@@ -304,7 +304,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             Document document,
             int caretOffset
         ) {
-            if (document != null && component != null) {
+            if (document != null && component != null /* #96910 hotfix */ && component.getCaret() != null) {
                 int startOffset = component.getSelectionStart();
                 int endOffset = component.getSelectionEnd();
 
