@@ -93,7 +93,6 @@ public class PageFlowView  extends TopComponent{
     private void createAllPageNodes(List<NavigationRule> rules) {
         Collection<String> pages = new HashSet<String>();
         for( NavigationRule rule : rules ){
-            System.out.println("Rule: " + rule);
             String page = rule.getFromViewId();
             pages.add(page);
             List<NavigationCase> navCases = rule.getNavigationCases();
@@ -126,7 +125,6 @@ public class PageFlowView  extends TopComponent{
     
     
     private VMDNodeWidget createNode(GraphPinScene graphScene, Image image, String page, String type, List<Image> glyphs) {
-        System.err.println("\nPage : " + page);
         VMDNodeWidget widget = (VMDNodeWidget) graphScene.addNode(page);
         widget.setNodeProperties(image, page, type, glyphs);
         graphScene.addPin(page, page +"pin");

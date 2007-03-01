@@ -34,9 +34,9 @@ import org.openide.windows.TopComponent;
  *
  * @author Joelle Lam
  */
-public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription{
+public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Serializable{
     
-    private static final long serialVersionUID = -1l;
+    private static final long serialVersionUID = -6305897237371751567L;
     
     private JSFConfigEditorContext context;
     
@@ -56,11 +56,11 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription{
     }
     
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ONLY_OPENED;
     }
     
     public String getDisplayName() {
-        return "Flow";
+        return "PageFlow";
     }
     
     public Image getIcon() {
@@ -94,9 +94,10 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription{
         
     }
     
-    static class PageFlowElement extends JPanel implements MultiViewElement, Serializable {
-        private JScrollPane panel;
-        private static final long serialVersionUID = -1l;
+    static class PageFlowElement implements MultiViewElement, Serializable {
+        private transient JScrollPane panel;
+        private transient TopComponent tc;
+        private static final long serialVersionUID = -6305897237371751567L;
         private JSFConfigEditorContext context;
         
         
@@ -109,11 +110,11 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription{
         }
         
         private void init() {
-            TopComponent tc = new PageFlowView(context);
+            tc = new PageFlowView(context);
             panel = new JScrollPane(tc);
             panel.setName(context.getFacesConfigFile().getName());
-            this.setName(context.getFacesConfigFile().getName());
-            add(panel, BorderLayout.CENTER);
+//            this.setName(context.getFacesConfigFile().getName());
+//            add(panel, BorderLayout.CENTER);
         }
         
         public JComponent getVisualRepresentation() {
@@ -179,8 +180,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription{
         
         
         public void setMultiViewCallback(MultiViewElementCallback callback) {
-            System.out.println("PageFlowElement.setMultivewCallback");
-            context.setMultiViewTopComponent(null);
+            context.setMultiViewTopComponent(callback.getTopComponent());
         }
         
         public CloseOperationState canCloseElement() {
@@ -202,5 +202,6 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription{
         public UndoRedo getUndoRedo() {
             return context.getUndoRedo();
         }
+        
     }
 }
