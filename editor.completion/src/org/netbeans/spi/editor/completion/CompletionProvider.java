@@ -47,14 +47,9 @@ public interface CompletionProvider {
     public static final int TOOLTIP_QUERY_TYPE = 4;
 
     /**
-     * The <code>int</code> value representing the query for a smart code completion.
-     */
-    public static final int COMPLETION_SMART_QUERY_TYPE = 9;
-
-    /**
      * The <code>int</code> value representing the query for an all code completion.
      */
-    public static final int COMPLETION_ALL_QUERY_TYPE = 17;
+    public static final int COMPLETION_ALL_QUERY_TYPE = 9;
 
     /**
      * Creates a task that performs a query of the given type on the given component.
@@ -68,8 +63,8 @@ public interface CompletionProvider {
      * text up to the caret position and returns the appropriate result.
      * 
      * @param queryType a type ot the query. It can be one of the {@link #COMPLETION_QUERY_TYPE},
-     *  {@link #DOCUMENTATION_QUERY_TYPE}, or {@link #TOOLTIP_QUERY_TYPE}
-     *  (but not their combination).          
+     *  {@link #COMPLETION_ALL_QUERY_TYPE}, {@link #DOCUMENTATION_QUERY_TYPE},
+     *  or {@link #TOOLTIP_QUERY_TYPE} (but not their combination).          
      * @param component a component on which the query is performed
      *
      * @return a task performing the query.
@@ -86,7 +81,7 @@ public interface CompletionProvider {
      * @param component a component in which typing appeared
      * @param typedText a typed text 
      *
-     * @return a combination of the {@link #COMPLETION_QUERY_TYPE},
+     * @return a combination of the {@link #COMPLETION_QUERY_TYPE}, {@link #COMPLETION_ALL_QUERY_TYPE},
      *         {@link #DOCUMENTATION_QUERY_TYPE}, and {@link #TOOLTIP_QUERY_TYPE}
      *         values, or zero if no query should be automatically invoked.
      */

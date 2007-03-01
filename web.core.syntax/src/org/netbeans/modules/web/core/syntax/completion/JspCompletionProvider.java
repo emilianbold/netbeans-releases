@@ -62,7 +62,7 @@ public class JspCompletionProvider implements CompletionProvider {
     }
     
     public CompletionTask createTask(int type, JTextComponent component) {
-        if ((type & COMPLETION_QUERY_TYPE & COMPLETION_SMART_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
+        if ((type & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
             return new AsyncCompletionTask(new Query(component.getCaret().getDot()), component);
         } else if (type == DOCUMENTATION_QUERY_TYPE) {
             return new AsyncCompletionTask(new DocQuery(null), component);

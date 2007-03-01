@@ -159,7 +159,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
             TypeElement e = handle.resolve(controller);
             if (e != null && controller.getTrees().isAccessible(scope, e)) {
                 if (isOfKind(e, kinds))
-                    delegate = JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e));
+                    delegate = JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), false);
             }
         }
         handle = null;

@@ -43,6 +43,7 @@ public class CompletionJList extends JList {
 
     private int fixedItemHeight;
     private int maxVisibleRowCount;
+    private int smartIndex;
     
     public CompletionJList(int maxVisibleRowCount, MouseListener mouseListener) {
         this.maxVisibleRowCount = maxVisibleRowCount;
@@ -62,6 +63,7 @@ public class CompletionJList extends JList {
                     CompletionItem item = (CompletionItem)value;
                     renderComponent.setItem(item);
                     renderComponent.setSelected(isSelected);
+                    renderComponent.setSeparator(smartIndex > 0 && smartIndex == index);
                     Color bgColor;
                     Color fgColor;
                     if (isSelected) {
@@ -97,6 +99,7 @@ public class CompletionJList extends JList {
     }
     
     void setData(List data) {
+        smartIndex = -1;
         if (data != null) {
             int itemCount = data.size();
             ListModel lm = LazyListModel.create( new Model(data), CompletionImpl.filter, 1.0d, LocaleSupport.getString("completion-please-wait") ); //NOI18N
@@ -104,6 +107,7 @@ public class CompletionJList extends JList {
             int lmSize = lm.getSize();
             int width = 0;
             int maxWidth = getParent().getParent().getMaximumSize().width;
+            boolean stop = false;
             for(int index = 0; index < lmSize; index++) {
                 Object value = lm.getElementAt(index);
                 Component c = renderer.getListCellRendererComponent(this, value, index, false, false);
@@ -111,8 +115,12 @@ public class CompletionJList extends JList {
                 if (cellSize.width > width) {
                     width = cellSize.width;
                     if (width >= maxWidth)
-                        break;
+                        stop = true;                    
                 }
+                if (smartIndex < 0 && value instanceof CompletionItem && ((CompletionItem)value).getSortPriority() >= 0)
+                    smartIndex = index;
+                if (stop && smartIndex >= 0)
+                    break;
             }
             setFixedCellWidth(width);
             setModel(lm);
@@ -217,6 +225,7 @@ public class CompletionJList extends JList {
         private CompletionItem item;
         
         private boolean selected;
+        private boolean separator;
         
         void setItem(CompletionItem item) {
             this.item = item;
@@ -226,6 +235,10 @@ public class CompletionJList extends JList {
             this.selected = selected;
         }
         
+        void setSeparator(boolean separator) {
+            this.separator = separator;
+        }
+
         public void paintComponent(Graphics g) {
             // Although the JScrollPane without horizontal scrollbar
             // is explicitly set with a preferred size
@@ -246,6 +259,12 @@ public class CompletionJList extends JList {
             // Render the item
             item.render(g, CompletionJList.this.getFont(), getForeground(), bgColor,
                     itemRenderWidth, getHeight(), selected);
+            
+            if (separator) {
+                g.setColor(Color.gray);
+                g.drawLine(0, 0, itemRenderWidth, 0);
+                g.setColor(fgColor);
+            }
         }
         
         public Dimension getPreferredSize() {

@@ -60,7 +60,7 @@ public class HTMLCompletionProvider implements CompletionProvider {
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
         AsyncCompletionTask task = null;
-        if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_SMART_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
+        if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
             task = new AsyncCompletionTask(new Query(), component);
         } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
             task = new AsyncCompletionTask(new DocQuery(null), component);

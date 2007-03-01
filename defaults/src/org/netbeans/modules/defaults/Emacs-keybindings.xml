@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="delete-next" key="DELETE"/>
     <bind actionName="delete-next" key="D-D"/> 
     <bind actionName="delete-previous" key="BACK_SPACE"/>
-    <bind actionName="documentation-show" key="AS-SPACE"/>
+    <bind actionName="documentation-show" key="DS-SPACE"/>
     <bind actionName="expand-all-folds" key="DS-ADD"/>
     <bind actionName="expand-all-folds" key="DS-EQUALS"/>
     <bind actionName="expand-all-folds" key="DS-PLUS"/>
@@ -118,7 +118,6 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="selection-up" key="S-UP"/>
     <bind actionName="shift-line-left" key="O-0$D-X$TAB"/>
     <bind actionName="shift-line-right" key="D-X$TAB"/>
-    <bind actionName="smart-completion-show" key="DS-SPACE"/>
     <bind actionName="split-line" key="D-ENTER"/>
     <bind actionName="start-macro-recording" key="D-X$S-9"/>
     <bind actionName="start-new-line" key="S-ENTER"/>

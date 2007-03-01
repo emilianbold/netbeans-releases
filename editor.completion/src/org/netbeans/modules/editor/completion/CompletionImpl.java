@@ -81,7 +81,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private static final String PLEASE_WAIT = NbBundle.getMessage(CompletionImpl.class, "completion-please-wait");
 
     private static final String COMPLETION_SHOW = "completion-show"; //NOI18N
-    private static final String COMPLETION_SMART_SHOW = "completion-smart-show"; //NOI18N
     private static final String COMPLETION_ALL_SHOW = "completion-all-show"; //NOI18N
     private static final String DOC_SHOW = "doc-show"; //NOI18N
     private static final String TOOLTIP_SHOW = "tooltip-show"; //NOI18N
@@ -171,7 +170,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private int autoModEndOffset;
     
     private boolean pleaseWaitDisplayed = false;
-
+    
     private CompletionImpl() {
         Registry.addChangeListener(this);
         completionAutoPopupTimer = new Timer(0, new ActionListener() {
@@ -230,7 +229,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         return activeDocument != null ? activeDocument.get() : null;
     }
     
-    public int getSortType() {
+    int getSortType() {
         return alphaSort ? CompletionResultSet.TEXT_SORT_TYPE : CompletionResultSet.PRIORITY_SORT_TYPE;
     }
     
@@ -654,6 +653,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         this.explicitQuery = explicitQuery;
         if (activeProviders != null) {
             completionAutoPopupTimer.stop();
+            synchronized(this) {
+                if (explicitQuery && completionResult != null)
+                    queryType = CompletionProvider.COMPLETION_ALL_QUERY_TYPE;
+            }
             completionCancel(); // cancel possibly pending query
             completionQuery(delayQuery, queryType);
         }
@@ -1086,13 +1089,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
         actionMap.put(COMPLETION_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_QUERY_TYPE));
 
-        // Register smart completion show
-        keys = findEditorKeys(ExtKit.smartCompletionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)));
-        for (int i = 0; i < keys.length; i++) {
-            inputMap.put(keys[i], COMPLETION_SMART_SHOW);
-        }
-        actionMap.put(COMPLETION_SMART_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_SMART_QUERY_TYPE));
-        
         // Register all completion show
         keys = findEditorKeys(ExtKit.allCompletionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.ALT_MASK)));
         for (int i = 0; i < keys.length; i++) {
@@ -1101,7 +1097,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         actionMap.put(COMPLETION_ALL_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_ALL_QUERY_TYPE));
 
         // Register documentation show
-        keys = findEditorKeys(ExtKit.documentationShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.ALT_MASK | InputEvent.SHIFT_MASK)));
+        keys = findEditorKeys(ExtKit.documentationShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)));
         for (int i = 0; i < keys.length; i++) {
             inputMap.put(keys[i], DOC_SHOW);
         }
@@ -1123,7 +1119,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     void finishNotify(CompletionResultSetImpl finishedResult) {
         switch (finishedResult.getQueryType()) {
             case CompletionProvider.COMPLETION_QUERY_TYPE:
-            case CompletionProvider.COMPLETION_SMART_QUERY_TYPE:
             case CompletionProvider.COMPLETION_ALL_QUERY_TYPE:
                 Result localCompletionResult;
                 synchronized (this) {
