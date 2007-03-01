@@ -926,39 +926,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="tmp"/>
   </target>
 
-  <target name="bootstrap-javadoc"
-          depends="bootstrap"
-          description="Generate Javadoc for Ant extensions.">
-    <!-- XXX this ought to be deleted at some point. -->
-    <!-- Can be done anyway by apisupport/ant, and published as regular module Javadoc -->
-    <!-- by the regular daily Javadoc build process. -->
-    <!-- Then all of this stuff can be deleted from the www part of CVS. -->
-    <mkdir dir="www/nbantext-javadoc"/>
-    <delete>
-        <fileset dir="www/nbantext-javadoc">
-            <include name="**/*.html"/>
-        </fileset>
-    </delete>
-    <tstamp/>
-    <javadoc sourcepath="antsrc"
-             destdir="www/nbantext-javadoc"
-             packagenames="org.netbeans.nbbuild.*"
-             windowtitle="NetBeans Ant Extensions"
-             doctitle="Extended Ant Tasks for Building NetBeans"
-             nodeprecatedlist="true"
-             notree="true"
-             noindex="true"
-             nohelp="true"
-             nonavbar="true"
-             author="false"
-             version="false"
-             bottom="Built on ${buildday}"
-    >
-      <classpath refid="bootstrap-cp"/>
-      <link href="http://nagoya.apache.org/gump/javadoc/ant/build/javadocs" offline="true" packagelistloc="antsrc"/>
-    </javadoc>
-  </target>
-
   <target name="clean-external">
     <subant target="clean">
       <fileset dir="..">
