@@ -68,7 +68,7 @@ public final class ComponentInstaller {
     }
 
     public static Map<String,Item> search (Project project) {
-        ClasspathInfo info = MidpProjectSupport.getClasspathInfo (project);
+        final ClasspathInfo info = MidpProjectSupport.getClasspathInfo (project);
         if (info == null)
             return Collections.emptyMap ();
         final SourceGroup sourceGroup = MidpProjectSupport.getSourceGroup (project);
@@ -94,7 +94,7 @@ public final class ComponentInstaller {
                         if (! iterator.hasNext ())
                             break;
                         TypeElement element = iterator.next ();
-                        search (element, elements, registry, sourceGroup, result);
+                        search (element, elements, registry, info, sourceGroup, result);
                     }
                 }
             }, true);
@@ -128,7 +128,7 @@ public final class ComponentInstaller {
         return registryMap;
     }
 
-    private static boolean search (TypeElement element, Set<TypeElement> elements, Map<String, ComponentDescriptor> registry, SourceGroup sourceGroup, Map<String, Item> result) {
+    private static boolean search (TypeElement element, Set<TypeElement> elements, Map<String, ComponentDescriptor> registry, ClasspathInfo info, SourceGroup sourceGroup, Map<String, Item> result) {
         if (element == null)
             return false;
 
@@ -149,7 +149,7 @@ public final class ComponentInstaller {
         TypeElement superElement = getSuperElement (element);
         if (superElement == null)
             return false;
-        if (! search (superElement, elements, registry, sourceGroup, result))
+        if (! search (superElement, elements, registry, info, sourceGroup, result))
             return false;
 
         String superFQN = superElement.getQualifiedName ().toString ();
@@ -158,7 +158,7 @@ public final class ComponentInstaller {
 
         boolean isAbstract = element.getModifiers ().contains (Modifier.ABSTRACT);
         boolean isFinal = element.getModifiers ().contains (Modifier.FINAL);
-        FileObject file = SourceUtils.getFile (element);
+        FileObject file = SourceUtils.getFile (element, info);
         boolean isInSource = file != null  &&  sourceGroup != null  &&  sourceGroup.contains (file);
         item = new Item (superFQN, fqn, isAbstract, isFinal, isInSource);
         item.addPresenter (new MidpAddImportPresenterSerializer ());

@@ -47,7 +47,7 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
 
     public void reload () {
         final ArrayList<ComponentInstaller.Item> lst;
-        if (! cLibraries.isSelected ())
+        if (cLibraries.isSelected ())
             lst = new ArrayList<ComponentInstaller.Item> (items);
         else {
             lst = new ArrayList<ComponentInstaller.Item> ();
