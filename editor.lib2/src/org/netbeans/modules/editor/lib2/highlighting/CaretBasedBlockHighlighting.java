@@ -138,16 +138,14 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         updateLineInfo(true);
     }
 
-    protected abstract Position [] getCurrentBlockPositions(JTextComponent component, Document document, int caretOffset);
+    protected abstract Position [] getCurrentBlockPositions(Document document, Caret caret);
     
     // ------------------------------------------------
     // private implementation
     // ------------------------------------------------
     
     private final void updateLineInfo(boolean fire) {
-        Document document = component.getDocument();
-        int caretOffset = caret == null ? -1 : caret.getDot();
-        Position [] currentLine = getCurrentBlockPositions(component, document, caretOffset);
+        Position [] currentLine = getCurrentBlockPositions(component.getDocument(), caret);
         
         if (!comparePositions(currentLine[0], currentLineStart) ||
             !comparePositions(currentLine[1], currentLineEnd))
@@ -167,7 +165,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             if (fire) {
                 fireHighlightsChange(
                     changeStart == null ? 0 : changeStart.getOffset(),
-                    changeEnd == null ? document.getLength() : changeEnd.getOffset()
+                    changeEnd == null ? Integer.MAX_VALUE : changeEnd.getOffset()
                 );
             }
         }
@@ -264,12 +262,9 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             super(component, FontColorNames.CARET_ROW_COLORING, true, false);
         }
         
-        protected Position[] getCurrentBlockPositions(
-            JTextComponent component,
-            Document document,
-            int caretOffset
-        ) {
-            if (document != null && caretOffset >= 0 && caretOffset <= document.getLength()) {
+        protected Position[] getCurrentBlockPositions(Document document, Caret caret) {
+            if (document != null && caret != null) {
+                int caretOffset = caret.getDot();
                 try {
                     int startOffset = DocUtils.getRowStart(document, caretOffset, 0);
                     int endOffset = DocUtils.getRowEnd(document, caretOffset);
@@ -299,22 +294,20 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             super(component, FontColorNames.SELECTION_COLORING, false, true);
         }
     
-        protected Position[] getCurrentBlockPositions(
-            JTextComponent component,
-            Document document,
-            int caretOffset
-        ) {
-            if (document != null && component != null /* #96910 hotfix */ && component.getCaret() != null) {
-                int startOffset = component.getSelectionStart();
-                int endOffset = component.getSelectionEnd();
+        protected Position[] getCurrentBlockPositions(Document document, Caret caret) {
+            if (document != null && caret != null) {
+                int caretOffset = caret.getDot();
+                int markOffset = caret.getMark();
 
-                try {
-                    return new Position [] {
-                        document.createPosition(startOffset),
-                        document.createPosition(endOffset),
-                    };
-                } catch (BadLocationException e) {
-                    LOG.log(Level.WARNING, e.getMessage(), e);
+                if (caretOffset != markOffset) {
+                    try {
+                        return new Position [] {
+                            document.createPosition(Math.min(caretOffset, markOffset)),
+                            document.createPosition(Math.max(caretOffset, markOffset)),
+                        };
+                    } catch (BadLocationException e) {
+                        LOG.log(Level.WARNING, e.getMessage(), e);
+                    }
                 }
             }
             
