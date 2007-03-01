@@ -135,24 +135,6 @@ public class DiffStreamSource extends StreamSource {
         return Lookups.fixed(remoteFo);
     }
     
-    private static Set<File> getAllDataObjectFiles(File file) {
-        Set<File> filesToCheckout = new HashSet<File>(2);
-        filesToCheckout.add(file);
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo != null) {
-            try {
-                DataObject dao = DataObject.find(fo);
-                Set<FileObject> fileObjects = dao.files();
-                for (FileObject fileObject : fileObjects) {
-                    filesToCheckout.add(FileUtil.toFile(fileObject));
-                }
-            } catch (DataObjectNotFoundException e) {
-                // no dataobject, never mind
-            }
-        }
-        return filesToCheckout;
-    }
-    
     /**
      * Loads data over network.
      *
@@ -173,7 +155,7 @@ public class DiffStreamSource extends StreamSource {
                 // To correctly get content of the base file, we need to checkout all files that belong to the same
                 // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
                 // if it also finds associate .form file in the same directory
-                Set<File> allFiles = getAllDataObjectFiles(baseFile);
+                Set<File> allFiles = Utils.getAllDataObjectFiles(baseFile);
                 for (File file : allFiles) {
                     boolean isBase = file.equals(baseFile);
                     try {
