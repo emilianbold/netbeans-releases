@@ -67,6 +67,8 @@ public class BrokenProjectSupportTest extends NbTestCase {
         assertEquals("right initial car reference", CAR_REFERENCE_EXPECTED_VALUE, carReferenceValue);
         // broke the project
         ep.setProperty(CAR_REFERENCE_EXPECTED_KEY, CAR_REFERENCE_EXPECTED_VALUE + "-broken");
+        carReferenceValue = ep.getProperty(CAR_REFERENCE_EXPECTED_KEY);
+        assertFalse("broken car reference", CAR_REFERENCE_EXPECTED_VALUE.equals(carReferenceValue));
         TestUtil.storeProjectProperties(prjDirFO, ep);
         
         Project project = ProjectManager.getDefault().findProject(prjDirFO);
@@ -74,6 +76,14 @@ public class BrokenProjectSupportTest extends NbTestCase {
         assertNotNull("project successfully created", this.earProject);
         this.bps = (BrokenProjectSupport) this.earProject.getLookup().lookup(BrokenProjectSupport.class);
         assertNotNull("has BrokenProjectSupport in the lookup", bps);
+    }
+    
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        
+        serverID = null;
+        earProject = null;
+        bps = null;
     }
     
     public void testAdjustReferences() {
@@ -87,18 +97,4 @@ public class BrokenProjectSupportTest extends NbTestCase {
         assertEquals("reference property was fixed", CAR_REFERENCE_EXPECTED_VALUE,
                 fixedProjectProps.getProperty(CAR_REFERENCE_EXPECTED_KEY));
     }
-    
-    //    public void testHasBrokenArtifacts() {
-    //        assertTrue("has broken artifacts", bps.hasBrokenArtifacts());
-    //    }
-    //
-    //    public void testWatchAntArtifact() {
-    //    }
-    //
-    //    public void testAddChangeListener() {
-    //    }
-    //
-    //    public void testRemoveChangeListener() {
-    //    }
-    
 }
