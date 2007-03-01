@@ -235,7 +235,8 @@ public final class InternalHandle {
             }
             if (workunit > totalUnits) {
                 // seems to be the by far most frequently abused contract. Record it to log file and safely handle the case
-                LOG.log(Level.WARNING,
+                //#96921 - WARNING -> INFO to prevent users reporting the problem automatically.
+                LOG.log(Level.INFO,
                     "Cannot process more work than scheduled. " +
                     "Progress handle with name \"" + getDisplayName() + "\" has requested progress to workunit no." + workunit + 
                     " but the total number of workunits is " + totalUnits + ". That means the progress bar UI will not display real progress and will stay at 100%.",
