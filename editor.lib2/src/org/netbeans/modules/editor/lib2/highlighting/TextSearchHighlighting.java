@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -42,7 +43,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author vita
+ * @author Vita Stejskal
  */
 public class TextSearchHighlighting extends AbstractHighlightsContainer implements PropertyChangeListener, HighlightsChangeListener {
 
@@ -50,12 +51,18 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.TextSearchHighlighting"; //NOI18N
     
-    private JTextComponent component;
-    private Document document;
-    private OffsetsBag bag;
+    private final MimePath mimePath;
+    private final JTextComponent component;
+    private final Document document;
+    private final OffsetsBag bag;
     
     /** Creates a new instance of TextSearchHighlighting */
     public TextSearchHighlighting(JTextComponent component) {
+        // Determine the mime type
+        EditorKit kit = component.getUI().getEditorKit(component);
+        String mimeType = kit == null ? null : kit.getContentType();
+        this.mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
+        
         this.component = component;
         this.document = component.getDocument();
         
@@ -123,13 +130,8 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     }
     
     private AttributeSet getAttribs() {
-        FontColorSettings fcs = MimeLookup.getLookup(
-            MimePath.parse(getMimeType())).lookup(FontColorSettings.class);
+        FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
         AttributeSet attribs = fcs.getFontColors(FontColorNames.HIGHLIGHT_SEARCH_COLORING);
         return attribs == null ? SimpleAttributeSet.EMPTY : attribs;
-    }
-    
-    private String getMimeType() {
-        return component.getUI().getEditorKit(component).getContentType();
     }
 }
