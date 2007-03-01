@@ -113,7 +113,7 @@ public final class Startup {
               // Enable GTK L&F only for JDK version 1.6.0 update 1 and later.
               // GTK L&F quality unacceptable for earlier versions.
               String javaVersion = System.getProperty("java.version");
-              if ("1.6.0_01".compareTo(javaVersion) > 0) {
+              if ("1.6.0_01".compareTo(javaVersion) >= 0) {
                   if (uiClassName.indexOf("gtk") >= 0 && !Boolean.getBoolean("useGtk")) {
                       uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
                   }
