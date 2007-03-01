@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.refactoring.api.ui;
+package org.netbeans.modules.refactoring.java.api.ui;
 
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction;
 import org.openide.util.ContextAwareAction;
