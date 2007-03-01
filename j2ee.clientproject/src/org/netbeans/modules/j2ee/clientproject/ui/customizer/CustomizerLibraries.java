@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -40,16 +40,16 @@ import org.openide.util.NbBundle;
  *
  * @author  phrebejk
  */
-public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener, CustomizerProviderImpl.SubCategoryProvider {
+public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
     
     public static final String COMPILE = "COMPILE";  //NOI18N
     public static final String RUN = "RUN";          //NOI18N
     public static final String COMPILE_TESTS = "COMPILE_TESTS"; //NOI18N
-    public final String RUN_TESTS = "RUN_TESTS";  //NOI18N        
+    public static final String RUN_TESTS = "RUN_TESTS";  //NOI18N        
     
     private final AppClientProjectProperties uiProperties;    
     
-    public CustomizerLibraries( AppClientProjectProperties uiProperties ) {
+    public CustomizerLibraries( AppClientProjectProperties uiProperties, CustomizerProviderImpl.SubCategoryProvider subcat) {
         this.uiProperties = uiProperties;        
         initComponents();        
         
@@ -126,6 +126,9 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             } 
         });
         testBroken();
+        if (AppClientCompositePanelProvider.LIBRARIES.equals(subcat.getCategory())) {
+            showSubCategory(subcat.getSubcategory());
+        }
         
         uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel().addListDataListener( this );
         uiProperties.JAVAC_TEST_CLASSPATH_MODEL.addListDataListener( this );
@@ -190,7 +193,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     }
     
     
-    public void showSubCategory (String name) {
+    private void showSubCategory (String name) {
         if (name.equals(COMPILE)) {
             jTabbedPane1.setSelectedIndex (0);
         }        

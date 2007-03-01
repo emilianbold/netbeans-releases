@@ -1069,6 +1069,14 @@ Microsystems, Inc. All Rights Reserved.
        will be merged into a single instance in the project's lookup.
      </p>
     </api>
+    <api group="layer" name="ClientProjectCustomizer" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-j2ee-clientproject/Customizer" folder's content is used to construct the project's customizer.
+       It's content is expected to be <code>ProjectCustomizer.CompositeCategoryProvider</code> instances.
+       The lookup passed to the panels contains an instance of <code>Project</code> and <code>org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties</code>
+       Please note that the latter is not part of any public APIs and you need implementation dependency to make use of it.
+     </p>
+    </api>
  </answer>
 
 

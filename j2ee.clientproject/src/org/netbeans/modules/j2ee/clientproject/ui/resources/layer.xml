@@ -62,6 +62,42 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Projects">
         <folder name="org-netbeans-modules-j2ee-clientproject">
             
+            <folder name="Customizer">
+                <file name="Sources.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createSources"/>
+                </file>
+                <attr name="Sources.instance/Libraries.instance" boolvalue="true"/>
+                <file name="Libraries.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createLibraries"/>
+                </file>
+                <attr name="Libraries.instance/BuildCategory" boolvalue="true"/>
+                <folder name="BuildCategory">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.Bundle"/>
+                    <file name="Build.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createBuild"/>
+                    </file>
+                    <attr name="Build.instance/Jar.instance" boolvalue="true"/>
+                    <file name="Jar.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createJar"/>
+                    </file>
+                    <attr name="Jar.instance/Javadoc.instance" boolvalue="true"/>
+                    <file name="Javadoc.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createJavadoc"/>
+                    </file>
+                </folder>
+                <attr name="BuildCategory/Run.instance" boolvalue="true"/>
+                <file name="Run.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createRun"/>
+                </file>
+                <attr name="Run.instance/WebServiceCategory" boolvalue="true"/>
+                <folder name="WebServiceCategory">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.Bundle"/>
+                    <file name="Client.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createWebServiceClients"/>
+                    </file>
+                </folder>
+            </folder>
+
             <folder name="Lookup"/>
             
         </folder>
