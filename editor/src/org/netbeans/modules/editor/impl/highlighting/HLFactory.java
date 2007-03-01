@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.editor.lib2.highlighting.CaretRowHighlighting;
+import org.netbeans.modules.editor.lib2.highlighting.CaretBasedBlockHighlighting.CaretRowHighlighting;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
