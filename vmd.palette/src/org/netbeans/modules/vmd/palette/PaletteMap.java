@@ -21,19 +21,17 @@ package org.netbeans.modules.vmd.palette;
 
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
-import org.netbeans.modules.vmd.api.model.Debug;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
+
 import javax.swing.*;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.vmd.api.model.DescriptorRegistryListener;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 
 /**
  * @author David Kaspar, Anton Chechel
@@ -46,6 +44,8 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
     private String activeProjectID;
     
     private AtomicBoolean requiresUpdate = new AtomicBoolean(false);
+
+    private DescriptorRegistry registeredRegistry;
     
     private PaletteMap() {
         ActiveDocumentSupport.getDefault().addActiveDocumentListener(this);
@@ -61,9 +61,15 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         if (activatedDocument == null) {
             return;
         }
-        
-        deactivatedDocument.getDescriptorRegistry().removeRegistryListener(this);
-        activatedDocument.getDescriptorRegistry().addRegistryListener(this);
+
+        DescriptorRegistry currentRegistry = activatedDocument.getDescriptorRegistry ();
+        if (registeredRegistry != currentRegistry) {
+            if (registeredRegistry != null)
+                registeredRegistry.removeRegistryListener (this);
+            registeredRegistry = currentRegistry;
+            if (registeredRegistry != null)
+                registeredRegistry.addRegistryListener(this);
+        }
         updatePalette(activatedDocument);
     }
     
