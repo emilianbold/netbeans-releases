@@ -2021,6 +2021,10 @@ public class WebForm implements Designer {
     InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName) {
         return htmlDomProvider.createInlineEditorSupport(componentRootElement, propertyName);
     }
+
+    void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
+        htmlDomProvider.dumpHtmlMarkupForNode(node);
+    }
     
     
     private static class HtmlDomProviderListener implements HtmlDomProvider.HtmlDomProviderListener {
