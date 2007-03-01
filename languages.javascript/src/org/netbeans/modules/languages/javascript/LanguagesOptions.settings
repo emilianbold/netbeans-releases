@@ -9,5 +9,5 @@
     <instanceof class="org.openide.options.SystemOption"/>
     <instanceof class="org.netbeans.modules.editor.options.OptionSupport"/>
     <instanceof class="org.netbeans.modules.editor.options.BaseOptions"/>
-    <instance class="org.netbeans.modules.languages.options.LanguagesOptions" method="create"/>
+    <instance class="org.netbeans.modules.languages.dataobject.LanguagesOptions" method="create"/>
 </settings>
