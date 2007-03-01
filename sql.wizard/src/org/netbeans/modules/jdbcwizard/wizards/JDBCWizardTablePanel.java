@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * 
  * Copyright 2005 Sun Microsystems, Inc.
  * 
@@ -104,7 +123,6 @@ public class JDBCWizardTablePanel extends JPanel {
             // Need to revisit whether should use abstract model here??
             this.setDefaultRenderer(DBTableImpl.class, this.mytabmod);
             this.setDefaultRenderer(Boolean.class, this.mybool);
-            // setDefaultRenderer(DBTableImpl.class, new MyButtonRenderer(".."));
             final JTableHeader header = this.getTableHeader();
 
             header.setReorderingAllowed(false);
@@ -150,7 +168,6 @@ public class JDBCWizardTablePanel extends JPanel {
                 final Object obj = rowDW.getTable();
                 if (obj instanceof DBTable) {
                     final DBTable st = (DBTable) obj;// SourceTable modified to
-                    // DBTable
                     if (!st.isSelected()) {
                         this.setToolTipText(NbBundle.getMessage(JDBCWizardTablePanel.class,
                                 "TOOLTIP_source_table_disabled_unselected", rowDW.getTable()));
@@ -228,6 +245,7 @@ public class JDBCWizardTablePanel extends JPanel {
             this.myButPanel.setLayout(new BorderLayout());
             this.myButPanel.add(this, BorderLayout.CENTER);
             this.myButPanel.setOpaque(true);
+            this.myButPanel.setEnabled(false);
         }
 
         public Component getTableCellRendererComponent(final JTable table,
@@ -276,6 +294,7 @@ public class JDBCWizardTablePanel extends JPanel {
 
                 this.setEnabled(true);
                 this.setFocusable(true);
+                this.setText("Advanced..");
             }
             return this.myButPanel;
         }
@@ -288,8 +307,7 @@ public class JDBCWizardTablePanel extends JPanel {
                 this.setBackground(Color.LIGHT_GRAY);
                 final Object obj = rowDW.getTable();
                 if (obj instanceof DBTable) {
-                    final DBTable st = (DBTable) obj;// SourceTable modified to
-                    // DBTable
+                    final DBTable st = (DBTable) obj;
                     if (!st.isSelected()) {
                         this.setToolTipText(NbBundle.getMessage(JDBCWizardTablePanel.class,
                                 "TOOLTIP_source_table_disabled_unselected", rowDW.getTable()));
@@ -298,7 +316,6 @@ public class JDBCWizardTablePanel extends JPanel {
             } else {
 
                 if (isSelected) {
-                    // myButPanel.setBorder(noFocusBorder);
                     this.myButPanel.setBackground(Color.LIGHT_GRAY);
                     this.myButPanel.add(this, BorderLayout.CENTER);
                     this.setEnabled(true);
@@ -316,6 +333,7 @@ public class JDBCWizardTablePanel extends JPanel {
                     this.myButPanel.setBackground(table.getBackground());
                 }
                 this.setFocusable(true);
+                this.setText("Advanced..");
             }
             return this.myButPanel;
         }
@@ -500,7 +518,7 @@ public class JDBCWizardTablePanel extends JPanel {
          */
         private static final long serialVersionUID = 1L;
 
-        private final String[] columnNames = { "Select", "Table Name", "Select Column" };
+        private final String[] columnNames = { "Select", "Table Name", "Properties" };
 
         private List rowList;
 
@@ -800,14 +818,20 @@ public class JDBCWizardTablePanel extends JPanel {
     public void resetTable(final List tableNameList) {
         final MyTableModel myMod = new MyTableModel(tableNameList);
         this.metaDataTable.setModel(myMod);
-        this.metaDataTable.getColumn("Select Column").setCellRenderer(new MyButtonRenderer(".."));
-        this.metaDataTable.getColumn("Select Column").setCellEditor(new MyButtonRenderer(".."));
+        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer("Advanced.."));
+        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer("Advanced.."));
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
         column.setResizable(false);
         column.setMinWidth(40);
         column.setPreferredWidth(80);
         column.setMaxWidth(120);
+        
+        final TableColumn columnAdv = this.metaDataTable.getColumnModel().getColumn(2);
+        columnAdv.setResizable(false);
+        columnAdv.setMinWidth(60);
+        columnAdv.setPreferredWidth(80);
+        columnAdv.setMaxWidth(100);
     }
 
     /**
@@ -819,8 +843,8 @@ public class JDBCWizardTablePanel extends JPanel {
         this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);
         final MyTableModel myModel = new MyTableModel(testList);
         this.metaDataTable.setModel(myModel);
-        this.metaDataTable.getColumn("Select Column").setCellRenderer(new MyButtonRenderer(".."));
-        this.metaDataTable.getColumn("Select Column").setCellEditor(new MyButtonRenderer(".."));
+        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer("Advacned.."));
+        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer("Advanced.."));
         this.setLayout(new BorderLayout());
         // add(headerPnl, BorderLayout.NORTH);
         this.setPreferredSize(new Dimension(100, 100));

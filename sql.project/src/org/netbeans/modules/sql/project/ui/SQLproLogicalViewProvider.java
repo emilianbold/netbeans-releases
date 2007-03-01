@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -104,7 +123,7 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
 
 
         public DtelLogicalViewRootNode() {
-            super( new SQLproViews.LogicalViewChildren( helper, evaluator, project ), createLookup( project ) );
+            super( new SQLproViews.LogicalViewChildren( helper, evaluator ), createLookup( project ) );
             setIconBaseWithExtension( "org/netbeans/modules/sql/project/ui/resources/sqlproProjectIcon.gif" ); // NOI18N
             setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks(helper, resolver)) {
@@ -132,18 +151,20 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
 
             return new Action[] {
                 // disable new action at the top...
-                // CommonProjectActions.newFileAction(),
-                // null,
+                 CommonProjectActions.newFileAction(),
+                 null,
                 ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
                 ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
                 ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
                 null,
-                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-                null,
                 CommonProjectActions.setAsMainProjectAction(),
                 CommonProjectActions.openSubprojectsAction(),
                 CommonProjectActions.closeProjectAction(),
+                null,
+                CommonProjectActions.renameProjectAction(),
+                CommonProjectActions.moveProjectAction(),
+                CommonProjectActions.copyProjectAction(),
+                CommonProjectActions.deleteProjectAction(),
                 null,
                 SystemAction.get( org.openide.actions.FindAction.class ),
                 null,

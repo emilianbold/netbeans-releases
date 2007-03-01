@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -25,6 +44,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -37,27 +57,31 @@ import org.openide.util.NbBundle;
  * strange things to Web actions. E.g. compile-single.
  */
 class SQLproActionProvider implements ActionProvider {
-    
+
     // Definition of commands
 
     // Commands available from Web project
     private static final String[] supportedActions = {
-        COMMAND_BUILD, 
-        COMMAND_CLEAN, 
-        COMMAND_REBUILD, 
-        COMMAND_COMPILE_SINGLE, 
+        COMMAND_BUILD,
+        COMMAND_CLEAN,
+        COMMAND_REBUILD,
+        COMMAND_COMPILE_SINGLE,
+        COMMAND_DELETE,
+        COMMAND_COPY,
+        COMMAND_MOVE,
+        COMMAND_RENAME,
     };
-    
+
     // Project
     SQLproProject project;
-    
+
     // Ant project helper of the project
     private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
-        
+
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
-    
+
     public SQLproActionProvider(SQLproProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         commands = new HashMap();
         commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
@@ -68,16 +92,42 @@ class SQLproActionProvider implements ActionProvider {
         this.project = project;
         this.refHelper = refHelper;
     }
-    
+
     private FileObject findBuildXml() {
         return project.getProjectDirectory().getFileObject(project.getBuildXmlName ());
     }
-    
+
     public String[] getSupportedActions() {
         return supportedActions;
     }
-    
+
+	String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
+		String[] targetNames = (String[])commands.get(command);
+		return targetNames;
+    }
+
     public void invokeAction( String command, Lookup context ) throws IllegalArgumentException {
+
+        if (COMMAND_COPY.equals(command)) {
+            DefaultProjectOperations.performDefaultCopyOperation(project);
+            return ;
+        }
+
+        if (COMMAND_MOVE.equals(command)) {
+            DefaultProjectOperations.performDefaultMoveOperation(project);
+            return ;
+        }
+
+        if (COMMAND_RENAME.equals(command)) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            return ;
+        }
+
+        if (COMMAND_DELETE.equals(command)) {
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            return ;
+        }
+
         Properties p = null;
         String[] targetNames = (String[])commands.get(command);
         //EXECUTION PART
@@ -94,27 +144,27 @@ class SQLproActionProvider implements ActionProvider {
 
         try {
             ActionUtils.runTarget(findBuildXml(), targetNames, p);
-        } 
+        }
         catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
     }
-    
+
     public boolean isActionEnabled( String command, Lookup context ) {
-        
+
         if ( findBuildXml() == null ) {
             return false;
         }
         return true;
-        
+
     }
-    
+
     // Private methods -----------------------------------------------------
-    
+
     private boolean isDebugged() {
         return false;
     }
-    
+
 
     private boolean isSelectedServer () {
         String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (IcanproProjectProperties.J2EE_SERVER_INSTANCE);
@@ -146,9 +196,9 @@ class SQLproActionProvider implements ActionProvider {
                     wpp.store ();
                 }
             }
-            dlg.dispose();            
+            dlg.dispose();
         }
         return selected;
     }
-    
+
 }

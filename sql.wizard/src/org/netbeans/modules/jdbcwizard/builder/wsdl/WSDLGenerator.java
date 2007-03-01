@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -19,7 +38,9 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.HashMap;
 
+
 import java.net.URL;
+import java.io.File;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -44,10 +65,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBConnectionDefinition;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
 import org.netbeans.modules.jdbcwizard.builder.model.DBQueryModel;
 import org.netbeans.modules.jdbcwizard.builder.model.DerbyQueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.OracleQueryGenerator;
+import org.netbeans.modules.jdbcwizard.builder.model.DB2QueryGenerator;
+import org.netbeans.modules.jdbcwizard.builder.model.SQLServerQueryGenerator;
+import org.netbeans.modules.jdbcwizard.builder.model.JdbcQueryGenerator;
+
 
 public class WSDLGenerator {
 
@@ -85,18 +111,26 @@ public class WSDLGenerator {
     private static final String SQL_ELEMENT = "sql";
     private static final String PARAM_ORDER = "paramOrder";
     private static final String JDBC_NAMESPACE = "http://schemas.sun.com/jbi/wsdl-extensions/jdbc/";
-    
+
+   
     private static final String PRIMARYKEY_ATTR = "PKName";	
 	private static final String TRANSACTION  = "Transaction";	
 	private static final String MARK_COLUMN_VALUE = "MarkColumnValue";	
 	private static final String MARK_COLUMN_NAME = "MarkColumnName";	
 	private static final String POLL_POST_PROCESS = "PollingPostProcessing";	
 	private static final String TABLE_NAME = "TableName";
+
+	private static final String NUMNBER_OF_RECORDS = "numberOfRecords";
+	private static final String MOVEROW_TABLE_NAME ="MoveRowToTableName";
+	private static final String POLLMILLI_SECONDS = "PollMilliSeconds";
 	private static final String OPERATION_TYPE="operationType";
 	
  // private static final String FLAGCOL_ATTR = "FlagColumn";	
     private static final String JNDI_NAME = "jndiname";
     private static final String JNDI_ADD_ELE = "jdbc:address";
+    
+    private static final String SERVICE_NAME = "Service";
+    private static final String PORT_NAME = "Port";
     	
     private DBTable mTable;
     private String xsdTopEleName;
@@ -105,6 +139,8 @@ public class WSDLGenerator {
     private String mDBType;
     private String mJNDIName;
 	private String mTableName = null;
+
+    private DBConnectionDefinition dbinfo;
     
     private DBQueryModel dbDataAccessObject = null;
     static {
@@ -154,7 +190,10 @@ public class WSDLGenerator {
     public void setXSDName(){
     	this.xsdName = this.mTable.getName() + WSDLGenerator.XSD_EXT;
     }
-
+    
+    public void setDBInfo(DBConnectionDefinition dbinfo){
+        this.dbinfo = dbinfo;
+    }
    /**
      * reads an sqlpro wsdl template file and genarates the javax.wsdl.Definition
      *
@@ -224,6 +263,7 @@ public class WSDLGenerator {
         this.modifyName();
         this.modifyMessageTypes();
         this.modifyBindings();
+        this.modifyServiceAndPortNames();
         this.modifyJNDIAddress();
         //modifyPortTypes();
         //modifyServices();
@@ -373,7 +413,7 @@ public class WSDLGenerator {
 			this.modifyUpdate(this.dbDataAccessObject, updateQuery);
 			this.modifyDelete(this.dbDataAccessObject, deleteQuery);
 			this.modifyFind(this.dbDataAccessObject, findQuery);
-			this.modifyPool(this.dbDataAccessObject, poolQuery);
+			this.modifyPoll(this.dbDataAccessObject, poolQuery);
 		} catch (final Exception e) {
 			throw new WSDLException(WSDLException.OTHER_ERROR,
 					"Could not generate the WSDL");
@@ -403,8 +443,15 @@ public class WSDLGenerator {
 			sqlEle.setAttribute(WSDLGenerator.PARAM_ORDER, dao.getParamOrder(WSDLGenerator.INSERT_QUERY));
 			sqlEle.setAttribute(WSDLGenerator.SQL_ELEMENT, query);
 			sqlEle.setAttribute(WSDLGenerator.PRIMARYKEY_ATTR,primaryKey);
+			sqlEle.setAttribute(WSDLGenerator.TRANSACTION,"NOTransaction");	
 			sqlEle.setAttribute(WSDLGenerator.TABLE_NAME,this.mTableName);
-	//		sqlEle.setAttribute(FLAGCOL_ATTR, "");
+	
+			sqlEle.setAttribute(WSDLGenerator.NUMNBER_OF_RECORDS,"");
+			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_VALUE,"");
+			sqlEle.setAttribute(WSDLGenerator.MOVEROW_TABLE_NAME,"");
+			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_NAME,"");
+			sqlEle.setAttribute(WSDLGenerator.POLLMILLI_SECONDS,"5000");
+
 			insParentNode.appendChild(sqlEle);
 			insParentNode.removeChild(insSqlEle);
 			// Change WSDL template with generated queries
@@ -438,8 +485,15 @@ public class WSDLGenerator {
 			sqlEle.setAttribute(WSDLGenerator.PARAM_ORDER, dao.getParamOrder(WSDLGenerator.UPDATE_QUERY));
 			sqlEle.setAttribute(WSDLGenerator.SQL_ELEMENT, query);
 			sqlEle.setAttribute(WSDLGenerator.PRIMARYKEY_ATTR, primaryKey);
+			sqlEle.setAttribute(WSDLGenerator.TRANSACTION,"NOTransaction");	
 			sqlEle.setAttribute(WSDLGenerator.TABLE_NAME,this.mTableName);
-		//	sqlEle.setAttribute(FLAGCOL_ATTR, "");
+			
+			sqlEle.setAttribute(WSDLGenerator.NUMNBER_OF_RECORDS,"");
+			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_VALUE,"");
+			sqlEle.setAttribute(WSDLGenerator.MOVEROW_TABLE_NAME,"");
+			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_NAME,"");
+			sqlEle.setAttribute(WSDLGenerator.POLLMILLI_SECONDS,"5000");
+
 			insParentNode.appendChild(sqlEle);
 			insParentNode.removeChild(updateSqlEle);
 			// Change WSDL template with generated queries
@@ -472,8 +526,15 @@ public class WSDLGenerator {
 			sqlEle.setAttribute(WSDLGenerator.PARAM_ORDER, "");
 			sqlEle.setAttribute(WSDLGenerator.SQL_ELEMENT, query);
 			sqlEle.setAttribute(WSDLGenerator.PRIMARYKEY_ATTR, primaryKey);
+			sqlEle.setAttribute(WSDLGenerator.TRANSACTION,"NOTransaction");
 			sqlEle.setAttribute(WSDLGenerator.TABLE_NAME,this.mTableName);
-		//	sqlEle.setAttribute(FLAGCOL_ATTR, "");
+			
+			sqlEle.setAttribute(WSDLGenerator.NUMNBER_OF_RECORDS,"");
+			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_VALUE,"");
+			sqlEle.setAttribute(WSDLGenerator.MOVEROW_TABLE_NAME,"");
+			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_NAME,"");
+			sqlEle.setAttribute(WSDLGenerator.POLLMILLI_SECONDS,"5000");
+
 			insParentNode.appendChild(sqlEle);
 			insParentNode.removeChild(delSqlEle);
 			// Change WSDL template with generated queries
@@ -505,8 +566,15 @@ public class WSDLGenerator {
 			sqlEle.setAttribute(WSDLGenerator.PARAM_ORDER, "");
 			sqlEle.setAttribute(WSDLGenerator.SQL_ELEMENT, query);
 			sqlEle.setAttribute(WSDLGenerator.PRIMARYKEY_ATTR,primaryKey);
+			sqlEle.setAttribute(WSDLGenerator.TRANSACTION,"NOTransaction");
 			sqlEle.setAttribute(WSDLGenerator.TABLE_NAME,this.mTableName);
-	//		sqlEle.setAttribute(FLAGCOL_ATTR, "");
+			
+			sqlEle.setAttribute(WSDLGenerator.NUMNBER_OF_RECORDS,"");
+			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_VALUE,"");
+			sqlEle.setAttribute(WSDLGenerator.MOVEROW_TABLE_NAME,"");
+			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_NAME,"");
+			sqlEle.setAttribute(WSDLGenerator.POLLMILLI_SECONDS,"5000");
+
 			insParentNode.appendChild(sqlEle);
 			insParentNode.removeChild(findSqlEle);
 			// Change WSDL template with generated queries
@@ -523,7 +591,7 @@ public class WSDLGenerator {
 	 * @throws WSDLException
 	 * @throws Exception
 	 */
-	public void modifyPool(final DBQueryModel dao, final String query) throws WSDLException, Exception {
+	public void modifyPoll(final DBQueryModel dao, final String query) throws WSDLException, Exception {
 		try {
 			final Element rootEle = this.doc.getDocumentElement();
 			String primaryKey = null;
@@ -535,15 +603,17 @@ public class WSDLGenerator {
 			final Element sqlEle = this.doc.createElementNS(WSDLGenerator.JDBC_NAMESPACE,
 					WSDLGenerator.JDBC_SQL_ELEMENT);
 			sqlEle.setAttribute(WSDLGenerator.OPERATION_TYPE,"poll");
+			sqlEle.setAttribute(WSDLGenerator.NUMNBER_OF_RECORDS,"");
 			sqlEle.setAttribute(WSDLGenerator.PARAM_ORDER, "");
 			sqlEle.setAttribute(WSDLGenerator.SQL_ELEMENT, query);
 			sqlEle.setAttribute(WSDLGenerator.PRIMARYKEY_ATTR, primaryKey);
-			sqlEle.setAttribute(WSDLGenerator.TRANSACTION,"");
+			sqlEle.setAttribute(WSDLGenerator.TRANSACTION,"NOTransaction");
 			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_VALUE,"");
 			sqlEle.setAttribute(WSDLGenerator.MARK_COLUMN_NAME,"");
 			sqlEle.setAttribute(WSDLGenerator.POLL_POST_PROCESS,"Delete");
 			sqlEle.setAttribute(WSDLGenerator.TABLE_NAME,this.mTableName);
-
+			sqlEle.setAttribute(WSDLGenerator.MOVEROW_TABLE_NAME,"");
+			sqlEle.setAttribute(WSDLGenerator.POLLMILLI_SECONDS,"5000");
 
 			//sqlEle.setAttribute(FLAGCOL_ATTR, "");
 			insParentNode.appendChild(sqlEle);
@@ -555,6 +625,43 @@ public class WSDLGenerator {
 					"Could not generate the WSDL");
 		}
 	}
+    
+    /**
+     * @throws WSDLException
+     * @throws Exception
+     */
+    public void modifyServiceAndPortNames() throws WSDLException, Exception {
+        try {
+            final Element rootEle = this.doc.getDocumentElement();
+            final String projectName = getProjectName(this.wsdlFileLocation);
+            final NodeList list = rootEle.getChildNodes();
+            for (int i = 0; i < list.getLength(); i++) {
+                final Node n = list.item(i);
+                if (n.getNodeType() == Node.ELEMENT_NODE) {
+                    if (n.getLocalName().equalsIgnoreCase(SERVICE_NAME)) {
+                        Element serEle = (Element) n;
+                        serEle.removeAttribute("name");
+                        serEle.setAttribute("name", projectName + this.mWSDLFileName + SERVICE_NAME);
+                        final NodeList childList = n.getChildNodes();
+                        for (int j = 0; j < childList.getLength(); j++) {
+                            final Node childNode = childList.item(j);
+                            if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+                                if (childNode.getLocalName().equalsIgnoreCase(PORT_NAME)) {
+                                    Element portEle = (Element) childNode;
+                                    portEle.removeAttribute("name");
+                                    portEle.setAttribute("name", projectName + this.mWSDLFileName + PORT_NAME);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            this.def = this.reader.readWSDL(this.wsdlFileLocation, rootEle);
+        } catch (final Exception e) {
+            throw new WSDLException(WSDLException.OTHER_ERROR, "Could not generate the WSDL");
+        }
+    }
+    
 	/**
 	 * 
 	 * @throws WSDLException
@@ -566,12 +673,16 @@ public class WSDLGenerator {
 			final Element jndiRemEle = this.getElementByAddress(rootEle, WSDLGenerator.JNDI_NAME);
 			final Element jndiParentNode = (Element) jndiRemEle.getParentNode();
 
-			// Create sql element to replace
-		
 			final Element jndiEle = this.doc.createElementNS(WSDLGenerator.JDBC_NAMESPACE,
 					WSDLGenerator.JNDI_ADD_ELE);
 			jndiEle.setAttribute("jndiName", this.mJNDIName);
-			
+			// commenting out the attribute creation which is required to create data source
+			// at runtime
+		  /*jndiEle.setAttribute("dbURL", this.dbinfo.getConnectionURL());
+            jndiEle.setAttribute("driverClassName", this.dbinfo.getDriverClass());
+            jndiEle.setAttribute("userName",  this.dbinfo.getUserName());
+            jndiEle.setAttribute("password", this.dbinfo.getPassword());
+           */
 			jndiParentNode.appendChild(jndiEle);
 			jndiParentNode.removeChild(jndiRemEle);
 			// Change WSDL template with generated queries
@@ -581,6 +692,20 @@ public class WSDLGenerator {
 					"Could not generate the WSDL");
 		}
 	}
+    
+    /**
+     * get the project name from the wsdl file location
+     * @param wsdlLocation
+     * @return
+     */
+    private String getProjectName(String wsdlLocation) {
+        String projName = "";
+        if(wsdlLocation != null && !wsdlLocation.equals("")){
+            projName  = wsdlLocation.substring (0 , wsdlLocation.lastIndexOf(File.separator));
+            projName = projName.substring(projName.lastIndexOf(File.separator)+1 , projName.length());
+        }
+        return projName;
+    }
 	/**
 	 * 
 	 * @return
@@ -589,9 +714,14 @@ public class WSDLGenerator {
 		DBQueryModel objDataAccess = null;
 		if(this.mDBType.equalsIgnoreCase("DERBY")){
 			objDataAccess = DerbyQueryGenerator.getInstance();
-		}
-		else if (this.mDBType.equalsIgnoreCase("ORACLE")) {
+		} else if (this.mDBType.equalsIgnoreCase("ORACLE")) {
 			objDataAccess = OracleQueryGenerator.getInstance();
+		} else if (this.mDBType.equalsIgnoreCase("DB2")) {
+			objDataAccess = DB2QueryGenerator.getInstance();
+		} else if (this.mDBType.equalsIgnoreCase("SQLServer")) {
+			objDataAccess = SQLServerQueryGenerator.getInstance();
+		}else {
+			objDataAccess = JdbcQueryGenerator.getInstance();
 		}
 		
 		return objDataAccess;

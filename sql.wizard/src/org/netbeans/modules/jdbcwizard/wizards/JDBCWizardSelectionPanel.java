@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * 
  * Copyright 2005 Sun Microsystems, Inc.
  * 
@@ -18,24 +37,22 @@
 package org.netbeans.modules.jdbcwizard.wizards;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.windows.WindowManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBConnectionDefinition;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DatabaseModel;
@@ -44,28 +61,22 @@ import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.impl.DBTableImpl;
 import org.netbeans.modules.jdbcwizard.builder.DBMetaData;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.impl.DatabaseObjectFactory;
-import org.netbeans.modules.jdbcwizard.builder.DBMetaData;
 import org.netbeans.modules.jdbcwizard.builder.Table;
 import org.netbeans.modules.jdbcwizard.builder.TableColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.impl.DBColumnImpl;
-
-import javax.swing.SwingUtilities;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultButtonModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -86,15 +97,23 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
     protected final Set listeners = new HashSet(1);
 
     private DatabaseConnection selectedConnection;
+    
+    DBConnectionDefinition def;
 
     DBModelNameCellRenderer srcRenderer;
 
     DBModelNameCellRenderer destRenderer;
+    
+    DefaultComboBoxModel providers;
+    
+    private static final String NEW_DATA_SOURCE = "New DataSource...";
 
     int visibleCt;
 
     String dbtype;
-
+    
+    private int selTableLen = 0;
+    
     private static class ConnectionWrapper {
         private DatabaseConnection conn;
 
@@ -118,7 +137,10 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
     }
 
     /** Creates new form JDBCWizardSelectionPanel */
-    public JDBCWizardSelectionPanel() {
+    public JDBCWizardSelectionPanel(final String title) {
+        if (title != null && title.trim().length() != 0) {
+            this.setName(title);
+        }
     }
 
     /**
@@ -131,7 +153,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
     }
 
     public void initDataSourceCombo() {
-        final DefaultComboBoxModel providers = new DefaultComboBoxModel();
+        providers = new DefaultComboBoxModel();
         final DatabaseConnection[] conns = ConnectionManager.getDefault().getConnections();
         if (conns.length > 0) {
             for (int i = 0; i < conns.length; i++) {
@@ -140,7 +162,8 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         } else {
             providers.addElement("<None>");
         }
-
+      //  String newDataSrc = new String(NEW_DATA_SOURCE);
+        //providers.addElement(newDataSrc);
         this.datasourceComboBox.setModel(providers);
         this.datasourceComboBox.setSelectedIndex(0);
 
@@ -180,6 +203,10 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         this.removeButton.addActionListener(this);
         this.addAllButton.addActionListener(this);
         this.removeAllButton.addActionListener(this);
+        this.addButton.setEnabled(false);
+        this.removeButton.setEnabled(false);
+        this.addAllButton.setEnabled(false);
+        this.removeAllButton.setEnabled(false);
         this.jLabel1.setText("Data Source");
 
         this.availableTablesLabel.setText("Available Tables:");
@@ -242,7 +269,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                                                 this.jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 163,
                                                 org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(this.jScrollPane3,
                                                 org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)))).addContainerGap(
-                        54, Short.MAX_VALUE)));
+                        44, Short.MAX_VALUE)));
     }// </editor-fold>
 
     /**
@@ -256,59 +283,64 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
      * Connect to the datasource selected in the combo
      */
     private void updateSourceSchema() {
+        Set oldConnections = new HashSet(Arrays.asList(ConnectionManager.getDefault().getConnections()));
+        
         final Object item = this.datasourceComboBox.getSelectedItem();
         if (item instanceof ConnectionWrapper) {
             final ConnectionWrapper cw = (ConnectionWrapper) item;
             this.selectedConnection = cw.getDatabaseConnection();
             ConnectionManager.getDefault().showConnectionDialog(this.selectedConnection);
             this.persistModel();
+        }else{
+             ConnectionManager.getDefault().showAddConnectionDialog(null);
         }
-
+        // try to find the new connection
+        DatabaseConnection[] newConnections = ConnectionManager.getDefault().getConnections();
+        if (newConnections.length == oldConnections.size()) {
+            // no new connection, so...
+            return;
+        }
+        providers.removeElement(new String(NEW_DATA_SOURCE));
+        for (int i = 0; i < newConnections.length; i++) {
+            if (!oldConnections.contains(newConnections[i])) {
+                providers.addElement(new ConnectionWrapper(newConnections[i]));
+                break;
+            }
+        }
     }
 
     public void persistModel() {
         //final DBMetaData meta = new DBMetaData();
     	final Connection connection = this.selectedConnection.getJDBCConnection();
-        try {
-            //meta.connectDB(this.selectedConnection.getJDBCConnection());
-            final DBConnectionDefinition def = DatabaseObjectFactory.createDBConnectionDefinition(
-                    this.selectedConnection.getDisplayName(), this.selectedConnection.getDriverClass(),
-                    this.selectedConnection.getDatabaseURL(), this.selectedConnection.getUser(),
-                    this.selectedConnection.getPassword(), "Descriptive info here", DBMetaData.getDBType(connection));
-
-            this.dbtype = DBMetaData.getDBType(this.selectedConnection.getJDBCConnection());
-            this.dbmodel = new DatabaseModelImpl(this.selectedConnection.getDisplayName(), def);
-
-            final String[][] tableList = DBMetaData.getTablesOnly("", "", "", false,connection);
-            DBTable ffTable = null;
-            String[] currTable = null;
-            if (tableList != null) {
-                for (int i = 0; i < tableList.length; i++) {
-                    currTable = tableList[i];
-                    ffTable = new DBTableImpl(currTable[DBMetaData.NAME], currTable[DBMetaData.SCHEMA], currTable[DBMetaData.CATALOG]);
-
-                    final Table t = DBMetaData.getTableMetaData(currTable[DBMetaData.CATALOG], currTable[DBMetaData.SCHEMA],
-                            currTable[DBMetaData.NAME], currTable[DBMetaData.TYPE],connection);
-                    final TableColumn[] cols = t.getColumns();
-                    TableColumn tc = null;
-                    DBColumn ffColumn = null;
-                    for (int j = 0; j < cols.length; j++) {
-                        tc = cols[j];
-                        ffColumn = new DBColumnImpl(tc.getName(), tc.getSqlTypeCode(), tc.getNumericScale(),
-                                tc.getNumericPrecision(), tc.getIsPrimaryKey(), tc.getIsForeignKey(),
-                                false /* isIndexed */, tc.getIsNullable());
-                        ffTable.addColumn(ffColumn);
+        if(connection != null){
+            try {
+                //meta.connectDB(this.selectedConnection.getJDBCConnection());
+                 def = DatabaseObjectFactory.createDBConnectionDefinition(
+                        this.selectedConnection.getDisplayName(), this.selectedConnection.getDriverClass(),
+                        this.selectedConnection.getDatabaseURL(), this.selectedConnection.getUser(),
+                        this.selectedConnection.getPassword(), "Descriptive info here", DBMetaData.getDBType(connection));
+                
+                this.dbtype = DBMetaData.getDBType(this.selectedConnection.getJDBCConnection());
+                this.dbmodel = new DatabaseModelImpl(this.selectedConnection.getDisplayName(), def);
+    
+    		    final String[][] tableList = DBMetaData.getTablesOnly("", "", "", false,connection);
+    			String[] currTable = null;
+    			List tableNamesList = new ArrayList();
+                if (tableList != null) {
+                    for (int i = 0; i < tableList.length; i++) {
+                        currTable = tableList[i];
+    					tableNamesList.add(currTable[DBMetaData.NAME]);
+                        }
+                       
                     }
-                    this.dbmodel.addTable(ffTable);
-                }
-
+    			this.initListModel(tableNamesList);           
+                
+            } catch (final Exception ex) {
+                ex.printStackTrace();
+                ErrorManager.getDefault().log(ErrorManager.ERROR, ex.getMessage());
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
             }
-            this.initListModel();
-        } catch (final Exception ex) {
-            ex.printStackTrace();
-            ErrorManager.getDefault().log(ErrorManager.ERROR, ex.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-        }
+      }
     }
 
     /**
@@ -316,20 +348,18 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
      *
      */
 
-    public void initListModel() {
+    public void initListModel(List tableList) {
         final DefaultListModel tempListModel = new DefaultListModel();
-        final List tempList = this.dbmodel.getTables();
-        final Iterator itr = tempList.iterator();
+        final Iterator itr = tableList.iterator();
         while (itr.hasNext()) {
-            final DBTable o = (DBTable) itr.next();
-            if (o != null) {
-                tempListModel.addElement(o);
+            final String tabName = (String) itr.next();
+            if (tabName != null) {
+                tempListModel.addElement(tabName);
             }
         }
         this.listModel = new ListTransferModel();
-
         this.listModel.setSourceList(Arrays.asList(tempListModel.toArray()));
-
+        
         String largestString = this.listModel.getPrototypeCell();
 
         if (largestString.length() < JDBCWizardSelectionPanel.LBL_SOURCE_MSG.length()) {
@@ -347,7 +377,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         this.removeButton.setModel(this.listModel.getRemoveButtonModel());
         this.addAllButton.setModel(this.listModel.getAddAllButtonModel());
         this.removeAllButton.setModel(this.listModel.getRemoveAllButtonModel());
-
+        
         this.availableTablesList = new JList((this.listModel.getSourceList()).toArray());
         this.availableTablesList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.availableTablesList.addMouseListener(new MouseAdapter() {
@@ -366,6 +396,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         this.availableTablesList.setCellRenderer(this.srcRenderer);
         this.availableTablesList.setVisibleRowCount(this.visibleCt);
 
+        this.selectedTablesList = new JList();
         this.selectedTablesList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.selectedTablesList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(final MouseEvent e) {
@@ -384,18 +415,25 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
 
         this.selectedTablesList.addListSelectionListener(this);
         this.jScrollPane2.setViewportView(this.availableTablesList);
+        this.jScrollPane3.setViewportView(this.selectedTablesList);
     }
-
+    /**
+     * 
+     */
     public Component getComponent() {
         return this;
     }
-
+    /**
+     * 
+     */
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
 
     }
-
+    /**
+     * @param settings
+     */
     public void readSettings(final Object settings) {
         WizardDescriptor wd = null;
         if (settings instanceof JDBCWizardContext) {
@@ -405,8 +443,11 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         } else if (settings instanceof WizardDescriptor) {
             wd = (WizardDescriptor) settings;
         }
-    }
-
+	
+	}
+    /**
+     * @param settings
+     */
     public void storeSettings(final Object settings) {
         WizardDescriptor wd = null;
         if (settings instanceof JDBCWizardContext) {
@@ -422,11 +463,86 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                 return;
         }
 
-        if (wd != null) {
-            wd.putProperty(JDBCWizardContext.SELECTEDTABLES, this.listModel.getDestinationList().toArray());
+		//populateDBModel();
+        if(selectedOption.toString().equals("PREVIOUS_OPTION")){
+        	//listModel = null;
+        	if(this.availableTablesList != null){
+        		if(listModel != null){
+	        		this.listModel.getSourceList().clear();
+	        		this.jScrollPane2.setViewportView(this.availableTablesList);
+	        	}
+         	}
+        	if(this.selectedTablesList != null){
+        		if(listModel != null){
+	        		this.listModel.getSourceList().clear();
+	        		this.jScrollPane3.setViewportView(this.selectedTablesList);
+        		}
+        	}
+        	return;
+        }
+        
+		if(listModel!= null){
+		List selList = this.listModel.getDestinationList();
+        List selTabList = new ArrayList();
+        Iterator itr = selList.iterator();
+        while(itr.hasNext()){
+            DBTable tabObj = (DBTable)populateDBTable((String)itr.next());
+            //By default make the table selected
+            //tabObj.setSelected(true);
+            selTabList.add(tabObj);
+        }
+        
+		if (wd != null) {
+            wd.putProperty(JDBCWizardContext.SELECTEDTABLES, selTabList.toArray());
             wd.putProperty(JDBCWizardContext.DBTYPE, this.dbtype);
+            wd.putProperty(JDBCWizardContext.CONNECTION_INFO, def);
+	        }
         }
     }
+    /**
+     * 
+     * @param tableName
+     * @return
+     */
+	public DBTable populateDBTable(String tableName){
+		final Connection connection = this.selectedConnection.getJDBCConnection();
+        
+		try{
+		 final String[][] tableList = DBMetaData.getTablesOnly("", "", "", false,connection);
+            DBTable ffTable = null;
+            String[] currTable = null;
+            if (tableList != null) {
+                for (int i = 0; i < tableList.length; i++) {
+                    currTable = tableList[i];
+                    if(tableName.equals(currTable[DBMetaData.NAME])){
+                        ffTable = new DBTableImpl(currTable[DBMetaData.NAME], currTable[DBMetaData.SCHEMA], currTable[DBMetaData.CATALOG]);
+    
+                        final Table t = DBMetaData.getTableMetaData(currTable[DBMetaData.CATALOG], currTable[DBMetaData.SCHEMA],
+                                currTable[DBMetaData.NAME], currTable[DBMetaData.TYPE],connection);
+                        final TableColumn[] cols = t.getColumns();
+                        TableColumn tc = null;
+                        DBColumn ffColumn = null;
+                        for (int j = 0; j < cols.length; j++) {
+                            tc = cols[j];
+                            ffColumn = new DBColumnImpl(tc.getName(), tc.getSqlTypeCode(), tc.getNumericScale(),
+                                    tc.getNumericPrecision(), tc.getIsPrimaryKey(), tc.getIsForeignKey(),
+                                    false /* isIndexed */, tc.getIsNullable());
+                            ffTable.addColumn(ffColumn);
+                        }
+                        return ((DBTable)ffTable);
+                    }
+                    if(ffTable != null){
+                        break;
+                    }
+                }
+            }
+        } catch (final Exception ex) {
+            ex.printStackTrace();
+            ErrorManager.getDefault().log(ErrorManager.ERROR, ex.getMessage());
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+        }
+        return null;
+	}
 
     /**
      * @see JDBCWizardPanel#addChangeListener
@@ -466,10 +582,10 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
      * @see JDBCWizardPanel#isValid
      */
     public boolean isValid() {
-        final boolean returnVal = true;
-        // if (selectedSourceDatabasesModel.getSize() > 0 ) {
-        // returnVal = true;
-        // }
+        boolean returnVal = false;
+         if (selTableLen > 0) {
+			returnVal = true;
+		}
         return returnVal;
     }
 
@@ -588,13 +704,12 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
 
                     this.updateButtonState();
                 }
-
-                JDBCWizardSelectionPanel.this.fireChangeEvent();
-
             }
-
+            selTableLen = this.dest.getSize();
+            
             this.updateButtonState();
             this.updateUI();
+            JDBCWizardSelectionPanel.this.fireChangeEvent();
         }
 
         /**
@@ -612,7 +727,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                     this.source.removeAllElements();
                 }
             }
-
+            selTableLen = this.dest.getSize();
             this.updateButtonState();
 
             JDBCWizardSelectionPanel.this.fireChangeEvent();
@@ -778,9 +893,8 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                     }
                 }
             }
-
+            selTableLen = this.dest.getSize();
             this.updateButtonState();
-
             JDBCWizardSelectionPanel.this.fireChangeEvent();
             this.updateUI();
         }
@@ -799,9 +913,8 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                     this.dest.removeAllElements();
                 }
             }
-
+            selTableLen = this.dest.getSize();
             this.updateButtonState();
-
             JDBCWizardSelectionPanel.this.fireChangeEvent();
             this.updateUI();
         }
@@ -888,11 +1001,17 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         public void updateButtonState() {
             final boolean canAdd = !this.source.isEmpty();
             final boolean canRemove = !this.dest.isEmpty();
-
-            this.addButtonModel.setEnabled(canAdd);
-            this.addAllButtonModel.setEnabled(canAdd);
-            this.removeButtonModel.setEnabled(canRemove);
-            this.removeAllButtonModel.setEnabled(canRemove);
+            if(canRemove){
+            	this.addButtonModel.setEnabled(false);
+            	this.addAllButtonModel.setEnabled(false);
+            	this.removeButtonModel.setEnabled(canRemove);
+            	this.removeAllButtonModel.setEnabled(canRemove);
+            } else{
+            	this.addButtonModel.setEnabled(canAdd);
+            	this.addAllButtonModel.setEnabled(canRemove);
+            	this.removeButtonModel.setEnabled(canRemove);
+            	this.removeAllButtonModel.setEnabled(canRemove);
+            }
         }
 
         public void updateUI() {
@@ -936,8 +1055,15 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
 
         if (JDBCWizardSelectionPanel.LBL_ADD.equals(cmd)) {
             final int[] indices = this.availableTablesList.getSelectedIndices();
+            if (indices.length <= 1) {
             final Object[] selections = this.availableTablesList.getSelectedValues();
             this.listModel.add(selections, indices);
+            } else {
+                Object[] options = { "OK" };
+                JOptionPane.showOptionDialog(WindowManager.getDefault().getMainWindow(),
+                        NbBundle.getMessage(JDBCWizardSelectionPanel.class, "WARNING_IN_SELECTING_TABLES"), "Warning", JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+            }
         } else if (JDBCWizardSelectionPanel.LBL_ADD_ALL.equals(cmd)) {
             this.listModel.addAll();
         } else if (JDBCWizardSelectionPanel.LBL_REMOVE.equals(cmd)) {
@@ -1011,14 +1137,17 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                 } else {
                     this.setText(model.getName());
                 }
+            }else if (value instanceof String)
+            {
+				this.setText(value.toString());
             }
 
             return this;
         }
 
     }
-
-    private ListTransferModel listModel;
+	
+	private ListTransferModel listModel;
 
     private final List dsList = new ArrayList();
 

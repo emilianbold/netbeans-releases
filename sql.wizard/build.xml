@@ -23,15 +23,16 @@
 <project name="org.netbeans.modules.jdbcwizard" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.jdbcwizard</description>
     <import file="nbproject/build-impl.xml"/>
-	 <target name="release" depends="init">
+	 <target name="init" depends="harness.init">
         <mkdir dir="${cluster}/modules/ext/sql/wsdl4j-1_5_2/"/>
         <copy todir="${cluster}/modules/ext/sql/wsdl4j-1_5_2">
             <fileset dir="../external/wsdl4j-1_5_2">
                 <include name="wsdl4j.jar"/>
             </fileset>
 		</copy>
+		<echo message="my classpath to ant ${harness.dir}/../ide7/ant/lib"/>
 		<copy todir="${cluster}/modules/ext/sql">
-           <fileset dir="../external">
+           <fileset dir="${harness.dir}/../ide8/ant/lib">
                 <include name="ant.jar"/>
             </fileset>
         </copy>

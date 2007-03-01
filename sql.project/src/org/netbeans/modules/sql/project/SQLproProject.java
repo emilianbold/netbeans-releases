@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -17,6 +36,7 @@ import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.sql.project.ui.SQLproLogicalViewProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -62,7 +82,7 @@ import org.w3c.dom.Text;
 
 
 /**
- * Represents one ejb module project
+ * Represents one sql module project
  * @author Chris Webster
  */
 public final class SQLproProject implements Project, AntProjectListener {
@@ -99,6 +119,10 @@ public final class SQLproProject implements Project, AntProjectListener {
         return "SQLproProject[" + getProjectDirectory() + "]"; // NOI18N
     }
 
+    public ReferenceHelper getReferenceHelper() {
+        return this.refHelper;
+    }
+
     private PropertyEvaluator createEvaluator() {
         // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
         return helper.getStandardPropertyEvaluator();
@@ -114,7 +138,7 @@ public final class SQLproProject implements Project, AntProjectListener {
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator(), 
+        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator(),
             new String[] {"${src.dir}/*.java"}, // NOI18N
             new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
@@ -146,6 +170,7 @@ public final class SQLproProject implements Project, AntProjectListener {
             new JbiArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
+            new SQLproProjectOperations(this),
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
@@ -201,6 +226,35 @@ public final class SQLproProject implements Project, AntProjectListener {
                 return "???"; // NOI18N
             }
         });
+    }
+
+    public AntProjectHelper getAntProjectHelper() {
+        return helper;
+    }
+
+	/** Store configured project name. */
+	public void setName(final String name) {
+		ProjectManager.mutex().writeAccess(new Mutex.Action() {
+			public Object run() {
+				Element data = helper.getPrimaryConfigurationData(true);
+				// XXX replace by XMLUtil when that has findElement, findText, etc.
+				NodeList nl = data.getElementsByTagNameNS(SQLproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+				Element nameEl;
+				if (nl.getLength() == 1) {
+					nameEl = (Element) nl.item(0);
+					NodeList deadKids = nameEl.getChildNodes();
+					while (deadKids.getLength() > 0) {
+						nameEl.removeChild(deadKids.item(0));
+					}
+				} else {
+					nameEl = data.getOwnerDocument().createElementNS(SQLproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+					data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
+				}
+				nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+				helper.putPrimaryConfigurationData(data, true);
+				return null;
+			}
+		});
     }
 
     // Private innerclasses ----------------------------------------------------
@@ -327,7 +381,7 @@ public final class SQLproProject implements Project, AntProjectListener {
                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
 				helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR,
                          IcanproProjectProperties.SE_DEPLOYMENT_JAR,
-                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
+                         helper.getStandardPropertyEvaluator(), "dist_se", "clean") // NOI18N
             };
         }
 

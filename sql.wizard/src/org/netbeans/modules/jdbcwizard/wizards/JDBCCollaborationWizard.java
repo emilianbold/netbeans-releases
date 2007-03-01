@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * 
  * Copyright 2005 Sun Microsystems, Inc.
  * 
@@ -136,12 +155,14 @@ public class JDBCCollaborationWizard extends JDBCWizard {
                 this.collaborationNamePanel = new SimpleTargetChooserPanel(project, groups, null, false);
             }
 
-            this.dataSelectionPanel = new JDBCWizardSelectionPanel();
+            this.dataSelectionPanel = new JDBCWizardSelectionPanel(NbBundle.getMessage(JDBCCollaborationWizard.class,
+                    "TITLE_tblwizard_selecttableobjects"));
             this.dataSelectionPanel.initialize();
             this.sourceTableSelectionPanel = new JDBCWizardTransferPanel(NbBundle.getMessage(JDBCCollaborationWizard.class,
                     "TITLE_tblwizard_selectsources"));
 
-            this.jndiNamePanel = new JNDINameFinishPanel();
+            this.jndiNamePanel = new JNDINameFinishPanel(NbBundle.getMessage(JDBCCollaborationWizard.class,
+                    "STEP_tblwizard_jndiname"));
 
             this.panels = new ArrayList(4);
             if (this.collaborationNamePanel != null) {

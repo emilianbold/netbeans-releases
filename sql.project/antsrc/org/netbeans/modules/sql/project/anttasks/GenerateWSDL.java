@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -60,6 +79,7 @@ public class GenerateWSDL extends Task {
     private String mSrcDirectoryLocation;
     private String mBuildDirectoryLocation;
     private String dbURL = "";
+	private String jndi_name = "";
     private static final String CONNECTION_FILE = "connectivityInfo.xml";
     private String engineFileName = null;
     DatabaseConnection dbConn = null;
@@ -143,13 +163,15 @@ public class GenerateWSDL extends Task {
                     engineFileGen.addSQLDefinition(f.getName(), dbConn);
                 }
             }
-            engineFileGen.persistEngineFile();
+            engineFileGen.persistEngineFile(jndi_name);
             //call generate wsdl in model.
             WSDLGenerator wsdlgen = new WSDLGenerator(conn,
                     sqlFiles,
                     projectName,
                     srcDirPath,
                     engineFileName);
+            
+            wsdlgen.setDBConnection(dbConn);
 
             Definition def = wsdlgen.generateWSDL();
             SQLMapWriter sqlw = new SQLMapWriter(sqlFiles, 
@@ -178,6 +200,17 @@ public class GenerateWSDL extends Task {
                         if (n2 != null) {
                             dbURL = n2.getNodeValue();
                             log("Using Database URL value: " + dbURL);
+                        }
+                    }
+                }
+				NodeList n3 = doc.getDocumentElement().getElementsByTagName("jndi-name");
+				if (n3 != null) {
+                    Node n = n3.item(0);
+                    if (n != null) {
+                        Node n4 = n.getAttributes().getNamedItem("value");
+                        if (n4 != null) {
+                            jndi_name = n4.getNodeValue();
+                            log("jndi value: " + jndi_name);
                         }
                     }
                 }

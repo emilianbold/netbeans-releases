@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -31,6 +50,7 @@ import java.util.Vector;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+
 
 /**
  * Extracts database metadata information (table names and constraints, their
@@ -871,6 +891,7 @@ public class DBMetaData {
         return fkList;
     }
     
+    
     /**
      * Gets the procedure metadata (parameters).
      *
@@ -881,94 +902,262 @@ public class DBMetaData {
      * @return Procedure object
      * @throws Exception DOCUMENT ME!
      */
-    public Procedure getProcedureMetaData(String pcatalog, String pschema,
-            String pname, String ptype)
+    public Procedure getProcedureMetaData()
             throws Exception {
-        errMsg = "";
-        try {
-            // create a new procedure object
-            Procedure newProcedure = new Procedure(pname, pcatalog, pschema, ptype);
-            Vector v = new Vector();
-            
-            if (pcatalog.equals("")) {
-                pcatalog = null;
-            }
-            if (pschema.equals("")) {
-                pschema = null;
-            }
-            
-            // get procedure parameter information
-            ResultSet rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, "%");
-            
-            Parameter[] parameters = null;
-            int pos = 0;
-            boolean hasReturn = false;
-            
-            while (rs.next()) {
-                pos++;
-                String parmName = rs.getString("COLUMN_NAME");
-                if (parmName != null) {
-                    // strip off "@" in front of parameter name
-                    if (parmName.charAt(0) == '@') {
-                        parmName = parmName.substring(1);
-                    }
-                } else {
-                    // parameter name is not return - call it "param<pos>"
-                    parmName = "param" + String.valueOf(pos);
-                }
-                String sqlType = getSQLTypeDescription(rs.getInt("DATA_TYPE"));
-                String javaType = getJavaFromSQLTypeDescription(sqlType);
-                //added abey for Procedure ResultSet
-                int dataType = rs.getInt("DATA_TYPE");
-                if((dataType==java.sql.Types.OTHER)&&(rs.getString("TYPE_NAME").equalsIgnoreCase("REF CURSOR"))){
-                    sqlType = "RESULTSET";
-                    javaType = "java.sql.ResultSet";
-                }
-                String paramType = getParamTypeDescription(rs.getShort("COLUMN_TYPE"));
-                int nullable = rs.getShort("NULLABLE");
-                int numericPrecision = rs.getInt("PRECISION");
-                short numericScale = rs.getShort("SCALE");
-                
-                // create a parameter and add it to the vector
-                Parameter parm = new Parameter(parmName, javaType);
-                boolean isNullable = false;
-                if (nullable == DatabaseMetaData.procedureNullable) {
-                    isNullable = true;
-                }
-                parm.setJavaType(javaType);
-                parm.setSqlType(sqlType);
-                parm.setParamType(paramType);
-                parm.setOrdinalPosition(pos);
-                parm.setNumericPrecision(numericPrecision);
-                parm.setNumericScale(numericScale);
-                parm.setIsNullable(isNullable);
-                
-                if (paramType.equals("RETURN")) {
-                    hasReturn = true;
-                }
-                
-                // add to vector
-                v.add(parm);
-            }
-            rs.close();
-            
-            // now copy Vector to array
-            if (v.size() > 0) {
-                parameters = new Parameter[v.size()];
-                v.copyInto(parameters);
-            }
-            
-            // now set up parameters in the procedure to return
-            newProcedure.setParameters(parameters);
-            newProcedure.setHasReturn(hasReturn);
-            
-            return newProcedure;
-        } catch (Exception e) {
-            e.printStackTrace();
-            errMsg = e.getLocalizedMessage();
-            throw e;
-        }
-    }
+    	return getProcedureMetaData(null, null, null, sqlText);
+    	}
+    
+    /**
+     * Gets the procedure metadata (parameters).
+     *
+     * @param pcatalog Catalog name
+     * @param pschema Schema name
+     * @param pname Procedure name
+     * @param ptype Procedure type
+     * @return Procedure object
+     * @throws Exception DOCUMENT ME!
+     */
+    public Procedure getProcedureMetaData(String pcatalog, String pschema, 
+            String pname, String ptype) 
+	throws Exception {
+		try {
+		// create a new procedure object
+		Procedure newProcedure = new Procedure(pname, pcatalog, pschema, ptype);
+		Vector v = new Vector();
+		
+		if (pcatalog.equals("")) {
+		pcatalog = null;
+		}
+		if (pschema.equals("")) {
+		pschema = null;
+		}
+		
+		int colCount = 0;
+		boolean isFunction = false;
+		boolean hasParameters = true;
+		// indicates if the procedure is within a package or standalone
+		boolean isPackaged = true;
+		
+		ResultSetColumn resultCol = new ResultSetColumn();
+		ArrayList paramIndices = new ArrayList();   // arraylist to hold the indices of the paramters that return resultsets
+		ArrayList result = new ArrayList();     // arraylist to hold ResultSetColumns objects
+		
+		// check if the procedure is within a package or not
+		if(pcatalog == null || pcatalog.trim().equalsIgnoreCase("")) {
+		isPackaged = false;
+		}
+		
+		
+		
+		dbmeta=dbconn.getMetaData();
+		// get procedure parameter information
+		ResultSet rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, "%");
+		
+		Parameter[] parameters = null;
+		int pos = 0;
+		int paramIndex=0;
+		boolean hasReturn = false;
+		CallableStatement cstmt = dbconn.prepareCall(sqlText);
+		while (rs.next()) {
+		pos++;
+		String parmName = rs.getString("COLUMN_NAME");
+		if(rs.getShort("COLUMN_TYPE") == DatabaseMetaData.procedureColumnReturn){
+			// this is a function, so set the flag to true
+			isFunction = true;
+		}
+		colCount++;
+		if (parmName != null) {
+		// strip off "@" in front of parameter name
+		if (parmName.charAt(0) == '@') {
+		parmName = parmName.substring(1);
+		}
+		} else {
+		// parameter name is not return - call it "param<pos>"
+		parmName = "param" + String.valueOf(pos);
+		}
+		String sqlType = getSQLTypeDescription(rs.getInt("DATA_TYPE"));
+		String javaType = getJavaFromSQLTypeDescription(sqlType);
+		//added abey for Procedure ResultSet
+		int dataType = rs.getInt("DATA_TYPE");
+		if((dataType==java.sql.Types.OTHER)&&(rs.getString("TYPE_NAME").equalsIgnoreCase("REF CURSOR"))){
+		sqlType = "RESULTSET";
+		javaType = "java.sql.ResultSet";
+		}
+		String paramType = getParamTypeDescription(rs.getShort("COLUMN_TYPE"));
+		int nullable = rs.getShort("NULLABLE");
+		int numericPrecision = rs.getInt("PRECISION");
+		short numericScale = rs.getShort("SCALE");
+		
+		// create a parameter and add it to the vector
+		Parameter parm = new Parameter(parmName, javaType);
+		boolean isNullable = false;
+		if (nullable == DatabaseMetaData.procedureNullable) {
+		isNullable = true;
+		}
+		parm.setJavaType(javaType);
+		parm.setSqlType(sqlType);
+		parm.setParamType(paramType);
+		parm.setOrdinalPosition(pos);
+		parm.setNumericPrecision(numericPrecision);
+		parm.setNumericScale(numericScale);
+		parm.setIsNullable(isNullable);
+		
+		if (paramType.equals("RETURN")) {
+		hasReturn = true;
+		}
+		paramIndex++;
+		String parameterName = rs.getString("COLUMN_NAME");
+		int targetSqlType = rs.getInt("DATA_TYPE");
+		int colType = rs.getShort("COLUMN_TYPE");
+		String type_Name = rs.getString("TYPE_NAME");
+		
+		if ( colType == DatabaseMetaData.procedureColumnIn) {
+			if ((targetSqlType == 1111) && (type_Name.equals("PL/SQL TABLE"))) {
+			targetSqlType = -14;
+			}
+			
+			if ((targetSqlType == 1111) && (type_Name.equals("PL/SQL RECORD"))) {
+			targetSqlType = -14;
+			}
+			cstmt.setNull(paramIndex, targetSqlType);
+			}
+			
+			if (colType == DatabaseMetaData.procedureColumnInOut || colType == DatabaseMetaData.procedureColumnOut) {
+			try {
+			// if the parameter is a cursor type, add its index to the arraylist
+			if ((targetSqlType == 1111) && (type_Name.equals("REF CURSOR"))) {
+			targetSqlType = -10;
+			paramIndices.add(new Integer(paramIndex));
+			}
+			cstmt.registerOutParameter(paramIndex, targetSqlType);
+			} catch(SQLException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+			//throw e;
+			}
+			}
+			
+			// check if the parameter is RETURN type (i.e. it is a function)
+			if (colType == DatabaseMetaData.procedureColumnReturn) {
+			try {
+			// if the parameter is a cursor type, add its index to the arraylist
+			if ((targetSqlType == 1111) && (type_Name.equals("REF CURSOR"))) {
+			targetSqlType = -10;
+			paramIndices.add(new Integer(paramIndex));
+			}
+			cstmt.registerOutParameter(paramIndex, targetSqlType);
+			} catch(SQLException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+			//throw e;
+			}
+			}
+		
+		// add to vector
+		v.add(parm);
+		}
+		
+		rs.close();
+		
+		// now copy Vector to array
+		if (v.size() > 0) {
+		parameters = new Parameter[v.size()];
+		v.copyInto(parameters);
+		}
+		
+		// now set up parameters in the procedure to return
+		newProcedure.setParameters(parameters);
+		newProcedure.setHasReturn(hasReturn);
+		///////////////////////////////////////////////////
+		try {
+		if(hasReturn) {
+			boolean resultsAvailable = cstmt.execute();
+			int count = -1;
+			int numResults = paramIndices.size();
+			
+			Iterator paramIdxIter = paramIndices.iterator();
+			
+			// iterate through the resultsets returned, whose indices are stored in the arraylist
+			while (paramIdxIter.hasNext()) {
+			ArrayList resultArray = new ArrayList();    // arraylist to hold the objects of ResultSetColumn
+			count += 1;
+			// get the index (from the arraylist) of the parameter which is a resultset
+			int index = ((Integer)paramIdxIter.next()).intValue();
+			ResultSet paramRS ;
+			ResultSetMetaData rsmd;
+			// if the resultset returns nothing, set the metadata object to null
+			try {
+			paramRS = (ResultSet)cstmt.getObject(index);
+			rsmd = paramRS.getMetaData();
+			} catch(SQLException e) {
+			rsmd = null;
+			}
+			
+			int rsmdColCount=0;
+			if (rsmd != null) {
+			rsmdColCount = rsmd.getColumnCount();
+			}
+			// scroll through the resultset column information
+			for (int i = 1; i <= rsmdColCount; i++) {
+			ResultSetColumn currCol = new ResultSetColumn();
+			currCol.setOrdinalPosition(i);
+			currCol.setName(rsmd.getColumnName(i));
+			currCol.setLabel(rsmd.getColumnLabel(i));
+			currCol.setSqlType(getSQLTypeDescription(rsmd.getColumnType(i)));
+			currCol.setJavaType((String)SQLTOJAVATYPES.get(getSQLTypeDescription(rsmd.getColumnType(i))));
+			
+			if (rsmd.isNullable(i) == DatabaseMetaData.columnNullable) {
+			currCol.setIsNullable(true);
+			} else {
+			currCol.setIsNullable(false);
+			}
+			// add ResultSetColumn object to the arraylist
+			boolean addToArray = resultArray.add(currCol);
+			}
+			
+			// add the arraylist having ResultSetColumn objects to the ResultSetColumns object
+			// now add this ResultSetColumns object to the arraylist object (result)
+			if(resultArray.size() > 0){
+			ResultSetColumns rsColbj = new ResultSetColumns();
+			rsColbj.setColumns(resultArray);
+			rsColbj.setName(pname + "_" + count);
+			result.add(rsColbj);
+			}
+			}
+		}
+		} catch (SQLException e) {
+		// resultset column metadata not supported
+		System.out.println("\nException occurred: " + e.getClass().getName()+ ", "+ e.getMessage());
+		e.printStackTrace();
+		errMsg = e.getLocalizedMessage();
+		//throw e;
+		}
+		catch (NullPointerException npe) {
+		System.out.println("\nException occurred: " + npe.getClass().getName()+ ", " + npe.getMessage());
+		npe.printStackTrace();
+		errMsg = npe.getLocalizedMessage();
+		//throw npe;
+		}
+		catch (Exception e) {
+		// resultset column metadata not supported
+		System.out.println("\nException occurred: " + e.getClass().getName()+ ", " + e.getMessage());
+		e.printStackTrace();
+		errMsg = e.getLocalizedMessage();
+		}
+		
+		// add the arraylist object to the Procedure object
+		newProcedure.setResultSetColumns(result);
+		
+
+		
+		
+		///////////////////////////////////////////////////
+		return newProcedure;
+		} catch (Exception e) {
+		e.printStackTrace();
+		throw e;
+		}
+	}
     
     /**
      * Gets the table metadata (columns).
@@ -1696,115 +1885,43 @@ public class DBMetaData {
         return cols;
     }
     
-    public Procedure getProcResultSetColumns(String pcatalog,
-            String pschema,
-            String pname,
-            String columnName)
+    
+    
+    public void getProcResultSetColumns(CallableStatement cstmt, Procedure proc)
             throws SQLException, NullPointerException {
-        
-        String errMsg = "";
-        String cstmtString = "";
-        int colCount = 0;
-        boolean isFunction = false;
-        boolean hasParameters = true;
-        // indicates if the procedure is within a package or standalone
-        boolean isPackaged = true;
-        
-        Procedure procResult = new Procedure(pname, pcatalog, pschema, new String("PROCEDURE"));
-        ResultSetColumn resultCol = new ResultSetColumn();
-        ArrayList paramIndices = new ArrayList();   // arraylist to hold the indices of the paramters that return resultsets
-        ArrayList result = new ArrayList();     // arraylist to hold ResultSetColumns objects
-        
-        // check if the procedure is within a package or not
-        if(pcatalog.trim().equalsIgnoreCase("") || pcatalog == null) {
-            isPackaged = false;
-        }
-        try{
-            DatabaseMetaData dbmeta = dbconn.getMetaData();
-            ResultSet rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
-            
-            // loop to identify if the procedure is actually a function
-            while(rs.next()) {
-                if(rs.getShort("COLUMN_TYPE") == DatabaseMetaData.procedureColumnReturn){
-                    // this is a function, so set the flag to true
-                    isFunction = true;
-                }
-            }
-            
-            rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
-            
-            // get the count of the parameters
-            while(rs.next()) {
-                colCount++;
-            }
-            
-            // check if the procedure has parameters or not
-            if(colCount == 0) {
-                hasParameters = false;
-            }
-            
-            // construct the procedure execution command string
-            if (isFunction == true) {
-                cstmtString = "{ ? = call ";
-                // use the package name to qualify the procedure name if the procedure is within a package
-                if(isPackaged) {
-                    cstmtString += pcatalog + "." + pname + "(";
-                } else {
-                    cstmtString += pname + "(";
-                }
-                
-                for ( int j = 1; j < colCount; j++) {
-                    cstmtString += "?,";
-                }
-                
-                // trim the last comma only if the procedure has any parameters
-                if(hasParameters) {
-                    cstmtString = cstmtString.substring(0, cstmtString.length()-1);
-                }
-                cstmtString += ") }";
-            } else {
-                cstmtString = "call ";
-                // use the package name to qualify the procedure name if the procedure is within a package
-                if(isPackaged) {
-                    cstmtString += pcatalog + "." + pname + "(";
-                } else {
-                    cstmtString += pname + "(";
-                }
-                
-                for ( int j = 0; j < colCount; j++) {
-                    cstmtString += "?,";
-                }
-                
-                // trim the last comma only if the procedure has any parameters
-                if(hasParameters) {
-                    cstmtString = cstmtString.substring(0, cstmtString.length()-1);
-                }
-                cstmtString += ")";
-            }
-            
-            CallableStatement cstmt = dbconn.prepareCall(cstmtString);
-            
-            rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
+    	    String errMsg = "";
+	        int colCount = 0;
+	        boolean isFunction = false;
+			boolean hasReturn = false;
+	        boolean hasParameters = true;
+	        // indicates if the procedure is within a package or standalone
+	        boolean isPackaged = true;
+	        cstmt = dbconn.prepareCall(sqlText);
+	        ArrayList paramIndices = new ArrayList();
+	        ArrayList result = new ArrayList();
             int paramIndex=0;
-            
+            try {
+            Parameter[] parameters = proc.getParameters();
+            colCount = proc.getNumParameters();
             // loop through the list of parameters and register them
+            if(colCount > 0) {
             for (int j = 0; j < colCount; j++) {
-                rs.next();
-                paramIndex++;
-                String parameterName = rs.getString("COLUMN_NAME");
-                int targetSqlType = rs.getInt("DATA_TYPE");
-                int colType = rs.getShort("COLUMN_TYPE");
-                String type_Name = rs.getString("TYPE_NAME");
-                cstmt.setNull(paramIndex, targetSqlType);
+            	paramIndex++;
+            	Parameter param = parameters[j];
+                String parameterName = param.getName();
+                String sqlType = param.getSqlType();
+                int sqlTypeCode = getSQLTypeCode(sqlType);
+                String colType = param.getParamType();
+                cstmt.setNull(paramIndex, sqlTypeCode);
                 
-                if (colType == DatabaseMetaData.procedureColumnInOut || colType == DatabaseMetaData.procedureColumnOut) {
+                if (colType.equalsIgnoreCase("INOUT") || colType.equalsIgnoreCase("OUT")) {
                     try {
                         // if the parameter is a cursor type, add its index to the arraylist
-                        if ((targetSqlType == 1111) && (type_Name.equals("OTHER"))) {
-                            targetSqlType = java.sql.Types.OTHER;
+                        if ((sqlTypeCode == 1111) && (colType.equals("OTHER"))) {
+                            sqlTypeCode = java.sql.Types.OTHER;
                             paramIndices.add(new Integer(paramIndex));
                         }
-                        cstmt.registerOutParameter(paramIndex, targetSqlType);
+                        cstmt.registerOutParameter(paramIndex, sqlTypeCode);
                     } catch(SQLException e) {
                         System.out.println(e.getMessage());
                         e.printStackTrace();
@@ -1813,14 +1930,16 @@ public class DBMetaData {
                 }
                 
                 // check if the parameter is RETURN type (i.e. it is a function)
-                if (colType == DatabaseMetaData.procedureColumnReturn) {
+                if (colType == "RETURN") {
                     try {
+
                         // if the parameter is a cursor type, add its index to the arraylist
-                        if ((targetSqlType == 1111) && (type_Name.equals("OTHER"))) {
-                            targetSqlType = java.sql.Types.OTHER;
+                        if ((sqlTypeCode == 1111) && (colType.equals("OTHER"))) {
+                            sqlTypeCode = java.sql.Types.OTHER;
                             paramIndices.add(new Integer(paramIndex));
                         }
-                        cstmt.registerOutParameter(paramIndex, targetSqlType);
+                        hasReturn = true;
+						cstmt.registerOutParameter(paramIndex, sqlTypeCode);
                     } catch(SQLException e) {
                         System.out.println(e.getMessage());
                         e.printStackTrace();
@@ -1828,9 +1947,11 @@ public class DBMetaData {
                     }
                 }
             }
-            
+            }
             // execute the stored procedure
+			if(hasReturn) {
             boolean resultsAvailable = cstmt.execute();
+			
             int count = -1;
             int numResults = paramIndices.size();
             
@@ -1879,10 +2000,11 @@ public class DBMetaData {
                 if(resultArray.size() > 0){
                     ResultSetColumns rsColbj = new ResultSetColumns();
                     rsColbj.setColumns(resultArray);
-                    rsColbj.setName(pname + "_" + count);
+                    rsColbj.setName("proc_" + count);
                     result.add(rsColbj);
                 }
             }
+		   }
         } catch (SQLException e) {
             // resultset column metadata not supported
             System.out.println("\nException occurred: " + e.getClass().getName()+ ", "+ e.getMessage());
@@ -1902,8 +2024,8 @@ public class DBMetaData {
         }
         
         // add the arraylist object to the Procedure object
-        procResult.setResultSetColumns(result);
-        return procResult;
+        proc.setResultSetColumns(result);
+        
     }
     
     
@@ -2086,4 +2208,194 @@ public class DBMetaData {
     public String getSQLText(){
         return this.sqlText;
     }
+    
+    
+	
+	
+	public Procedure getProcResultSetColumns(String pcatalog,
+            String pschema,
+            String pname,
+            String columnName,
+            Procedure procResult)
+		throws SQLException, NullPointerException {
+		
+		String errMsg = "";
+		int colCount = 0;
+		boolean isFunction = false;
+		boolean hasParameters = true;
+		// indicates if the procedure is within a package or standalone
+		boolean isPackaged = true;
+		
+		//Procedure procResult = new Procedure(pname, pcatalog, pschema, new String("PROCEDURE"));
+		ResultSetColumn resultCol = new ResultSetColumn();
+		ArrayList paramIndices = new ArrayList();   // arraylist to hold the indices of the paramters that return resultsets
+		ArrayList result = new ArrayList();     // arraylist to hold ResultSetColumns objects
+		
+		// check if the procedure is within a package or not
+		if(pcatalog.trim().equalsIgnoreCase("") || pcatalog == null) {
+		isPackaged = false;
+		}
+		try {
+		ResultSet rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
+		
+		// loop to identify if the procedure is actually a function
+		while(rs.next()) {
+		if(rs.getShort("COLUMN_TYPE") == DatabaseMetaData.procedureColumnReturn){
+		// this is a function, so set the flag to true
+		isFunction = true;
+		}
+		}
+		
+		rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
+		
+		// get the count of the parameters
+		while(rs.next()) {
+		colCount++;
+		}
+		
+		// check if the procedure has parameters or not
+		if(colCount == 0) {
+		hasParameters = false;
+		}
+		
+		// construct the procedure execution command string
+		if (isFunction == true) {} else {}
+		
+		CallableStatement cstmt = dbconn.prepareCall(sqlText);
+		
+		rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
+		int paramIndex=0;
+		
+		// loop through the list of parameters and register them
+		for (int j = 0; j < colCount; j++)
+		{
+		rs.next();
+		paramIndex++;
+		String parameterName = rs.getString("COLUMN_NAME");
+		int targetSqlType = rs.getInt("DATA_TYPE");
+		int colType = rs.getShort("COLUMN_TYPE");
+		String type_Name = rs.getString("TYPE_NAME");
+		
+		if ( colType == DatabaseMetaData.procedureColumnIn) {
+		if ((targetSqlType == 1111) && (type_Name.equals("PL/SQL TABLE"))) {
+		targetSqlType = -14;
+		}
+		
+		if ((targetSqlType == 1111) && (type_Name.equals("PL/SQL RECORD"))) {
+		targetSqlType = -14;
+		}
+		cstmt.setNull(paramIndex, targetSqlType);
+		}
+		
+		if (colType == DatabaseMetaData.procedureColumnInOut || colType == DatabaseMetaData.procedureColumnOut) {
+		try {
+		// if the parameter is a cursor type, add its index to the arraylist
+		if ((targetSqlType == 1111) && (type_Name.equals("REF CURSOR"))) {
+		targetSqlType = -10;
+		paramIndices.add(new Integer(paramIndex));
+		}
+		cstmt.registerOutParameter(paramIndex, targetSqlType);
+		} catch(SQLException e) {
+		System.out.println(e.getMessage());
+		e.printStackTrace();
+		throw e;
+		}
+		}
+		
+		// check if the parameter is RETURN type (i.e. it is a function)
+		if (colType == DatabaseMetaData.procedureColumnReturn) {
+		try {
+		// if the parameter is a cursor type, add its index to the arraylist
+		if ((targetSqlType == 1111) && (type_Name.equals("REF CURSOR"))) {
+		targetSqlType = -10;
+		paramIndices.add(new Integer(paramIndex));
+		}
+		cstmt.registerOutParameter(paramIndex, targetSqlType);
+		} catch(SQLException e) {
+		System.out.println(e.getMessage());
+		e.printStackTrace();
+		throw e;
+		}
+		}
+		}
+		
+		// execute the stored procedure
+		boolean resultsAvailable = cstmt.execute();
+		int count = -1;
+		int numResults = paramIndices.size();
+		
+		Iterator paramIdxIter = paramIndices.iterator();
+		
+		// iterate through the resultsets returned, whose indices are stored in the arraylist
+		while (paramIdxIter.hasNext()) {
+		ArrayList resultArray = new ArrayList();    // arraylist to hold the objects of ResultSetColumn
+		count += 1;
+		// get the index (from the arraylist) of the parameter which is a resultset
+		int index = ((Integer)paramIdxIter.next()).intValue();
+		ResultSet paramRS ;
+		ResultSetMetaData rsmd;
+		// if the resultset returns nothing, set the metadata object to null
+		try {
+		paramRS = (ResultSet)cstmt.getObject(index);
+		rsmd = paramRS.getMetaData();
+		} catch(SQLException e) {
+		rsmd = null;
+		}
+		
+		int rsmdColCount=0;
+		if (rsmd != null) {
+		rsmdColCount = rsmd.getColumnCount();
+		}
+		// scroll through the resultset column information
+		for (int i = 1; i <= rsmdColCount; i++) {
+		ResultSetColumn currCol = new ResultSetColumn();
+		currCol.setOrdinalPosition(i);
+		currCol.setName(rsmd.getColumnName(i));
+		currCol.setLabel(rsmd.getColumnLabel(i));
+		currCol.setSqlType(getSQLTypeDescription(rsmd.getColumnType(i)));
+		currCol.setJavaType((String)SQLTOJAVATYPES.get(getSQLTypeDescription(rsmd.getColumnType(i))));
+		
+		if (rsmd.isNullable(i) == DatabaseMetaData.columnNullable) {
+		currCol.setIsNullable(true);
+		} else {
+		currCol.setIsNullable(false);
+		}
+		// add ResultSetColumn object to the arraylist
+		boolean addToArray = resultArray.add(currCol);
+		}
+		
+		// add the arraylist having ResultSetColumn objects to the ResultSetColumns object
+		// now add this ResultSetColumns object to the arraylist object (result)
+		if(resultArray.size() > 0){
+		ResultSetColumns rsColbj = new ResultSetColumns();
+		rsColbj.setColumns(resultArray);
+		rsColbj.setName(pname + "_" + count);
+		result.add(rsColbj);
+		}
+		}
+		} catch (SQLException e) {
+		// resultset column metadata not supported
+		System.out.println("\nException occurred: " + e.getClass().getName()+ ", "+ e.getMessage());
+		e.printStackTrace();
+		errMsg = e.getLocalizedMessage();
+		throw e;
+		}
+		catch (NullPointerException npe) {
+		System.out.println("\nException occurred: " + npe.getClass().getName()+ ", " + npe.getMessage());
+		npe.printStackTrace();
+		errMsg = npe.getLocalizedMessage();
+		throw npe;
+		}
+		catch (Exception e) {
+		// resultset column metadata not supported
+		System.out.println("\nException occurred: " + e.getClass().getName()+ ", " + e.getMessage());
+		e.printStackTrace();
+		errMsg = e.getLocalizedMessage();
+		}
+		
+		// add the arraylist object to the Procedure object
+		procResult.setResultSetColumns(result);
+		return procResult;
+	}
+    
 }

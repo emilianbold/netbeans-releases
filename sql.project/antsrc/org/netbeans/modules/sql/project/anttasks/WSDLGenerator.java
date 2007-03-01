@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -16,7 +35,11 @@ package org.netbeans.modules.sql.project.anttasks;
 import org.netbeans.modules.sql.project.dbmodel.DBMetaData;
 import org.netbeans.modules.sql.project.dbmodel.PrepStmt;
 import org.netbeans.modules.sql.project.dbmodel.ResultSetColumn;
+import org.netbeans.modules.sql.project.dbmodel.ResultSetColumns;
 import org.netbeans.modules.sql.project.dbmodel.Parameter;
+import org.netbeans.modules.sql.project.dbmodel.Procedure;
+
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -24,6 +47,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import java.net.URL;
 import java.net.URI;
@@ -85,6 +109,7 @@ public class WSDLGenerator {
     private DBMetaData dbmeta;
     private String sqlFileName;
     private List sqlFileList = null;
+    private String schema;
     private String wsdlFileLocation;
     private String engineFileName;
     private Document doc;
@@ -92,7 +117,7 @@ public class WSDLGenerator {
     private String wsdlFileName = null;
     private boolean wsdlFileExsits = false;
     private Connection conn;
-
+    private DatabaseConnection dbConn;
     private static final String SELECT_STATEMENT = "SELECT";
     private static final String INSERT_STATEMENT = "INSERT";
     private static final String UPDATE_STATEMENT = "UPDATE";
@@ -373,7 +398,7 @@ public class WSDLGenerator {
                                 if (currResponse == null) {
                                     currResponse = createElement("numRowsEffected", "xsd:int");
                                 }
-                                generateDeleteSchemaElements(currRequest);
+                                generateInsertSchemaElements(currRequest);
                             }else if (STATEMENT_TYPE.equalsIgnoreCase(DDL_STATEMENT_CREATE)) {
                                 currResponse = getElementByName(e, "numRowsEffected");
                                 if (currResponse == null) {
@@ -724,12 +749,21 @@ public class WSDLGenerator {
      */
     private void generateProcSchemaElements(Element requestElement, Element responseElement) {
         try {
-            PrepStmt prep = dbmeta.getPrepStmtMetaData();
+            String catalog = conn.getCatalog();
+            schema= dbConn.getSchema();
+            String procName = getProcName();
+            if (catalog == null) {
+        		catalog = "";
+        	}
+        	Procedure proc = dbmeta.getProcedureMetaData(catalog, schema, procName,"Procedure");
+        	if(proc.getHasReturn()) {
+        		//dbmeta.getProcResultSetColumns(catalog, schema, procName, "Procedure", proc);
+        	}
             if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
-                    if (prep.getNumParameters() > 0) {
-                        addPreparedStmtParametersToElement(prep, sequenceElement);
+                    if (proc.getNumParameters() > 0) {
+                        addProcedureParametersToElement(proc, sequenceElement);
                     } else {
                         //remove elements under the current requestItem.             
                         NodeList list = sequenceElement.getChildNodes();
@@ -747,7 +781,7 @@ public class WSDLGenerator {
             if (responseElement != null) {
                 Element colElem2 = getElementByName(responseElement, "xsd:sequence");
                 if (colElem2 != null) {
-                    addResultSetColumnsToElement(prep, colElem2);
+                    addProcedureResultSetColumnsToElement(proc, colElem2);
                     //colElem2.getParentNode().removeChild(colElem2);
                 }
             }
@@ -795,6 +829,47 @@ public class WSDLGenerator {
         }
     }
 
+/**
+     * Given a xml Element and a Procedure object, adds the resultset columns
+     * and their types as sub elements.
+     * @param proc
+     * @param sequenceElement
+     */
+    private void addProcedureResultSetColumnsToElement(Procedure proc, Element sequenceElement) 
+    throws WSDLException{
+        String colType = null;
+        if (sequenceElement != null) {
+            NodeList list = sequenceElement.getChildNodes();
+            if (list != null) {
+                for (int j = list.getLength() - 1; j >= 0; j--) {
+                    sequenceElement.removeChild(list.item(j));
+                }
+            }
+        }
+        if (proc != null) {
+            ResultSetColumns[] rss = proc.getResultSetColumnsArray();
+            for(int j=0;j<rss.length;j++) {
+            ResultSetColumn rs= rss[j].get(j);
+            if (rs != null) {
+                try {
+                        colType = rs.getJavaType();
+                        Element elem = null;
+                        if (isBuiltInType(colType)) {
+                            elem = createElement(rs.getName(), (String) WSDLGenerator.builtInTypes.get(colType));
+                        } else {
+                            throw new WSDLException(WSDLException.INVALID_WSDL, "Invalid datatype encountered");
+                        }
+                        sequenceElement.appendChild(elem);
+                    } catch (WSDLException e) {
+                        logger.log(Level.SEVERE, e.getLocalizedMessage());
+                        throw new WSDLException(WSDLException.INVALID_WSDL, "Check if the sql entered is valid");
+                    }
+                }
+            }
+        
+        }
+    }
+
     /**
      * Adds prepared statement parameters to the element.
      * @param prep
@@ -819,6 +894,33 @@ public class WSDLGenerator {
         }
     }
 
+    /**
+     * Adds Procedure parameters to the element.
+     * @param prep
+     * @param sequenceElement
+     */
+    private void addProcedureParametersToElement(Procedure prep, Element sequenceElement) {
+        if (prep.getNumParameters() > 0) {
+            if (sequenceElement != null) {
+                NodeList list = sequenceElement.getChildNodes();
+                if (list != null) {
+                    for (int j = list.getLength() - 1; j >= 0; j--) {
+                        sequenceElement.removeChild(list.item(j));
+                    }
+                }
+                Parameter[] params = prep.getParameters();
+                for (int i = 0; i < prep.getNumParameters(); i++) {
+                    Element elem2 = createElement(params[i].getName(), (String) WSDLGenerator.builtInTypes.get(params[i].getJavaType()));
+                    sequenceElement.appendChild(elem2);
+                }
+
+            }
+        }
+    }
+
+    
+    
+    
     /**
      * Helper method to return the Element with the name elementName from a 
      * top level element e. The method recursively looks thru sub elements and 
@@ -954,5 +1056,42 @@ public class WSDLGenerator {
         elem.setAttribute("name", name);
         elem.setAttribute("type", type);
         return elem;
+    }
+    
+    public void setDBConnection(DatabaseConnection con) {
+    	this.dbConn = con;
+    	this.schema=schema;
+    }
+    
+    private String getProcName() {
+    	String proc_name = "";
+    	String schema = "";
+    	final StringTokenizer tok = new StringTokenizer(dbmeta.getSQLText(), " ");
+		
+        while (tok.hasMoreElements()) {
+            String column = (String) tok.nextElement();
+            int cnt = 0;
+            column=column.toLowerCase();
+            if(column.endsWith("call")){
+            	cnt++;
+            	proc_name=(String)tok.nextElement();
+            	if(proc_name.contains(".")){
+            		final StringTokenizer tok1 = new StringTokenizer(proc_name, ".");
+            		schema=tok1.nextToken();
+            		proc_name=tok1.nextToken();
+            	}
+            	if(proc_name.contains("(")){
+            		int i = proc_name.indexOf("(");
+            		proc_name=proc_name.substring(0, i);
+            	}
+            	if(proc_name.contains("}")){
+            		int i = proc_name.indexOf("}");
+            		proc_name=proc_name.substring(0, i);
+            	}
+            }
+            if(cnt>0)
+            	break;
+        }
+        return proc_name;
     }
 }

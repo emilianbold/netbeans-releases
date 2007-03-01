@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * 
  * Copyright 2005 Sun Microsystems, Inc.
  * 
@@ -25,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Arrays;
 import java.io.File;
+import java.io.FileOutputStream;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
@@ -34,9 +54,11 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
-import org.netbeans.modules.jdbcwizard.builder.dbmodel.DatabaseModel;
 import org.netbeans.modules.jdbcwizard.builder.wsdl.GenerateWSDL;
 import org.netbeans.modules.jdbcwizard.builder.xsd.XSDGenerator;
+import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBConnectionDefinition;
+
+
 
 /**
  * @author npedapudi
@@ -54,11 +76,16 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
 
     private static final boolean enableNext = false;
 
-    private static final String JNDI_DEFAULT_NAME = "jdbc/__default";
+    private static final String JNDI_DEFAULT_NAME = "jdbc/__defaultDS";
+
+	private static final String CONNECTION_INFO_FILE = "config\\ConnectionInfo.xml";
 
     /** Creates new form JNDINamePanel */
-    public JNDINamePanel() {
-        this.initComponents();
+    public JNDINamePanel(final String title) {
+        if (title != null && title.trim().length() != 0) {
+            this.setName(title);
+        }
+		this.initComponents();
     }
 
     /**
@@ -84,7 +111,7 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
                         layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(this.jLabel1).add(
                                 this.jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
                                 org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-                                org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addContainerGap(148, Short.MAX_VALUE)));
+                                org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addContainerGap(128, Short.MAX_VALUE)));
     }
 
     /**
@@ -174,14 +201,16 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
                     tsk.setDBTable(selTable);
                     tsk.setDBType(dbType);
                     tsk.setJNDIName(jndiName);
+                    tsk.setDBInfo((DBConnectionDefinition) wd.getProperty(JDBCWizardContext.CONNECTION_INFO));
                     tsk.execute();
+                   
                 } catch (final Exception e) {
 
                 }
             }
         }
     }
-
+	
     /**
      * @param l
      */
