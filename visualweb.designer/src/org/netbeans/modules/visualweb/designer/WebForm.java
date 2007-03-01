@@ -1924,8 +1924,11 @@ public class WebForm implements Designer {
         return htmlDomProvider.isSourceDirty();
     }
 
-    Transferable copyBeans(DesignBean[] beans) {
-        return htmlDomProvider.copyBeans(beans);
+//    Transferable copyBeans(DesignBean[] beans) {
+//        return htmlDomProvider.copyBeans(beans);
+//    }
+    Transferable copyComponents(Element[] componentRootElements) {
+        return htmlDomProvider.copyComponents(componentRootElements);
     }
 
     public HtmlDomProvider.WriteLock writeLock(String message) {
