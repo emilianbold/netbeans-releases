@@ -338,7 +338,9 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         syncOrder.updateTargetReference();
         if (syncOrder.isComponentChanged()) {
             ComponentEvent.EventType changeType = ComponentEvent.EventType.VALUE_CHANGED;
-            fireComponentChangedEvent(new ComponentEvent(targetComponent, changeType));
+            if (! syncOrder.hasWhitespaceChangeOnly()) {
+                fireComponentChangedEvent(new ComponentEvent(targetComponent, changeType));
+            }
             firePropertyChangedEvents(syncOrder, oldElement);
         }
         

@@ -2,9 +2,13 @@ package org.netbeans.modules.xml.wsdl.model.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 import junit.framework.TestCase;
@@ -38,8 +42,11 @@ import org.netbeans.modules.xml.wsdl.model.visitor.FindReferencedVisitor;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xdm.visitor.FlushVisitor;
+import org.netbeans.modules.xml.xdm.visitor.PathFromRootVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -395,4 +402,34 @@ public class SyncUpdateTest extends TestCase {
         um.undo();
         assertEquals("OTA_TravelItinerary2.xsd", xsdImport.getSchemaLocation());
      }
+
+     public void testWsdlSchemaReformat() throws Exception {
+         WSDLModel model = Util.loadWSDLModel("resources/newWSDL1.wsdl");
+         setup(model);
+         List<WSDLSchema> schemas = model.getDefinitions().getTypes().getExtensibilityElements(WSDLSchema.class);
+
+         Util.setDocumentContentTo(model, "resources/newWSDL1_reformat.wsdl");
+         model.sync();
+         
+         for (WSDLSchema schema : schemas) {
+             checkEmbeddedSchema(schema);
+         }
+         listener.assertEventCount(0);
+     }
+     private void checkEmbeddedSchema(WSDLSchema schema) throws Exception {
+         WSDLModel model = schema.getModel();
+         String wsdlText2 = getWSDLText(model);
+         assertTrue(new PathFromRootVisitor().findPath(model.getDocument(), schema.getPeer()).size() == 4);
+         assertSame(schema.getPeer(), schema.getSchemaModel().getSchema().getPeer());
+         
+         int index2 = schema.findPosition();
+         String fragment2 = schema.getContentFragment();
+         assertTrue(wsdlText2.indexOf(fragment2) > 0);
+         assertTrue(wsdlText2.indexOf(fragment2, index2) > 0);
+    }
+    
+    private String getWSDLText(WSDLModel model) throws Exception {
+        javax.swing.text.Document d = model.getBaseDocument();
+        return d.getText(0, d.getLength());
+    }
 }

@@ -32,6 +32,7 @@ import java.util.Map;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 public class SyncUnit {
     private final DocumentComponent target;
@@ -155,5 +156,38 @@ public class SyncUnit {
 
     public void setHasTextContentChanges(boolean val) {
         hasTextContentChanges = val;
+    }
+    
+    public boolean hasWhitespaceChangeOnly() {
+        for (ChangeInfo ci : getChanges()) {
+            if (ci.isDomainElement()) {
+                return false;
+            }
+            Node n = ci.getActualChangedNode();
+            if (n.getNodeType() == Node.TEXT_NODE) {
+                String text = ((Text)n).getNodeValue();
+                if (text != null && text.trim().length() > 0) {
+                    return false;
+                }
+            } else if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
+                String name =  ((Attr) n).getName();
+                Attr removed = getRemovedAttributes().get(name);
+                if (removed == null) {
+                    return false;
+                }
+                Attr added = getAddedAttributes().get(name);
+                if (added == null) {
+                    return false;
+                }
+                if (removed.getValue() == null || 
+                    ! removed.getValue().equals(added.getValue())) {
+                    return false;
+                }
+            } else {
+                // node type must be either element or comment or cdata...
+                return false;
+            }
+        }
+        return true;
     }
 }

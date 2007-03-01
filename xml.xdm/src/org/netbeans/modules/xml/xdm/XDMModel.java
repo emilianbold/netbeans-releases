@@ -190,7 +190,7 @@ public class XDMModel {
                 }
                 List<Difference> diffs = preparation.getDifferences();
                 mergeDiff(diffs);
-                diffs = DiffFinder.filterWhitespace(diffs);
+                //diffs = DiffFinder.filterWhitespace(diffs);
                 fireDiffEvents(diffs);
                 if (getCurrentDocument() != oldDoc) {
                     fireUndoableEditEvent(getCurrentDocument(), oldDoc);
