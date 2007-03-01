@@ -42,7 +42,7 @@ implements Map {
     private Exception e;
     private int howMuchOut;
     private boolean open;
-    private static Logger LOG;
+    static Logger LOG;
     
     public CLIWhatHappensWhenSecondVMExistsTest(String testName) {
         super(testName);
@@ -142,7 +142,16 @@ implements Map {
         int time = 10;
         InputStream is = p.getInputStream();
         while(offset < 4 && time-- > 0) {
-            offset += is.read(arr, offset, arr.length - offset);
+            int l = arr.length - offset;
+            LOG.log(Level.FINEST, "Reading at {0} length {1}", new Object[] { offset, l });
+            int read = is.read(arr, offset, l);
+            LOG.log(Level.FINEST, "Read {0} bytes", read);
+            if (read == -1) {
+                LOG.log(Level.WARNING, "this is not good, why there is no data in the stream?"); // NOI18N
+                Thread.sleep(1000);
+                continue;
+            }
+            offset += read;
         }
         assertEquals("Ofset is 4", 4, offset);
         

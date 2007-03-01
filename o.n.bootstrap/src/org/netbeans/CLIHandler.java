@@ -370,10 +370,14 @@ public abstract class CLIHandler extends Object {
      * @return the result of executing the handlers
      */
     static int finishInitialization (boolean recreate) {
+        OUTPUT.log(Level.FINER, "finishInitialization {0}", recreate);
         List toRun;
         synchronized (CLIHandler.class) {
             toRun = doLater;
             doLater = recreate ? new ArrayList<Execute> () : null;
+            if (OUTPUT.isLoggable(Level.FINER)) {
+                OUTPUT.finer("Notify: " + toRun);
+            }
             if (!recreate) {
                 CLIHandler.class.notifyAll ();
             }
@@ -554,6 +558,10 @@ public abstract class CLIHandler extends Object {
                     public int exec () {
                         return notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
                     }
+                    
+                    public String toString() {
+                        return handlers.toString();
+                    }
                 });
                 
                 enterState(0, block);
@@ -569,6 +577,9 @@ public abstract class CLIHandler extends Object {
                 DataInputStream is = null;
                 try {
                     enterState(21, block);
+                    if (OUTPUT.isLoggable(Level.FINER)) {
+                        OUTPUT.log(Level.FINER, "Reading lock file {0}", lockFile); // NOI18N
+                    }
                     is = new DataInputStream(new FileInputStream(lockFile));
                     port = is.readInt();
                     enterState(22, block);
