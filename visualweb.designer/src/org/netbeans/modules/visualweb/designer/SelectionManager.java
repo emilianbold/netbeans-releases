@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
-import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
 import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Container;
@@ -2061,9 +2060,9 @@ public class SelectionManager {
             //Node[] nodes = new Node[selected.size()];
             List nodes = new ArrayList(selectedComponents.size());
             for (SelectedComponent sc : selectedComponents) {
-                DesignBean component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
-
-                Node n = DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(component);
+//                DesignBean component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
+//                Node n = DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(component);
+                Node n = WebForm.getHtmlDomProviderService().getNodeRepresentation(sc.componentRootElement);
 //                n.setDataObject(dobj);
                 nodes.add(n);
             }

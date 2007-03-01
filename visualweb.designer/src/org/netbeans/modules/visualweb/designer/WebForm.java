@@ -2405,6 +2405,10 @@ public class WebForm implements Designer {
         public Image getIcon(Element componentRootElement) {
             return null;
         }
+
+        public org.openide.nodes.Node getNodeRepresentation(Element componentRootElement) {
+            return null;
+        }
     } // End of DummyHtmlDomProviderService.
     
     
