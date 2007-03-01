@@ -41,6 +41,8 @@ import org.netbeans.spi.viewmodel.TreeModel;
 
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -187,18 +189,17 @@ public class CallStackActionsProvider implements NodeActionsProvider {
                 frameStr.append("." + stack[i].getMethodName() +
                         " line: " + stack[i].getLineNumber("java"));
                 if (i != k - 1) frameStr.append('\n');
-                
-                Clipboard systemClipboard = 
-			Toolkit.getDefaultToolkit().getSystemClipboard();
-		Transferable transferableText =
-			new StringSelection(new String(frameStr));
-                systemClipboard.setContents(
-			transferableText,
-			null);
-            }
+            }    
+            Clipboard systemClipboard = 
+                    Toolkit.getDefaultToolkit().getSystemClipboard();
+            Transferable transferableText =
+                    new StringSelection(new String(frameStr));
+            systemClipboard.setContents(
+                    transferableText,
+                    null);
             
         } catch (AbsentInformationException ex) {
-            //System.out.println(ex);
+            ErrorManager.getDefault().notify(ex);
         }
     }
     
