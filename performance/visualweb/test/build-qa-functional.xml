@@ -75,18 +75,12 @@ Microsystems, Inc. All Rights Reserved.
           <arg value="-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
 	  <classpath path="${java.class.path}"/>
         </java>
-        
-<!--        <jar basedir="${nb_all}/performance/build/test/qa-functional/classes" jarfile="${nb_all}/performance/build/test/qa-functional/performance-tests.jar">
-            <include name="gui/**"/>
-            <include name="footprint/**"/>
-        </jar> -->
-
     </target>
+
     
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
-    
 
     <target name="qa-functional-compiler" depends="build-performance, init, init-cp">
         <ant antfile="${nball.dir}/nbbuild/templates/xtest-qa-functional.xml" target="qa-functional-compiler">
@@ -94,6 +88,7 @@ Microsystems, Inc. All Rights Reserved.
             
         <packageTests/>
     </target>
+
     
     <!-- ================ -->
     <!-- Global Executors -->
@@ -162,8 +157,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="runidetest_scan" depends="copy_unzip_jedit_project, copy_unzip_test_folder_project, init-cp">
         <antcall target="copy_released_ide_cfg_file"/>
         
-        <property name="test.qa-functional.run.cp.extra" value=""/>
-        
         <executeTests pluginName="ide">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
@@ -182,8 +175,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="runidetest_footprint" depends="copy_unzip_jedit_project, prepare_measure_footprint, ide_command_line_suffix, check-appserver, init-cp">
         <antcall target="copy_released_ide_cfg_file"/>
-        
-        <property name="test.qa-functional.run.cp.extra" value=""/>
         
         <!-- Opens project at specified location -->
         <!-- open this project in test run - because not all tests are supposed to have jEdit opened
