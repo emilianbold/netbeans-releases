@@ -113,7 +113,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             case LOCAL_VARIABLE:
             case PARAMETER:
             case EXCEPTION_PARAMETER:
-                return new VariableItem(type, elem.getSimpleName(), substitutionOffset);
+                return new VariableItem(type, elem.getSimpleName().toString(), substitutionOffset);
             case ENUM_CONSTANT:
             case FIELD:
                 return new FieldItem(elem, type, substitutionOffset, isInherited, isDeprecated);
@@ -122,7 +122,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
     
-    public static final JavaCompletionItem createVariableItem(CharSequence varName, int substitutionOffset) {
+    public static final JavaCompletionItem createVariableItem(String varName, int substitutionOffset) {
         return new VariableItem(null, varName, substitutionOffset);
     }
 
@@ -179,7 +179,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final String BOLD = "<b>"; //NOI18N
     public static final String BOLD_END = "</b>"; //NOI18N
 
-    int substitutionOffset;
+    protected int substitutionOffset;
     
     JavaCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
@@ -308,6 +308,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String kwd;
         private int dim;
         private String postfix;
+        private String leftText;
 
         private KeywordItem(String kwd, int dim, String postfix, int substitutionOffset) {
             super(substitutionOffset);
@@ -334,15 +335,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getLeftHtmlText() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(KEYWORD_COLOR);
-            sb.append(BOLD);
-            sb.append(kwd);
-            for(int i = 0; i < dim; i++)
-                sb.append("[]"); //NOI18N
-            sb.append(BOLD_END);
-            sb.append(COLOR_END);
-            return sb.toString();
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(KEYWORD_COLOR);
+                sb.append(BOLD);
+                sb.append(kwd);
+                for(int i = 0; i < dim; i++)
+                    sb.append("[]"); //NOI18N
+                sb.append(BOLD_END);
+                sb.append(COLOR_END);
+                leftText = sb.toString();
+            }
+            return leftText;
         }
         
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
@@ -418,16 +422,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PACKAGE_COLOR = "<font color=#005600>"; //NOI18N
         private static ImageIcon icon;
         
-        private String simpleName;
-        private String qualifiedName;
         private boolean isDeprecated;
+        private String simpleName;
+        private String sortText;
+        private String leftText;
 
         private PackageItem(String pkgFQN, int substitutionOffset, boolean isDeprecated) {
             super(substitutionOffset);
-            this.qualifiedName = pkgFQN;
+            this.isDeprecated = isDeprecated;
             int idx = pkgFQN.lastIndexOf('.');
             this.simpleName = idx < 0 ? pkgFQN : pkgFQN.substring(idx + 1);
-            this.isDeprecated = isDeprecated;
+            this.sortText = this.simpleName + "#" + pkgFQN; //NOI18N
         }
         
         public int getSortPriority() {
@@ -435,7 +440,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            return simpleName + "#" + qualifiedName; //NOI18N
+            return sortText;
         }
         
         public CharSequence getInsertPrefix() {
@@ -448,15 +453,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getLeftHtmlText() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(PACKAGE_COLOR);
-            if (isDeprecated)
-                sb.append(STRIKE);
-            sb.append(simpleName);
-            if (isDeprecated)
-                sb.append(STRIKE_END);
-            sb.append(COLOR_END);
-            return sb.toString();
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(PACKAGE_COLOR);
+                if (isDeprecated)
+                    sb.append(STRIKE);
+                sb.append(simpleName);
+                if (isDeprecated)
+                    sb.append(STRIKE_END);
+                sb.append(COLOR_END);
+                leftText = sb.toString();
+            }
+            return leftText;
         }
         
         public String toString() {
@@ -471,19 +479,26 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
         private static ImageIcon icon;
         
-        protected TypeElement elem;
-        private DeclaredType type;
+        protected ElementHandle<TypeElement> elementHandle;
+        private TypeMirrorHandle<DeclaredType> typeHandle;
         private int dim;
-        private boolean displayPkgName;
         private boolean isDeprecated;
+        private String simpleName;
+        private String typeName;
+        private String enclName;
+        private String sortText;
+        private String leftText;
         
         private ClassItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
             super(substitutionOffset);
-            this.elem = elem;
-            this.type = type;
+            this.elementHandle = ElementHandle.create(elem);
+            this.typeHandle = TypeMirrorHandle.create(type);
             this.dim = dim;
-            this.displayPkgName = displayPkgName;
             this.isDeprecated = isDeprecated;
+            this.simpleName = elem.getSimpleName().toString();
+            this.typeName = Utilities.getTypeName(type, false).toString();
+            this.enclName = displayPkgName ? Utilities.getElementName(elem.getEnclosingElement(), true).toString() : null;
+            this.sortText = this.simpleName  + "#" + elem.getQualifiedName().toString(); //NOI18N            
         }
         
         public int getSortPriority() {
@@ -491,15 +506,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            return elem.getSimpleName() + "#" + elem.getQualifiedName(); //NOI18N
+            return sortText;
         }
         
         public CharSequence getInsertPrefix() {
-            return elem.getSimpleName();
+            return simpleName;
         }
 
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
+            return JavaCompletionProvider.createDocTask(elementHandle);
         }
 
         protected ImageIcon getIcon(){
@@ -508,37 +523,39 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected String getLeftHtmlText() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(getColor());
-            if (isDeprecated)
-                sb.append(STRIKE);
-            sb.append(escape(Utilities.getTypeName(type, false).toString()));
-            for(int i = 0; i < dim; i++)
-                sb.append("[]"); //NOI18N
-            if (isDeprecated)
-                sb.append(STRIKE_END);
-            CharSequence enclName = displayPkgName ? Utilities.getElementName(elem.getEnclosingElement(), true) : null;
-            if (enclName != null && enclName.length() > 0) {
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(getColor());
+                if (isDeprecated)
+                    sb.append(STRIKE);
+                sb.append(escape(typeName));
+                for(int i = 0; i < dim; i++)
+                    sb.append("[]"); //NOI18N
+                if (isDeprecated)
+                    sb.append(STRIKE_END);
+                if (enclName != null && enclName.length() > 0) {
+                    sb.append(COLOR_END);
+                    sb.append(PKG_COLOR);
+                    sb.append(" ("); //NOI18N
+                    sb.append(enclName);
+                    sb.append(")"); //NOI18N
+                }
                 sb.append(COLOR_END);
-                sb.append(PKG_COLOR);
-                sb.append(" ("); //NOI18N
-                sb.append(enclName);
-                sb.append(")"); //NOI18N
+                leftText = sb.toString();
             }
-            sb.append(COLOR_END);
-            return sb.toString();
+            return leftText;
         }
         
         protected String getColor() {
             return CLASS_COLOR;
         }
 
-        protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
-            if (!displayPkgName) {
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+            if (enclName == null) {
                 super.substituteText(c, offset, len, toAdd);
                 return;
             }
-            BaseDocument doc = (BaseDocument)c.getDocument();
+            final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder text = new StringBuilder();
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
@@ -571,110 +588,107 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             }
-            boolean asTemplate = false;
-            StringBuilder sb = new StringBuilder();
-            int cnt = 1;
-            sb.append("${PAR"); //NOI18N
-            sb.append(cnt++);
-            if (type.getKind() != TypeKind.ERROR) {
-                sb.append(" type=\""); //NOI18N
-                sb.append(elem.getQualifiedName());
-            } else {
-                sb.append(" default=\""); //NOI18N
-                sb.append(elem.getQualifiedName());
-            }
-            sb.append("\" editable=false}"); //NOI18N
-            Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
-            if (tas.hasNext()) {
-                sb.append('<'); //NOI18N
-                while (tas.hasNext()) {
-                    TypeMirror ta = tas.next();
-                    sb.append("${PAR"); //NOI18N
-                    sb.append(cnt++);
-                    if (ta.getKind() == TypeKind.TYPEVAR) {
-                        sb.append(" type=\""); //NOI18N
-                        ta = ((TypeVariable)ta).getUpperBound();
-                        sb.append(Utilities.getTypeName(ta, true));
-                        sb.append("\"}"); //NOI18N
-                    } else if (ta.getKind() == TypeKind.WILDCARD) {
-                        sb.append(" type=\""); //NOI18N
-                        TypeMirror bound = ((WildcardType)ta).getExtendsBound();
-                        if (bound == null)
-                            bound = ((WildcardType)ta).getSuperBound();
-                        sb.append(bound != null ? Utilities.getTypeName(bound, true) : "java.lang.Object"); //NOI18N
-                        sb.append("\"}"); //NOI18N
-                        asTemplate = true;
-                    } else if (ta.getKind() == TypeKind.ERROR) {
-                        sb.append(" default=\"\"}"); //NOI18N
-                        asTemplate = true;
-                    } else {
-                        sb.append(" type=\""); //NOI18N
-                        sb.append(Utilities.getTypeName(ta, true));
+            final int finalLen = len;
+            JavaSource js = JavaSource.forDocument(doc);
+            try {
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void cancel() {
+                    }
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(Phase.RESOLVED);
+                        TypeElement elem = elementHandle.resolve(controller);
+                        DeclaredType type = typeHandle.resolve(controller);
+                        boolean asTemplate = false;
+                        StringBuilder sb = new StringBuilder();
+                        int cnt = 1;
+                        sb.append("${PAR"); //NOI18N
+                        sb.append(cnt++);
+                        if (type.getKind() != TypeKind.ERROR) {
+                            sb.append(" type=\""); //NOI18N
+                            sb.append(elem.getQualifiedName());
+                        } else {
+                            sb.append(" default=\""); //NOI18N
+                            sb.append(elem.getQualifiedName());
+                        }
                         sb.append("\" editable=false}"); //NOI18N
-                        asTemplate = true;
-                    }
-                    if (tas.hasNext())
-                        sb.append(", "); //NOI18N
-                }
-                sb.append('>'); //NOI18N
-            }
-            for(int i = 0; i < dim; i++) {
-                sb.append("[${PAR"); //NOI18N
-                sb.append(cnt++);
-                sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N                
-                asTemplate = true;
-            }
-            if (asTemplate) {
-                if (len > 0) {
-                    doc.atomicLock();
-                    try {
-                        doc.remove(offset, len);
-                    } catch (BadLocationException e) {
-                        // Can't update
-                    } finally {
-                        doc.atomicUnlock();
-                    }
-                }
-                CodeTemplateManager ctm = CodeTemplateManager.get(doc);
-                if (ctm != null) {
-                    ctm.createTemporary(sb.append(text).toString()).insert(c);
-                }
-            } else {
-                Position position = null;
-                try {
-                    position = doc.createPosition(offset);
-                    JavaSource js = JavaSource.forDocument(doc);
-                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                        public void cancel() {
+                        Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
+                        if (tas.hasNext()) {
+                            sb.append('<'); //NOI18N
+                            while (tas.hasNext()) {
+                                TypeMirror ta = tas.next();
+                                sb.append("${PAR"); //NOI18N
+                                sb.append(cnt++);
+                                if (ta.getKind() == TypeKind.TYPEVAR) {
+                                    sb.append(" type=\""); //NOI18N
+                                    ta = ((TypeVariable)ta).getUpperBound();
+                                    sb.append(Utilities.getTypeName(ta, true));
+                                    sb.append("\"}"); //NOI18N
+                                } else if (ta.getKind() == TypeKind.WILDCARD) {
+                                    sb.append(" type=\""); //NOI18N
+                                    TypeMirror bound = ((WildcardType)ta).getExtendsBound();
+                                    if (bound == null)
+                                        bound = ((WildcardType)ta).getSuperBound();
+                                    sb.append(bound != null ? Utilities.getTypeName(bound, true) : "java.lang.Object"); //NOI18N
+                                    sb.append("\"}"); //NOI18N
+                                    asTemplate = true;
+                                } else if (ta.getKind() == TypeKind.ERROR) {
+                                    sb.append(" default=\"\"}"); //NOI18N
+                                    asTemplate = true;
+                                } else {
+                                    sb.append(" type=\""); //NOI18N
+                                    sb.append(Utilities.getTypeName(ta, true));
+                                    sb.append("\" editable=false}"); //NOI18N
+                                    asTemplate = true;
+                                }
+                                if (tas.hasNext())
+                                    sb.append(", "); //NOI18N
+                            }
+                            sb.append('>'); //NOI18N
                         }
-                        public void run(WorkingCopy copy) throws IOException {
-                            copy.toPhase(JavaSource.Phase.RESOLVED);
-                            TreePath tp = copy.getTreeUtilities().pathFor(substitutionOffset);
-                            text.insert(0, AutoImport.resolveImport(copy, tp, copy.getTypes().getDeclaredType(elem)));
+                        for(int i = 0; i < dim; i++) {
+                            sb.append("[${PAR"); //NOI18N
+                            sb.append(cnt++);
+                            sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N
+                            asTemplate = true;
                         }
-                    }).commit();
-                } catch (Exception ex) {
-                }
-                // Update the text
-                doc.atomicLock();
-                try {
-                    if (position != null)
-                        offset = position.getOffset();
-                    String textToReplace = doc.getText(offset, len);
-                    if (textToReplace.contentEquals(text)) return;
-                    
-                    doc.remove(offset, len);
-                    doc.insertString(position != null ? position.getOffset() : offset, text.toString(), null);
-                } catch (BadLocationException e) {
-                    // Can't update
-                } finally {
-                    doc.atomicUnlock();
-                }
+                        if (asTemplate) {
+                            if (finalLen > 0) {
+                                doc.atomicLock();
+                                try {
+                                    doc.remove(offset, finalLen);
+                                } catch (BadLocationException e) {
+                                    // Can't update
+                                } finally {
+                                    doc.atomicUnlock();
+                                }
+                            }
+                            CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+                            if (ctm != null)
+                                ctm.createTemporary(sb.append(text).toString()).insert(c);
+                        } else {
+                            // Update the text
+                            doc.atomicLock();
+                            try {
+                                TreePath tp = controller.getTreeUtilities().pathFor(offset);
+                                text.insert(0, AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
+                                String textToReplace = doc.getText(offset, finalLen);
+                                if (textToReplace.contentEquals(text)) return;
+                                doc.remove(offset, finalLen);
+                                doc.insertString(offset, text.toString(), null);
+                            } catch (BadLocationException e) {
+                                // Can't update
+                            } finally {
+                                doc.atomicUnlock();
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException ioe) {                
             }
         }
         
         public String toString() {
-            return elem.getSimpleName().toString();
+            return simpleName;
         }        
     }
     
@@ -731,13 +745,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
     private static class TypeParameterItem extends JavaCompletionItem {
         
         private static final String TYPE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
-        private static ImageIcon icon;
 
-        private TypeParameterElement elem;
+        private String simpleName;
+        private String leftText;
 
         private TypeParameterItem(TypeParameterElement elem, int substitutionOffset) {
             super(substitutionOffset);
-            this.elem = elem;
+            this.simpleName = elem.getSimpleName().toString();
         }
         
         public int getSortPriority() {
@@ -745,23 +759,21 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            return elem.getSimpleName();
+            return simpleName;
         }
         
         public CharSequence getInsertPrefix() {
-            return elem.getSimpleName();
+            return simpleName;
         }
         
         protected String getLeftHtmlText() {
-            return TYPE_PARAMETER_COLOR + elem.getSimpleName() + COLOR_END;
+            if (leftText == null)
+                leftText = TYPE_PARAMETER_COLOR + simpleName + COLOR_END;
+            return leftText;
         }
         
-        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-            super.substituteText(c, offset, len, toAdd);
-        }
-    
         public String toString() {
-            return elem.getSimpleName().toString();
+            return simpleName;
         }        
     }
 
@@ -771,13 +783,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PARAMETER_COLOR = "<font color=#00007c>"; //NOI18N
         private static ImageIcon icon;
 
-        private TypeMirror type;
-        private CharSequence varName;
+        private String varName;
+        private String typeName;
+        private String leftText;
+        private String rightText;
         
-        private VariableItem(TypeMirror type, CharSequence varName, int substitutionOffset) {
+        private VariableItem(TypeMirror type, String varName, int substitutionOffset) {
             super(substitutionOffset);
-            this.type = type;
             this.varName = varName;
+            this.typeName = type != null ? Utilities.getTypeName(type, false).toString() : null;
         }
         
         public int getSortPriority() {
@@ -793,11 +807,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected String getLeftHtmlText() {
-             return PARAMETER_COLOR + BOLD + varName + BOLD_END + COLOR_END;
+            if (leftText == null)
+                leftText = PARAMETER_COLOR + BOLD + varName + BOLD_END + COLOR_END;
+            return leftText;
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(type, false).toString());
+            if (rightText == null)
+                rightText = escape(typeName);
+            return rightText;
         }
         
         protected ImageIcon getIcon(){
@@ -806,7 +824,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public String toString() {
-            return (type != null ? Utilities.getTypeName(type, false) + " " : "") + varName; //NOI18N
+            return (typeName != null ? typeName + " " : "") + varName; //NOI18N
         }
    }
 
@@ -823,17 +841,23 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String FIELD_COLOR = "<font color=#008618>"; //NOI18N
         private static ImageIcon icon[][] = new ImageIcon[2][4];
         
-        private VariableElement elem;
-        private TypeMirror type;
+        private ElementHandle<VariableElement> elementHandle;
         private boolean isInherited;
         private boolean isDeprecated;
+        private String simpleName;
+        private Set<Modifier> modifiers;
+        private String typeName;
+        private String leftText;
+        private String rightText;
         
         private FieldItem(VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated) {
             super(substitutionOffset);
-            this.elem = elem;
-            this.type = type;
+            this.elementHandle = ElementHandle.create(elem);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
+            this.simpleName = elem.getSimpleName().toString();
+            this.modifiers = elem.getModifiers();
+            this.typeName = Utilities.getTypeName(type, false).toString();
         }
         
         public int getSortPriority() {
@@ -841,39 +865,43 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            return elem.getSimpleName();
+            return simpleName;
         }
         
         public CharSequence getInsertPrefix() {
-            return elem.getSimpleName();
+            return simpleName;
         }
 
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
+            return JavaCompletionProvider.createDocTask(elementHandle);
         }
 
         protected String getLeftHtmlText() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(FIELD_COLOR);
-            if (!isInherited)
-                sb.append(BOLD);
-            if (isDeprecated)
-                sb.append(STRIKE);
-            sb.append(elem.getSimpleName());
-            if (isDeprecated)
-                sb.append(STRIKE_END);
-            if (!isInherited)
-                sb.append(BOLD_END);
-            sb.append(COLOR_END);
-            return sb.toString();
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(FIELD_COLOR);
+                if (!isInherited)
+                    sb.append(BOLD);
+                if (isDeprecated)
+                    sb.append(STRIKE);
+                sb.append(simpleName);
+                if (isDeprecated)
+                    sb.append(STRIKE_END);
+                if (!isInherited)
+                    sb.append(BOLD_END);
+                sb.append(COLOR_END);
+                leftText = sb.toString();
+            }
+            return leftText;
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(type, false).toString());
+            if (rightText == null)
+                rightText = escape(typeName);
+            return rightText;
         }
         
         protected ImageIcon getIcon(){
-            Set<Modifier> modifiers = elem.getModifiers();
             int level = getProtectionLevel(modifiers);
             boolean isStatic = modifiers.contains(Modifier.STATIC);
             ImageIcon cachedIcon = icon[isStatic?1:0][level];
@@ -925,13 +953,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            for(Modifier mod : elem.getModifiers()) {
+            for(Modifier mod : modifiers) {
                sb.append(mod.toString());
                sb.append(' ');
             }
-            sb.append(Utilities.getTypeName(type, false));
+            sb.append(typeName);
             sb.append(' ');
-            sb.append(elem.getSimpleName());
+            sb.append(simpleName);
             return sb.toString();
         }
     }
@@ -950,19 +978,37 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         private static ImageIcon icon[][] = new ImageIcon[2][4];
 
-        private ExecutableElement elem;
-        private ExecutableType type;
+        protected ElementHandle<ExecutableElement> elementHandle;
         private boolean isInherited;
         private boolean isDeprecated;
         private boolean inImport;
+        private String simpleName;
+        protected Set<Modifier> modifiers;
+        private List<ParamDesc> params;
+        private String typeName;
+        private boolean isPrimitive;
+        private String sortText;
+        private String leftText;
+        private String rightText;
         
         private MethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport) {
             super(substitutionOffset);
-            this.elem = elem;
-            this.type = type;
+            this.elementHandle = ElementHandle.create(elem);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
             this.inImport = inImport;
+            this.simpleName = elem.getSimpleName().toString();
+            this.modifiers = elem.getModifiers();
+            this.params = new ArrayList<ParamDesc>();
+            Iterator<? extends VariableElement> it = elem.getParameters().iterator();
+            Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
+            while(it.hasNext() && tIt.hasNext()) {
+                TypeMirror tm = tIt.next();
+                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+            }
+            TypeMirror retType = type.getReturnType();
+            this.typeName = Utilities.getTypeName(retType, false).toString();
+            this.isPrimitive = retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID;
         }
         
         public int getSortPriority() {
@@ -970,64 +1016,71 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            StringBuilder sortParams = new StringBuilder();
-            sortParams.append('(');
-            int cnt = 0;
-            for(Iterator<? extends TypeMirror> it = type.getParameterTypes().iterator(); it.hasNext();) {
-                sortParams.append(Utilities.getTypeName(it.next(), false, elem.isVarArgs() && !it.hasNext()));
-                if (it.hasNext()) {
-                    sortParams.append(',');
+            if (sortText == null) {
+                StringBuilder sortParams = new StringBuilder();
+                sortParams.append('(');
+                int cnt = 0;
+                for(Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc param = it.next();
+                    sortParams.append(param.typeName);
+                    if (it.hasNext()) {
+                        sortParams.append(',');
+                    }
+                    cnt++;
                 }
-                cnt++;
+                sortParams.append(')');
+                sortText = simpleName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
             }
-            sortParams.append(')');
-            return elem.getSimpleName() + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
-        }
-        
-        protected String getLeftHtmlText() {
-            StringBuilder lText = new StringBuilder();
-            lText.append(METHOD_COLOR);
-            if (!isInherited)
-                lText.append(BOLD);
-            if (isDeprecated)
-                lText.append(STRIKE);
-            lText.append(elem.getSimpleName());
-            if (isDeprecated)
-                lText.append(STRIKE_END);
-            if (!isInherited)
-                lText.append(BOLD_END);
-            lText.append(COLOR_END);
-            lText.append('(');
-            Iterator<? extends VariableElement> it = elem.getParameters().iterator();
-            Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
-            while(it.hasNext() && tIt.hasNext()) {
-                lText.append(escape(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext()).toString()));
-                lText.append(' ');
-                lText.append(PARAMETER_NAME_COLOR);
-                lText.append(it.next().getSimpleName());
-                lText.append(COLOR_END);
-                if (it.hasNext()) {
-                    lText.append(", "); //NOI18N
-                }
-            }
-            lText.append(')');
-            return lText.toString();
+            return sortText;
         }
         
         public CharSequence getInsertPrefix() {
-            return elem.getSimpleName();
+            return simpleName;
+        }
+        
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder lText = new StringBuilder();
+                lText.append(METHOD_COLOR);
+                if (!isInherited)
+                    lText.append(BOLD);
+                if (isDeprecated)
+                    lText.append(STRIKE);
+                lText.append(simpleName);
+                if (isDeprecated)
+                    lText.append(STRIKE_END);
+                if (!isInherited)
+                    lText.append(BOLD_END);
+                lText.append(COLOR_END);
+                lText.append('(');
+                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc paramDesc = it.next();
+                    lText.append(escape(paramDesc.typeName));
+                    lText.append(' ');
+                    lText.append(PARAMETER_NAME_COLOR);
+                    lText.append(paramDesc.name);
+                    lText.append(COLOR_END);
+                    if (it.hasNext()) {
+                        lText.append(", "); //NOI18N
+                    }
+                }
+                lText.append(')');
+                return lText.toString();
+            }
+            return leftText;
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(type.getReturnType(), false).toString());
+            if (rightText == null)
+                rightText = escape(typeName);
+            return rightText;
         }
         
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
+            return JavaCompletionProvider.createDocTask(elementHandle);
         }
 
         protected ImageIcon getIcon() {
-            Set<Modifier> modifiers = elem.getModifiers();
             int level = getProtectionLevel(modifiers);
             boolean isStatic = modifiers.contains(Modifier.STATIC);
             ImageIcon cachedIcon = icon[isStatic?1:0][level];
@@ -1079,8 +1132,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
             if (toAdd == null) {
-                TypeMirror retType = type.getReturnType();
-                if (retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID) {
+                if (isPrimitive) {
                     try {
                         final String[] ret = new String[1];
                         JavaSource js = JavaSource.forDocument(c.getDocument());
@@ -1105,8 +1157,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             }
-            List<? extends VariableElement> params = elem.getParameters();
-            List<? extends TypeMirror> paramTypes = type.getParameterTypes();
             String add = inImport ? ";" : "()"; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
@@ -1160,13 +1210,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     sb.append(getInsertPrefix());
                     sb.append("("); //NOI18N
                     if (text.length() > 1) {
-                        Iterator<? extends VariableElement> it = params.iterator();
-                        Iterator<? extends TypeMirror> tIt = paramTypes.iterator();
-                        while (it.hasNext() && tIt.hasNext()) {
+                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                            ParamDesc paramDesc = it.next();
                             sb.append("${"); //NOI18N
-                            sb.append(it.next().getSimpleName());
+                            sb.append(paramDesc.name);
                             sb.append(" named instanceof="); //NOI18N
-                            sb.append(tIt.next().toString());
+                            sb.append(paramDesc.fullTypeName);
                             sb.append("}"); //NOI18N
                             if (it.hasNext())
                                 sb.append(", "); //NOI18N
@@ -1183,20 +1232,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            for (Modifier mod : elem.getModifiers()) {
+            for (Modifier mod : modifiers) {
                 sb.append(mod.toString());
                 sb.append(' ');
             }
-            sb.append(Utilities.getTypeName(type.getReturnType(), false));
+            sb.append(typeName);
             sb.append(' ');
-            sb.append(elem.getSimpleName());
+            sb.append(simpleName);
             sb.append('(');
-            Iterator<? extends VariableElement> it = elem.getParameters().iterator();
-            Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
-            while(it.hasNext() && tIt.hasNext()) {
-                sb.append(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext()));
+            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                ParamDesc paramDesc = it.next();
+                sb.append(paramDesc.typeName);
                 sb.append(' ');
-                sb.append(it.next().getSimpleName());
+                sb.append(paramDesc.name);
                 if (it.hasNext()) {
                     sb.append(", "); //NOI18N
                 }
@@ -1204,8 +1252,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sb.append(')');
             return sb.toString();
         }
-   }
-    
+    }    
 
     private static class OverrideMethodItem extends MethodItem {
         
@@ -1214,16 +1261,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         private static ImageIcon implementBadge = new ImageIcon(org.openide.util.Utilities.loadImage(IMPL_BADGE_PATH));
         private static ImageIcon overrideBadge = new ImageIcon(org.openide.util.Utilities.loadImage(OVRD_BADGE_PATH));
-        
-        private ExecutableElement elem;
-        private ElementHandle<ExecutableElement> elemHandle;
-        private boolean implement;
         private static ImageIcon merged_icon[][] = new ImageIcon[2][4];
+        
+        private boolean implement;
+        private String leftText;
         
         private OverrideMethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
             super(elem, type, substitutionOffset, false, false, false);
-            this.elem = elem;
-            this.elemHandle = ElementHandle.create(elem);
             this.implement = implement;
         }
         
@@ -1232,21 +1276,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getLeftHtmlText() {
-            String result = super.getLeftHtmlText();
-
-            return result + (implement ? " - implement" : " - override");
+            if (leftText == null)
+                leftText = super.getLeftHtmlText() + (implement ? " - implement" : " - override");
+            return leftText;
         }
         
         @Override
         protected ImageIcon getIcon() {
-            Set<Modifier> modifiers = elem.getModifiers();
             int level = getProtectionLevel(modifiers);
-            
             ImageIcon merged = merged_icon[implement? 0 : 1][level];
             if ( merged != null ) {
                 return merged;
             }
-            
             ImageIcon superIcon = super.getIcon();                        
             merged = new ImageIcon( org.openide.util.Utilities.mergeImages(
                 superIcon.getImage(), 
@@ -1255,22 +1296,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 16 - 8) );
             
             merged_icon[implement? 0 : 1][level] = merged;
-            
             return merged;
         }
 
-                
-        public void defaultAction(JTextComponent component) {
-            Completion.get().hideDocumentation();
-            Completion.get().hideCompletion();
-            substituteText(component, substitutionOffset, component.getSelectionEnd() - substitutionOffset);
-        }
         
-        public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
-        }
-
-        protected void substituteText(final JTextComponent c, final int offset, final int len) {
+        protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
             BaseDocument doc = (BaseDocument)c.getDocument();
             if (len > 0) {
                 doc.atomicLock();
@@ -1283,13 +1313,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             try {
-                JavaSource js = JavaSource.forDocument(c.getDocument());
+                JavaSource js = JavaSource.forDocument(doc);
                 js.runModificationTask(new CancellableTask<WorkingCopy>() {
                     public void cancel() {
                     }
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(Phase.ELEMENTS_RESOLVED);
-                        ExecutableElement ee = elemHandle.resolve(copy);                        
+                        ExecutableElement ee = elementHandle.resolve(copy);                        
                         if (ee == null)
                             return;
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
@@ -1317,7 +1347,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         public String toString() {
             StringBuilder sb = new StringBuilder();
-
             sb.append(super.toString());
             sb.append(" - ");
             sb.append(implement ? "implement" : "override");
@@ -1339,14 +1368,29 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         private static ImageIcon icon[] = new ImageIcon[4];
 
-        private ExecutableElement elem;
-        private ExecutableType type;
+        private ElementHandle<ExecutableElement> elementHandle;
         private boolean isDeprecated;
+        private String simpleName;
+        protected Set<Modifier> modifiers;
+        private List<ParamDesc> params;
+        private boolean isAbstract;
+        private String sortText;
+        private String leftText;
         
         private ConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated) {
             super(substitutionOffset);
-            this.elem = elem;
-            this.type = type;
+            this.elementHandle = ElementHandle.create(elem);
+            this.isDeprecated = isDeprecated;
+            this.simpleName = elem.getEnclosingElement().getSimpleName().toString();
+            this.modifiers = elem.getModifiers();
+            this.params = new ArrayList<ParamDesc>();
+            Iterator<? extends VariableElement> it = elem.getParameters().iterator();
+            Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
+            while(it.hasNext() && tIt.hasNext()) {
+                TypeMirror tm = tIt.next();
+                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+            }
+            this.isAbstract = elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
         }
         
         public int getSortPriority() {
@@ -1354,50 +1398,64 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            StringBuilder sortParams = new StringBuilder();
-            sortParams.append('(');
-            int cnt = 0;
-            for(Iterator<? extends TypeMirror> it = type.getParameterTypes().iterator(); it.hasNext();) {
-                sortParams.append(Utilities.getTypeName(it.next(), false, elem.isVarArgs() && !it.hasNext()));
-                if (it.hasNext()) {
-                    sortParams.append(',');
+            if (sortText == null) {
+                StringBuilder sortParams = new StringBuilder();
+                sortParams.append('(');
+                int cnt = 0;
+                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc paramDesc = it.next();
+                    sortParams.append(paramDesc.typeName);
+                    if (it.hasNext()) {
+                        sortParams.append(',');
+                    }
+                    cnt++;
                 }
-                cnt++;
+                sortParams.append(')');
+                sortText = simpleName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
             }
-            sortParams.append(')');
-            return elem.getEnclosingElement().getSimpleName() + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+            return sortText;
         }
+        
+        public CharSequence getInsertPrefix() {
+            return simpleName;
+        }        
         
         protected String getLeftHtmlText() {
-            StringBuilder lText = new StringBuilder();
-            lText.append(CONSTRUCTOR_COLOR);
-            lText.append(BOLD);
-            if (isDeprecated)
-                lText.append(STRIKE);
-            lText.append(elem.getEnclosingElement().getSimpleName());
-            if (isDeprecated)
-                lText.append(STRIKE_END);
-            lText.append(BOLD_END);
-            lText.append(COLOR_END);
-            lText.append('(');
-            Iterator<? extends VariableElement> it = elem.getParameters().iterator();
-            Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
-            while(it.hasNext() && tIt.hasNext()) {
-                lText.append(escape(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext()).toString()));
-                lText.append(' ');
-                lText.append(PARAMETER_NAME_COLOR);
-                lText.append(it.next().getSimpleName());
+            if (leftText == null) {
+                StringBuilder lText = new StringBuilder();
+                lText.append(CONSTRUCTOR_COLOR);
+                lText.append(BOLD);
+                if (isDeprecated)
+                    lText.append(STRIKE);
+                lText.append(simpleName);
+                if (isDeprecated)
+                    lText.append(STRIKE_END);
+                lText.append(BOLD_END);
                 lText.append(COLOR_END);
-                if (it.hasNext()) {
-                    lText.append(", "); //NOI18N
+                lText.append('(');
+                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc paramDesc = it.next();
+                    lText.append(escape(paramDesc.typeName));
+                    lText.append(' ');
+                    lText.append(PARAMETER_NAME_COLOR);
+                    lText.append(paramDesc.name);
+                    lText.append(COLOR_END);
+                    if (it.hasNext()) {
+                        lText.append(", "); //NOI18N
+                    }
                 }
+                lText.append(')');
+                leftText = lText.toString();
             }
-            lText.append(')');
-            return lText.toString();
+            return leftText;
         }
         
+        public CompletionTask createDocumentationTask() {
+            return JavaCompletionProvider.createDocTask(elementHandle);
+        }
+
         protected ImageIcon getIcon() {
-            int level = getProtectionLevel(elem.getModifiers());
+            int level = getProtectionLevel(modifiers);
             ImageIcon cachedIcon = icon[level];
             if (cachedIcon != null)
                 return cachedIcon;
@@ -1425,20 +1483,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return newIcon;            
         }
         
-        public CharSequence getInsertPrefix() {
-            return elem.getEnclosingElement().getSimpleName();
-        }        
-        
-        public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
-        }
-
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
             offset += len;
             len = 0;
             BaseDocument doc = (BaseDocument)c.getDocument();
             TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
-            boolean isAbstract = elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
             if (sequence != null) {
                 sequence.movePrevious();
                 if (sequence.token().id() == JavaTokenId.THIS || sequence.token().id() == JavaTokenId.SUPER) {
@@ -1513,20 +1562,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }).commit();
                 } catch (Exception ex) {
                 }
-            }
-            List<? extends VariableElement> params = elem.getParameters();
+            }            
             if (!params.isEmpty() && text.length() > 1) {
-                List<? extends TypeMirror> paramTypes = type.getParameterTypes();
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
-                    Iterator<? extends VariableElement> it = params.iterator();
-                    Iterator<? extends TypeMirror> tIt = paramTypes.iterator();
-                    while (it.hasNext() && tIt.hasNext()) {
+                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                        ParamDesc paramDesc = it.next();
                         sb.append("${"); //NOI18N
-                        sb.append(it.next().getSimpleName());
+                        sb.append(paramDesc.name);
                         sb.append(" named instanceof="); //NOI18N
-                        sb.append(tIt.next().toString());
+                        sb.append(paramDesc.fullTypeName);
                         sb.append("}"); //NOI18N
                         if (it.hasNext())
                             sb.append(", "); //NOI18N
@@ -1542,18 +1588,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            for (Modifier mod : elem.getModifiers()) {
+            for (Modifier mod : modifiers) {
                 sb.append(mod.toString());
                 sb.append(' ');
             }
-            sb.append(elem.getEnclosingElement().getSimpleName());
+            sb.append(simpleName);
             sb.append('('); //NOI18N
-            Iterator<? extends VariableElement> it = elem.getParameters().iterator();
-            Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
-            while(it.hasNext() && tIt.hasNext()) {
-                sb.append(Utilities.getTypeName(tIt.next(), false, elem.isVarArgs() && !tIt.hasNext()));
+            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                ParamDesc paramDesc = it.next();
+                sb.append(paramDesc.typeName);
                 sb.append(' ');
-                sb.append(it.next().getSimpleName());
+                sb.append(paramDesc.name);
                 if (it.hasNext()) {
                     sb.append(", "); //NOI18N
                 }
@@ -1569,20 +1614,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
         private static ImageIcon icon;        
         
-        private TypeElement elem;
+        private String simpleName;
+        private boolean isAbstract;
+        private String sortText;
+        private String leftText;
 
         private DefaultConstructorItem(TypeElement elem, int substitutionOffset) {
             super(substitutionOffset);
-            this.elem = elem;
+            this.simpleName = elem.getSimpleName().toString();
+            this.isAbstract = elem.getModifiers().contains(Modifier.ABSTRACT);
         }
 
         public CharSequence getInsertPrefix() {
-            return elem.getSimpleName();
-        }
-
-        protected ImageIcon getIcon() {
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(CONSTRUCTOR));
-            return icon;            
+            return simpleName;
         }
 
         public int getSortPriority() {
@@ -1590,18 +1634,26 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public CharSequence getSortText() {
-            return elem.getSimpleName() + "#0#"; //NOI18N
+            if (sortText == null)
+                sortText = simpleName + "#0#"; //NOI18N
+            return sortText;
         }
         
         protected String getLeftHtmlText() {
-            return CONSTRUCTOR_COLOR + elem.getSimpleName() + "()" + COLOR_END; //NOI18N
+            if (leftText == null)
+                leftText = CONSTRUCTOR_COLOR + simpleName + "()" + COLOR_END; //NOI18N
+            return leftText;
         }        
+
+        protected ImageIcon getIcon() {
+            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(CONSTRUCTOR));
+            return icon;            
+        }
 
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
             offset += len;
             len = 0;
             TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
-            boolean isAbstract = elem.getModifiers().contains(Modifier.ABSTRACT);
             if (sequence != null) {
                 sequence.movePrevious();
                 if (sequence.token().id() == JavaTokenId.THIS || sequence.token().id() == JavaTokenId.SUPER) {
@@ -1680,7 +1732,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public String toString() {
-            return elem.getSimpleName() + "()";
+            return simpleName + "()";
         }        
     }
     
@@ -1694,8 +1746,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return "@" + super.getInsertPrefix(); //NOI18N
         }
 
-        protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
-            BaseDocument doc = (BaseDocument)c.getDocument();
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+            final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder text = new StringBuilder();
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
@@ -1728,35 +1780,32 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             }
-            Position position = null;
+            final int finalLen = len;
+            JavaSource js = JavaSource.forDocument(doc);
             try {
-                position = doc.createPosition(offset);
-                JavaSource js = JavaSource.forDocument(doc);
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
                     public void cancel() {
                     }
-                    public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(JavaSource.Phase.RESOLVED);
-                        TreePath tp = copy.getTreeUtilities().pathFor(substitutionOffset);
-                        text.insert(0, "@" + AutoImport.resolveImport(copy, tp, copy.getTypes().getDeclaredType(elem))); //NOI18N
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(JavaSource.Phase.RESOLVED);
+                        TypeElement elem = elementHandle.resolve(controller);
+                        // Update the text
+                        doc.atomicLock();
+                        try {
+                            TreePath tp = controller.getTreeUtilities().pathFor(offset);
+                            text.insert(0, "@" + AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem))); //NOI18N
+                            String textToReplace = doc.getText(offset, finalLen);
+                            if (textToReplace.contentEquals(text)) return;
+                            doc.remove(offset, finalLen);
+                            doc.insertString(offset, text.toString(), null);
+                        } catch (BadLocationException e) {
+                            // Can't update
+                        } finally {
+                            doc.atomicUnlock();
+                        }
                     }
-                }).commit();
-            } catch (Exception ex) {
-            }
-            // Update the text
-            doc.atomicLock();
-            try {
-                if (position != null)
-                    offset = position.getOffset();
-                String textToReplace = doc.getText(offset, len);
-                if (textToReplace.contentEquals(text)) return;
-                
-                doc.remove(offset, len);
-                doc.insertString(position != null ? position.getOffset() : offset, text.toString(), null);
-            } catch (BadLocationException e) {
-                // Can't update
-            } finally {
-                doc.atomicUnlock();
+                }, true);
+            } catch (IOException ioe) {                
             }
         }
     }
@@ -1767,15 +1816,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String ATTRIBUTE_COLOR = "<font color=#404040>"; //NOI18N
         private static ImageIcon icon;
         
-        private ExecutableElement elem;
-        private ExecutableType type;
+        private ElementHandle<ExecutableElement> elementHandle;
         private boolean isDeprecated;
+        private String simpleName;
+        private String typeName;
+        private String defaultValue;
+        private String leftText;
+        private String rightText;
 
         private AttributeItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated) {
             super(substitutionOffset);
-            this.elem = elem;
-            this.type = type;
+            this.elementHandle = ElementHandle.create(elem);
             this.isDeprecated = isDeprecated;
+            this.simpleName = elem.getSimpleName().toString();
+            this.typeName = Utilities.getTypeName(type.getReturnType(), false).toString();
+            AnnotationValue value = elem.getDefaultValue();
+            this.defaultValue = value != null ? value.toString() : null;
         }
         
         public int getSortPriority() {
@@ -1783,15 +1839,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            return elem.getSimpleName();
+            return simpleName;
         }
         
         public CharSequence getInsertPrefix() {
-            return elem.getSimpleName() + "="; //NOI18N
+            return simpleName + "="; //NOI18N
         }
         
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
+            return JavaCompletionProvider.createDocTask(elementHandle);
         }
 
         protected ImageIcon getIcon(){
@@ -1800,32 +1856,36 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getLeftHtmlText() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(ATTRIBUTE_COLOR);
-            AnnotationValue value = elem.getDefaultValue();
-            if (value == null)
-                sb.append(BOLD);
-            if (isDeprecated)
-                sb.append(STRIKE);
-            sb.append(elem.getSimpleName());
-            if (isDeprecated)
-                sb.append(STRIKE_END);
-            if (value == null) {
-                sb.append(BOLD_END);
-            } else {
-                sb.append(" = "); //NOI18N
-                sb.append(value);
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(ATTRIBUTE_COLOR);
+                if (defaultValue == null)
+                    sb.append(BOLD);
+                if (isDeprecated)
+                    sb.append(STRIKE);
+                sb.append(simpleName);
+                if (isDeprecated)
+                    sb.append(STRIKE_END);
+                if (defaultValue == null) {
+                    sb.append(BOLD_END);
+                } else {
+                    sb.append(" = "); //NOI18N
+                    sb.append(defaultValue);
+                }
+                sb.append(COLOR_END);
+                leftText = sb.toString();
             }
-            sb.append(COLOR_END);
-            return sb.toString();
+            return leftText;
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(type.getReturnType(), false).toString());
+            if (rightText == null)
+                rightText = escape(typeName);
+            return rightText;
         }
         
         public String toString() {
-            return elem.getSimpleName().toString();
+            return simpleName;
         }        
     }
 
@@ -1842,85 +1902,114 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PARAMETER_NAME_COLOR = "<font color=#b200b2>"; //NOI18N
         private static ImageIcon icon[][] = new ImageIcon[2][3];
         
-        private DeclaredType type;
-        private Element memberElem;
-        private TypeMirror memberType;
+        private TypeMirrorHandle<DeclaredType> typeHandle;
+        private ElementHandle<Element> memberElementHandle;
         private boolean isDeprecated;
+        private String typeName;
+        private String memberName;
+        private String memberTypeName;
+        private Set<Modifier> modifiers;
+        private List<ParamDesc> params;
+        private String sortText;
+        private String leftText;
+        private String rightText;
         
         private StaticMemberItem(DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
             super(substitutionOffset);
-            this.type = type;
-            this.memberElem = memberElem;
-            this.memberType = memberType;
+            this.typeHandle = TypeMirrorHandle.create(type);
+            this.memberElementHandle = ElementHandle.create(memberElem);
             this.isDeprecated = isDeprecated;
-        }
-        
-        public int getSortPriority() {
-            return memberElem.getKind().isField() ? 700 : 750;
-        }
-        
-        public CharSequence getSortText() {
-            if (memberElem.getKind().isField())
-                return memberElem.getSimpleName();
-            StringBuilder sortParams = new StringBuilder();
-            sortParams.append('(');
-            int cnt = 0;
-            for(Iterator<? extends TypeMirror> it = ((ExecutableType)memberType).getParameterTypes().iterator(); it.hasNext();) {
-                sortParams.append(Utilities.getTypeName(it.next(), false, ((ExecutableElement)memberElem).isVarArgs() && !it.hasNext()));
-                if (it.hasNext()) {
-                    sortParams.append(',');
-                }
-                cnt++;
-            }
-            sortParams.append(')');
-            return memberElem.getSimpleName() + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
-        }
-        
-        public CharSequence getInsertPrefix() {
-            return type.asElement().getSimpleName() + "." + memberElem.getSimpleName(); //NOI18N
-        }
-
-        public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.create(memberElem));
-        }
-
-        protected String getLeftHtmlText() {
-            StringBuilder lText = new StringBuilder();
-            lText.append(memberElem.getKind().isField() ? FIELD_COLOR : METHOD_COLOR);
-            lText.append(escape(Utilities.getTypeName(type, false).toString()));
-            lText.append('.');
-            if (isDeprecated)
-                lText.append(STRIKE);
-            lText.append(memberElem.getSimpleName());
-            if (isDeprecated)
-                lText.append(STRIKE_END);
-            lText.append(COLOR_END);
+            this.typeName = Utilities.getTypeName(type, false).toString();
+            this.memberName = memberElem.getSimpleName().toString();
+            this.memberTypeName = Utilities.getTypeName(memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType(), false).toString();
+            this.modifiers = memberElem.getModifiers();
             if (!memberElem.getKind().isField()) {
-                lText.append('(');
+                this.params = new ArrayList<ParamDesc>();
                 Iterator<? extends VariableElement> it = ((ExecutableElement)memberElem).getParameters().iterator();
                 Iterator<? extends TypeMirror> tIt = ((ExecutableType)memberType).getParameterTypes().iterator();
                 while(it.hasNext() && tIt.hasNext()) {
-                    lText.append(escape(Utilities.getTypeName(tIt.next(), false, ((ExecutableElement)memberElem).isVarArgs() && !tIt.hasNext()).toString()));
-                    lText.append(' '); //NOI18N
-                    lText.append(PARAMETER_NAME_COLOR);
-                    lText.append(it.next().getSimpleName());
-                    lText.append(COLOR_END);
-                    if (it.hasNext()) {
-                        lText.append(", "); //NOI18N
-                    }
+                    TypeMirror tm = tIt.next();
+                    this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, ((ExecutableElement)memberElem).isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
                 }
-                lText.append(')');
             }
-            return lText.toString();
+        }
+        
+        public int getSortPriority() {
+            return params == null ? 700 : 750;
+        }
+        
+        public CharSequence getSortText() {
+            if (sortText == null) {
+                if (params == null) {
+                    sortText = memberName;
+                } else {
+                    StringBuilder sortParams = new StringBuilder();
+                    sortParams.append('(');
+                    int cnt = 0;
+                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                        ParamDesc paramDesc = it.next();
+                        sortParams.append(paramDesc.typeName);
+                        if (it.hasNext()) {
+                            sortParams.append(',');
+                        }
+                        cnt++;
+                    }
+                    sortParams.append(')');
+                    sortText = memberName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+                }
+            }
+            return sortText;
+        }
+        
+        public CharSequence getInsertPrefix() {
+            return typeName + "." + memberName; //NOI18N
+        }
+
+        public CompletionTask createDocumentationTask() {
+            return JavaCompletionProvider.createDocTask(memberElementHandle);
+        }
+
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder lText = new StringBuilder();
+                lText.append(memberElementHandle.getKind().isField() ? FIELD_COLOR : METHOD_COLOR);
+                lText.append(escape(typeName));
+                lText.append('.');
+                if (isDeprecated)
+                    lText.append(STRIKE);
+                lText.append(memberName);
+                if (isDeprecated)
+                    lText.append(STRIKE_END);
+                lText.append(COLOR_END);
+                if (params == null) {
+                    lText.append('(');
+                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                        ParamDesc paramDesc = it.next();
+                        lText.append(escape(paramDesc.typeName));
+                        lText.append(' '); //NOI18N
+                        lText.append(PARAMETER_NAME_COLOR);
+                        lText.append(paramDesc.name);
+                        lText.append(COLOR_END);
+                        if (it.hasNext()) {
+                            lText.append(", "); //NOI18N
+                        }
+                    }
+                    lText.append(')');
+                }
+                leftText = lText.toString();
+            }
+            return leftText;
         }
         
         protected String getRightHtmlText() {
-            return escape(Utilities.getTypeName(memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType(), false).toString());
+            if (rightText == null)
+                rightText = escape(memberTypeName);
+            return rightText;
         }
         
         protected ImageIcon getIcon(){
-            int level = getProtectionLevel(memberElem.getModifiers());
-            boolean isField = memberElem.getKind().isField();
+            int level = getProtectionLevel(modifiers);
+            boolean isField = memberElementHandle.getKind().isField();
             ImageIcon cachedIcon = icon[isField ? 0 : 1][level - 1];
             if (cachedIcon != null)
                 return cachedIcon;            
@@ -1962,67 +2051,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return newIcon;            
         }
 
-        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            StringBuilder sb = new StringBuilder();
-            int cnt = 1;
-            sb.append("${PAR#"); //NOI18N
-            sb.append(cnt++);
-            sb.append(" type=\""); //NOI18N
-            sb.append(((TypeElement)type.asElement()).getQualifiedName());
-            sb.append("\" editable=false}"); //NOI18N
-            Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
-            if (tas.hasNext()) {
-                sb.append('<'); //NOI18N
-                while (tas.hasNext()) {
-                    TypeMirror ta = tas.next();
-                    sb.append("${PAR#"); //NOI18N
-                    sb.append(cnt++);
-                    if (ta.getKind() == TypeKind.TYPEVAR) {
-                        sb.append(" type=\""); //NOI18N
-                        ta = ((TypeVariable)ta).getUpperBound();
-                        sb.append(Utilities.getTypeName(ta, true));
-                        sb.append("\"}"); //NOI18N
-                    } else if (ta.getKind() == TypeKind.WILDCARD) {
-                        sb.append(" type=\""); //NOI18N
-                        TypeMirror bound = ((WildcardType)ta).getExtendsBound();
-                        if (bound == null)
-                            bound = ((WildcardType)ta).getSuperBound();
-                        sb.append(bound != null ? Utilities.getTypeName(bound, true) : "java.lang.Object"); //NOI18N
-                        sb.append("\"}"); //NOI18N
-                    } else if (ta.getKind() == TypeKind.ERROR) {
-                        sb.append(" default=\"\"}"); //NOI18N
-                    } else {
-                        sb.append(" type=\""); //NOI18N
-                        sb.append(Utilities.getTypeName(ta, true));
-                        sb.append("\" editable=false}"); //NOI18N
-                    }
-                    if (tas.hasNext())
-                        sb.append(", "); //NOI18N
-                }
-                sb.append('>'); //NOI18N
-            }
-            sb.append('.'); //NOI18N
-            sb.append(memberElem.getSimpleName());
-            if (!memberElem.getKind().isField()) {
-                sb.append("("); //NOI18N
-                Iterator<? extends VariableElement> it = ((ExecutableElement)memberElem).getParameters().iterator();
-                Iterator<? extends TypeMirror> tIt = ((ExecutableType)memberType).getParameterTypes().iterator();
-                while (it.hasNext() && tIt.hasNext()) {
-                    sb.append("${"); //NOI18N
-                    sb.append(it.next().getSimpleName());
-                    sb.append(" named instanceof="); //NOI18N
-                    sb.append(tIt.next().toString());
-                    sb.append("}"); //NOI18N
-                    if (it.hasNext())
-                        sb.append(", "); //NOI18N
-                }
-                sb.append(")");//NOI18N
-            }
+        protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+            final BaseDocument doc = (BaseDocument)c.getDocument();
+            final StringBuilder text = new StringBuilder();
             if (toAdd != null && !toAdd.equals("\n")) { //NOI18N
                 TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
                 if (sequence == null) {
-                    sb.append(toAdd);
+                    text.append(toAdd);
                     toAdd = null;
                 }
                 boolean added = false;
@@ -2030,61 +2065,128 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     String tokenText = sequence.token().text().toString();
                     if (tokenText.startsWith(toAdd)) {
                         len = sequence.offset() - offset + toAdd.length();
-                        sb.append(toAdd);
+                        text.append(toAdd);
                         toAdd = null;
                     } else if (toAdd.startsWith(tokenText)) {
                         sequence.moveNext();
                         len = sequence.offset() - offset;
-                        sb.append(toAdd.substring(0, tokenText.length()));
+                        text.append(toAdd.substring(0, tokenText.length()));
                         toAdd = toAdd.substring(tokenText.length());
                         added = true;
                     } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
                         if (!sequence.moveNext()) {
-                            sb.append(toAdd);
+                            text.append(toAdd);
                             toAdd = null;
                         }
                     } else {
                         if (!added)
-                            sb.append(toAdd);
+                            text.append(toAdd);
                         toAdd = null;
                     }
                 }
             }
-            if (len > 0) {
-                doc.atomicLock();
-                try {
-                    doc.remove(offset, len);
-                } catch (BadLocationException e) {
-                    // Can't update
-                } finally {
-                    doc.atomicUnlock();
-                }
-            }
-            CodeTemplateManager ctm = CodeTemplateManager.get(doc);
-            if (ctm != null) {
-                ctm.createTemporary(sb.toString()).insert(c);
+            final int finalLen = len;
+            JavaSource js = JavaSource.forDocument(doc);
+            try {
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void cancel() {
+                    }
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(JavaSource.Phase.RESOLVED);
+                        DeclaredType type = typeHandle.resolve(controller);
+                        StringBuilder sb = new StringBuilder();
+                        int cnt = 1;
+                        sb.append("${PAR#"); //NOI18N
+                        sb.append(cnt++);
+                        sb.append(" type=\""); //NOI18N
+                        sb.append(((TypeElement)type.asElement()).getQualifiedName());
+                        sb.append("\" editable=false}"); //NOI18N
+                        Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
+                        if (tas.hasNext()) {
+                            sb.append('<'); //NOI18N
+                            while (tas.hasNext()) {
+                                TypeMirror ta = tas.next();
+                                sb.append("${PAR#"); //NOI18N
+                                sb.append(cnt++);
+                                if (ta.getKind() == TypeKind.TYPEVAR) {
+                                    sb.append(" type=\""); //NOI18N
+                                    ta = ((TypeVariable)ta).getUpperBound();
+                                    sb.append(Utilities.getTypeName(ta, true));
+                                    sb.append("\"}"); //NOI18N
+                                } else if (ta.getKind() == TypeKind.WILDCARD) {
+                                    sb.append(" type=\""); //NOI18N
+                                    TypeMirror bound = ((WildcardType)ta).getExtendsBound();
+                                    if (bound == null)
+                                        bound = ((WildcardType)ta).getSuperBound();
+                                    sb.append(bound != null ? Utilities.getTypeName(bound, true) : "java.lang.Object"); //NOI18N
+                                    sb.append("\"}"); //NOI18N
+                                } else if (ta.getKind() == TypeKind.ERROR) {
+                                    sb.append(" default=\"\"}"); //NOI18N
+                                } else {
+                                    sb.append(" type=\""); //NOI18N
+                                    sb.append(Utilities.getTypeName(ta, true));
+                                    sb.append("\" editable=false}"); //NOI18N
+                                }
+                                if (tas.hasNext())
+                                    sb.append(", "); //NOI18N
+                            }
+                            sb.append('>'); //NOI18N
+                        }
+                        sb.append('.'); //NOI18N
+                        sb.append(memberName);
+                        if (params != null) {
+                            sb.append("("); //NOI18N
+                            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                                ParamDesc paramDesc = it.next();
+                                sb.append("${"); //NOI18N
+                                sb.append(paramDesc.name);
+                                sb.append(" named instanceof="); //NOI18N
+                                sb.append(paramDesc.fullTypeName);
+                                sb.append("}"); //NOI18N
+                                if (it.hasNext())
+                                    sb.append(", "); //NOI18N
+                            }
+                            sb.append(")");//NOI18N
+                        }
+                        sb.append(text);
+                        if (finalLen > 0) {
+                            doc.atomicLock();
+                            try {
+                                doc.remove(offset, finalLen);
+                            } catch (BadLocationException e) {
+                                // Can't update
+                            } finally {
+                                doc.atomicUnlock();
+                            }
+                        }
+                        CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+                        if (ctm != null) {
+                            ctm.createTemporary(sb.toString()).insert(c);
+                        }
+                    }
+                }, true);
+            } catch (IOException ioe) {                
             }
         }
 
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            for(Modifier mod : memberElem.getModifiers()) {
+            for(Modifier mod : modifiers) {
                sb.append(mod.toString());
                sb.append(' '); // NOI18N
             }
-            sb.append(Utilities.getTypeName(memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType(), false));
+            sb.append(memberTypeName);
             sb.append(' ');
-            sb.append(Utilities.getTypeName(type, false));
+            sb.append(typeName);
             sb.append('.');
-            sb.append(memberElem.getSimpleName());
-            if (!memberElem.getKind().isField()) {
+            sb.append(memberName);
+            if (params != null) {
                 sb.append('('); //NOI18N
-                Iterator<? extends VariableElement> it = ((ExecutableElement)memberElem).getParameters().iterator();
-                Iterator<? extends TypeMirror> tIt = ((ExecutableType)memberType).getParameterTypes().iterator();
-                while(it.hasNext() && tIt.hasNext()) {
-                    sb.append(Utilities.getTypeName(tIt.next(), false, ((ExecutableElement)memberElem).isVarArgs() && !tIt.hasNext()));
+                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc paramDesc = it.next();
+                    sb.append(paramDesc.typeName);
                     sb.append(' ');
-                    sb.append(it.next().getSimpleName());
+                    sb.append(paramDesc.name);
                     if (it.hasNext()) {
                         sb.append(", "); //NOI18N
                     }
@@ -2098,20 +2200,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
     private static class InitializeAllConstructorItem extends JavaCompletionItem {
         
         private static final String CONSTRUCTOR_PUBLIC = "org/netbeans/modules/java/editor/resources/new_constructor_16.png"; //NOI18N
-        private static final String CONSTRUCTOR_PROTECTED = "org/netbeans/modules/editor/resources/completion/constructor_protected_16.png"; //NOI18N
-        private static final String CONSTRUCTOR_PACKAGE = "org/netbeans/modules/editor/resources/completion/constructor_package_private_16.png"; //NOI18N
-        private static final String CONSTRUCTOR_PRIVATE = "org/netbeans/modules/editor/resources/completion/constructor_private_16.png"; //NOI18N
         private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
         private static final String PARAMETER_NAME_COLOR = "<font color=#b200b2>"; //NOI18N
-        private static ImageIcon icon[] = new ImageIcon[4];
+        private static ImageIcon icon;
 
-        private Iterable<? extends VariableElement> fields;
-        private TypeElement parent;
+        private List<ElementHandle<VariableElement>> fieldHandles;
+        private String simpleName;
+        private List<ParamDesc> params;
+        private String sortText;
+        private String leftText;
         
         private InitializeAllConstructorItem(Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
-            this.fields = fields;
-            this.parent = parent;
+            this.fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
+            this.params = new ArrayList<ParamDesc>();
+            for (VariableElement ve : fields) {
+                this.fieldHandles.add(ElementHandle.create(ve));
+                this.params.add(new ParamDesc(null, Utilities.getTypeName(ve.asType(), false).toString(), ve.getSimpleName().toString()));
+            }
+            this.simpleName = parent.getSimpleName().toString();
         }
         
         public int getSortPriority() {
@@ -2119,84 +2226,60 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getSortText() {
-            StringBuilder sortParams = new StringBuilder();
-            sortParams.append('('); //NOI18N
-            int cnt = 0;
-            for(Iterator<? extends VariableElement> it = fields.iterator(); it.hasNext();) {
-                sortParams.append(it.next().asType().toString());
-                if (it.hasNext()) {
-                    sortParams.append(','); //NOI18N
+            if (sortText == null) {
+                StringBuilder sortParams = new StringBuilder();
+                sortParams.append('('); //NOI18N
+                int cnt = 0;
+                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc paramDesc = it.next();
+                    sortParams.append(paramDesc.typeName);
+                    if (it.hasNext()) {
+                        sortParams.append(','); //NOI18N
+                    }
+                    cnt++;
                 }
-                cnt++;
+                sortParams.append(')'); //NOI18N
+                sortText = simpleName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
             }
-            sortParams.append(')'); //NOI18N
-            return parent.getSimpleName() + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+            return sortText;
         }
         
         protected String getLeftHtmlText() {
-            StringBuilder lText = new StringBuilder();
-            lText.append(CONSTRUCTOR_COLOR);
-            lText.append("<b>" + parent.getSimpleName() + "</b>"); //NOI18N
-            lText.append(COLOR_END);
-            lText.append('('); //NOI18N
-            Iterator<? extends VariableElement> it = fields.iterator();
-            while(it.hasNext()) {
-                VariableElement ve = it.next();
-                lText.append(escape(Utilities.getTypeName(ve.asType(), false).toString()));
-                lText.append(' '); //NOI18N
-                lText.append(PARAMETER_NAME_COLOR);
-                lText.append(ve.getSimpleName());
+            if (leftText == null) {
+                StringBuilder lText = new StringBuilder();
+                lText.append(CONSTRUCTOR_COLOR);
+                lText.append(simpleName);
                 lText.append(COLOR_END);
-                if (it.hasNext()) {
-                    lText.append(", "); //NOI18N
+                lText.append('('); //NOI18N
+                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc paramDesc = it.next();
+                    lText.append(escape(paramDesc.typeName));
+                    lText.append(' '); //NOI18N
+                    lText.append(PARAMETER_NAME_COLOR);
+                    lText.append(paramDesc.name);
+                    lText.append(COLOR_END);
+                    if (it.hasNext()) {
+                        lText.append(", "); //NOI18N
+                    }
                 }
+                lText.append(')'); //NOI18N
+                lText.append(" - generate"); //NOI18N
+                leftText = lText.toString();
             }
-            lText.append(')'); //NOI18N
-            lText.append(" - generate"); //NOI18N
-            return lText.toString();
+            return leftText;
         }
         
         protected ImageIcon getIcon() {
-            int level = PUBLIC_LEVEL;
-            ImageIcon cachedIcon = icon[level];
-            if (cachedIcon != null)
-                return cachedIcon;
-            
-            String iconPath = CONSTRUCTOR_PUBLIC;            
-            switch (level) {
-                case PRIVATE_LEVEL:
-                    iconPath = CONSTRUCTOR_PRIVATE;
-                    break;
-
-                case PACKAGE_LEVEL:
-                    iconPath = CONSTRUCTOR_PACKAGE;
-                    break;
-
-                case PROTECTED_LEVEL:
-                    iconPath = CONSTRUCTOR_PROTECTED;
-                    break;
-
-                case PUBLIC_LEVEL:
-                    iconPath = CONSTRUCTOR_PUBLIC;
-                    break;
-            }
-            ImageIcon newIcon = new ImageIcon(org.openide.util.Utilities.loadImage(iconPath));
-            icon[level] = newIcon;
-            return newIcon;            
+            if (icon == null) 
+                icon = new ImageIcon(org.openide.util.Utilities.loadImage(CONSTRUCTOR_PUBLIC));
+            return icon;            
         }
         
         public CharSequence getInsertPrefix() {
-            return parent.getSimpleName();
+            return simpleName;
         }        
         
-        public CompletionTask createDocumentationTask() {
-            return null;//JavaCompletionProvider.createDocTask(elem);
-        }
-
         protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
-            final List<ElementHandle<VariableElement>> fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
-            for (VariableElement variableElement : fields)
-                fieldHandles.add(ElementHandle.create(variableElement));
             BaseDocument doc = (BaseDocument)c.getDocument();
             if (len > 0) {
                 doc.atomicLock();
@@ -2218,10 +2301,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
                             ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
-                            if (fieldHandles != null) {
-                                for (ElementHandle<? extends Element> handle : fieldHandles)
-                                    fieldElements.add((VariableElement)handle.resolve(copy));
-                            }
+                            for (ElementHandle<? extends Element> handle : fieldHandles)
+                                fieldElements.add((VariableElement)handle.resolve(copy));
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
                                 if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset)
@@ -2239,18 +2320,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            for (Modifier mod : EnumSet.of(Modifier.PUBLIC)) {
-                sb.append(mod.toString());
-                sb.append(' '); //NOI18N
-            }
-            sb.append(parent.getSimpleName());
+            sb.append("public "); //NOI18N
+            sb.append(simpleName);
             sb.append('('); //NOI18N
-            Iterator<? extends VariableElement> it = fields.iterator();
-            while(it.hasNext()) {
-                VariableElement ve = it.next();
-                sb.append(Utilities.getTypeName(ve.asType(), false));
+            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                ParamDesc paramDesc = it.next();
+                sb.append(paramDesc.typeName);
                 sb.append(' '); //NOI18N
-                sb.append(ve.getSimpleName());
+                sb.append(paramDesc.name);
                 if (it.hasNext()) {
                     sb.append(", "); //NOI18N
                 }
@@ -2287,5 +2364,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } catch (Exception ex) {}
         }
         return s;
+    }
+    
+    private static class ParamDesc {
+        private String fullTypeName;
+        private String typeName;
+        private String name;
+    
+        public ParamDesc(String fullTypeName, String typeName, String name) {
+            this.fullTypeName = fullTypeName;
+            this.typeName = typeName;
+            this.name = name;
+        }
     }
 }

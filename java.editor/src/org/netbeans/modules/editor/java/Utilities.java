@@ -383,7 +383,7 @@ public class Utilities {
             Element e = t.asElement();
             if (e instanceof TypeElement) {
                 TypeElement te = (TypeElement)e;
-                DEFAULT_VALUE.append(p ? te.getQualifiedName() : te.getSimpleName());
+                DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
                 Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
                 if (it.hasNext()) {
                     DEFAULT_VALUE.append("<"); //NOI18N
@@ -412,8 +412,8 @@ public class Utilities {
         public StringBuilder visitTypeVariable(TypeVariable t, Boolean p) {
             Element e = t.asElement();
             if (e != null) {
-                CharSequence name = e.getSimpleName();
-                if (!CAPTURED_WILDCARD.contentEquals(name))
+                String name = e.getSimpleName().toString();
+                if (!CAPTURED_WILDCARD.equals(name))
                     return DEFAULT_VALUE.append(name);
             }
             DEFAULT_VALUE.append("?"); //NOI18N
@@ -456,7 +456,7 @@ public class Utilities {
             Element e = t.asElement();
             if (e instanceof TypeElement) {
                 TypeElement te = (TypeElement)e;
-                return DEFAULT_VALUE.append(p ? te.getQualifiedName() : te.getSimpleName());
+                return DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
             }
             return DEFAULT_VALUE;
         }
@@ -470,12 +470,12 @@ public class Utilities {
 
         @Override
         public StringBuilder visitPackage(PackageElement e, Boolean p) {
-            return DEFAULT_VALUE.append(p ? e.getQualifiedName() : e.getSimpleName());
+            return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
         }
 
 	@Override
         public StringBuilder visitType(TypeElement e, Boolean p) {
-            return DEFAULT_VALUE.append(p ? e.getQualifiedName() : e.getSimpleName());
+            return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
         }        
     }    
 }

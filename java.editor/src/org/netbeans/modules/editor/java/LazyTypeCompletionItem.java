@@ -56,6 +56,8 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     private String pkgName;
     private JavaCompletionItem delegate = null;
     private LazyTypeCompletionItem nextItem = null;
+    private String sortText;
+    private int prefWidth = -1;
     
     private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource) {
         super(substitutionOffset);
@@ -106,7 +108,9 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     }
 
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        return CompletionUtilities.getPreferredWidth(simpleName + " (" + pkgName + ")", null, g, defaultFont); //NOI18N
+        if (prefWidth < 0)
+            prefWidth = CompletionUtilities.getPreferredWidth(simpleName + " (" + pkgName + ")", null, g, defaultFont); //NOI18N
+        return prefWidth;
     }
 
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
@@ -137,7 +141,9 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     }
 
     public CharSequence getSortText() {
-        return simpleName + "#" + name; //NOI18N
+        if (sortText == null)
+            sortText = simpleName + "#" + name; //NOI18N
+        return sortText;
     }
 
     public CharSequence getInsertPrefix() {
