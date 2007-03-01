@@ -1987,7 +1987,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (isDeprecated)
                     lText.append(STRIKE_END);
                 lText.append(COLOR_END);
-                if (params == null) {
+                if (params != null) {
                     lText.append('(');
                     for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                         ParamDesc paramDesc = it.next();
