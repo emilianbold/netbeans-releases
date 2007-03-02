@@ -54,6 +54,20 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     protected void setRequests () {
+        boolean access = (breakpoint.getBreakpointType () & 
+                          FieldBreakpoint.TYPE_ACCESS) != 0;
+        if (access && !getVirtualMachine().canWatchFieldAccess()) {
+            setValidity(VALIDITY.INVALID,
+                    NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoFieldAccess"));
+            return ;
+        }
+        boolean modification = (breakpoint.getBreakpointType () & 
+                                FieldBreakpoint.TYPE_MODIFICATION) != 0;
+        if (modification && !getVirtualMachine().canWatchFieldModification()) {
+            setValidity(VALIDITY.INVALID,
+                    NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoFieldModification"));
+            return ;
+        }
         setClassRequests (
             new String[] {breakpoint.getClassName ()},
             new String[0],
