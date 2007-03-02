@@ -39,7 +39,7 @@ public class VWPUtilities extends gui.Utilities{
      * open jsp file from project and return WebFormDesigner
      */
     public static gui.window.WebFormDesignerOperator openedWebDesignerForJspFile(String projectName, String jspFileName){
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(projectName),WEB_PAGES + jspFileName + ".jsp");
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(projectName),WEB_PAGES + "|" +jspFileName + ".jsp");
         new OpenAction().performAPI(openFile);
         return new gui.window.WebFormDesignerOperator(jspFileName);
     }
