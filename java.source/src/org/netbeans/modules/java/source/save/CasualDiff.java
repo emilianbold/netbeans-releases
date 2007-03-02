@@ -59,7 +59,7 @@ import org.netbeans.modules.java.source.engine.JavaFormatOptions;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.ListMatcher;
-import org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType;
+import static org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType.*;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
 import static org.netbeans.modules.java.source.save.TreeDiff.*;
@@ -180,41 +180,16 @@ public class CasualDiff {
             posHint = endPos(oldT.pid);
         }
         try {
-            diffPackageStatement(oldT, newT);
-            if (oldT.getImports().isEmpty()) {
-                // imports are not available, compute position from package and
-                // type decl position.
-                // XXX: empty lines!!! (if there is not empty line between
-                // package and type decl. Also, when package and imports are
-                // unavailable
-                if (oldT.pid != null) {
-                    // hint pos is at the end of package statement before
-                    // its semicolon. Move it after the semicolon.
-                    // XXX todo (#pf): ensure there are enough empty lines.
-                    posHint = TokenUtilities.moveFwdToToken(tokenSequence, posHint, JavaTokenId.SEMICOLON);
-                    posHint += JavaTokenId.SEMICOLON.fixedText().length();
-                }
-            } else {
-                posHint = oldT.getImports().head.pos;
-            }
-            printer.reset(0);
+            posHint = diffPackageStatement(oldT, newT);
             PositionEstimator est = EstimatorFactory.imports(oldT.getImports(), newT.getImports(), workingCopy);
             int[] pos = diffListImports(oldT.getImports(), newT.getImports(), posHint, est, Measure.DEFAULT, printer);
-            if (pointer < pos[0])
-                output.writeTo(origText.substring(pointer, pos[0]));
-            if (pos[1] > pointer)
-                pointer = pos[1];
-            if (pos[0] == -1 && pos[1] == -1) {
-                // they match
-                output.writeTo(origText.substring(pointer, pointer = posHint));
-            } else {
-                output.writeTo(printer.toString());
-            }
+            pointer = pos[1];
             if (oldT.getTypeDecls().nonEmpty()) {
                 posHint = getOldPos(oldT.getTypeDecls().head);
             } else {
                 // todo (#pf): this has to be fixed, missing code here.
             }
+            output.writeTo(printer.toString());
             printer.reset(0);
             pos = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), posHint, EstimatorFactory.toplevel(), Measure.DEFAULT, printer);
             if (pointer < pos[0])
@@ -257,7 +232,7 @@ public class CasualDiff {
         }
     }
     
-    private void diffPackageStatement(JCCompilationUnit oldT, JCCompilationUnit newT) throws IOException, BadLocationException {
+    private int diffPackageStatement(JCCompilationUnit oldT, JCCompilationUnit newT) {
         ChangeKind change = getChangeKind(oldT.pid, newT.pid);
         printer.reset(0);
         switch (change) {
@@ -271,13 +246,12 @@ public class CasualDiff {
                 printer.print(newT.pid);
                 printer.print(";");
                 printer.newline();
-                output.writeTo(printer.toString());
                 break;
                 
             // package statement was deleted.    
             case DELETE:
                 TokenUtilities.movePrevious(tokenSequence, oldT.pid.getStartPosition());
-                output.writeTo(origText.substring(pointer, tokenSequence.offset()));
+                copyTo(pointer, tokenSequence.offset());
                 TokenUtilities.moveNext(tokenSequence, endPos(oldT.pid));
                 pointer = tokenSequence.offset() + 1;
                 break;
@@ -288,9 +262,9 @@ public class CasualDiff {
                 pointer = endPos(oldT.pid);
                 printer.print(newT.pid);
                 diffInfo.put(getOldPos(oldT.pid), "Update package statement");
-                output.writeTo(printer.toString());
                 break;
         }
+        return pointer;
     }
     
     protected void diffImport(JCImport oldT, JCImport newT) {
@@ -1903,12 +1877,12 @@ public class CasualDiff {
     private int[] diffListImports(
             List<? extends JCTree> oldList, 
             List<? extends JCTree> newList,
-            int initialPos, 
+            int localPointer, 
             PositionEstimator estimator,
             Measure measure, 
             VeryPretty printer)
     {
-        int[] ret = new int[] { -1, -1 };
+        int[] ret = new int[] { localPointer, localPointer };
         if (oldList == newList) {
             return ret;
         }
@@ -1924,17 +1898,38 @@ public class CasualDiff {
         }
         JCTree lastdel = null; // last deleted element
         ResultItem<JCTree>[] result = matcher.getResult();
-        int posHint = initialPos;
-        estimator.initialize(oldList, workingCopy);
-        
+        int posHint = localPointer;
+
         // if there hasn't been import but at least one is added
         if (oldList.isEmpty() && !newList.isEmpty()) {
+            // such a situation needs special handling. It is difficult to
+            // obtain a correct position.
+            StringBuilder aHead = new StringBuilder(), aTail = new StringBuilder();
+            int pos = estimator.prepare(0, aHead, aTail);
+            copyTo(localPointer, pos, printer);
+            printer.print(aHead.toString());
+            for (JCTree item : newList) {
+                if (BEFORE == estimator.lineInsertType()) printer.newline();
+                printer.printExpr(item);
+                if (AFTER == estimator.lineInsertType()) printer.newline();
+            }
+            // this should be uncommented! -- support of empty line when
+            // first import is added and there is only one empty line between
+            // package statement and type decl 0.
+            // printer.print(aTail.toString());
+            return new int[] { pos, pos };
         }
+
         // if there has been imports which is removed now
         if (newList.isEmpty() && !oldList.isEmpty()) {
-            return estimator.sectionRemovalBounds(null);
+            int[] removalBounds = estimator.sectionRemovalBounds(null);
+            copyTo(localPointer, removalBounds[0]);
+            return removalBounds;
         }
+        // copy to start position
+        copyTo(localPointer, posHint = oldList.get(0).pos);
         int i = 0;
+        // go on, match it!
         for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
             switch (item.operation) {
@@ -1944,9 +1939,9 @@ public class CasualDiff {
                     // first element is inserted to the collection
                     String head = "", tail = "";
                     if (pos < 0 && oldList.isEmpty() && i == 0) {
-                        pos = initialPos;
+                        pos = localPointer;
                         StringBuilder aHead = new StringBuilder(), aTail = new StringBuilder();
-                        pos = estimator.prepare(initialPos, aHead, aTail);
+                        pos = estimator.prepare(localPointer, aHead, aTail);
                         if (j+1 == result.length) {
                             tail = aTail.toString();
                         }
@@ -2022,7 +2017,7 @@ public class CasualDiff {
                     if (ret[0] < 0) {
                         ret[0] = pos[0];
                     }
-                    printer.print(origText.substring(pos[0], pos[1]));
+                    copyTo(pos[0], pos[1], printer);
                     ret[1] = pos[1];
                     ++i;
                     break;

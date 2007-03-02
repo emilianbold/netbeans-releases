@@ -126,20 +126,22 @@ abstract class PositionEstimator {
      */
     static class ImportsEstimator extends PositionEstimator {
         
-        private final TokenSequence<JavaTokenId> seq;
         private final List<JCImport> oldL;
         private final List<JCImport> newL;
         private final WorkingCopy copy;
+        private boolean initialized;
+        private final TokenSequence<JavaTokenId> seq;
         
         public ImportsEstimator(final List<JCImport> oldL, final List<JCImport> newL, final WorkingCopy copy) {
             this.oldL = oldL;
             this.newL = newL;
             this.copy = copy;
             this.seq = copy.getTokenHierarchy().tokenSequence();
+            initialized = false;
         }
 
         @Override()
-        public void initialize(List<? extends JCTree> oldL, WorkingCopy copy) { // parameters should be removed
+        public void initialize(List<? extends JCTree> unusedOldL, WorkingCopy wc) { // parameters should be removed
             int size = oldL.size();
             matrix = new int[size+1][3];
             matrix[size] = new int[] { -1, -1, -1 };
@@ -169,10 +171,12 @@ abstract class PositionEstimator {
                     matrix[i][0] = seq.index();
                 }
             }
+            initialized = true;
         }
 
         @Override()
         public int getInsertPos(int index) {
+            if (!initialized) initialize(null, null);
             int tokenIndex = matrix[index][0];
             // cannot do any decision about the position - probably first
             // element is inserted, no information is available. Call has
@@ -187,9 +191,17 @@ abstract class PositionEstimator {
         // do decision about adding new lines.
         @Override()
         public int prepare(final int startPos, StringBuilder aHead, StringBuilder aTail) {
-            int resultPos = startPos;
-            seq.move(startPos);
-            seq.movePrevious();
+            CompilationUnitTree cut = copy.getCompilationUnit();
+            int resultPos = 0;
+            if (cut.getTypeDecls().isEmpty()) {
+            } else {
+                Tree t = cut.getTypeDecls().get(0);
+                SourcePositions positions = copy.getTrees().getSourcePositions();
+                int typeDeclStart = (int) positions.getStartPosition(cut, t);
+                seq.move(typeDeclStart);
+                moveToSrcRelevant(seq, Direction.BACKWARD);
+                resultPos = seq.offset() + seq.token().length();
+            }
             int counter = 0;
             while (seq.moveNext() && nonRelevant.contains(seq.token().id()) && counter < 3) {
                 if (JavaTokenId.WHITESPACE == seq.token().id()) {
@@ -225,6 +237,7 @@ abstract class PositionEstimator {
         
         @Override()
         public int[] getPositions(int index) {
+            if (!initialized) initialize(null, null);
             int tokenIndex = matrix[index][0];
             if (tokenIndex != -1) {
                 seq.moveIndex(tokenIndex);
@@ -272,8 +285,7 @@ abstract class PositionEstimator {
         /**
          * Used when all elements from the list was removed.
          */
-        public int[] sectionRemovalBounds(StringBuilder replacement)
-        {
+        public int[] sectionRemovalBounds(StringBuilder replacement) {
             // this part should be generalized
             assert !oldL.isEmpty() && newL.isEmpty(); // check the call correctness
             SourcePositions positions = copy.getTrees().getSourcePositions();
