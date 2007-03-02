@@ -1908,8 +1908,11 @@ public class WebForm implements Designer {
 //        return htmlDomProvider.canCreateBean(className, parent, pos);
 //    }
 
-    DesignBean getDefaultParentBean() {
-        return htmlDomProvider.getDefaultParentBean();
+//    DesignBean getDefaultParentBean() {
+//        return htmlDomProvider.getDefaultParentBean();
+//    }
+    Element getDefautlParentComponent() {
+        return htmlDomProvider.getDefaultParentComponent();
     }
 
     JComponent getErrorPanel() {
@@ -2006,15 +2009,15 @@ public class WebForm implements Designer {
         return htmlDomProvider.isFormComponent(componentRootElement);
     }
 
-    int getDropType(DesignBean origDroppee, Element droppeeElement, Transferable t, boolean linkOnly) {
-        return htmlDomProvider.getDropType(origDroppee, droppeeElement, t, linkOnly);
+    int getDropType(/*DesignBean origDroppee,*/Element origDropeeComponentRootElement, Element droppeeElement, Transferable t, boolean linkOnly) {
+        return htmlDomProvider.getDropType(/*origDroppee,*/origDropeeComponentRootElement, droppeeElement, t, linkOnly);
     }
 
 //    int getDropTypeForClassNames(DesignBean origDroppee, Element droppeeElement, String[] classNames, DesignBean[] beans, boolean linkOnly) {
 //        return htmlDomProvider.getDropTypeForClassNames(origDroppee, droppeeElement, classNames, beans, linkOnly);
 //    }
-    int getDropTypeForComponent(DesignBean origDroppee, Element droppeeElement, Element componentRootElement, boolean linkOnly) {
-        return htmlDomProvider.getDropTypeForComponent(origDroppee, droppeeElement, componentRootElement, linkOnly);
+    int getDropTypeForComponent(/*DesignBean origDroppee,*/Element origDropeeComponentRootElement, Element droppeeElement, Element componentRootElement, boolean linkOnly) {
+        return htmlDomProvider.getDropTypeForComponent(/*origDroppee,*/origDropeeComponentRootElement, droppeeElement, componentRootElement, linkOnly);
     }
 
     Element getComponentRootElementEquivalentTo(Element oldComponentRootElement) {
@@ -2439,6 +2442,10 @@ public class WebForm implements Designer {
         }
 
         public MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
+            return null;
+        }
+
+        public HtmlDomProvider.Location computeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid, Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement) {
             return null;
         }
     } // End of DummyHtmlDomProviderService.

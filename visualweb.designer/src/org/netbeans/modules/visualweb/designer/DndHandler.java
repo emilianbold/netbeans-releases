@@ -1172,9 +1172,11 @@ public class DndHandler /*extends TransferHandler*/ {
 //        return webform.importBean(items, origParent, nodePos, facet, createdBeans, location, coordinateTranslator);
 //    }
 
-    private DesignBean getDroppee(CssBox box) {
+//    private DesignBean getDroppee(CssBox box) {
+    private Element getDropeeComponent(CssBox box) {
 //        DesignBean origDroppee = ModelViewMapper.findComponent(box);
-        DesignBean origDroppee = ModelViewMapper.findMarkupDesignBean(box);
+//        DesignBean origDroppee = ModelViewMapper.findMarkupDesignBean(box);
+        Element origDropeeComponentRootElement = ModelViewMapper.findComponentRootElement(box);
 
 //        if (webform.isGridMode() && (origDroppee == null) &&
 //                (webform.getModel().getLiveUnit() != null)) {
@@ -1184,11 +1186,16 @@ public class DndHandler /*extends TransferHandler*/ {
 //                origDroppee = webform.getModel().getLiveUnit().getDesignBean(bean);
 //            }
 //        }
-        if (webform.isGridMode() && (origDroppee == null)) {
-            origDroppee = webform.getDefaultParentBean();
+//        if (webform.isGridMode() && (origDroppee == null)) {
+//            origDroppee = webform.getDefaultParentBean();
+//        }
+        if (webform.isGridMode() && (origDropeeComponentRootElement == null)) {
+//            origDroppee = webform.getDefaultParentBean();
+            origDropeeComponentRootElement = webform.getDefautlParentComponent();
         }
 
-        return origDroppee;
+//        return origDroppee;
+        return origDropeeComponentRootElement;
     }
 
     private Position computeDocumentPosition(Point canvasPos, Position documentPos) {
@@ -1232,142 +1239,146 @@ public class DndHandler /*extends TransferHandler*/ {
 //        CssBox box = computeDroppeeCssBox(canvasPos);
         CssBox box = canvasPos == null ? null : ModelViewMapper.findBox(webform.getPane().getPageBox(), canvasPos.x, canvasPos.y);
         Element droppeeElement = box == null ? null : box.getElement();
-        DesignBean droppeeBean = box == null ? null : getDroppee(box);
+//        DesignBean droppeeBean = box == null ? null : getDroppee(box);
+        Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);
         boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
-        DesignBean defaultParentBean = webform.getDefaultParentBean();
-        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
+//        DesignBean defaultParentBean = webform.getDefaultParentBean();
+        Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
+//        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
+        return WebForm.getHtmlDomProviderService().computeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
+                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
     }
     
-    private static HtmlDomProvider.Location doComputeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset,
-    Dimension dropSize, boolean isGrid, Element droppeeElement, DesignBean droppeeBean, /*WebForm webform*/DesignBean defaultParentBean) {
-        HtmlDomProvider.Location location = new HtmlDomProvider.Location();
-        location.facet = facet;
-        location.coordinates = canvasPos;
-//        location.size = getDropSize();
-        location.size = dropSize;
-
-        DesignBean parent = null;
-        Node under = null;
-        Node before = null;
-
-        Element element = null;
-
-        if (documentPosNode != null) {
-            // XXX TODO: split text nodes!
-            if (documentPosNode instanceof Text) {
-                if (documentPosOffset == 0) {
-                    before = documentPosNode;
-                    under = before.getParentNode();
-                } else {
-                    Text txt = (Text)documentPosNode;
-
-                    if (documentPosOffset < txt.getLength()) {
-                        before = txt.splitText(documentPosOffset);
-                        under = before.getParentNode();
-                    } else {
-                        before = txt.getNextSibling();
-                        under = txt.getParentNode();
-                    }
-                }
-            } else {
-                int offset = documentPosOffset;
-
-                if (offset < documentPosNode.getChildNodes().getLength()) {
-                    under = documentPosNode;
-                    before = under.getChildNodes().item(offset);
-                } else {
-                    // Just append - but we don't have an api for that (can only set "before")
-                    // so create a new blank text node as a hook
-                    // XXX should I really mutate the document here?
-                    // That doesn't sound right...
-                    under = documentPosNode;
-
-                    // XXX Manipulation of the doc may not be done here.
-//                        Text txt = webform.getJspDom().createTextNode(" "); // NOI18N
-                    Text txt = under.getOwnerDocument().createTextNode(" "); // NOI18N
-                    under.appendChild(txt);
-                    before = txt;
-                }
-            }
-
-            if (parent == null) {
-                Node n = under;
-
-//                    while (n instanceof RaveElement) {
-//                        RaveElement xel = (RaveElement)n;
-                while (n instanceof Element) {
-                    Element xel = (Element)n;
-
-//                        if (xel.getDesignBean() != null) {
-//                            DesignBean lbean = (DesignBean)xel.getDesignBean();
-//                    DesignBean lbean = InSyncService.getProvider().getMarkupDesignBeanForElement(xel);
-                    DesignBean lbean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(xel);
-                    if (lbean != null) {
-                        if (lbean.isContainer()) {
-                            parent = lbean;
-
-                            break;
-                        }
-                    }
-
-                    n = n.getParentNode();
-                }
-            }
-
-            //!CQ: facesUnit.setInsertBefore(before);
-            // determine the integer offset of the before node within its parent
-            if ((under != null) && (under.getNodeType() == Node.ELEMENT_NODE)) {
-                location.droppeeElement = (Element)under;
-            }
-        } else if (canvasPos != null) {
-            // What position should we assign here??? For now, nothing.
-            // Let insync pick a position. The exact location in the source
-            // where the tag is inserted isn't very important since we're
-            // absolute positioning anyway.
-            under = null;
-            before = null;
-
-//                CssBox box = webform.getMapper().findBox(canvasPos.x, canvasPos.y);
-//                CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), canvasPos.x, canvasPos.y);
+//    private static HtmlDomProvider.Location doComputeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset,
+//    Dimension dropSize, boolean isGrid, Element droppeeElement, DesignBean droppeeBean, /*WebForm webform*/DesignBean defaultParentBean) {
+//        HtmlDomProvider.Location location = new HtmlDomProvider.Location();
+//        location.facet = facet;
+//        location.coordinates = canvasPos;
+////        location.size = getDropSize();
+//        location.size = dropSize;
 //
-//                // In flow mode, don't do absolute positioning, ever, unless we're in
-//                // a grid positioning area
-//                if (!webform.isGridMode() && ((box == null) || !box.isGrid())) {
-//                    location.coordinates = null;
+//        DesignBean parent = null;
+//        Node under = null;
+//        Node before = null;
+//
+//        Element element = null;
+//
+//        if (documentPosNode != null) {
+//            // XXX TODO: split text nodes!
+//            if (documentPosNode instanceof Text) {
+//                if (documentPosOffset == 0) {
+//                    before = documentPosNode;
+//                    under = before.getParentNode();
+//                } else {
+//                    Text txt = (Text)documentPosNode;
+//
+//                    if (documentPosOffset < txt.getLength()) {
+//                        before = txt.splitText(documentPosOffset);
+//                        under = before.getParentNode();
+//                    } else {
+//                        before = txt.getNextSibling();
+//                        under = txt.getParentNode();
+//                    }
 //                }
+//            } else {
+//                int offset = documentPosOffset;
 //
-//                location.droppeeElement = box.getElement();
-//                parent = getDroppee(box);
-            if (!isGrid) {
-                location.coordinates = null;
-            }
-            location.droppeeElement = droppeeElement;
-            parent = droppeeBean;
-        }
-
-        //            else {
-        //                // No position specified. In this case send just nulls
-        //                // to insync and let insync figure it out. It will insert
-        //                // the component most likely as a child of the form component.
-        //            }
-
-        location.droppee = parent;
-
-        // If default-positioning, try to place the component before the <br/>, if
-        // the the br is the last element under the default parent.
-        if ((under == null) && (before == null)) {
-            if (parent == null) {
-//                parent = webform.getDefaultParentBean();
-                parent = defaultParentBean;
-            }
-            location.pos = getDefaultMarkupPositionUnderParent(parent/*, webform*/);
-        } else {
-            location.pos = new MarkupPosition(under, before);
-        }
-
-        return location;
-        
-    }
+//                if (offset < documentPosNode.getChildNodes().getLength()) {
+//                    under = documentPosNode;
+//                    before = under.getChildNodes().item(offset);
+//                } else {
+//                    // Just append - but we don't have an api for that (can only set "before")
+//                    // so create a new blank text node as a hook
+//                    // XXX should I really mutate the document here?
+//                    // That doesn't sound right...
+//                    under = documentPosNode;
+//
+//                    // XXX Manipulation of the doc may not be done here.
+////                        Text txt = webform.getJspDom().createTextNode(" "); // NOI18N
+//                    Text txt = under.getOwnerDocument().createTextNode(" "); // NOI18N
+//                    under.appendChild(txt);
+//                    before = txt;
+//                }
+//            }
+//
+//            if (parent == null) {
+//                Node n = under;
+//
+////                    while (n instanceof RaveElement) {
+////                        RaveElement xel = (RaveElement)n;
+//                while (n instanceof Element) {
+//                    Element xel = (Element)n;
+//
+////                        if (xel.getDesignBean() != null) {
+////                            DesignBean lbean = (DesignBean)xel.getDesignBean();
+////                    DesignBean lbean = InSyncService.getProvider().getMarkupDesignBeanForElement(xel);
+//                    DesignBean lbean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(xel);
+//                    if (lbean != null) {
+//                        if (lbean.isContainer()) {
+//                            parent = lbean;
+//
+//                            break;
+//                        }
+//                    }
+//
+//                    n = n.getParentNode();
+//                }
+//            }
+//
+//            //!CQ: facesUnit.setInsertBefore(before);
+//            // determine the integer offset of the before node within its parent
+//            if ((under != null) && (under.getNodeType() == Node.ELEMENT_NODE)) {
+//                location.droppeeElement = (Element)under;
+//            }
+//        } else if (canvasPos != null) {
+//            // What position should we assign here??? For now, nothing.
+//            // Let insync pick a position. The exact location in the source
+//            // where the tag is inserted isn't very important since we're
+//            // absolute positioning anyway.
+//            under = null;
+//            before = null;
+//
+////                CssBox box = webform.getMapper().findBox(canvasPos.x, canvasPos.y);
+////                CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), canvasPos.x, canvasPos.y);
+////
+////                // In flow mode, don't do absolute positioning, ever, unless we're in
+////                // a grid positioning area
+////                if (!webform.isGridMode() && ((box == null) || !box.isGrid())) {
+////                    location.coordinates = null;
+////                }
+////
+////                location.droppeeElement = box.getElement();
+////                parent = getDroppee(box);
+//            if (!isGrid) {
+//                location.coordinates = null;
+//            }
+//            location.droppeeElement = droppeeElement;
+//            parent = droppeeBean;
+//        }
+//
+//        //            else {
+//        //                // No position specified. In this case send just nulls
+//        //                // to insync and let insync figure it out. It will insert
+//        //                // the component most likely as a child of the form component.
+//        //            }
+//
+//        location.droppee = parent;
+//
+//        // If default-positioning, try to place the component before the <br/>, if
+//        // the the br is the last element under the default parent.
+//        if ((under == null) && (before == null)) {
+//            if (parent == null) {
+////                parent = webform.getDefaultParentBean();
+//                parent = defaultParentBean;
+//            }
+//            location.pos = getDefaultMarkupPositionUnderParent(parent/*, webform*/);
+//        } else {
+//            location.pos = new MarkupPosition(under, before);
+//        }
+//
+//        return location;
+//        
+//    }
     
 //    private static HtmlDomProvider.Location computeLocationForBean(DesignBean bean, int where, String facet, Point canvasPos, Dimension dropSize, WebForm webform) {
 //        if (bean == null) {
@@ -1715,44 +1726,44 @@ public class DndHandler /*extends TransferHandler*/ {
 //        return location;
 //    }
     
-    private static MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent/*, WebForm webform*/) {
-//        Node under = null;
-//        Node before = null;
-//        if ((parent != null) && parent instanceof MarkupDesignBean) {
-//            under = ((MarkupDesignBean)parent).getElement();
-//        }
-//
-//        if (under == null) {
-////                under = webform.getModel().getFacesUnit().getDefaultParent().getElement();
-//            under = facesModel.getFacesUnit().getDefaultParent().getElement();
-//        }
-//
-//        if (under != null) {
-//            NodeList children = under.getChildNodes();
-//
-//            if (children.getLength() > 0) {
-//                Node last = children.item(children.getLength() - 1);
-//
-//                while (last != null) {
-//                    if ((last.getNodeType() != Node.TEXT_NODE) ||
-//                            !DesignerUtils.onlyWhitespace(last.getNodeValue())) {
-//                        break;
-//                    }
-//
-//                    last = last.getPreviousSibling();
-//                }
-//
-//                if ((last != null) && (last.getNodeType() == Node.ELEMENT_NODE) &&
-//                        last.getNodeName().equals(HtmlTag.BR.name)) {
-//                    before = last;
-//                }
-//            }
-//        }
-//
-//        return new MarkupPosition(under, before);
-//        return webform.getDefaultMarkupPositionUnderParent(parent);
-        return WebForm.getHtmlDomProviderService().getDefaultMarkupPositionUnderParent(parent);
-    }
+//    private static MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent/*, WebForm webform*/) {
+////        Node under = null;
+////        Node before = null;
+////        if ((parent != null) && parent instanceof MarkupDesignBean) {
+////            under = ((MarkupDesignBean)parent).getElement();
+////        }
+////
+////        if (under == null) {
+//////                under = webform.getModel().getFacesUnit().getDefaultParent().getElement();
+////            under = facesModel.getFacesUnit().getDefaultParent().getElement();
+////        }
+////
+////        if (under != null) {
+////            NodeList children = under.getChildNodes();
+////
+////            if (children.getLength() > 0) {
+////                Node last = children.item(children.getLength() - 1);
+////
+////                while (last != null) {
+////                    if ((last.getNodeType() != Node.TEXT_NODE) ||
+////                            !DesignerUtils.onlyWhitespace(last.getNodeValue())) {
+////                        break;
+////                    }
+////
+////                    last = last.getPreviousSibling();
+////                }
+////
+////                if ((last != null) && (last.getNodeType() == Node.ELEMENT_NODE) &&
+////                        last.getNodeName().equals(HtmlTag.BR.name)) {
+////                    before = last;
+////                }
+////            }
+////        }
+////
+////        return new MarkupPosition(under, before);
+////        return webform.getDefaultMarkupPositionUnderParent(parent);
+//        return WebForm.getHtmlDomProviderService().getDefaultMarkupPositionUnderParent(parent);
+//    }
 
     /** Figure out which kind of action we can do for the given
      * transferable over the given droppee.
@@ -3133,7 +3144,8 @@ public class DndHandler /*extends TransferHandler*/ {
         }
         
         CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), p.x, p.y);
-        DesignBean origDroppee = getDroppee(box);
+//        DesignBean origDroppee = getDroppee(box);
+        Element origDropeeComponentRootElement = getDropeeComponent(box);
         Element droppeeElement = box == null ? null : box.getElement();
         
 //        DataFlavor importFlavor = getImportFlavor(t.getTransferDataFlavors());
@@ -3260,7 +3272,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //
 //        return DROP_DENIED;
-        return webform.getDropType(origDroppee, droppeeElement, t, linkOnly);
+        return webform.getDropType(/*origDroppee,*/origDropeeComponentRootElement, droppeeElement, t, linkOnly);
     }
 
 //    // XXX Also in insync/FacesDnDSupport
@@ -3385,10 +3397,11 @@ public class DndHandler /*extends TransferHandler*/ {
         // No... call computePositions and use location.coordinates instead... see @todo above
 //        CssBox box = webform.getMapper().findBox(p.x, p.y);
         CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), p.x, p.y);
-        DesignBean origDroppee = getDroppee(box);
+//        DesignBean origDroppee = getDroppee(box);
+        Element origDropeeComponentRootElement = getDropeeComponent(box);
         Element droppeeElement = box == null ? null : box.getElement();
 //        return webform.getDropTypeForClassNames(origDroppee, droppeeElement, classNames, beans, linkOnly);
-        return webform.getDropTypeForComponent(origDroppee, droppeeElement, componentRootElement, linkOnly);
+        return webform.getDropTypeForComponent(/*origDroppee,*/origDropeeComponentRootElement, droppeeElement, componentRootElement, linkOnly);
     }
     
 //    /**
