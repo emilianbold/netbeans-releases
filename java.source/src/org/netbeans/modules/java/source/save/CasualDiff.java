@@ -180,7 +180,7 @@ public class CasualDiff {
             posHint = endPos(oldT.pid);
         }
         try {
-            posHint = diffPackageStatement(oldT, newT);
+            posHint = diffPackageStatement(oldT, newT, pointer);
             PositionEstimator est = EstimatorFactory.imports(oldT.getImports(), newT.getImports(), workingCopy);
             int[] pos = diffListImports(oldT.getImports(), newT.getImports(), posHint, est, Measure.DEFAULT, printer);
             pointer = pos[1];
@@ -232,9 +232,8 @@ public class CasualDiff {
         }
     }
     
-    private int diffPackageStatement(JCCompilationUnit oldT, JCCompilationUnit newT) {
+    private int diffPackageStatement(JCCompilationUnit oldT, JCCompilationUnit newT, int localPointer) {
         ChangeKind change = getChangeKind(oldT.pid, newT.pid);
-        printer.reset(0);
         switch (change) {
             // packages are the same or not available, i.e. both are null
             case NOCHANGE:
@@ -251,20 +250,22 @@ public class CasualDiff {
             // package statement was deleted.    
             case DELETE:
                 TokenUtilities.movePrevious(tokenSequence, oldT.pid.getStartPosition());
-                copyTo(pointer, tokenSequence.offset());
+                copyTo(localPointer, tokenSequence.offset());
                 TokenUtilities.moveNext(tokenSequence, endPos(oldT.pid));
-                pointer = tokenSequence.offset() + 1;
+                localPointer = tokenSequence.offset() + 1;
+                // todo (#pf): check the declaration:
+                // package org.netbeans /* aa */;
                 break;
     
             // package statement was modified.
             case MODIFY:
-                copyTo(pointer, getOldPos(oldT.pid));
-                pointer = endPos(oldT.pid);
+                copyTo(localPointer, getOldPos(oldT.pid));
+                localPointer = endPos(oldT.pid);
                 printer.print(newT.pid);
                 diffInfo.put(getOldPos(oldT.pid), "Update package statement");
                 break;
         }
-        return pointer;
+        return localPointer;
     }
     
     protected void diffImport(JCImport oldT, JCImport newT) {
