@@ -48,10 +48,8 @@ public class LogTestCase extends NbTestCase {
      */
     public static boolean CREATE_GOLDENFILES=false;
     
-    private FileObject projectDirFo;
-    
-    
-    private boolean backupFiles = true;
+    protected FileObject projectDirFo;
+        
     private static boolean initProjects = true;
     
     
@@ -142,6 +140,20 @@ public class LogTestCase extends NbTestCase {
         log.println(o);
     }
     
+    public void log(File file) {
+        try {
+            BufferedReader br=new BufferedReader(new FileReader(file));
+            String line;
+            while ((line=br.readLine()) != null) {
+                log(line);
+            }
+            br.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    
     public void ref(String s) {
         ref.println(s);
         if (CREATE_GOLDENFILES) {
@@ -200,7 +212,7 @@ public class LogTestCase extends NbTestCase {
         return projdir;                
     }
     
-    private void copyFile(File src,File dst)  {
+    public void copyFile(File src,File dst)  {
         BufferedReader br = null;
         FileWriter fw = null;
         try {
@@ -224,42 +236,13 @@ public class LogTestCase extends NbTestCase {
         }
     }
     
-    private String getRelativeFileName(FileObject fo) {
+    protected String getRelativeFileName(FileObject fo) {
         String relPath = FileUtil.getRelativePath(projectDirFo, fo);
         String res = relPath.replace('/', '.');
         if(res.startsWith("src.")) res = res.substring(4);
         return res;
     }
-    
-    Map<String,LinkedList<String>> refactoredFiles;
-    
-    protected void addRefactoringElement(RefactoringElement element) throws IOException {
-        FileObject fo = element.getParentFile();
-        String relPath = getRelativeFileName(fo);
-        if(!refactoredFiles.keySet().contains(relPath)) { //new file
-            if(backupFiles) {
-                File fBackUp = new File(getWorkDir(),getRelativeFileName(fo));
-                File oFile = FileUtil.toFile(fo);
-                copyFile(oFile, fBackUp);
-            }
-            refactoredFiles.put(relPath, new LinkedList<String>());
-        }
-        List<String> list = refactoredFiles.get(relPath);
-        list.add(element.getDisplayText());
-    }
-    
-    protected void dumpRefactoredFiles() {
-        
-        for (String fileName: refactoredFiles.keySet()) {
-            ref(fileName);
-            ref("--------------------");
-            for(String text : refactoredFiles.get(fileName)) {
-                ref(text);
-            }
-            ref("\n");
-        }
-    }                
-    
+                   
     protected FileObject getFileInProject(String project,String file) throws IOException {
         projectDirFo = openProject(project);
         FileObject test = projectDirFo.getFileObject(file);

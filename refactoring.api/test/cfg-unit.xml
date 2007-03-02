@@ -28,6 +28,14 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+    
+    <testbag testattribs="rename" executor="unit-executor" name="Rename Refactoring">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/refactoring/java/RenameClassTest.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
             
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>

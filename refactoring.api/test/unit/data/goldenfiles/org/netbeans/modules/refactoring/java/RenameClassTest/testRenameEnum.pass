@@ -1,0 +1,15 @@
+defaultpkg.RenameEnum.java
+--------------------
+Rename file RenameEnum.java
+Change class name
+null
+
+
+defaultpkg.RenameEnumDep.java
+--------------------
+Update reference to RenameEnum
+Update reference to RenameEnum
+Update reference to RenameEnum
+Update reference to RenameEnum
+
+
