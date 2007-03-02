@@ -155,8 +155,8 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
 
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Current row changed from [" //NOI18N
-                    + currentLineStart.getOffset() + ", " + currentLineEnd.getOffset()+ "] to [" //NOI18N
-                    + currentLine[0].getOffset() + ", " + currentLine[1].getOffset() + "]"); //NOI18N
+                    + positionToString(currentLineStart) + ", " + positionToString(currentLineEnd) + "] to [" //NOI18N
+                    + positionToString(currentLine[0]) + ", " + positionToString(currentLine[1]) + "]"); //NOI18N
             }
             
             currentLineStart = currentLine[0];
@@ -216,6 +216,10 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         } else {
             return null;
         }
+    }
+    
+    private static String positionToString(Position p) {
+        return p == null ? "null" : Integer.toString(p.getOffset()); //NOI18N
     }
     
     private static final class SimpleHighlightsSequence implements HighlightsSequence {
