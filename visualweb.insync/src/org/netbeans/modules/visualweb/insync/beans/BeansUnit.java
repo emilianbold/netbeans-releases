@@ -922,7 +922,7 @@ public class BeansUnit implements Unit {
                     return null;
                 return Introspector.getBeanInfo(cls, Introspector.USE_ALL_BEANINFO);
             } catch (Exception e) {
-                //System.err.println("Caught " + e + " in BU.getBeanInfo for class:" + cls.getName());  //NOI18N
+                e.printStackTrace();
                 assert Trace.trace("insync.beans", "Caught " + e + " in BU.getBeanInfo for class:" + cls.getName());  //NOI18N
             } catch (NoClassDefFoundError e) {
                 throw e;

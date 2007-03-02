@@ -22,18 +22,13 @@ import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.Method;
-
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
-
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.PropertyEditor2;
-import javax.el.MethodExpression;
-import javax.el.ValueExpression;
-import javax.faces.convert.Converter;
-import javax.faces.el.MethodBinding;
-import javax.faces.el.ValueBinding;
-import javax.faces.validator.Validator;
+import com.sun.rave.propertyeditors.resolver.PropertyEditorResolver;
+import java.util.Collection;
+import org.openide.util.Lookup;
 
 /**
  * Abstract base partial DesignProperty implementation which manages a PropertyDescriptor and other
@@ -43,20 +38,20 @@ import javax.faces.validator.Validator;
  * @author Carl Quinn
  */
 public abstract class SourceDesignProperty implements DesignProperty {
-
+    
     public static final SourceDesignProperty[] EMPTY_ARRAY = {};
     public static final Object[] EMPTY_OBJECT_ARRAY = {};
-
+    
     protected final PropertyDescriptor descriptor;
     protected final SourceDesignBean liveBean;
-
+    
     protected PropertyEditor editor;
     protected boolean modified = false;
     protected Object initialValue;
     protected String category;
-
+    
     //--------------------------------------------------------------------------------- Construction
-
+    
     /**
      * @param descriptor
      * @param liveBean
@@ -67,12 +62,12 @@ public abstract class SourceDesignProperty implements DesignProperty {
         if (descriptor.getWriteMethod() != null)
             this.initialValue = getValue();  // don't bother getting initial value for read-only props
     }
-
+    
     /**
      * Called after construction to initialize the live state from the source
      */
     protected abstract void initLive();
-
+    
     /**
      *
      */
@@ -80,13 +75,13 @@ public abstract class SourceDesignProperty implements DesignProperty {
         String name;
         Object value;
         ClipImage(String name, Object value) { this.name = name; this.value = value; }
-
+        
         public String toString() {
             StringBuffer sb = new StringBuffer();
             toString(sb);
             return sb.toString();
         }
-
+        
         public void toString(StringBuffer sb) {
             sb.append("[DesignProperty.ClipImage");
             sb.append(" name=" + name);
@@ -94,7 +89,7 @@ public abstract class SourceDesignProperty implements DesignProperty {
             sb.append("]");
         }
     }
-
+    
     /**
      * @return
      */
@@ -103,94 +98,91 @@ public abstract class SourceDesignProperty implements DesignProperty {
             return null;
         return new ClipImage(descriptor.getName(), getValue());
     }
-
+    
     //------------------------------------------------------------------------------------ Accessors
-
+    
     /**
      * @param category
      */
     public void setPropertyCategory(String category) {
         this.category = category;
     }
-
+    
     /**
      * @return
      */
     public String getPropertyCategory() {
         return category;
     }
-
+    
     /*
      * @see com.sun.rave.designtime.DesignProperty#getPropertyDescriptor()
      */
     public PropertyDescriptor getPropertyDescriptor() {
         return descriptor;
     }
-
+    
     /*
      * @see com.sun.rave.designtime.DesignProperty#getDesignBean()
      */
     public DesignBean getDesignBean() {
         return liveBean;
     }
-
+    
+    
+    private static Lookup.Result propertyEditorResolverLookupResult;
+    
     /**
-     * Load the property editor for this property and cache it for internal use.
+     * Look up all property editor resolvers registered with the current IDE session.
+     */
+    private static PropertyEditorResolver[] getPropertyEditorResolvers() {
+        if (propertyEditorResolverLookupResult == null) {
+            Lookup.Template template = new Lookup.Template(PropertyEditorResolver.class);
+            Lookup lookup = Lookup.getDefault();
+            propertyEditorResolverLookupResult = lookup.lookup(template);
+        }
+        Collection instances = propertyEditorResolverLookupResult.allInstances();
+        return (PropertyEditorResolver[]) instances.toArray(
+                new PropertyEditorResolver[instances.size()]);
+    }
+    
+    /**
+     * Load the property editor for use with this design property, and cache it.
      */
     protected void loadEditor() {
-        loadEditor(descriptor.getPropertyEditorClass());
-    }
-
-    /**
-     * Load the property editor with an instance of editorClass for this property
-     * and cache it for internal use.
-     */
-    protected void loadEditor(Class editorClass) {
-        // Attempt to load specified property editor, if specified
-        if (editorClass != null) {
-            try {
-                editor = (PropertyEditor)editorClass.newInstance();
-            } catch (Exception e) {
-                System.err.println("Caught " + e + " in SLP.loadEditor instantiating editor class: " +
-                        editorClass.getName());
-                //e.printStackTrace();
+        // Ask each property editor resolver service that was registered with the
+        // IDE for an editor appropriate for the property descriptor
+        if (editor == null) {
+            for (PropertyEditorResolver resolver : getPropertyEditorResolvers()) {
+                editor = resolver.getEditor(this.descriptor);
+                if (editor != null)
+                    break;
             }
         }
-        // If no editor loaded, attempt to load a Creator-specific, default editor appropriate
-        // for the property type
-        if (editor == null) {
-            Class propertyType = this.getPropertyDescriptor().getPropertyType();
-            if (String.class.isAssignableFrom(propertyType))
-                editor = new com.sun.rave.propertyeditors.StringPropertyEditor();
-            else if (Integer.class.isAssignableFrom(propertyType))
-                editor = new com.sun.rave.propertyeditors.IntegerPropertyEditor();
-            else if (Long.class.isAssignableFrom(propertyType))
-                editor = new com.sun.rave.propertyeditors.LongPropertyEditor();
-            else if (Double.class.isAssignableFrom(propertyType))
-                editor = new com.sun.rave.propertyeditors.DoublePropertyEditor();
-            else if (Converter.class.isAssignableFrom(propertyType))
-                editor = new com.sun.rave.propertyeditors.ConverterPropertyEditor();
-            else if (Validator.class.isAssignableFrom(propertyType))
-                editor = new com.sun.rave.propertyeditors.ValidatorPropertyEditor();
-            else if (ValueBinding.class.isAssignableFrom(propertyType) || ValueExpression.class.isAssignableFrom(propertyType))
-                editor = new com.sun.rave.propertyeditors.binding.ValueBindingPropertyEditor();
-            else if (MethodBinding.class.isAssignableFrom(propertyType) || MethodExpression.class.isAssignableFrom(propertyType))
-                editor = new com.sun.rave.propertyeditors.MethodBindingPropertyEditor();
-            // If no editor loaded still, attempt to load the editor registered statically
-            // with the Java Beans editor manager
-            if (editor == null) {
-                editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
-                // An ultimate fallback editor is one that allows sibling bean selection
-                if (editor == null)
-                    editor = new BeanSelectionEditor(this);
+        // If no editor returned by a resolver, and the property descriptor has an
+        // editor class property, attempt to instantiate it
+        if (editor == null && this.descriptor.getPropertyEditorClass() != null) {
+            try {
+                editor = (PropertyEditor) this.descriptor.getPropertyEditorClass().newInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        }
+        // If no editor found yet, ask the static Java Beans editor manager for an
+        // editor appropriate for the property descriptor
+        if (editor == null) {
+            editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
+        }
+        // Finally, if no editor registered with the Java Beans editor manager, use
+        // an editor that allows sibling bean selection
+        if (editor == null) {
+            editor = new BeanSelectionEditor(this);
         }
         if (editor instanceof PropertyEditor2) {
             try {
                 ((PropertyEditor2)editor).setDesignProperty(this);
             } catch (Exception e) {
-                System.err.println("Caught " + e + " in SLP.loadEditor initing live editor: " + editor);
-                //e.printStackTrace();
+                e.printStackTrace();
             }
         }
     }
@@ -241,13 +233,13 @@ public abstract class SourceDesignProperty implements DesignProperty {
      * @see com.sun.rave.designtime.DesignProperty#getValue()
      */
     public Object getValue() {
-    	ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(((LiveUnit)getDesignBean().getDesignContext()).getBeansUnit().getClassLoader());    	
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(((LiveUnit)getDesignBean().getDesignContext()).getBeansUnit().getClassLoader());
             return invokeGetter();
-    	} finally {
-    		Thread.currentThread().setContextClassLoader(oldContextClassLoader);
-    	}
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+        }
     }
     
     /**
@@ -309,17 +301,17 @@ public abstract class SourceDesignProperty implements DesignProperty {
      * @see com.sun.rave.designtime.DesignProperty#setValue(java.lang.Object)
      */
     public boolean setValue(Object value) {
-    	ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(((LiveUnit)getDesignBean().getDesignContext()).getBeansUnit().getClassLoader());
-	        Object oldValue = invokeGetter();
-	        boolean ok = invokeSetter(value);
-	        if (ok)
-	            liveBean.fireDesignPropertyChanged(this, oldValue);
-	        return ok;
-	    } finally {
-			Thread.currentThread().setContextClassLoader(oldContextClassLoader);
-		}
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(((LiveUnit)getDesignBean().getDesignContext()).getBeansUnit().getClassLoader());
+            Object oldValue = invokeGetter();
+            boolean ok = invokeSetter(value);
+            if (ok)
+                liveBean.fireDesignPropertyChanged(this, oldValue);
+            return ok;
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+        }
     }
     
     /*

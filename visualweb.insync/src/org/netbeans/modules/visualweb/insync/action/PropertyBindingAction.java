@@ -24,10 +24,10 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DisplayAction;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import org.netbeans.modules.visualweb.propertyeditors.binding.PropertyBindingHelper;
 import org.netbeans.modules.visualweb.insync.live.FacesDesignBean;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
-import com.sun.rave.propertyeditors.binding.PropertyBindingHelper;
 import org.openide.util.NbBundle;
 
 

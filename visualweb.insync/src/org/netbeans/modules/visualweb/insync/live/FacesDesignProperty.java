@@ -283,18 +283,18 @@ public class FacesDesignProperty extends BeansDesignProperty
      * Load the property editor for this property and cache it for internal use.
      */
     protected void loadEditor() {
-        Boolean ignoreIsBound = Boolean.valueOf((String) descriptor.getValue("ignoreIsBound"));
-        Class clazz = descriptor.getPropertyEditorClass();
-        if (clazz != null && FacesBindingPropertyEditor.class.isAssignableFrom(clazz))
-            ignoreIsBound = Boolean.TRUE;
-        if (!ignoreIsBound.booleanValue() && isBound() ) {
-            // initialize a different kind of property editor for bound case
-            clazz = getIsBoundPropertyEditorClass();
-            if (clazz != null) {
-                loadEditor(clazz);
-                return;
-            }
-        }
+//        Boolean ignoreIsBound = Boolean.valueOf((String) descriptor.getValue("ignoreIsBound"));
+//        Class clazz = descriptor.getPropertyEditorClass();
+//        if (clazz != null && FacesBindingPropertyEditor.class.isAssignableFrom(clazz))
+//            ignoreIsBound = Boolean.TRUE;
+//        if (!ignoreIsBound.booleanValue() && isBound() ) {
+//            // initialize a different kind of property editor for bound case
+//            clazz = getIsBoundPropertyEditorClass();
+//            if (clazz != null) {
+//                loadEditor(clazz);
+//                return;
+//            }
+//        }
         super.loadEditor();
     }
 

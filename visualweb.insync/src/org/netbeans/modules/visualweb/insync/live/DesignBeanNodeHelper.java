@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.visualweb.insync.live;
 
-import com.sun.jsfcl.std.URLPropertyEditor;
-import com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor;
-import com.sun.jsfcl.std.reference.ReferenceDataManager;
+import java.beans.PropertyDescriptor;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssComputedValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
@@ -41,11 +39,11 @@ import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.insync.faces.MarkupBean;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
-import com.sun.rave.propertyeditors.ImageUrlPropertyEditor;
+import org.netbeans.modules.visualweb.propertyeditors.StandardUrlPropertyEditor;
 import java.awt.Color;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.lang.reflect.InvocationTargetException;
+import javax.faces.component.UIViewRoot;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -69,24 +67,24 @@ import org.w3c.dom.NodeList;
  * @author Tor Norbye (old code, parts of impl of set/getValue methods)
  */
 final class DesignBeanNodeHelper {
-
+    
     /** Creates a new instance of DesignBeanNodeHelper */
     private DesignBeanNodeHelper() {
     }
-
-
+    
+    
     /** XXX Adds additional properties to the specified sheet
      * and for specified <code>DesignBean</code>.
      * @return same sheet with added properties */
     static void addFakePageProperties(Sheet sheet, DesignBean designBean) {
-
+        
         Sheet.Set set = addSetIntoSheet(sheet,
                 "Appearance", // NOI18N
                 NbBundle.getMessage(DesignBeanNodeHelper.class, "LBL_Appearance"));
-
+        
         boolean isPortlet = isPortlet(designBean);
         boolean isFragment = isFragment(designBean);
-
+        
         if (isPortlet || !isFragment) {
             // Add Background property
             set.put(new BackgroundProperty(designBean));
@@ -110,7 +108,7 @@ final class DesignBeanNodeHelper {
             set.put(new StyleSheetProperty(designBean));
             // Add Title property
             set.put(new TitleProperty(designBean));
-
+            
             set = addSetIntoSheet(sheet,
                     "Advanced", // NOI18N
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "LBL_Advanced"));
@@ -120,18 +118,18 @@ final class DesignBeanNodeHelper {
             set.put(new LanguageProperty(designBean));
         }
     }
-
+    
     private static Set addSetIntoSheet(Sheet sheet, String name, String displayName) {
         Sheet.Set set = sheet.get(name);
         if (set == null) {
-                set = new Sheet.Set();
-                set.setName(name);
-                set.setDisplayName(displayName);
-    //            //ss.setExpert();
-    //            // would like to set default expanded state too...
-    //            if (descr != null) {
-    //                ss.setShortDescription(descr);
-    //            }
+            set = new Sheet.Set();
+            set.setName(name);
+            set.setDisplayName(displayName);
+            //            //ss.setExpert();
+            //            // would like to set default expanded state too...
+            //            if (descr != null) {
+            //                ss.setShortDescription(descr);
+            //            }
             sheet.put(set);
         }
         
@@ -154,7 +152,7 @@ final class DesignBeanNodeHelper {
             validateValue(value, Color.class);
             
             Color color = (Color)value;
-
+            
             FacesModel facesModel = findFacesModel(designBean);
             if (facesModel == null) {
                 return;
@@ -175,7 +173,7 @@ final class DesignBeanNodeHelper {
             } finally {
                 facesModel.writeUnlock(event);
             }
-
+            
 //            CssLookup.refreshEffectiveStyles(webform.getDom());
             CssProvider.getEngineService().refreshStylesForDocument(facesModel.getJspDom());
             // XXX Should this be here too (or the above?).
@@ -198,7 +196,7 @@ final class DesignBeanNodeHelper {
                 bgColor = Color.WHITE;
                 return bgColor;
             }
-
+            
             if (body != null) {
 //                bgColor = CssLookup.getColor(body, XhtmlCss.BACKGROUND_COLOR_INDEX);
                 bgColor = CssProvider.getValueService().getColorForElement(body, XhtmlCss.BACKGROUND_COLOR_INDEX);
@@ -209,65 +207,48 @@ final class DesignBeanNodeHelper {
             return bgColor;
         }
     } // End of BackgroundProperty.
-
+    
     
     private static class BackgroundImageProperty extends PropertySupport.ReadWrite {
         private final DesignBean designBean;
         private String bgImage;
+        
         public BackgroundImageProperty(DesignBean desingBean) {
             super("backgroundImage", // NOI18N
                     String.class,
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "LBL_BackgroundImage"),
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "DESC_BackgroundImage"));
             this.designBean = desingBean;
-            
-            // EAT: Guard against case I may not have encountered yet
-            // If such happens, just let this property fall back to the default
-            // and be a straight String editor
             DesignContext designContext = designBean.getDesignContext();
             FacesModel facesModel = findFacesModel(designBean);
             FileObject fileObject = facesModel == null ? null : facesModel.getFile();
             if ((designContext != null) || (fileObject != null)) {
-//                setPropertyEditorClass(URLPropertyEditor.class);
-                setValue(URLPropertyEditor.PROPERTY_PROPERTY, this);
-
+                setValue(StandardUrlPropertyEditor.PROPERTY_PROPERTY, this);
                 if (designContext == null) {
-                    setValue(URLPropertyEditor.PROPERTY_FORM_FILE, fileObject);
+                    setValue(StandardUrlPropertyEditor.PROPERTY_FORM_FILE, fileObject);
                 } else {
-                    setValue(URLPropertyEditor.PROPERTY_LIVE_CONTEXT, designContext);
+                    setValue(StandardUrlPropertyEditor.PROPERTY_LIVE_CONTEXT, designContext);
                 }
             }
         }
         
-        /** XXX See EAT above. */
         public PropertyEditor getPropertyEditor() {
-//            FacesModel facesModel = findFacesModel(designBean);
-//            if (facesModel != null) {
-//                Element body = facesModel.getHtmlBody();
-//                if (body != null) {
-//                    DesignBean bodyBean = InSyncServiceProvider.get().getMarkupDesignBeanForElement(body);
-//                    if (bodyBean != null) {
-//                        DesignProperty background = bodyBean.getProperty("imageURL"); // NOI18N
-//                        ImageUrlPropertyEditor propEditor = new ImageUrlPropertyEditor();
-//                        propEditor.setDesignProperty(background);
-//                        return propEditor;
-//                    }
-//                }
-//            }
-//            
-//            return super.getPropertyEditor();
-            return new URLPropertyEditor();
+            if (this.designBean.getInstance() instanceof UIViewRoot) {
+                StandardUrlPropertyEditor editor = new StandardUrlPropertyEditor();
+                return editor;
+            }
+            return super.getPropertyEditor();
         }
-
+        
         public Object getValue() {
             if (bgImage == null) {
                 FacesModel facesModel = findFacesModel(designBean);
                 if (facesModel == null) {
                     return ""; // NOI18N
                 }
-
+                
                 Element body = facesModel.getHtmlBody();
-
+                
                 if (body != null) {
                     // Prefer to use the body's "background image" property, since
                     // this can properly handle context relative urls etc. (direct CSS properties
@@ -285,10 +266,10 @@ final class DesignBeanNodeHelper {
                             }
                         }
                     }
-
+                    
 //                    Value value = CssLookup.getValue(body, XhtmlCss.BACKGROUND_IMAGE_INDEX);
                     CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(body, XhtmlCss.BACKGROUND_IMAGE_INDEX);
-
+                    
 //                    if ((value == CssValueConstants.NONE_VALUE) || (value == null)) {
                     if (cssValue == null || CssProvider.getValueService().isNoneValue(cssValue)) {
                         bgImage = ""; // NOI18N
@@ -299,10 +280,10 @@ final class DesignBeanNodeHelper {
                     bgImage = ""; // NOI18N
                 }
             }
-
+            
             return bgImage;
         }
-
+        
         public void setValue(Object value) throws IllegalArgumentException {
             validateValue(value, String.class);
             String bgImage = (String)value;
@@ -314,14 +295,14 @@ final class DesignBeanNodeHelper {
             }
             
             Element body = facesModel.getHtmlBody();
-
+            
             if (body != null) {
                 UndoEvent event = null;
-
+                
                 try {
                     String description = null; // TODO
                     event = facesModel.writeLock(description);
-
+                    
                     // Prefer to use the body's "background image" property, since
                     // this can properly handle context relative urls etc. (direct CSS properties
                     // can not)
@@ -335,11 +316,11 @@ final class DesignBeanNodeHelper {
                             } else {
                                 background.unset();
                             }
-
+                            
                             return;
                         }
                     }
-
+                    
                     if ((bgImage != null) && (bgImage.length() > 0)) {
                         String url = "url(" + bgImage + ")"; // NOI18N
 //                        CssLookup.setLocalStyleValue(body, XhtmlCss.BACKGROUND_IMAGE_INDEX, url);
@@ -375,16 +356,16 @@ final class DesignBeanNodeHelper {
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "DESC_Layout"));
             this.designBean = desingBean;
         }
-
+        
         public Object getValue() {
             if (layoutMode < 0) {
                 FacesModel facesModel = findFacesModel(designBean);
                 if (facesModel == null) {
                     return new Integer(0);
                 }
-
+                
                 Element body = facesModel.getHtmlBody();
-
+                
                 if (body != null) {
 //                    Value val = CssLookup.getValue(body, XhtmlCss.RAVELAYOUT_INDEX);
                     CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(body, XhtmlCss.RAVELAYOUT_INDEX);
@@ -394,10 +375,10 @@ final class DesignBeanNodeHelper {
                     layoutMode = 1; // flow if grid is not known
                 }
             }
-
+            
             return new Integer(layoutMode);
         }
-
+        
         /** XXX */
         public PropertyEditor getPropertyEditor() {
             return new PageLayoutEditor();
@@ -414,19 +395,19 @@ final class DesignBeanNodeHelper {
             }
             
             Element body = facesModel.getHtmlBody();
-
+            
             if (body != null) {
                 UndoEvent event = null;
-
+                
                 try {
                     String description = null; // TODO
                     event = facesModel.writeLock(description);
-
+                    
                     if (mode == 1) { // flow
 //                        CssLookup.removeLocalStyleValue(body, XhtmlCss.RAVELAYOUT_INDEX);
                         Util.removeLocalStyleValueForElement(body, XhtmlCss.RAVELAYOUT_INDEX);
-
-                        // Ensure that the document has a <br> near the top we 
+                        
+                        // Ensure that the document has a <br> near the top we
                         // can go back to. This is necessary because the caret can
                         // only be placed in lineboxes, and we need to ensure we have a linebox.
                         // Other HTML editors seem to do this too - Mozilla Composer for example.
@@ -434,12 +415,12 @@ final class DesignBeanNodeHelper {
                         if (body != null) {
 //                            DesignBean bean = ((RaveElement)body).getDesignBean();
                             DesignBean bean = InSyncServiceProvider.get().getMarkupDesignBeanForElement(body);
-
+                            
                             LiveUnit lunit = facesModel.getLiveUnit();
                             if (bean != null) {
                                 if ((bean.getChildBeanCount() == 0) ||
                                         !((MarkupDesignBean)bean.getChildBean(0)).getElement()
-                                              .getTagName().equals(HtmlTag.BR.name)) {
+                                        .getTagName().equals(HtmlTag.BR.name)) {
                                     // Add a br
                                     Element parent = ((MarkupDesignBean)bean).getElement();
                                     Node before = parent.getFirstChild();
@@ -447,21 +428,21 @@ final class DesignBeanNodeHelper {
                                     createBean(org.netbeans.modules.visualweb.xhtml.Br.class.getName(), parent, before, lunit);
                                 }
                             }
-
+                            
                             // Add one to form too...
                             FacesPageUnit facesUnit = facesModel.getFacesUnit();
-
+                            
                             if ((facesUnit != null) && (lunit != null)) {
                                 MarkupBean formBean = facesUnit.getDefaultParent();
 //                                bean = /*FacesSupport*/Util.getDesignBean(formBean.getElement());
                                 bean = InSyncServiceProvider.get().getMarkupDesignBeanForElement(formBean.getElement());
-
+                                
                                 if (bean != null) {
                                     int n = bean.getChildBeanCount();
-
+                                    
                                     if ((n == 0) ||
                                             !((MarkupDesignBean)bean.getChildBean(n - 1)).getElement()
-                                                  .getTagName().equals(HtmlTag.BR.name)) {
+                                            .getTagName().equals(HtmlTag.BR.name)) {
                                         // Add a br
                                         Element parent = ((MarkupDesignBean)bean).getElement();
 //                                        webform.getDocument().createBean(org.netbeans.modules.visualweb.xhtml.Br.class.getName(), parent, null);
@@ -481,7 +462,7 @@ final class DesignBeanNodeHelper {
                     facesModel.writeUnlock(event);
                 }
             }
-
+            
             this.layoutMode = mode;
         }
         
@@ -491,7 +472,7 @@ final class DesignBeanNodeHelper {
             DesignBean parentBean = /*FacesSupport.*/Util.findParentBean(parent);
 //            LiveUnit unit = webform.getModel().getLiveUnit();
             DesignBean bean = liveUnit.createBean(className, parentBean, pos);
-
+            
             return bean;
         }
         
@@ -502,21 +483,21 @@ final class DesignBeanNodeHelper {
      */
     private static class PageLayoutEditor extends PropertyEditorSupport {
         private String[] tags =
-            new String[] {
-                NbBundle.getMessage(DesignBeanNodeHelper.class, "LBL_GridLayout"), // NOI18N
-                NbBundle.getMessage(DesignBeanNodeHelper.class, "LBL_FlowLayout") // NOI18N
-            };
-
+                new String[] {
+            NbBundle.getMessage(DesignBeanNodeHelper.class, "LBL_GridLayout"), // NOI18N
+            NbBundle.getMessage(DesignBeanNodeHelper.class, "LBL_FlowLayout") // NOI18N
+        };
+        
         public String getJavaInitializationString() {
             return getAsText();
         }
-
+        
         public String getAsText() {
             int val = ((Integer)getValue()).intValue();
-
+            
             return (val == 0) ? tags[0] : tags[1];
         }
-
+        
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
             if (text.equals(tags[0])) {
                 setValue(new Integer(0));
@@ -526,12 +507,12 @@ final class DesignBeanNodeHelper {
                 throw new java.lang.IllegalArgumentException(text);
             }
         }
-
+        
         public String[] getTags() {
             return tags;
         }
     } // End of PageLayoutEditor.
-
+    
     
     private static class StyleSheetProperty extends PropertySupport.ReadWrite {
         private final DesignBean designBean;
@@ -542,53 +523,35 @@ final class DesignBeanNodeHelper {
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "LBL_StyleSheet"),
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "DESC_StyleSheet"));
             this.designBean = desingBean;
-            
-            // EAT: Guard agains case I may not have encountered yet
-            // If such happens, just let this property fall back to the default
-            // and be a straight String editor
             DesignContext designContext = designBean.getDesignContext();
             FacesModel facesModel = findFacesModel(designBean);
             FileObject fileObject = facesModel == null ? null : facesModel.getFile();
             if ((designContext != null) || (fileObject != null)) {
-//                p.setPropertyEditorClass(URLPropertyEditor.class);
-                setValue(URLPropertyEditor.PROPERTY_PROPERTY, this);
-
+                setValue(StandardUrlPropertyEditor.PROPERTY_PROPERTY, this);
                 if (designContext == null) {
-                    setValue(URLPropertyEditor.PROPERTY_FORM_FILE, fileObject);
+                    setValue(StandardUrlPropertyEditor.PROPERTY_FORM_FILE, fileObject);
                 } else {
-                    setValue(URLPropertyEditor.PROPERTY_LIVE_CONTEXT, designContext);
+                    setValue(StandardUrlPropertyEditor.PROPERTY_LIVE_CONTEXT, designContext);
                 }
             }
         }
-
-        /** XXX See EAT above. */
+        
         public PropertyEditor getPropertyEditor() {
-//            FacesModel facesModel = findFacesModel(designBean);
-//            if (facesModel != null) {
-//                Element body = facesModel.getHtmlBody();
-//                if (body != null) {
-//                    DesignBean bodyBean = InSyncServiceProvider.get().getMarkupDesignBeanForElement(body);
-//                    if (bodyBean != null) {
-//                        DesignProperty background = bodyBean.getProperty("imageURL"); // NOI18N
-//                        ImageUrlPropertyEditor propEditor = new ImageUrlPropertyEditor();
-//                        propEditor.setDesignProperty(background);
-//                        return propEditor;
-//                    }
-//                }
-//            }
-//            
-//            return super.getPropertyEditor();
-            return new URLPropertyEditor();
+            if (this.designBean.getInstance() instanceof UIViewRoot) {
+                StandardUrlPropertyEditor editor = new StandardUrlPropertyEditor();
+                return editor;
+            }
+            return super.getPropertyEditor();
         }
         
         public Object getValue() {
             if (styleSheet == null) {
                 styleSheet = getStyleSheetURL();
             }
-
+            
             return styleSheet;
         }
-
+        
         public void setValue(Object value) throws IllegalArgumentException {
             validateValue(value, String.class);
             styleSheet = (String)value;
@@ -597,16 +560,16 @@ final class DesignBeanNodeHelper {
             if (facesModel == null) {
                 return;
             }
-
+            
             if (styleSheet == null) {
                 styleSheet = ""; // NOI18N
             }
-
+            
             String description = null; // TODO
             UndoEvent event = facesModel.writeLock(description);
             try {
                 setStyleSheetURL(styleSheet);
-
+                
                 // The value shown in the propertysheet is shown by immediately
                 // calling getStyleSheet() after setStyleSheet(), and at this point we haven't
                 // re-rendered the document (it's delayed by DomSynchronizer) so
@@ -615,7 +578,7 @@ final class DesignBeanNodeHelper {
             } finally {
                 facesModel.writeUnlock(event);
             }
-
+            
             // Apparently we don't need to refresh the styles, the CSS engine
             // listens to the DOM
             this.styleSheet = styleSheet;
@@ -639,45 +602,45 @@ final class DesignBeanNodeHelper {
             
             // XXX is there a way to get ensureElement to NOT create?
             Element html = markup.findHtmlTag(root);
-
+            
             if (html == null) {
                 return "";
             }
-
+            
             Element head = Util.findChild(HtmlTag.HEAD.name, html, false);
-
+            
             if (head == null) {
                 return "";
             }
-
+            
             NodeList list = head.getChildNodes();
             int len = list.getLength();
-
+            
             for (int i = 0; i < len; i++) {
                 org.w3c.dom.Node child = list.item(i);
-
+                
                 if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                     Element element = (Element)child;
-
+                    
                     if (element.getTagName().equals(HtmlTag.LINK.name)) {
 //                        RaveElement xlink = (RaveElement)element;
-
+                        
 //                        if (xlink.isRendered() && (xlink.getSource() == null)) {
                         if (MarkupService.isRenderedNode(element) && MarkupService.getSourceNodeForNode(element) == null) {
                             // Don't return "derived" links such as theme links
                             // automatically rendered for themes for example
                             continue;
                         }
-
+                        
                         String url = element.getAttribute(HtmlAttribute.HREF);
-
+                        
                         if (url != null) {
                             return url;
                         }
                     }
                 }
             }
-
+            
             return ""; // NOI18N
         }
         
@@ -685,7 +648,7 @@ final class DesignBeanNodeHelper {
             // See if we have a Braveheart Link component. If so, just change its
             // url.
             boolean add = (url != null) && (url.length() > 0);
-
+            
             FacesModel facesModel = findFacesModel(designBean);
             if (facesModel == null) {
                 return;
@@ -697,7 +660,7 @@ final class DesignBeanNodeHelper {
             Document document = facesModel.getJspDom();
 //            LiveUnit lu = webform.getModel().getLiveUnit();
             LiveUnit lu = facesModel.getLiveUnit();
-
+            
             DataObject markupDO;
             try {
                 markupDO = DataObject.find(facesModel.getMarkupFile());
@@ -705,38 +668,38 @@ final class DesignBeanNodeHelper {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 return;
             }
-                
+            
             DesignBean uihead = null;
 //            if (DesignerUtils.isBraveheartPage(document)) {
             if (InSyncServiceProvider.get().isBraveheartPage(document)) {
                 DesignBean[] heads = lu.getBeansOfType(com.sun.rave.web.ui.component.Head.class);
-
+                
                 if ((heads != null) && (heads.length > 0)) {
                     uihead = heads[0];
                 }
             } else if (InSyncServiceProvider.get().isWoodstockPage(document)) {
                 DesignBean[] heads = lu.getBeansOfType(com.sun.webui.jsf.component.Head.class);
-
+                
                 if ((heads != null) && (heads.length > 0)) {
                     uihead = heads[0];
                 }
             }
             
-
+            
             if (uihead != null) {
                 // Find existing eligible links
                 for (int i = 0, n = uihead.getChildBeanCount(); i < n; i++) {
                     DesignBean child = uihead.getChildBean(i);
-
+                    
                     if (child.getInstance() instanceof com.sun.rave.web.ui.component.Link) {
                         // Ensure that this is a stylesheet link
                         String rel = (String)child.getProperty("rel").getValue(); // NOI18N
-
+                        
                         if ((rel != null) && (rel.length() > 0) && !rel.equalsIgnoreCase("stylesheet")) { // NOI18N
-
+                            
                             continue;
                         }
-
+                        
                         // Use this one
                         if (add) {
                             child.getProperty("url").setValue(url); // NOI18N
@@ -744,7 +707,7 @@ final class DesignBeanNodeHelper {
 //                            DesignerServiceHack.getDefault().refresh(null, markupDO, false);
 //                            DesignerServiceHack.getDefault().refreshDataObject(markupDO, false);
                             fireRefreshNeeded(false);
-
+                            
                             return;
                         } else {
                             lu.deleteBean(child);
@@ -752,12 +715,12 @@ final class DesignBeanNodeHelper {
 //                            DesignerServiceHack.getDefault().refresh(null, markupDO, false);
 //                            DesignerServiceHack.getDefault().refreshDataObject(markupDO, false);
                             fireRefreshNeeded(false);
-
+                            
                             return;
                         }
                     }
                 }
-
+                
                 // No stylesheet link exists - add one
 //                DesignBean link = lu.createBean("com.sun.rave.web.ui.component.Link", uihead, new Position()); // NOI18N
                 
@@ -783,17 +746,17 @@ final class DesignBeanNodeHelper {
             } else {
                 Element root = document.getDocumentElement();
                 Element html = markup.findHtmlTag(root);
-
+                
                 if (html == null) { // We're hosed!!! This shouldn't happen
                     Thread.dumpStack();
-
+                    
                     return;
                 }
-
+                
                 // Gotta replace with HtmlTag.LINK.name
                 Element head = Util.findChild(HtmlTag.HEAD.name, html, true);
                 Element link = Util.findChild(HtmlTag.LINK.name, head, false);
-
+                
                 // XXX should iterate over ALL the links until you find one
                 // that has rel="stylesheet" !!
                 if ((url != null) && (url.length() > 0)) {
@@ -814,7 +777,7 @@ final class DesignBeanNodeHelper {
                     // Remove stylesheet reference
                     head.removeChild(link);
                 }
-
+                
 //                webform.getActions().refresh(true);
 //                DesignerServiceHack.getDefault().refresh(null, markupDO, true);
 //                DesignerServiceHack.getDefault().refreshDataObject(markupDO, true);
@@ -838,7 +801,7 @@ final class DesignBeanNodeHelper {
             setValue(null);
         }
     } // End of StyleSheetProperty.
-
+    
     
     private static class TitleProperty extends PropertySupport.ReadWrite {
         private final DesignBean designBean;
@@ -850,15 +813,15 @@ final class DesignBeanNodeHelper {
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "DESC_Title"));
             this.designBean = desingBean;
         }
-
+        
         public Object getValue() {
             if (title == null) {
                 Element titleElem = findTitle();
-
+                
                 if (titleElem != null) {
                     title = MarkupUnit.getElementText(titleElem);
                 }
-
+                
                 if (title == null) {
                     title = ""; // NOI18N
                 } else {
@@ -870,41 +833,41 @@ final class DesignBeanNodeHelper {
                     }
                 }
             }
-
+            
             return title;
         }
-
+        
         public void setValue(Object value) throws IllegalArgumentException {
             validateValue(value, String.class);
             String title = (String)value;
             
             Element head = findHead();
-
+            
             if (head != null) {
 //                RaveElement h = (RaveElement)head;
-
+                
 //                if (h.isRendered() && (h.getDesignBean() != null)) {
                 if (MarkupService.isRenderedNode(head)) {
 //                    MarkupDesignBean b = h.getDesignBean();
                     com.sun.rave.designtime.markup.MarkupDesignBean b = InSyncServiceProvider.get().getMarkupDesignBeanForElement(head);
                     if (b != null) {
                         DesignProperty prop = b.getProperty("title"); // NOI18N
-
+                        
                         if (prop != null) {
                             prop.setValue(title);
-
+                            
                             // The value shown in the propertysheet is shown by immediately
                             // calling getTitle() after setTitle(), and at this point we haven't
                             // re-rendered the document (it's delayed by DomSynchronizer) so
                             // just use the expected value directly.
                             this.title = title;
-
+                            
                             return;
                         }
                     }
                 }
             }
-
+            
             FacesModel facesModel = findFacesModel(designBean);
             if (facesModel == null) {
                 return;
@@ -914,14 +877,14 @@ final class DesignBeanNodeHelper {
             UndoEvent event = facesModel.writeLock(description);
             try {
                 head = MarkupUnit.ensureElement(doc.getDocumentElement(), HtmlTag.HEAD.name, null);
-
+                
                 //Element head = MarkupUnit.getFirstDescendantElement(doc.getDocumentElement(), "head");
                 Element titleElem = MarkupUnit.ensureElement(head, HtmlTag.TITLE.name, null);
                 MarkupUnit.setElementText(titleElem, title);
             } finally {
                 facesModel.writeUnlock(event);
             }
-
+            
             this.title = title;
         }
         
@@ -951,21 +914,21 @@ final class DesignBeanNodeHelper {
             if (html == null) {
                 return null;
             }
-
+            
             return MarkupUnit.getFirstDescendantElement(html, HtmlTag.HEAD.name);
         }
-
+        
         private Element findTitle() {
             Element head = findHead();
-
+            
             if (head != null) {
                 Element titleElem = MarkupUnit.getFirstDescendantElement(head, HtmlTag.TITLE.name);
-
+                
                 if (titleElem != null) {
                     return titleElem;
                 }
             }
-
+            
             return null;
         }
     } // End of TitleProperty.
@@ -980,7 +943,7 @@ final class DesignBeanNodeHelper {
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "DESC_Encoding"));
             this.designBean = desingBean;
         }
-
+        
         public Object getValue() {
             FacesModel facesModel = findFacesModel(designBean);
             if (facesModel == null) {
@@ -992,7 +955,7 @@ final class DesignBeanNodeHelper {
                 return null;
             }
         }
-
+        
         public void setValue(Object value) throws IllegalArgumentException {
             validateValue(value, String.class);
             String encoding = (String)value;
@@ -1020,7 +983,7 @@ final class DesignBeanNodeHelper {
             setValue(null);
         }
     } // End of EncodingProperty.
-
+    
     
     private static class LanguageProperty extends PropertySupport.ReadWrite {
         private final DesignBean designBean;
@@ -1035,10 +998,10 @@ final class DesignBeanNodeHelper {
             // liveProperty not getting set on this editor.  I assume its due to this not being a DesignProperty :)
             // Never the less, I want a solution, maybe I do one where the property editor can work with no liveProperty
             //            p.setPropertyEditorClass(com.sun.jsfcl.std.property.SingleChoiceReferenceDataPropertyEditor.class);
-            setValue(ChooseOneReferenceDataPropertyEditor.REFERENCE_DATA_NAME,
-                ReferenceDataManager.LANGUAGE_CODES);
+//            setValue(ChooseOneReferenceDataPropertyEditor.REFERENCE_DATA_NAME,
+//                ReferenceDataManager.LANGUAGE_CODES);
         }
-
+        
         public Object getValue() {
             FacesModel facesModel = findFacesModel(designBean);
             if (facesModel == null) {
@@ -1049,29 +1012,29 @@ final class DesignBeanNodeHelper {
             if (InSyncServiceProvider.get().isBraveheartPage(doc)
             || InSyncServiceProvider.get().isWoodstockPage(doc)) {
                 DesignProperty property = findLanguageProperty();
-
+                
                 if (property != null) {
                     String lang = property.getValueSource();
-
+                    
                     if (lang != null) {
                         return lang;
                     }
                 }
-
+                
                 // Just return empty string
             } else {
                 Element html =
-                    MarkupUnit.getFirstDescendantElement(doc.getDocumentElement(),
+                        MarkupUnit.getFirstDescendantElement(doc.getDocumentElement(),
                         HtmlTag.HTML.name);
-
+                
                 if (html != null) {
                     return html.getAttribute(HtmlAttribute.LANG);
                 }
             }
-
+            
             return ""; // NOI18N
         }
-
+        
         public void setValue(Object value) throws IllegalArgumentException {
             validateValue(value, String.class);
             String language = (String)value;
@@ -1084,7 +1047,7 @@ final class DesignBeanNodeHelper {
             if (InSyncServiceProvider.get().isBraveheartPage(doc)
             || InSyncServiceProvider.get().isWoodstockPage(doc)) {
                 DesignProperty property = findLanguageProperty();
-
+                
                 if (property != null) {
                     property.setValue(language);
                 }
@@ -1092,15 +1055,15 @@ final class DesignBeanNodeHelper {
                 if ((language == null) && (facesModel.getFacesUnit() != null)) {
                     language = facesModel.getFacesUnit().getDefaultLanguage();
                 }
-
+                
                 String description = null; // TODO
                 UndoEvent event = facesModel.writeLock(description);
                 try {
-
+                    
                     Element html =
-                        MarkupUnit.getFirstDescendantElement(doc.getDocumentElement(),
+                            MarkupUnit.getFirstDescendantElement(doc.getDocumentElement(),
                             HtmlTag.HTML.name);
-
+                    
                     if (html != null) {
                         MarkupUnit pgunit = facesModel.getMarkupUnit();
                         pgunit.ensureAttributeValue(html, HtmlAttribute.LANG, language);
@@ -1123,7 +1086,7 @@ final class DesignBeanNodeHelper {
         private DesignProperty findLanguageProperty() {
 //            assert !webform.isPortlet();
 //            assert !webform.isFragment();
-
+            
 //            RaveElement body = webform.getBody();
             FacesModel facesModel = findFacesModel(designBean);
             if (facesModel == null) {
@@ -1131,29 +1094,29 @@ final class DesignBeanNodeHelper {
             }
             
             Element body = facesModel.getHtmlBody();
-
+            
             if (body == null) {
                 return null;
             }
-
+            
 //            DesignBean bodyBean = body.getDesignBean();
             DesignBean bodyBean = InSyncServiceProvider.get().getMarkupDesignBeanForElement(body);
             DesignBean parent = bodyBean.getBeanParent();
-
+            
             if (parent != null) {
                 // TODO - check if this is really an Html component?
                 // It doesn't really matter... if it has a "lang" property we'll
                 // be happy with third party containers too!
                 DesignProperty property = parent.getProperty("lang"); // NOI18N
-
+                
                 return property;
             }
-
+            
             return null;
         }
         
     } // End of LanguageProperty.
-
+    
     
     private static class WidthProperty extends PropertySupport.ReadWrite {
         private final DesignBean designBean;
@@ -1164,11 +1127,11 @@ final class DesignBeanNodeHelper {
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "DESC_Width"));
             this.designBean = desingBean;
         }
-
+        
         public Object getValue() {
             return getSize(designBean, XhtmlCss.WIDTH_INDEX);
         }
-
+        
         public void setValue(Object value) throws IllegalArgumentException {
             validateValue(value, String.class);
             String size = (String)value;
@@ -1194,11 +1157,11 @@ final class DesignBeanNodeHelper {
                     NbBundle.getMessage(DesignBeanNodeHelper.class, "DESC_Height"));
             this.designBean = desingBean;
         }
-
+        
         public Object getValue() {
             return getSize(designBean, XhtmlCss.HEIGHT_INDEX);
         }
-
+        
         public void setValue(Object value) throws IllegalArgumentException {
             validateValue(value, String.class);
             String size = (String)value;
@@ -1213,7 +1176,7 @@ final class DesignBeanNodeHelper {
             setValue(null);
         }
     } // End of HeightProperty.
-
+    
     
     private static void validateValue(Object value, Class type) throws IllegalArgumentException {
         if (value != null && !type.isAssignableFrom(value.getClass())) {
@@ -1234,19 +1197,19 @@ final class DesignBeanNodeHelper {
         if (facesModel == null) {
             return;
         }
-
+        
         Element body = facesModel.getHtmlBody();
         if (body == null) {
             return;
         }
         
-            
+        
         UndoEvent undoEvent = facesModel.writeLock(NbBundle.getMessage(DesignBeanNodeHelper.class, "LBL_SetSize")); // NOI18N
         try {
             if (size != null) {
                 size = size.trim();
             }
-
+            
 //            if ((size == null) || (size.length() == 0) || CssConstants.CSS_AUTO_VALUE.equals(size)) {
             if (size == null || size.length() == 0 || CssProvider.getValueService().isAutoValue(size)) {
 //                CssLookup.removeLocalStyleValue(body, property);
@@ -1256,7 +1219,7 @@ final class DesignBeanNodeHelper {
                 if (CssProvider.getValueService().hasNoUnits(size)) {
                     size = size + "px"; // NOI18N
                 }
-
+                
 //                CssLookup.setLocalStyleValue(body, property, size);
                 Util.addLocalStyleValueForElement(body, property, size);
             }
@@ -1270,13 +1233,13 @@ final class DesignBeanNodeHelper {
         if (facesModel == null) {
             return ""; // NOI18N
         }
-
+        
         Element body = facesModel.getHtmlBody();
         if (body == null) {
             return ""; // NOI18N
         }
-
-
+        
+        
         if (body != null) {
 //            Value v = CssLookup.getValue(body, property);
             CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(body, property);
@@ -1285,18 +1248,18 @@ final class DesignBeanNodeHelper {
             if (cssValue == null || CssProvider.getValueService().isAutoValue(cssValue)) {
                 return ""; // NOI18N
             }
-
+            
 //            if (v instanceof ComputedValue) {
 //                return ((ComputedValue)v).getCascadedValue().getCssText();
 //            }
             if (cssValue instanceof CssComputedValue) {
                 return ((CssComputedValue)cssValue).getCascadedValue().getCssText();
             }
-
+            
 //            return v.toString(); // Do I need to add in the percent?
             return cssValue.getCssText();
         }
-
+        
         return ""; // NOI18N
     }
     
@@ -1316,7 +1279,7 @@ final class DesignBeanNodeHelper {
         return "#" + hexdigits[(r & 0xF0) >> 4] + hexdigits[r & 0x0F] + hexdigits[(g & 0xF0) >> 4] +
                 hexdigits[g & 0x0F] + hexdigits[(b & 0xF0) >> 4] + hexdigits[b & 0x0F];
     }
-
+    
     private static boolean isPortlet(DesignBean designBean) {
         DesignContext designContext = designBean.getDesignContext();
         if (designContext instanceof LiveUnit) {
@@ -1328,7 +1291,7 @@ final class DesignBeanNodeHelper {
         }
         return false;
     }
-
+    
     private static boolean isFragment(DesignBean designBean) {
         DesignContext designContext = designBean.getDesignContext();
         if (designContext instanceof LiveUnit) {
