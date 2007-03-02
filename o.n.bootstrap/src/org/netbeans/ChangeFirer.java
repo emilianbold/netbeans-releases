@@ -80,9 +80,7 @@ final class ChangeFirer {
     public void fire() {
         mgr.readOnly(true);
         try {
-            Iterator it = changes.iterator();
-            while (it.hasNext()) {
-                Change c = (Change) it.next();
+            for (Change c: changes) {
                 if (c.source instanceof Module) {
                     ((Module) c.source).firePropertyChange0(c.prop, c.old, c.nue);
                 } else if (c.source == mgr) {
