@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -118,6 +118,28 @@ public class HttpSettingsTest extends NbTestCase {
             if (! USER_PROXY_PORT.equals (proxyPreferences.get ("proxyHttpPort", ""))) {
                 proxyPreferences.put ("proxyHttpPort", USER_PROXY_PORT);
                 sync.wait (10000);
+            }
+        }
+    }
+    
+    private void setUpAutoDirect () throws Exception {
+        synchronized (sync) {
+            if (ProxySettings.DIRECT_CONNECTION != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
+                sync.wait ();
+            }
+        }
+        System.setProperty ("netbeans.system_http_proxy", "DIRECT");
+        synchronized (sync) {
+            if (! "".equals (proxyPreferences.get ("proxyHttpHost", ""))) {
+                proxyPreferences.put ("proxyHttpHost", "");
+                sync.wait (10000);
+            }
+        }
+        synchronized (sync) {
+            if (ProxySettings.AUTO_DETECT_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
+                sync.wait ();
             }
         }
     }
@@ -286,6 +308,42 @@ public class HttpSettingsTest extends NbTestCase {
         assertEquals ("System Proxy Host: ", SYSTEM_PROXY_HOST, System.getProperty ("http.proxyHost"));
         assertEquals ("System Proxy Port: ", SYSTEM_PROXY_PORT, System.getProperty ("http.proxyPort"));
     }    
+    
+    public void testSwitchAutoAndManualMode () throws Exception {
+        setUpAutoDirect ();
+        
+        // ensure auto detect mode
+        assertEquals("Proxy type AUTO_DETECT_PROXY.",
+                     ProxySettings.AUTO_DETECT_PROXY,
+                     ProxySettings.getProxyType());
+        assertEquals ("Auto Proxy Host from System.getProperty(): ", null, System.getProperty ("http.proxyHost"));
+        assertEquals ("Auto Proxy Port from System.getProperty(): ", null, System.getProperty ("http.proxyPort"));
+        
+        // switch to manual
+        proxyPreferences.put ("proxyHttpHost", "foo");
+        synchronized (sync) {
+            if (ProxySettings.MANUAL_SET_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
+                sync.wait ();
+            }
+        }
+        assertEquals ("Proxy type MANUAL_SET_PROXY.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
+        assertEquals ("Auto Proxy Host from System.getProperty(): ", "foo", System.getProperty ("http.proxyHost"));
+        
+        // switch back to auto detect
+        synchronized (sync) {
+            if (ProxySettings.AUTO_DETECT_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
+                sync.wait ();
+            }
+        }
+        assertEquals("Proxy type AUTO_DETECT_PROXY.",
+                     ProxySettings.AUTO_DETECT_PROXY,
+                     ProxySettings.getProxyType());
+        assertEquals ("Auto Proxy Host from System.getProperty(): ", null, System.getProperty ("http.proxyHost"));
+        assertEquals ("Auto Proxy Port from System.getProperty(): ", null, System.getProperty ("http.proxyPort"));
+        
+    }
     
     private Object getEventQueueSync() {
         try {

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,7 +45,7 @@ public final class NbProxySelector extends ProxySelector {
     private ProxySelector original = null;
     private Logger log = Logger.getLogger (NbProxySelector.class.getName ());
     private Object useSystemProxies;
-    private final static String EMPTY_VALUE = "n/a";
+//    private final static String EMPTY_VALUE = "n/a";
         
     /** Creates a new instance of NbProxySelector */
     public NbProxySelector () {
@@ -140,11 +140,16 @@ public final class NbProxySelector extends ProxySelector {
         String sHost = null, sPort = null;
         int proxyType = ProxySettings.getProxyType ();
         if (ProxySettings.DIRECT_CONNECTION == proxyType) {
-            host = EMPTY_VALUE;
-            port = EMPTY_VALUE;
-            nonProxyHosts = EMPTY_VALUE;
-            sHost = EMPTY_VALUE;
-            sPort = EMPTY_VALUE;
+//            host = EMPTY_VALUE;
+//            port = EMPTY_VALUE;
+//            nonProxyHosts = EMPTY_VALUE;
+//            sHost = EMPTY_VALUE;
+//            sPort = EMPTY_VALUE;
+            host = null;
+            port = null;
+            nonProxyHosts = null;
+            sHost = null;
+            sPort = null;
         } else if (ProxySettings.AUTO_DETECT_PROXY == proxyType) {
             host = ProxySettings.SystemProxySettings.getHttpHost ();
             port = ProxySettings.SystemProxySettings.getHttpPort ();
@@ -160,79 +165,103 @@ public final class NbProxySelector extends ProxySelector {
         } else {
             assert false : "Invalid proxy type: " + proxyType;
         }
-        if (host != null && host.length() > 0) {
-            if (EMPTY_VALUE.equals (host)) {
-                System.clearProperty ("http.proxyHost");
-            } else {
-                System.setProperty ("http.proxyHost", host);
-            }
-        }
-        if (port != null && port.length() > 0) {
-            if (EMPTY_VALUE.equals (port)) {
-                System.clearProperty ("http.proxyPort");
-            } else {
-                try {
-                    Integer.parseInt (port);
-                    System.setProperty ("http.proxyPort", port);
-                } catch (NumberFormatException nfe) {
-                    log.log (Level.INFO, nfe.getMessage(), nfe);
-                }
-            }
-        }
-        if (nonProxyHosts != null && nonProxyHosts.length() > 0) {
-            if (EMPTY_VALUE.equals (nonProxyHosts)) {
-                System.clearProperty ("http.nonProxyHosts");
-            } else {
-                System.setProperty ("http.nonProxyHosts", nonProxyHosts);
-            }
-        }
-        if (host != null && host.length() > 0) {
-            if (EMPTY_VALUE.equals (host)) {
-                System.clearProperty ("https.proxyHost");
-            } else {
-                System.setProperty ("https.proxyHost", host);
-            }
-        }
-        if (port != null && port.length() > 0) {
-            if (EMPTY_VALUE.equals (port)) {
-                System.clearProperty ("https.proxyPort");
-            } else {
-                try {
-                    Integer.parseInt (port);
-                    System.setProperty ("https.proxyPort", port);
-                } catch (NumberFormatException nfe) {
-                    log.log (Level.INFO, nfe.getMessage(), nfe);
-                }
-            }
-        }
-        if (nonProxyHosts != null && nonProxyHosts.length() > 0) {
-            if (EMPTY_VALUE.equals (nonProxyHosts)) {
-                System.clearProperty ("https.nonProxyHosts");
-            } else {
-                System.setProperty ("https.nonProxyHosts", nonProxyHosts);
-            }
-        }
-        if (sHost != null && sHost.length() > 0) {
-            if (EMPTY_VALUE.equals (sHost)) {
-                System.clearProperty ("socksProxyHost");
-            } else {
-                System.setProperty ("socksProxyHost", sHost);
-            }
-        }
-        if (sPort != null && sPort.length() > 0) {
-            if (EMPTY_VALUE.equals (sPort)) {
-                System.clearProperty ("socksProxyPort");
-            } else {
-                try {
-                    Integer.parseInt (port);
-                    System.setProperty ("socksProxyPort", sPort);
-                } catch (NumberFormatException nfe) {
-                    log.log (Level.INFO, nfe.getMessage(), nfe);
-                }
-            }
-        }
+//        if (host != null && host.length() > 0) {
+//            if (EMPTY_VALUE.equals (host)) {
+//                System.clearProperty ("http.proxyHost");
+//            } else {
+//                System.setProperty ("http.proxyHost", host);
+//            }
+//        }
+//        if (port != null && port.length() > 0) {
+//            if (EMPTY_VALUE.equals (port)) {
+//                System.clearProperty ("http.proxyPort");
+//            } else {
+//                try {
+//                    Integer.parseInt (port);
+//                    System.setProperty ("http.proxyPort", port);
+//                } catch (NumberFormatException nfe) {
+//                    log.log (Level.INFO, nfe.getMessage(), nfe);
+//                }
+//            }
+//        }
+//        if (nonProxyHosts != null && nonProxyHosts.length() > 0) {
+//            if (EMPTY_VALUE.equals (nonProxyHosts)) {
+//                System.clearProperty ("http.nonProxyHosts");
+//            } else {
+//                System.setProperty ("http.nonProxyHosts", nonProxyHosts);
+//            }
+//        }
+//        if (host != null && host.length() > 0) {
+//            if (EMPTY_VALUE.equals (host)) {
+//                System.clearProperty ("https.proxyHost");
+//            } else {
+//                System.setProperty ("https.proxyHost", host);
+//            }
+//        }
+//        if (port != null && port.length() > 0) {
+//            if (EMPTY_VALUE.equals (port)) {
+//                System.clearProperty ("https.proxyPort");
+//            } else {
+//                try {
+//                    Integer.parseInt (port);
+//                    System.setProperty ("https.proxyPort", port);
+//                } catch (NumberFormatException nfe) {
+//                    log.log (Level.INFO, nfe.getMessage(), nfe);
+//                }
+//            }
+//        }
+//        if (nonProxyHosts != null && nonProxyHosts.length() > 0) {
+//            if (EMPTY_VALUE.equals (nonProxyHosts)) {
+//                System.clearProperty ("https.nonProxyHosts");
+//            } else {
+//                System.setProperty ("https.nonProxyHosts", nonProxyHosts);
+//            }
+//        }
+//        if (sHost != null && sHost.length() > 0) {
+//            if (EMPTY_VALUE.equals (sHost)) {
+//                System.clearProperty ("socksProxyHost");
+//            } else {
+//                System.setProperty ("socksProxyHost", sHost);
+//            }
+//        }
+//        if (sPort != null && sPort.length() > 0) {
+//            if (EMPTY_VALUE.equals (sPort)) {
+//                System.clearProperty ("socksProxyPort");
+//            } else {
+//                try {
+//                    Integer.parseInt (port);
+//                    System.setProperty ("socksProxyPort", sPort);
+//                } catch (NumberFormatException nfe) {
+//                    log.log (Level.INFO, nfe.getMessage(), nfe);
+//                }
+//            }
+//        }
+        setOrClearProperty ("http.proxyHost", host, false);
+        setOrClearProperty ("http.proxyPort", port, true);
+        setOrClearProperty ("http.nonProxyHosts", nonProxyHosts, false);
+        setOrClearProperty ("https.proxyHost", host, false);
+        setOrClearProperty ("https.proxyPort", port, true);
+        setOrClearProperty ("https.nonProxyHosts", nonProxyHosts, false);
+        setOrClearProperty ("socksProxyHost", sHost, false);
+        setOrClearProperty ("socksProxyPort", sPort, true);
         log.finest ("Set System's http.proxyHost/Port/NonProxyHost to " + host + "/" + port + "/" + nonProxyHosts);
         log.finest ("Set System's socksProxyHost/Port to " + sHost + "/" + sPort);
+    }
+    
+    private void setOrClearProperty (String key, String value, boolean isInteger) {
+        assert key != null;
+        if (value == null || value.length () == 0) {
+            System.clearProperty (key);
+        } else {
+            if (isInteger) {
+                try {
+                    Integer.parseInt (value);
+                } catch (NumberFormatException nfe) {
+                    log.log (Level.INFO, nfe.getMessage(), nfe);
+                }
+            }
+            System.setProperty (key, value);
+        }
     }
 
     private boolean dontUseProxy (String nonProxyHosts, String host) {

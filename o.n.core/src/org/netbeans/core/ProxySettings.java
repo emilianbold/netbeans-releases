@@ -48,6 +48,7 @@ public class ProxySettings {
     public static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername";
     public static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword";
     public static final String USE_PROXY_ALL_PROTOCOLS = "useProxyAllProtocols";
+    public static final String DIRECT = "DIRECT";
     
     private static String presetNonProxyHosts;
 
@@ -176,7 +177,8 @@ public class ProxySettings {
 
         // helper methods
         private static boolean isSystemProxyDetect () {
-            return System.getProperty ("netbeans.system_http_proxy") != null; // NOI18N
+            String s = System.getProperty ("netbeans.system_http_proxy"); // NOT_PROXY_HOSTS
+            return s != null && ! DIRECT.equals (s); // NOI18N
         }
 
         private static String getSystemProxyHost () {
