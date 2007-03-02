@@ -1234,11 +1234,12 @@ public class DndHandler /*extends TransferHandler*/ {
         Element droppeeElement = box == null ? null : box.getElement();
         DesignBean droppeeBean = box == null ? null : getDroppee(box);
         boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
-        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, webform);
+        DesignBean defaultParentBean = webform.getDefaultParentBean();
+        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
     }
     
     private static HtmlDomProvider.Location doComputeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset,
-    Dimension dropSize, boolean isGrid, Element droppeeElement, DesignBean droppeeBean, WebForm webform) {
+    Dimension dropSize, boolean isGrid, Element droppeeElement, DesignBean droppeeBean, /*WebForm webform*/DesignBean defaultParentBean) {
         HtmlDomProvider.Location location = new HtmlDomProvider.Location();
         location.facet = facet;
         location.coordinates = canvasPos;
@@ -1356,7 +1357,8 @@ public class DndHandler /*extends TransferHandler*/ {
         // the the br is the last element under the default parent.
         if ((under == null) && (before == null)) {
             if (parent == null) {
-                parent = webform.getDefaultParentBean();
+//                parent = webform.getDefaultParentBean();
+                parent = defaultParentBean;
             }
             location.pos = getDefaultMarkupPositionUnderParent(parent/*, webform*/);
         } else {
