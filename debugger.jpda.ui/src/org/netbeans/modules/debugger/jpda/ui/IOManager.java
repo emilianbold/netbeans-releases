@@ -53,6 +53,7 @@ public class IOManager {
     
     protected InputOutput                   debuggerIO = null;
     private OutputWriter                    debuggerOut;
+    private OutputWriter                    debuggerErr;
     private String                          name;
     private boolean                         closed = false;
     
@@ -66,7 +67,9 @@ public class IOManager {
     public IOManager(String title) {
         debuggerIO = IOProvider.getDefault ().getIO (title, true);
         debuggerIO.setFocusTaken (false);
+        debuggerIO.setErrSeparated(false);
         debuggerOut = debuggerIO.getOut ();
+        debuggerErr = debuggerIO.getErr();
         debuggerIO.select();
     }
     
@@ -108,17 +111,25 @@ public class IOManager {
                             Text t = (Text) buffer.removeFirst ();
                             try {
                                 //if ((t.where & DEBUGGER_OUT) != 0) {
+                                    Listener listener;
                                     if (t.line != null) {
-                                        debuggerOut.println (t.text, listener, t.important);
-                                        if (t.important) {
-                                            debuggerIO.select();
-                                        }
+                                        listener = IOManager.this.listener;
                                         lines.put (t.text, t.line);
-                                    } else
-                                        debuggerOut.println (t.text);
-                                    debuggerOut.flush ();
-                                    if (closed)
+                                    } else {
+                                        listener = null;
+                                    }
+                                    if (t.important) {
+                                        debuggerErr.println (t.text, listener, t.important);
+                                        debuggerIO.select();
+                                        debuggerErr.flush();
+                                    } else {
+                                        debuggerOut.println (t.text, listener, t.important);
+                                        debuggerOut.flush();
+                                    }
+                                    if (closed) {
                                         debuggerOut.close ();
+                                        debuggerErr.close();
+                                    }
                                 //}
                                // if ((t.where & STATUS_OUT) != 0) 
                                     StatusDisplayer.getDefault ().setStatusText (t.text);

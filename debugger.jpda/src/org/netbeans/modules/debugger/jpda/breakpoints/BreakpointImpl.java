@@ -121,13 +121,16 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     }
 
     public void propertyChange (PropertyChangeEvent evt) {
-        if (Breakpoint.PROP_DISPOSED.equals(evt.getPropertyName())) {
+        String propertyName = evt.getPropertyName();
+        if (Breakpoint.PROP_DISPOSED.equals(propertyName)) {
             remove();
-        } else {
+        } else if (!Breakpoint.PROP_VALIDITY.equals(propertyName)) {
             if (reader != null) {
                 reader.storeCachedClassName(breakpoint, null);
             }
-            update ();
+            if (Breakpoint.PROP_ENABLED.equals(propertyName)) {
+                update ();
+            }
         }
     }
 

@@ -19,6 +19,9 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.debugger.Breakpoint;
 
 /**
  * Notifies about variable change or access events.
@@ -35,7 +38,7 @@ package org.netbeans.api.debugger.jpda;
  *
  * @author Jan Jancura
  */
-public final class FieldBreakpoint extends JPDABreakpoint {
+public class FieldBreakpoint extends JPDABreakpoint {
 
     /** Property name constant. */
     public static final String      PROP_FIELD_NAME = "fieldName"; // NOI18N
@@ -74,7 +77,7 @@ public final class FieldBreakpoint extends JPDABreakpoint {
         String fieldName,
         int breakpointType
     ) {
-        FieldBreakpoint b = new FieldBreakpoint ();
+        FieldBreakpoint b = new FieldBreakpointImpl ();
         b.setClassName (className);
         b.setFieldName (fieldName);
         b.setBreakpointType (breakpointType);
@@ -187,5 +190,17 @@ public final class FieldBreakpoint extends JPDABreakpoint {
      */
     public String toString () {
         return "FieldBreakpoint " + className + "." + fieldName;
+    }
+    
+    private static final class FieldBreakpointImpl extends FieldBreakpoint implements ChangeListener {
+        
+        public void stateChanged(ChangeEvent chev) {
+            Object source = chev.getSource();
+            if (source instanceof Breakpoint.VALIDITY) {
+                setValidity((Breakpoint.VALIDITY) source, chev.toString());
+            } else {
+                throw new UnsupportedOperationException(chev.toString());
+            }
+        }
     }
 }

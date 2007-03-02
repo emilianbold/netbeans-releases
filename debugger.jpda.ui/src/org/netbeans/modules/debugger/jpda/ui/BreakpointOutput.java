@@ -167,7 +167,30 @@ PropertyChangeListener {
                             debugger
                         );
                     }
-                    ioManager.println (printText, line, true);
+                    ioManager.println (printText, null, true);
+                    if (line != null) {
+                        ioManager.println(
+                                NbBundle.getMessage(BreakpointOutput.class, "Link_InvalidBreakpoint", bp.toString()),
+                                line, true);
+                    }
+                }
+            } else if (JPDABreakpoint.VALIDITY.VALID.equals(evt.getNewValue())) {
+                JPDABreakpoint bp = (JPDABreakpoint) evt.getSource();
+                synchronized (lock) {
+                    if (ioManager == null) {
+                        lookupIOManager ();
+                        if (ioManager == null) return;
+                    }
+                    String printText = NbBundle.getMessage(BreakpointOutput.class, "MSG_ValidBreakpoint", bp.toString());
+                    IOManager.Line line = null;
+                    if (bp instanceof LineBreakpoint) {
+                        line = new IOManager.Line (
+                            ((LineBreakpoint) bp).getURL(),
+                            ((LineBreakpoint) bp).getLineNumber(),
+                            debugger
+                        );
+                    }
+                    ioManager.println (printText, line, false);
                 }
             }
             return ;

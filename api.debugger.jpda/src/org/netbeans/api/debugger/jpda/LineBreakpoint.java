@@ -302,7 +302,17 @@ public class LineBreakpoint extends JPDABreakpoint {
      * @return  a string representation of the object
      */
     public String toString () {
-        return "LineBreakpoint " + url + " : " + lineNumber;
+        String fileName = null;
+        try {
+            FileObject fo = URLMapper.findFileObject(new URL(url));
+            if (fo != null) {
+                fileName = fo.getNameExt();
+            }
+        } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+        if (fileName == null) fileName = url;
+        return "LineBreakpoint " + fileName + " : " + lineNumber;
     }
     
     private static class LineBreakpointImpl extends LineBreakpoint 

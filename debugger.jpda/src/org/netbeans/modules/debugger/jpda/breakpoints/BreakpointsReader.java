@@ -101,7 +101,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             }
             b = lb;
         }
-        if (typeID.equals (MethodBreakpoint.class.getName ())) {
+        if (typeID.equals (MethodBreakpoint.class.getName ()) ||
+                typeID.equals (MethodBreakpoint.class.getName ()+"$MethodBreakpointImpl")) {
             MethodBreakpoint mb = MethodBreakpoint.create ();
             mb.setClassFilters (
                 (String[]) properties.getArray (
@@ -175,7 +176,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             }
             b = eb;
         }
-        if (typeID.equals (FieldBreakpoint.class.getName ())) {
+        if (typeID.equals (FieldBreakpoint.class.getName ()) ||
+                typeID.equals (FieldBreakpoint.class.getName ()+"$FieldBreakpointImpl")) {
             FieldBreakpoint fb = FieldBreakpoint.create (
                 properties.getString (FieldBreakpoint.PROP_CLASS_NAME, null),
                 properties.getString (FieldBreakpoint.PROP_FIELD_NAME, null),

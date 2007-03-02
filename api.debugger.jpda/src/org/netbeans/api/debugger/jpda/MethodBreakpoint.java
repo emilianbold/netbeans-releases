@@ -19,6 +19,9 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.debugger.Breakpoint;
 
 /**
  * Notifies about method entry events.
@@ -35,7 +38,7 @@ package org.netbeans.api.debugger.jpda;
  *
  * @author Jan Jancura
  */
-public final class MethodBreakpoint extends JPDABreakpoint {
+public class MethodBreakpoint extends JPDABreakpoint {
 
     /** Property name constant */
     public static final String          PROP_METHOD_NAME = "methodName"; // NOI18N
@@ -75,7 +78,7 @@ public final class MethodBreakpoint extends JPDABreakpoint {
         String className,
         String methodName
     ) {
-        MethodBreakpoint b = new MethodBreakpoint ();
+        MethodBreakpoint b = new MethodBreakpointImpl ();
         b.setClassFilters (new String[] {className});
         b.setMethodName (methodName);
         return b;
@@ -88,7 +91,7 @@ public final class MethodBreakpoint extends JPDABreakpoint {
      */
     public static MethodBreakpoint create (
     ) {
-        MethodBreakpoint b = new MethodBreakpoint ();
+        MethodBreakpoint b = new MethodBreakpointImpl ();
         return b;
     }
 
@@ -212,6 +215,18 @@ public final class MethodBreakpoint extends JPDABreakpoint {
      * @return  a string representation of the object
      */
     public String toString () {
-        return "MethodBreakpoint " + classFilters + "." + methodName;
+        return "MethodBreakpoint " + java.util.Arrays.asList(classFilters).toString() + "." + methodName;
+    }
+    
+    private static final class MethodBreakpointImpl extends MethodBreakpoint implements ChangeListener {
+        
+        public void stateChanged(ChangeEvent chev) {
+            Object source = chev.getSource();
+            if (source instanceof Breakpoint.VALIDITY) {
+                setValidity((Breakpoint.VALIDITY) source, chev.toString());
+            } else {
+                throw new UnsupportedOperationException(chev.toString());
+            }
+        }
     }
 }

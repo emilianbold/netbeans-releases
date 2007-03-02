@@ -22,7 +22,6 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
-
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
@@ -39,11 +38,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
+import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.util.NbBundle;
 
 /**
 * Implementation of method breakpoint.
@@ -164,10 +164,11 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         MethodExitRequest exitReq = null;
         Set<String> entryMethodNames = null;
         Set<String> exitMethodNames = null;
+        boolean locationEntry = false;
+        String methodName = breakpoint.getMethodName();
         while (methods.hasNext ()) {
             Method method = (Method) methods.next ();
-            if ( (match (method.name (), breakpoint.getMethodName ()) ||
-                  breakpoint.getMethodName().equals(""))) {
+            if (methodName.equals("") || match (method.name (), methodName)) {
                 
                 if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_ENTRY) != 0) {
                     if (method.location () != null && !method.isNative()) {
@@ -178,6 +179,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                             addEventRequest (br);
                         } catch (VMDisconnectedException e) {
                         }
+                        locationEntry = true;
                     } else {
                         if (entryReq == null) {
                             entryReq = getEventRequestManager().
@@ -206,6 +208,12 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         }
         if (exitReq != null) {
             addEventRequest(exitReq);
+        }
+        if (locationEntry || entryReq != null || exitReq != null) {
+            setValidity(VALIDITY.VALID, null);
+        } else {
+            setValidity(VALIDITY.INVALID,
+                    NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethod", referenceType.name(), methodName));
         }
     }
 }

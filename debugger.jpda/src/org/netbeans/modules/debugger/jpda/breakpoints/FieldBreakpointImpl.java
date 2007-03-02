@@ -29,12 +29,12 @@ import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
-
+import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
-
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.util.NbBundle;
 
 /**
 * Implementation of breakpoint on method.
@@ -64,6 +64,11 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     
     protected void classLoaded (ReferenceType referenceType) {
         Field f = referenceType.fieldByName (breakpoint.getFieldName ());
+        if (f == null) {
+            setValidity(VALIDITY.INVALID,
+                    NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoField", referenceType.name(), breakpoint.getFieldName ()));
+            return ;
+        }
         try {
             if ( (breakpoint.getBreakpointType () & 
                   FieldBreakpoint.TYPE_ACCESS) != 0
@@ -79,6 +84,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
                     createModificationWatchpointRequest (f);
                 addEventRequest (mwr);
             }
+            setValidity(VALIDITY.VALID, null);
         } catch (VMDisconnectedException e) {
         }
     }
