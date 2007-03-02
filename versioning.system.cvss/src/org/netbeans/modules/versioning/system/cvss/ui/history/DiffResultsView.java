@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -115,8 +115,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             Runnable runnable = new Runnable() {
                 public void run() {
                     if (treeView.getSelection().length == 0) return;
-                    SearchHistoryPanel.ResultsContainer container1 = (SearchHistoryPanel.ResultsContainer) nodes[0].getLookup().lookup(SearchHistoryPanel.ResultsContainer.class);
-                    SearchHistoryPanel.DispRevision r1 = (SearchHistoryPanel.DispRevision) nodes[0].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
+                    SearchHistoryPanel.ResultsContainer container1 = nodes[0].getLookup().lookup(SearchHistoryPanel.ResultsContainer.class);
+                    SearchHistoryPanel.DispRevision r1 = nodes[0].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
                     try {
                         if (r1 == null || !r1.isBranchRoot()) {
                             currentIndex = treeView.getSelection()[0];
@@ -128,14 +128,14 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                                     showRevisionDiff(r1, onSelectionshowLastDifference);
                                 }
                             } else if (nodes.length == 2) {
-                                SearchHistoryPanel.DispRevision r2 = (SearchHistoryPanel.DispRevision) nodes[1].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
+                                SearchHistoryPanel.DispRevision r2 = nodes[1].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
                                 if (r2.isBranchRoot()) throw new Exception();
                                 if (r2.getRevision().getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
                                     throw new Exception();
                                 }
                                 String revision1 = r1.getRevision().getNumber();
                                 String revision2 = r2.getRevision().getNumber();
-                                if (compareRevisions(revision1, revision2) == 1) {
+                                if (SearchHistoryPanel.compareRevisions(revision1, revision2) == 1) {
                                     revision2 = r1.getRevision().getNumber();
                                     revision1 = r2.getRevision().getNumber();
                                 }
@@ -155,22 +155,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         }
     }
 
-    private static int compareRevisions(String r1, String r2) {
-        StringTokenizer st1 = new StringTokenizer(r1, "."); // NOI18N
-        StringTokenizer st2 = new StringTokenizer(r2, "."); // NOI18N
-        for (;;) {
-            if (!st1.hasMoreTokens()) {
-                return st2.hasMoreTokens() ? -1 : 0;
-            }
-            if (!st2.hasMoreTokens()) {
-                return st1.hasMoreTokens() ? 1 : 0;
-            }
-            int n1 = Integer.parseInt(st1.nextToken());
-            int n2 = Integer.parseInt(st2.nextToken());
-            if (n1 != n2) return n1 - n2;
-        }
-    }
-    
     private void showDiffError(String s) {
         setBottomComponent(new NoContentPanel(s));
     }
@@ -210,7 +194,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         String revision1;
         if (revision2 == VersionsCache.REVISION_CURRENT) {
             SearchHistoryPanel.ResultsContainer container = findParent(rev);
-            SearchHistoryPanel.DispRevision newest = (SearchHistoryPanel.DispRevision) container.getRevisions().get(1);
+            SearchHistoryPanel.DispRevision newest = container.getRevisions().get(1);
             revision1 = newest.getRevision().getNumber();
         } else {
             revision1 = Utils.previousRevision(revision2);
@@ -288,6 +272,23 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     void select(SearchHistoryPanel.ResultsContainer container) {
         treeView.requestFocusInWindow();
         treeView.setSelection(container);
+    }
+
+    /**
+     * @return Collection<Object> currently selected items in the view or an empty Collection.
+     */
+    List<Object> getSelection() {
+        Node [] nodes = ExplorerManager.find(treeView).getSelectedNodes();
+        List<Object> selection = new ArrayList<Object>(nodes.length);
+        for (Node node : nodes) {
+            RevisionNode rnode = (RevisionNode) node;
+            if (rnode.getContainer() != null) {
+                selection.add(rnode.getContainer());
+            } else {
+                selection.add(rnode.getDispRevision());
+            }
+        }
+        return selection;
     }
 
     private class ShowDiffTask implements Runnable, Cancellable {

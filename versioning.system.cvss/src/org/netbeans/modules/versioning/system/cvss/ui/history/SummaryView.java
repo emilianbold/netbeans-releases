@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -319,9 +319,6 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
         if (container != null) {
             String eldest = container.getEldestRevision();
-            if (eldest == null) {
-                eldest = ((SearchHistoryPanel.DispRevision) container.getRevisions().get(container.getRevisions().size() - 1)).getRevision().getNumber();
-            }
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_Diff", eldest, container.getNewestRevision())) {
                 public void actionPerformed(ActionEvent e) {
                     diffPrevious(selection[0]);
@@ -451,7 +448,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
-            ViewCookie view = (ViewCookie) new RevisionNode(drev).getCookie(ViewCookie.class);
+            ViewCookie view = new RevisionNode(drev).getCookie(ViewCookie.class);
             if (view != null) {
                 view.view();
             }
@@ -497,6 +494,17 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     
     public JComponent getComponent() {
         return scrollPane;
+    }
+
+    /**
+     * @return Collection<Object> currently selected items in the view or an empty Collection.
+     */
+    List<Object> getSelection() {
+        List<Object> selection = new ArrayList<Object>();
+        for (int i : resultsList.getSelectedIndices()) {
+            selection.add(dispResults.get(i));
+        }
+        return selection;
     }
 
     private class SummaryListModel extends AbstractListModel {

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -57,13 +57,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private final SearchCriteriaPanel   criteria;
     
     private Divider                 divider;
-    private SearchExecutor          currentSearch;
     private RequestProcessor.Task   currentSearchTask;
 
     private boolean                 criteriaVisible;
     private boolean                 searchInProgress;
     private List                    results;
-    private List                    dispResults;
+    private List<Object>            dispResults;
     private SummaryView             summaryView;    
     private DiffResultsView         diffView;
     
@@ -255,7 +254,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             p = Utils.getProject(file);
             if (p == null) p = NULL_PROJECT;
             fileProjects.put(file, p);
-            int n = fileProjects.size();
         }
         if (p == NULL_PROJECT) p = null;
         return p;
@@ -274,16 +272,16 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             currentSearchTask.cancel();
         }
         setResults(null, true);
-        currentSearch = new SearchExecutor(this);
+        SearchExecutor currentSearch = new SearchExecutor(this);
         currentSearchTask = RequestProcessor.getDefault().create(currentSearch);
         currentSearchTask.schedule(0);
     }
     
-    private List createDisplayList(List<LogInformation.Revision> inputList) {
+    private List<Object> createDisplayList(List<LogInformation.Revision> inputList) {
         List dispResults = new ArrayList();
         if (inputList.isEmpty()) return dispResults;
         
-        List<LogInformation.Revision> list = new ArrayList(inputList);
+        List<LogInformation.Revision> list = new ArrayList<LogInformation.Revision>(inputList);
         Collections.sort(list, new ByRemotePathRevisionNumberComparator());
 
         List<DispRevision> rs = new ArrayList<DispRevision>(list.size());
@@ -319,7 +317,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         
         ResultsContainer currentContainer = null;
         
-        currentContainer = new ResultsContainer(((DispRevision) rs.get(0)).getRevision().getLogInfoHeader());
+        currentContainer = new ResultsContainer((rs.get(0)).getRevision().getLogInfoHeader());
         currentContainer.add(createLocalRevision((rs.get(0)).getRevision().getLogInfoHeader()));
         dispResults.add(currentContainer);
         
@@ -404,16 +402,37 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
      * It return empty collection on non-atomic
      * revision ranges. XXX move this logic to clients?
      */
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         if (dispResults == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
-        List setups = new ArrayList(dispResults.size());
-        Iterator it = dispResults.iterator();
-        while (it.hasNext()) {
-            ResultsContainer entry = (ResultsContainer) it.next();
-            File file = entry.getHeader().getFile();
 
+        List<Object> selectedItems = dispResults;
+        if (tbSummary.isSelected()) {
+            selectedItems = summaryView.getSelection();
+        } else {
+            selectedItems = diffView.getSelection();
+        }
+        
+        // treat empty selection as all-containers selection
+        if (selectedItems.size() == 0) {
+            for (Object o : dispResults) {
+                if (o instanceof ResultsContainer) {
+                    selectedItems.add(o);
+                }
+            }
+        }
+
+        // group selected revisions by its container, taking the oldest and newest revisions, producing a patch
+        // for container-only selections produce eldest-newest patches in them
+        List<Setup> setups = new ArrayList<Setup>(selectedItems.size());
+        Set<LogInformation> includedFiles = new HashSet<LogInformation>();
+        
+        for (Object item : selectedItems) {
+            if (!(item instanceof ResultsContainer)) continue;
+            ResultsContainer entry = (ResultsContainer) item;
+            File file = entry.getHeader().getFile();
+            
             boolean atomicRange = true;
             String prev = null;
             List revisions = entry.getRevisions();
@@ -421,8 +440,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             while (revs.hasNext()) {
                 DispRevision revision = (DispRevision) revs.next();
                 String rev = revision.getRevision().getNumber();
+                if (VersionsCache.REVISION_CURRENT.equals(rev)) {
+                    // skip Local Copy revisions
+                    continue;
+                }
                 if (prev != null) {
-                    if (prev.equals(Utils.previousRevision(rev)) == false) {
+                    if (!rev.equals(Utils.previousRevision(prev))) {
                         atomicRange = false;
                         break;
                     }
@@ -430,15 +453,48 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 prev = rev;
             }
 
-            if (atomicRange == false) {
-                return Collections.EMPTY_SET;
+            // skip containers with non-atomic range of revisions, the patch would make no sense
+            if (!atomicRange) {
+                continue;
             }
 
             String eldest = entry.getEldestRevision();
             String newest = entry.getNewestRevision();
             Setup setup = new Setup(file, eldest, newest);
+            includedFiles.add(entry.getHeader());
             setups.add(setup);
         }
+        
+        for (int i = 0; i < selectedItems.size(); i++) {
+            Object item = selectedItems.get(i);
+            if (!(item instanceof DispRevision)) continue;
+            DispRevision rev1 = (DispRevision) item;
+            LogInformation header = rev1.getRevision().getLogInfoHeader();
+            if (includedFiles.contains(header)) continue;            
+            String r1 = rev1.getRevision().getNumber();
+            String r2 = r1;
+            for (int j = i + 1; j < selectedItems.size(); j++) {
+                Object item2 = selectedItems.get(j);
+                if (!(item2 instanceof DispRevision)) continue;
+                DispRevision rev2 = (DispRevision) item2;
+                if (header.equals(rev2.getRevision().getLogInfoHeader())) {
+                    r2 = rev2.getRevision().getNumber();
+                }
+            }
+            if (r2 == null) continue;
+            if (compareRevisions(r1, r2) > 0) {
+                String tmp = r2;
+                r2 = r1;
+                r1 = tmp;
+            }
+            if (Utils.previousRevision(r1) != null) {
+                r1 = Utils.previousRevision(r1);  
+            }
+            Setup setup = new Setup(header.getFile(), r1, r2);
+            includedFiles.add(header);
+            setups.add(setup);
+        }
+        
         return setups;
     }
 
@@ -482,13 +538,20 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             return revisions;
         }
 
+        /**
+         * @return String previous revision before the eldest revision in the container (if the eldest is 1.6 then 1.5 is returned). 
+         * If the container contains revision 1.1 then 1.1 is returned. 
+         */
         public String getEldestRevision() {
             DispRevision rev = revisions.get(revisions.size() - 1);
-            return Utils.previousRevision(rev.getRevision().getNumber());
+            String revNumber = Utils.previousRevision(rev.getRevision().getNumber());
+            return revNumber != null ? revNumber : rev.getRevision().getNumber();
         }
 
         public String getNewestRevision() {
-            return revisions.get(0).getRevision().getNumber();
+            String newest = revisions.get(0).getRevision().getNumber(); 
+            if (VersionsCache.REVISION_CURRENT.equals(newest)) newest = revisions.get(1).getRevision().getNumber();
+            return newest;
         }
         
         public String getPath() {
@@ -632,11 +695,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             if (namec != 0) return namec;
             namec = r1.getLogInfoHeader().getRepositoryFilename().compareToIgnoreCase(r2.getLogInfoHeader().getRepositoryFilename());
             if (namec != 0) return namec;
-            return compareRevisions(r1.getNumber(), r2.getNumber());
+            return compareRevisionsTrunkFirst(r1.getNumber(), r2.getNumber());
         }
     }
     
-    public static int compareRevisions(String r1, String r2) {
+    public static int compareRevisionsTrunkFirst(String r1, String r2) {
         StringTokenizer st1 = new StringTokenizer(r1, "."); // NOI18N
         StringTokenizer st2 = new StringTokenizer(r2, "."); // NOI18N
         for (;;) {
@@ -652,6 +715,29 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
     }
     
+    /**
+     * 
+     * @param r1
+     * @param r2
+     * @return negative integer if r1 is older than r2, positive integer if r1 is newer than r2, 0 if both revisions are equal
+     */
+    public static int compareRevisions(String r1, String r2) {
+        if (r1.equals(r2)) return 0;
+        StringTokenizer st1 = new StringTokenizer(r1, "."); // NOI18N
+        StringTokenizer st2 = new StringTokenizer(r2, "."); // NOI18N
+        for (;;) {
+            if (!st1.hasMoreTokens()) {
+                return -1;
+            }
+            if (!st2.hasMoreTokens()) {
+                return 1;
+            }
+            int n1 = Integer.parseInt(st1.nextToken());
+            int n2 = Integer.parseInt(st2.nextToken());
+            if (n1 != n2) return n1 - n2;
+        }
+    }
+        
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

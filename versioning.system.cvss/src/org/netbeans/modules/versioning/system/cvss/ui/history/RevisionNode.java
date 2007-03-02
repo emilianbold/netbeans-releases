@@ -93,6 +93,10 @@ class RevisionNode extends AbstractNode {
         initProperties();
     }
 
+    SearchHistoryPanel.DispRevision getDispRevision() {
+        return revision;
+    }
+
     LogInformation.Revision getRevision() {
         return revision.getRevision();
     }
