@@ -2420,8 +2420,8 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //    }
 
-    /** Handle links where the target is a possibly nonvisual bean so has no element */
-    public void handleLinks(DesignBean droppee, ArrayList beans) {
+//    /** Handle links where the target is a possibly nonvisual bean so has no element */
+//    public void handleLinks(DesignBean droppee, ArrayList beans) {
 ////        Document document = webform.getDocument();
 //
 //        int n = beans.size();
@@ -2485,7 +2485,7 @@ public class DndHandler /*extends TransferHandler*/ {
 ////            document.writeUnlock();
 //            webform.getModel().writeUnlock(undoEvent);
 //        }
-    }
+//    }
 
     /**
      * Multi-function method dealing with link handling for components.
