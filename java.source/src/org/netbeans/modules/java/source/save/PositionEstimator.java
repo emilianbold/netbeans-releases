@@ -19,7 +19,6 @@
 package org.netbeans.modules.java.source.save;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.tools.javac.tree.JCTree;
@@ -636,7 +635,7 @@ abstract class PositionEstimator {
      * @return      relevant token identifier.
      *
      */
-    private static JavaTokenId moveToSrcRelevant(TokenSequence<JavaTokenId> seq,
+    protected static JavaTokenId moveToSrcRelevant(TokenSequence<JavaTokenId> seq,
                                                  Direction dir)
     {
         return moveToDifferentThan(seq, dir, nonRelevant);
@@ -726,7 +725,7 @@ abstract class PositionEstimator {
     /**
      * Represents the direction to move. Either forward or backward.
      */
-    private enum Direction {
+    protected enum Direction {
         FORWARD, BACKWARD;
     }
 }

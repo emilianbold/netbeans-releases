@@ -63,6 +63,7 @@ import static org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType.*
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
 import static org.netbeans.modules.java.source.save.TreeDiff.*;
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 public class CasualDiff {
     protected ListBuffer<Diff> diffs;
@@ -535,7 +536,21 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = getOldPos(oldT.init));
             localPointer = diffTree(oldT.init, newT.init, new int[] { localPointer, endPos(oldT.init) });
         } else {
-            diffTreeToken("=", endPos(oldT.init), oldT.init, newT.init, "");
+            if (oldT.init != null && newT.init == null) {
+                // remove initial value
+                int pos = getOldPos(oldT.init);
+                tokenSequence.move(pos);
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                tokenSequence.moveNext();
+                int to = tokenSequence.offset();
+                copyTo(localPointer, to);
+                localPointer = endPos(oldT.init);
+            }
+            if (oldT.init == null && newT.init != null) {
+                copyTo(localPointer, localPointer = endPos(oldT.init));
+                printer.print(newT.init);
+            }
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -2633,14 +2648,6 @@ public class CasualDiff {
         return listsMatch(t1.defs, t2.defs) && treesMatch(t1.expr, t2.expr);
     }
 
-    private void diffTreeToken(String preceding, int pos, JCTree t1, JCTree t2, String tail) {
-        if (t1 == t2) {
-            return;
-        } else {
-            append(Diff.modify(preceding, pos, t1, t2, tail, null));
-        }
-    }
-    
     private int[] getBounds(JCTree tree) {
         return new int[] { getOldPos(tree), endPos(tree) };
     }
