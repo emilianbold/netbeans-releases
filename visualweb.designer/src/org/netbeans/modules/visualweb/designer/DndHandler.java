@@ -889,8 +889,8 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //    }
 
-    public void bindOrMoveItems(int dropAction, DesignBean[] beans, Transferable t,
-    DesignBean dropNode, int nodePos, String facet) {
+//    public void bindOrMoveItems(int dropAction, DesignBean[] beans, Transferable t,
+//    DesignBean dropNode, int nodePos, String facet) {
 ////        Location location = computePositions((DesignBean)dropNode, nodePos, facet, null, null, false);
 //        Location location = computeLocationForBean((DesignBean)dropNode, nodePos, facet, null, getDropSize(), webform.getModel());
 //        doBindOrMoveItems(dropAction, beans, t, dropNode, nodePos, facet, location);
@@ -961,7 +961,7 @@ public class DndHandler /*extends TransferHandler*/ {
 ////            computePositions((DesignBean)dropNode, nodePos, facet, null, null, false);
 //        DesignBean parent = location.droppee;
 //        moveBeans(webform, beans, parent, location.pos);
-    }
+//    }
 
 //    /**
 //     * Move the given beans to the given parent and markup position.
