@@ -91,8 +91,8 @@ public class SimpleTableModelCD extends ComponentDescriptor {
         return new CodeSetterPresenter ()
             .addParameters (MidpParameter.create (PROP_VALUES, PROP_COLUMN_NAMES))
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (PROP_VALUES, PROP_COLUMN_NAMES))
-            .addSetters (MidpSetter.createSetter ("setValues", MidpVersionable.MIDP_2).addParameters (PROP_VALUES))
-            .addSetters (MidpSetter.createSetter ("setColumnNames", MidpVersionable.MIDP_2).addParameters (PROP_COLUMN_NAMES));
+            .addSetters (MidpSetter.createSetter ("setValues", MidpVersionable.MIDP_2).setArrayParameter(PROP_VALUES).addParameters (PROP_VALUES))
+            .addSetters (MidpSetter.createSetter ("setColumnNames", MidpVersionable.MIDP_2).setArrayParameter(PROP_COLUMN_NAMES).addParameters (PROP_COLUMN_NAMES));
     }
 
     protected List<? extends Presenter> createPresenters() {
