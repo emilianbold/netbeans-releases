@@ -786,6 +786,7 @@ public class DndHandler /*extends TransferHandler*/ {
 ////            document.writeUnlock();
 //            webform.getModel().writeUnlock(undoEvent);
 //        }
+        webform.importString(string, location, coordinateTranslator);
     }
 
 //    private void importStylesheet(final File file) {

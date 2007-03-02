@@ -102,6 +102,11 @@ class DndSupport {
         getFacesModel().getDnDSupport().importData(comp, t, transferData, dimension, new LocationImpl(location),
                 new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
     }
+    
+    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+        getFacesModel().getDnDSupport().importString(string, new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
+    }
+    
 
     DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, FacesDnDSupport.UpdateSuspender updateSuspender) {
         return getFacesModel().getDnDSupport().pasteBeans(t, parent, pos, location, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());

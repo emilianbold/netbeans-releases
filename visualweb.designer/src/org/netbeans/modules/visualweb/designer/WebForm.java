@@ -1643,6 +1643,10 @@ public class WebForm implements Designer {
         htmlDomProvider.importData(comp, t, transferData, dimension, location, coordinateTranslator, dropAction);
     }
 
+    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+        htmlDomProvider.importString(string, location, coordinateTranslator);
+    }
+
 //    public DesignBean findHtmlContainer(DesignBean parent) {
 //        return htmlDomProvider.findHtmlContainer(parent);
 //    }
