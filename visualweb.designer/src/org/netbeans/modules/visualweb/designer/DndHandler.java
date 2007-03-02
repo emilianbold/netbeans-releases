@@ -1355,7 +1355,10 @@ public class DndHandler /*extends TransferHandler*/ {
         // If default-positioning, try to place the component before the <br/>, if
         // the the br is the last element under the default parent.
         if ((under == null) && (before == null)) {
-            location.pos = getDefaultMarkupPositionUnderParent(parent, webform);
+            if (parent == null) {
+                parent = webform.getDefaultParentBean();
+            }
+            location.pos = getDefaultMarkupPositionUnderParent(parent/*, webform*/);
         } else {
             location.pos = new MarkupPosition(under, before);
         }
@@ -1710,7 +1713,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //        return location;
 //    }
     
-    private static MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent, WebForm webform) {
+    private static MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent/*, WebForm webform*/) {
 //        Node under = null;
 //        Node before = null;
 //        if ((parent != null) && parent instanceof MarkupDesignBean) {
@@ -1745,7 +1748,8 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //
 //        return new MarkupPosition(under, before);
-        return webform.getDefaultMarkupPositionUnderParent(parent);
+//        return webform.getDefaultMarkupPositionUnderParent(parent);
+        return WebForm.getHtmlDomProviderService().getDefaultMarkupPositionUnderParent(parent);
     }
 
     /** Figure out which kind of action we can do for the given

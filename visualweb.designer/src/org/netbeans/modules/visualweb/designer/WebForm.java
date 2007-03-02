@@ -1660,9 +1660,9 @@ public class WebForm implements Designer {
 //        return htmlDomProvider.importBean(items, origParent, nodePos, facet, createdBeans, location, coordinateTranslator);
 //    }
 
-    MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
-        return htmlDomProvider.getDefaultPositionUnderParent(parent);
-    }
+//    MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
+//        return htmlDomProvider.getDefaultPositionUnderParent(parent);
+//    }
 
 //    int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp, int nodePos) {
 //        return htmlDomProvider.computeActions(droppee, transferable, searchUp, nodePos);
@@ -2435,6 +2435,10 @@ public class WebForm implements Designer {
         }
 
         public Element getComponentRootElementFromNode(org.openide.nodes.Node node) {
+            return null;
+        }
+
+        public MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
             return null;
         }
     } // End of DummyHtmlDomProviderService.

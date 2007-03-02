@@ -81,9 +81,9 @@ class DndSupport {
         return FacesDnDSupport.getImportFlavor(flavors);
     }
 
-    MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
-        return FacesDnDSupport.getDefaultMarkupPositionUnderParent(parent, getFacesModel());
-    }
+//    MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
+//        return FacesDnDSupport.getDefaultMarkupPositionUnderParent(parent, getFacesModel());
+//    }
 
 
     String[] getClassNames(DisplayItem[] displayItems) {
