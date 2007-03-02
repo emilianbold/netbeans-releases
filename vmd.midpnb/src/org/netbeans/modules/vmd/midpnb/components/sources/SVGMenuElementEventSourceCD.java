@@ -23,15 +23,13 @@ package org.netbeans.modules.vmd.midpnb.components.sources;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.*;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
@@ -77,15 +75,13 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
     }
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
-        for (Presenter presenter : presenters.toArray(new Presenter[presenters.size()])) {
-            if (presenter instanceof InspectorPositionPresenter)
-                presenters.remove(presenter);
-            if (presenter instanceof ActionsPresenter)
-                presenters.remove(presenter);
-        }
+        DocumentSupport.removePresentersOfClass (presenters, InspectorPositionPresenter.class);
+        DocumentSupport.removePresentersOfClass (presenters, ActionsPresenter.class);
+
         MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, false, true, false);
         MidpActionsSupport.addMoveActionPresenter(presenters, SVGMenuCD.PROP_ELEMENTS);
         presenters.add(ActionsPresenterForwarder.createByParent(DeleteAction.DISPLAY_NAME, RenameAction.DISPLAY_NAME));
+
         super.gatherPresenters (presenters);
     }
 
