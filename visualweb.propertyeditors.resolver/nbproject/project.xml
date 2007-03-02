@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.modules.visualweb.propertyeditors.resolver</code-name-base>
+            <suite-component/>
+            <module-dependencies/>
+            <friend-packages>
+                <friend>org.netbeans.modules.visualweb.insync</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.propertyeditors</friend>
+                <package>com.sun.rave.propertyeditors.resolver</package>
+            </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/editor-resolver.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/editor-resolver.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>
