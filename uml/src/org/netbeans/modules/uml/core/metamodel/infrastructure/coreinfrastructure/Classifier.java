@@ -23,12 +23,10 @@ package org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructur
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.Collection;
-
 import org.dom4j.Document;
 import org.dom4j.Node;
 import java.util.List;
 import org.netbeans.modules.uml.common.Util;
-
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.configstringframework.ConfigStringHelper;
 import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslator;
@@ -53,6 +51,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableEleme
 import org.netbeans.modules.uml.core.metamodel.core.foundation.Namespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RedefinableElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.AutonomousElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementChangeDispatchHelper;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.profiles.IStereotype;
@@ -70,7 +69,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.NamedCollection;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
-
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
@@ -649,35 +647,47 @@ public class Classifier extends Namespace implements IClassifier,
 	 * @return HRESULTs
 	 *
 	 */
-	public void addFeature(IFeature feat) 
-	{
-		if (feat != null)
-		{
-			// Pop the context that has been plugging events
-			// for feature.
-			revokeEventContext(feat);
-	
-			EventDispatchRetriever ret = EventDispatchRetriever.instance();
-			IClassifierEventDispatcher disp = (IClassifierEventDispatcher) ret.getDispatcher(
-										EventDispatchNameKeeper.classifier());
-			boolean proceed = true;
-			if (disp != null) {
-				IEventPayload payload = disp.createPayload("FeaturePreAdded");
-				proceed = disp.fireFeaturePreAdded(this, feat, payload);
-			}
-	
-			if (proceed) {
-				addElement(feat);
-				if (disp != null) {
-					IEventPayload payload = disp.createPayload("FeatureAdded");
-					disp.fireFeatureAdded(this, feat, payload);
-				}
-				else {
-					proceed =false;
-				}
-            }     
-		}
-	}
+        public void addFeature(IFeature feat)
+        {
+            if (feat != null)
+            {
+                // Pop the context that has been plugging events
+                // for feature.
+                revokeEventContext(feat);
+                
+                IElementChangeDispatchHelper helper = new ElementChangeDispatchHelper();
+
+//                if (Util.hasNameCollision(
+//                    this, feat.getName(), feat.getElementType(), feat))
+//                {
+//                    return;
+//                }
+                
+                EventDispatchRetriever ret = EventDispatchRetriever.instance();
+                IClassifierEventDispatcher disp = (IClassifierEventDispatcher) ret.getDispatcher(
+                    EventDispatchNameKeeper.classifier());
+                boolean proceed = true;
+                if (disp != null)
+                {
+                    IEventPayload payload = disp.createPayload("FeaturePreAdded");
+                    proceed = disp.fireFeaturePreAdded(this, feat, payload);
+                }
+                
+                if (proceed)
+                {
+                    addElement(feat);
+                    if (disp != null)
+                    {
+                        IEventPayload payload = disp.createPayload("FeatureAdded");
+                        disp.fireFeatureAdded(this, feat, payload);
+                    }
+                    else
+                    {
+                        proceed =false;
+                    }
+                }
+            }
+        }
 
 	/**
 	 *
@@ -3446,5 +3456,22 @@ public class Classifier extends Namespace implements IClassifier,
         
         return sourcesStr.toString();
     }
-   
+
+    
+    public boolean isSimilar(INamedElement other)
+    {
+        if (!(other instanceof IClassifier) || !super.isSimilar(other))
+            return false;
+        
+        IClassifier otherClassifier = (IClassifier) other;
+        
+        if (!getFullyQualifiedName(false).equals(
+                otherClassifier.getFullyQualifiedName(false)))
+        {
+            return false;
+        }
+        
+        return true;
+    }
+
 }

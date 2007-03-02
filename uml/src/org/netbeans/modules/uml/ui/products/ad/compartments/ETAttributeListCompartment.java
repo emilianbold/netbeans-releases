@@ -25,7 +25,6 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.Iterator;
 import java.util.List;
-
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
@@ -45,6 +44,7 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTarge
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import org.netbeans.modules.uml.common.Util;
 
 
 public class ETAttributeListCompartment extends ETNamedElementListCompartment
@@ -139,20 +139,25 @@ public class ETAttributeListCompartment extends ETNamedElementListCompartment
                         {
                             if (sourceFeature != null)
                             {
-                                if (bMoving)
+                                if (!Util.constainsSimilarElement(
+                                    targetClassifier, sourceFeature.getName(), 
+                                    sourceFeature.getElementType(), sourceFeature))
                                 {
-                                    sourceFeature.moveToClassifier(
-                                        targetClassifier);
-                                    
-                                    // refresh source node affected by the move operation
-                                    sourceCompartment.getEngine().init();
-                                    sourceCompartment.getEngine().invalidate();
-                                }
-                                
-                                else
-                                {
-                                    sourceFeature.duplicateToClassifier(
-                                        targetClassifier);
+                                    if (bMoving)
+                                    {
+                                        sourceFeature.moveToClassifier(
+                                            targetClassifier);
+
+                                        // refresh source node affected by the move operation
+                                        sourceCompartment.getEngine().init();
+                                        sourceCompartment.getEngine().invalidate();
+                                    }
+
+                                    else
+                                    {
+                                        sourceFeature.duplicateToClassifier(
+                                            targetClassifier);
+                                    }
                                 }
                             }
                             

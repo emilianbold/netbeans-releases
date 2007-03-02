@@ -22,7 +22,6 @@ package org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructur
 
 import org.dom4j.Document;
 import org.dom4j.Node;
-
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
@@ -638,6 +637,26 @@ public class Operation extends BehavioralFeature implements IOperation,
          return str;
      }
 
+    public boolean isSimilar(INamedElement other)
+    {
+        if (!(other instanceof IOperation) || !super.isSimilar(other))
+            return false;
+        
+        IOperation otherOp = (IOperation) other;
+        ETList<IParameter> otherParams = otherOp.getParameters();
+        ETList<IParameter> params = getParameters();
+        
+        if (params.size() != otherParams.size())
+            return false;
+        
+        for (int i=0; i < params.size(); i++)
+        {
+            if (!params.get(i).isSimilar(otherParams.get(i)))
+                return false;
+        }
+        
+        return true;
+    }
+
+     
 }
-
-

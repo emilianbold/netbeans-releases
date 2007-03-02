@@ -25,7 +25,6 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.Iterator;
 import java.util.List;
-
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
@@ -44,6 +43,7 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTarge
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import org.netbeans.modules.uml.common.Util;
 
 /**
  * @author Embarcadero Technologies Inc.
@@ -72,70 +72,90 @@ public class ETOperationListCompartment extends ETNamedElementListCompartment im
 		super.initResources();
 	}
 
-	// TODO need to use IElement instead of ICompartment
-	public boolean handleLeftMouseDrop(IETPoint pCurrentPos, List pCompartments, boolean bMoving) {
-		boolean eventHandled = false;
-		int insertionPoint = -1;
-
-		if (this.getReadOnly())
-			return true;
-
-		INodeDrawEngine nodeDrawEngine = (INodeDrawEngine) this.getEngine();
-		IClassifier targetClassifier = nodeDrawEngine.getParentClassifier();
-
-		ICompartment targetCompartment = this.getCompartmentAtPoint(pCurrentPos);
-
-		if (targetCompartment != null) {
-			insertionPoint = this.getCompartmentIndex(targetCompartment);
-		}
-
-		Iterator iterator = pCompartments.iterator();
-		while (iterator.hasNext()) {
-			ICompartment sourceCompartment = (ICompartment) iterator.next();
-
-			// Insert only compartments of the same kind
-			if (sourceCompartment instanceof ETClassOperationCompartment) {
-				try {
-
-					IElement sourceElement = sourceCompartment.getModelElement();
-
-					if (sourceElement instanceof IFeature) {
-
-						IFeature sourceFeature = (IFeature) sourceElement;
-
-						// check if we're dropping on ourselves
-						IClassifier sourceClassifier = sourceFeature.getFeaturingClassifier();
-
-						// dropping on ourselves, perform an index move instead
-						if (sourceClassifier != null && targetClassifier != null && sourceClassifier.getXMIID().equals(targetClassifier.getXMIID())) {
-							ICompartment foundCompartment = this.findCompartmentContainingElement(sourceElement);
-							this.moveCompartment(foundCompartment, insertionPoint, false);
-
-						} else {
-							if (sourceFeature != null) {
-								if (bMoving) {
-									sourceFeature.moveToClassifier(targetClassifier);
-									// refresh source node affected by the move operation
-									sourceCompartment.getEngine().init();
-									sourceCompartment.getEngine().invalidate();
-								} else {
-									sourceFeature.duplicateToClassifier(targetClassifier);
-								}
-							}
-							//refresh the target node affected by the move/copy operation;
-							this.getEngine().init();
-							this.getEngine().invalidate();
-						}
-					}
-					eventHandled = true;
-				} catch (ETException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		return eventHandled;
-	}
+        // TODO need to use IElement instead of ICompartment
+        public boolean handleLeftMouseDrop(IETPoint pCurrentPos, List pCompartments, boolean bMoving)
+        {
+            boolean eventHandled = false;
+            int insertionPoint = -1;
+            
+            if (this.getReadOnly())
+                return true;
+            
+            INodeDrawEngine nodeDrawEngine = (INodeDrawEngine) this.getEngine();
+            IClassifier targetClassifier = nodeDrawEngine.getParentClassifier();
+            
+            ICompartment targetCompartment = this.getCompartmentAtPoint(pCurrentPos);
+            
+            if (targetCompartment != null)
+            {
+                insertionPoint = this.getCompartmentIndex(targetCompartment);
+            }
+            
+            Iterator iterator = pCompartments.iterator();
+            while (iterator.hasNext())
+            {
+                ICompartment sourceCompartment = (ICompartment) iterator.next();
+                
+                // Insert only compartments of the same kind
+                if (sourceCompartment instanceof ETClassOperationCompartment)
+                {
+                    try
+                    {
+                        
+                        IElement sourceElement = sourceCompartment.getModelElement();
+                        
+                        if (sourceElement instanceof IFeature)
+                        {
+                            
+                            IFeature sourceFeature = (IFeature) sourceElement;
+                            
+                            // check if we're dropping on ourselves
+                            IClassifier sourceClassifier = sourceFeature.getFeaturingClassifier();
+                            
+                            // dropping on ourselves, perform an index move instead
+                            if (sourceClassifier != null && targetClassifier != null && sourceClassifier.getXMIID().equals(targetClassifier.getXMIID()))
+                            {
+                                ICompartment foundCompartment = this.findCompartmentContainingElement(sourceElement);
+                                this.moveCompartment(foundCompartment, insertionPoint, false);
+                                
+                            }
+                            else
+                            {
+                                if (sourceFeature != null)
+                                {
+                                    if (!Util.constainsSimilarElement(
+                                        targetClassifier, sourceFeature.getName(), 
+                                        sourceFeature.getElementType(), sourceFeature))
+                                    {
+                                        if (bMoving)
+                                        {
+                                            sourceFeature.moveToClassifier(targetClassifier);
+                                            // refresh source node affected by the move operation
+                                            sourceCompartment.getEngine().init();
+                                            sourceCompartment.getEngine().invalidate();
+                                        }
+                                        else
+                                        {
+                                            sourceFeature.duplicateToClassifier(targetClassifier);
+                                        }
+                                    }
+                                }
+                                //refresh the target node affected by the move/copy operation;
+                                this.getEngine().init();
+                                this.getEngine().invalidate();
+                            }
+                        }
+                        eventHandled = true;
+                    }
+                    catch (ETException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            
+            return eventHandled;
+        }
 
 	public void addModelElement(IElement pElement, int pIndex) {
 		try {

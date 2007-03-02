@@ -23,7 +23,6 @@ package org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructur
 import org.netbeans.modules.uml.common.Util;
 import org.dom4j.Document;
 import org.dom4j.Node;
-
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
@@ -571,4 +570,20 @@ public class Parameter extends NamedElement implements IParameter,
 	{
 		return getTypeName() + " " + getName();
 	}
+        
+    
+    public boolean isSimilar(INamedElement other) 
+    {
+        if (!(other instanceof IParameter) || !super.isSimilar(other))
+            return false;
+        
+        IParameter otherParam = (IParameter) other;
+        
+        if (!getType().isSimilar(otherParam.getType()))
+            return false;
+        
+        return true;
+    }
+
+    
 }

@@ -26,7 +26,6 @@ package org.netbeans.modules.uml.core.metamodel.common.commonactions;
 
 import org.dom4j.Document;
 import org.dom4j.Node;
-
 import org.netbeans.modules.uml.core.metamodel.basic.basicactions.IAction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementCollector;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency;
@@ -292,4 +291,20 @@ public class GroupAction extends CompositeAction implements IGroupAction
 	{
 		return namespace.createPackageStructure(packageStructure);
 	}
+
+    /**
+     * The default behavior to this method is to return true if the names of the
+     * two elements being compared are same. Subclasses should override to 
+     * implement class specific <em>isSimilar</em> behavior.
+     *
+     * @param other The other named element to compare this named element to.
+     * @return true, if the names are the same, otherwise, false.
+     */
+    public boolean isSimilar(INamedElement other)
+    {
+        if (!getName().equals(other.getName()) || !(other instanceof IGroupAction))
+            return false;
+        
+        return true;
+    }
 }

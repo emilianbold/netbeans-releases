@@ -22,7 +22,6 @@ package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
 import org.dom4j.Document;
 import org.dom4j.Node;
-
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
@@ -30,8 +29,8 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
  * @author sumitabhk
  *
  */
-public class Dependency extends DirectedRelationship implements IDependency,
-				IPackageableElement
+public class Dependency extends DirectedRelationship 
+    implements IDependency, IPackageableElement
 {
 
 	private IPackageableElement m_Pack = new PackageableElement();
@@ -475,6 +474,22 @@ public class Dependency extends DirectedRelationship implements IDependency,
 	{
 		m_Pack.setNameWithAlias(newVal);
 	}
+
+    /**
+     * The default behavior to this method is to return true if the names of the
+     * two elements being compared are same. Subclasses should override to 
+     * implement class specific <em>isSimilar</em> behavior.
+     *
+     * @param other The other named element to compare this named element to.
+     * @return true, if the names are the same, otherwise, false.
+     */
+    public boolean isSimilar(INamedElement other)
+    {
+        if (!getName().equals(other.getName()) || !(other instanceof IDependency))
+            return false;
+        
+        return true;
+    }
 }
 
 

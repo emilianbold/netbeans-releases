@@ -346,4 +346,20 @@ public class Generalization extends DirectedRelationship implements IGeneralizat
 	public String getSpecificXMIID() {
 		return getInternalXMIID("specific");
 	}
+        
+    /**
+     * The default behavior to this method is to return true if the names of the
+     * two elements being compared are same. Subclasses should override to 
+     * implement class specific <em>isSimilar</em> behavior.
+     *
+     * @param other The other named element to compare this named element to.
+     * @return true, if the names are the same, otherwise, false.
+     */
+    public boolean isSimilar(INamedElement other)
+    {
+        if (!getName().equals(other.getName()) || !(other instanceof IGeneralization))
+            return false;
+
+        return true;
+    }
 }

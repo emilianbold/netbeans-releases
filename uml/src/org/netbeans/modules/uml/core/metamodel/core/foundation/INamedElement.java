@@ -129,4 +129,13 @@ public interface INamedElement extends IElement
  public String getNameWithAlias();
  public void setNameWithAlias(String newVal);
  
+ /**
+ * The default behavior to this method is to return true if the names of the
+ * two elements being compared are same. Subclasses should override to 
+ * implement class specific <em>isSimilar</em> behavior.
+ *
+ * @param other The other named element to compare this named element to.
+ * @return true, if the names are the same, otherwise, false.
+ */
+ public boolean isSimilar(INamedElement other);
 }

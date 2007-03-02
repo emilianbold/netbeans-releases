@@ -1078,4 +1078,17 @@ public class NamedElement extends Element implements INamedElement{
 		}
 		return showAlias;
 	}
+    
+    /**
+     * The default behavior to this method is to return true if the names of the
+     * two elements being compared are same. Subclasses should override to 
+     * implement class specific <em>isSimilar</em> behavior.
+     *
+     * @param other The other named element to compare this named element to.
+     * @return true, if the names are the same, otherwise, false.
+     */
+    public boolean isSimilar(INamedElement other)
+    {
+        return (getName().equals(other.getName()));
+    }
 }
