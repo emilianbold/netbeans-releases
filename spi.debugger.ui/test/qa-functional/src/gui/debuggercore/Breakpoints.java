@@ -100,10 +100,10 @@ public class Breakpoints extends JellyTestCase {
         suite.addTest(new Breakpoints("testClassBreakpointFunctionalityOnPrimaryClass"));
         suite.addTest(new Breakpoints("testClassBreakpointFunctionalityOnSecondClass"));
         suite.addTest(new Breakpoints("testClassBreakpointFunctionalityWithFilter"));
-        suite.addTest(new Breakpoints("testVariableBreakpointPrefilledValues"));
-        suite.addTest(new Breakpoints("testVariableBreakpointCreation"));
-        suite.addTest(new Breakpoints("testVariableBreakpointFunctionalityAccess"));
-        suite.addTest(new Breakpoints("testVariableBreakpointFunctionalityModification"));
+        suite.addTest(new Breakpoints("testFieldBreakpointPrefilledValues"));
+        suite.addTest(new Breakpoints("testFieldBreakpointCreation"));
+        suite.addTest(new Breakpoints("testFieldBreakpointFunctionalityAccess"));
+        suite.addTest(new Breakpoints("testFieldBreakpointFunctionalityModification"));
         suite.addTest(new Breakpoints("testThreadBreakpointCreation"));
         suite.addTest(new Breakpoints("testThreadBreakpointFunctionality"));
         suite.addTest(new Breakpoints("testExceptionBreakpointCreation"));
@@ -699,13 +699,13 @@ public class Breakpoints extends JellyTestCase {
     /**
      *
      */
-    public void testVariableBreakpointPrefilledValues() throws Throwable {
+    public void testFieldBreakpointPrefilledValues() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Variable");
+            new JComboBoxOperator(dialog, 0).selectItem("Field");
             assertEquals("Package Name was not set to correct value.", "examples.advanced", new JTextFieldOperator(dialog, 1).getText());
             assertEquals("Class Name was not set to correct value.", "MemoryView", new JTextFieldOperator(dialog, 2).getText());
-            assertEquals("Variable Name was not set to correct value.", "msgMemory", new JTextFieldOperator(dialog, 3).getText());
+            assertEquals("Field Name was not set to correct value.", "msgMemory", new JTextFieldOperator(dialog, 3).getText());
             dialog.cancel();
         } catch (Throwable th) {
             try {
@@ -721,15 +721,15 @@ public class Breakpoints extends JellyTestCase {
     /**
      *
      */
-    public void testVariableBreakpointCreation() throws Throwable {
+    public void testFieldBreakpointCreation() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Variable");
-            new JComboBoxOperator(dialog, 1).selectItem("Variable Access");
+            new JComboBoxOperator(dialog, 0).selectItem("Field");
+            new JComboBoxOperator(dialog, 1).selectItem("Field Access");
             dialog.ok();
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Variable breakpoint was not created.", "Variable MemoryView.msgMemory access", jTableOperator.getValueAt(0, 0).toString());
+            assertEquals("Field breakpoint was not created.", "Field MemoryView.msgMemory access", jTableOperator.getValueAt(0, 0).toString());
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -744,11 +744,11 @@ public class Breakpoints extends JellyTestCase {
     /**
      *
      */
-    public void testVariableBreakpointFunctionalityAccess() throws Throwable {
+    public void testFieldBreakpointFunctionalityAccess() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Variable");
-            new JComboBoxOperator(dialog, 1).selectItem("Variable Access");
+            new JComboBoxOperator(dialog, 0).selectItem("Field");
+            new JComboBoxOperator(dialog, 1).selectItem("Field Access");
             dialog.ok();
             Utilities.startDebugger();
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104.", 0);
@@ -766,11 +766,11 @@ public class Breakpoints extends JellyTestCase {
     /**
      *
      */
-    public void testVariableBreakpointFunctionalityModification() throws Throwable {
+    public void testFieldBreakpointFunctionalityModification() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Variable");
-            new JComboBoxOperator(dialog, 1).selectItem("Variable Modification");
+            new JComboBoxOperator(dialog, 0).selectItem("Field");
+            new JComboBoxOperator(dialog, 1).selectItem("Field Modification");
             dialog.ok();
             Utilities.startDebugger();
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:45", 0);
