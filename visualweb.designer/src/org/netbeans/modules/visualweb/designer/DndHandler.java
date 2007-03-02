@@ -1074,13 +1074,13 @@ public class DndHandler /*extends TransferHandler*/ {
 //        return classNames;
 //    }
 
-    /**
-     * @param beans An empty list into which the created beans will be added, or null
-     *    if caller is not interested in the result
-     * @return true iff the bean palette item was inserted successfully
-     */
-    private boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos,
-    String facet, List createdBeans, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
+//    /**
+//     * @param beans An empty list into which the created beans will be added, or null
+//     *    if caller is not interested in the result
+//     * @return true iff the bean palette item was inserted successfully
+//     */
+//    private boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos,
+//    String facet, List createdBeans, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
 //        if(DesignerUtils.DEBUG) {
 //            DesignerUtils.debugLog(getClass().getName() + ".importBean(DisplayItem[], DesignBean, int, String, List)");
 //        }
@@ -1169,8 +1169,8 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //
 //        return true;
-        return webform.importBean(items, origParent, nodePos, facet, createdBeans, location, coordinateTranslator);
-    }
+//        return webform.importBean(items, origParent, nodePos, facet, createdBeans, location, coordinateTranslator);
+//    }
 
     private DesignBean getDroppee(CssBox box) {
 //        DesignBean origDroppee = ModelViewMapper.findComponent(box);

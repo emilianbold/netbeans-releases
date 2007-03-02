@@ -90,12 +90,12 @@ class DndSupport {
         return getFacesModel().getDnDSupport().getClasses(displayItems);
     }
     
-    boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos,
-            String facet, List createdBeans, HtmlDomProvider.Location location,
-            HtmlDomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
-        return getFacesModel().getDnDSupport().importBean(items, origParent, nodePos, facet, createdBeans,
-                new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
-    }
+//    boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos,
+//            String facet, List createdBeans, HtmlDomProvider.Location location,
+//            HtmlDomProvider.CoordinateTranslator coordinateTranslator) throws IOException {
+//        return getFacesModel().getDnDSupport().importBean(items, origParent, nodePos, facet, createdBeans,
+//                new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
+//    }
 
     void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension,
             HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {

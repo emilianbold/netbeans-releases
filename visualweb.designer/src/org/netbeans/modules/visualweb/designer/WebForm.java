@@ -1655,10 +1655,10 @@ public class WebForm implements Designer {
         return htmlDomProvider.getClassNames(displayItems);
     }
 
-    boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos, String facet, List createdBeans, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator)
-    throws IOException {
-        return htmlDomProvider.importBean(items, origParent, nodePos, facet, createdBeans, location, coordinateTranslator);
-    }
+//    boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos, String facet, List createdBeans, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator)
+//    throws IOException {
+//        return htmlDomProvider.importBean(items, origParent, nodePos, facet, createdBeans, location, coordinateTranslator);
+//    }
 
     MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
         return htmlDomProvider.getDefaultPositionUnderParent(parent);
