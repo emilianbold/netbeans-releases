@@ -164,7 +164,7 @@ public class PartnerLinkTypeImpl extends NamedExtensibilityElementBase
         return getChildren(Documentation.class);
     }
 
-    @Override
+    //@Override
     public boolean canBeAddedTo(Component target) {
         if (target instanceof Definitions) {
             return true;

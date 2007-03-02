@@ -109,7 +109,7 @@ public class DocumentationImpl extends GenericExtensibilityElement implements Do
         setAttribute( LANG , BPELAttribute.LANG, value );
     }
 
-    @Override
+    //@Override
     public boolean canBeAddedTo(Component target) {
         if (target instanceof PartnerLinkType || target instanceof Role) {
             return true;

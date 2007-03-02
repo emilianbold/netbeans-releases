@@ -72,7 +72,7 @@ public class CorrelationPropertyImpl extends NamedExtensibilityElementBase imple
         setAttribute(ELEMENT_PROPERTY, BPELAttribute.ELEMENT, value);        
     }
 
-    @Override
+    //@Override
     public boolean canBeAddedTo(Component target) {
         if (target instanceof Definitions) {
             return true;
