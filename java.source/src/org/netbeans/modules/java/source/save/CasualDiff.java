@@ -161,24 +161,7 @@ public class CasualDiff {
         oldTopLevel = oldT;
         // todo (#pf): make package annotation diffing correctly
         // diffList(oldT.packageAnnotations, newT.packageAnnotations, LineInsertionType.NONE, 0);
-        int posHint;
-        // no package declaration available (default package)
-        if (oldT.pid == null) {
-            if (oldT.getImports().head != null) {
-                posHint = oldT.getImports().head.getStartPosition();
-            } else if (oldT.getTypeDecls().head != null) {
-                posHint = oldT.getTypeDecls().head.getStartPosition();
-            } else {
-                // there is neither package declaration nor
-                // import nor class definition. Who wrote 
-                // such a file? Make package declaration
-                // at the beginning of file.
-                posHint = 1;
-            }
-        } else {
-            // replacing old declaration.
-            posHint = endPos(oldT.pid);
-        }
+        int posHint = 0;
         try {
             posHint = diffPackageStatement(oldT, newT, pointer);
             PositionEstimator est = EstimatorFactory.imports(oldT.getImports(), newT.getImports(), workingCopy);
