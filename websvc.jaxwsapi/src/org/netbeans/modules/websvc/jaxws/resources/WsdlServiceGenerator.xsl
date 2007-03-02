@@ -109,7 +109,26 @@ Microsystems, Inc. All Rights Reserved.
                         </xsl:if>
                     </xsl:variable>
 
-                    <!-- generate document/literal binding -->
+                      <!--Determine if rpc or document style -->
+                        <xsl:variable name="isRPC">
+                          <xsl:choose>
+                           <xsl:when test="/wsdl:definitions/wsdl:message">  <!--Get the first message -->
+                               <xsl:choose>
+                                 <xsl:when test="/wsdl:definitions/wsdl:message/wsdl:part/@type">
+                                   <xsl:value-of select="true()"/>
+                                 </xsl:when>
+                                 <xsl:otherwise>
+                                   <xsl:value-of select="false()"/>
+                                 </xsl:otherwise>
+                               </xsl:choose>
+                           </xsl:when>
+                           <xsl:otherwise>
+                             <xsl:value-of select="false()"/>
+                           </xsl:otherwise>
+                           </xsl:choose>  
+                        </xsl:variable>
+
+                     <!-- generate document or rpc/literal binding -->
                     <xsl:element name="binding" namespace="http://schemas.xmlsoap.org/wsdl/">
                         <xsl:attribute name="name">
                             <xsl:value-of select="$bindingName"/>
@@ -119,7 +138,14 @@ Microsystems, Inc. All Rights Reserved.
                         </xsl:attribute>
                         <xsl:element name="binding" namespace="http://schemas.xmlsoap.org/wsdl/soap/">
                             <xsl:attribute name="transport">http://schemas.xmlsoap.org/soap/http</xsl:attribute>
-                            <xsl:attribute name="style">document</xsl:attribute>
+                            <xsl:choose>
+                            <xsl:when test="$isRPC='true'">
+                              <xsl:attribute name="style">rpc</xsl:attribute>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:attribute name="style">document</xsl:attribute>
+                            </xsl:otherwise>
+                            </xsl:choose>
                         </xsl:element>
                         <xsl:for-each select="wsdl:operation">
                             <xsl:element name="operation" namespace="http://schemas.xmlsoap.org/wsdl/">
@@ -139,6 +165,11 @@ Microsystems, Inc. All Rights Reserved.
                                             </xsl:attribute>
                                         </xsl:if>
                                         <xsl:element name="body" namespace="http://schemas.xmlsoap.org/wsdl/soap/">
+                                             <xsl:if test="$isRPC='true'">
+                                                 <xsl:attribute name="namespace">
+                                                   <xsl:value-of select="/wsdl:definitions/@targetNamespace"/>
+                                                 </xsl:attribute>
+                                             </xsl:if>
                                             <xsl:attribute name="use">literal</xsl:attribute>
                                         </xsl:element>
                                     </xsl:element>
@@ -151,6 +182,11 @@ Microsystems, Inc. All Rights Reserved.
                                             </xsl:attribute>
                                         </xsl:if>
                                         <xsl:element name="body" namespace="http://schemas.xmlsoap.org/wsdl/soap/">
+                                           <xsl:if test="$isRPC='true'">
+                                                 <xsl:attribute name="namespace">
+                                                   <xsl:value-of select="/wsdl:definitions/@targetNamespace"/>
+                                                 </xsl:attribute>
+                                             </xsl:if>
                                             <xsl:attribute name="use">literal</xsl:attribute>
                                         </xsl:element>
                                     </xsl:element>
