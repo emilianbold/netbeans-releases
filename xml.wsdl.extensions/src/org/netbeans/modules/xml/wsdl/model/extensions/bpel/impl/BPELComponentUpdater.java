@@ -24,7 +24,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Documentation;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -100,7 +99,7 @@ public class BPELComponentUpdater implements
         // never
     }
 
-    public void visit( Query c ) {
+    public void visit( org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query c ) {
         if ( parent instanceof PropertyAliasImpl ){
             PropertyAliasImpl propertyAlias = ( PropertyAliasImpl )parent;
             if (operation == ComponentUpdater.Operation.ADD) {
