@@ -56,7 +56,7 @@ public class VWPFootprintUtilities extends gui.VWPUtilities{
         ProjectSupport.closeProject(project);
     }
     
-    static void deleteProject(String project) {
+    public static void deleteProject(String project) {
         new DeleteAction().performShortcut(ProjectsTabOperator.invoke().getProjectRootNode(project));
 
         //delete project
