@@ -24,7 +24,10 @@ package org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Documentation;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
+import org.netbeans.modules.xml.xam.Component;
 import org.w3c.dom.Element;
 
 
@@ -106,4 +109,11 @@ public class DocumentationImpl extends GenericExtensibilityElement implements Do
         setAttribute( LANG , BPELAttribute.LANG, value );
     }
 
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof PartnerLinkType || target instanceof Role) {
+            return true;
+        }
+        return false;
+    }
 }

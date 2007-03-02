@@ -25,6 +25,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Documentation;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
@@ -36,7 +37,8 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
  */
 public class BPELComponentUpdater implements
         BPELExtensibilityComponent.Visitor,
-        ComponentUpdater<BPELExtensibilityComponent>
+        ComponentUpdater<BPELExtensibilityComponent>, 
+        ComponentUpdater.Query<BPELExtensibilityComponent>
 {
 
     private BPELExtensibilityComponent parent;
@@ -44,9 +46,19 @@ public class BPELComponentUpdater implements
     private ComponentUpdater.Operation operation;
     
     private int index;
+    
+    private boolean canAdd;
 
     /** Creates a new instance of BPELComponentUpdater */
     public BPELComponentUpdater() {
+    }
+
+    public boolean canAdd(BPELExtensibilityComponent target, Component child) {
+        if (!(child instanceof BPELExtensibilityComponent)) {
+            return false;
+        }
+        update(target, (BPELExtensibilityComponent) child, null);
+        return canAdd;
     }
 
     public void update( BPELExtensibilityComponent target,
@@ -89,8 +101,10 @@ public class BPELComponentUpdater implements
             if (operation == ComponentUpdater.Operation.ADD) {
                 target.addRole(child);
             }
-            else {
+            else if (operation == ComponentUpdater.Operation.REMOVE) {
                 target.removeRole(child);
+            } else {
+                canAdd = true;
             }
         }
     }
@@ -109,9 +123,10 @@ public class BPELComponentUpdater implements
                  * and either insert element or add to the end......
                  */  
                 propertyAlias.setQuery( c );
-            }
-            else {
+            } else if (operation == ComponentUpdater.Operation.REMOVE) {
                 propertyAlias.removeQuery( c );
+            } else {
+                canAdd = true;
             }
         }
         
@@ -127,8 +142,10 @@ public class BPELComponentUpdater implements
                 else 
                     partnerLinkType.addPartnerLinkTypeDocumentation(c);
             }
-            else {
+            else if (operation == ComponentUpdater.Operation.REMOVE) {
                 partnerLinkType.removePartnerLinkTypeDocumentation( c );
+            } else {
+                canAdd = true;
             }
         } else if ( parent instanceof RoleImpl ){
             RoleImpl role = ( RoleImpl )parent;
@@ -141,8 +158,10 @@ public class BPELComponentUpdater implements
                     role.addRoleDocumentation( c );
                 }
             }
-            else {
+            else if (operation == ComponentUpdater.Operation.REMOVE) {
                 role.removeRoleDocumentation( c );
+            } else {
+                canAdd = true;
             }
         }
         

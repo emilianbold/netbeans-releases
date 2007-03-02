@@ -21,6 +21,8 @@ package org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl;
 
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELExtensibilityComponent;
@@ -29,6 +31,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
 
@@ -40,7 +43,7 @@ import org.w3c.dom.Element;
  * @author ads
  */
 public class PropertyAliasImpl extends GenericExtensibilityElement implements
-        PropertyAlias
+        PropertyAlias, ExtensibilityElement.ParentSelector
 {
 
     public PropertyAliasImpl( WSDLModel model, Element e ) {
@@ -126,6 +129,14 @@ public class PropertyAliasImpl extends GenericExtensibilityElement implements
 
     public void setElement( NamedComponentReference<GlobalElement> value ) {
         setAttribute(ELEMENT_PROPERTY, BPELAttribute.ELEMENT, value);        
+    }
+
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof Definitions) {
+            return true;
+        }
+        return false;
     }
 
 }

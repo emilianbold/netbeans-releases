@@ -104,6 +104,9 @@ public class TestCatalogModel extends CatalogWriteModelImpl{
         return new ModelSource(proxyLookup, editable);
     }
     
+    public void clearDocumentPool() {
+        fileToDocumentMap = null;
+    }
     
     private Document getDocument(FileObject fo) {
         Document result = null;

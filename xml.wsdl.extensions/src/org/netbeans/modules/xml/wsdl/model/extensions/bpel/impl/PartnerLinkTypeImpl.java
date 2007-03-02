@@ -21,7 +21,7 @@ package org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl;
 
 import java.util.Collection;
 import java.util.List;
-
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -31,6 +31,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Documentation;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.spi.NamedExtensibilityElementBase;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.w3c.dom.Element;
 
@@ -161,6 +162,14 @@ public class PartnerLinkTypeImpl extends NamedExtensibilityElementBase
 
     public Collection<Documentation> getPartnerLinkTypeDocumentations() {
         return getChildren(Documentation.class);
+    }
+
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof Definitions) {
+            return true;
+        }
+        return false;
     }
 
 }
