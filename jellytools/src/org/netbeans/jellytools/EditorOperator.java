@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -37,7 +37,6 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
-
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
@@ -45,12 +44,11 @@ import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.operators.AbstractButtonOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -657,23 +655,23 @@ public class EditorOperator extends TopComponentOperator {
     
     /***************** Methods for toolbar manipulation *******************/
     
-    /** Return JButtonOperator representing a toolbar button found by given
+    /** Return AbstractButtonOperator representing a toolbar button found by given
      * tooltip within the Source Editor.
      * @param buttonTooltip tooltip of toolbar button
-     * @return JButtonOperator instance of found toolbar button
+     * @return AbstractButtonOperator instance of found toolbar button
      */
-    public JButtonOperator getToolbarButton(String buttonTooltip) {
+    public AbstractButtonOperator getToolbarButton(String buttonTooltip) {
         ToolbarButtonChooser chooser = new ToolbarButtonChooser(buttonTooltip, getComparator());
-        return new JButtonOperator(JButtonOperator.waitJButton(
-        (Container)this.getSource(), chooser));
+        return new AbstractButtonOperator(
+                AbstractButtonOperator.waitAbstractButton((Container)this.getSource(), chooser));
     }
     
-    /** Return JButtonOperator representing index-th toolbar button within
+    /** Return AbstractButtonOperator representing index-th toolbar button within
      * the Source Editor.
      * @param index index of toolbar button to find
-     * @return JButtonOperator instance of found toolbar button
+     * @return AbstractButtonOperator instance of found toolbar button
      */
-    public JButtonOperator getToolbarButton(int index) {
+    public AbstractButtonOperator getToolbarButton(int index) {
         // finds JToolbar
         ComponentChooser chooser = new ComponentChooser() {
             public boolean checkComponent(Component comp) {
@@ -693,8 +691,8 @@ public class EditorOperator extends TopComponentOperator {
         if(combo != null) {
             index++;
         }
-        return new JButtonOperator(JButtonOperator.waitJButton((Container)toolbar, 
-                                   ComponentSearcher.getTrueChooser("JButton"), index));
+        return new AbstractButtonOperator(AbstractButtonOperator.waitAbstractButton((Container)toolbar, 
+                                   ComponentSearcher.getTrueChooser("AbstractButton"), index));
     }
     
     /** Chooser which can be used to find a component with given tooltip,
