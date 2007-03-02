@@ -336,8 +336,8 @@ public class GlobalSourcePathTest extends NbTestCase {
     public void testRaceCondition2 () throws Exception {
         final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
         final GlobalSourcePath gcp = GlobalSourcePath.getDefault();        
-        final ClassPath cp = ClassPathFactory.createClassPath(gcp.getSourcePath());
-        final int initialSize = cp.entries().size();        
+        final ClassPathImplementation cp = gcp.getSourcePath();
+        final int initialSize = cp.getResources().size();        
         final CountDownLatch state_1 = new CountDownLatch (1);
         final CountDownLatch state_2 = new CountDownLatch (1);
         final CountDownLatch state_3 = new CountDownLatch (1);        
@@ -356,8 +356,8 @@ public class GlobalSourcePathTest extends NbTestCase {
                 public void run () {
                     try {
                         state_1.await();
-                        cp.entries();
-                        cp.entries();
+                        cp.getResources();
+                        cp.getResources();
                         state_4.countDown();
                     } catch (InterruptedException ie) {}
                 }
@@ -368,7 +368,7 @@ public class GlobalSourcePathTest extends NbTestCase {
             regs.register(ClassPath.SOURCE, new ClassPath[] {ClassPathSupport.createClassPath(new URL[] {new URL("file:///foo4/")})});            
             state_3.countDown();
             state_4.await();
-            assertEquals("Race condition",initialSize+2, cp.entries().size());
+            assertEquals("Race condition",initialSize+2, cp.getResources().size());
         } finally {
             es.shutdownNow();
         }

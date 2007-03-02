@@ -55,8 +55,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/modules/java/source/usages/LucenePerformanceTest.class"/>
 		<!--requires test source:-->
 		<exclude name="org/netbeans/api/java/source/UiUtilsTest.class" />
-                <!--97114:-->
-                <exclude name="org/netbeans/modules/java/source/classpath/GlobalSourcePathTest.class/testRaceCondition2" />
 		
 		<!--classes without any uncommented tests:-->
 		<exclude name="org/netbeans/modules/java/source/parsing/CachingFolderArchiveTest.class" />
