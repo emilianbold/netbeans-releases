@@ -80,7 +80,7 @@ public class JaxWsRootChildren extends Children.Keys {
             for (FileObject srcRoot:srcRoots) {
                 FileObject implClassFo = getImplementationClass(implClass, srcRoot);
                 if (implClassFo!=null)
-                    return new Node[] {new JaxWsNode(jaxWsModel, (Service)key, srcRoot)};
+                    return new Node[] {new JaxWsNode(jaxWsModel, (Service)key, srcRoot, implClassFo)};
             }
         }
         return new Node[0];
