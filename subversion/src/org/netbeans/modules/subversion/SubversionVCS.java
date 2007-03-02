@@ -24,6 +24,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.util.*;
@@ -44,7 +45,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     }
 
     public String getDisplayName() {
-        return "Subversion";
+        return NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu");
     }
 
     public File getTopmostManagedParent(File file) {
