@@ -71,18 +71,25 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     public void closeDiscard() {
         System.out.println("::	close and discard Designer surface");
         TopComponentOperator tco = new TopComponentOperator(topComponentName);
-        tco.closeDiscard();
-        
+        //tco.closeDiscard();
+        tco.closeWindow();
         //tco.close();
         System.out.println("::closing and wait Question dialog");
-        NbDialogOperator dialog = new NbDialogOperator(NbDialogOperator.waitJDialog("Question", false, false));
-        JButtonOperator db = new JButtonOperator(dialog,"Discard");
-        db.pushNoBlock();
+        try {
+            NbDialogOperator dialog = new NbDialogOperator(NbDialogOperator.waitJDialog("Question", false, false));
+            JButtonOperator db = new JButtonOperator(dialog,"Discard");
+            db.pushNoBlock();
+        } catch (org.netbeans.jemmy.TimeoutExpiredException e) {
+            //Do nothing
+        }
         
     }
     
     public void cancelSelection() {
         this.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+    }
+    public void deleteSelection() {
+        this.pushKey(java.awt.event.KeyEvent.VK_DELETE);
     }
     
     public void clickOnSurface() {
