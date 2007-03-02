@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
-
 import org.netbeans.modules.xml.schema.model.Annotation;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -69,6 +68,7 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.openide.util.NbBundle;
 
 
 
@@ -81,9 +81,6 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
  * @version $Revision$
  */
 public class WSDLSemanticsVisitor  implements WSDLVisitor {
-    
-    /** MessageManager for localized strings. */
-    private static MessageManager mMsg = MessageManager.getManager(WSDLSemanticsVisitor.class);
     
     private ValidateSupport mValidateSupport = null;
     /** Validate configuration singleton. */
@@ -296,16 +293,16 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
      */
     public void visit(Definitions w) {
         if (w.getTargetNamespace() == null || w.getTargetNamespace().trim().length() == 0) {
-            getValidateSupport().fireToDo(Validator.ResultType.WARNING, w, mMsg.getString(VAL_ERROR_WSDL_DEFINITIONS_NO_TARGETNAMESPACE),
-                    mMsg.getString(FIX_ERROR_WSDL_DEFINITIONS_NO_TARGETNAMESPACE));
+            getValidateSupport().fireToDo(Validator.ResultType.WARNING, w, NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_ERROR_WSDL_DEFINITIONS_NO_TARGETNAMESPACE),
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_ERROR_WSDL_DEFINITIONS_NO_TARGETNAMESPACE));
             
         }
         
         List<Types> result = w.getChildren(Types.class);
         if(result != null && result.size() > 1) {
         	//multiple types are not valid
-        	 getValidateSupport().fireToDo(Validator.ResultType.ERROR, w, mMsg.getString(VAL_MULTIPLE_TYPES_IN_DEFINITION),
-                     mMsg.getString(FIX_MULTIPLE_TYPES_IN_DEFINITION));
+        	 getValidateSupport().fireToDo(Validator.ResultType.ERROR, w, NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_MULTIPLE_TYPES_IN_DEFINITION),
+                     NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_MULTIPLE_TYPES_IN_DEFINITION));
             
         	
         }
@@ -322,8 +319,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         if(w.getParts().size() == 0 ) {
             getValidateSupport().fireToDo(
                     Validator.ResultType.WARNING, w,
-                    mMsg.getString(VAL_WARNING_WSDL_MESSAGE_DOES_NOT_HAVE_ANY_PARTS_DEFINED, w.getName()),
-                    mMsg.getString(FIX_WARNING_WSDL_MESSAGE_DOES_NOT_HAVE_ANY_PARTS_DEFINED, w.getName()));
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_WARNING_WSDL_MESSAGE_DOES_NOT_HAVE_ANY_PARTS_DEFINED, w.getName()),
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_WARNING_WSDL_MESSAGE_DOES_NOT_HAVE_ANY_PARTS_DEFINED, w.getName()));
         }
         
         visitChildren(w);
@@ -339,16 +336,16 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         if(p.getElement() == null && p.getType() == null) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, p,
-                    mMsg.getString(VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART, p.getName()),
-                    mMsg.getString(FIX_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART));
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART, p.getName()),
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART));
         }
         
         //if both element and type attribute are specified then part is invalid
         if(p.getElement() != null && p.getType() != null) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, p,
-                    mMsg.getString(VAL_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART, p.getName()),
-                    mMsg.getString(FIX_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART));
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART, p.getName()),
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART));
         }
         
         //if element attribute is specified and xsd element object can not be resolved
@@ -356,8 +353,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         if(p.getElement() != null && p.getElement().get() == null) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, p,
-                    mMsg.getString(VAL_ELEMENT_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID, p.getName(), p.getAttribute(new StringAttribute(Part.ELEMENT_PROPERTY))), //NOTI18N
-                    mMsg.getString(FIX_ELEMENT_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID));
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_ELEMENT_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID, p.getName(), p.getAttribute(new StringAttribute(Part.ELEMENT_PROPERTY))), //NOTI18N
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_ELEMENT_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID));
         }
         
         //if type attribute is specified and xsd type object can not be resolved
@@ -365,8 +362,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         if(p.getType() != null && p.getType().get() == null) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, p,
-                    mMsg.getString(VAL_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID, p.getName(), p.getAttribute(new StringAttribute(Part.TYPE_PROPERTY))), //NOTI18N
-                    mMsg.getString(FIX_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID));
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID, p.getName(), p.getAttribute(new StringAttribute(Part.TYPE_PROPERTY))), //NOTI18N
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID));
         }
         
         visitChildren(p);
@@ -403,8 +400,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                         //found duplicate input name in this portType operations
                         getValidateSupport().fireToDo
                                 (Validator.ResultType.ERROR, input,
-                                mMsg.getString(VAL_DUPLICATE_OPRATION_INPUT_NAME_IN_PORTTYPE, inputName, portType.getName()),
-                                mMsg.getString(FIX_DUPLICATE_OPRATION_INPUT_NAME_IN_PORTTYPE));
+                                NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_DUPLICATE_OPRATION_INPUT_NAME_IN_PORTTYPE, inputName, portType.getName()),
+                                NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_DUPLICATE_OPRATION_INPUT_NAME_IN_PORTTYPE));
                     }
                 }
             }
@@ -419,8 +416,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                         //found duplicate output name in this portType operations
                         getValidateSupport().fireToDo
                                 (Validator.ResultType.ERROR, output,
-                                mMsg.getString(VAL_DUPLICATE_OPRATION_OUTPUT_NAME_IN_PORTTYPE, outputName, portType.getName()),
-                                mMsg.getString(FIX_DUPLICATE_OPRATION_OUTPUT_NAME_IN_PORTTYPE));
+                                NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_DUPLICATE_OPRATION_OUTPUT_NAME_IN_PORTTYPE, outputName, portType.getName()),
+                                NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_DUPLICATE_OPRATION_OUTPUT_NAME_IN_PORTTYPE));
                     }
                 }
             }
@@ -441,8 +438,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         if (operation.getFaults() != null && operation.getFaults().size() > 0) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.WARNING, operation,
-                    mMsg.getString(VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
-                    mMsg.getString(FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
         }
         
                 
@@ -457,8 +454,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         && (operation.getFaults() != null && operation.getFaults().size() > 0)) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.WARNING, operation,
-                    mMsg.getString(VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
-                    mMsg.getString(FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
         }
         
         //wsdl spec:
@@ -486,8 +483,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         && (operation.getFaults() != null && operation.getFaults().size() > 0)) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.WARNING, operation,
-                    mMsg.getString(VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
-                    mMsg.getString(FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
         }
         
         //wsdl spec:
@@ -512,8 +509,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         if (operation.getFaults() != null && operation.getFaults().size() > 0) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.WARNING, operation,
-                    mMsg.getString(VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
-                    mMsg.getString(FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
         }
         
         visitChildren(operation);
@@ -542,9 +539,9 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             Operation operation = (Operation) input.getParent();
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, input,
-                    mMsg.getString(VAL_MESSAGE_NOT_FOUND_IN_OPERATION_INPUT,
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_MESSAGE_NOT_FOUND_IN_OPERATION_INPUT,
                     messageName, operation.getName()),
-                    mMsg.getString(FIX_MESSAGE_NOT_FOUND_IN_OPERATION_INPUT,
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_MESSAGE_NOT_FOUND_IN_OPERATION_INPUT,
                     messageName, operation.getName()));
             
         }
@@ -573,9 +570,9 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             Operation operation = (Operation) output.getParent();
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, output,
-                    mMsg.getString(VAL_MESSAGE_NOT_FOUND_IN_OPERATION_OUTPUT,
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_MESSAGE_NOT_FOUND_IN_OPERATION_OUTPUT,
                     messageName, operation.getName()),
-                    mMsg.getString(FIX_MESSAGE_NOT_FOUND_IN_OPERATION_OUTPUT,
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_MESSAGE_NOT_FOUND_IN_OPERATION_OUTPUT,
                     messageName, operation.getName()));
             
         }
@@ -606,9 +603,9 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             Operation operation = (Operation) fault.getParent();
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, fault,
-                    mMsg.getString(VAL_MESSAGE_NOT_FOUND_IN_OPERATION_FAULT,
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_MESSAGE_NOT_FOUND_IN_OPERATION_FAULT,
                     messageName, fault.getName(), operation.getName()),
-                    mMsg.getString(FIX_MESSAGE_NOT_FOUND_IN_OPERATION_FAULT,
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_MESSAGE_NOT_FOUND_IN_OPERATION_FAULT,
                     fault.getName(), operation.getName()));
             
         }
@@ -643,9 +640,9 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         if(binding == null) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, port,
-                    mMsg.getString(VAL_MISSING_BINDING_IN_SERVICE_PORT,
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_MISSING_BINDING_IN_SERVICE_PORT,
                     port.getName(), port.getAttribute(new StringAttribute(Port.BINDING_PROPERTY))),
-                    mMsg.getString(FIX_MISSING_BINDING_IN_SERVICE_PORT)
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_MISSING_BINDING_IN_SERVICE_PORT)
                     );
         }
         
@@ -672,10 +669,10 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             if (xsdImports == null || xsdImports.size() == 0) {
                 getValidateSupport().fireToDo
                         (Validator.ResultType.ERROR, wsdlImport,
-                        mMsg.getString(VAL_MISSING_IMPORTED_DOCUMENT,
+                        NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_MISSING_IMPORTED_DOCUMENT,
                         wsdlImport.getNamespace(),
                         wsdlImport.getLocation()),
-                        mMsg.getString(FIX_MISSING_IMPORTED_DOCUMENT)
+                        NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_MISSING_IMPORTED_DOCUMENT)
                         );
             }
         }
@@ -704,10 +701,10 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         if(type != null && portType == null) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, binding,
-                    mMsg.getString(VAL_MISSING_PORTTYPE_IN_BINDING,
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_MISSING_PORTTYPE_IN_BINDING,
                     binding.getName(),
                     type),
-                    mMsg.getString(FIX_MISSING_PORTTYPE_IN_BINDING)
+                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_MISSING_PORTTYPE_IN_BINDING)
                     );
         }
         
@@ -754,8 +751,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             if(matchingOp == null){
                 getValidateSupport().fireToDo
                         (Validator.ResultType.ERROR, bindingOp,
-                        mMsg.getString(VAL_OPERATION_DOES_NOT_EXIST_IN_PORT_TYPE, operationName, binding.getName(), portType.getName()),
-                        mMsg.getString(FIX_OPERATION_DOES_NOT_EXIST_IN_PORT_TYPE, portType.getName()));
+                        NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_OPERATION_DOES_NOT_EXIST_IN_PORT_TYPE, operationName, binding.getName(), portType.getName()),
+                        NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_OPERATION_DOES_NOT_EXIST_IN_PORT_TYPE, portType.getName()));
             } else{
                 //check if the signatures match
                 BindingInput bindingInput = bindingOp.getBindingInput();
@@ -773,15 +770,15 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                     //Input in portType operation does not match input in binding operation
                     getValidateSupport().fireToDo
                             (Validator.ResultType.ERROR, bindingOp,
-                            mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName, bindingName, portTypeName),
-                            mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName));
+                            NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName, bindingName, portTypeName),
+                            NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName));
                 }else{
                     if(bindingOpHasInput){
                         if(!inputNamesMatch(bindingInput, portTypeInput, operationName)){
                             getValidateSupport().fireToDo
                                     (Validator.ResultType.WARNING, bindingInput,
-                                    mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE, operationName, bindingName, portTypeName),
-                                    mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE, operationName));
+                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE, operationName, bindingName, portTypeName),
+                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE, operationName));
                         }
                     }
                 }
@@ -790,15 +787,15 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                     //Output in portType operation does not match output in binding operation
                     getValidateSupport().fireToDo
                             (Validator.ResultType.ERROR, bindingOp,
-                            mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName, bindingName, portTypeName),
-                            mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName));
+                            NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName, bindingName, portTypeName),
+                            NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName));
                 }else{
                     if(bindingOpHasOutput){
                         if(!outputNamesMatch(bindingOutput, portTypeOutput, operationName)){
                             getValidateSupport().fireToDo
                                     (Validator.ResultType.WARNING, bindingOutput,
-                                    mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE, operationName, bindingName, portTypeName),
-                                    mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE, operationName));
+                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE, operationName, bindingName, portTypeName),
+                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE, operationName));
                         }
                     }
                 }
@@ -806,8 +803,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                     //Faults do not match
                     getValidateSupport().fireToDo
                             (Validator.ResultType.ERROR, bindingOp,
-                            mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName, bindingName, portTypeName),
-                            mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName));
+                            NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName, bindingName, portTypeName),
+                            NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName));
                 }
             }
         } else {
@@ -912,8 +909,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                                 sc instanceof org.netbeans.modules.xml.schema.model.Import)) {
                             getValidateSupport().fireToDo
                                     (Validator.ResultType.ERROR, ext,
-                                    mMsg.getString(VAL_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST),
-                                    mMsg.getString(FIX_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST));
+                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST),
+                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST));
                             break;
                         }
                     }
@@ -960,8 +957,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                     //found duplicate output name in this portType operations
                     getValidateSupport().fireToDo
                             (Validator.ResultType.ERROR, operation,
-                            mMsg.getString(VAL_DUPLICATE_OPRATION_FAULT_NAME, faultName, operation.getName()),
-                            mMsg.getString(FIX_DUPLICATE_OPRATION_FAULT_NAME));
+                            NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_DUPLICATE_OPRATION_FAULT_NAME, faultName, operation.getName()),
+                            NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_DUPLICATE_OPRATION_FAULT_NAME));
                 }
             }
         }
@@ -1012,8 +1009,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             
             if(!foundPart) {
                  getValidateSupport().fireToDo(Validator.ResultType.ERROR, operation, 
-                                               mMsg.getString(VAL_PARMETER_ORDER_CHECK_PART_EXISTENCE, partName, operation.getName()),
-                                               mMsg.getString(FIX_PARMETER_ORDER_CHECK_PART_EXISTENCE));
+                                               NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_PARMETER_ORDER_CHECK_PART_EXISTENCE, partName, operation.getName()),
+                                               NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_PARMETER_ORDER_CHECK_PART_EXISTENCE));
             }
         }    
     }
@@ -1045,8 +1042,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                     
                     if(matchedOutputPartsCount < (outputParts.size() -1)) {
                         getValidateSupport().fireToDo(Validator.ResultType.ERROR, operation, 
-                                               mMsg.getString(VAL_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING,  operation.getName()),
-                                               mMsg.getString(FIX_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING));
+                                               NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING,  operation.getName()),
+                                               NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_PARMETER_ORDER_CHECK_AT_MOST_ONE_OUTPUT_MESSAGE_PART_MISSING));
                         
                     }
                 }

@@ -20,14 +20,13 @@ package org.netbeans.modules.xml.wsdl.validator.visitor;
 
 import java.util.Collection;
 import java.util.StringTokenizer;
-
 import javax.xml.namespace.QName;
-
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -38,9 +37,6 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
  */
 public class ValidateSupport  {
 
-    
-    /** MessageManager for localized strings. */    
-    private static MessageManager mMsg = MessageManager.getManager(ValidateSupport.class);
     
     /** Validate Configuration */
     private ValidateConfiguration mValConfig;
@@ -275,8 +271,8 @@ public class ValidateSupport  {
         }
         
         if (isAttributeAbsent(value)) {
-            return fireToDo(Validator.ResultType.ERROR, source, mMsg.getString(VAL_MISSING_ATTRIB, name), 
-                    mMsg.getString(FIX_MISSING_ATTRIB, name));
+            return fireToDo(Validator.ResultType.ERROR, source, NbBundle.getMessage(ValidateSupport.class, VAL_MISSING_ATTRIB, name), 
+                    NbBundle.getMessage(ValidateSupport.class, FIX_MISSING_ATTRIB, name));
         }
         
         return true;
@@ -296,8 +292,8 @@ public class ValidateSupport  {
         }
         
         if (value == null || isAttributeAbsent(value.toString())) {
-            return fireToDo(Validator.ResultType.ERROR, source, mMsg.getString(VAL_MISSING_ATTRIB, name),
-                mMsg.getString(FIX_MISSING_ATTRIB, name));
+            return fireToDo(Validator.ResultType.ERROR, source, NbBundle.getMessage(ValidateSupport.class, VAL_MISSING_ATTRIB, name),
+                NbBundle.getMessage(ValidateSupport.class, FIX_MISSING_ATTRIB, name));
         }
         
         return true;
@@ -318,8 +314,8 @@ public class ValidateSupport  {
         
         if (!isAttributeAbsent(value) && !ValidationUtils.isNCName(value)) {
             return fireToDo(Validator.ResultType.ERROR, source,
-                mMsg.getString(VAL_NOT_NCNAME_ATTRIB, name),
-                mMsg.getString(FIX_NOT_NCNAME_ATTRIB, name)
+                NbBundle.getMessage(ValidateSupport.class, VAL_NOT_NCNAME_ATTRIB, name),
+                NbBundle.getMessage(ValidateSupport.class, FIX_NOT_NCNAME_ATTRIB, name)
             );
         }
         return true;
@@ -382,8 +378,8 @@ public class ValidateSupport  {
                 if (!fireToDo(Validator.ResultType.ERROR,
                             source,
                             
-                            mMsg.getString(VAL_NOT_QNAME_ATTRIB, name),
-                            mMsg.getString(FIX_NOT_QNAME_ATTRIB, name)
+                            NbBundle.getMessage(ValidateSupport.class, VAL_NOT_QNAME_ATTRIB, name),
+                            NbBundle.getMessage(ValidateSupport.class, FIX_NOT_QNAME_ATTRIB, name)
                         )) {
                     return false;
                 }
@@ -399,8 +395,8 @@ public class ValidateSupport  {
                     if (null == ns) {
                         if (!fireToDo(Validator.ResultType.ERROR, 
                                 source,
-                                mMsg.getString(VAL_PREFIX_NOT_DEFINED, prefix),
-                                mMsg.getString(FIX_PREFIX_NOT_DEFINED, prefix)
+                                NbBundle.getMessage(ValidateSupport.class, VAL_PREFIX_NOT_DEFINED, prefix),
+                                NbBundle.getMessage(ValidateSupport.class, FIX_PREFIX_NOT_DEFINED, prefix)
                         )) {
                             return false;
                         }
@@ -433,8 +429,8 @@ public class ValidateSupport  {
                 if (prefix == null || "".equals(prefix.trim())) {
                     if (!fireToDo(Validator.ResultType.ERROR, 
                             source,
-                                    mMsg.getString(VAL_PREFIX_NULL_QNAME_ATTRIB, name),
-                                    mMsg.getString(FIX_PREFIX_NULL_QNAME_ATTRIB, name)
+                                    NbBundle.getMessage(ValidateSupport.class, VAL_PREFIX_NULL_QNAME_ATTRIB, name),
+                                    NbBundle.getMessage(ValidateSupport.class, FIX_PREFIX_NULL_QNAME_ATTRIB, name)
                             )) {
                         return false;
                     }
@@ -461,8 +457,8 @@ public class ValidateSupport  {
         if (!isAttributeAbsent(value) && !(value.equals("yes") || value.equals("no"))) {
             return fireToDo(Validator.ResultType.ERROR,
                 source,
-                mMsg.getString(VAL_NOT_BOOLEAN_ATTRIB, name),
-                mMsg.getString(FIX_NOT_BOOLEAN_ATTRIB, name)
+                NbBundle.getMessage(ValidateSupport.class, VAL_NOT_BOOLEAN_ATTRIB, name),
+                NbBundle.getMessage(ValidateSupport.class, FIX_NOT_BOOLEAN_ATTRIB, name)
             );
         }
         return true;
@@ -487,8 +483,8 @@ public class ValidateSupport  {
                 source,
                /* category,
                 Severity.ERROR,*/
-                mMsg.getString(VAL_MIN_ELEM_NOT_MET, Integer.valueOf(min), name, Integer.valueOf(num)),
-                mMsg.getString(FIX_MIN_ELEM_NOT_MET, Integer.valueOf(min - num), name)
+                NbBundle.getMessage(ValidateSupport.class, VAL_MIN_ELEM_NOT_MET, Integer.valueOf(min), name, Integer.valueOf(num)),
+                NbBundle.getMessage(ValidateSupport.class, FIX_MIN_ELEM_NOT_MET, Integer.valueOf(min - num), name)
             );
         }
         return true;
@@ -527,8 +523,8 @@ public class ValidateSupport  {
                }
                return fireToDo(Validator.ResultType.ERROR,
                     source, /*Category.BPEL_SYNTAX, Severity.ERROR,*/
-                    mMsg.getString(VAL_NOT_ENUM_ATTRIB, name, enumsb.toString()),
-                    mMsg.getString(FIX_NOT_ENUM_ATTRIB, enumsb.toString(), name)
+                    NbBundle.getMessage(ValidateSupport.class, VAL_NOT_ENUM_ATTRIB, name, enumsb.toString()),
+                    NbBundle.getMessage(ValidateSupport.class, FIX_NOT_ENUM_ATTRIB, enumsb.toString(), name)
                );
            }
        }
@@ -551,8 +547,8 @@ public class ValidateSupport  {
         if (null == subElem) {
             return fireToDo(Validator.ResultType.ERROR,
                 source,
-                mMsg.getString(VAL_MISSING_ELEM, name),
-                mMsg.getString(FIX_MISSING_ELEM, name));
+                NbBundle.getMessage(ValidateSupport.class, VAL_MISSING_ELEM, name),
+                NbBundle.getMessage(ValidateSupport.class, FIX_MISSING_ELEM, name));
         }
         return true;
     }
