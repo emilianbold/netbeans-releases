@@ -18,7 +18,6 @@
  */
 package org.netbeans.test.codegen.indent.imports;
 
-
 /**
  * Test classs for imports. ImportFormatTest tests, if the
  * imports are inserted and removed correctly.

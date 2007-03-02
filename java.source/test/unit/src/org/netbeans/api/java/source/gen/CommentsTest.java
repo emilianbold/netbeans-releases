@@ -54,10 +54,10 @@ public class CommentsTest extends GeneratorTestMDRCompat {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 //        suite.addTestSuite(CommentsTest.class);
-        suite.addTest(new CommentsTest("testAddStatement"));
-        suite.addTest(new CommentsTest("testAddJavaDocToMethod"));
-        suite.addTest(new CommentsTest("testGetComment1"));
-//        suite.addTest(new CommentsTest("testAddJavaDocToExistingMethod"));
+//        suite.addTest(new CommentsTest("testAddStatement"));
+//        suite.addTest(new CommentsTest("testAddJavaDocToMethod"));
+//        suite.addTest(new CommentsTest("testGetComment1"));
+        suite.addTest(new CommentsTest("testAddJavaDocToExistingMethod"));
         return suite;
     }
 
@@ -216,29 +216,30 @@ public class CommentsTest extends GeneratorTestMDRCompat {
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
             
-            public void run(final WorkingCopy copy) throws Exception {
-                copy.toPhase(Phase.RESOLVED);
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED);
                 
-                TreeMaker make = copy.getTreeMaker();
-                ClassTree node = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
-                MethodTree method = null;
-                for (Tree tree : node.getMembers()) {
-                    if (tree.getKind() == Tree.Kind.METHOD && "test".contentEquals(((MethodTree) tree).getName())) {
-                        method = (MethodTree) tree;
-                        break;
-                    }
-                }
-                
-                assertNotNull(method);
-                
-                make.addComment(method, Comment.create(
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree node = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) node.getMembers().get(1);
+                MethodTree copy = make.Method(method.getModifiers(),
+                        method.getName(),
+                        method.getReturnType(),
+                        method.getTypeParameters(),
+                        method.getParameters(),
+                        method.getThrows(),
+                        method.getBody(),
+                        (ExpressionTree) method.getDefaultValue()
+                );
+                make.addComment(copy, Comment.create(
                         Comment.Style.JAVADOC, 
                         Query.NOPOS, 
                         Query.NOPOS, 
                         Query.NOPOS, 
-                        "Comentario"), 
+                        "/** Comentario \n*/"),
                         true
                 );
+                workingCopy.rewrite(method, copy);
             }
             
             public void cancel() {

@@ -19,9 +19,11 @@
 package org.netbeans.modules.java.source.save;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCImport;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -81,7 +83,9 @@ abstract class PositionEstimator {
      * @return  position where to start
      */
     public abstract int prepare(final int startPos, StringBuilder aHead, StringBuilder aTail);
-    
+
+    public abstract int[] sectionRemovalBounds(StringBuilder replacement);
+            
     /**
      * Return line insertion type for given estimator.
      */
@@ -122,15 +126,23 @@ abstract class PositionEstimator {
      */
     static class ImportsEstimator extends PositionEstimator {
         
-        TokenSequence<JavaTokenId> seq;
-        int size = 0;
+        private final TokenSequence<JavaTokenId> seq;
+        private final List<JCImport> oldL;
+        private final List<JCImport> newL;
+        private final WorkingCopy copy;
         
+        public ImportsEstimator(final List<JCImport> oldL, final List<JCImport> newL, final WorkingCopy copy) {
+            this.oldL = oldL;
+            this.newL = newL;
+            this.copy = copy;
+            this.seq = copy.getTokenHierarchy().tokenSequence();
+        }
+
         @Override()
-        public void initialize(List<? extends JCTree> oldL, WorkingCopy copy) {
-            size = oldL.size();
+        public void initialize(List<? extends JCTree> oldL, WorkingCopy copy) { // parameters should be removed
+            int size = oldL.size();
             matrix = new int[size+1][3];
             matrix[size] = new int[] { -1, -1, -1 };
-            seq = copy.getTokenHierarchy().tokenSequence();
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             int i = 0;
@@ -218,7 +230,7 @@ abstract class PositionEstimator {
                 seq.moveIndex(tokenIndex);
                 seq.moveNext();
             }
-            int begin = goAfterLastNewLine(seq);
+            int begin = index == 0 ? goAfterLastNewLine(seq) : goAfterFirstNewLine(seq);
             if (matrix[index][2] != -1) {
                 seq.moveIndex(matrix[index][2]);
                 seq.moveNext();
@@ -246,6 +258,37 @@ abstract class PositionEstimator {
             throw new UnsupportedOperationException("Not applicable for imports!");
         }
 
+        @Override
+        public String toString() {
+            String result = "";
+            for (int i = 0; i < oldL.size(); i++) {
+                int[] pos = getPositions(i);
+                String s = copy.getText().substring(pos[0], pos[1]);
+                result += "\"" + s + "\"";
+            }
+            return result;
+        }
+    
+        /**
+         * Used when all elements from the list was removed.
+         */
+        public int[] sectionRemovalBounds(StringBuilder replacement)
+        {
+            // this part should be generalized
+            assert !oldL.isEmpty() && newL.isEmpty(); // check the call correctness
+            SourcePositions positions = copy.getTrees().getSourcePositions();
+            CompilationUnitTree compilationUnit = copy.getCompilationUnit();
+            int sectionStart = (int) positions.getStartPosition(compilationUnit, oldL.get(0));
+            int sectionEnd = (int) positions.getEndPosition(compilationUnit, oldL.get(oldL.size()-1));
+            // end of generalization part
+            
+            seq.move(sectionStart);
+            moveToSrcRelevant(seq, Direction.BACKWARD);
+            sectionStart = goAfterFirstNewLine(seq);
+            seq.move(sectionEnd);
+            sectionEnd = goAfterFirstNewLine(seq);
+            return new int[] { sectionStart, sectionEnd };
+        }
     }
 
     /**
@@ -346,6 +389,10 @@ abstract class PositionEstimator {
             return startPos;
         }
         
+        public int[] sectionRemovalBounds(StringBuilder replacement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
     
     /**
@@ -426,6 +473,10 @@ abstract class PositionEstimator {
             return startPos;
         }
         
+        public int[] sectionRemovalBounds(StringBuilder replacement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
     
     private static abstract class BaseEstimator extends PositionEstimator {
@@ -532,6 +583,11 @@ abstract class PositionEstimator {
                            StringBuilder aTail) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        
+        public int[] sectionRemovalBounds(StringBuilder replacement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 
     // todo (#pf): remove - used for debugging reasons, doesn't do good job
@@ -552,7 +608,7 @@ abstract class PositionEstimator {
             System.err.println("");
         }
     }
-
+        
     ////////////////////////////////////////////////////////////////////////////
     // Utility methods
     

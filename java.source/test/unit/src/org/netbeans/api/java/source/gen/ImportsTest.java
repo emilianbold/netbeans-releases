@@ -19,6 +19,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.source.CancellableTask;
@@ -46,17 +47,20 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         NbTestSuite suite = new NbTestSuite();
 //        suite.addTestSuite(ImportsTest.class);
         suite.addTest(new ImportsTest("testAddFirst"));
-//        suite.addTest(new ImportsTest("testAddFirstAgain"));
+        suite.addTest(new ImportsTest("testAddFirstAgain"));
         suite.addTest(new ImportsTest("testAddSecondImport"));
         suite.addTest(new ImportsTest("testAddSecondImportWithEndLineCmt"));
         suite.addTest(new ImportsTest("testAddTwoImportsOrigWithComment"));
         suite.addTest(new ImportsTest("testAddBetweenImports"));
         suite.addTest(new ImportsTest("testRemoveBetweenImportsWithLineEndComment"));
         suite.addTest(new ImportsTest("testRemoveAllImports"));
+        suite.addTest(new ImportsTest("testRemoveAllImports2"));
         suite.addTest(new ImportsTest("testAddFirstTwo"));
         suite.addTest(new ImportsTest("testAddFirstTwoAgain"));
         suite.addTest(new ImportsTest("testAddFirstToExisting"));
         suite.addTest(new ImportsTest("testRemoveInnerImport"));
+//        suite.addTest(new ImportsTest("testUnformatted"));
+        suite.addTest(new ImportsTest("testEmptyLines"));
         return suite;
     }
     
@@ -111,7 +115,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             );
         String golden =
             "package hierbas.del.litoral;\n\n" +
-            "import java.io.IOException;\n\n" +
+            "import java.io.IOException;\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
@@ -545,16 +549,68 @@ public class ImportsTest extends GeneratorTestMDRCompat {
     public void testRemoveAllImports() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "import java.util.ArrayList; // polovy seznam\n" +
             "import java.util.List; // yerba mate\n" +
-            "import java.util.Collections;\n\n" +
+            "import java.util.Collections;\n" +
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
             "}\n");
         String golden =
-            "package hierbas.del.litoral;\n\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.removeCompUnitImport(node, 0);
+                copy = make.removeCompUnitImport(copy, 0);
+                copy = make.removeCompUnitImport(copy, 0);
+                workingCopy.rewrite(node, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveAllImports2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.ArrayList; // polovy seznam\n" +
+            "import java.util.List; // yerba mate\n" +
+            "import java.util.Collections;\n" +
+            "\n" +
+            "/**\n" +
+            " * What?\n" +
+            " */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**\n" +
+            " * What?\n" +
+            " */\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
@@ -613,6 +669,55 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 CompilationUnitTree copy = make.removeCompUnitImport(node, 0);
                 copy = make.addCompUnitImport(copy, make.Import(make.Identifier("java.util.Arrays"), true));
                 workingCopy.rewrite(node, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testEmptyLines() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "\n" +
+            "import java.util.List;\n" +
+            "import java.util.Collections;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.LinkedList;\n" +
+            "\n" +
+            "import java.util.List;\n" +
+            "import java.util.Collections;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ImportTree novyDovoz = make.Import(make.Identifier("java.util.LinkedList"), false);
+                CompilationUnitTree copy = make.insertCompUnitImport(cut, 1, novyDovoz);
+                workingCopy.rewrite(cut, copy);
             }
 
             public void cancel() {

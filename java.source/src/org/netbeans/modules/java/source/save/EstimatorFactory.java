@@ -13,10 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.source.save;
+
+import com.sun.source.tree.ImportTree;
+import com.sun.tools.javac.tree.JCTree.JCImport;
+import java.util.List;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.TokenSequence;
 
 /**
  * Factory used for creating instances of position provider.
@@ -84,7 +91,10 @@ final class EstimatorFactory {
      * These bounds are returned when user ask for offset of the specified
      * import statement.
      */
-    static PositionEstimator imports() {
-        return new PositionEstimator.ImportsEstimator();
+    static PositionEstimator imports(List<JCImport> oldL, 
+                                     List<JCImport> newL,
+                                     WorkingCopy copy)
+    {
+        return new PositionEstimator.ImportsEstimator(oldL, newL, copy);
     }
 }

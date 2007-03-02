@@ -198,7 +198,8 @@ public class CasualDiff {
                 posHint = oldT.getImports().head.pos;
             }
             printer.reset(0);
-            int[] pos = diffList(oldT.getImports(), newT.getImports(), posHint, EstimatorFactory.imports(), Measure.DEFAULT, printer);
+            PositionEstimator est = EstimatorFactory.imports(oldT.getImports(), newT.getImports(), workingCopy);
+            int[] pos = diffListImports(oldT.getImports(), newT.getImports(), posHint, est, Measure.DEFAULT, printer);
             if (pointer < pos[0])
                 output.writeTo(origText.substring(pointer, pos[0]));
             if (pos[1] > pointer)
@@ -1824,8 +1825,6 @@ public class CasualDiff {
                             int[] poss = estimator.getPositions(index);
                             diffTree(lastdel, item.element, poss);
                             printer.print(this.printer.toString());
-    //                                if (pointer < poss[1])
-    //                                    printer.print(origText.substring(pointer, pointer = poss[1]));
                             this.printer = oldPrinter;
                             this.printer.undent(old);
                             break;
@@ -1840,7 +1839,7 @@ public class CasualDiff {
                         inPrint.enclClassName = printer.enclClassName;
 //                        inPrint.indent();
                         inPrint.print(item.element);
-                        inPrint.newline();
+                            inPrint.newline();
                         printer.print(inPrint.toString());
                         printer.undent(old);
                         //printer.print(tail);
@@ -1894,6 +1893,149 @@ public class CasualDiff {
             result.add(tree);
         }
         return result;
+    }
+    
+    
+    /**
+     * Used for diffing lists which does not contain any separator.
+     * (Currently for imports and members diffing.)
+     */
+    private int[] diffListImports(
+            List<? extends JCTree> oldList, 
+            List<? extends JCTree> newList,
+            int initialPos, 
+            PositionEstimator estimator,
+            Measure measure, 
+            VeryPretty printer)
+    {
+        int[] ret = new int[] { -1, -1 };
+        if (oldList == newList) {
+            return ret;
+        }
+        assert oldList != null && newList != null;
+        
+        ListMatcher<JCTree> matcher = ListMatcher.instance(
+                oldList, 
+                newList,
+                measure
+        );
+        if (!matcher.match()) {
+            return ret;
+        }
+        JCTree lastdel = null; // last deleted element
+        ResultItem<JCTree>[] result = matcher.getResult();
+        int posHint = initialPos;
+        estimator.initialize(oldList, workingCopy);
+        
+        // if there hasn't been import but at least one is added
+        if (oldList.isEmpty() && !newList.isEmpty()) {
+        }
+        // if there has been imports which is removed now
+        if (newList.isEmpty() && !oldList.isEmpty()) {
+            return estimator.sectionRemovalBounds(null);
+        }
+        int i = 0;
+        for (int j = 0; j < result.length; j++) {
+            ResultItem<JCTree> item = result[j];
+            switch (item.operation) {
+                case INSERT: {
+                    int pos = estimator.getInsertPos(i);
+                    // estimator couldn't compute the position - probably
+                    // first element is inserted to the collection
+                    String head = "", tail = "";
+                    if (pos < 0 && oldList.isEmpty() && i == 0) {
+                        pos = initialPos;
+                        StringBuilder aHead = new StringBuilder(), aTail = new StringBuilder();
+                        pos = estimator.prepare(initialPos, aHead, aTail);
+                        if (j+1 == result.length) {
+                            tail = aTail.toString();
+                        }
+                        head = aHead.toString();
+                        posHint = pos;
+                        if (ret[0] < 0) ret[0] = posHint;
+                        if (ret[1] < 0) ret[1] = posHint;
+                    } else {
+                        if (ret[0] < 0) ret[0] = posHint;
+                        if (ret[1] < 0) ret[1] = posHint;
+                    }
+                    int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
+                    boolean found = false;
+                    if (oldPos > 0) {
+                        for (JCTree oldT : oldList) {
+                            int oldNodePos = oldT.getKind() != Kind.VARIABLE ? getOldPos(oldT) : oldT.pos;
+                            if (oldPos == oldNodePos) {
+                                found = true;
+                                VeryPretty oldPrinter = this.printer;
+                                int old = oldPrinter.indent();
+                                this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
+                                this.printer.reset(old);
+                                int index = oldList.indexOf(oldT);
+                                int[] poss = estimator.getPositions(index);
+                                diffTree(oldT, item.element, poss);
+                                printer.print(this.printer.toString());
+                                this.printer = oldPrinter;
+                                this.printer.undent(old);
+                                break;
+                            }
+                        }
+                    }
+                    if (!found) {
+                        if (lastdel != null && treesMatch(item.element, lastdel, false)) {
+                            VeryPretty oldPrinter = this.printer;
+                            int old = oldPrinter.indent();
+                            this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
+                            this.printer.reset(old);
+                            int index = oldList.indexOf(lastdel);
+                            int[] poss = estimator.getPositions(index);
+                            diffTree(lastdel, item.element, poss);
+                            printer.print(this.printer.toString());
+                            this.printer = oldPrinter;
+                            this.printer.undent(old);
+                            break;
+                        }
+                        printer.print(head);
+                        int old = printer.indent();
+                        VeryPretty inPrint = new VeryPretty(context, JavaFormatOptions.getDefault());
+                        inPrint.reset(old);
+                        inPrint.enclClassName = printer.enclClassName;
+                        if (LineInsertionType.BEFORE == estimator.lineInsertType()) inPrint.newline();
+                        inPrint.print(item.element);
+                        if (LineInsertionType.AFTER == estimator.lineInsertType()) inPrint.newline();
+                        printer.print(inPrint.toString());
+                        printer.undent(old);
+                    }
+                    break;
+                }
+                case DELETE: {
+                    int[] pos = estimator.getPositions(i);
+                    lastdel = oldList.get(i);
+                    if (ret[0] < 0) {
+                        ret[0] = pos[0];
+                    }
+                    ++i;
+                    ret[1] = pos[1];
+                    posHint = pos[1];
+                    break;
+                }
+                case NOCHANGE: {
+                    int[] pos = estimator.getPositions(i);
+                    if (ret[0] < 0) {
+                        ret[0] = pos[0];
+                    }
+                    printer.print(origText.substring(pos[0], pos[1]));
+                    ret[1] = pos[1];
+                    ++i;
+                    break;
+                }
+            }
+        }
+        if (!oldList.isEmpty()) {
+            Iterator<? extends JCTree> it = oldList.iterator();
+            for (i = 0; it.hasNext(); i++, it.next()) ;
+            int[] pos = estimator.getPositions(i);
+            ret[1] = pos[1];
+        }
+        return ret;
     }
     
     private boolean isHidden(JCTree t, JCTree parent) {
