@@ -31,7 +31,7 @@ import org.netbeans.modules.xml.wsdl.model.TestCatalogModel;
 public class SOAPComponentValidatorTest extends TestCase {
 
     private static final ResourceBundle mMessages =
-        ResourceBundle.getBundle("org.netbeans.modules.xml.wsdl.model.extensions.soap.validation.resources.Bundle");
+        ResourceBundle.getBundle("org.netbeans.modules.xml.wsdl.model.extensions.soap.validation.Bundle");
 
     public SOAPComponentValidatorTest(String testName) {
         super(testName);
