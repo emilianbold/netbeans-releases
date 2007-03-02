@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="Property_Editors_Library" default="default" basedir=".">
+    
+    <description>Builds, tests, and runs the project Property Editors Library.</description>
+    <import file="nbproject/build-impl.xml"/>
+    
+    <target name="-pre-jar"> 
+        <tstamp>
+            <format property="TODAY" pattern="MMMM dd yyyy" locale="en"/>
+        </tstamp>
+        <manifest file="MANIFEST.MF">
+            <attribute name="Specification-Title" value="Sun Microsystems Property Editors API"/>
+            <attribute name="Specification-Version" value="1.0"/>
+            <attribute name="Specification-Vendor" value="Sun Microsystems"/>
+            <attribute name="Implementation-Title" value="com.sun.rave.propertyeditors"/>
+            <attribute name="Implementation-Version" value="1.0 ${TODAY}"/> 
+            <attribute name="Implementation-Vendor" value="Sun Microsystems"/>
+        </manifest>
+        <property name="manifest.file" value="MANIFEST.MF"/>
+        <available file="${manifest.file}" property="manifest.available"/>
+    </target>
+    
+    <target name="-post-jar">
+        <delete file="MANIFEST.MF"/>
+    </target>
+    
+</project>
