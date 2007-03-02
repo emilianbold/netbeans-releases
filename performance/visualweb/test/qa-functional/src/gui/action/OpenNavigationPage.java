@@ -48,7 +48,7 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
     }
     
     public OpenNavigationPage(String testName, String performanceDataName) {
-        super(testName);
+        super(testName, performanceDataName);
         expectedTime = 25000;
         WAIT_AFTER_OPEN=20000;
     }
