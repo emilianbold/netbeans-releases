@@ -102,6 +102,9 @@ public class MeasureDialogs  {
         
         suite.addTest(new CreateTestsDialog("measureTime", "Create Tests dialog open"));
         
+        suite.addTest(new SelectProfilingTaskDialog("measureTime", "Select Profiling Task dialog open"));
+        
+        
 //TODO failing after retouche integration        suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
 //TODO failing after retouche integration        suite.addTest(new RefactorRenameDialog("measureTime", "Refactor rename dialog open"));
 //TODO hard to indentify end of the action        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));

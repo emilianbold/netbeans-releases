@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core qa-performance test config">
     
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="all or menus or dialogs or actions or setup or memory_usage or memory_dialog or memory_action or memory_menu or editor_related or java_related or apisupport_related or temp or memory_temp" prio="1"
+    <testbag testattribs="all or menus or dialogs or actions or setup or memory_usage or memory_dialog or memory_action or memory_menu or editor_related or java_related or apisupport_related or profiler_related or temp or memory_temp" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
@@ -314,10 +314,19 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Custom / Module test bags -->    
     <testbag testattribs="java_related" prio="100"
-             executor="ide_performance" name="UI responsiveness of actions, dialogs or menus related to java, editor, mdr" >
+             executor="ide_performance" name="UI responsiveness of actions, dialogs or menus related to java, editor, refactoring" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureJava.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="profiler_related" prio="101"
+             executor="ide_performance" name="UI responsiveness of actions, dialogs or menus related to profiler" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureProfiler.class"/>
             </patternset>
         </testset>
     </testbag>

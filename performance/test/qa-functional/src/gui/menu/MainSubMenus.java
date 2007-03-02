@@ -105,6 +105,18 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         testSubMenu("org.netbeans.modules.project.ui.Bundle", "RunProject", "org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
     }
     
+    public void testVersLocalHistoryMenu() {
+        testSubMenu("org.netbeans.modules.versioning.Bundle","Menu/Versioning", "org.netbeans.modules.localhistory.Bundle", "CTL_MainMenuItem");
+    }
+
+    public void testVersSubversionMenu() {
+        testSubMenu("org.netbeans.modules.versioning.Bundle","Menu/Versioning", "Subversion");
+    }
+        
+    public void testToolsJavaDBMenu(){
+        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", " org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase");
+    }
+    
     public void testToolsI18nMenu(){
         testSubMenu("org.netbeans.core.Bundle","Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
     }
@@ -112,6 +124,23 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     public void testWinDebuggingMenu(){
         testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
     }
+    
+    public void testWinVersioningMenu(){
+        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning");
+    }
+
+    public void testWinProfilingMenu(){
+        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.profiler.actions.Bundle","Menu/Window/Profile");
+    }
+    
+    public void testHelpTutorials(){
+        testSubMenu("org.netbeans.core.Bundle","Menu/Help", " org.netbeans.modules.url.Bundle", "Menu/Help/Tutorials");
+    }
+
+    public void testHelpJavadoc(){
+        testSubMenu("org.netbeans.core.Bundle","Menu/Help", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
+    }
+    
     
     private void testSubMenu(String mainMenu, String subMenu){
         mainMenuPath = mainMenu;

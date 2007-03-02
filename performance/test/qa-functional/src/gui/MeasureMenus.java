@@ -42,6 +42,7 @@ public class MeasureMenus  {
         suite.addTest(new MainMenu("testRunMenu", "Run main menu"));
         suite.addTest(new MainMenu("testRefactoringMenu", "Refactor main menu"));
         suite.addTest(new MainMenu("testVersioningMenu", "CVS main menu"));
+        suite.addTest(new MainMenu("testProfileMenu", "Profile main menu"));
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
         suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
         
@@ -54,8 +55,15 @@ public class MeasureMenus  {
         suite.addTest(new MainSubMenus("testViewToolbarsMenu", "View | Toolbars main menu"));
         suite.addTest(new MainSubMenus("testRunStackMenu", "Run | Stack main menu"));
         suite.addTest(new MainSubMenus("testRunRunFileMenu", "Run | Run File main menu"));
+        suite.addTest(new MainSubMenus("testVersLocalHistoryMenu", "Versioning | Local History main menu"));
+        suite.addTest(new MainSubMenus("testVersSubversionMenu", "Versioning | Subversion main menu"));
         suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
+        suite.addTest(new MainSubMenus("testToolsJavaDBMenu", "Tools | Java DB Database main menu"));
         suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debugging main menu"));
+        suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
+        suite.addTest(new MainSubMenus("testWinProfilingMenu", "Window | Profiling main menu"));
+        suite.addTest(new MainSubMenus("testHelpTutorials", "Help | Tutorials main menu"));
+        suite.addTest(new MainSubMenus("testHelpJavadoc", "Help | Javadoc References main menu"));
         
         suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenuProjects", "JSE Project node popup in Projects View"));
         suite.addTest(new ProjectsViewPopupMenu("testSourcePackagesPopupMenuProjects", "Source Packages node popup in Projects View"));

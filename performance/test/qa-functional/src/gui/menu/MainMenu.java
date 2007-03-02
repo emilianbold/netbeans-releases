@@ -112,11 +112,15 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
     }
     
     public void testRefactoringMenu(){
-        testMenuWithJava("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_Action");
+        testMenuWithJava("org.netbeans.modules.refactoring.spi.impl.Bundle","Menu/Refactoring");
     }
     
     public void testVersioningMenu(){
-        testMenuWithJava("org.netbeans.modules.versioning.system.cvss.Bundle","Menu/CVS");
+        testMenuWithJava("org.netbeans.modules.versioning.Bundle","Menu/Versioning");
+    }
+    
+    public void testProfileMenu(){
+        testMenuWithJava("org.netbeans.modules.profiler.actions.Bundle","Menu/Profile");
     }
     
     public void testWindowMenu(){
