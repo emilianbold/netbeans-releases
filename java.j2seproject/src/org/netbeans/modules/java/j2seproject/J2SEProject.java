@@ -499,11 +499,10 @@ public final class J2SEProject implements Project, AntProjectListener {
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-//XXX: to compile workaround            
-//            if (mainClassUpdater != null) {
-//                mainClassUpdater.unregister ();
-//                mainClassUpdater = null;
-//            }
+            if (mainClassUpdater != null) {
+                mainClassUpdater.unregister ();
+                mainClassUpdater = null;
+            }
             
             if (jaxWsFo!=null) jaxWsFo.removeFileChangeListener(jaxWsListener);
         }

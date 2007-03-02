@@ -78,6 +78,12 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
         this.addFileChangeListener ();
     }
     
+    public synchronized void unregister () {
+        if (current != null) {
+            current.removeFileChangeListener(this);
+        }
+    }
+    
     public void propertyChange(PropertyChangeEvent evt) {
         if (this.mainClassPropName.equals(evt.getPropertyName())) {
             this.addFileChangeListener ();
@@ -86,7 +92,11 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     
     @Override
     public void fileRenamed (final FileRenameEvent evt) {
-        if (evt.getFile() == this.current) {
+        final FileObject _current;
+        synchronized (this) {
+            _current = this.current;
+        }
+        if (evt.getFile() == _current) {
             Runnable r = new Runnable () {
                 public void run () {  
                     try {
@@ -96,7 +106,7 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                             }
                         });
 
-                        Collection<ElementHandle<TypeElement>> main = SourceUtils.getMainClasses(current);
+                        Collection<ElementHandle<TypeElement>> main = SourceUtils.getMainClasses(_current);
                         String newMainClass = null;
                         if (!main.isEmpty()) {
                             ElementHandle<TypeElement> mainHandle = main.iterator().next();
@@ -133,16 +143,19 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
         }
     }
     
-    private synchronized void addFileChangeListener () {
+    private void addFileChangeListener () {
         performer.post( new Runnable () {
             public void run() {
                 try {
                     SourceUtils.waitScanFinished();
-                    if (current != null) {
-                        current.removeFileChangeListener(MainClassUpdater.this);
-                        current = null;
-                    }            
+                    synchronized (MainClassUpdater.this) {
+                        if (current != null) {
+                            current.removeFileChangeListener(MainClassUpdater.this);
+                            current = null;
+                        }            
+                    }
                     final String mainClassName = org.netbeans.modules.java.j2seproject.MainClassUpdater.this.eval.getProperty(mainClassPropName);
+                    final FileObject[] _current = new FileObject[1];
                     if (mainClassName != null) {
                         FileObject[] roots = sourcePath.getRoots();
                         if (roots.length>0) {
@@ -156,13 +169,16 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                                 public void run(CompilationController c) throws Exception {
                                     TypeElement te = c.getElements().getTypeElement(mainClassName);
                                     if (te != null) {
-                                        current = SourceUtils.getFile(te, cpInfo);
-                                        if (current != null && sourcePath.contains(current)) {
-                                            current.addFileChangeListener(MainClassUpdater.this);
-                                        }
+                                        _current[0] = SourceUtils.getFile(te, cpInfo);                                        
                                     }
                                 }                
                             }, true);
+                        }
+                    }
+                    synchronized (MainClassUpdater.this) {
+                        current = _current[0];
+                        if (current != null && sourcePath.contains(current)) {
+                            current.addFileChangeListener(MainClassUpdater.this);
                         }
                     }
                 } catch (InterruptedException e) {
