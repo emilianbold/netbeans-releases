@@ -196,7 +196,13 @@ public class StorageBuilderAction extends ProductAction {
             
             Object oResult = null;
             String destDir = nbInstallDir + File.separator + ideClusterDir + File.separator + "mdrstorage";
-            Object [] args = new Object [] {new String [] {Util.getJdkHome()}, destDir};
+            String jdkHome;
+            if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
+                jdkHome = Util.getInstalledJdk();
+            } else {
+                jdkHome = Util.getJdkHome();
+            }
+            Object [] args = new Object [] {new String [] {jdkHome}, destDir};
             try {
                 oResult = method.invoke(null, args);
             } catch (IllegalAccessException exc) {

@@ -459,6 +459,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         }
         String j2seInstallDir = null;
         if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
+            j2seInstallDir = Util.getInstalledJdk();
             //Code moved to execute() and exited()
         } else {
             // There is no jdk already installed so check the j2se directory.
