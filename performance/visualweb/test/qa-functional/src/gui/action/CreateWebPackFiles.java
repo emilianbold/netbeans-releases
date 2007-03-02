@@ -19,11 +19,12 @@
 
 package gui.action;
 
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -39,7 +40,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     private NewFileNameLocationStepOperator location;
     
     private int index;
-
+    private static final String project_name = "VisualWebProject";
     /**
      * Creates a new instance of CreateWebPackFiles
      * @param testName the name of the test
@@ -100,7 +101,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     
     public void initialize(){
 	log("::initialize::");
-        new ProjectsTabOperator().getProjectRootNode("VisualWebProject").select();
+        new ProjectsTabOperator().getProjectRootNode(project_name).select();
     }
 
     public void prepare(){
@@ -125,10 +126,24 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
 
     public void close(){
         log("::close");
+        cleanupTest();
 	index++;
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
-
+    
+    private void cleanupTest() {
+        log(":: do cleanup.....");
+        Node projectRoot = new ProjectsTabOperator().getProjectRootNode(project_name);        
+        Node objNode = new Node(projectRoot.tree(),docname+"_"+(index)+suffix);
+        objNode.select();
+        log(":: Document: "+docname+"_"+(index)+suffix);
+        log(":: Selected: "+objNode.getTreePath().toString());
+        
+        objNode.performPopupAction("Delete");
+        new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("com.sun.rave.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle")).ok();
+        log(":: cleanup passed");
+        
+    }
     protected void shutdown() {
         log("::shutdwown");
         super.shutdown();

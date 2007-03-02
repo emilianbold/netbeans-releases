@@ -19,14 +19,12 @@
 
 package gui.action;
 
+import footprint.VWPFootprintUtilities;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.junit.ide.ProjectSupport;
-
 
 /**
  * Test create Web Pack projects
@@ -104,10 +102,10 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     }
     
     public void close(){
-        ProjectSupport.closeProject(project_name);
+        VWPFootprintUtilities.deleteProject(project_name);
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
-    
+       
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateWebPackProject("testCreateWebPackProject"));
     }    	
