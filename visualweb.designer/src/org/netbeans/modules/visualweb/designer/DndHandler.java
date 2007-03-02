@@ -415,157 +415,157 @@ public class DndHandler /*extends TransferHandler*/ {
         clearDropMatch();
     }
     
-    private void doImportDataDelayed(JComponent comp, Transferable t, Object transferData,
-    HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
-//        LiveUnit unit = webform.getModel().getLiveUnit();
-//        if (unit == null) {
-//            NotifyDescriptor d =
-//                new NotifyDescriptor.Message(NbBundle.getMessage(DndHandler.class, "NoHtmlDrops"),
-//                    NotifyDescriptor.WARNING_MESSAGE);
-//            DialogDisplayer.getDefault().notify(d);
-////            dropSize = null;
-////            insertPos = Position.NONE;
-////            dropPoint = null;
-//            
-////            clearDropMatch();
-//
-//            return;
-//        }
-//
-//        // wrap process in a try to allow cleanup in the finally
-//        try {
-//            comp.setCursor(org.openide.util.Utilities.createProgressCursor(comp));
-//
-//            // if we are importing to the same component that we exported from then don't actually do
-//            // anything if the drop location is inside the drag location and set shouldRemove to false
-//            // so that exportDone knows not to remove any data
-//            if (transferData instanceof DisplayItem) {
-//                // Create a new type
-//                DisplayItem item = (DisplayItem)transferData;
-//
-////                Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-//                // Todo: pass in a set instead
-////                doImportItem(item, null, DROP_CENTER, null, null, location);
-//                importBean(new DisplayItem[] {item}, null, DROP_CENTER, null, null, location, coordinateTranslator);
-//            } else if (transferData instanceof DesignBean[]) {
-//                DesignBean[] beans = (DesignBean[])transferData;
-////                Location location =
-////                    computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-////                DesignBean droppee = location.droppee;
+//    private void doImportDataDelayed(JComponent comp, Transferable t, Object transferData,
+//    HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+////        LiveUnit unit = webform.getModel().getLiveUnit();
+////        if (unit == null) {
+////            NotifyDescriptor d =
+////                new NotifyDescriptor.Message(NbBundle.getMessage(DndHandler.class, "NoHtmlDrops"),
+////                    NotifyDescriptor.WARNING_MESSAGE);
+////            DialogDisplayer.getDefault().notify(d);
+//////            dropSize = null;
+//////            insertPos = Position.NONE;
+//////            dropPoint = null;
+////            
+//////            clearDropMatch();
 ////
+////            return;
+////        }
+////
+////        // wrap process in a try to allow cleanup in the finally
+////        try {
+////            comp.setCursor(org.openide.util.Utilities.createProgressCursor(comp));
+////
+////            // if we are importing to the same component that we exported from then don't actually do
+////            // anything if the drop location is inside the drag location and set shouldRemove to false
+////            // so that exportDone knows not to remove any data
+////            if (transferData instanceof DisplayItem) {
+////                // Create a new type
+////                DisplayItem item = (DisplayItem)transferData;
+////
+//////                Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
+////                // Todo: pass in a set instead
+//////                doImportItem(item, null, DROP_CENTER, null, null, location);
+////                importBean(new DisplayItem[] {item}, null, DROP_CENTER, null, null, location, coordinateTranslator);
+////            } else if (transferData instanceof DesignBean[]) {
+////                DesignBean[] beans = (DesignBean[])transferData;
+//////                Location location =
+//////                    computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
+//////                DesignBean droppee = location.droppee;
+//////
+//////                if (droppee != null) {
+//////                    Location location2 =
+//////                        computePositions(droppee, DROP_CENTER, null, null, null, false);
+//////                    doBindOrMoveItems(dropAction, beans, t, droppee, DROP_CENTER, null, location2);
+//////                }
+////                DesignBean droppee = location.droppee;
 ////                if (droppee != null) {
-////                    Location location2 =
-////                        computePositions(droppee, DROP_CENTER, null, null, null, false);
-////                    doBindOrMoveItems(dropAction, beans, t, droppee, DROP_CENTER, null, location2);
+//////                    location = computePositions(droppee1, DROP_CENTER, null, null, null, false);
+////                    location = computeLocationForBean(droppee, DROP_CENTER, null, null, getDropSize(), webform.getModel());
+////                    doBindOrMoveItems(dropAction, beans, t, droppee, DROP_CENTER, null, location);
 ////                }
-//                DesignBean droppee = location.droppee;
-//                if (droppee != null) {
-////                    location = computePositions(droppee1, DROP_CENTER, null, null, null, false);
-//                    location = computeLocationForBean(droppee, DROP_CENTER, null, null, getDropSize(), webform.getModel());
-//                    doBindOrMoveItems(dropAction, beans, t, droppee, DROP_CENTER, null, location);
-//                }
-//            } else if (transferData instanceof org.openide.nodes.Node) {
-//                org.openide.nodes.Node node = (org.openide.nodes.Node)transferData;
-//                DataObject dobj = (DataObject)node.getCookie(DataObject.class);
-//
-//                if (dobj != null) {
-//                    FileObject fo = dobj.getPrimaryFile();
-////                    String rel = DesignerUtils.getPageRelativePath(webform, fo);
-//                    String rel = getPageRelativePath(webform.getProject(), fo);
-//                    
-//                    Project fileProject = FileOwnerQuery.getOwner(fo);
-//
-//                    if (fileProject != webform.getProject()) {
-//                        // Import file into our project first
-//                        FileObject webitem = webform.getDataObject().getPrimaryFile();
-//
-//                        try {
-//                            if (DesignerUtils.isImage(fo.getExt()) ||
-//                                    DesignerUtils.isStylesheet(fo.getExt())) {
-//                                // Import web context relative rather than file relative
-//                                DesignProject project =
-//                                    webform.getModel().getLiveUnit().getProject();
-//                                File file = FileUtil.toFile(fo);
-//                                URL url = file.toURI().toURL();
-//                                rel = RESOURCES + UrlPropertyEditor.encodeUrl(file.getName());
-//                                project.addResource(url, new URI(WEB + rel));
-//                            } else {
-//                                URL url = fo.getURL();
-//                                rel = JsfProjectUtils.addResource(webitem, url, true);
-//                            }
-//                        } catch (FileStateInvalidException fse) {
-//                            ErrorManager.getDefault().notify(fse);
-//                        }
-//                    }
-//
-//                    if (DesignerUtils.isImage(fo.getExt())) {
-////                        Location location =
-////                            computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-//                        importImage(rel, location, coordinateTranslator);
-//                    } else if (DesignerUtils.isStylesheet(fo.getExt())) {
-//                        importStylesheet(rel);
-//                    }
-//
-//                    //} else if (node instanceof org.netbeans.modules.properties.KeyNode) {
-//                    //    // Compute the value binding expression:
-//                    //    //  #{bundle.key}
-//                    //    // But I need to ensure that the bundle file is included somewhere in
-//                    //    // the page, and use the variable in the above.
-//                    //    // The key can be found from this node via a cookie, but it looks like
-//                    //    // the properties code is using old-style openide.src api calls, so
-//                    //    // I'd hate to include it.
-//                }
-//            } else if (transferData instanceof File) {
-//                File f = (File)transferData;
-////                Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-//                importFile(f, null, location, coordinateTranslator);
-//            } else if (transferData instanceof String) {
-//                String s = (String)transferData;
-//                
-//                File file = extractFileFromString(s);
-//                if (file != null) {
-//                    importFile(file, null, location, coordinateTranslator);
-//                } else {
-//                
-//                    s = DesignerUtils.truncateString(s, 600);
-////                    Location location =
-////                        computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-//                    importString(s, location, coordinateTranslator);
-//                }
-//            } else if (transferData instanceof List) {
-//                // TODO: place this under a single undo unit?
-//                List list = (List)transferData;
-//                Iterator it = list.iterator();
-//                JPanel panel = null;
-//
-//                while (it.hasNext()) {
-//                    Object o = it.next();
-//
-//                    if (o instanceof File) {
-//                        File f = (File)o;
-////                        Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-//                        panel = importFile(f, panel, location, coordinateTranslator);
-//                    }
-//                }
-//            } else {
-//                assert false : transferData;
-//            }
-//        } catch (Exception e) {
-//            ErrorManager.getDefault().notify(e);
-//
-//            return;
-//        } finally {
-//            if (comp != null) {
-//                comp.setCursor(null);
-//            }
-//
-////            dropSize = null;
-////            insertPos = Position.NONE;
-////            dropPoint = null;
-////            clearDropMatch();
-//        }
-        webform.importData(comp, t, transferData, getDropSize(), location, coordinateTranslator, dropAction);
-    }
+////            } else if (transferData instanceof org.openide.nodes.Node) {
+////                org.openide.nodes.Node node = (org.openide.nodes.Node)transferData;
+////                DataObject dobj = (DataObject)node.getCookie(DataObject.class);
+////
+////                if (dobj != null) {
+////                    FileObject fo = dobj.getPrimaryFile();
+//////                    String rel = DesignerUtils.getPageRelativePath(webform, fo);
+////                    String rel = getPageRelativePath(webform.getProject(), fo);
+////                    
+////                    Project fileProject = FileOwnerQuery.getOwner(fo);
+////
+////                    if (fileProject != webform.getProject()) {
+////                        // Import file into our project first
+////                        FileObject webitem = webform.getDataObject().getPrimaryFile();
+////
+////                        try {
+////                            if (DesignerUtils.isImage(fo.getExt()) ||
+////                                    DesignerUtils.isStylesheet(fo.getExt())) {
+////                                // Import web context relative rather than file relative
+////                                DesignProject project =
+////                                    webform.getModel().getLiveUnit().getProject();
+////                                File file = FileUtil.toFile(fo);
+////                                URL url = file.toURI().toURL();
+////                                rel = RESOURCES + UrlPropertyEditor.encodeUrl(file.getName());
+////                                project.addResource(url, new URI(WEB + rel));
+////                            } else {
+////                                URL url = fo.getURL();
+////                                rel = JsfProjectUtils.addResource(webitem, url, true);
+////                            }
+////                        } catch (FileStateInvalidException fse) {
+////                            ErrorManager.getDefault().notify(fse);
+////                        }
+////                    }
+////
+////                    if (DesignerUtils.isImage(fo.getExt())) {
+//////                        Location location =
+//////                            computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
+////                        importImage(rel, location, coordinateTranslator);
+////                    } else if (DesignerUtils.isStylesheet(fo.getExt())) {
+////                        importStylesheet(rel);
+////                    }
+////
+////                    //} else if (node instanceof org.netbeans.modules.properties.KeyNode) {
+////                    //    // Compute the value binding expression:
+////                    //    //  #{bundle.key}
+////                    //    // But I need to ensure that the bundle file is included somewhere in
+////                    //    // the page, and use the variable in the above.
+////                    //    // The key can be found from this node via a cookie, but it looks like
+////                    //    // the properties code is using old-style openide.src api calls, so
+////                    //    // I'd hate to include it.
+////                }
+////            } else if (transferData instanceof File) {
+////                File f = (File)transferData;
+//////                Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
+////                importFile(f, null, location, coordinateTranslator);
+////            } else if (transferData instanceof String) {
+////                String s = (String)transferData;
+////                
+////                File file = extractFileFromString(s);
+////                if (file != null) {
+////                    importFile(file, null, location, coordinateTranslator);
+////                } else {
+////                
+////                    s = DesignerUtils.truncateString(s, 600);
+//////                    Location location =
+//////                        computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
+////                    importString(s, location, coordinateTranslator);
+////                }
+////            } else if (transferData instanceof List) {
+////                // TODO: place this under a single undo unit?
+////                List list = (List)transferData;
+////                Iterator it = list.iterator();
+////                JPanel panel = null;
+////
+////                while (it.hasNext()) {
+////                    Object o = it.next();
+////
+////                    if (o instanceof File) {
+////                        File f = (File)o;
+//////                        Location location = computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
+////                        panel = importFile(f, panel, location, coordinateTranslator);
+////                    }
+////                }
+////            } else {
+////                assert false : transferData;
+////            }
+////        } catch (Exception e) {
+////            ErrorManager.getDefault().notify(e);
+////
+////            return;
+////        } finally {
+////            if (comp != null) {
+////                comp.setCursor(null);
+////            }
+////
+//////            dropSize = null;
+//////            insertPos = Position.NONE;
+//////            dropPoint = null;
+//////            clearDropMatch();
+////        }
+//        webform.importData(comp, t, transferData, getDropSize(), location, coordinateTranslator, dropAction);
+//    }
 
 //    private static File extractFileFromString(String string) {
 //        // We don't know if the String passed in to us represents
@@ -768,65 +768,65 @@ public class DndHandler /*extends TransferHandler*/ {
         webform.importString(string, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, coordinateTranslator);
     }
     
-    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
-//        // Import the string as part of an output text component
-////        Location location =
-////            computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
-//        DesignBean droppee = location.droppee;
-//
-////        Document document = webform.getDocument();
-//
-//        String description = NbBundle.getMessage(DndHandler.class, "DropComponent"); // NOI18N
-//        UndoEvent undoEvent = webform.getModel().writeLock(description);
-//        try {
-////            String description = NbBundle.getMessage(DndHandler.class, "DropComponent"); // NOI18N
-////            document.writeLock(description);
-//
-//            String className;
-//            String propertyName;
-//
-//            // XXX This should be decided by the parent bean.
-//            // I.e. appropriate api is missing.
-////            if (DesignerUtils.isBraveheartPage(webform.getJspDom())) {
-//            // XXX This shouldn't be here resolved, but in parent bean.
-//            if (InSyncService.getProvider().isBraveheartPage(webform.getJspDom())) {
-//                className = "com.sun.rave.web.ui.component.StaticText"; // NOI18N
-//                propertyName = "text";
-//            } else {
-//                className = "javax.faces.component.html.HtmlOutputText"; // NOI18N
-//                propertyName = "value";
-//            }
-//
-//            DesignBean parent = findParent(className, droppee, location.pos.getUnderParent(), true);
-//            DesignBean bean = createBean(className, parent, location.pos, null);
-//            select = bean;
-//
-//            if (bean instanceof MarkupDesignBean) {
-//                MarkupDesignBean mbean = (MarkupDesignBean)bean;
-//                positionBean(mbean, parent, mbean.getElement(), location, coordinateTranslator);
-//            }
-//
-////            selectBean(select);
-//            webform.getSelection().selectBean(select);
-//            select = null;
-//
-//            DesignProperty prop = bean.getProperty(propertyName);
-//
-//            if (prop != null) {
-//                // Clean up string a little
-//                // TODO - should I look for <HTML> markup and if so unset the escape property?
-//                string = string.replace('\n', ' ');
-//                string = string.replace('\r', ' ');
-//                prop.setValue(string);
-//            }
-//
-//            //inlineEdit(beans);
-//        } finally {
-////            document.writeUnlock();
-//            webform.getModel().writeUnlock(undoEvent);
-//        }
-        webform.importString(string, location, coordinateTranslator);
-    }
+//    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+////        // Import the string as part of an output text component
+//////        Location location =
+//////            computePositions(null, DROP_CENTER, null, getDropPoint(), insertPos, true);
+////        DesignBean droppee = location.droppee;
+////
+//////        Document document = webform.getDocument();
+////
+////        String description = NbBundle.getMessage(DndHandler.class, "DropComponent"); // NOI18N
+////        UndoEvent undoEvent = webform.getModel().writeLock(description);
+////        try {
+//////            String description = NbBundle.getMessage(DndHandler.class, "DropComponent"); // NOI18N
+//////            document.writeLock(description);
+////
+////            String className;
+////            String propertyName;
+////
+////            // XXX This should be decided by the parent bean.
+////            // I.e. appropriate api is missing.
+//////            if (DesignerUtils.isBraveheartPage(webform.getJspDom())) {
+////            // XXX This shouldn't be here resolved, but in parent bean.
+////            if (InSyncService.getProvider().isBraveheartPage(webform.getJspDom())) {
+////                className = "com.sun.rave.web.ui.component.StaticText"; // NOI18N
+////                propertyName = "text";
+////            } else {
+////                className = "javax.faces.component.html.HtmlOutputText"; // NOI18N
+////                propertyName = "value";
+////            }
+////
+////            DesignBean parent = findParent(className, droppee, location.pos.getUnderParent(), true);
+////            DesignBean bean = createBean(className, parent, location.pos, null);
+////            select = bean;
+////
+////            if (bean instanceof MarkupDesignBean) {
+////                MarkupDesignBean mbean = (MarkupDesignBean)bean;
+////                positionBean(mbean, parent, mbean.getElement(), location, coordinateTranslator);
+////            }
+////
+//////            selectBean(select);
+////            webform.getSelection().selectBean(select);
+////            select = null;
+////
+////            DesignProperty prop = bean.getProperty(propertyName);
+////
+////            if (prop != null) {
+////                // Clean up string a little
+////                // TODO - should I look for <HTML> markup and if so unset the escape property?
+////                string = string.replace('\n', ' ');
+////                string = string.replace('\r', ' ');
+////                prop.setValue(string);
+////            }
+////
+////            //inlineEdit(beans);
+////        } finally {
+//////            document.writeUnlock();
+////            webform.getModel().writeUnlock(undoEvent);
+////        }
+//        webform.importString(string, location, coordinateTranslator);
+//    }
 
 //    private void importStylesheet(final File file) {
 //        try {

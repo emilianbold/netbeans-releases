@@ -508,40 +508,40 @@ class DndSupport {
         }
     } // End of CoordinateTranslatorImpl.
 
-    // XXX
-    private static class LocationImpl implements FacesDnDSupport.Location {
-        private final HtmlDomProvider.Location location;
-        
-        
-        public LocationImpl(HtmlDomProvider.Location location) {
-            this.location = location;
-        }
-        
-        
-        public DesignBean getDroppee() {
-            return location.droppee;
-        }
-        
-        public String getFacet() {
-            return location.facet;
-        }
-        
-        public Element getDroppeeElement() {
-            return location.droppeeElement;
-        }
-        
-        public MarkupPosition getPos() {
-            return location.pos;
-        }
-        
-        public Point getCoordinates() {
-            return location.coordinates;
-        }
-        
-        public Dimension getSize() {
-            return location.size;
-        }
-    } // End of LocationImpl.
+//    // XXX
+//    private static class LocationImpl implements FacesDnDSupport.Location {
+//        private final HtmlDomProvider.Location location;
+//        
+//        
+//        public LocationImpl(HtmlDomProvider.Location location) {
+//            this.location = location;
+//        }
+//        
+//        
+//        public DesignBean getDroppee() {
+//            return location.droppee;
+//        }
+//        
+//        public String getFacet() {
+//            return location.facet;
+//        }
+//        
+//        public Element getDroppeeElement() {
+//            return location.droppeeElement;
+//        }
+//        
+//        public MarkupPosition getPos() {
+//            return location.pos;
+//        }
+//        
+//        public Point getCoordinates() {
+//            return location.coordinates;
+//        }
+//        
+//        public Dimension getSize() {
+//            return location.size;
+//        }
+//    } // End of LocationImpl.
 
     
     // XXX Make FacesModel fire appropriate event changes and then this might be not needed.

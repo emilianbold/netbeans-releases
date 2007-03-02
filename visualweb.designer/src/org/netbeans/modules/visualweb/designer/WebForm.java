@@ -2458,9 +2458,9 @@ public class WebForm implements Designer {
             return null;
         }
 
-        public HtmlDomProvider.Location computeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid, Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement) {
-            return null;
-        }
+//        public HtmlDomProvider.Location computeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid, Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement) {
+//            return null;
+//        }
     } // End of DummyHtmlDomProviderService.
     
     
