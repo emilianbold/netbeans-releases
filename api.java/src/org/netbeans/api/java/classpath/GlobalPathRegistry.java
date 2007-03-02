@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -268,6 +267,9 @@ public final class GlobalPathRegistry {
      * change. In the future a change listener might be added for the value
      * of the source roots.
      * </p>
+     * <p>
+     * Note that this method takes no account of package includes/excludes.
+     * </p>
      * @return an immutable set of <code>FileObject</code> source roots
      */
     public Set<FileObject> getSourceRoots() {        
@@ -330,15 +332,14 @@ public final class GlobalPathRegistry {
      * looks up the resource among them.
      * In case more than one source root contains the resource, one is chosen
      * arbitrarily.
+     * As with {@link ClassPath#findResource}, include/exclude lists can affect the result.
      * @param resource a resource path, e.g. <samp>somepkg/Foo.java</samp>
      * @return some file found with that path, or null
      */
     public FileObject findResource(String resource) {
-        Iterator it = getSourceRoots().iterator();
-        while (it.hasNext()) {
-            FileObject root = (FileObject)it.next();
-            // XXX try to use java.io.File's wherever possible for the search; FileObject is too slow
-            FileObject f = root.getFileObject(resource);
+        // XXX try to use java.io.File's wherever possible for the search; FileObject is too slow
+        for (ClassPath cp : getPaths(ClassPath.SOURCE)) {
+            FileObject f = cp.findResource(resource);
             if (f != null) {
                 return f;
             }
@@ -349,8 +350,7 @@ public final class GlobalPathRegistry {
     
     private synchronized void resetSourceRootsCache () {
         this.sourceRoots = null;
-        for (Iterator it = this.results.iterator(); it.hasNext();) {
-            SourceForBinaryQuery.Result result = (SourceForBinaryQuery.Result) it.next ();
+        for (SourceForBinaryQuery.Result result : results) {
             result.removeChangeListener(this.resultListener);
         }
         this.resetCount++;

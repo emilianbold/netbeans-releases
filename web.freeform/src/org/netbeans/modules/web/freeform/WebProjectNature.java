@@ -62,7 +62,7 @@ public class WebProjectNature implements ProjectNature {
         return Collections.EMPTY_SET;
     }
     
-    public Node createSourceFolderView(Project project, FileObject folder, String style, String name, String displayName) throws IllegalArgumentException {
+    public Node createSourceFolderView(Project project, FileObject folder, String includes, String excludes, String style, String name, String displayName) throws IllegalArgumentException {
         throw new IllegalArgumentException();
     }
 

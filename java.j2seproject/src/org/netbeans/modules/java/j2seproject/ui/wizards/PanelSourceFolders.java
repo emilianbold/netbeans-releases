@@ -266,7 +266,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     // End of variables declaration//GEN-END:variables
 
     
-    static class Panel implements WizardDescriptor.ValidatingPanel {
+    static class Panel implements WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
         
         private List<ChangeListener> listeners;
         private PanelSourceFolders component;
@@ -334,6 +334,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
            }
         }
                 
+        public boolean isFinishPanel() {
+            return true;
+        }
+
     }
 
 }

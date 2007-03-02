@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 
 /**
@@ -41,19 +42,26 @@ public class FolderArchive implements Archive {
         this.root = root;
     }
 
-    public Iterable<JavaFileObject> getFiles(String folderName, JavaFileFilterImplementation filter) throws IOException {
+    public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, JavaFileFilterImplementation filter) throws IOException {
         assert folderName != null;
-        final File folder = new File (this.root, folderName.replace('/', File.separatorChar));      //NOI18N
-        if (folder.canRead()) {
-            File[] content = folder.listFiles();            
-            if (content != null) {
-                List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
-                for (File f : content) {
-                    if (f.isFile()) {
-                        result.add(FileObjects.fileFileObject(f,this.root,filter));
+        if (folderName.length()>0) {
+            folderName+='/';                                                                            //NOI18N
+        }
+        if (entry == null || entry.includes(folderName)) {
+            final File folder = new File (this.root, folderName.replace('/', File.separatorChar));      //NOI18N
+            if (folder.canRead()) {
+                File[] content = folder.listFiles();            
+                if (content != null) {
+                    List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
+                    for (File f : content) {
+                        if (f.isFile()) {
+                            if (entry == null || entry.includes(f.toURI().toURL())) {
+                                result.add(FileObjects.fileFileObject(f,this.root,filter));
+                            }
+                        }
                     }
+                    return Collections.unmodifiableList(result);
                 }
-                return Collections.unmodifiableList(result);
             }
         }
         return Collections.<JavaFileObject>emptyList();

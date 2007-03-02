@@ -68,8 +68,6 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class WebFreeFormActionProvider implements ActionProvider {
     
-    static final String NS_GENERAL = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
-
     /**
      * Script to hold file-sensitive generated targets like compile.single.
      * (Or for generated targets for debug which cannot reuse any existing target body.)
@@ -226,7 +224,7 @@ public class WebFreeFormActionProvider implements ActionProvider {
         scriptRoot.setAttribute("name", NbBundle.getMessage(WebFreeFormActionProvider.class, "LBL_generated_script_name", projname));
 
         //copy properties from project.xml to the script
-        copyProperties(helper.getPrimaryConfigurationData(true), scriptRoot);
+        copyProperties(Util.getPrimaryConfigurationData(helper), scriptRoot);
         
         return script;
     }
@@ -242,8 +240,8 @@ public class WebFreeFormActionProvider implements ActionProvider {
         // Look for <properties> in project.xml and make corresponding definitions in the Ant script.
         // See corresponding schema.
         
-        Element data = helper.getPrimaryConfigurationData(true);
-        Element properties = Util.findElement(data, "properties", NS_GENERAL); // NOI18N
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Element properties = Util.findElement(data, "properties", Util.NAMESPACE); // NOI18N
         if (properties != null) {
             Iterator/*<Element>*/ propertiesIt = Util.findSubElements(properties).iterator();
             while (propertiesIt.hasNext()) {
@@ -436,65 +434,65 @@ public class WebFreeFormActionProvider implements ActionProvider {
     void addBinding(String command, String scriptPath, String target, String propertyName, String dir, String pattern, String format, String separator) throws IOException {
         // XXX cannot use FreeformProjectGenerator since that is currently not a public support SPI from ant/freeform
         // XXX should this try to find an existing binding? probably not, since it is assumed that if there was one, we would never get here to begin with
-        Element data = helper.getPrimaryConfigurationData(true);
-        Element ideActions = Util.findElement(data, "ide-actions", NS_GENERAL); // NOI18N
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE); // NOI18N
         if (ideActions == null) {
             // Probably won't happen, since generator produces it always.
             // Not trivial to just add it now, since order is significant in the schema. (FPG deals with these things.)
             return;
         }
         Document doc = data.getOwnerDocument();
-        Element action = doc.createElementNS(NS_GENERAL, "action"); // NOI18N
+        Element action = doc.createElementNS(Util.NAMESPACE, "action"); // NOI18N
         action.setAttribute("name", command); // NOI18N
-        Element script = doc.createElementNS(NS_GENERAL, "script"); // NOI18N
+        Element script = doc.createElementNS(Util.NAMESPACE, "script"); // NOI18N
         script.appendChild(doc.createTextNode(scriptPath));
         action.appendChild(script);
-        Element targetEl = doc.createElementNS(NS_GENERAL, "target"); // NOI18N
+        Element targetEl = doc.createElementNS(Util.NAMESPACE, "target"); // NOI18N
         targetEl.appendChild(doc.createTextNode(target));
         action.appendChild(targetEl);
         ideActions.appendChild(action);
         
         if (propertyName != null) {
-            Element context = doc.createElementNS(NS_GENERAL, "context"); // NOI18N
-            Element property = doc.createElementNS(NS_GENERAL, "property"); // NOI18N
+            Element context = doc.createElementNS(Util.NAMESPACE, "context"); // NOI18N
+            Element property = doc.createElementNS(Util.NAMESPACE, "property"); // NOI18N
             property.appendChild(doc.createTextNode(propertyName));
             context.appendChild(property);
-            Element folder = doc.createElementNS(NS_GENERAL, "folder"); // NOI18N
+            Element folder = doc.createElementNS(Util.NAMESPACE, "folder"); // NOI18N
             folder.appendChild(doc.createTextNode(dir));
             context.appendChild(folder);
             if (pattern != null) {
-                Element patternEl = doc.createElementNS(NS_GENERAL, "pattern"); // NOI18N
+                Element patternEl = doc.createElementNS(Util.NAMESPACE, "pattern"); // NOI18N
                 patternEl.appendChild(doc.createTextNode(pattern));
                 context.appendChild(patternEl);
             }
-            Element formatEl = doc.createElementNS(NS_GENERAL, "format"); // NOI18N
+            Element formatEl = doc.createElementNS(Util.NAMESPACE, "format"); // NOI18N
             formatEl.appendChild(doc.createTextNode(format));
             context.appendChild(formatEl);
-            Element arity = doc.createElementNS(NS_GENERAL, "arity"); // NOI18N
+            Element arity = doc.createElementNS(Util.NAMESPACE, "arity"); // NOI18N
             if (separator != null) {
-                Element separatorEl = doc.createElementNS(NS_GENERAL, "separated-files"); // NOI18N
+                Element separatorEl = doc.createElementNS(Util.NAMESPACE, "separated-files"); // NOI18N
                 separatorEl.appendChild(doc.createTextNode(separator));
                 arity.appendChild(separatorEl);
             } else {
-                arity.appendChild(doc.createElementNS(NS_GENERAL, "one-file-only")); // NOI18N
+                arity.appendChild(doc.createElementNS(Util.NAMESPACE, "one-file-only")); // NOI18N
             }
             context.appendChild(arity);
             action.appendChild(context);
         } else {
             // Add a context menu item, since it applies to the project as a whole.
             // Assume there is already a <context-menu> defined, which is quite likely.
-            Element view = Util.findElement(data, "view", NS_GENERAL); // NOI18N
+            Element view = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
             if (view != null) {
-                Element contextMenu = Util.findElement(view, "context-menu", NS_GENERAL); // NOI18N
+                Element contextMenu = Util.findElement(view, "context-menu", Util.NAMESPACE); // NOI18N
                 if (contextMenu != null) {
-                    Element ideAction = doc.createElementNS(NS_GENERAL, "ide-action"); // NOI18N
+                    Element ideAction = doc.createElementNS(Util.NAMESPACE, "ide-action"); // NOI18N
                     ideAction.setAttribute("name", command); // NOI18N
                     contextMenu.appendChild(ideAction);
                 }
             }
         }
 
-        helper.putPrimaryConfigurationData(data, true);
+        Util.putPrimaryConfigurationData(helper, data);
         ProjectManager.getDefault().saveProject(project);
     }
     
@@ -660,15 +658,15 @@ public class WebFreeFormActionProvider implements ActionProvider {
     
     private String findSourceFolders(String type) {
         StringBuffer result = new StringBuffer();
-        Element data = helper.getPrimaryConfigurationData(true);
-        Element foldersEl = Util.findElement(data, "folders", NS_GENERAL); // NOI18N
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl != null) {
             for (Iterator i = Util.findSubElements(foldersEl).iterator(); i.hasNext();) {
                 Element sourceFolderEl = (Element)i.next();
-                Element typeEl = Util.findElement(sourceFolderEl , "type", NS_GENERAL); // NOI18N
+                Element typeEl = Util.findElement(sourceFolderEl , "type", Util.NAMESPACE); // NOI18N
                 if (typeEl == null || !Util.findText(typeEl).equals(type))
                     continue;
-                Element locationEl = Util.findElement(sourceFolderEl , "location", NS_GENERAL); // NOI18N
+                Element locationEl = Util.findElement(sourceFolderEl , "location", Util.NAMESPACE); // NOI18N
                 if (locationEl == null)
                     continue;
                 String location = Util.findText(locationEl);

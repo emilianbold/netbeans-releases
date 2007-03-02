@@ -47,6 +47,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.netbeans.spi.project.ActionProvider;
@@ -103,6 +104,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
 
     private java.util.Map<String,Object/*NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|PackageNode*/> names2nodes;
     private final FileObject root;
+    private final SourceGroup group;
     private FileChangeListener wfcl;    // Weak listener on the system filesystem
     private ChangeListener wvqcl;       // Weak listener on the VisibilityQuery
 
@@ -110,14 +112,12 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
      * Creates children based on a single source root.
      * @param root the folder where sources start (must be a package root)
      */    
-    public PackageViewChildren(FileObject root) {
+    public PackageViewChildren(SourceGroup group) {
         
         // Sem mas dat cache a bude to uplne nejrychlejsi na svete
         
-        if (root == null) {
-            throw new NullPointerException();
-        }
-        this.root = root;
+        this.root = group.getRootFolder();
+        this.group = group;
     }
 
     FileObject getRoot() {
@@ -249,7 +249,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
      * but no files.
      */    
     private void findNonExcludedPackages( FileObject fo ) {
-        PackageView.findNonExcludedPackages( this, fo );
+        PackageView.findNonExcludedPackages(this, null, fo, group, true);
     }
     
     
@@ -365,6 +365,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         FileObject fo = fe.getFile();
         if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
             FileObject parent = fo.getParent();
+            // XXX consider using group.contains() here
             if ( !VisibilityQuery.getDefault().isVisible( parent ) ) {
                 return; // Adding file into ignored directory
             }
@@ -409,7 +410,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     //#61027: workaround to a deadlock when the package is being changed from non-leaf to leaf:
                     boolean leaf = n.isLeaf();
                     DataFolder df = n.getDataFolder();
-                    boolean empty = n.isEmpty( df );
+                    boolean empty = isEmpty(df);
                     
                     if (leaf != empty) {
                         SwingUtilities.invokeLater(new Runnable() {
@@ -441,6 +442,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         boolean ignoredOnly = true;
         boolean foldersOnly = true;
         for (FileObject kid : folder.getChildren()) {
+            // XXX consider using group.contains() here
             if (VisibilityQuery.getDefault().isVisible(kid)) {
                 ignoredOnly = false;
                 if (!kid.isFolder()) {
@@ -465,6 +467,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             String rp = FileUtil.getRelativePath( root, fo.getParent() );
             String oldPath = rp + ( rp.length() == 0 ? "" : "/" ) + fe.getName() + fe.getExt(); // NOI18N
 
+            // XXX consider using group.contains() here
             boolean visible = VisibilityQuery.getDefault().isVisible( fo );
             boolean doUpdate = false;
             
@@ -527,6 +530,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     private boolean isVisible( FileObject parent, FileObject file ) {
         
         do {    
+            // XXX consider using group.contains() here
             if ( !VisibilityQuery.getDefault().isVisible( file ) )  {
                 return false;
             }
@@ -554,18 +558,23 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
     }
      */
-     
     
+    private final DataFilter NO_FOLDERS_FILTER = new NoFoldersDataFilter();
 
-    static final class PackageNode extends FilterNode {
+    private static Action actions[];
         
-        private static final DataFilter NO_FOLDERS_FILTER = new NoFoldersDataFilter();
+    private static boolean isEmpty(DataFolder dataFolder) {
+        if ( dataFolder == null ) {
+            return true;
+        }
+        return PackageDisplayUtils.isEmpty( dataFolder.getPrimaryFile() );
+    }
+    
+    final class PackageNode extends FilterNode {
         
         private final FileObject root;
         private DataFolder dataFolder;
         private boolean isDefaultPackage;
-        
-        private static Action actions[];
         
         public PackageNode( FileObject root, DataFolder dataFolder ) {
             this( root, dataFolder, isEmpty( dataFolder ) );
@@ -747,7 +756,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return false;
         }
 
-        private static synchronized PackageRenameHandler getRenameHandler() {
+        private synchronized PackageRenameHandler getRenameHandler() {
             Collection<? extends PackageRenameHandler> handlers = Lookup.getDefault().lookupAll(PackageRenameHandler.class);
             if (handlers.size()==0)
                 return null;
@@ -1008,15 +1017,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return getCookie(DataFolder.class);
         }
         
-        private static boolean isEmpty( DataFolder dataFolder ) {
-            if ( dataFolder == null ) {
-                return true;
-            }
-            return PackageDisplayUtils.isEmpty( dataFolder.getPrimaryFile() );
-        }
-        
-       
-        private static boolean isValidPackageName (String name) {
+        private boolean isValidPackageName(String name) {
             if (name.length() == 0) {
                 //Fast check of default pkg
                 return true;
@@ -1094,7 +1095,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
     }
     
-    static final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter {
+    final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter {
         
         EventListenerList ell = new EventListenerList();        
         
@@ -1104,7 +1105,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 
         public boolean acceptDataObject(DataObject obj) {                
             FileObject fo = obj.getPrimaryFile();                
-            return  VisibilityQuery.getDefault().isVisible( fo ) && !(obj instanceof DataFolder);
+            return  VisibilityQuery.getDefault().isVisible(fo) && !(obj instanceof DataFolder) && group.contains(fo);
         }
         
         public void stateChanged( ChangeEvent e) {            

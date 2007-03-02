@@ -92,7 +92,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     }
     
     private PackageRootNode( SourceGroup group, InstanceContent ic ) {
-        super( new PackageViewChildren( group.getRootFolder() ),
+        super( new PackageViewChildren(group),
                 new ProxyLookup(createLookup(group), new AbstractLookup(ic)));
         ic.add(alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfoBySubnodes(this)));
         this.group = group;

@@ -21,10 +21,13 @@ package org.netbeans.spi.project.support.ant;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,11 +44,11 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.FileChangeSupport;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
-import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -75,29 +78,181 @@ public final class SourcesHelper {
             }
             return project.resolveFile(val);
         }
+        public Collection<FileObject> getIncludeRoots() {
+            File loc = getActualLocation();
+            if (loc != null) {
+                FileObject fo = FileUtil.toFileObject(loc);
+                if (fo != null) {
+                    return Collections.singleton(fo);
+                }
+            }
+            return Collections.emptySet();
+        }
     }
     
     private class SourceRoot extends Root {
+
         private final String displayName;
         private final Icon icon;
         private final Icon openedIcon;
-        public SourceRoot(String location, String displayName, Icon icon, Icon openedIcon) {
+        private final String includes;
+        private final String excludes;
+        private PathMatcher matcher;
+
+        public SourceRoot(String location, String includes, String excludes, String displayName, Icon icon, Icon openedIcon) {
             super(location);
             this.displayName = displayName;
             this.icon = icon;
             this.openedIcon = openedIcon;
+            this.includes = includes;
+            this.excludes = excludes;
         }
+
         public final SourceGroup toGroup(FileObject loc) {
             assert loc != null;
-            return GenericSources.group(getProject(), loc, location.length() > 0 ? location : "generic", // NOI18N
-                                        displayName, icon, openedIcon);
+            return new Group(loc);
         }
+
+        @Override
+        public String toString() {
+            return "SourceRoot[" + location + "]"; // NOI18N
+        }
+
+        // Copied w/ mods from GenericSources.
+        private final class Group implements SourceGroup, PropertyChangeListener {
+
+            private final FileObject loc;
+            private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+            Group(FileObject loc) {
+                this.loc = loc;
+                evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+            }
+
+            public FileObject getRootFolder() {
+                return loc;
+            }
+
+            public String getName() {
+                return location.length() > 0 ? location : "generic"; // NOI18N
+            }
+
+            public String getDisplayName() {
+                return displayName;
+            }
+
+            public Icon getIcon(boolean opened) {
+                return opened ? icon : openedIcon;
+            }
+
+            public boolean contains(FileObject file) throws IllegalArgumentException {
+                if (file == loc) {
+                    return true;
+                }
+                String path = FileUtil.getRelativePath(loc, file);
+                if (path == null) {
+                    throw new IllegalArgumentException();
+                }
+                if (file.isFolder()) {
+                    path += "/"; // NOI18N
+                }
+                computeIncludeExcludePatterns();
+                if (!matcher.matches(path, true)) {
+                    return false;
+                }
+                Project p = getProject();
+                if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
+                    // #67450: avoid actually loading the nested project.
+                    return false;
+                }
+                Project owner = FileOwnerQuery.getOwner(file);
+                if (owner != null && owner != p) {
+                    return false;
+                }
+                File f = FileUtil.toFile(file);
+                if (f != null && SharabilityQuery.getSharability(f) == SharabilityQuery.NOT_SHARABLE) {
+                    return false;
+                } // else MIXED, UNKNOWN, or SHARABLE; or not a disk file
+                return true;
+            }
+
+            public void addPropertyChangeListener(PropertyChangeListener l) {
+                pcs.addPropertyChangeListener(l);
+            }
+
+            public void removePropertyChangeListener(PropertyChangeListener l) {
+                pcs.removePropertyChangeListener(l);
+            }
+
+            @Override
+            public String toString() {
+                return "SourcesHelper.Group[name=" + getName() + ",rootFolder=" + getRootFolder() + "]"; // NOI18N
+            }
+
+            public void propertyChange(PropertyChangeEvent ev) {
+                assert ev.getSource() == evaluator : ev;
+                String prop = ev.getPropertyName();
+                if (prop == null ||
+                        (includes != null && includes.contains("${" + prop + "}")) || // NOI18N
+                        (excludes != null && excludes.contains("${" + prop + "}"))) { // NOI18N
+                    matcher = null;
+                    pcs.firePropertyChange(PROP_CONTAINERSHIP, null, null);
+                }
+                // XXX should perhaps react to ProjectInformation changes? but nothing to fire currently
+            }
+
+        }
+
+        private String evalForMatcher(String raw) {
+            if (raw == null) {
+                return null;
+            }
+            String patterns = evaluator.evaluate(raw);
+            if (patterns == null) {
+                return null;
+            }
+            if (patterns.matches("\\$\\{[^}]+\\}")) { // NOI18N
+                // Unevaluated single property, treat like null.
+                return null;
+            }
+            return patterns;
+        }
+
+        private void computeIncludeExcludePatterns() {
+            if (matcher != null) {
+                return;
+            }
+            String includesPattern = evalForMatcher(includes);
+            String excludesPattern = evalForMatcher(excludes);
+            matcher = new PathMatcher(includesPattern, excludesPattern, getActualLocation());
+        }
+
+
+        @Override
+        public Collection<FileObject> getIncludeRoots() {
+            Collection<FileObject> supe = super.getIncludeRoots();
+            computeIncludeExcludePatterns();
+            if (supe.size() == 1) {
+                Set<FileObject> roots = new HashSet<FileObject>();
+                for (File r : matcher.findIncludedRoots()) {
+                    FileObject subroot = FileUtil.toFileObject(r);
+                    if (subroot != null) {
+                        roots.add(subroot);
+                    }
+                }
+                return roots;
+            } else {
+                assert supe.isEmpty();
+                return supe;
+            }
+        }
+
     }
     
     private final class TypedSourceRoot extends SourceRoot {
         private final String type;
-        public TypedSourceRoot(String type, String location, String displayName, Icon icon, Icon openedIcon) {
-            super(location, displayName, icon, openedIcon);
+        public TypedSourceRoot(String type, String location, String includes, String excludes, String displayName, Icon icon, Icon openedIcon) {
+            super(location, includes, excludes, displayName, icon, openedIcon);
             this.type = type;
         }
         public final String getType() {
@@ -152,10 +307,48 @@ public final class SourcesHelper {
      * @see Sources#TYPE_GENERIC
      */
     public void addPrincipalSourceRoot(String location, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
+        addPrincipalSourceRoot(location, null, null, displayName, icon, openedIcon);
+    }
+
+    /**
+     * Add a possible principal source root, or top-level folder which may
+     * contain sources that should be considered part of the project, with
+     * optional include and exclude lists.
+     * <p>
+     * If an include or exclude string is given as null, then it is skipped. A non-null value is
+     * evaluated and then treated as a comma- or space-separated pattern list,
+     * as detailed in the Javadoc for {@link PathMatcher}.
+     * (As a special convenience, a value consisting solely of an Ant property reference
+     * which cannot be evaluated, e.g. <samp>${undefined}</samp>, is treated like null.)
+     * {@link SourceGroup#contains} will then reflect the includes and excludes for files, but note that the
+     * semantics of that method requires that a folder be "contained" in case any folder or file
+     * beneath it is contained, and in particular the root folder is always contained.
+     * </p>
+     * @param location a project-relative or absolute path giving the location
+     *                 of a source tree; may contain Ant property substitutions
+     * @param includes Ant-style includes; may contain Ant property substitutions;
+     *                 if not null, only files and folders
+     *                 matching the pattern (or patterns), and not specified in the excludes list,
+     *                 will be {@link SourceGroup#contains included}
+     * @param excludes Ant-style excludes; may contain Ant property substitutions;
+     *                 if not null, files and folders
+     *                 matching the pattern (or patterns) will not be {@link SourceGroup#contains included},
+     *                 even if specified in the includes list
+     * @param displayName a display name (for {@link SourceGroup#getDisplayName})
+     * @param icon a regular icon for the source root, or null
+     * @param openedIcon an opened variant icon for the source root, or null
+     * @throws IllegalStateException if this method is called after either
+     *                               {@link #createSources} or {@link #registerExternalRoots}
+     *                               was called
+     * @see #registerExternalRoots
+     * @see Sources#TYPE_GENERIC
+     * @since org.netbeans.modules.project.ant/1 1.15
+     */
+    public void addPrincipalSourceRoot(String location, String includes, String excludes, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         if (lastRegisteredRoots != null) {
             throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
         }
-        principalSourceRoots.add(new SourceRoot(location, displayName, icon, openedIcon));
+        principalSourceRoots.add(new SourceRoot(location, includes, excludes, displayName, icon, openedIcon));
     }
     
     /**
@@ -192,10 +385,31 @@ public final class SourcesHelper {
      *                               was called
      */
     public void addTypedSourceRoot(String location, String type, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
+        addTypedSourceRoot(location, null, null, type, displayName, icon, openedIcon);
+    }
+    
+    /**
+     * Add a typed source root with optional include and exclude lists.
+     * See {@link #addPrincipalSourceRoot(String,String,String,String,Icon,Icon)}
+     * for details on semantics of includes and excludes.
+     * @param location a project-relative or absolute path giving the location
+     *                 of a source tree; may contain Ant property substitutions
+     * @param includes an optional list of Ant-style includes
+     * @param excludes an optional list of Ant-style excludes
+     * @param type a source root type such as <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
+     * @param displayName a display name (for {@link SourceGroup#getDisplayName})
+     * @param icon a regular icon for the source root, or null
+     * @param openedIcon an opened variant icon for the source root, or null
+     * @throws IllegalStateException if this method is called after either
+     *                               {@link #createSources} or {@link #registerExternalRoots}
+     *                               was called
+     * @since org.netbeans.modules.project.ant/1 1.15
+     */
+    public void addTypedSourceRoot(String location, String includes, String excludes, String type, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         if (lastRegisteredRoots != null) {
             throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
         }
-        typedSourceRoots.add(new TypedSourceRoot(type, location, displayName, icon, openedIcon));
+        typedSourceRoots.add(new TypedSourceRoot(type, location, includes, excludes, displayName, icon, openedIcon));
     }
     
     private Project getProject() {
@@ -220,6 +434,12 @@ public final class SourcesHelper {
      * and are now external will be registered, and roots which were previously
      * external and are now internal will be unregistered. The (un-)registration
      * will be done using the same algorithm as was used initially.
+     * </p>
+     * <p>
+     * If an explicit include list is configured for a principal source root, only those
+     * subfolders which are included (or folders directly containing included files)
+     * will be registered. Note that the source root, or an included subfolder, will
+     * be registered even if it contains excluded files or folders beneath it.
      * </p>
      * <p>
      * Calling this method causes the helper object to hold strong references to the
@@ -254,64 +474,51 @@ public final class SourcesHelper {
         FileObject pdir = project.getProjectDirectory();
         // First time: register roots and add to lastRegisteredRoots.
         // Subsequent times: add to newRootsToRegister and maybe add them later.
-        Set<FileObject> newRootsToRegister;
         if (lastRegisteredRoots == null) {
             // First time.
-            newRootsToRegister = null;
-            lastRegisteredRoots = new HashSet<FileObject>();
+            lastRegisteredRoots = Collections.emptySet();
             propChangeL = new PropChangeL(); // hold a strong ref
             evaluator.addPropertyChangeListener(WeakListeners.propertyChange(propChangeL, evaluator));
-        } else {
-            newRootsToRegister = new HashSet<FileObject>();
         }
+        Set<FileObject> newRegisteredRoots = new HashSet<FileObject>();
         // XXX might be a bit more efficient to cache for each root the actualLocation value
         // that was last computed, and just check if that has changed... otherwise we wind
         // up calling APH.resolveFileObject repeatedly (for each property change)
         for (Root r : allRoots) {
-            File locF = r.getActualLocation();
-            FileObject loc = locF != null ? FileUtil.toFileObject(locF) : null;
-            if (loc == null) {
-                // Not there; skip it.
-                continue;
-            }
-            if (!loc.isFolder()) {
-                // Actually a file. Skip it.
-                continue;
-            }
-            if (FileUtil.getRelativePath(pdir, loc) != null) {
-                // Inside projdir already. Skip it.
-                continue;
-            }
-            try {
-                Project other = ProjectManager.getDefault().findProject(loc);
-                if (other != null) {
-                    // This is a foreign project; we cannot own it. Skip it.
+            for (FileObject loc : r.getIncludeRoots()) {
+                if (!loc.isFolder()) {
                     continue;
                 }
-            } catch (IOException e) {
-                // Assume it is a foreign project and skip it.
-                continue;
-            }
-            // It's OK to go.
-            if (newRootsToRegister != null) {
-                newRootsToRegister.add(loc);
-            } else {
-                lastRegisteredRoots.add(loc);
-                FileOwnerQuery.markExternalOwner(loc, p, registeredRootAlgorithm);
-            }
-        }
-        if (newRootsToRegister != null) {
-            // Just check for changes since the last time.
-            Set<FileObject> toUnregister = new HashSet<FileObject>(lastRegisteredRoots);
-            toUnregister.removeAll(newRootsToRegister);
-            for (FileObject loc : toUnregister) {
-                FileOwnerQuery.markExternalOwner(loc, null, registeredRootAlgorithm);
-            }
-            newRootsToRegister.removeAll(lastRegisteredRoots);
-            for (FileObject loc : newRootsToRegister) {
-                FileOwnerQuery.markExternalOwner(loc, p, registeredRootAlgorithm);
+                if (FileUtil.getRelativePath(pdir, loc) != null) {
+                    // Inside projdir already. Skip it.
+                    continue;
+                }
+                try {
+                    Project other = ProjectManager.getDefault().findProject(loc);
+                    if (other != null) {
+                        // This is a foreign project; we cannot own it. Skip it.
+                        continue;
+                    }
+                } catch (IOException e) {
+                    // Assume it is a foreign project and skip it.
+                    continue;
+                }
+                // It's OK to go.
+                newRegisteredRoots.add(loc);
             }
         }
+        // Just check for changes since the last time.
+        Set<FileObject> toUnregister = new HashSet<FileObject>(lastRegisteredRoots);
+        toUnregister.removeAll(newRegisteredRoots);
+        for (FileObject loc : toUnregister) {
+            FileOwnerQuery.markExternalOwner(loc, null, registeredRootAlgorithm);
+        }
+        Set<FileObject> toRegister = new HashSet<FileObject>(newRegisteredRoots);
+        toRegister.removeAll(lastRegisteredRoots);
+        for (FileObject loc : toRegister) {
+            FileOwnerQuery.markExternalOwner(loc, p, registeredRootAlgorithm);
+        }
+        lastRegisteredRoots = newRegisteredRoots;
     }
 
     /**
@@ -376,7 +583,7 @@ public final class SourcesHelper {
             if (type.equals(Sources.TYPE_GENERIC)) {
                 List<SourceRoot> roots = new ArrayList<SourceRoot>(principalSourceRoots);
                 // Always include the project directory itself as a default:
-                roots.add(new SourceRoot("", ProjectUtils.getInformation(getProject()).getDisplayName(), null, null)); // NOI18N
+                roots.add(new SourceRoot("", null, null, ProjectUtils.getInformation(getProject()).getDisplayName(), null, null)); // NOI18N
                 Map<FileObject,SourceRoot> rootsByDir = new LinkedHashMap<FileObject,SourceRoot>();
                 // First collect all non-redundant existing roots.
                 for (SourceRoot r : roots) {
@@ -531,6 +738,9 @@ public final class SourcesHelper {
         
         public void propertyChange(PropertyChangeEvent evt) {
             // Some properties changed; external roots might have changed, so check them.
+            for (SourceRoot r : principalSourceRoots) {
+                r.matcher = null;
+            }
             remarkExternalRoots();
         }
         

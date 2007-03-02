@@ -45,8 +45,9 @@ public abstract class ClasspathInfoAccessor {
     
     public abstract JavaFileManager getFileManager(ClasspathInfo cpInfo);
     
-    public abstract ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation);
+    public abstract ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes);
     
-    public abstract ClasspathInfo create (ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, JavaFileFilterImplementation filter, boolean backgroundCompilation);
+    public abstract ClasspathInfo create (ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, JavaFileFilterImplementation filter,
+                                          boolean backgroundCompilation, boolean ignoreExcludes);
     
 }

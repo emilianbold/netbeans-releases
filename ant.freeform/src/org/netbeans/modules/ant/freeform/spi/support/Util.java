@@ -23,13 +23,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import javax.xml.XMLConstants;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
@@ -43,10 +45,19 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Miscellaneous helper methods.
@@ -255,4 +266,151 @@ public class Util {
         return FreeformProjectGenerator.getAntScript(accessor.getHelper(), accessor.getEvaluator());
     }
     
+    /**
+     * Convert an XML fragment from one namespace to another.
+     */
+    private static Element translateXML(Element from, String namespace) {
+        Element to = from.getOwnerDocument().createElementNS(namespace, from.getLocalName());
+        NodeList nl = from.getChildNodes();
+        int length = nl.getLength();
+        for (int i = 0; i < length; i++) {
+            Node node = nl.item(i);
+            Node newNode;
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                newNode = translateXML((Element) node, namespace);
+            } else {
+                newNode = node.cloneNode(true);
+            }
+            to.appendChild(newNode);
+        }
+        NamedNodeMap m = from.getAttributes();
+        for (int i = 0; i < m.getLength(); i++) {
+            Node attr = m.item(i);
+            to.setAttribute(attr.getNodeName(), attr.getNodeValue());
+        }
+        return to;
+    }
+
+    /**
+     * Namespace of data used in {@link #getPrimaryConfigurationData} and {@link #putPrimaryConfigurationData}.
+     * @since org.netbeans.modules.ant.freeform/1 1.15
+     */
+    public static final String NAMESPACE = "http://www.netbeans.org/ns/freeform-project/2"; // NOI18N
+
+    /**
+     * Replacement for {@link AntProjectHelper#getPrimaryConfigurationData}
+     * taking into account the /1 -> /2 upgrade.
+     * @param helper a project helper
+     * @return data in {@link #NAMESPACE}, converting /1 data if needed
+     * @since org.netbeans.modules.ant.freeform/1 1.15
+     */
+    public static Element getPrimaryConfigurationData(final AntProjectHelper helper) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
+            public Element run() {
+                AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
+                Element data = ac.getConfigurationFragment(FreeformProjectType.NAME_SHARED, NAMESPACE, true);
+                if (data != null) {
+                    return data;
+                } else {
+                    return translateXML(helper.getPrimaryConfigurationData(true), NAMESPACE);
+                }
+            }
+        });
+    }
+
+    /**
+     * Replacement for {@link AntProjectHelper#putPrimaryConfigurationData}
+     * taking into account the /1 -> /2 upgrade.
+     * Always pass the /2 data, which will be converted to /1 where legal.
+     * @param helper a project helper
+     * @param data data in {@link #NAMESPACE}
+     * @throws IllegalArgumentException if the incoming data is not in {@link #NAMESPACE}
+     * @since org.netbeans.modules.ant.freeform/1 1.15
+     */
+    public static void putPrimaryConfigurationData(final AntProjectHelper helper, final Element data) {
+        if (!data.getNamespaceURI().equals(FreeformProjectType.NS_GENERAL)) {
+            throw new IllegalArgumentException("Bad namespace"); // NOI18N
+        }
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
+                /* XXX schema validation is apparently broken in JDK 6! (#6529766)
+                Element dataAs1 = translateXML(data, FreeformProjectType.NS_GENERAL_1);
+                try {
+                    validate(dataAs1, SCHEMA_1);
+                    putPrimaryConfigurationDataAs1(helper, dataAs1);
+                } catch (SAXException x1) {
+                    try {
+                        validate(data, SCHEMA_2);
+                        putPrimaryConfigurationDataAs2(helper, data);
+                    } catch (SAXException x2) {
+                        assert false : x2.getMessage() + "; rejected content: " + format(data);
+                        putPrimaryConfigurationDataAs1(helper, dataAs1);
+                    }
+                }
+                 */
+                // For now, just hardcode the differences between /1 and /2.
+                if (data.getElementsByTagName("includes").getLength() > 0 || data.getElementsByTagName("excludes").getLength() > 0) {
+                    putPrimaryConfigurationDataAs2(helper, data);
+                } else {
+                    Element dataAs1 = translateXML(data, FreeformProjectType.NS_GENERAL_1);
+                    putPrimaryConfigurationDataAs1(helper, dataAs1);
+                }
+                return null;
+            }
+        });
+    }
+    private static void putPrimaryConfigurationDataAs1(AntProjectHelper helper, Element data) {
+        helper.createAuxiliaryConfiguration().removeConfigurationFragment(FreeformProjectType.NAME_SHARED, NAMESPACE, true);
+        helper.putPrimaryConfigurationData(data, true);
+    }
+    private static void putPrimaryConfigurationDataAs2(AntProjectHelper helper, Element data) {
+        Document doc = data.getOwnerDocument();
+        Element dummy1 = doc.createElementNS(FreeformProjectType.NS_GENERAL_1, FreeformProjectType.NAME_SHARED);
+        // Make sure it is not invalid.
+        dummy1.appendChild(doc.createElementNS(FreeformProjectType.NS_GENERAL_1, "name")). // NOI18N
+                appendChild(doc.createTextNode(findText(findElement(data, "name", NAMESPACE)))); // NOI18N
+        helper.putPrimaryConfigurationData(dummy1, true);
+        helper.createAuxiliaryConfiguration().putConfigurationFragment(data, true);
+    }
+    private static final Schema SCHEMA_1, SCHEMA_2;
+    static {
+        try {
+            SchemaFactory f = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            SCHEMA_1 = f.newSchema(FreeformProject.class.getResource("resources/freeform-project-general.xsd")); // NOI18N
+            SCHEMA_2 = f.newSchema(FreeformProject.class.getResource("resources/freeform-project-general-2.xsd")); // NOI18N
+        } catch (SAXException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+    private static void validate(Element data, Schema schema) throws SAXException {
+        Validator v = schema.newValidator();
+        final SAXException[] error = {null};
+        v.setErrorHandler(new ErrorHandler() {
+            public void warning(SAXParseException x) throws SAXException {}
+            public void error(SAXParseException x) throws SAXException {
+                // Just rethrowing it is bad because it will also print it to stderr.
+                error[0] = x;
+            }
+            public void fatalError(SAXParseException x) throws SAXException {
+                error[0] = x;
+            }
+        });
+        try {
+            v.validate(new DOMSource(data));
+        } catch (IOException x) {
+            assert false : x;
+        }
+        if (error[0] != null) {
+            throw error[0];
+        }
+    }
+    private static String format(Element data) {
+        LSSerializer ser = ((DOMImplementationLS) data.getOwnerDocument().getImplementation().getFeature("LS", "3.0")).createLSSerializer();
+        try {
+            ser.getDomConfig().setParameter("format-pretty-print", true);
+            ser.getDomConfig().setParameter("xml-declaration", false);
+        } catch (DOMException ignore) {}
+        return ser.writeToString(data);
+    }
+
 }

@@ -233,6 +233,7 @@ public class ProjectModel  {
             
             boolean exist = false;
             String label = ""; // NOI18N
+            String includes = null, excludes = null;
             for (JavaProjectGenerator.SourceFolder _sf : allSF) {
                 if (_sf.location.equals(location) && _sf.type == null) {
                     exist = true;
@@ -241,6 +242,8 @@ public class ProjectModel  {
                 if (_sf.location.equals(location) && _sf.type != null) {
                     // find some label to use
                     label = _sf.label;
+                    includes = _sf.includes;
+                    excludes = _sf.excludes;
                 }
             }
             
@@ -248,6 +251,8 @@ public class ProjectModel  {
                 JavaProjectGenerator.SourceFolder _sf = new JavaProjectGenerator.SourceFolder();
                 _sf.location = location;
                 _sf.label = label;
+                _sf.includes = includes;
+                _sf.excludes = excludes;
                 allSF.add(_sf);
             }
         }

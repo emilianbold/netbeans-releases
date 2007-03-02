@@ -22,19 +22,25 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.io.File;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.java.j2seproject.J2SEProject;
 
 /**
- *
+ * Customizer panel "Sources": source roots, level, includes/excludes.
  * @author  Tomas Zezula
  */
 public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
 
+    private final J2SEProjectProperties uiProperties;
+
     public CustomizerSources( J2SEProjectProperties uiProperties ) {
+        this.uiProperties = uiProperties;
         initComponents();
         jScrollPane1.getViewport().setBackground( sourceRoots.getBackground() );
         jScrollPane2.getViewport().setBackground( testRoots.getBackground() );
@@ -50,8 +56,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         
         J2SESourceRootsUi.EditMediator emSR = J2SESourceRootsUi.registerEditMediator(
-            (J2SEProject)uiProperties.getProject(),
-            ((J2SEProject)uiProperties.getProject()).getSourceRoots(),
+            uiProperties.getProject(),
+            uiProperties.getProject().getSourceRoots(),
             sourceRoots,
             addSourceRoot,
             removeSourceRoot, 
@@ -59,8 +65,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             downSourceRoot);
         
         J2SESourceRootsUi.EditMediator emTSR = J2SESourceRootsUi.registerEditMediator(
-            (J2SEProject)uiProperties.getProject(),
-            ((J2SEProject)uiProperties.getProject()).getTestSourceRoots(),
+            uiProperties.getProject(),
+            uiProperties.getProject().getTestSourceRoots(),
             testRoots,
             addTestRoot,
             removeTestRoot, 
@@ -126,13 +132,14 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jPanel1 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         sourceLevel = new javax.swing.JComboBox();
-        jPanel2 = new javax.swing.JPanel();
+        includeExcludeButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_ProjectFolder").charAt(0));
         jLabel1.setLabelFor(projectLocation);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_ProjectFolder"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("CTL_ProjectFolder")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
@@ -145,13 +152,13 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(projectLocation, gridBagConstraints);
-        projectLocation.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_projectLocation"));
+        projectLocation.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_projectLocation")); // NOI18N
 
         sourceRootsPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_SourceRoots").charAt(0));
         jLabel2.setLabelFor(sourceRoots);
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_SourceRoots"));
+        jLabel2.setText(bundle.getString("CTL_SourceRoots")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -186,7 +193,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
         });
         jScrollPane1.setViewportView(sourceRoots);
-        sourceRoots.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_sourceRoots"));
+        sourceRoots.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_sourceRoots")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -200,7 +207,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         sourceRootsPanel.add(jScrollPane1, gridBagConstraints);
 
         addSourceRoot.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_AddSourceRoot").charAt(0));
-        addSourceRoot.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_AddSourceRoot"));
+        addSourceRoot.setText(bundle.getString("CTL_AddSourceRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -208,10 +215,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sourceRootsPanel.add(addSourceRoot, gridBagConstraints);
-        addSourceRoot.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_addSourceRoot"));
+        addSourceRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_addSourceRoot")); // NOI18N
 
         removeSourceRoot.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_RemoveSourceRoot").charAt(0));
-        removeSourceRoot.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_RemoveSourceRoot"));
+        removeSourceRoot.setText(bundle.getString("CTL_RemoveSourceRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -220,10 +227,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         sourceRootsPanel.add(removeSourceRoot, gridBagConstraints);
-        removeSourceRoot.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_removeSourceRoot"));
+        removeSourceRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_removeSourceRoot")); // NOI18N
 
         upSourceRoot.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_UpSourceRoot").charAt(0));
-        upSourceRoot.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_UpSourceRoot"));
+        upSourceRoot.setText(bundle.getString("CTL_UpSourceRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -232,10 +239,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         sourceRootsPanel.add(upSourceRoot, gridBagConstraints);
-        upSourceRoot.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_upSourceRoot"));
+        upSourceRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_upSourceRoot")); // NOI18N
 
         downSourceRoot.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_DownSourceRoot").charAt(0));
-        downSourceRoot.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_DownSourceRoot"));
+        downSourceRoot.setText(bundle.getString("CTL_DownSourceRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -244,7 +251,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         sourceRootsPanel.add(downSourceRoot, gridBagConstraints);
-        downSourceRoot.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_downSourceRoot"));
+        downSourceRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_downSourceRoot")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -260,7 +267,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_TestRoots").charAt(0));
         jLabel3.setLabelFor(testRoots);
-        jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_TestRoots"));
+        jLabel3.setText(bundle.getString("CTL_TestRoots")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -296,7 +303,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
         });
         jScrollPane2.setViewportView(testRoots);
-        testRoots.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_testRoots"));
+        testRoots.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_testRoots")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -309,7 +316,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         testRootsPanel.add(jScrollPane2, gridBagConstraints);
 
         addTestRoot.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_AddTestRoot").charAt(0));
-        addTestRoot.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_AddTestRoot"));
+        addTestRoot.setText(bundle.getString("CTL_AddTestRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -318,10 +325,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         testRootsPanel.add(addTestRoot, gridBagConstraints);
-        addTestRoot.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_addTestRoot"));
+        addTestRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_addTestRoot")); // NOI18N
 
         removeTestRoot.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_RemoveTestRoot").charAt(0));
-        removeTestRoot.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_RemoveTestRoot"));
+        removeTestRoot.setText(bundle.getString("CTL_RemoveTestRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -330,10 +337,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         testRootsPanel.add(removeTestRoot, gridBagConstraints);
-        removeTestRoot.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_removeTestRoot"));
+        removeTestRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_removeTestRoot")); // NOI18N
 
         upTestRoot.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_UpTestRoot").charAt(0));
-        upTestRoot.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_UpTestRoot"));
+        upTestRoot.setText(bundle.getString("CTL_UpTestRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -342,10 +349,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         testRootsPanel.add(upTestRoot, gridBagConstraints);
-        upTestRoot.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_upTestRoot"));
+        upTestRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_upTestRoot")); // NOI18N
 
         downTestRoot.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_DownTestRoot").charAt(0));
-        downTestRoot.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("CTL_DownTestRoot"));
+        downTestRoot.setText(bundle.getString("CTL_DownTestRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -354,7 +361,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         testRootsPanel.add(downTestRoot, gridBagConstraints);
-        downTestRoot.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizerSources_downTestRoot"));
+        downTestRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_downTestRoot")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -371,30 +378,30 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_SourceLevel").charAt(0));
         jLabel4.setLabelFor(sourceLevel);
-        jLabel4.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("TXT_SourceLevel"));
+        jLabel4.setText(bundle.getString("TXT_SourceLevel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         jPanel1.add(jLabel4, gridBagConstraints);
 
+        sourceLevel.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1.4", "1.5" }));
         sourceLevel.setMinimumSize(this.sourceLevel.getPreferredSize());
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0.75;
-        jPanel1.add(sourceLevel, gridBagConstraints);
-        sourceLevel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AN_SourceLevel"));
-        sourceLevel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_SourceLevel"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jPanel2, gridBagConstraints);
+        jPanel1.add(sourceLevel, gridBagConstraints);
+        sourceLevel.getAccessibleContext().setAccessibleName(bundle.getString("AN_SourceLevel")); // NOI18N
+        sourceLevel.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_SourceLevel")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(includeExcludeButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.includeExcludeButton")); // NOI18N
+        includeExcludeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                includeExcludeButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel1.add(includeExcludeButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -403,8 +410,18 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
+
+private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeExcludeButtonActionPerformed
+    IncludeExcludeVisualizer v = new IncludeExcludeVisualizer();
+    uiProperties.loadIncludesExcludes(v);
+    DialogDescriptor dd = new DialogDescriptor(v.getVisualizerPanel(),
+            NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.title.includeExclude"));
+    dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+    if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
+        uiProperties.storeIncludesExcludes(v);
+    }
+}//GEN-LAST:event_includeExcludeButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -412,12 +429,12 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JButton addTestRoot;
     private javax.swing.JButton downSourceRoot;
     private javax.swing.JButton downTestRoot;
+    private javax.swing.JButton includeExcludeButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField projectLocation;

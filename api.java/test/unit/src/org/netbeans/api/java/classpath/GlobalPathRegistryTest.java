@@ -37,10 +37,12 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.PathResourceBase;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-
-// XXX need test for findResource
 
 /**
  * Test functionality of GlobalPathRegistry.
@@ -54,13 +56,14 @@ public class GlobalPathRegistryTest extends NbTestCase {
     }
     
     private GlobalPathRegistry r;
+    private FileObject root;
     private ClassPath cp1, cp2, cp3, cp4, cp5;
     protected void setUp() throws Exception {
         super.setUp();
         r = GlobalPathRegistry.getDefault();
         r.clear();
         clearWorkDir();
-        FileObject root = FileUtil.toFileObject(getWorkDir());
+        root = FileUtil.toFileObject(getWorkDir());
         cp1 = ClassPathSupport.createClassPath(new FileObject[] {root.createFolder("1")});
         cp2 = ClassPathSupport.createClassPath(new FileObject[] {root.createFolder("2")});
         cp3 = ClassPathSupport.createClassPath(new FileObject[] {root.createFolder("3")});
@@ -133,7 +136,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
     
     
     public void testGetSourceRoots () throws Exception {
-        SFBQImpl query = (SFBQImpl) Lookup.getDefault().lookup(SFBQImpl.class);
+        SFBQImpl query = Lookup.getDefault().lookup(SFBQImpl.class);
         assertNotNull ("SourceForBinaryQueryImplementation not found in lookup",query);                
         query.addPair(cp3.getRoots()[0].getURL(),new FileObject[0]);
         ClassPathTest.TestClassPathImplementation cpChangingImpl = new ClassPathTest.TestClassPathImplementation();
@@ -146,7 +149,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertTrue ("Missing roots from cp1",result.containsAll (Arrays.asList(cp1.getRoots())));
         assertTrue ("Missing roots from cp2",result.containsAll (Arrays.asList(cp2.getRoots())));                
         // simulate classpath change:
-        URL u = ((ClassPath.Entry)cp5.entries().get(0)).getURL();
+        URL u = cp5.entries().get(0).getURL();
         cpChangingImpl.addResource(u);
         assertEquals("cpChangingImpl is not empty", 1, cpChanging.getRoots().length);
         result = r.getSourceRoots();
@@ -167,7 +170,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
      * Tests issue: #60976:Deadlock between JavaFastOpen$Evaluator and AntProjectHelper$something
      */
     public void testGetSourceRootsDeadLock () throws Exception {        
-        DeadLockSFBQImpl query = (DeadLockSFBQImpl) Lookup.getDefault().lookup(DeadLockSFBQImpl.class);
+        DeadLockSFBQImpl query = Lookup.getDefault().lookup(DeadLockSFBQImpl.class);
         assertNotNull ("SourceForBinaryQueryImplementation not found in lookup",query);        
         r.register (ClassPath.COMPILE, new ClassPath[] {cp1});
         try {            
@@ -182,6 +185,39 @@ public class GlobalPathRegistryTest extends NbTestCase {
         } finally {
             query.setSynchronizedJob (null);
         }
+    }
+
+    public void testFindResource() throws Exception {
+        final FileObject src1 = root.createFolder("src1");
+        FileObject src1included = FileUtil.createData(src1, "included/file");
+        FileUtil.createData(src1, "excluded/file1");
+        FileUtil.createData(src1, "excluded/file2");
+        FileObject src2 = root.createFolder("src2");
+        FileObject src2included = FileUtil.createData(src2, "included/file");
+        FileObject src2excluded1 = FileUtil.createData(src2, "excluded/file1");
+        class PRI extends PathResourceBase implements FilteringPathResourceImplementation {
+            public URL[] getRoots() {
+                try {
+                    return new URL[] {src1.getURL()};
+                } catch (FileStateInvalidException x) {
+                    throw new AssertionError(x);
+                }
+            }
+            public boolean includes(URL root, String resource) {
+                return resource.startsWith("incl");
+            }
+            public ClassPathImplementation getContent() {
+                return null;
+            }
+        }
+        r.register(ClassPath.SOURCE, new ClassPath[] {
+            ClassPathSupport.createClassPath(Collections.singletonList(new PRI())),
+            ClassPathSupport.createClassPath(new FileObject[] {src2})
+        });
+        assertTrue(Arrays.asList(src1included, src2included).contains(r.findResource("included/file")));
+        assertEquals(src2excluded1, r.findResource("excluded/file1"));
+        assertEquals(null, r.findResource("excluded/file2"));
+        assertEquals(null, r.findResource("nonexistent"));
     }
     
     private static final class L implements GlobalPathRegistryListener {

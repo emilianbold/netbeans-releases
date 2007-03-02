@@ -32,7 +32,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -78,7 +80,8 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             case EXT:
                 return new WizardDescriptor.Panel[] {
                     new PanelConfigureProject(type),
-                    new PanelSourceFolders.Panel()
+                    new PanelSourceFolders.Panel(),
+                    new PanelIncludesExcludes(),
                 };
             default:
                 return new WizardDescriptor.Panel[] {
@@ -93,6 +96,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
                 return new String[] {
                     NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureProject"),
                     NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureSourceRoots"),
+                    NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_PanelIncludesExcludes"),
                 };
             default:
                 return new String[] {
@@ -122,7 +126,19 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         case EXT:
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
-            J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE );
+            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE );
+            EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String includes = (String) wiz.getProperty(J2SEProjectProperties.INCLUDES);
+            if (includes == null) {
+                includes = "**"; // NOI18N
+            }
+            ep.setProperty(J2SEProjectProperties.INCLUDES, includes);
+            String excludes = (String) wiz.getProperty(J2SEProjectProperties.EXCLUDES);
+            if (excludes == null) {
+                excludes = ""; // NOI18N
+            }
+            ep.setProperty(J2SEProjectProperties.EXCLUDES, excludes);
+            h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             handle.progress (2);
             for (File f : sourceFolders) {
                 FileObject srcFo = FileUtil.toFileObject(f);
@@ -132,7 +148,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             break;
         default:
-            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null);
+            h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null);
             handle.progress (2);
             if (mainClass != null && mainClass.length () > 0) {
                 try {

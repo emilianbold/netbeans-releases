@@ -67,7 +67,7 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
     }
     
     public List<FileObject> getDataFiles() {
-        Element genldata = project.helper().getPrimaryConfigurationData(true);
+        Element genldata = project.getPrimaryConfigurationData();
         Element foldersEl = Util.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
         List<Element> folders = foldersEl != null ? Util.findSubElements(foldersEl) : Collections.<Element>emptyList();
         List<FileObject> result = new ArrayList<FileObject>();

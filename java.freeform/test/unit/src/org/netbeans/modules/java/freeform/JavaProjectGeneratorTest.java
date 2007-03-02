@@ -189,7 +189,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         
         // check that all elements are written in expected order
         
-        Element el = helper.getPrimaryConfigurationData(true);
+        Element el = Util.getPrimaryConfigurationData(helper);
         List subElements = Util.findSubElements(el);
         assertEquals(7, subElements.size());
         assertElementArray(subElements, 
@@ -236,7 +236,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         JavaProjectGenerator.putSubprojects(helper, subprojects);
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
-        el = helper.getPrimaryConfigurationData(true);
+        el = Util.getPrimaryConfigurationData(helper);
         subElements = Util.findSubElements(el);
         assertEquals(7, subElements.size());
         assertElementArray(subElements, 
@@ -412,8 +412,8 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         folders = JavaProjectGenerator.getSourceFolders(helper, null);
         JavaProjectGenerator.putSourceFolders(helper, folders, null);
 //        ProjectManager.getDefault().saveAllProjects();
-        Element el = helper.getPrimaryConfigurationData(true);
-        el = Util.findElement(el, "folders", FreeformProjectType.NS_GENERAL);
+        Element el = Util.getPrimaryConfigurationData(helper);
+        el = Util.findElement(el, "folders", Util.NAMESPACE);
         assertNotNull("Source folders were not saved correctly",  el);
         List subElements = Util.findSubElements(el);
         assertEquals(2, subElements.size());
@@ -447,8 +447,8 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         folders.add(sf);
         JavaProjectGenerator.putSourceFolders(helper, folders, "type2");
         ProjectManager.getDefault().saveAllProjects();
-        el = helper.getPrimaryConfigurationData(true);
-        el = Util.findElement(el, "folders", FreeformProjectType.NS_GENERAL);
+        el = Util.getPrimaryConfigurationData(helper);
+        el = Util.findElement(el, "folders", Util.NAMESPACE);
         assertNotNull("Source folders were not saved correctly",  el);
         subElements = Util.findSubElements(el);
         assertEquals(2, subElements.size());
@@ -563,10 +563,10 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         folders = JavaProjectGenerator.getSourceViews(helper, null);
         JavaProjectGenerator.putSourceViews(helper, folders, null);
         ProjectManager.getDefault().saveAllProjects();
-        Element el = helper.getPrimaryConfigurationData(true);
-        el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
+        Element el = Util.getPrimaryConfigurationData(helper);
+        el = Util.findElement(el, "view", Util.NAMESPACE);
         assertNotNull("View folders were not saved correctly",  el);
-        el = Util.findElement(el, "items", FreeformProjectType.NS_GENERAL);
+        el = Util.findElement(el, "items", Util.NAMESPACE);
         assertNotNull("View folders were not saved correctly",  el);
         List subElements = Util.findSubElements(el);
         // there will be three sublements: <source-file> is added for build.xml during project.creation
@@ -601,10 +601,10 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         folders.add(sf);
         JavaProjectGenerator.putSourceViews(helper, folders, "packages");
         ProjectManager.getDefault().saveAllProjects();
-        el = helper.getPrimaryConfigurationData(true);
-        el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
+        el = Util.getPrimaryConfigurationData(helper);
+        el = Util.findElement(el, "view", Util.NAMESPACE);
         assertNotNull("Source views were not saved correctly",  el);
-        el = Util.findElement(el, "items", FreeformProjectType.NS_GENERAL);
+        el = Util.findElement(el, "items", Util.NAMESPACE);
         assertNotNull("View folders were not saved correctly",  el);
         subElements = Util.findSubElements(el);
         // there will be three sublements: <source-file> is added for build.xml during project.creation
@@ -995,7 +995,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         exports.add(e);
         
         JavaProjectGenerator.putExports(helper, exports);
-        Element el = helper.getPrimaryConfigurationData(true);
+        Element el = Util.getPrimaryConfigurationData(helper);
         List subElements = Util.findSubElements(el);
         // 4, i.e. name, two exports and one view of build.xml file
         assertEquals(5, subElements.size());
@@ -1035,7 +1035,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         exports.add(e);
         
         JavaProjectGenerator.putExports(helper, exports);
-        el = helper.getPrimaryConfigurationData(true);
+        el = Util.getPrimaryConfigurationData(helper);
         subElements = Util.findSubElements(el);
         // 3, i.e. name, export and one view of build.xml file
         assertEquals(4, subElements.size());
@@ -1122,8 +1122,8 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         subprojects.add("C:\\dev\\projB");
         
         JavaProjectGenerator.putSubprojects(helper, subprojects);
-        Element el = helper.getPrimaryConfigurationData(true);
-        Element subprojectsEl = Util.findElement(el, "subprojects", FreeformProjectType.NS_GENERAL);
+        Element el = Util.getPrimaryConfigurationData(helper);
+        Element subprojectsEl = Util.findElement(el, "subprojects", Util.NAMESPACE);
         assertNotNull("<subprojects> element exists", subprojectsEl);
         List subElements = Util.findSubElements(subprojectsEl);
         assertEquals("project depends on two subprojects", 2, subElements.size());
@@ -1141,16 +1141,16 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         subprojects = new ArrayList();
         subprojects.add("/projC");
         JavaProjectGenerator.putSubprojects(helper, subprojects);
-        el = helper.getPrimaryConfigurationData(true);
-        subprojectsEl = Util.findElement(el, "subprojects", FreeformProjectType.NS_GENERAL);
+        el = Util.getPrimaryConfigurationData(helper);
+        subprojectsEl = Util.findElement(el, "subprojects", Util.NAMESPACE);
         subElements = Util.findSubElements(subprojectsEl);
         assertEquals("project depends on one subproject", 1, subElements.size());
         el2 = (Element)subElements.get(0);
         assertElement(el2, "project", "/projC");
         subprojects = new ArrayList();
         JavaProjectGenerator.putSubprojects(helper, subprojects);
-        el = helper.getPrimaryConfigurationData(true);
-        subprojectsEl = Util.findElement(el, "subprojects", FreeformProjectType.NS_GENERAL);
+        el = Util.getPrimaryConfigurationData(helper);
+        subprojectsEl = Util.findElement(el, "subprojects", Util.NAMESPACE);
         subElements = Util.findSubElements(subprojectsEl);
         assertEquals("project depends on one subproject", 0, subElements.size());
         
@@ -1230,8 +1230,8 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         buildFolders.add("C:\\dev\\projB");
         
         JavaProjectGenerator.putBuildFolders(helper, buildFolders);
-        Element el = helper.getPrimaryConfigurationData(true);
-        Element foldersEl = Util.findElement(el, "folders", FreeformProjectType.NS_GENERAL);
+        Element el = Util.getPrimaryConfigurationData(helper);
+        Element foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
         assertNotNull("<folders> element exists", foldersEl);
         List subElements = Util.findSubElements(foldersEl);
         assertEquals("project has two build-folders", 2, subElements.size());
@@ -1253,8 +1253,8 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         buildFolders = new ArrayList();
         buildFolders.add("/projC");
         JavaProjectGenerator.putBuildFolders(helper, buildFolders);
-        el = helper.getPrimaryConfigurationData(true);
-        foldersEl = Util.findElement(el, "folders", FreeformProjectType.NS_GENERAL);
+        el = Util.getPrimaryConfigurationData(helper);
+        foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
         subElements = Util.findSubElements(foldersEl);
         assertEquals("project has one build-folder", 1, subElements.size());
         el2 = (Element)subElements.get(0);
@@ -1263,8 +1263,8 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElement((Element)Util.findSubElements(el2).get(0), "location", "/projC");
         buildFolders = new ArrayList();
         JavaProjectGenerator.putBuildFolders(helper, buildFolders);
-        el = helper.getPrimaryConfigurationData(true);
-        foldersEl = Util.findElement(el, "folders", FreeformProjectType.NS_GENERAL);
+        el = Util.getPrimaryConfigurationData(helper);
+        foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
         subElements = Util.findSubElements(foldersEl);
         assertEquals("project has no build-folder", 0, subElements.size());
         

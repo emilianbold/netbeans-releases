@@ -20,14 +20,23 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.TestBase;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Children;
@@ -36,6 +45,7 @@ import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.w3c.dom.Document;
 import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -71,8 +81,8 @@ public class ViewTest extends TestBase {
         assertEquals("correct code name #2", "nbproject/project.xml", kids[1].getName());
         assertEquals("correct display name #2", "project.xml", kids[1].getDisplayName());
         assertEquals("correct cookie #2",
-            DataObject.find(egdirFO.getFileObject("extsrcroot/proj/nbproject/project.xml")),
-            kids[1].getLookup().lookup(DataObject.class));
+                DataObject.find(egdirFO.getFileObject("extsrcroot/proj/nbproject/project.xml")),
+                kids[1].getLookup().lookup(DataObject.class));
     }
     
     public void testViewItemChanges() throws Exception {
@@ -84,7 +94,7 @@ public class ViewTest extends TestBase {
         assertEquals("correct code name #2", "nbproject/project.xml", kids[1].getName());
         TestNL l = new TestNL();
         root.addNodeListener(l);
-        Element data = extsrcroot.helper().getPrimaryConfigurationData(true);
+        Element data = extsrcroot.getPrimaryConfigurationData();
         Element view = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <view>", view);
         Element items = Util.findElement(view, "items", FreeformProjectType.NS_GENERAL);
@@ -100,7 +110,7 @@ public class ViewTest extends TestBase {
         Element sourceFile =  Util.findElement(items, "source-file", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <source-file>", sourceFile);
         items.removeChild(sourceFile);
-        extsrcroot.helper().putPrimaryConfigurationData(data, true);
+        extsrcroot.putPrimaryConfigurationData(data);
         // children keys are updated asynchronously. give them a time
         Thread.sleep(500);
         assertFalse("got some changes in children", l.probeChanges().isEmpty());
@@ -109,8 +119,8 @@ public class ViewTest extends TestBase {
         assertEquals("correct code name #1", "../src2", kids[0].getName());
         assertEquals("correct display name #1", "External Sources", kids[0].getDisplayName());
         assertEquals("correct cookie #1",
-            DataObject.find(egdirFO.getFileObject("extsrcroot/src2")),
-            kids[0].getLookup().lookup(DataObject.class));
+                DataObject.find(egdirFO.getFileObject("extsrcroot/src2")),
+                kids[0].getLookup().lookup(DataObject.class));
     }
     
     public void testFindPath() throws Exception {
@@ -147,6 +157,92 @@ public class ViewTest extends TestBase {
         assertNull("did not find node for " + path, n);
     }
     
+    public static void doTestIncludesExcludes(NbTestCase test, String style, String appearanceEverything, String appearanceIncludesExcludes, String appearanceExcludes, String appearanceFloating) throws Exception {
+        FolderNodeFactory.synchronous = true;
+        test.clearWorkDir();
+        File d = test.getWorkDir();
+        AntProjectHelper helper = FreeformProjectGenerator.createProject(d, d, "prj", null);
+        Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        FileUtil.createData(new File(d, "s/relevant/included/file"));
+        FileUtil.createData(new File(d, "s/relevant/excluded/file"));
+        FileUtil.createData(new File(d, "s/ignored/file"));
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Document doc = data.getOwnerDocument();
+        Element items = (Element) data.getElementsByTagName("items").item(0);
+        items.removeChild(items.getElementsByTagName("source-file").item(0)); // build.xml
+        Element sf = (Element) items.appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
+        sf.setAttribute("style", style);
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "location")).appendChild(doc.createTextNode("s"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        Node r = p.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
+        assertEquals(appearanceEverything, expand(r));
+        // Now configure includes and excludes.
+        EditableProperties ep = new EditableProperties();
+        ep.put("includes", "relevant/");
+        ep.put("excludes", "**/excluded/");
+        helper.putProperties("config.properties", ep);
+        data = Util.getPrimaryConfigurationData(helper);
+        doc = data.getOwnerDocument();
+        data.getElementsByTagName("properties").item(0).
+                appendChild(doc.createElementNS(Util.NAMESPACE, "property-file")).
+                appendChild(doc.createTextNode("config.properties"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        data = Util.getPrimaryConfigurationData(helper);
+        doc = data.getOwnerDocument();
+        sf = (Element) data.getElementsByTagName("source-folder").item(0);
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "includes")).
+                appendChild(doc.createTextNode("${includes}"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "excludes")).
+                appendChild(doc.createTextNode("${excludes}"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(appearanceIncludesExcludes, expand(r));
+        // Now change them.
+        ep = helper.getProperties("config.properties");
+        ep.remove("includes");
+        helper.putProperties("config.properties", ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(appearanceExcludes, expand(r));
+        // Also check floating includes.
+        ep = helper.getProperties("config.properties");
+        ep.put("includes", "relevant/included/");
+        helper.putProperties("config.properties", ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(appearanceFloating, expand(r));
+    }
+    public void testIncludesExcludes() throws Exception {
+        doTestIncludesExcludes(this, "tree",
+                "prj{s{ignored{file} relevant{excluded{file} included{file}}}}",
+                "prj{s{relevant{included{file}}}}",
+                "prj{s{ignored{file} relevant{included{file}}}}",
+                "prj{s{relevant{included{file}}}}");
+    }
+    private static String expand(Node n) {
+        Node[] kids = n.getChildren().getNodes(true);
+        String nm = n.getDisplayName();
+        if (kids.length == 0) {
+            return nm;
+        } else {
+            SortedSet<String> under = new TreeSet<String>();
+            for (Node kid : kids) {
+                under.add(expand(kid));
+            }
+            StringBuilder b = new StringBuilder(nm).append('{');
+            boolean first = true;
+            for (String s : under) {
+                if (first) {
+                    first = false;
+                } else {
+                    b.append(' ');
+                }
+                b.append(s);
+            }
+            return b.append('}').toString();
+        }
+    }
+    
     private static final class TestNL implements NodeListener {
         private final Set<String> changes = new HashSet<String>();
         public TestNL() {}
@@ -172,5 +268,5 @@ public class ViewTest extends TestBase {
             return _changes;
         }
     }
-
+    
 }

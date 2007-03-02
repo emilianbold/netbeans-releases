@@ -68,7 +68,21 @@ public final class FreeformProject implements Project {
     public AntProjectHelper helper() {
         return helper;
     }
-    
+
+    /**
+     * @see Util#getPrimaryConfigurationData
+     */
+    public Element getPrimaryConfigurationData() {
+        return Util.getPrimaryConfigurationData(helper);
+    }
+
+    /**
+     * @see Util#putPrimaryConfigurationData
+     */
+    public void putPrimaryConfigurationData(Element data) {
+        Util.putPrimaryConfigurationData(helper, data);
+    }
+
     private Lookup initLookup() throws IOException {
         aux = helper().createAuxiliaryConfiguration(); // AuxiliaryConfiguration
         Lookup baseLookup = Lookups.fixed(
@@ -112,7 +126,7 @@ public final class FreeformProject implements Project {
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             public Void run() {
-                Element data = helper.getPrimaryConfigurationData(true);
+                Element data = getPrimaryConfigurationData();
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(FreeformProjectType.NS_GENERAL, "name");
                 Element nameEl;
@@ -127,7 +141,7 @@ public final class FreeformProject implements Project {
                     data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-                helper.putPrimaryConfigurationData(data, true);
+                putPrimaryConfigurationData(data);
                 return null;
             }
         });
@@ -144,7 +158,7 @@ public final class FreeformProject implements Project {
         public String getDisplayName() {
             return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
                 public String run() {
-                    Element genldata = helper.getPrimaryConfigurationData(true);
+                    Element genldata = getPrimaryConfigurationData();
                     Element nameEl = Util.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
                     if (nameEl == null) {
                         // Corrupt. Cf. #48267 (cause unknown).
@@ -191,7 +205,7 @@ public final class FreeformProject implements Project {
     public boolean usesAntScripting() {
         return getProjectDirectory().getFileObject("build.xml") != null || // NOI18N
                 evaluator().getProperty("ant.script") != null || // NOI18N
-                helper.getPrimaryConfigurationData(true).getElementsByTagName("action").getLength() > 0; // NOI18N
+                Util.getPrimaryConfigurationData(helper).getElementsByTagName("action").getLength() > 0; // NOI18N
     }
 
 }

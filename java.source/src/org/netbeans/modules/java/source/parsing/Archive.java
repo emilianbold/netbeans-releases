@@ -21,6 +21,7 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 /** Methods for accessing an archive. Archive represents zip file or
  * folder.
@@ -28,13 +29,17 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
  * @author Petr Hrebejk
  */
 public interface Archive {
-
+       
     // New implementation Archive Interface ------------------------------------
 
 
     /** Gets all files in given folder
+     *  @param folderName name of folder to list, path elements separated by / char
+     *  @param entry owning ClassPath.Entry to check the excludes or null if everything should be included
+     *  @param filter to filter the file content
+     *  @return the listend files
      */
-    public Iterable<JavaFileObject> getFiles( String folderName, JavaFileFilterImplementation filter) throws IOException;    
+    public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, JavaFileFilterImplementation filter) throws IOException;    
     
     
     /**

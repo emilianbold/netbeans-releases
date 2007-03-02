@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
   </p>
   <ol>
    <li>
-    <api group="dtd" name="freeform-project-general.xsd" type="export" category="official" url="http://www.netbeans.org/ns/freeform-project/1.xsd">
+    <api group="dtd" name="freeform-project-general.xsd" type="export" category="official" url="http://www.netbeans.org/ns/freeform-project/2.xsd">
      <p>
       XML schema for the general section of the project type. Users are allowed
       to modify this section by hand and can refer to this schema for available

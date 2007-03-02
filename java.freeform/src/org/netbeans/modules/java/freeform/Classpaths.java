@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,18 +44,21 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.jdkselection.JdkConfiguration;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.PathMatcher;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -62,6 +66,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 
 /**
@@ -538,6 +544,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         private final String type;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private List<URL> roots; // should always be non-null
+        private List<PathResourceImplementation> resources;
         
         public MutableClassPathImplementation(List<String> packageRootNames, String type, Element initialCompilationUnit) {
             this.packageRootNames = packageRootNames;
@@ -567,44 +574,54 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         /**
          * Initialize list of URL roots.
          */
-        private void initRoots(Element compilationUnitEl) {
-            if (compilationUnitEl == null) {
+        private boolean initRoots(Element compilationUnitEl) {
+            List<URL> oldRoots = roots;
+            if (compilationUnitEl != null) {
+                if (type.equals(ClassPath.SOURCE)) {
+                    roots = createSourcePath(packageRootNames);
+                } else if (type.equals(ClassPath.COMPILE)) {
+                    roots = createCompileClasspath(compilationUnitEl);
+                } else if (type.equals(ClassPath.EXECUTE)) {
+                    roots = createExecuteClasspath(packageRootNames, compilationUnitEl);
+                } else {
+                    assert type.equals(ClassPath.BOOT) : type;
+                    roots = createBootClasspath(compilationUnitEl);
+                }
+            } else {
                 // Dead.
                 roots = Collections.emptyList();
-                return;
-            }
-            if (type.equals(ClassPath.SOURCE)) {
-                roots = createSourcePath(packageRootNames);
-            } else if (type.equals(ClassPath.COMPILE)) {
-                roots = createCompileClasspath(compilationUnitEl);
-            } else if (type.equals(ClassPath.EXECUTE)) {
-                roots = createExecuteClasspath(packageRootNames, compilationUnitEl);
-            } else {
-                assert type.equals(ClassPath.BOOT) : type;
-                roots = createBootClasspath(compilationUnitEl);
             }
             assert roots != null;
+            if (!roots.equals(oldRoots)) {
+                resources = new ArrayList<PathResourceImplementation>(roots.size());
+                for (URL root : roots) {
+                    assert root.toExternalForm().endsWith("/") : "Had bogus roots " + roots + " for type " + type + " in " + helper.getProjectDirectory();
+                    PathResourceImplementation pri;
+                    if (type.equals(ClassPath.SOURCE)) {
+                        pri = new SourcePRI(root);
+                    } else {
+                        pri = ClassPathSupport.createResource(root);
+                    }
+                    resources.add(pri);
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
 
         public List<PathResourceImplementation> getResources() {
-            List<PathResourceImplementation> impls = new ArrayList<PathResourceImplementation>(roots.size());
-            for (URL root : roots) {
-                assert root.toExternalForm().endsWith("/") : "Had bogus roots " + roots + " for type " + type + " in " + helper.getProjectDirectory();
-                impls.add(ClassPathSupport.createResource(root));
-            }
-            return impls;
+            return resources;
         }
-        
+
         /**
          * Notify impl of a possible change in data.
          */
         public void change() {
-            List<URL> oldRoots = roots;
-            initRoots(findCompilationUnit());
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("MutableClassPathImplementation.change: packageRootNames=" + packageRootNames + " type=" + type + " oldRoots=" + oldRoots + " roots=" + roots);
-            }
-            if (!roots.equals(oldRoots)) {
+            if (initRoots(findCompilationUnit())) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log("MutableClassPathImplementation.change: packageRootNames=" + packageRootNames + " type=" + type + " roots=" + roots);
+                }
                 pcs.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
             }
         }
@@ -617,6 +634,96 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             pcs.removePropertyChangeListener(listener);
         }
         
+    }
+    
+    private final class SourcePRI implements FilteringPathResourceImplementation, PropertyChangeListener, AntProjectListener {
+        private final URL root;
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private PathMatcher matcher;
+        private String includes, excludes;
+        public SourcePRI(URL root) {
+            this.root = root;
+            helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, helper));
+            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+            computeMatcher();
+        }
+        private boolean computeMatcher() {
+            String includes = null;
+            String excludes = null;
+            // Annoying to duplicate logic from FreeformSources.
+            // But using SourceGroup.contains is not an option since that requires FileObject creation.
+            File rootFolder = new File(URI.create(root.toExternalForm()));
+            Element genldata = Util.getPrimaryConfigurationData(helper);
+            Element foldersE = Util.findElement(genldata, "folders", Util.NAMESPACE); // NOI18N
+            if (foldersE != null) {
+                for (Element folderE : Util.findSubElements(foldersE)) {
+                    if (folderE.getLocalName().equals("source-folder")) {
+                        Element typeE = Util.findElement(folderE, "type", Util.NAMESPACE); // NOI18N
+                        if (typeE != null) {
+                            String type = Util.findText(typeE);
+                            if (type.equals(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                                Element locationE = Util.findElement(folderE, "location", Util.NAMESPACE); // NOI18N
+                                String location = evaluator.evaluate(Util.findText(locationE));
+                                if (location != null && helper.resolveFile(location).equals(rootFolder)) {
+                                    Element includesE = Util.findElement(folderE, "includes", Util.NAMESPACE); // NOI18N
+                                    if (includesE != null) {
+                                        includes = evaluator.evaluate(Util.findText(includesE));
+                                        if (includes != null && includes.matches("\\$\\{[^}]+\\}")) { // NOI18N
+                                            // Clearly intended to mean "include everything".
+                                            includes = null;
+                                        }
+                                    }
+                                    Element excludesE = Util.findElement(folderE, "excludes", Util.NAMESPACE); // NOI18N
+                                    if (excludesE != null) {
+                                        excludes = evaluator.evaluate(Util.findText(excludesE));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (!Utilities.compareObjects(includes, this.includes) || !Utilities.compareObjects(excludes, this.excludes)) {
+                this.includes = includes;
+                this.excludes = excludes;
+                matcher = new PathMatcher(includes, excludes, rootFolder);
+                return true;
+            } else {
+                if (matcher == null) {
+                    matcher = new PathMatcher(includes, excludes, rootFolder);
+                }
+                return false;
+            }
+        }
+        public URL[] getRoots() {
+            return new URL[] {root};
+        }
+        public boolean includes(URL root, String resource) {
+            return matcher.matches(resource, true);
+        }
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+        public ClassPathImplementation getContent() {
+            return null;
+        }
+        public void propertyChange(PropertyChangeEvent ev) {
+            change(ev);
+        }
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            change(ev);
+        }
+        public void propertiesChanged(AntProjectEvent ev) {}
+        private void change(Object propid) {
+            if (computeMatcher()) {
+                PropertyChangeEvent ev = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
+                ev.setPropagationId(propid);
+                pcs.firePropertyChange(ev);
+            }
+        }
     }
     
 }

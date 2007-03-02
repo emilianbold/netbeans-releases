@@ -20,6 +20,8 @@
 
 package org.netbeans.modules.ant.freeform.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,11 +36,12 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.PathMatcher;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
-import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -66,7 +69,8 @@ public class FolderNodeFactory implements NodeFactory {
     }
 
     
-    private static final class RootChildren implements NodeList<Element>, AntProjectListener {
+    static boolean synchronous = false; // for ViewTest
+    private static final class RootChildren implements NodeList<Element>, AntProjectListener, PropertyChangeListener {
         
         private final FreeformProject p;
         private List<Element> keys = new ArrayList<Element>();
@@ -79,38 +83,33 @@ public class FolderNodeFactory implements NodeFactory {
         public void addNotify() {
             updateKeys(false);
             p.helper().addAntProjectListener(this);
-            // XXX should probably listen to project.evaluator also?
+            p.evaluator().addPropertyChangeListener(this);
         }
         
         public void removeNotify() {
             keys = null;
             p.helper().removeAntProjectListener(this);
+            p.evaluator().removePropertyChangeListener(this);
         }
         
         private void updateKeys(boolean fromListener) {
-            Element genldata = p.helper().getPrimaryConfigurationData(true);
+            Element genldata = p.getPrimaryConfigurationData();
             Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
             if (viewEl != null) {
                 Element itemsEl = Util.findElement(viewEl, "items", FreeformProjectType.NS_GENERAL); // NOI18N
                 keys = Util.findSubElements(itemsEl);
-                if (fromListener) {
-                    // #50328 - post setKeys to different thread to prevent deadlocks
-                    RequestProcessor.getDefault().post(new Runnable() {
-                            public void run() {
-                                fireChange();
-                            }
-                        });
-                } 
             } else {
-                if (fromListener) {
-                    keys = Collections.<Element>emptyList();
-                    // #58491 - post setKeys to different thread to prevent deadlocks
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            fireChange();
-                        }
-                    });
-                }
+                keys = Collections.<Element>emptyList();
+            }
+            if (fromListener && !synchronous) {
+                // #50328, #58491 - post setKeys to different thread to prevent deadlocks
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        fireChange();
+                    }
+                });
+            } else {
+                fireChange();
             }
         }
         
@@ -123,6 +122,10 @@ public class FolderNodeFactory implements NodeFactory {
             // ignore
         }
         
+        public void propertyChange(PropertyChangeEvent ev) {
+            updateKeys(true);
+        }
+
         public List<Element> keys() {
             return keys;
         }
@@ -168,10 +171,24 @@ public class FolderNodeFactory implements NodeFactory {
                     // Just a file. Skip it.
                     return null;
                 }
+                String includes = null;
+                Element includesEl = Util.findElement(itemEl, "includes", FreeformProjectType.NS_GENERAL); // NOI18N
+                if (includesEl != null) {
+                    includes = p.evaluator().evaluate(Util.findText(includesEl));
+                    if (includes.matches("\\$\\{[^}]+\\}")) { // NOI18N
+                        // Clearly intended to mean "include everything".
+                        includes = null;
+                    }
+                }
+                String excludes = null;
+                Element excludesEl = Util.findElement(itemEl, "excludes", FreeformProjectType.NS_GENERAL); // NOI18N
+                if (excludesEl != null) {
+                    excludes = p.evaluator().evaluate(Util.findText(excludesEl));
+                }
                 String style = itemEl.getAttribute("style"); // NOI18N
                 for (ProjectNature nature : Lookup.getDefault().lookupAll(ProjectNature.class)) {
                     if (nature.getSourceFolderViewStyles().contains(style)) {
-                        return nature.createSourceFolderView(p, file, style, location, label);
+                        return nature.createSourceFolderView(p, file, includes, excludes, style, location, label);
                     }
                 }
                 // fall back to tree display
@@ -182,7 +199,7 @@ public class FolderNodeFactory implements NodeFactory {
                 } catch (DataObjectNotFoundException e) {
                     throw new AssertionError(e);
                 }
-                return new ViewItemNode((DataFolder) fileDO, location, label);
+                return new ViewItemNode((DataFolder) fileDO, includes, excludes, location, label);
             } else {
                 assert itemEl.getLocalName().equals("source-file") : itemEl; // NOI18N
                     DataObject fileDO;
@@ -200,13 +217,25 @@ public class FolderNodeFactory implements NodeFactory {
     static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
         
         EventListenerList ell = new EventListenerList();        
+        private final FileObject root;
+        private final PathMatcher matcher;
         
-        public VisibilityQueryDataFilter() {
+        public VisibilityQueryDataFilter(FileObject root, String includes, String excludes) {
+            this.root = root;
+            matcher = new PathMatcher(includes, excludes, FileUtil.toFile(root));
             VisibilityQuery.getDefault().addChangeListener( this );
         }
                 
         public boolean acceptDataObject(DataObject obj) {                
             FileObject fo = obj.getPrimaryFile();                
+            String path = FileUtil.getRelativePath(root, fo);
+            assert path != null : fo + " not in " + root;
+            if (fo.isFolder()) {
+                path += "/"; // NOI18N
+            }
+            if (!matcher.matches(path, true)) {
+                return false;
+            }
             return VisibilityQuery.getDefault().isVisible( fo );
         }
         
@@ -238,7 +267,6 @@ public class FolderNodeFactory implements NodeFactory {
         private final String name;
         
         private final String displayName;
-        private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
        
         public ViewItemNode(Node orig, String name, String displayName) {
             super(orig);
@@ -246,8 +274,8 @@ public class FolderNodeFactory implements NodeFactory {
             this.displayName = displayName;
         }
         
-        public ViewItemNode(DataFolder folder, String name, String displayName) {
-            super(folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER));
+        public ViewItemNode(DataFolder folder, String includes, String excludes, String name, String displayName) {
+            super(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(folder.getPrimaryFile(), includes, excludes)));
             this.name = name;
             this.displayName = displayName;
         }

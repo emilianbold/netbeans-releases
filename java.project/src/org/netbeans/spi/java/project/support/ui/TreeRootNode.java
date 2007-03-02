@@ -37,7 +37,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
-import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
@@ -59,8 +58,6 @@ import org.openide.util.lookup.ProxyLookup;
  */
 final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     
-    private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
-    
     private final SourceGroup g;
     
     public TreeRootNode(SourceGroup g) {
@@ -68,7 +65,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     }
     
     private TreeRootNode(DataFolder folder, SourceGroup g) {
-        this (new FilterNode (folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER)),g);
+        this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g);
     }
     
     private TreeRootNode (Node originalNode, SourceGroup g) {
@@ -180,23 +177,35 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         }
     }
     
-    /** Copied from PhysicalView. */
-    private static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+    private static final class VisibilityQueryDataFilter implements ChangeListener, PropertyChangeListener, ChangeableDataFilter {
         
         private static final long serialVersionUID = 1L; // in case a DataFolder.ClonedFilterHandle saves me
         
         private final EventListenerList ell = new EventListenerList();
+        private final SourceGroup g;
         
-        public VisibilityQueryDataFilter() {
-            VisibilityQuery.getDefault().addChangeListener(this);
+        public VisibilityQueryDataFilter(SourceGroup g) {
+            this.g = g;
+            VisibilityQuery.getDefault().addChangeListener(WeakListeners.change(this, VisibilityQuery.getDefault()));
+            g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
         }
         
         public boolean acceptDataObject(DataObject obj) {
             FileObject fo = obj.getPrimaryFile();
-            return VisibilityQuery.getDefault().isVisible(fo);
+            return g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
         }
         
         public void stateChanged(ChangeEvent e) {
+            fireChange();
+        }
+        
+        public void propertyChange(PropertyChangeEvent e) {
+            if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {
+                fireChange();
+            }
+        }
+
+        private void fireChange() {
             Object[] listeners = ell.getListenerList();
             ChangeEvent event = null;
             for (int i = listeners.length - 2; i >= 0; i -= 2) {

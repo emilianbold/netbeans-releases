@@ -83,6 +83,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+    <change id="IncludeExcludeVisualizer">
+        <api name="ui"/>
+        <summary>Added <code>IncludeExcludeVisualizer</code> support class</summary>
+        <version major="1" minor="12"/>
+        <date day="1" month="3" year="2007"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            A new utility class which is handy for previewing include and exclude patterns (Ant syntax)
+            for source groups, for example in project customizer dialogs.
+        </description>
+        <class package="org.netbeans.spi.java.project.support.ui" name="IncludeExcludeVisualizer"/>
+        <issue number="49026"/>
+    </change>
     <change id="JavaProjectConstants.SOURCES_TYPE_RESOURCES">
         <api name="general"/>
         <summary>Add SourceGroup type for resources that are separate from sources</summary>

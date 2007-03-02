@@ -19,12 +19,9 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -32,7 +29,7 @@ import java.util.Set;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -44,39 +41,51 @@ import org.openide.filesystems.URLMapper;
  */
 public class SourceFileManager implements JavaFileManager {
     
-    private FileObject[] sourceRoots;    
+    private final ClassPath sourceRoots;
+    private final boolean ignoreExcludes;
     
     /** Creates a new instance of SourceFileManager */
-    public SourceFileManager (FileObject... sourceRoots) {
+    public SourceFileManager (final ClassPath sourceRoots, final boolean ignoreExcludes) {
         this.sourceRoots = sourceRoots;
+        this.ignoreExcludes = ignoreExcludes;
     }
 
     public List<JavaFileObject> list(final Location l, final String packageName, final Set<JavaFileObject.Kind> kinds, final boolean recursive) {
         //Todo: Caching of results, needs listening on FS
         List<JavaFileObject> result = new ArrayList<JavaFileObject> ();
         String _name = packageName.replace('.','/');    //NOI18N
-        for (FileObject root : this.sourceRoots) {
-            FileObject tmpFile = root.getFileObject(_name);
-            if (tmpFile != null && tmpFile.isFolder()) {
-                Enumeration<? extends FileObject> files = tmpFile.getChildren (recursive);
-                while (files.hasMoreElements()) {
-                    FileObject file = files.nextElement();
-                    JavaFileObject.Kind kind;
-                    final String ext = file.getExt();
-                    if (FileObjects.JAVA.equalsIgnoreCase(ext)) {
-                        kind = JavaFileObject.Kind.SOURCE;
-                    }
-                    else if (FileObjects.CLASS.equalsIgnoreCase(ext) || "sig".equalsIgnoreCase(ext)) {
-                        kind = JavaFileObject.Kind.CLASS;
-                    }
-                    else if (FileObjects.HTML.equalsIgnoreCase(ext)) {
-                        kind = JavaFileObject.Kind.HTML;
-                    }
-                    else {
-                        kind = JavaFileObject.Kind.OTHER;
-                    }
-                    if (kinds.contains(kind)) {                        
-                        result.add (SourceFileObject.create(file));
+        if (_name.length() != 0) {
+            _name+='/';                                 //NOI18N
+        }
+        for (ClassPath.Entry entry : this.sourceRoots.entries()) {
+            if (ignoreExcludes || entry.includes(_name)) {
+                FileObject root = entry.getRoot();
+                if (root != null) {
+                    FileObject tmpFile = root.getFileObject(_name);
+                    if (tmpFile != null && tmpFile.isFolder()) {
+                        Enumeration<? extends FileObject> files = tmpFile.getChildren (recursive);
+                        while (files.hasMoreElements()) {
+                            FileObject file = files.nextElement();
+                            if (ignoreExcludes || entry.includes(file)) {
+                                JavaFileObject.Kind kind;
+                                final String ext = file.getExt();
+                                if (FileObjects.JAVA.equalsIgnoreCase(ext)) {
+                                    kind = JavaFileObject.Kind.SOURCE;
+                                }
+                                else if (FileObjects.CLASS.equalsIgnoreCase(ext) || "sig".equalsIgnoreCase(ext)) {
+                                    kind = JavaFileObject.Kind.CLASS;
+                                }
+                                else if (FileObjects.HTML.equalsIgnoreCase(ext)) {
+                                    kind = JavaFileObject.Kind.HTML;
+                                }
+                                else {
+                                    kind = JavaFileObject.Kind.OTHER;
+                                }
+                                if (kinds.contains(kind)) {                        
+                                    result.add (SourceFileObject.create(file));
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -86,10 +95,15 @@ public class SourceFileManager implements JavaFileManager {
 
     public javax.tools.FileObject getFileForInput (final Location l, final String pkgName, final String relativeName) {
         String rp = FileObjects.getRelativePath (pkgName, relativeName);
-        for (FileObject root : this.sourceRoots) {
-            FileObject file = root.getFileObject(rp);
-            if (file != null) {
-                return SourceFileObject.create (file);
+        for (ClassPath.Entry entry : this.sourceRoots.entries()) {
+            if (ignoreExcludes || entry.includes(rp)) {
+                FileObject root = entry.getRoot();            
+                if (root != null) {
+                    FileObject file = root.getFileObject(rp);
+                    if (file != null) {
+                        return SourceFileObject.create (file);
+                    }
+                }
             }
         }
         return null;
@@ -101,13 +115,16 @@ public class SourceFileManager implements JavaFileManager {
             return null;
         }
         String ext = kind == JavaFileObject.Kind.CLASS ? "sig" : kind.extension.substring(1);   //Skeep the .
-        for (FileObject root : this.sourceRoots) {
-            FileObject parent = root.getFileObject(namePair[0]);
-            if (parent != null) {
-                FileObject[] children = parent.getChildren();
-                for (FileObject child : children) {
-                    if (namePair[1].equals(child.getName()) && ext.equalsIgnoreCase(child.getExt())) {
-                        return SourceFileObject.create (child);
+        for (ClassPath.Entry entry : this.sourceRoots.entries()) {
+            FileObject root = entry.getRoot();
+            if (root != null) {
+                FileObject parent = root.getFileObject(namePair[0]);
+                if (parent != null) {
+                    FileObject[] children = parent.getChildren();
+                    for (FileObject child : children) {
+                        if (namePair[1].equals(child.getName()) && ext.equalsIgnoreCase(child.getExt()) && (ignoreExcludes || entry.includes(child))) {
+                            return SourceFileObject.create (child);
+                        }
                     }
                 }
             }
@@ -159,7 +176,7 @@ public class SourceFileManager implements JavaFileManager {
                 //Should never happen in the IDE
                 fo = URLMapper.findFileObject(jfo.toUri().toURL());
             }
-            for (FileObject root : this.sourceRoots) {
+            for (FileObject root : this.sourceRoots.getRoots()) {
                 if (FileUtil.isParentOf(root,fo)) {
                     String relativePath = FileUtil.getRelativePath(root,fo);
                     int index = relativePath.lastIndexOf('.');

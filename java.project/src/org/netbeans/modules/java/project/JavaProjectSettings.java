@@ -53,8 +53,7 @@ public class JavaProjectSettings {
 
     /**
      * Returns how the package view should be displayed.
-     * @return {@link PackageViewSettings#TYPE_PACKAGE_VIEW} or
-     * {@link PackageViewSettings#TYPE_TREE}
+     * @return {@link #TYPE_PACKAGE_VIEW} or {@link #TYPE_TREE}
      */
     public static int getPackageViewType() {
         return prefs().getInt(PROP_PACKAGE_VIEW_TYPE, TYPE_PACKAGE_VIEW);
@@ -62,8 +61,7 @@ public class JavaProjectSettings {
 
     /**
      * Sets how the package view should be displayed.
-     * @param type either {@link PackageViewSettings#TYPE_PACKAGE_VIEW} or
-     * {@link PackageViewSettings#TYPE_TREE}
+     * @param type either {@link #TYPE_PACKAGE_VIEW} or {@link #TYPE_TREE}
      */
     public static void setPackageViewType(int type) {
         int currentType = getPackageViewType();

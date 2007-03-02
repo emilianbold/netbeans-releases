@@ -69,6 +69,7 @@ public final class ClasspathInfo {
     
     private final ClassPathListener cpListener;
     private final boolean backgroundCompilation;
+    private final boolean ignoreExcludes;
     private final JavaFileFilterImplementation filter;
     private JavaFileManager fileManager;
     private EventListenerList listenerList =  null;
@@ -76,7 +77,7 @@ public final class ClasspathInfo {
     
     /** Creates a new instance of ClasspathInfo (private use the fatctory methods) */
     private ClasspathInfo(CachingArchiveProvider archiveProvider, ClassPath bootCp, ClassPath compileCp, ClassPath srcCp,
-        JavaFileFilterImplementation filter, boolean backgroundCompilation) {
+        JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
         assert archiveProvider != null && bootCp != null && compileCp != null;
         this.cpListener = new ClassPathListener ();
         this.archiveProvider = archiveProvider;        
@@ -94,6 +95,7 @@ public final class ClasspathInfo {
             this.outputClassPath = ClassPathSupport.createClassPath(new URL[0]);
         }
         this.backgroundCompilation = backgroundCompilation;
+        this.ignoreExcludes = ignoreExcludes;
         this.filter = filter;
     }
     
@@ -123,7 +125,7 @@ public final class ClasspathInfo {
     }
     
     
-    private static ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation) {
+    private static ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
         ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
         if (bootPath == null) {
             //javac requires at least java.lang
@@ -137,22 +139,23 @@ public final class ClasspathInfo {
         if (srcPath == null) {
             srcPath = EMPTY_PATH;
         }
-        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation);
+        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes);
     }
     
     /** Creates new interface to the compiler
      * @param fo for which the CompilerInterface should be created
      */
     public static ClasspathInfo create(FileObject fo) {
-        return create (fo, null, false);
+        return create (fo, null, false, false);
     }            
     
-    private static ClasspathInfo create(ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, JavaFileFilterImplementation filter, boolean backgroundCompilation) {
-        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath, filter, backgroundCompilation);
+    private static ClasspathInfo create(ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, JavaFileFilterImplementation filter,
+                                        boolean backgroundCompilation, boolean ignoreExcludes) {
+        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes);
     }
     
     public static ClasspathInfo create(ClassPath bootPath, ClassPath classPath, ClassPath sourcePath) {        
-        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath, null, false);
+        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath, null, false, false);
     }
        
     // Public methods ----------------------------------------------------------
@@ -207,10 +210,10 @@ public final class ClasspathInfo {
         if (this.fileManager == null) {
             boolean hasSources = this.srcClassPath != null;
             this.fileManager = new ProxyFileManager (
-                new CachingFileManager (this.archiveProvider, this.bootClassPath, true),
-                new CachingFileManager (this.archiveProvider, this.compileClassPath, false),
-                hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.srcClassPath, filter, false)
-                    : new SourceFileManager (this.srcClassPath.getRoots())) : null,
+                new CachingFileManager (this.archiveProvider, this.bootClassPath, true, true),
+                new CachingFileManager (this.archiveProvider, this.compileClassPath, false, true),
+                hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.srcClassPath, filter, false, ignoreExcludes)
+                    : new SourceFileManager (this.srcClassPath, ignoreExcludes)) : null,
                 hasSources ? new OutputFileManager (this.archiveProvider, this.outputClassPath, this.srcClassPath) : null
             );
         }
@@ -266,13 +269,13 @@ public final class ClasspathInfo {
         }
         
         @Override
-        public ClasspathInfo create (ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, JavaFileFilterImplementation filter, boolean backgroundCompilation) {
-            return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation);
+        public ClasspathInfo create (ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
+            return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes);
         }
         
         @Override
-        public ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation) {
-            return ClasspathInfo.create(fo, filter, backgroundCompilation);
+        public ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes) {
+            return ClasspathInfo.create(fo, filter, backgroundCompilation, ignoreExcludes);
         }
     }
 }

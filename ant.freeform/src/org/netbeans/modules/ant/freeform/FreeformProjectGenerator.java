@@ -87,7 +87,7 @@ public class FreeformProjectGenerator {
                     AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
                     assert aux != null;
 
-                    Element data = h[0].getPrimaryConfigurationData(true);
+                    Element data = Util.getPrimaryConfigurationData(h[0]);
                     Document doc = data.getOwnerDocument();
 
                     Node comment = doc.createComment(" " + NbBundle.getMessage(FreeformProjectGenerator.class, "LBL_Manual_Editing_Warning") + " ");
@@ -127,7 +127,7 @@ public class FreeformProjectGenerator {
 //                  if (props.getChildNodes().getLength() > 0) {
                     data.appendChild(props);
 //                  }
-                    h[0].putPrimaryConfigurationData(data, true);
+                    Util.putPrimaryConfigurationData(h[0], data);
                     putBuildXMLSourceFile(h[0], antPath);
                 }
             }
@@ -172,7 +172,7 @@ public class FreeformProjectGenerator {
     public static List<TargetMapping> getTargetMappings(AntProjectHelper helper) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List<TargetMapping> list = new ArrayList<TargetMapping>();
-        Element genldata = helper.getPrimaryConfigurationData(true);
+        Element genldata = Util.getPrimaryConfigurationData(helper);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             return list;
@@ -248,7 +248,7 @@ public class FreeformProjectGenerator {
      */
     public static void putTargetMappings(AntProjectHelper helper, List<TargetMapping> mappings) {
         //assert ProjectManager.mutex().isWriteAccess();
-        Element data = helper.getPrimaryConfigurationData(true);
+        Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
         Element actions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actions != null) {
@@ -258,6 +258,7 @@ public class FreeformProjectGenerator {
         actions = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-actions"); // NOI18N
         for (TargetMapping tm : mappings) {
             Element action = doc.createElementNS(FreeformProjectType.NS_GENERAL, "action"); //NOI18N
+            assert tm.name != null && tm.name.length() > 0;
             action.setAttribute("name", tm.name); // NOI18N
             if (tm.script != null) {
                 Element script = doc.createElementNS(FreeformProjectType.NS_GENERAL, "script"); //NOI18N
@@ -308,7 +309,7 @@ public class FreeformProjectGenerator {
             actions.appendChild(action);
         }
         Util.appendChildElement(data, actions, rootElementsOrder);
-        helper.putPrimaryConfigurationData(data, true);
+        Util.putPrimaryConfigurationData(helper, data);
     }
     
     private static void writeProperties(EditableProperties props, Document doc, Element element) {
@@ -331,7 +332,7 @@ public class FreeformProjectGenerator {
      */
     public static void putContextMenuAction(AntProjectHelper helper, List<TargetMapping> mappings) {
         //assert ProjectManager.mutex().isWriteAccess();
-        Element data = helper.getPrimaryConfigurationData(true);
+        Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl == null) {
@@ -358,7 +359,7 @@ public class FreeformProjectGenerator {
             ideAction.setAttribute("name", tm.name); // NOI18N
             Util.appendChildElement(contextMenuEl, ideAction, contextMenuElementsOrder);
         }
-        helper.putPrimaryConfigurationData(data, true);
+        Util.putPrimaryConfigurationData(helper, data);
     }
     
     /**
@@ -369,7 +370,7 @@ public class FreeformProjectGenerator {
     public static List<CustomTarget> getCustomContextMenuActions(AntProjectHelper helper) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List<CustomTarget> list = new ArrayList<CustomTarget>();
-        Element genldata = helper.getPrimaryConfigurationData(true);
+        Element genldata = Util.getPrimaryConfigurationData(helper);
         Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl == null) {
             return list;
@@ -422,7 +423,7 @@ public class FreeformProjectGenerator {
      */
     public static void putCustomContextMenuActions(AntProjectHelper helper, List<CustomTarget> customTargets) {
         //assert ProjectManager.mutex().isWriteAccess();
-        Element data = helper.getPrimaryConfigurationData(true);
+        Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl == null) {
@@ -462,7 +463,7 @@ public class FreeformProjectGenerator {
             }
             Util.appendChildElement(contextMenuEl, action, contextMenuElementsOrder);
         }
-        helper.putPrimaryConfigurationData(data, true);
+        Util.putPrimaryConfigurationData(helper, data);
     }
     
     /**
@@ -497,7 +498,7 @@ public class FreeformProjectGenerator {
     }
 
     private static void putBuildXMLSourceFile(AntProjectHelper helper, String antPath) {
-        Element data = helper.getPrimaryConfigurationData(true);
+        Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl == null) {
@@ -514,7 +515,7 @@ public class FreeformProjectGenerator {
         el.appendChild(doc.createTextNode(antPath)); // NOI18N
         fileEl.appendChild(el);
         Util.appendChildElement(itemsEl, fileEl, viewItemElementsOrder);
-        helper.putPrimaryConfigurationData(data, true);
+        Util.putPrimaryConfigurationData(helper, data);
     }
 
     /**

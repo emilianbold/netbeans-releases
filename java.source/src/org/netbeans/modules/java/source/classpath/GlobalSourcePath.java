@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TooManyListenersException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -58,6 +59,8 @@ import org.openide.util.WeakListeners;
  */
 public class GlobalSourcePath {
     
+    public static final String PROP_INCLUDES = ClassPath.PROP_INCLUDES;
+    
     private static GlobalSourcePath instance;
     
     private final GlobalPathRegistry gpr;
@@ -76,6 +79,8 @@ public class GlobalSourcePath {
     private final UnknownSourcePathImplementation unknownSourcePath;
     
     private final Listener listener;
+    
+    private PropertyChangeListener excludesListener;
 
     /** Creates a new instance of GlobalSourcePath */
     private GlobalSourcePath() {
@@ -90,6 +95,14 @@ public class GlobalSourcePath {
         this.unknownRoots = new HashMap<URL, WeakValue>();
         this.translatedRoots = new HashMap<URL, URL[]> ();
         this.gpr.addGlobalPathRegistryListener ((GlobalPathRegistryListener)WeakListeners.create(GlobalPathRegistryListener.class,this.listener,this.gpr));        
+    }
+    
+    
+    public void setExcludesListener (final PropertyChangeListener listener) throws TooManyListenersException {
+        if (this.excludesListener != null) {
+            throw new TooManyListenersException ();
+        }
+        this.excludesListener=listener;
     }
     
     public URL[] getSourceRootForBinaryRoot (final URL binaryRoot, final ClassPath definingClassPath, final boolean fire) {
@@ -163,7 +176,7 @@ public class GlobalSourcePath {
             }
             boolean notContained = newCps.add (cp);
             if (isNew && notContained) {
-                cp.addPropertyChangeListener(r.propertyListener);
+               cp.addPropertyChangeListener(r.propertyListener);
             }
         }
         Map<URL,SourceForBinaryQuery.Result> newSR = new HashMap<URL,SourceForBinaryQuery.Result> ();
@@ -408,8 +421,8 @@ public class GlobalSourcePath {
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.SOURCE),
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.BOOT), 
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.COMPILE),
-                    GlobalSourcePath.this.activeCps,
-                    GlobalSourcePath.this.sourceResults,
+                    new HashSet (GlobalSourcePath.this.activeCps),
+                    new HashMap (GlobalSourcePath.this.sourceResults),
                     new HashMap<URL,WeakValue> (GlobalSourcePath.this.unknownRoots),
                     GlobalSourcePath.this.listener,
                     GlobalSourcePath.this.listener);
@@ -483,8 +496,8 @@ public class GlobalSourcePath {
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.SOURCE),
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.BOOT), 
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.COMPILE),
-                    GlobalSourcePath.this.activeCps,
-                    GlobalSourcePath.this.sourceResults,
+                    new HashSet (GlobalSourcePath.this.activeCps),
+                    new HashMap (GlobalSourcePath.this.sourceResults),
                     new HashMap<URL, WeakValue> (GlobalSourcePath.this.unknownRoots),
                     GlobalSourcePath.this.listener,
                     GlobalSourcePath.this.listener);
@@ -545,8 +558,8 @@ public class GlobalSourcePath {
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.SOURCE),
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.BOOT), 
                     GlobalSourcePath.this.gpr.getPaths(ClassPath.COMPILE),
-                    GlobalSourcePath.this.activeCps,
-                    GlobalSourcePath.this.sourceResults,
+                    new HashSet(GlobalSourcePath.this.activeCps),
+                    new HashMap(GlobalSourcePath.this.sourceResults),
                     new HashMap<URL, WeakValue> (GlobalSourcePath.this.unknownRoots),
                     GlobalSourcePath.this.listener,
                     GlobalSourcePath.this.listener);
@@ -617,8 +630,15 @@ public class GlobalSourcePath {
             }        
 
             public void propertyChange(PropertyChangeEvent evt) {
-                if (ClassPath.PROP_ENTRIES.equals(evt.getPropertyName())) {
+                String propName = evt.getPropertyName();
+                if (ClassPath.PROP_ENTRIES.equals(propName)) {
                     resetCacheAndFire ();
+                }
+                else if (ClassPath.PROP_INCLUDES.equals(propName)) {
+                    if (excludesListener != null) {
+                        PropertyChangeEvent event = new PropertyChangeEvent (this,PROP_INCLUDES,evt.getSource(),evt.getSource());
+                        excludesListener.propertyChange(event);
+                    }
                 }
             }
     

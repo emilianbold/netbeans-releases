@@ -65,7 +65,7 @@ final class Subprojects implements SubprojectProvider {
      * This method never allocates a new set.
      */
     private Set<Project> createSubprojects(Set<Project> subprojects) {
-        Element config = project.helper().getPrimaryConfigurationData(true);
+        Element config = project.getPrimaryConfigurationData();
         Element subprjsEl = Util.findElement(config, "subprojects", FreeformProjectType.NS_GENERAL); // NOI18N
         if (subprjsEl != null) {
             for (Element prjEl : Util.findSubElements(subprjsEl)) {

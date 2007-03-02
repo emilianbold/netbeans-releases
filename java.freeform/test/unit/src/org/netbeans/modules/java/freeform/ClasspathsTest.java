@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.java.freeform;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -26,9 +29,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -36,8 +39,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.FreeformProject;
+import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.TestBase;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -48,6 +54,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 // XXX testClasspathsOfBuildProducts
@@ -364,8 +371,7 @@ public class ClasspathsTest extends TestBase {
             public void run() {
                 ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
                     public Void run() {
-                        AntProjectHelper helper = simple.helper();
-                        Element el = helper.getPrimaryConfigurationData(true);
+                        Element el = simple.getPrimaryConfigurationData();
                         AuxiliaryConfiguration c = simple.getLookup().lookup(AuxiliaryConfiguration.class);
                         
                         l.countDown();
@@ -407,4 +413,166 @@ public class ClasspathsTest extends TestBase {
         return s;
     }
     
+    public void testIncludesExcludes() throws Exception {
+        clearWorkDir();
+        File d = getWorkDir();
+        AntProjectHelper helper = FreeformProjectGenerator.createProject(d, d, "prj", null);
+        Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        FileUtil.createData(new File(d, "s/relevant/included/file"));
+        FileUtil.createData(new File(d, "s/relevant/excluded/file"));
+        FileUtil.createData(new File(d, "s/ignored/file"));
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Document doc = data.getOwnerDocument();
+        Element sf = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), Util.findElement(data, "view", Util.NAMESPACE)).
+                appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "label")).appendChild(doc.createTextNode("Sources"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "type")).appendChild(doc.createTextNode(JavaProjectConstants.SOURCES_TYPE_JAVA));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "location")).appendChild(doc.createTextNode("s"));
+        Util.putPrimaryConfigurationData(helper, data);
+        Element jd = doc.createElementNS(JavaProjectNature.NS_JAVA_2, JavaProjectNature.EL_JAVA);
+        jd.appendChild(doc.createElementNS(JavaProjectNature.NS_JAVA_2, "compilation-unit")).
+                appendChild(doc.createElementNS(JavaProjectNature.NS_JAVA_2, "package-root")).
+                appendChild(doc.createTextNode("s"));
+        p.getLookup().lookup(AuxiliaryConfiguration.class).putConfigurationFragment(jd, true);
+        ProjectManager.getDefault().saveProject(p);
+        FileObject s = helper.resolveFileObject("s");
+        ClassPath cp = ClassPath.getClassPath(s, ClassPath.SOURCE);
+        FileObject[] roots = cp.getRoots();
+        assertEquals(1, roots.length);
+        assertEquals(s, roots[0]);
+        assertEquals("ignored{file} relevant{excluded{file} included{file}}", expand(cp, s));
+        // Now configure includes and excludes.
+        EditableProperties ep = new EditableProperties();
+        ep.put("includes", "relevant/");
+        ep.put("excludes", "**/excluded/");
+        helper.putProperties("config.properties", ep);
+        data = Util.getPrimaryConfigurationData(helper);
+        doc = data.getOwnerDocument();
+        data.getElementsByTagName("properties").item(0).
+                appendChild(doc.createElementNS(Util.NAMESPACE, "property-file")).
+                appendChild(doc.createTextNode("config.properties"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        data = Util.getPrimaryConfigurationData(helper);
+        doc = data.getOwnerDocument();
+        sf = (Element) data.getElementsByTagName("source-folder").item(0);
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "includes")).
+                appendChild(doc.createTextNode("${includes}"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "excludes")).
+                appendChild(doc.createTextNode("${excludes}"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("relevant{included{file}}", expand(cp, s));
+        // Now change them.
+        TestPCL l = new TestPCL();
+        cp.addPropertyChangeListener(l);
+        ep = helper.getProperties("config.properties");
+        ep.remove("includes");
+        helper.putProperties("config.properties", ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("ignored{file} relevant{included{file}}", expand(cp, s));
+        assertEquals(Collections.singleton(ClassPath.PROP_INCLUDES), l.changed);
+        // Also check floating includes.
+        ep = helper.getProperties("config.properties");
+        ep.put("includes", "relevant/included/");
+        helper.putProperties("config.properties", ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("relevant{included{file}}", expand(cp, s));
+    }
+    private static String expand(ClassPath cp, FileObject d) {
+        SortedSet<String> subs = new TreeSet<String>();
+        for (FileObject kid : d.getChildren()) {
+            if (!cp.contains(kid)) {
+                continue;
+            }
+            String sub = kid.getNameExt();
+            if (kid.isFolder()) {
+                sub += '{' + expand(cp, kid) + '}';
+            }
+            subs.add(sub);
+        }
+        StringBuilder b = new StringBuilder();
+        for (String sub : subs) {
+            if (b.length() > 0) {
+                b.append(' ');
+            }
+            b.append(sub);
+        }
+        return b.toString();
+    }
+    
+    public void testIncludesFiredJustOnce() throws Exception {
+        clearWorkDir();
+        File d = getWorkDir();
+        AntProjectHelper helper = FreeformProjectGenerator.createProject(d, d, "prj", null);
+        Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        FileObject src1 = FileUtil.createFolder(new File(d, "src1"));
+        FileObject src2 = FileUtil.createFolder(new File(d, "src2"));
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Document doc = data.getOwnerDocument();
+        data.getElementsByTagName("properties").item(0).
+                appendChild(doc.createElementNS(Util.NAMESPACE, "property-file")).
+                appendChild(doc.createTextNode("config.properties"));
+        Element folders = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), Util.findElement(data, "view", Util.NAMESPACE));
+        Element sf = (Element) folders.appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "label")).appendChild(doc.createTextNode("Sources #1"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "type")).appendChild(doc.createTextNode(JavaProjectConstants.SOURCES_TYPE_JAVA));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "location")).appendChild(doc.createTextNode("src1"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "includes")).
+                appendChild(doc.createTextNode("${includes}"));
+        sf = (Element) folders.appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "label")).appendChild(doc.createTextNode("Sources #2"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "type")).appendChild(doc.createTextNode(JavaProjectConstants.SOURCES_TYPE_JAVA));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "location")).appendChild(doc.createTextNode("src2"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "includes")).
+                appendChild(doc.createTextNode("${includes}"));
+        Util.putPrimaryConfigurationData(helper, data);
+        Element jd = doc.createElementNS(JavaProjectNature.NS_JAVA_2, JavaProjectNature.EL_JAVA);
+        Element cu = (Element) jd.appendChild(doc.createElementNS(JavaProjectNature.NS_JAVA_2, "compilation-unit"));
+        cu.appendChild(doc.createElementNS(JavaProjectNature.NS_JAVA_2, "package-root")).
+                appendChild(doc.createTextNode("src1"));
+        cu.appendChild(doc.createElementNS(JavaProjectNature.NS_JAVA_2, "package-root")).
+                appendChild(doc.createTextNode("src2"));
+        p.getLookup().lookup(AuxiliaryConfiguration.class).putConfigurationFragment(jd, true);
+        ProjectManager.getDefault().saveProject(p);
+        ClassPath cp = ClassPath.getClassPath(src1, ClassPath.SOURCE);
+        FileObject[] roots = cp.getRoots();
+        assertEquals(2, roots.length);
+        assertEquals(src1, roots[0]);
+        assertEquals(src2, roots[1]);
+        ClassPath.Entry cpe2 = cp.entries().get(1);
+        assertEquals(src2.getURL(), cpe2.getURL());
+        assertTrue(cpe2.includes("stuff/"));
+        assertTrue(cpe2.includes("whatever/"));
+        class L implements PropertyChangeListener {
+            int cnt;
+            public void propertyChange(PropertyChangeEvent e) {
+                if (ClassPath.PROP_INCLUDES.equals(e.getPropertyName())) {
+                    cnt++;
+                }
+            }
+        }
+        L l = new L();
+        cp.addPropertyChangeListener(l);
+        EditableProperties ep = new EditableProperties();
+        ep.put("includes", "whatever/");
+        helper.putProperties("config.properties", ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(1, l.cnt);
+        assertFalse(cpe2.includes("stuff/"));
+        assertTrue(cpe2.includes("whatever/"));
+        ep.setProperty("includes", "whateverelse/");
+        helper.putProperties("config.properties", ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(2, l.cnt);
+        assertFalse(cpe2.includes("stuff/"));
+        assertFalse(cpe2.includes("whatever/"));
+        ep.remove("includes");
+        helper.putProperties("config.properties", ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(3, l.cnt);
+        assertTrue(cpe2.includes("stuff/"));
+        assertTrue(cpe2.includes("whatever/"));
+    }
+
 }

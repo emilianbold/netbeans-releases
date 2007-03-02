@@ -100,6 +100,7 @@ final class ProjectXmlValidator extends DefaultHandler implements FileChangeList
         // XXX should not refer to schema in another module; wait for #42686 to solve properly
         schemas.add("nbres:/org/netbeans/modules/project/ant/project.xsd"); // NOI18N
         schemas.add("nbres:/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd"); // NOI18N
+        schemas.add("nbres:/org/netbeans/modules/ant/freeform/resources/freeform-project-general-2.xsd"); // NOI18N
         for (ProjectNature nature : FreeformProject.PROJECT_NATURES.allInstances()) {
             schemas.addAll(nature.getSchemas());
         }

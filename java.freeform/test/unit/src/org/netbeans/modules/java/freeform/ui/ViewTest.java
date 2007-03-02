@@ -20,6 +20,7 @@
 package org.netbeans.modules.java.freeform.ui;
 
 import org.netbeans.modules.ant.freeform.TestBase;
+import org.netbeans.modules.java.freeform.JavaProjectNature;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -71,4 +72,12 @@ public class ViewTest extends TestBase {
         org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lvp2, root, simple, "antsrc/org/foo/ant/SpecialTask.java");
     }
     
+    public void testIncludesExcludes() throws Exception {
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestIncludesExcludes(this, JavaProjectNature.STYLE_PACKAGES,
+                "prj{s{ignored{file} relevant.excluded{file} relevant.included{file}}}",
+                "prj{s{relevant.included{file}}}",
+                "prj{s{ignored{file} relevant.included{file}}}",
+                "prj{s{relevant.included{file}}}");
+    }
+
 }

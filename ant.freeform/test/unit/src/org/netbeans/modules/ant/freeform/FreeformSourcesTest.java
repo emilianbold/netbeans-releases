@@ -19,13 +19,23 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import java.io.File;
+import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -76,7 +86,7 @@ public class FreeformSourcesTest extends TestBase {
         assertEquals("right root folder", egdirFO.getFileObject("extsrcroot/src"), groups[0].getRootFolder());
         TestCL l = new TestCL();
         s.addChangeListener(l);
-        Element data = extsrcroot.helper().getPrimaryConfigurationData(true);
+        Element data = extsrcroot.getPrimaryConfigurationData();
         Element folders = Util.findElement(data, "folders", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <folders>", folders);
         List/*<Element>*/ sourceFolders = Util.findSubElements(folders);
@@ -88,7 +98,7 @@ public class FreeformSourcesTest extends TestBase {
         assertEquals("one child (text)", 1, nl.getLength());
         location.removeChild(nl.item(0));
         location.appendChild(location.getOwnerDocument().createTextNode("../src2"));
-        extsrcroot.helper().putPrimaryConfigurationData(data, true);
+        extsrcroot.putPrimaryConfigurationData(data);
         assertEquals("got a change in Sources", 1, l.changeCount());
         groups = s.getSourceGroups("java");
         assertEquals("one Java group", 1, groups.length);
@@ -100,6 +110,87 @@ public class FreeformSourcesTest extends TestBase {
         FileObject builtFile = egdirFO.getFileObject("extbuildroot/build/built.file");
         assertNotNull("have built.file", builtFile);
         assertEquals("owned by extbuildroot project", extbuildroot, FileOwnerQuery.getOwner(builtFile));
+    }
+
+    public void testIncludesExcludes() throws Exception {
+        clearWorkDir();
+        File d = getWorkDir();
+        AntProjectHelper helper = FreeformProjectGenerator.createProject(d, d, "prj", null);
+        Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        FileUtil.createData(new File(d, "s/relevant/included/file"));
+        FileUtil.createData(new File(d, "s/relevant/excluded/file"));
+        FileUtil.createData(new File(d, "s/ignored/file"));
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Document doc = data.getOwnerDocument();
+        Element sf = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), Util.findElement(data, "view", Util.NAMESPACE)).
+                appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "label")).appendChild(doc.createTextNode("Sources"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "type")).appendChild(doc.createTextNode("stuff"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "location")).appendChild(doc.createTextNode("s"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        Sources s = ProjectUtils.getSources(p);
+        SourceGroup[] gs = s.getSourceGroups("stuff");
+        assertEquals(1, gs.length);
+        assertEquals(FileUtil.toFileObject(new File(d, "s")), gs[0].getRootFolder());
+        assertEquals("Sources", gs[0].getDisplayName());
+        assertEquals("ignored{file} relevant{excluded{file} included{file}}", expand(gs[0]));
+        // Now configure includes and excludes.
+        EditableProperties ep = new EditableProperties();
+        ep.put("includes", "relevant/");
+        ep.put("excludes", "**/excluded/");
+        helper.putProperties("config.properties", ep);
+        data = Util.getPrimaryConfigurationData(helper);
+        doc = data.getOwnerDocument();
+        data.getElementsByTagName("properties").item(0).
+                appendChild(doc.createElementNS(Util.NAMESPACE, "property-file")).
+                appendChild(doc.createTextNode("config.properties"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        data = Util.getPrimaryConfigurationData(helper);
+        doc = data.getOwnerDocument();
+        sf = (Element) data.getElementsByTagName("source-folder").item(0);
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "includes")).
+                appendChild(doc.createTextNode("${includes}"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "excludes")).
+                appendChild(doc.createTextNode("${excludes}"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        gs = s.getSourceGroups("stuff");
+        assertEquals("relevant{included{file}}", expand(gs[0]));
+        // Now change them.
+        TestPCL l = new TestPCL();
+        gs[0].addPropertyChangeListener(l);
+        ep = helper.getProperties("config.properties");
+        ep.remove("includes");
+        helper.putProperties("config.properties", ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("ignored{file} relevant{included{file}}", expand(gs[0]));
+        assertEquals(Collections.singleton(SourceGroup.PROP_CONTAINERSHIP), l.changed);
+    }
+    private static String expand(SourceGroup g) {
+        return expand(g, g.getRootFolder());
+    }
+    private static String expand(SourceGroup g, FileObject d) {
+        SortedSet<String> subs = new TreeSet<String>();
+        for (FileObject kid : d.getChildren()) {
+            if (!g.contains(kid)) {
+                continue;
+            }
+            String sub = kid.getNameExt();
+            if (kid.isFolder()) {
+                sub += '{' + expand(g, kid) + '}';
+            }
+            subs.add(sub);
+        }
+        StringBuilder b = new StringBuilder();
+        for (String sub : subs) {
+            if (b.length() > 0) {
+                b.append(' ');
+            }
+            b.append(sub);
+        }
+        return b.toString();
     }
     
 }

@@ -113,7 +113,7 @@ public class ArtifactProviderTest extends TestBase {
 
     private static void putExports(AntProjectHelper helper, List<Export> exports) {
         //assert ProjectManager.mutex().isWriteAccess();
-        Element data = helper.getPrimaryConfigurationData(true);
+        Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
         for (Element exportEl : Util.findSubElements(data)) {
             if (!exportEl.getLocalName().equals("export")) { // NOI18N
@@ -143,9 +143,13 @@ public class ArtifactProviderTest extends TestBase {
                 el.appendChild(doc.createTextNode(export.cleanTarget)); // NOI18N
                 exportEl.appendChild(el);
             }
-            data.appendChild(exportEl);
+            Element later = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL);
+            if (later == null) {
+                later = Util.findElement(data, "subprojects", FreeformProjectType.NS_GENERAL);
+            }
+            data.insertBefore(exportEl, later);
         }
-        helper.putPrimaryConfigurationData(data, true);
+        Util.putPrimaryConfigurationData(helper, data);
     }
 
     private static final class Export {

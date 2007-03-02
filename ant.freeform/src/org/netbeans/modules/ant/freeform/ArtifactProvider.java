@@ -50,7 +50,7 @@ final class ArtifactProvider implements AntArtifactProvider {
     }
 
     public AntArtifact[] getBuildArtifacts() {
-        Element data = project.helper().getPrimaryConfigurationData(true);
+        Element data = project.getPrimaryConfigurationData();
         List<AntArtifact> artifacts = new ArrayList<AntArtifact>();
         Set<String> ids = new HashSet<String>();
         HashMap<String,FreeformArtifact> uniqueArtifacts = new HashMap<String,FreeformArtifact>();
@@ -156,7 +156,7 @@ final class ArtifactProvider implements AntArtifactProvider {
             } else {
                 // Guess based on configured target for 'clean' command, if any.
                 String target = null;
-                Element genldata = project.helper().getPrimaryConfigurationData(true);
+                Element genldata = project.getPrimaryConfigurationData();
                 Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
                 if (actionsEl != null) {
                     for (Element actionEl : Util.findSubElements(actionsEl)) {

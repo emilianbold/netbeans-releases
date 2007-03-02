@@ -43,10 +43,11 @@ public class OutputFileManager extends CachingFileManager {
     
     /** Creates a new instance of CachingFileManager */
     public OutputFileManager(CachingArchiveProvider provider, final ClassPath outputClassPath, final ClassPath sourcePath) {
-        super (provider, outputClassPath, false);
-	assert sourcePath != null && outputClassPath != null;
+        super (provider, outputClassPath, false, true);
+	assert sourcePath != null && outputClassPath != null;        
 	this.scp = sourcePath;
     }
+    
     
     public @Override JavaFileObject getJavaFileForOutput( Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling ) 
         throws IOException, UnsupportedOperationException, IllegalArgumentException {

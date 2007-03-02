@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
 
@@ -40,15 +41,15 @@ public class FileObjectArchive implements Archive {
         this.root = root;
     }
     
-    public Iterable<JavaFileObject> getFiles(String folderName, JavaFileFilterImplementation filter) throws IOException {
-        FileObject folder = root.getFileObject(folderName);
-        if (folder == null) {
+    public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, JavaFileFilterImplementation filter) throws IOException {
+        FileObject folder = root.getFileObject(folderName);        
+        if (folder == null || entry == null || !entry.includes(folder)) {
             return Collections.<JavaFileObject>emptySet();
         }
         FileObject[] children = folder.getChildren();
         List<JavaFileObject> result = new ArrayList<JavaFileObject>(children.length);
         for (FileObject fo : children) {
-            if (fo.isData()) {
+            if (fo.isData() && (entry == null || entry.includes(fo))) {
                 result.add(FileObjects.nbFileObject(fo,filter,false));
             }
         }

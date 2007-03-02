@@ -84,11 +84,11 @@ public class JdkConfiguration {
                 if (project.getProjectDirectory().getFileObject(NBJDK_XML) != null) {
                     return;
                 }
-                Element generalDataE = helper.getPrimaryConfigurationData(true);
+                Element generalDataE = Util.getPrimaryConfigurationData(helper);
                 Document nbjdkDoc = createNbjdkXmlSkeleton();
                 rebindAllActions(generalDataE, nbjdkDoc);
                 writeXML(nbjdkDoc, NBJDK_XML);
-                helper.putPrimaryConfigurationData(generalDataE, true);
+                Util.putPrimaryConfigurationData(helper, generalDataE);
                 ProjectManager.getDefault().saveProject(project);
             }
         });
@@ -141,15 +141,15 @@ public class JdkConfiguration {
         Element projectE = nbjdkDoc.getDocumentElement();
         Set<String> targetsCreated = new HashSet<String>();
         // XXX remove any definition of ${ant.script}, which will by now be obsolete
-        Element ideActionsE = Util.findElement(generalDataE, "ide-actions", JavaProjectGenerator.NS_FREEFORM);
+        Element ideActionsE = Util.findElement(generalDataE, "ide-actions", Util.NAMESPACE);
         if (ideActionsE != null) {
             for (Element actionE : Util.findSubElements(ideActionsE)) {
                 rebindAction(actionE, projectE, targetsCreated);
             }
         }
-        Element viewE = Util.findElement(generalDataE, "ide-actions", JavaProjectGenerator.NS_FREEFORM);
+        Element viewE = Util.findElement(generalDataE, "ide-actions", Util.NAMESPACE);
         if (viewE != null) {
-            Element contextMenuE = Util.findElement(viewE, "context-menu", JavaProjectGenerator.NS_FREEFORM);
+            Element contextMenuE = Util.findElement(viewE, "context-menu", Util.NAMESPACE);
             if (contextMenuE != null) {
                 for (Element actionE : Util.findSubElements(contextMenuE)) {
                     if (!actionE.getLocalName().equals("action")) {
@@ -165,7 +165,7 @@ public class JdkConfiguration {
     }
 
     private void rebindAction(Element actionE, Element projectE, Set<String> targetsCreated) {
-        Element scriptE = Util.findElement(actionE, "script", JavaProjectGenerator.NS_FREEFORM); // NOI18N
+        Element scriptE = Util.findElement(actionE, "script", Util.NAMESPACE); // NOI18N
         String script;
         if (scriptE != null) {
             script = Util.findText(scriptE);
@@ -173,7 +173,7 @@ public class JdkConfiguration {
         } else {
             script = "build.xml"; // NOI18N
         }
-        scriptE = actionE.getOwnerDocument().createElementNS(JavaProjectGenerator.NS_FREEFORM, "script"); // NOI18N
+        scriptE = actionE.getOwnerDocument().createElementNS(Util.NAMESPACE, "script"); // NOI18N
         scriptE.appendChild(actionE.getOwnerDocument().createTextNode(NBJDK_XML));
         actionE.insertBefore(scriptE, actionE.getFirstChild());
         List<String> targetNames = new ArrayList<String>();

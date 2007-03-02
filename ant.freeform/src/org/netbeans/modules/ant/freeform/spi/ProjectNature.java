@@ -64,13 +64,17 @@ public interface ProjectNature {
      * Produce a logical view of a source folder in a style supported by the nature.
      * @param project a project displaying the view
      * @param folder a file folder (typically part of the project but not necessarily) to produce a view of
+     * @param includes an Ant-style includes list, or null
+     * @param excludes an Ant-style excludes list, or null
      * @param style a view style; will be one of {@link #getSourceFolderViewStyles}
      * @param name a suggested code name for the new node
      * @param displayName a suggested display name for the new node (may be null, in which case provider is free to pick an appropriate display name)
      * @return a logical view of that folder
      * @throws IllegalArgumentException if the supplied style is not one of {@link #getSourceFolderViewStyles}
+     * @see org.netbeans.spi.project.support.ant.PathMatcher
+     * @since org.netbeans.modules.ant.freeform/1 1.15
      */
-    Node createSourceFolderView(Project project, FileObject folder, String style, String name, String displayName) throws IllegalArgumentException;
+    Node createSourceFolderView(Project project, FileObject folder, String includes, String excludes, String style, String name, String displayName) throws IllegalArgumentException;
     
     /**
      * Try to find a node selection in a source folder logical view.

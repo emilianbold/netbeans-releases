@@ -108,7 +108,7 @@ public final class Actions implements ActionProvider {
     }
     
     public String[] getSupportedActions() {
-        Element genldata = project.helper().getPrimaryConfigurationData(true);
+        Element genldata = project.getPrimaryConfigurationData();
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             return new String[0];
@@ -141,7 +141,7 @@ public final class Actions implements ActionProvider {
             return true;
         }
         
-        Element genldata = project.helper().getPrimaryConfigurationData(true);
+        Element genldata = project.getPrimaryConfigurationData();
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             throw new IllegalArgumentException("No commands supported"); // NOI18N
@@ -204,7 +204,7 @@ public final class Actions implements ActionProvider {
             return ;
         }
         
-        Element genldata = project.helper().getPrimaryConfigurationData(true);
+        Element genldata = project.getPrimaryConfigurationData();
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             throw new IllegalArgumentException("No commands supported"); // NOI18N
@@ -422,7 +422,7 @@ public final class Actions implements ActionProvider {
         List<Action> actions = new ArrayList<Action>();
         actions.add(CommonProjectActions.newFileAction());
         // Requested actions.
-        Element genldata = p.helper().getPrimaryConfigurationData(true);
+        Element genldata = p.getPrimaryConfigurationData();
         Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl != null) {
             Element contextMenuEl = Util.findElement(viewEl, "context-menu", FreeformProjectType.NS_GENERAL); // NOI18N

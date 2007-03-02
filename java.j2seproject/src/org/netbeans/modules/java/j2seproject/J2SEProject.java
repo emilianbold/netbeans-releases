@@ -431,7 +431,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             }
             
             // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -452,6 +452,14 @@ public final class J2SEProject implements Project, AntProjectListener {
                     WSUtils.setJaxWsEndorsedDirProperty(ep);
                     
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (!ep.containsKey(J2SEProjectProperties.INCLUDES)) {
+                        ep.setProperty(J2SEProjectProperties.INCLUDES, "**"); // NOI18N
+                    }
+                    if (!ep.containsKey(J2SEProjectProperties.EXCLUDES)) {
+                        ep.setProperty(J2SEProjectProperties.EXCLUDES, ""); // NOI18N
+                    }
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(J2SEProject.this);
                     } catch (IOException e) {
@@ -467,8 +475,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                     return null;
                 }
             });
-            J2SELogicalViewProvider physicalViewProvider = (J2SELogicalViewProvider)
-                J2SEProject.this.getLookup().lookup (J2SELogicalViewProvider.class);
+            J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
@@ -488,7 +495,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             }
             
             // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));

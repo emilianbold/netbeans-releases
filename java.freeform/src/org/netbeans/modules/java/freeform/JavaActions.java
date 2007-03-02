@@ -83,7 +83,6 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 final class JavaActions implements ActionProvider {
     
-    static final String NS_GENERAL = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
     /* Too problematic for importing <classpath> from existing <java>, since Ant would want NS on that too (oddly):
     private static final String NS_JPDA = "antlib:org.netbeans.modules.debugger.jpda.ant"; // NOI18N
      */
@@ -483,8 +482,8 @@ final class JavaActions implements ActionProvider {
         }
         antProject.setAttribute("basedir", /* ".." times count('/', FILE_SCRIPT_PATH) */".."); // NOI18N
         // Look for <properties> in project.xml and make corresponding definitions in the Ant script.
-        Element data = helper.getPrimaryConfigurationData(true);
-        Element properties = Util.findElement(data, "properties", NS_GENERAL);
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Element properties = Util.findElement(data, "properties", Util.NAMESPACE);
         if (properties != null) {
             for (Element el : Util.findSubElements(properties)) {
                 Element nue = antProject.getOwnerDocument().createElement("property"); // NOI18N
@@ -787,63 +786,63 @@ final class JavaActions implements ActionProvider {
     void addBinding(String command, String scriptPath, String target, String propertyName, String dir, String pattern, String format, String separator) throws IOException {
         // XXX cannot use FreeformProjectGenerator since that is currently not a public support SPI from ant/freeform
         // XXX should this try to find an existing binding? probably not, since it is assumed that if there was one, we would never get here to begin with
-        Element data = helper.getPrimaryConfigurationData(true);
-        Element ideActions = Util.findElement(data, "ide-actions", NS_GENERAL); // NOI18N
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE); // NOI18N
         if (ideActions == null) {
             //fix for #58442:
-            ideActions = data.getOwnerDocument().createElementNS(JavaProjectGenerator.NS_FREEFORM, "ide-actions"); // NOI18N
+            ideActions = data.getOwnerDocument().createElementNS(Util.NAMESPACE, "ide-actions"); // NOI18N
             Util.appendChildElement(data, ideActions, rootElementsOrder);
         }
         Document doc = data.getOwnerDocument();
-        Element action = doc.createElementNS(NS_GENERAL, "action"); // NOI18N
+        Element action = doc.createElementNS(Util.NAMESPACE, "action"); // NOI18N
         action.setAttribute("name", command); // NOI18N
-        Element script = doc.createElementNS(NS_GENERAL, "script"); // NOI18N
+        Element script = doc.createElementNS(Util.NAMESPACE, "script"); // NOI18N
         script.appendChild(doc.createTextNode(scriptPath));
         action.appendChild(script);
-        Element targetEl = doc.createElementNS(NS_GENERAL, "target"); // NOI18N
+        Element targetEl = doc.createElementNS(Util.NAMESPACE, "target"); // NOI18N
         targetEl.appendChild(doc.createTextNode(target));
         action.appendChild(targetEl);
         if (propertyName != null) {
-            Element context = doc.createElementNS(NS_GENERAL, "context"); // NOI18N
-            Element property = doc.createElementNS(NS_GENERAL, "property"); // NOI18N
+            Element context = doc.createElementNS(Util.NAMESPACE, "context"); // NOI18N
+            Element property = doc.createElementNS(Util.NAMESPACE, "property"); // NOI18N
             property.appendChild(doc.createTextNode(propertyName));
             context.appendChild(property);
-            Element folder = doc.createElementNS(NS_GENERAL, "folder"); // NOI18N
+            Element folder = doc.createElementNS(Util.NAMESPACE, "folder"); // NOI18N
             folder.appendChild(doc.createTextNode(dir));
             context.appendChild(folder);
             if (pattern != null) {
-                Element patternEl = doc.createElementNS(NS_GENERAL, "pattern"); // NOI18N
+                Element patternEl = doc.createElementNS(Util.NAMESPACE, "pattern"); // NOI18N
                 patternEl.appendChild(doc.createTextNode(pattern));
                 context.appendChild(patternEl);
             }
-            Element formatEl = doc.createElementNS(NS_GENERAL, "format"); // NOI18N
+            Element formatEl = doc.createElementNS(Util.NAMESPACE, "format"); // NOI18N
             formatEl.appendChild(doc.createTextNode(format));
             context.appendChild(formatEl);
-            Element arity = doc.createElementNS(NS_GENERAL, "arity"); // NOI18N
+            Element arity = doc.createElementNS(Util.NAMESPACE, "arity"); // NOI18N
             if (separator != null) {
-                Element separatorEl = doc.createElementNS(NS_GENERAL, "separated-files"); // NOI18N
+                Element separatorEl = doc.createElementNS(Util.NAMESPACE, "separated-files"); // NOI18N
                 separatorEl.appendChild(doc.createTextNode(separator));
                 arity.appendChild(separatorEl);
             } else {
-                arity.appendChild(doc.createElementNS(NS_GENERAL, "one-file-only")); // NOI18N
+                arity.appendChild(doc.createElementNS(Util.NAMESPACE, "one-file-only")); // NOI18N
             }
             context.appendChild(arity);
             action.appendChild(context);
         } else {
             // Add a context menu item, since it applies to the project as a whole.
             // Assume there is already a <context-menu> defined, which is quite likely.
-            Element view = Util.findElement(data, "view", NS_GENERAL); // NOI18N
+            Element view = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
             if (view != null) {
-                Element contextMenu = Util.findElement(view, "context-menu", NS_GENERAL); // NOI18N
+                Element contextMenu = Util.findElement(view, "context-menu", Util.NAMESPACE); // NOI18N
                 if (contextMenu != null) {
-                    Element ideAction = doc.createElementNS(NS_GENERAL, "ide-action"); // NOI18N
+                    Element ideAction = doc.createElementNS(Util.NAMESPACE, "ide-action"); // NOI18N
                     ideAction.setAttribute("name", command); // NOI18N
                     contextMenu.appendChild(ideAction);
                 }
             }
         }
         ideActions.appendChild(action);
-        helper.putPrimaryConfigurationData(data, true);
+        Util.putPrimaryConfigurationData(helper, data);
         ProjectManager.getDefault().saveProject(project);
     }
 
@@ -987,8 +986,8 @@ final class JavaActions implements ActionProvider {
      *         or null if no binding could be found for this command
      */
     String[] findCommandBinding(String command) {
-        Element data = helper.getPrimaryConfigurationData(true);
-        Element ideActions = Util.findElement(data, "ide-actions", NS_GENERAL); // NOI18N
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE); // NOI18N
         if (ideActions == null) {
             return null;
         }
@@ -996,7 +995,7 @@ final class JavaActions implements ActionProvider {
         for (Element action : Util.findSubElements(ideActions)) {
             assert action.getLocalName().equals("action");
             if (action.getAttribute("name").equals(command)) {
-                Element script = Util.findElement(action, "script", NS_GENERAL); // NOI18N
+                Element script = Util.findElement(action, "script", Util.NAMESPACE); // NOI18N
                 if (script != null) {
                     scriptName = Util.findText(script);
                 }

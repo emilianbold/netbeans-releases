@@ -208,7 +208,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         mappings = FreeformProjectGenerator.getTargetMappings(helper);
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
-        Element el = helper.getPrimaryConfigurationData(true);
+        Element el = Util.getPrimaryConfigurationData(helper);
         el = Util.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
         List<Element> subElements = Util.findSubElements(el);
@@ -272,7 +272,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm.properties.setProperty("key2", "value2");
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
-        el = helper.getPrimaryConfigurationData(true);
+        el = Util.getPrimaryConfigurationData(helper);
         el = Util.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
         subElements = Util.findSubElements(el);
@@ -302,7 +302,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         mappings.add(tm);
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
-        el = helper.getPrimaryConfigurationData(true);
+        el = Util.getPrimaryConfigurationData(helper);
         el = Util.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
         subElements = Util.findSubElements(el);
@@ -346,7 +346,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         mappings.add(tm);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
-        Element el = helper.getPrimaryConfigurationData(true);
+        Element el = Util.getPrimaryConfigurationData(helper);
         el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
         el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
@@ -373,7 +373,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         mappings.add(tm);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
-        el = helper.getPrimaryConfigurationData(true);
+        el = Util.getPrimaryConfigurationData(helper);
         el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
         el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
@@ -426,7 +426,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         customActions = FreeformProjectGenerator.getCustomContextMenuActions(helper);
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
 //        ProjectManager.getDefault().saveAllProjects();
-        Element el = helper.getPrimaryConfigurationData(true);
+        Element el = Util.getPrimaryConfigurationData(helper);
         el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
         el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
@@ -473,7 +473,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         customActions.add(ct);
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
 //        ProjectManager.getDefault().saveAllProjects();
-        el = helper.getPrimaryConfigurationData(true);
+        el = Util.getPrimaryConfigurationData(helper);
         el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
         el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
@@ -578,10 +578,11 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
     }
 
     private static String[] getSchemas() throws Exception {
-        String[] URIs = new String[2];
-        URIs[0] = FreeformProjectGenerator.class.getResource("resources/freeform-project-general.xsd").toExternalForm();
-        URIs[1] = AntBasedProjectFactorySingleton.class.getResource("project.xsd").toExternalForm();
-        return URIs;
+        return new String[] {
+            FreeformProjectGenerator.class.getResource("resources/freeform-project-general.xsd").toExternalForm(),
+            FreeformProjectGenerator.class.getResource("resources/freeform-project-general-2.xsd").toExternalForm(),
+            AntBasedProjectFactorySingleton.class.getResource("project.xsd").toExternalForm(),
+        };
     }
     
     public static void validate(Project proj) throws Exception {

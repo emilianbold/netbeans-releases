@@ -82,6 +82,24 @@ is the proper place.
 
     <changes>
         
+        <change id="includes-excludes">
+            <api name="general"/>
+            <summary>Support for source root includes and excludes</summary>
+            <version major="1" minor="15"/>
+            <date day="1" month="3" year="2007"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Ant-based projects can now conveniently specify include and exclude
+                    lists for source groups based on Ant's standard patternset syntax.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="SourcesHelper"/>
+            <class package="org.netbeans.spi.project.support.ant" name="PathMatcher"/>
+            <issue number="49026"/>
+        </change>
+        
         <change id="PropertyUtils.userPropertiesProvider.FilterPropertyProvider">
             <api name="general"/>
             <summary>Added utilities for constructing richer property evaluators</summary>

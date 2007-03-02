@@ -75,7 +75,7 @@ public class UnboundTargetAlertTest extends TestBase {
         assertEquals(null, lastMapping.properties);
         assertEquals(null, lastMapping.context);
         // Also check the context menu.
-        Element data = prj.helper().getPrimaryConfigurationData(true);
+        Element data = prj.getPrimaryConfigurationData();
         Element view = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull(view);
         Element contextMenu = Util.findElement(view, "context-menu", FreeformProjectType.NS_GENERAL);

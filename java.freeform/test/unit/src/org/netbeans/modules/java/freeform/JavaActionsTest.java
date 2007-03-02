@@ -65,18 +65,18 @@ public class JavaActionsTest extends TestBase {
         super.setUp();
         prj = copyProject(simple);
         // Remove existing context-sensitive bindings to make a clean slate.
-        Element data = prj.helper().getPrimaryConfigurationData(true);
-        Element ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
+        Element data = prj.getPrimaryConfigurationData();
+        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
         assertNotNull(ideActions);
         Iterator<Element> actionsIt = Util.findSubElements(ideActions).iterator();
         while (actionsIt.hasNext()) {
             Element action = actionsIt.next();
             assertEquals("action", action.getLocalName());
-            if (Util.findElement(action, "context", FreeformProjectType.NS_GENERAL) != null) {
+            if (Util.findElement(action, "context", Util.NAMESPACE) != null) {
                 ideActions.removeChild(action);
             }
         }
-        prj.helper().putPrimaryConfigurationData(data, true);
+        prj.putPrimaryConfigurationData(data);
         ProjectManager.getDefault().saveProject(prj);
         AuxiliaryConfiguration origAux = prj.getLookup().lookup(AuxiliaryConfiguration.class);
         AuxiliaryConfiguration aux = new LookupProviderImpl.UpgradingAuxiliaryConfiguration(origAux);
@@ -177,15 +177,15 @@ public class JavaActionsTest extends TestBase {
     
     public void testAddBinding() throws Exception {
         ja.addBinding("some.action", "special.xml", "special-target", "selection", "${some.src.dir}", "\\.java$", "relative-path", ",");
-        Element data = prj.helper().getPrimaryConfigurationData(true);
+        Element data = prj.getPrimaryConfigurationData();
         assertNotNull(data);
-        Element ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
+        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
         assertNotNull(ideActions);
         List<Element> actions = Util.findSubElements(ideActions);
         Element lastAction = actions.get(actions.size() - 1);
         String expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"some.action\">\n" +
+            "<action xmlns=\"" + Util.NAMESPACE + "\" name=\"some.action\">\n" +
             "    <script>special.xml</script>\n" +
             "    <target>special-target</target>\n" +
             "    <context>\n" +
@@ -200,13 +200,13 @@ public class JavaActionsTest extends TestBase {
             "</action>\n";
         assertEquals(expectedXml, xmlToString(lastAction));
         ja.addBinding("some.other.action", "special.xml", "special-target", "selection", "${some.src.dir}", null, "relative-path", null);
-        data = prj.helper().getPrimaryConfigurationData(true);
-        ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
+        data = prj.getPrimaryConfigurationData();
+        ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
         actions = Util.findSubElements(ideActions);
         lastAction = actions.get(actions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"some.other.action\">\n" +
+            "<action xmlns=\"" + Util.NAMESPACE + "\" name=\"some.other.action\">\n" +
             "    <script>special.xml</script>\n" +
             "    <target>special-target</target>\n" +
             "    <context>\n" +
@@ -221,42 +221,42 @@ public class JavaActionsTest extends TestBase {
         assertEquals(expectedXml, xmlToString(lastAction));
         // Non-context-sensitive bindings have no <context> but need to add a view item.
         ja.addBinding("general.action", "special.xml", "special-target", null, null, null, null, null);
-        data = prj.helper().getPrimaryConfigurationData(true);
-        ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
+        data = prj.getPrimaryConfigurationData();
+        ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
         actions = Util.findSubElements(ideActions);
         lastAction = actions.get(actions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"general.action\">\n" +
+            "<action xmlns=\"" + Util.NAMESPACE + "\" name=\"general.action\">\n" +
             "    <script>special.xml</script>\n" +
             "    <target>special-target</target>\n" +
             "</action>\n";
         assertEquals(expectedXml, xmlToString(lastAction));
-        Element view = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL);
+        Element view = Util.findElement(data, "view", Util.NAMESPACE);
         assertNotNull(view);
-        Element contextMenu = Util.findElement(view, "context-menu", FreeformProjectType.NS_GENERAL);
+        Element contextMenu = Util.findElement(view, "context-menu", Util.NAMESPACE);
         assertNotNull(contextMenu);
         // Currently (no FPG to help) it is always added as the last item.
         List<Element> contextMenuActions = Util.findSubElements(contextMenu);
         Element lastContextMenuAction = contextMenuActions.get(contextMenuActions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<ide-action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"general.action\"/>\n";
+            "<ide-action xmlns=\"" + Util.NAMESPACE + "\" name=\"general.action\"/>\n";
         assertEquals(expectedXml, xmlToString(lastContextMenuAction));
         
         //test #58442:
-        data = prj.helper().getPrimaryConfigurationData(true);
-        ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
+        data = prj.getPrimaryConfigurationData();
+        ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
         data.removeChild(ideActions);
         
         ja.addBinding("some.other.action", "special.xml", "special-target", "selection", "${some.src.dir}", null, "relative-path", null);
-        data = prj.helper().getPrimaryConfigurationData(true);
-        ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
+        data = prj.getPrimaryConfigurationData();
+        ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
         actions = Util.findSubElements(ideActions);
         lastAction = actions.get(actions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"some.other.action\">\n" +
+            "<action xmlns=\"" + Util.NAMESPACE + "\" name=\"some.other.action\">\n" +
             "    <script>special.xml</script>\n" +
             "    <target>special-target</target>\n" +
             "    <context>\n" +
@@ -429,22 +429,22 @@ public class JavaActionsTest extends TestBase {
             "</project>\n";
         assertEquals("Correct code generated for external script", expectedXml, xmlToString(root));
         // And also with locations defined as special properties in various ways...
-        Element data = prj.helper().getPrimaryConfigurationData(true);
-        Element properties = Util.findElement(data, "properties", JavaActions.NS_GENERAL);
+        Element data = prj.getPrimaryConfigurationData();
+        Element properties = Util.findElement(data, "properties", Util.NAMESPACE);
         assertNotNull(properties);
-        Element property = data.getOwnerDocument().createElementNS(JavaActions.NS_GENERAL, "property");
+        Element property = data.getOwnerDocument().createElementNS(Util.NAMESPACE, "property");
         property.setAttribute("name", "external.xml");
         property.appendChild(data.getOwnerDocument().createTextNode(scriptPath));
         properties.appendChild(property);
-        property = data.getOwnerDocument().createElementNS(JavaActions.NS_GENERAL, "property");
+        property = data.getOwnerDocument().createElementNS(Util.NAMESPACE, "property");
         property.setAttribute("name", "subtestdir");
         property.appendChild(data.getOwnerDocument().createTextNode(subtestdir.getAbsolutePath()));
         properties.appendChild(property);
-        property = data.getOwnerDocument().createElementNS(JavaActions.NS_GENERAL, "property");
+        property = data.getOwnerDocument().createElementNS(Util.NAMESPACE, "property");
         property.setAttribute("name", "testdir");
         property.appendChild(data.getOwnerDocument().createTextNode(testdir.getAbsolutePath()));
         properties.appendChild(property);
-        prj.helper().putPrimaryConfigurationData(data, true);
+        prj.putPrimaryConfigurationData(data);
         ProjectManager.getDefault().saveProject(prj); // ease of debugging
         root = XMLUtil.createDocument("project", null, null, null).getDocumentElement();
         ja.ensureImports(root, "${external.xml}");

@@ -98,7 +98,7 @@ public class FreeformEvaluatorTest extends TestBase {
         } finally {
             os.close();
         }
-        Element data = simple2.helper().getPrimaryConfigurationData(true);
+        Element data = simple2.getPrimaryConfigurationData();
         NodeList propertiesNL = data.getElementsByTagNameNS(FreeformProjectType.NS_GENERAL, "properties");
         assertEquals("one <properties>", 1, propertiesNL.getLength());
         Element properties = (Element) propertiesNL.item(0);
@@ -106,7 +106,7 @@ public class FreeformEvaluatorTest extends TestBase {
         Element propertyFile = properties.getOwnerDocument().createElementNS(FreeformProjectType.NS_GENERAL, "property-file");
         propertyFile.appendChild(properties.getOwnerDocument().createTextNode("loc.properties"));
         properties.insertBefore(propertyFile, properties.getFirstChild());
-        simple2.helper().putPrimaryConfigurationData(data, true);
+        simple2.putPrimaryConfigurationData(data);
         ProjectManager.getDefault().saveProject(simple2);
         // Now check baseline evaluation.
         PropertyEvaluator eval = simple2.evaluator();

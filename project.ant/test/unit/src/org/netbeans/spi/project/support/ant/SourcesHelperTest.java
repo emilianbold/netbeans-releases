@@ -19,6 +19,7 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import java.util.Collections;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -317,6 +318,238 @@ public final class SourcesHelperTest extends NbTestCase {
         groups = s.getSourceGroups("java");
         assertEquals("should have src15dir now", 1, groups.length);
         assertEquals("group #1 is src5dir", src5dir, groups[0].getRootFolder());
+    }
+
+    public void testIncludesExcludes() throws Exception {
+        // <editor-fold desc="initial setup">
+        scratch = TestUtil.makeScratchDir(this); // have our own setup
+        maindir = scratch.createFolder("dir");
+        projdir = maindir.createFolder("proj-dir");
+        src1dir = projdir.createFolder("src1");
+        src2dir = scratch.createFolder("src2");
+        src3dir = projdir.createFolder("src3");
+        src4dir = scratch.createFolder("src4");
+        // </editor-fold>
+        // <editor-fold desc="create files in group #1">
+        FileUtil.createData(src1dir, "com/sun/tools/javac/Main.java");
+        FileUtil.createData(src1dir, "com/sun/tools/internal/ws/processor/model/java/JavaArrayType.java");
+        FileUtil.createData(src1dir, "sun/tools/javac/Main.java");
+        FileUtil.createData(src1dir, "sunw/io/Serializable.java");
+        FileUtil.createData(src1dir, "java/lang/Byte.java");
+        FileUtil.createData(src1dir, "java/text/resources/Messages.properties");
+        FileUtil.createData(src1dir, "java/text/resources/Messages_zh.properties");
+        FileUtil.createData(src1dir, "java/text/resources/Messages_zh_TW.properties");
+        FileUtil.createData(src1dir, "java/text/resources/x_y/z.properties");
+        // </editor-fold>
+        // <editor-fold desc="create files in group #2">
+        FileUtil.createData(src2dir, "java/lang/Class.java");
+        FileUtil.createData(src2dir, "javax/swing/JComponent.java");
+        FileUtil.createData(src2dir, "javax/lang/Foo.java");
+        FileUtil.createData(src2dir, "com/sun/java/swing/plaf/motif/MotifSplitPaneUI.java");
+        FileUtil.createData(src2dir, "com/sun/org/apache/xerces/internal/parsers/AbstractDOMParser.java");
+        FileUtil.createData(src2dir, "org/omg/CORBA/Any.java");
+        FileUtil.createData(src2dir, "javax/swing/doc-files/groupLayout.1.gif");
+        FileUtil.createData(src2dir, "javax/swing/plaf/resources/foo.gif");
+        FileUtil.createData(src2dir, "javax/swing/resources/bar.gif");
+        FileUtil.createData(src2dir, "docs/html/index.html");
+        // </editor-fold>
+        // <editor-fold desc="create files in group #3">
+        FileUtil.createData(src3dir, "java/lang/Class.java");
+        FileUtil.createData(src3dir, "java/util/Compat$Clazz.java");
+        FileUtil.createData(src3dir, "javax/swing/JComponent.java");
+        FileUtil.createData(src3dir, "com/sun/java/swing/plaf/motif/MotifSplitPaneUI.java");
+        FileUtil.createData(src3dir, "README");
+        FileUtil.createData(src3dir, "README.html");
+        FileUtil.createData(src3dir, "whatever.xml");
+        // </editor-fold>
+        // <editor-fold desc="create files in group #4">
+        FileUtil.createData(src4dir, "java/lang/Class.java");
+        // </editor-fold>
+        // <editor-fold desc="other setup #1">
+        h = ProjectGenerator.createProject(projdir, "test");
+        project = ProjectManager.getDefault().findProject(projdir);
+        EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src1.dir", "src1");
+        p.setProperty("src2.dir", "../../src2");
+        p.setProperty("src3.dir", "src3");
+        p.setProperty("src4.dir", "../../src4");
+        // </editor-fold>
+        // <editor-fold desc="includes & excludes">
+        p.setProperty("src1.excludes", " sun/,sunw\\, **\\internal/** ${undefined} ,  **/resources/*_*.properties ");
+        p.setProperty("src2.includes", "**/swing/,com/sun/org/apache/,org/omg,docs/html/index.html");
+        p.setProperty("src2.excludes", "**/doc-files/ **/swing/**/resources/");
+        p.setProperty("src3.includes", "javax/swing/,com/sun/java/swing/,README,**/*$*.java,**/*.xml");
+        // </editor-fold>
+        // <editor-fold desc="other setup #2">
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        ProjectManager.getDefault().saveProject(project);
+        sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
+        sh.addPrincipalSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "Sources #1", null, null);
+        sh.addPrincipalSourceRoot("${src2.dir}", "${src2.includes}", "${src2.excludes}", "Sources #2", null, null);
+        sh.addPrincipalSourceRoot("${src3.dir}", "${src3.includes}", null, "Sources #3", null, null);
+        sh.addPrincipalSourceRoot("${src4.dir}", "**", "", "Sources #4", null, null);
+        sh.addTypedSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "java", "Packages #1", null, null);
+        sh.addTypedSourceRoot("${src2.dir}", "${src2.includes}", "${src2.excludes}", "java", "Packages #2", null, null);
+        sh.addTypedSourceRoot("${src3.dir}", "${src3.includes}", null, "java", "Packages #3", null, null);
+        sh.addTypedSourceRoot("${src4.dir}", "**", "", "java", "Packages #4", null, null);
+        Sources s = sh.createSources();
+        SourceGroup[] groups = s.getSourceGroups("java");
+        SourceGroup g1 = groups[0];
+        assertEquals("Packages #1", g1.getDisplayName());
+        SourceGroup g2 = groups[1];
+        assertEquals("Packages #2", g2.getDisplayName());
+        SourceGroup g3 = groups[2];
+        assertEquals("Packages #3", g3.getDisplayName());
+        SourceGroup g4 = groups[3];
+        assertEquals("Packages #4", g4.getDisplayName());
+        // </editor-fold>
+        // <editor-fold desc="testing group #1">
+        assertIncluded("not excluded despite sun/ infix", g1, "com/sun/tools/javac/Main.java");
+        assertExcluded("internal infix", g1, "com/sun/tools/internal/ws/processor/model/java/JavaArrayType.java");
+        assertExcluded("the whole folder is suppressed", g1, "com/sun/tools/internal");
+        assertExcluded("sun/ prefix", g1, "sun/tools/javac/Main.java");
+        assertExcluded("the whole folder is suppressed", g1, "sun");
+        assertExcluded("sunw/ prefix even with \\", g1, "sunw/io/Serializable.java");
+        assertExcluded("the whole folder is suppressed", g1, "sunw");
+        assertIncluded("why not?", g1, "java/lang/Byte.java");
+        assertIncluded("no _", g1, "java/text/resources/Messages.properties");
+        assertExcluded("has _", g1, "java/text/resources/Messages_zh.properties");
+        assertExcluded("has _ twice", g1, "java/text/resources/Messages_zh_TW.properties");
+        assertIncluded("* does not match /", g1, "java/text/resources/x_y/z.properties");
+        // </editor-fold>
+        // <editor-fold desc="testing group #2">
+        assertExcluded("not explicitly included", g2, "java/lang/Class.java");
+        assertExcluded("nothing in java.lang.** is", g2, "java/lang");
+        assertExcluded("nothing in java.** is", g2, "java");
+        assertIncluded("explicitly included", g2, "javax/swing/JComponent.java");
+        assertExcluded("but that does not apply to other children", g2, "javax/lang/Foo.java");
+        assertIncluded("also explicitly included", g2, "com/sun/java/swing/plaf/motif/MotifSplitPaneUI.java");
+        assertIncluded("not excluded as internal", g2, "com/sun/org/apache/xerces/internal/parsers/AbstractDOMParser.java");
+        assertExcluded("dir includes do not work without /", g2, "org/omg/CORBA/Any.java");
+        assertExcluded("dir includes do not work without / even for folder itself", g2, "org/omg");
+        assertExcluded("nothing in org included, in fact", g2, "org");
+        assertExcluded("doc-files excluded", g2, "javax/swing/doc-files/groupLayout.1.gif");
+        assertExcluded("whole doc-files excluded", g2, "javax/swing/doc-files");
+        assertExcluded("resources excluded with intermediate plaf", g2, "javax/swing/plaf/resources/foo.gif");
+        assertExcluded("whole resources excluded with intermediate plaf", g2, "javax/swing/plaf/resources");
+        assertExcluded("/**/ can match /", g2, "javax/swing/resources/bar.gif");
+        assertExcluded("/**/ can match / on whole dir", g2, "javax/swing/resources");
+        // </editor-fold>
+        // <editor-fold desc="testing group #3">
+        assertExcluded("no reason to include", g3, "java/lang/Class.java");
+        assertExcluded("java.lang not there", g3, "java/lang");
+        assertIncluded("has a $", g3, "java/util/Compat$Clazz.java");
+        assertIncluded("explicitly included", g3, "javax/swing/JComponent.java");
+        assertIncluded("explicitly included", g3, "com/sun/java/swing/plaf/motif/MotifSplitPaneUI.java");
+        assertIncluded("explicitly included", g3, "README");
+        assertExcluded("did not include file w/ ext", g3, "README.html");
+        assertIncluded("**/ can match null prefix", g3, "whatever.xml");
+        // </editor-fold>
+        // <editor-fold desc="testing group #4">
+        assertIncluded("everything included", g4, "java/lang/Class.java");
+        // </editor-fold>
+        // <editor-fold desc="testing external roots">
+        sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        FileObject projdir2 = maindir.createFolder("proj-dir2");
+        ProjectGenerator.createProject(projdir2, "test");
+        Project project2 = ProjectManager.getDefault().findProject(projdir2);
+        FileObject docfiles = src2dir.getFileObject("javax/swing/doc-files");
+        assertNotNull(docfiles);
+        FileOwnerQuery.markExternalOwner(docfiles, project2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertOwner(null, g2, "java/lang/Class.java");
+        assertOwner(project, g2, "javax/swing/JComponent.java");
+        assertOwner(project, g2, "javax/swing");
+        assertOwner(null, g2, "javax");
+        assertOwner(project, g2, "com/sun/java/swing/plaf/motif/MotifSplitPaneUI.java");
+        assertOwner(project, g2, "com/sun/java/swing/plaf/motif");
+        assertOwner(project, g2, "com/sun/java/swing/plaf");
+        assertOwner(project, g2, "com/sun/java/swing");
+        assertOwner(null, g2, "com/sun/java");
+        assertOwner(null, g2, "com/sun");
+        assertOwner(null, g2, "com");
+        assertOwner(null, g2, "org/omg/CORBA/Any.java");
+        assertOwner(project2, g2, "javax/swing/doc-files/groupLayout.1.gif");
+        assertOwner(project2, g2, "javax/swing/doc-files");
+        assertOwner(project, g2, "com/sun/java/swing");
+        assertOwner(project, g2, "docs/html/index.html");
+        assertOwner(project, g2, "docs/html");
+        assertOwner(null, g2, "docs");
+        p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src2.includes", "com/sun/org/apache/,org/omg,docs/html/index.html");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        assertOwner(null, g2, "javax/swing/JComponent.java");
+        p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src2.includes", "**/swing/,com/sun/org/apache/,org/omg,docs/html/index.html");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        assertOwner(project, g2, "javax/swing/JComponent.java");
+        assertOwner(project, g4, "java/lang/Class.java");
+        assertOwner(project, g4, "java/lang");
+        assertOwner(project, g4, "java");
+        assertOwner(project, g4, "");
+        // </editor-fold>
+        // <editor-fold desc="testing change firing">
+        AntBasedTestUtil.TestPCL l = new AntBasedTestUtil.TestPCL();
+        g2.addPropertyChangeListener(l);
+        p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src2.excludes", "**/doc-files/");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        assertEquals(Collections.singleton(SourceGroup.PROP_CONTAINERSHIP), l.changed);
+        l.reset();
+        assertExcluded("doc-files still excluded", g2, "javax/swing/doc-files/groupLayout.1.gif");
+        assertIncluded("resources now included", g2, "javax/swing/plaf/resources/foo.gif");
+        p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src2.includes", "**");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        assertEquals(Collections.singleton(SourceGroup.PROP_CONTAINERSHIP), l.changed);
+        l.reset();
+        assertIncluded("may as well be included", g2, "java/lang/Class.java");
+        p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src2.includes", "**/swing/");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        assertEquals(Collections.singleton(SourceGroup.PROP_CONTAINERSHIP), l.changed);
+        l.reset();
+        assertExcluded("excluded again", g2, "java/lang/Class.java");
+        p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("irrelevant", "value");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        assertEquals(Collections.emptySet(), l.changed);
+        l.reset();
+        // </editor-fold>
+        // <editor-fold desc="testing misc">
+        try {
+            FileObject f = src2dir.getFileObject("java/lang/Class.java");
+            assertNotNull(f);
+            g1.contains(f);
+            fail("wrong root");
+        } catch (IllegalArgumentException e) {/* good */}
+        SourceGroup[] ggroups = s.getSourceGroups(Sources.TYPE_GENERIC);
+        SourceGroup gg1 = ggroups[0];
+        assertEquals("Sources #2", gg1.getDisplayName());
+        assertIncluded("explicitly included", gg1, "javax/swing/JComponent.java");
+        assertExcluded("but that does not apply to other children", gg1, "javax/lang/Foo.java");
+        // </editor-fold>
+    }
+    private static void assertIncluded(String message, SourceGroup g, String resource) {
+        FileObject f = g.getRootFolder().getFileObject(resource);
+        assertNotNull(resource, f);
+        assertTrue(message, g.contains(f));
+        int slash = resource.lastIndexOf('/');
+        if (slash != -1) {
+            String parent = resource.substring(0, slash);
+            assertIncluded("parent " + parent + " of " + resource + " must also be contained by definition", g, parent);
+        } else if (resource.length() > 0) {
+            assertIncluded("root folder always contained by definition", g, "");
+        }
+    }
+    private static void assertExcluded(String message, SourceGroup g, String resource) {
+        FileObject f = g.getRootFolder().getFileObject(resource);
+        assertNotNull(resource, f);
+        assertFalse(message, g.contains(f));
+    }
+    private static void assertOwner(Project owner, SourceGroup g, String resource) {
+        FileObject f = g.getRootFolder().getFileObject(resource);
+        assertNotNull(resource, f);
+        assertEquals(owner, FileOwnerQuery.getOwner(f));
     }
     
 }

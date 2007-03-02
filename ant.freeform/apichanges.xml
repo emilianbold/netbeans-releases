@@ -82,6 +82,28 @@ is the proper place.
 
     <changes>
 
+        <change id="includes-excludes">
+            <summary>Include/exclude support in views</summary>
+            <version major="1" minor="15"/>
+            <date day="1" month="3" year="2007"/>
+            <author login="jglick"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no"/>
+            <description>
+                <p>
+                    Changed signature of <code>ProjectNature.createSourceFolderView</code> to accept
+                    <code>includes</code> and <code>excludes</code> parameters.
+                </p>
+                <p>
+                    Added methods to <code>Util</code> to work with a new <code>http://www.netbeans.org/ns/freeform-project/2</code>
+                    general data schema. Use of <code>AntProjectHelper.get/putPrimaryConfigurationData</code>
+                    is now considered unsafe.
+                </p>
+            </description>
+             <class package="org.netbeans.modules.ant.freeform.spi" name="ProjectNature"/>
+             <class package="org.netbeans.modules.ant.freeform.spi.support" name="Util"/>
+            <issue number="49026"/>
+        </change>
+        
         <change id="remove_nature_lookup_customizer">
             <summary>Simplify ProjectNature and align with common project extensibility APIs</summary>
             <version major="1" minor="14"/>

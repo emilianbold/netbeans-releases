@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.util.Factory;
@@ -60,7 +61,7 @@ class GoldenArchive implements Archive {
 //    }
     
     public String getFilesDiff( String folderName, Archive archive ) throws IOException {
-        return TestUtil.collectionDiff( getFiles( folderName, null), archive.getFiles( folderName, null ) );        
+        return TestUtil.collectionDiff( getFiles( folderName, null, null), archive.getFiles( folderName, null, null) );        
     }
 
     // Implementation of Archive -----------------------------------------------
@@ -78,7 +79,7 @@ class GoldenArchive implements Archive {
     }
 
 
-    public Iterable<JavaFileObject> getFiles( String folderName, JavaFileFilterImplementation filter ) {
+    public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry e, JavaFileFilterImplementation filter ) {
 
         File folder = new File( rootFolder, folderName );
         

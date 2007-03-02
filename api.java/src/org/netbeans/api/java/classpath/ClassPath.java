@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -34,13 +36,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -60,7 +64,7 @@ import org.openide.util.Utilities;
  * for resources, objects reachable using the ClassPath at runtime. It is intended
  * to replace some of the functionality of <link>org.openide.filesystems.Repository</link>.
  * <BR>
- * ClassPath instances should be used to map from java-style resource names
+ * ClassPath instances should be used to map from Java-style resource names
  * to FileObject (NetBeans-style resource) and vice versa. It should be also used
  * whenever the operation requires inspection of development or runtime project
  * environment instead. The service supports either searching in the classpath
@@ -75,8 +79,6 @@ import org.openide.util.Utilities;
  * names predefined as symbolic constants, following individual types of services
  * (compiler, debugger, executor). Names are not limited to the listed ones; an extension
  * module might add its own private classpath type.
- *
- * @author Svatopluk Dedic <sdedic@netbeans.org>, Tomas Zezula
  */
 public final class ClassPath {
 
@@ -109,6 +111,7 @@ public final class ClassPath {
      * Classpath for debugging things
      * @deprecated Probably useless.
      */
+    @Deprecated
     public static final String DEBUG = "classpath/debug";
 
     /**
@@ -172,6 +175,13 @@ public final class ClassPath {
      */
     public static final String PROP_ENTRIES = "entries";
     
+    /**
+     * Property to be fired when include/exclude set changes.
+     * @see FilteringPathResourceImplementation
+     * @since org.netbeans.api.java/1 1.13
+     */
+    public static final String PROP_INCLUDES = "includes";
+    
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ClassPath.class.getName());
     
     private static final Lookup.Result<? extends ClassPathProvider> implementations =
@@ -179,6 +189,12 @@ public final class ClassPath {
 
     private ClassPathImplementation impl;
     private FileObject[] rootsCache;
+    /**
+     * Associates entry roots with the matching filter, if there is one.
+     * XXX not quite right since we could have the same root added twice with two different
+     * filters. But why would you do that?
+     */
+    private Map<FileObject,FilteringPathResourceImplementation> root2Filter = new WeakHashMap<FileObject,FilteringPathResourceImplementation>();
     private PropertyChangeListener pListener;
     private RootsListener rootsListener;
     private List<ClassPath.Entry> entriesCache;
@@ -190,6 +206,7 @@ public final class ClassPath {
      * If there's an entry in the ClassPath, which cannot be accessed,
      * its root is not returned by this method. FileObjects returned
      * are all folders.
+     * Note that this method ignores {@link FilteringPathResourceImplementation includes and excludes}.
      * @return array of roots (folders) of the classpath. Never returns
      * null.
      */
@@ -227,8 +244,10 @@ public final class ClassPath {
                 rootsListener.addRoot (entry.getURL());
             }
             FileObject fo = entry.getRoot();
-            if (fo != null)
-                l.add (fo);
+            if (fo != null) {
+                l.add(fo);
+                root2Filter.put(fo, entry.filter);
+            }
         }
         return l.toArray (new FileObject[l.size()]);
     }
@@ -274,10 +293,9 @@ public final class ClassPath {
         else {
             List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
             for (PathResourceImplementation pr : resources) {
-                URL[] roots = pr.getRoots();
-                for (URL root : roots) {
-                    Entry e = new Entry (root);
-                    cache.add (e);
+                for (URL root : pr.getRoots()) {
+                    cache.add(new Entry(root,
+                            pr instanceof FilteringPathResourceImplementation ? (FilteringPathResourceImplementation) pr : null));
                 }
             }
             return Collections.unmodifiableList(cache);
@@ -290,7 +308,14 @@ public final class ClassPath {
         this.impl = impl;
         this.pListener = new SPIListener ();
         this.impl.addPropertyChangeListener (this.pListener);
-        this.propSupport = new PropertyChangeSupport (this);
+        listenToPRIs();
+    }
+
+    private void listenToPRIs() {
+        for (PathResourceImplementation pri : impl.getResources()) {
+            pri.removePropertyChangeListener(pListener);
+            pri.addPropertyChangeListener(pListener);
+        }
     }
 
     /**
@@ -299,7 +324,9 @@ public final class ClassPath {
      * this ClassPath.<BR>
      * If the <i>resourceName</i> identifies a package, this method will
      * return the <code>FileObject</code> for the first <I>package fragment</I>
-     * in the <code>ClassPath</code>
+     * in the <code>ClassPath</code>.
+     * {@link FilteringPathResourceImplementation} may cause an actual file
+     * beneath a registered root to not be returned.
      * Note: do not pass names starting with slash to this method.
      * @param resourceName name of the resource as it would be passed
      *                     to {@link ClassLoader#getResource}
@@ -307,8 +334,7 @@ public final class ClassPath {
      * be found in this ClassPath.
      */
     public final FileObject findResource(String resourceName) {
-	FileObject[] roots = getRoots();
-        return findResourceImpl(roots, new int[] { 0 }, parseResourceName(resourceName));
+        return findResourceImpl(getRoots(), new int[] {0}, parseResourceName(resourceName));
     }
 
     /**
@@ -316,6 +342,8 @@ public final class ClassPath {
      * to a given ResourceName; only the first one is seen by the ClassLoader
      * at runtime or can be linked against.  The resource name uses slashes ('/')
      * as folder separator and must not start with slash.
+     * {@link FilteringPathResourceImplementation} may cause an actual file
+     * beneath a registered root to not be returned.
      * @param resourceName resource name
      * @return list of resources identified by the given name.
      */
@@ -339,7 +367,7 @@ public final class ClassPath {
      * The returned name uses uses slashes ('/') as folder separators and
      * dot ('.') to separate file name and its extension.
      * Note that if the file object is in the classpath subtree, but is not reachable
-     * (it is hidden by some other resource), the resource name is still returned.
+     * (it is hidden by some other resource, or {@link FilteringPathResourceImplementation excluded}), the resource name is still returned.
      * @return Java-style resource name for the given file object (the empty string for the package root itself), or null if not
      * within the classpath
      * @param f FileObject whose resource name is requested
@@ -378,7 +406,7 @@ public final class ClassPath {
 
     /**
      * Finds a root in this ClassPath, that owns the given file. File resources, that
-     * are not reachable (they are hidden by other resources) are still considered
+     * are not reachable (they are hidden by other resources, or {@link FilteringPathResourceImplementation} excluded) are still considered
      * to be part of the classpath and "owned" by one of its roots.
      * <br>
      * <b>Note:</b> This implementation assumes that the FileSystem hosting a classpath root
@@ -399,21 +427,38 @@ public final class ClassPath {
     }
 
     /**
-     * Convenience method, which checks whether a FileObject lies on this
-     * classpath. It is an equivalent of <code>getResourceName(f) != null</code>
+     * Checks whether a FileObject lies on this classpath.
+     * {@link FilteringPathResourceImplementation} is considered.
      * @return true, if the parameter is inside one of the classpath subtrees,
      * false otherwise.
      * @param f the FileObject to check
      */
     public final boolean contains(FileObject f) {
-        return findOwnerRoot(f) != null;
+        FileObject root = findOwnerRoot(f);
+        if (root == null) {
+            return false;
+        }
+        FilteringPathResourceImplementation filter = root2Filter.get(root);
+        if (filter == null) {
+            return true;
+        }
+        String path = FileUtil.getRelativePath(root, f);
+        assert path != null : "could not find " + f + " in " + root;
+        if (f.isFolder()) {
+            path += "/"; // NOI18N
+        }
+        try {
+            return filter.includes(root.getURL(), path);
+        } catch (FileStateInvalidException x) {
+            throw new AssertionError(x);
+        }
     }
 
     /**
      * Determines if the resource is <i>visible</i> in the classpath,
      * that is if the file will be reached when a process attempts to
      * load a resource of that name. It will return false when the resource
-     * is not contained in the classpath.
+     * is not contained in the classpath, or the resource is {@link FilteringPathResourceImplementation excluded}.
      * @param resource the resource whose visibility should be tested
      * @return true, if the resource is contained in the classpath and visible;
      * false otherwise.
@@ -503,17 +548,14 @@ public final class ClassPath {
      * becomes invalid. It's also expected that ClassPath implementations may
      * use other ClassPath entries as default or base for themselves, so Entries
      * may be propagated between ClassPaths.
-     *
-     * <I>Please note:</I>
-     * This class is not intended to be implemented by regular clients. The project
-     * infrastructure and / or java language support modules should implement it
-     * and offer its services to others. <B>Do not implement this class</B>
      */
     public final class Entry {
 
         private URL url;
         private FileObject root;
         private IOException lastError;
+        private FilteringPathResourceImplementation filter;
+
         /**
          * Returns the ClassPath instance, which defines/introduces the Entry.
          * Note that the return value may differ from the ClassPath instance,
@@ -576,10 +618,64 @@ public final class ClassPath {
             return this.url;
         }
 
-        Entry (URL url) {
+        /**
+         * Check whether a file is included in this entry.
+         * @param resource a path relative to @{link #getURL} (must be terminted with <samp>/</samp> if a non-root folder)
+         * @return true if it is {@link FilteringPathResourceImplementation#includes included}
+         * @since org.netbeans.api.java/1 1.13
+         */
+        public boolean includes(String resource) {
+            return filter == null || filter.includes(url, resource);
+        }
+
+        /**
+         * Check whether a file is included in this entry.
+         * @param file a URL beneath @{link #getURL}
+         * @return true if it is {@link FilteringPathResourceImplementation#includes included}
+         * @throws IllegalArgumentException in case the argument is not beneath {@link #getURL}
+         * @since org.netbeans.api.java/1 1.13
+         */
+        public boolean includes(URL file) {
+            if (!file.toExternalForm().startsWith(url.toExternalForm())) {
+                throw new IllegalArgumentException(file + " not in " + url);
+            }
+            URI relative;
+            try {
+                relative = url.toURI().relativize(file.toURI());
+            } catch (URISyntaxException x) {
+                throw new AssertionError(x);
+            }
+            assert !relative.isAbsolute() : "could not locate " + file + " in " + url;
+            return filter == null || filter.includes(url, relative.toString());
+        }
+
+        /**
+         * Check whether a file is included in this entry.
+         * @param file a file inside @{link #getRoot}
+         * @return true if it is {@link FilteringPathResourceImplementation#includes included}
+         * @throws IllegalArgumentException in case the argument is not beneath {@link #getRoot}, or {@link #getRoot} is null
+         * @since org.netbeans.api.java/1 1.13
+         */
+        public boolean includes(FileObject file) {
+            FileObject root = getRoot();
+            if (root == null) {
+                throw new IllegalArgumentException("no root in " + url);
+            }
+            String path = FileUtil.getRelativePath(root, file);
+            if (path == null) {
+                throw new IllegalArgumentException(file + " not in " + root);
+            }
+            if (file.isFolder()) {
+                path += "/"; // NOI18N
+            }
+            return filter == null || filter.includes(url, path);
+        }
+
+        Entry(URL url, FilteringPathResourceImplementation filter) {
             if (url == null)
                 throw new IllegalArgumentException ();
             this.url = url;
+            this.filter = filter;
         }
 
         public String toString() {
@@ -589,7 +685,7 @@ public final class ClassPath {
 
     //-------------------- Implementation details ------------------------//
 
-    private PropertyChangeSupport   propSupport;
+    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     
     
     /**
@@ -672,12 +768,29 @@ public final class ClassPath {
      * Searches for a resource in one or more roots, gives back the index of
      * the first untouched root.
      */
-    private static FileObject findResourceImpl(FileObject[] roots,
+    private FileObject findResourceImpl(FileObject[] roots,
         int[] rootIndex, String[] nameComponents) {
         int ridx;
         FileObject f = null;
         for (ridx = rootIndex[0]; ridx < roots.length && f == null; ridx++) {
             f = findPath(roots[ridx], nameComponents);
+            FilteringPathResourceImplementation filter = root2Filter.get(roots[ridx]);
+            if (filter != null) {
+                try {
+                    if (f != null) {
+                        String path = FileUtil.getRelativePath(roots[ridx], f);
+                        assert path != null;
+                        if (f.isFolder()) {
+                            path += "/"; // NOI18N
+                        }
+                        if (!filter.includes(roots[ridx].getURL(), path)) {
+                            f = null;
+                        }
+                    }
+                } catch (FileStateInvalidException x) {
+                    throw new AssertionError(x);
+                }
+            }
         }
         rootIndex[0] = ridx;
         return f;
@@ -715,20 +828,34 @@ public final class ClassPath {
 
 
     private class SPIListener implements PropertyChangeListener {
+        private Object propIncludesPropagationId;
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() == ClassPath.this.impl && ClassPathImplementation.PROP_RESOURCES.equals(evt.getPropertyName())) {
+            String prop = evt.getPropertyName();
+            if (ClassPathImplementation.PROP_RESOURCES.equals(prop) || PathResourceImplementation.PROP_ROOTS.equals(prop)) {
                 synchronized (ClassPath.this) {
-                    RootsListener rootsListener = ClassPath.this.getRootsListener();
                     if (rootsListener != null) {
                         rootsListener.removeAllRoots ();
                     }
-                    ClassPath.this.entriesCache = null;
-                    ClassPath.this.rootsCache = null;
-                    ClassPath.this.invalidEntries++;
-                    ClassPath.this.invalidRoots++;
+                    entriesCache = null;
+                    rootsCache = null;
+                    invalidEntries++;
+                    invalidRoots++;
                 }
-                ClassPath.this.firePropertyChange (PROP_ENTRIES,null,null);
-                ClassPath.this.firePropertyChange (PROP_ROOTS,null,null);
+                firePropertyChange (PROP_ENTRIES,null,null);
+                firePropertyChange (PROP_ROOTS,null,null);
+            } else if (FilteringPathResourceImplementation.PROP_INCLUDES.equals(prop)) {
+                boolean fire;
+                synchronized (this) {
+                    Object id = evt.getPropagationId();
+                    fire = propIncludesPropagationId == null || !propIncludesPropagationId.equals(id);
+                    propIncludesPropagationId = id;
+                }
+                if (fire) {
+                    firePropertyChange(PROP_INCLUDES, null, null);
+                }
+            }
+            if (ClassPathImplementation.PROP_RESOURCES.equals(prop)) {
+                listenToPRIs();
             }
         }
     }
@@ -809,7 +936,7 @@ public final class ClassPath {
             }
             String path = getPath (fe.getFile());
             if (this.roots.contains(path)) {
-                ClassPath cp = (ClassPath) get ();
+                ClassPath cp = get();
                 if (cp != null) {
                     synchronized (cp) {
                         cp.rootsCache = null;
@@ -834,8 +961,7 @@ public final class ClassPath {
 
         public void run() {
             if (isInitialized()) {
-                FileSystem[] fss = getFileSystems ();
-                for (FileSystem fs : fss) {
+                for (FileSystem fs : getFileSystems()) {
                     if (fs != null) {
                         fs.removeFileChangeListener (this);
                     }                    
@@ -850,14 +976,13 @@ public final class ClassPath {
             String path = getPath (fe.getFile());
             if (path == null)
                 return;
-            ClassPath cp = (ClassPath) get ();
+            ClassPath cp = get();
             if (cp == null) {
                 return;
             }
             boolean fire = false;
             synchronized (cp) {
-                for (Iterator it = this.roots.iterator(); it.hasNext();) {
-                    String rootPath = (String) it.next ();
+                for (String rootPath : roots) {
                     if (rootPath.startsWith (path)) {
                         cp.rootsCache = null;
                         cp.invalidRoots++;

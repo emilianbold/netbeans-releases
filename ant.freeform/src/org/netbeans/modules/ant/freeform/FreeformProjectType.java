@@ -31,7 +31,9 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 public final class FreeformProjectType implements AntBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.ant.freeform";
-    public static final String NS_GENERAL = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
+    public static final String NS_GENERAL_1 = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
+    public static final String NS_GENERAL = org.netbeans.modules.ant.freeform.spi.support.Util.NAMESPACE;
+    public static final String NAME_SHARED = "general-data"; // NOI18N
     private static final String NS_GENERAL_PRIVATE = "http://www.netbeans.org/ns/freeform-project-private/1"; // NOI18N
     
     /** Default constructor for lookup. */
@@ -42,12 +44,12 @@ public final class FreeformProjectType implements AntBasedProjectType {
     }
     
     public String getPrimaryConfigurationDataElementName(boolean shared) {
-        return "general-data"; // NOI18N
+        return NAME_SHARED;
     }
     
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         // No private.xml defined anyway.
-        return shared ? NS_GENERAL : NS_GENERAL_PRIVATE;
+        return shared ? /* old! for FreeformProjectGenerator */ NS_GENERAL_1 : NS_GENERAL_PRIVATE;
     }
     
     public String getType() {

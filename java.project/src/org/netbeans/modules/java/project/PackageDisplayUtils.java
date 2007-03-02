@@ -142,6 +142,7 @@ public final class PackageDisplayUtils {
     public static boolean isEmpty( FileObject fo, boolean recurse ) {            
         FileObject[] kids = fo.getChildren();
         for( int i = 0; i < kids.length; i++ ) {
+            // XXX consider using group.contains() here
             if ( !kids[i].isFolder() && VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
                 return false;
             }  
@@ -162,6 +163,7 @@ public final class PackageDisplayUtils {
         if (!pkg.isFolder()) {
             throw new IllegalArgumentException("Not a folder"); // NOI18N
         }
+        // XXX consider using group.contains() here
         if (!VisibilityQuery.getDefault().isVisible(pkg)) {
             return false;
         }

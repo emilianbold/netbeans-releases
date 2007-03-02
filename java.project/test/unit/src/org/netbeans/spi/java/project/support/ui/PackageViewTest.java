@@ -21,13 +21,16 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.ResourceBundle;
 import javax.swing.Icon;
@@ -822,7 +825,7 @@ public class PackageViewTest extends NbTestCase {
                     assertEquals( "Node should not be leaf", false, nodes[i].isLeaf() );
                 }
                 
-                assertEquals( "Wrong nuber of children. Node: " + nodeNames[i] +".", childCount[i], nodes[i].getChildren().getNodes( true ).length );
+                assertEquals( "Wrong number of children. Node: " + nodeNames[i] +".", childCount[i], nodes[i].getChildren().getNodes( true ).length );
                 
                 
                 DataObject.Container cont = nodes[i].getCookie (DataObject.Container.class);
@@ -952,5 +955,72 @@ public class PackageViewTest extends NbTestCase {
         public void removeChangeListener(ChangeListener l) {}
         
     }
-    
+
+    public void testFilteredViews() throws Exception {
+        final FileObject r = FileUtil.createMemoryFileSystem().getRoot();
+        class Grp implements SourceGroup {
+            public FileObject getRootFolder() {
+                return r;
+            }
+            public String getName() {
+                return "test";
+            }
+            public String getDisplayName() {
+                return "Test";
+            }
+            public Icon getIcon(boolean opened) {
+                return null;
+            }
+            boolean sense = true;
+            public boolean contains(FileObject file) throws IllegalArgumentException {
+                String path = FileUtil.getRelativePath(r, file);
+                if (path == null) {
+                    throw new IllegalArgumentException();
+                }
+                return !path.matches(".+/(" + (sense ? "bad" : "contemporary") + "(/|$)|" + (sense ? "Ugly" : "Pretty") + ".*\\.java$)");
+            }
+            PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+                pcs.addPropertyChangeListener(listener);
+            }
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+                pcs.removePropertyChangeListener(listener);
+            }
+            void nonsense() {
+                sense = !sense;
+                pcs.firePropertyChange(PROP_CONTAINERSHIP, null, null);
+            }
+        };
+        FileUtil.createData(r, "a/good/man/is/hard/to/Find.java");
+        FileUtil.createData(r, "museum/of/contemporary/Art.java");
+        FileUtil.createData(r, "museum/of/bad/Art.java");
+        FileUtil.createData(r, "net/pond/aquafowl/PrettyDuckling.java");
+        FileUtil.createData(r, "net/pond/aquafowl/UglyDuckling.java");
+        Grp g = new Grp();
+        Node n = PackageView.createPackageView(g);
+        assertTree("Test{a.goo.man.is.har.to{Find.java}, m.of.contemporary{Art.java}, n.pon.aquafowl{PrettyDuckling.java}}", n);
+        g.nonsense();
+        assertTree("Test{a.goo.man.is.har.to{Find.java}, m.of.bad{Art.java}, n.pon.aquafowl{UglyDuckling.java}}", n);
+        g = new Grp();
+        n = new TreeRootNode(g);
+        assertTree("Test{a{good{man{is{hard{to{Find.java}}}}}}, museum{of{contemporary{Art.java}}}, net{pond{aquafowl{PrettyDuckling.java}}}}", n);
+        g.nonsense();
+        assertTree("Test{a{good{man{is{hard{to{Find.java}}}}}}, museum{of{bad{Art.java}}}, net{pond{aquafowl{UglyDuckling.java}}}}", n);
+    }
+    private static void assertTree(String expected, Node n) {
+        assertEquals(expected, printTree(n).replace('[', '{').replace(']', '}'));
+    }
+    private static String printTree(Node n) {
+        String name = n.getDisplayName();
+        if (n.isLeaf()) {
+            return name;
+        } else {
+            List<String> kidNames = new ArrayList<String>();
+            for (Node kid : n.getChildren().getNodes(true)) {
+                kidNames.add(printTree(kid));
+            }
+            return name + kidNames;
+        }
+    }
+
 }

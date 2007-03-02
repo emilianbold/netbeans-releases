@@ -117,28 +117,29 @@ public class PackageView {
     
     public static ComboBoxModel createListView(SourceGroup group) {        
         SortedSet<PackageItem> data = new TreeSet<PackageItem>();
-        findNonExcludedPackages( data, group.getRootFolder(), group );
+        findNonExcludedPackages(null, data, group.getRootFolder(), group, false);
         return new DefaultComboBoxModel(data.toArray(new PackageItem[data.size()]));
     }
     
     /** Fills given collection with flattened packages under given folder
      *@param target The collection to be filled
      *@param fo The folder to be scanned
-     *@param group if null the collection will be filled with file objects if 
-     *       non null PackageItems will be created.
-     */    
-    static void findNonExcludedPackages( PackageViewChildren children, FileObject fo ) {
-        ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(PackageView.class, "PackageView.find_packages_progress", FileUtil.getFileDisplayName(fo)));
-        progress.start(1000);
-        findNonExcludedPackages(children, null, fo, null, progress, 0, 1000);
-        progress.finish();
+     * @param group the group to scan
+     * @param createPackageItems if false the collection will be filled with file objects; if
+     *       true PackageItems will be created.
+     * @param showProgress whether to show a progress handle or not
+     */
+    static void findNonExcludedPackages(PackageViewChildren children, Collection<PackageItem> target, FileObject fo, SourceGroup group, boolean showProgress) {
+        if (showProgress) {
+            ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(PackageView.class, "PackageView.find_packages_progress", FileUtil.getFileDisplayName(fo)));
+            progress.start(1000);
+            findNonExcludedPackages(children, target, fo, group, progress, 0, 1000);
+            progress.finish();
+        } else {
+            findNonExcludedPackages(children, target, fo, group, null, 0, 0);
+        }
     }
-    
-    static void findNonExcludedPackages(Collection<PackageItem> target, FileObject fo, SourceGroup group) {
-        findNonExcludedPackages(null, target, fo, group, null, 0, 0);
-    }
-     
-    
+
     private static void findNonExcludedPackages(PackageViewChildren children, Collection<PackageItem> target, FileObject fo, SourceGroup group, ProgressHandle progress, int start, int end) {
         
         assert fo.isFolder() : "Package view only accepts folders"; // NOI18N
@@ -158,7 +159,7 @@ public class PackageView {
         List<FileObject> folders = new ArrayList<FileObject>();
         for (FileObject kid : fo.getChildren()) {
             // XXX could use PackageDisplayUtils.isSignificant here
-            if (VisibilityQuery.getDefault().isVisible(kid)) {
+            if (VisibilityQuery.getDefault().isVisible(kid) && group.contains(kid)) {
                 if (kid.isFolder()) {
                     folders.add(kid);
                     hasSubfolders = true;
@@ -169,7 +170,7 @@ public class PackageView {
             }
         }
         if (hasFiles || !hasSubfolders) {
-            if ( group != null ) {
+            if (target != null) {
                 target.add( new PackageItem(group, fo, !hasFiles ) );
             }
             else {
@@ -230,10 +231,12 @@ public class PackageView {
             super(getOriginalNode(group));
             this.sourceGroup = group;
             JavaProjectSettings.addPropertyChangeListener(WeakListeners.propertyChange(this, JavaProjectSettings.class));
+            group.addPropertyChangeListener(WeakListeners.propertyChange(this, group));
         }
         
         public void propertyChange (PropertyChangeEvent event) {
-            if (JavaProjectSettings.PROP_PACKAGE_VIEW_TYPE.equals(event.getPropertyName())) {
+            String prop = event.getPropertyName();
+            if (JavaProjectSettings.PROP_PACKAGE_VIEW_TYPE.equals(prop) || SourceGroup.PROP_CONTAINERSHIP.equals(prop)) {
                 changeOriginal(getOriginalNode(sourceGroup), true);
             }
         }

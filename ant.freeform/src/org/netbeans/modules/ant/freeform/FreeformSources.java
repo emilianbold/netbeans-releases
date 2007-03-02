@@ -20,7 +20,6 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -66,7 +65,7 @@ final class FreeformSources implements Sources, AntProjectListener {
     
     private Sources initSources() {
         final SourcesHelper h = new SourcesHelper(project.helper(), project.evaluator());
-        Element genldata = project.helper().getPrimaryConfigurationData(true);
+        Element genldata = project.getPrimaryConfigurationData();
         Element foldersE = Util.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
         if (foldersE != null) {
             for (Element folderE : Util.findSubElements(foldersE)) {
@@ -79,11 +78,21 @@ final class FreeformSources implements Sources, AntProjectListener {
                     Element nameE = Util.findElement(folderE, "label", FreeformProjectType.NS_GENERAL); // NOI18N
                     String name = Util.findText(nameE);
                     Element typeE = Util.findElement(folderE, "type", FreeformProjectType.NS_GENERAL); // NOI18N
+                    String includes = null;
+                    Element includesE = Util.findElement(folderE, "includes", FreeformProjectType.NS_GENERAL); // NOI18N
+                    if (includesE != null) {
+                        includes = Util.findText(includesE);
+                    }
+                    String excludes = null;
+                    Element excludesE = Util.findElement(folderE, "excludes", FreeformProjectType.NS_GENERAL); // NOI18N
+                    if (excludesE != null) {
+                        excludes = Util.findText(excludesE);
+                    }
                     if (typeE != null) {
                         String type = Util.findText(typeE);
-                        h.addTypedSourceRoot(location, type, name, null, null);
+                        h.addTypedSourceRoot(location, includes, excludes, type, name, null, null);
                     } else {
-                        h.addPrincipalSourceRoot(location, name, null, null);
+                        h.addPrincipalSourceRoot(location, includes, excludes, name, null, null);
                     }
                 }
             }

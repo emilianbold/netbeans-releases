@@ -76,7 +76,7 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
         }
         PropertyProvider preprovider = project.helper().getStockPropertyPreprovider();
         List<PropertyProvider> defs = new ArrayList<PropertyProvider>();
-        Element genldata = project.helper().getPrimaryConfigurationData(true);
+        Element genldata = project.getPrimaryConfigurationData();
         Element properties = Util.findElement(genldata, "properties", FreeformProjectType.NS_GENERAL); // NOI18N
         if (properties != null) {
             for (Element e : Util.findSubElements(properties)) {

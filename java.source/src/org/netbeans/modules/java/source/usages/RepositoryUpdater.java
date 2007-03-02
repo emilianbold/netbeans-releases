@@ -59,6 +59,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TooManyListenersException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -140,16 +141,21 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {
-        this.delay = new Delay();
-        this.cpImpl = GlobalSourcePath.getDefault();
-        this.cp = ClassPathFactory.createClassPath (this.cpImpl.getSourcePath());
-        this.cp.addPropertyChangeListener(this);
-        this.ucp = ClassPathFactory.createClassPath (this.cpImpl.getUnknownSourcePath());
-        this.binCp = ClassPathFactory.createClassPath(this.cpImpl.getBinaryPath());
-        this.registerFileSystemListener();
-        this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
-        this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
-        submitBatch();
+        try {
+            this.delay = new Delay();
+            this.cpImpl = GlobalSourcePath.getDefault();
+            this.cpImpl.setExcludesListener (this);
+            this.cp = ClassPathFactory.createClassPath (this.cpImpl.getSourcePath());
+            this.cp.addPropertyChangeListener(this);
+            this.ucp = ClassPathFactory.createClassPath (this.cpImpl.getUnknownSourcePath());
+            this.binCp = ClassPathFactory.createClassPath(this.cpImpl.getBinaryPath());
+            this.registerFileSystemListener();
+            this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
+            this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
+            submitBatch();
+        } catch (TooManyListenersException e) {
+            throw new IllegalStateException ();
+        }
     }
     
     public ClassPath getScannedSources () {
@@ -169,6 +175,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public void propertyChange(PropertyChangeEvent evt) {
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             submitBatch();
+        }
+        else if (GlobalSourcePath.PROP_INCLUDES.equals(evt.getPropertyName())) {            
+            ClassPath changedCp = (ClassPath) evt.getNewValue();
+            assert changedCp != null;
+            for (ClassPath.Entry e : changedCp.entries()) {
+                URL root = e.getURL();
+                scheduleCompilation(root,root, true);
+            }
         }
     }
     
@@ -613,9 +627,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private List<URL> state;
         private Set<URL> oldRoots;
         private Set<URL> oldBinaries;
-        private Set<URL> newBinaries;        
+        private Set<URL> newBinaries;                
         private ProgressHandle handle;
-        private final Set<URI> dirtyCrossFiles;
+        private final Set<URI> dirtyCrossFiles;        
+        private final Set<URL> ignoreExcludes;
         private final AtomicBoolean canceled;
         
         public CompileWorker (Work work ) {
@@ -623,6 +638,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             this.work = work;
             this.canceled = new AtomicBoolean (false);
             this.dirtyCrossFiles = new HashSet<URI>();
+            this.ignoreExcludes = new HashSet<URL>();
         }
         
         public void cancel () {            
@@ -642,7 +658,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             try {
                                 final MultiRootsWork mw = (MultiRootsWork) work;
                                 final List<URL> roots = mw.getRoots();
-                                final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
+                                final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();                                
                                 for (URL root: roots) {
                                     findDependencies (root, new Stack<URL>(), depGraph, null, false);
                                 }
@@ -765,7 +781,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 final URL file = sw.getFile();
                                 final URL root = sw.getRoot ();
                                 if (sw.isFolder()) {
-                                    updateFolder (file, root, false, handle);
+                                    handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Updating"));
+                                    handle.start();
+                                    try {
+                                        updateFolder (file, root, false, handle);
+                                    } finally {
+                                        handle.finish();
+                                    }
                                 }
                                 else {
                                     updateFile (file,root);
@@ -836,7 +858,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         final URL[] sourceRoots = RepositoryUpdater.this.cpImpl.getSourceRootForBinaryRoot(url, pathToResolve, false);
                         if (sourceRoots != null) {
                             for (URL sourceRoot : sourceRoots) {
-                                if (!cycleDetector.contains(sourceRoot)) {
+                                if (sourceRoot.equals (rootURL)) {
+                                    this.ignoreExcludes.add (rootURL);
+                                }
+                                else if (!cycleDetector.contains(sourceRoot)) {
                                     deps.add (sourceRoot);
                                     findDependencies(sourceRoot, cycleDetector,depGraph, binaries, useInitialState);
                                 }
@@ -897,8 +922,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 try {
                     final URL rootURL = it.previous();
                     it.remove();                                                                                
-                    if (!oldRoots.remove(rootURL)) {                        
-                        long startT = System.currentTimeMillis();
+                    if (!oldRoots.remove(rootURL) && !RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
+                        long startT = System.currentTimeMillis();                        
                         updateFolder (rootURL,rootURL, false, handle);
                         long endT = System.currentTimeMillis();
                         if (PERF_TEST) {
@@ -939,14 +964,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (sourcePath == null || bootPath == null || compilePath == null) {
                 LOGGER.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
                 return;
-            }
-            if (!clean && isInitialCompilation) {
-                //Initial compilation  debug messages
-                if (RepositoryUpdater.this.scannedRoots.contains(root)) {
-                    return;
-                }                
-                LOGGER.fine("Scanning Root: " + FileUtil.getFileDisplayName(rootFo));    //NOI18N
-            }
+            }            
             try {                                
                 final File rootFile = FileUtil.toFile(rootFo);
                 final File folderFile = isInitialCompilation ? rootFile : FileUtil.normalizeFile(new File (URI.create(folder.toExternalForm())));
@@ -964,8 +982,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         filters.put(root, filter);
                     }
-                }
-                final ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create(CacheClassPath.forClassPath(bootPath),CacheClassPath.forClassPath(compilePath),sourcePath,filter,true);
+                }                
                 List<JavaFileObject> toCompile = new LinkedList<JavaFileObject>();
                 final File classCache = Index.getClassFolder(rootFile);
                 final Map <String,List<File>> resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile,folderFile),true);
@@ -976,38 +993,49 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 assert sa != null;
                 boolean invalidIndex = isInitialCompilation && !sa.isValid();
                 Set<File> rs = new HashSet<File> ();
+                ClassPath.Entry entry = null;
+                final ClasspathInfo cpInfo;
+                if (!this.ignoreExcludes.contains(root)) {
+                    entry = getClassPathEntry(sourcePath, root);
+                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(CacheClassPath.forClassPath(bootPath),CacheClassPath.forClassPath(compilePath),sourcePath,filter,true,false);
+                }
+                else {
+                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(CacheClassPath.forClassPath(bootPath),CacheClassPath.forClassPath(compilePath),sourcePath,filter,true,true);
+                }                
                 for (File child : children) {       
-                    if (invalidIndex || clean || dirtyCrossFiles.remove(child.toURI())) {
-                        toCompile.add (FileObjects.fileFileObject(child, rootFile, filter));
-                    }
-                    else {
-                        String offset = FileObjects.getRelativePath(rootFile,child);
-                        final int index = offset.lastIndexOf('.');  //NOI18N
-                        if (index > -1) {
-                            offset = offset.substring(0,index);
+                    String offset = FileObjects.getRelativePath(rootFile,child);                    
+                    if (entry == null || entry.includes(offset.replace(File.separatorChar,'/'))) {                                                
+                        if (invalidIndex || clean || dirtyCrossFiles.remove(child.toURI())) {
+                            toCompile.add (FileObjects.fileFileObject(child, rootFile, filter));
                         }
-                        List<File> files = resources.remove(offset);
-                        if  (files==null) {
-                            toCompile.add(FileObjects.fileFileObject(child, rootFile, filter));
-                        } else {
-                            boolean rsf = files.get(0).getName().endsWith(FileObjects.RS);
-                            if (files.get(0).lastModified() < child.lastModified()) {
-                                toCompile.add(FileObjects.fileFileObject(child, rootFile, filter));
-                                for (File toDelete : files) {                            
-                                    toDelete.delete();
-                                    if (rsf) {                                    
-                                        rsf = false;
-                                    }
-                                    else {
-                                        String className = FileObjects.getBinaryName(toDelete,classCache);
-                                        sa.delete(className);
-                                    }                            
-                                }
+                        else {
+                            final int index = offset.lastIndexOf('.');  //NOI18N
+                            if (index > -1) {
+                                offset = offset.substring(0,index);
                             }
-                            else if (rsf) {
-                                files.remove(0);
-                                rs.addAll(files);
-                            }                        
+                            List<File> files = resources.remove(offset);                        
+                            if  (files==null) {
+                                toCompile.add(FileObjects.fileFileObject(child, rootFile, filter));
+                            } else {
+                                boolean rsf = files.get(0).getName().endsWith(FileObjects.RS);
+                                if (files.get(0).lastModified() < child.lastModified()) {
+                                    toCompile.add(FileObjects.fileFileObject(child, rootFile, filter));
+                                    for (File toDelete : files) {                            
+                                        toDelete.delete();
+                                        if (rsf) {                                    
+                                            rsf = false;
+                                        }
+                                        else {
+                                            String className = FileObjects.getBinaryName(toDelete,classCache);
+                                            sa.delete(className);
+                                        }                            
+                                    }
+                                }
+                                else if (rsf) {
+                                    files.remove(0);
+                                    rs.addAll(files);
+                                }                        
+                            }
                         }
                     }
                 }
@@ -1048,7 +1076,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (uqImpl != null) {
                 uqImpl.setDirty(null);
                 final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
-                ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (fo, filter, true);
+                ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (fo, filter, true, false);
                 final File rootFile = FileUtil.normalizeFile(new File (URI.create(root.toExternalForm())));
                 final File fileFile = FileUtil.toFile(fo);
                 final File classCache = Index.getClassFolder (rootFile);
@@ -1073,22 +1101,24 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 else {
                     sa.delete(FileObjects.convertFolder2Package(offset, '/'));  //NOI18N
                 }
-                assert fo != null;
-                String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
-                final CompilerListener listener = new CompilerListener ();
-                final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);                
-                JavaFileObject active = FileObjects.fileFileObject(fileFile, rootFile, filter);
-                JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
-                jt.setTaskListener(listener);
-                Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
-                jt.enter();            
-                jt.analyze ();
-                dumpClasses(listener.getEnteredTypes(), fm, root.toExternalForm(), null,
-                    com.sun.tools.javac.code.Types.instance(jt.getContext()),
-                    com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
-                sa.analyse (trees, jt, fm, active);
-                listener.cleanDiagnostics();
-                sa.store();
+                ClassPath.Entry entry = getClassPathEntry (cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),root);
+                if (entry == null || entry.includes(fo)) {
+                    String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
+                    final CompilerListener listener = new CompilerListener ();
+                    final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);                
+                    JavaFileObject active = FileObjects.fileFileObject(fileFile, rootFile, filter);
+                    JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
+                    jt.setTaskListener(listener);
+                    Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
+                    jt.enter();            
+                    jt.analyze ();
+                    dumpClasses(listener.getEnteredTypes(), fm, root.toExternalForm(), null,
+                        com.sun.tools.javac.code.Types.instance(jt.getContext()),
+                        com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
+                    sa.analyse (trees, jt, fm, active);
+                    listener.cleanDiagnostics();
+                    sa.store();
+                }
             }
         }
         
@@ -1155,7 +1185,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             CachingArchiveProvider.getDefault().clearArchive(root);                       
             final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();
             ba.analyse(root, handle);
-        }
+        }                
     }        
     
     static class LazyFileList implements Iterable<File> {
@@ -1721,6 +1751,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         } finally {
             in.close();
         }
+    }
+    
+    
+    private static ClassPath.Entry getClassPathEntry (final ClassPath cp, final URL root) {
+        assert cp != null;
+        assert root != null;
+        for (ClassPath.Entry e : cp.entries()) {
+            if (root.equals(e.getURL())) {
+                return e;
+            }
+        }
+        return null;
     }
     
     

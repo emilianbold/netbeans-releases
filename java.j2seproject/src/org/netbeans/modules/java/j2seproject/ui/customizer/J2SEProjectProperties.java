@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -50,6 +48,7 @@ import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -107,7 +106,10 @@ public class J2SEProjectProperties {
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
     public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
-    
+    /** @since org.netbeans.modules.java.j2seproject/1 1.11 */
+    public static final String INCLUDES = "includes"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.11 */
+    public static final String EXCLUDES = "excludes"; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N
@@ -213,7 +215,6 @@ public class J2SEProjectProperties {
 
     // Private fields ----------------------------------------------------------    
     private J2SEProject project;
-    private HashMap properties;    
     private UpdateHelper updateHelper;
     private PropertyEvaluator evaluator;
     private ReferenceHelper refHelper;
@@ -222,7 +223,9 @@ public class J2SEProjectProperties {
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
     
-    private Properties additionalProperties;    
+    private Map<String,String> additionalProperties;
+
+    private String includes, excludes;
     
     J2SEProject getProject() {
         return project;
@@ -240,7 +243,7 @@ public class J2SEProjectProperties {
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         
-        additionalProperties = new Properties();
+        additionalProperties = new HashMap<String,String>();
         
         init(); // Load known properties        
     }
@@ -254,6 +257,14 @@ public class J2SEProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getTestSourceRoots() );        
+        includes = evaluator.getProperty(INCLUDES);
+        if (includes == null) {
+            includes = "**"; // NOI18N
+        }
+        excludes = evaluator.getProperty(EXCLUDES);
+        if (excludes == null) {
+            excludes = ""; // NOI18N
+        }
                 
         // CustomizerLibraries
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
@@ -333,9 +344,9 @@ public class J2SEProjectProperties {
     public void save() {
         try {                        
             // Store properties 
-            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                public Object run() throws IOException {
+                public Boolean run() throws IOException {
                     if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                         J2SEProject.class.getResource("resources/build-impl.xsl"), //NOI18N
                         findJaxWsFileObject(projectDir))
@@ -348,15 +359,15 @@ public class J2SEProjectProperties {
                             }
                         }
                         else {
-                            return Boolean.FALSE;
+                            return false;
                         }
                     }
                     storeProperties();
-                    return Boolean.TRUE;
+                    return true;
                 }
             });
             // and save the project
-            if (result == Boolean.TRUE) {
+            if (result) {
                 ProjectManager.getDefault().saveProject(project);
             }
         } 
@@ -432,28 +443,15 @@ public class J2SEProjectProperties {
             projectProperties.remove( NO_DEPENDENCIES ); // Remove the property completely if not set
         }
 
-        storeAdditionalProperties(projectProperties);
+        projectProperties.putAll(additionalProperties);
+
+        projectProperties.put(INCLUDES, includes);
+        projectProperties.put(EXCLUDES, excludes);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
         
-    }
-  
-    private void storeAdditionalProperties(EditableProperties projectProperties) {
-        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            String key = (String) i.next();
-            projectProperties.put(key, (String) additionalProperties.get(key));
-        }
-    }
-    
-    private static String getDocumentText( Document document ) {
-        try {
-            return document.getText( 0, document.getLength() );
-        }
-        catch( BadLocationException e ) {
-            return ""; // NOI18N
-        }
     }
     
     /** Finds out what are new and removed project dependencies and 
@@ -464,10 +462,10 @@ public class J2SEProjectProperties {
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_CLASSPATH ) ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ) ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( RUN_CLASSPATH ) ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( RUN_TEST_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( JAVAC_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( JAVAC_TEST_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( RUN_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( RUN_TEST_CLASSPATH ) ) );
                    
         Set newArtifacts = new HashSet();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL ) );
@@ -534,7 +532,7 @@ public class J2SEProjectProperties {
     
     /* This is used by CustomizerWSServiceHost */
     public void putAdditionalProperty(String propertyName, String propertyValue) {
-        additionalProperties.setProperty(propertyName, propertyValue);
+        additionalProperties.put(propertyName, propertyValue);
     }
     
     private static boolean showModifiedMessage (String title) {
@@ -697,4 +695,21 @@ public class J2SEProjectProperties {
         return projectDir.getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
     }
     
+    void loadIncludesExcludes(IncludeExcludeVisualizer v) {
+        Set<File> roots = new HashSet<File>();
+        for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
+            for (Object row : model.getDataVector()) {
+                roots.add((File) ((Vector) row).elementAt(0));
+            }
+        }
+        v.setRoots(roots.toArray(new File[roots.size()]));
+        v.setIncludePattern(includes);
+        v.setExcludePattern(excludes);
+    }
+
+    void storeIncludesExcludes(IncludeExcludeVisualizer v) {
+        includes = v.getIncludePattern();
+        excludes = v.getExcludePattern();
+    }
+
 }

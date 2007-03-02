@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.ant.freeform.spi.support;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
@@ -27,7 +30,11 @@ import org.netbeans.modules.ant.freeform.TestBase;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * @author David Konecny
@@ -74,6 +81,77 @@ public class UtilTest extends TestBase {
         assertNull("no default ant script", Util.getDefaultAntScript(extsrcroot));
         assertEquals("found build.xml", simple.getProjectDirectory().getFileObject("build.xml"), Util.getDefaultAntScript(simple));
         assertEquals("found build.xml", extbuildscript.getProjectDirectory().getFileObject("scripts/build.xml"), Util.getDefaultAntScript(extbuildscript));
+    }
+
+    public void testFormatUpgrade() throws Exception {
+        AntProjectHelper helper = FreeformProjectGenerator.createProject(getWorkDir(), getWorkDir(), "prj", null);
+        Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        FileObject pxml = helper.resolveFileObject(AntProjectHelper.PROJECT_XML_PATH);
+        // To simplify test, overwrite project.xml with a basic version w/o <properties>, <view>, or <comment>.
+        Element data = helper.getPrimaryConfigurationData(true);
+        data = data.getOwnerDocument().createElementNS(data.getNamespaceURI(), data.getLocalName());
+        data.appendChild(data.getOwnerDocument().createElementNS(data.getNamespaceURI(), "name")).appendChild(data.getOwnerDocument().createTextNode("prj"));
+        helper.putPrimaryConfigurationData(data, true);
+        ProjectManager.getDefault().saveProject(p);
+        // Initial check.
+        assertEquals("<project/p1><type.../><configuration><general-data/ff1><name>prj</></></></>", xmlSimplified(pxml));
+        data = Util.getPrimaryConfigurationData(helper);
+        assertEquals("<general-data/ff2><name>prj</></>", xmlSimplified(data));
+        // Save something in a /1-compatible format.
+        Element folder = (Element) data.appendChild(data.getOwnerDocument().createElementNS(data.getNamespaceURI(), "folders")).
+                appendChild(data.getOwnerDocument().createElementNS(data.getNamespaceURI(), "source-folder"));
+        folder.appendChild(data.getOwnerDocument().createElementNS(data.getNamespaceURI(), "label")).appendChild(data.getOwnerDocument().createTextNode("Sources"));
+        folder.appendChild(data.getOwnerDocument().createElementNS(data.getNamespaceURI(), "location")).appendChild(data.getOwnerDocument().createTextNode("src"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("<project/p1><type.../><configuration><general-data/ff1><name>prj</>" +
+                "<folders><source-folder><label>Sources</><location>src</></></></></></>", xmlSimplified(pxml));
+        data = Util.getPrimaryConfigurationData(helper);
+        assertEquals("<general-data/ff2><name>prj</><folders><source-folder><label>Sources</><location>src</></></></>", xmlSimplified(data));
+        // Save something that forces use of the /2 format.
+        data.getElementsByTagName("source-folder").item(0).
+                appendChild(data.getOwnerDocument().createElementNS(data.getNamespaceURI(), "excludes")).
+                appendChild(data.getOwnerDocument().createTextNode("junk/"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("<project/p1><type.../><configuration><general-data/ff1><name>prj</></><general-data/ff2><name>prj</>" +
+                "<folders><source-folder><label>Sources</><location>src</><excludes>junk/</></></></></></>", xmlSimplified(pxml));
+        data = Util.getPrimaryConfigurationData(helper);
+        assertEquals("<general-data/ff2><name>prj</><folders><source-folder><label>Sources</><location>src</><excludes>junk/</></></></>", xmlSimplified(data));
+        // Save something old again.
+        Element excludes = (Element) data.getElementsByTagName("excludes").item(0);
+        excludes.getParentNode().removeChild(excludes);
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("<project/p1><type.../><configuration><general-data/ff1><name>prj</>" +
+                "<folders><source-folder><label>Sources</><location>src</></></></></></>", xmlSimplified(pxml));
+        data = Util.getPrimaryConfigurationData(helper);
+        assertEquals("<general-data/ff2><name>prj</><folders><source-folder><label>Sources</><location>src</></></></>", xmlSimplified(data));
+    }
+    private static String xmlSimplified(Element e) throws Exception {
+        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        doc.appendChild(doc.importNode(e, true));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLUtil.write(doc, baos, "UTF-8");
+        return xmlSimplified(baos.toString("UTF-8"));
+    }
+    private static String xmlSimplified(FileObject f) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        InputStream is = f.getInputStream();
+        try {
+            FileUtil.copy(is, baos);
+        } finally {
+            is.close();
+        }
+        return xmlSimplified(baos.toString("UTF-8"));
+    }
+    private static String xmlSimplified(String s) throws Exception {
+        return s.replaceFirst("^<\\?xml.+\\?>", "").
+                replaceAll("(\r|\n|\r\n) *", "").
+                replace(" xmlns=\"http://www.netbeans.org/ns/project/1\"", "/p1").
+                replaceAll(" xmlns=\"http://www\\.netbeans\\.org/ns/freeform-project/(\\d+)\"", "/ff$1").
+                replaceAll("</[^>]+>", "</>").
+                replace("<type>org.netbeans.modules.ant.freeform</>", "<type.../>");
     }
     
 }

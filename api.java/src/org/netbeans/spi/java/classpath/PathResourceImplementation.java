@@ -18,7 +18,6 @@
  */
 package org.netbeans.spi.java.classpath;
 
-
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 
@@ -43,7 +42,10 @@ public interface PathResourceImplementation {
      * If the PathResourceImplementation represents leaf resource, it returns null.
      * The ClassPathImplementation is live and can be used for path resource content
      * modification.
-     * @return ClassPath in case of composite resource null for leaf resource
+     * <p><strong>Semi-deprecated.</strong> There was never a real reason for this method to exist.
+     * If implementing <code>PathResourceImplementation</code> you can simply return null;
+     * it is unlikely anyone will call this method anyway.
+     * @return classpath handle in case of composite resource; null for leaf resource
      */
     public ClassPathImplementation getContent();
 
