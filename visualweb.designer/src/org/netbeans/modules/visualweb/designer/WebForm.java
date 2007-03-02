@@ -21,6 +21,7 @@ package org.netbeans.modules.visualweb.designer;
 import java.awt.Image;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.CoordinateTranslator;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.InlineEditorSupport;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
@@ -2038,6 +2039,18 @@ public class WebForm implements Designer {
 
     boolean canPasteTransferable(Transferable trans) {
         return htmlDomProvider.canPasteTransferable(trans);
+    }
+
+    void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+    Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+        htmlDomProvider.importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, coordinateTranslator);
+    }
+
+    void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+    Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, CoordinateTranslator coordinateTranslator, int dropAction) {
+        htmlDomProvider.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, coordinateTranslator, dropAction);
     }
     
     

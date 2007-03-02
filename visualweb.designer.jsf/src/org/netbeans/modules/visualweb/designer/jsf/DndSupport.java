@@ -474,6 +474,18 @@ class DndSupport {
         jsfForm.fireClearDropMatch();
     }
 
+    void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+        getFacesModel().getDnDSupport().importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
+    }
+
+    void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
+            Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
+        getFacesModel().getDnDSupport().importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
+    }
+
     
     // XXX
     private static class CoordinateTranslatorImpl implements FacesDnDSupport.CoordinateTranslator {

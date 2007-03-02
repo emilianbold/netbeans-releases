@@ -403,9 +403,11 @@ public class DndHandler /*extends TransferHandler*/ {
         Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
-        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
-                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
-        doImportDataDelayed(comp, t, transferData, location, coordinateTranslator);
+//        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
+//                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
+//        doImportDataDelayed(comp, t, transferData, location, coordinateTranslator);
+        webform.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
+                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement , coordinateTranslator, dropAction);
         
         dropSize = null;
         insertPos = Position.NONE;
@@ -760,9 +762,10 @@ public class DndHandler /*extends TransferHandler*/ {
         Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
-        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
-                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
-        importString(string, location, coordinateTranslator);
+//        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
+//                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
+//        importString(string, location, coordinateTranslator);
+        webform.importString(string, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, coordinateTranslator);
     }
     
     void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
