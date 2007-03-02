@@ -32,10 +32,10 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import com.sun.rave.propertyeditors.binding.data.AddDataProviderDialog;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import org.netbeans.modules.visualweb.propertyeditors.binding.data.AddDataProviderDialog;
 
 /**
  * Table bind to data Customizer panel

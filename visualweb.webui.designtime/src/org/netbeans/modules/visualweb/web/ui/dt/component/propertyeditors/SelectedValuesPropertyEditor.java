@@ -20,8 +20,6 @@ package org.netbeans.modules.visualweb.web.ui.dt.component.propertyeditors;
 
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
-import com.sun.rave.propertyeditors.TabularPropertyEditor;
-import com.sun.rave.propertyeditors.TabularPropertyModel;
 import com.sun.rave.propertyeditors.util.JavaInitializer;
 import org.netbeans.modules.visualweb.web.ui.dt.component.util.DesignMessageUtil;
 import com.sun.rave.web.ui.model.MultipleSelectOptionsList;
@@ -29,6 +27,8 @@ import com.sun.rave.web.ui.model.Option;
 import java.util.ArrayList;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import org.netbeans.modules.visualweb.propertyeditors.TabularPropertyEditor;
+import org.netbeans.modules.visualweb.propertyeditors.TabularPropertyModel;
 
 /**
  * An editor for properties that specify the options that are "selected" among

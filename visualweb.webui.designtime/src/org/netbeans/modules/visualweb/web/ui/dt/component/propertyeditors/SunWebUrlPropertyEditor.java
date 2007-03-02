@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.visualweb.web.ui.dt.component.propertyeditors;
 
-import com.sun.rave.propertyeditors.UrlPropertyEditor;
+import org.netbeans.modules.visualweb.propertyeditors.UrlPropertyEditor;
 import com.sun.rave.web.ui.component.Anchor;
 import javax.faces.component.UIComponent;
 

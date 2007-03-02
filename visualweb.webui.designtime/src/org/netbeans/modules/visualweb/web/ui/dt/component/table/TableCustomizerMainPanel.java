@@ -47,12 +47,12 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import com.sun.rave.propertyeditors.binding.data.AddDataProviderDialog;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.visualweb.propertyeditors.binding.data.AddDataProviderDialog;
 
 /**
  * Main Panel of the Table Customizer

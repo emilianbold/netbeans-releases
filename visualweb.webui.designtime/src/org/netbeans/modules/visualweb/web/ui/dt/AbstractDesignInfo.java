@@ -29,7 +29,6 @@ import com.sun.rave.designtime.faces.ResolveResult;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.faces.FacesDesignContext;
-import com.sun.rave.propertyeditors.binding.data.DataBindingHelper;
 import com.sun.data.provider.FieldKey;
 import com.sun.rave.designtime.faces.FacesDesignProperty;
 import org.netbeans.modules.visualweb.web.ui.dt.component.FormDesignInfo;
@@ -46,7 +45,6 @@ import com.sun.rave.web.ui.component.RbCbSelector;
 import com.sun.rave.web.ui.component.StaticText;
 import org.netbeans.modules.visualweb.web.ui.dt.component.customizers.AutoSubmitOnChangeAction;
 import org.netbeans.modules.visualweb.web.ui.dt.component.customizers.OptionsListCustomizerAction;
-import org.netbeans.modules.visualweb.web.ui.dt.component.util.DesignMessageUtil;
 import com.sun.rave.web.ui.model.DefaultOptionsList;
 import com.sun.rave.web.ui.component.BreadcrumbsBase;
 import com.sun.rave.web.ui.component.ButtonBase;
@@ -69,9 +67,7 @@ import java.util.Calendar;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.faces.application.Application;
 import javax.faces.component.ActionSource;
@@ -89,6 +85,7 @@ import org.w3c.dom.Element;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.visualweb.propertyeditors.binding.data.DataBindingHelper;
 
 /**
  * <p>Convenience base class for <code>DesignInfo</code> implementations

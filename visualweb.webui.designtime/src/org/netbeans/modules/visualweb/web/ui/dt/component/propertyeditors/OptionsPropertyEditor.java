@@ -18,13 +18,13 @@
  */
 package org.netbeans.modules.visualweb.web.ui.dt.component.propertyeditors;
 
-import com.sun.rave.propertyeditors.TabularPropertyEditor;
-import com.sun.rave.propertyeditors.TabularPropertyModel;
 import com.sun.rave.propertyeditors.util.JavaInitializer;
 import org.netbeans.modules.visualweb.web.ui.dt.component.util.DesignMessageUtil;
 import com.sun.rave.web.ui.model.Option;
 import java.util.ArrayList;
 import javax.swing.event.TableModelListener;
+import org.netbeans.modules.visualweb.propertyeditors.TabularPropertyEditor;
+import org.netbeans.modules.visualweb.propertyeditors.TabularPropertyModel;
 
 /**
  * An editor for properties that take lists of options, such as the
