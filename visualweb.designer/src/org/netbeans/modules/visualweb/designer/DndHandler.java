@@ -382,11 +382,29 @@ public class DndHandler /*extends TransferHandler*/ {
 //            location = null;
 //        }
         
-        HtmlDomProvider.Location location = computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
         
 //        HtmlDomProvider.CoordinateTranslator coordinateTranslator = GridHandler.getInstance();
         HtmlDomProvider.CoordinateTranslator coordinateTranslator = webform.getGridHandler();
+  
+//        HtmlDomProvider.Location location = computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
+        Point canvasPos = getDropPoint();
+        Position documentPos = insertPos;
+        Position computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
+        Node documentPosNode = computedDocumentPos.getNode();
+        int documentPosOffset = computedDocumentPos.getOffset();
+
+//        CssBox box = computeDroppeeCssBox(canvasPos);
+        CssBox box = canvasPos == null ? null : ModelViewMapper.findBox(webform.getPane().getPageBox(), canvasPos.x, canvasPos.y);
+        Element droppeeElement = box == null ? null : box.getElement();
+//        DesignBean droppeeBean = box == null ? null : getDroppee(box);
+        Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);
+        boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
+//        DesignBean defaultParentBean = webform.getDefaultParentBean();
+        Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
+//        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
+        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
+                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
         doImportDataDelayed(comp, t, transferData, location, coordinateTranslator);
         
         dropSize = null;
@@ -724,8 +742,26 @@ public class DndHandler /*extends TransferHandler*/ {
         setDropPoint(point);
         //setInsertPosition(getPasteMarkupPosition());
 
-        HtmlDomProvider.Location location =
-            computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
+//        HtmlDomProvider.Location location =
+//            computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
+        Point canvasPos = getDropPoint();
+        Position documentPos = insertPos;
+        Position computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
+        Node documentPosNode = computedDocumentPos.getNode();
+        int documentPosOffset = computedDocumentPos.getOffset();
+
+//        CssBox box = computeDroppeeCssBox(canvasPos);
+        CssBox box = canvasPos == null ? null : ModelViewMapper.findBox(webform.getPane().getPageBox(), canvasPos.x, canvasPos.y);
+        Element droppeeElement = box == null ? null : box.getElement();
+//        DesignBean droppeeBean = box == null ? null : getDroppee(box);
+        Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);
+        boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
+//        DesignBean defaultParentBean = webform.getDefaultParentBean();
+        Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
+//        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
+        
+        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
+                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
         importString(string, location, coordinateTranslator);
     }
     
@@ -1224,30 +1260,30 @@ public class DndHandler /*extends TransferHandler*/ {
         }
     }
     
-    private HtmlDomProvider.Location computeLocationForPositions(
-            int where,
-            String facet,
-            Point canvasPos,
-            Position documentPos,
-            boolean split
-    ) {
-//        return doComputePositions(bean, where, facet, canvasPos, documentPosNode, documentPosOffset, split, getDropSize(), isGrid, droppeeElement, droppeeBean, webform.getModel());
-        Position computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
-        Node documentPosNode = computedDocumentPos.getNode();
-        int documentPosOffset = computedDocumentPos.getOffset();
-
-//        CssBox box = computeDroppeeCssBox(canvasPos);
-        CssBox box = canvasPos == null ? null : ModelViewMapper.findBox(webform.getPane().getPageBox(), canvasPos.x, canvasPos.y);
-        Element droppeeElement = box == null ? null : box.getElement();
-//        DesignBean droppeeBean = box == null ? null : getDroppee(box);
-        Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);
-        boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
-//        DesignBean defaultParentBean = webform.getDefaultParentBean();
-        Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
-//        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
-        return WebForm.getHtmlDomProviderService().computeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
-                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
-    }
+//    private HtmlDomProvider.Location computeLocationForPositions(
+//            int where,
+//            String facet,
+//            Point canvasPos,
+//            Position documentPos,
+//            boolean split
+//    ) {
+////        return doComputePositions(bean, where, facet, canvasPos, documentPosNode, documentPosOffset, split, getDropSize(), isGrid, droppeeElement, droppeeBean, webform.getModel());
+//        Position computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
+//        Node documentPosNode = computedDocumentPos.getNode();
+//        int documentPosOffset = computedDocumentPos.getOffset();
+//
+////        CssBox box = computeDroppeeCssBox(canvasPos);
+//        CssBox box = canvasPos == null ? null : ModelViewMapper.findBox(webform.getPane().getPageBox(), canvasPos.x, canvasPos.y);
+//        Element droppeeElement = box == null ? null : box.getElement();
+////        DesignBean droppeeBean = box == null ? null : getDroppee(box);
+//        Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);
+//        boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
+////        DesignBean defaultParentBean = webform.getDefaultParentBean();
+//        Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
+////        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
+//        return WebForm.getHtmlDomProviderService().computeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
+//                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
+//    }
     
 //    private static HtmlDomProvider.Location doComputeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset,
 //    Dimension dropSize, boolean isGrid, Element droppeeElement, DesignBean droppeeBean, /*WebForm webform*/DesignBean defaultParentBean) {
