@@ -188,9 +188,9 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
 
     private void onCommitMessageChanged() {
         if (taMessage.getText().trim().length() == 0) {
-            messageErrorLabel.setText("Warning: Commit message is empty");
+            messageErrorLabel.setText(NbBundle.getMessage(CommitSettings.class,"MSG_CommitForm_MessageEmpty"));
         } else {
-            messageErrorLabel.setText("");
+            messageErrorLabel.setText("");  // NOI18N
         }
     }
     
@@ -198,15 +198,15 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         CommitFile [] files = getCommitFiles();
         for (CommitFile commitFile : files) {
             File file = commitFile.getNode().getFile();
-            File templateFile = new File(file.getParentFile(), CvsVersioningSystem.FILENAME_CVS + "/Template");
+            File templateFile = new File(file.getParentFile(), CvsVersioningSystem.FILENAME_CVS + "/Template");  // NOI18N
             if (templateFile.canRead()) {
                 StringWriter sw = new StringWriter();
                 try {
                     Utils.copyStreamsCloseAll(sw, new FileReader(templateFile));
                     String message = sw.toString();
                     if (message.trim().length() == 0) {
-                        NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_Empty"),
-                                                                   NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_Title"),
+                        NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_Empty"),  // NOI18N
+                                                                   NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_Title"),  // NOI18N
                                                                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE, null, NotifyDescriptor.NO_OPTION);
                         if (DialogDisplayer.getDefault().notify(nd) != NotifyDescriptor.YES_OPTION) return;
                     }
@@ -218,15 +218,15 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
             }
         }
         if (!quiet) {
-            NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_NoTemplate"), 
-                                                       NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_Title"), NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
+            NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_NoTemplate"),   // NOI18N
+                                                       NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_Title"), NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);  // NOI18N
             DialogDisplayer.getDefault().notify(nd);
         }
     }
 
     private void onBrowseRecentMessages() {
-        String message = StringSelector.select(NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Prompt"), 
-                                               NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Title"), 
+        String message = StringSelector.select(NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Prompt"),   // NOI18N
+                                               NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Title"),   // NOI18N
             Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
             taMessage.replaceSelection(message);

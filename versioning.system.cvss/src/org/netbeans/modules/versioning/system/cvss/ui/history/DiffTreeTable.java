@@ -77,7 +77,7 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
         Object o = treeTable.getValueAt(row, column);
         if (o instanceof Node.Property) {
             Node.Property tags = (Node.Property) o;
-            SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) tags.getValue("dispRevision");
+            SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) tags.getValue("dispRevision");  // NOI18N
             if (drev != null && drev.getBranches() != null && drev.getBranches().size() + drev.getTags().size() > 1) {
                 return drev;
             }
@@ -249,11 +249,11 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
         }
 
         public String getDisplayName() {
-            return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name");
+            return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name");  // NOI18N
         }
 
         public String getShortDescription() {
-            return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name_Desc");
+            return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name_Desc");  // NOI18N
         }
     }
 

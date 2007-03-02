@@ -96,9 +96,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         add(divider, gridBagConstraints);
 
         searchCriteriaPanel.add(criteria);
-        Action searchAction = new AbstractAction(NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")) {
+        Action searchAction = new AbstractAction(NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")) {  // NOI18N
             {
-                putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SearchHistoryPanel.class, "TT_Search"));
+                putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SearchHistoryPanel.class, "TT_Search"));  // NOI18N
             }
             public void actionPerformed(ActionEvent e) {
                 search();
@@ -107,7 +107,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
         getActionMap().put("search", searchAction); // NOI18N
         bSearch.setAction(searchAction);
-        Mnemonics.setLocalizedText(bSearch, NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search"));
+        Mnemonics.setLocalizedText(bSearch, NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search"));  // NOI18N
         
         Dimension d1 = tbSummary.getPreferredSize();
         Dimension d2 = tbDiff.getPreferredSize();
@@ -181,9 +181,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             resultsPanel.removeAll();
             if (results == null) {
                 if (searchInProgress) {
-                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_Searching")));
+                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_Searching")));  // NOI18N
                 } else {
-                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults")));
+                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults")));  // NOI18N
                 }
             } else {
                 if (tbSummary.isSelected()) {

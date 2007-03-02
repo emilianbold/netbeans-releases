@@ -71,7 +71,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
         diffView = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         diffView.setTopComponent(treeView);
-        setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")));
+        setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")));  // NOI18N
     }
 
     public void ancestorAdded(AncestorEvent event) {
@@ -101,12 +101,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             final Node [] nodes = (Node[]) evt.getNewValue();
             currentDifferenceIndex = 0;
             if (nodes.length == 0) {
-                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions"));
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions"));  // NOI18N
                 parent.refreshComponents(false);
                 return;
             }
             else if (nodes.length > 2) {
-                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_TooManyRevisions"));
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_TooManyRevisions"));  // NOI18N
                 parent.refreshComponents(false);
                 return;
             }
@@ -142,10 +142,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                                 showDiff(r1.getRevision().getLogInfoHeader(), revision1, revision2, false);
                             }
                         } else {
-                            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));
+                            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));  // NOI18N
                         }
                     } catch (Exception e) {
-                        showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));
+                        showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));  // NOI18N
                         parent.refreshComponents(false);
                         return;
                     }
@@ -311,9 +311,9 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             thread = Thread.currentThread();
             final Diff diff = Diff.getDefault();
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1 == VersionsCache.REVISION_CURRENT ? 
-                    NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy") : revision1);
+                    NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy") : revision1);  // NOI18N
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2 == VersionsCache.REVISION_CURRENT ? 
-                    NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy") : revision2);
+                    NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy") : revision2);  // NOI18N
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()

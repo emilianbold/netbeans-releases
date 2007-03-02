@@ -46,7 +46,7 @@ import java.util.logging.Level;
  */
 public class ChangeCVSRootAction extends AbstractAction {
     
-    private final String RECENT_CHANGED_ROOTS = "recentChangedRoots";
+    private final String RECENT_CHANGED_ROOTS = "recentChangedRoots";  // NOI18N
 
     private final VCSContext ctx;
 
@@ -84,10 +84,10 @@ public class ChangeCVSRootAction extends AbstractAction {
         final JButton changeRoot = new JButton(loc.getString("CTL_CvsRootForm_Action_Change"));
         changeRoot.setToolTipText(loc.getString("TT_CvsRootForm_Action_Change"));
         JButton cancel = new JButton(loc.getString("CTL_CvsRootForm_Action_Cancel"));
-        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ChangeCVSRootAction.class, "ACSD_CvsRootForm_Action_Cancel"));
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ChangeCVSRootAction.class, "ACSD_CvsRootForm_Action_Cancel"));  // NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel, 
-                loc.getString("CTL_CvsRootForm_Title"),
+                loc.getString("CTL_CvsRootForm_Title"),  // NOI18N
                 true,
                 new Object [] { changeRoot, cancel },
                 changeRoot,
@@ -148,9 +148,9 @@ public class ChangeCVSRootAction extends AbstractAction {
             try {
                 String root = CvsRootRewriter.getCvsRoot(file);
                 sb.append(root);
-                sb.append(", ");
+                sb.append(", ");  // NOI18N
             } catch (IOException e) {
-                Logger.getLogger(ChangeCVSRootAction.class.getName()).log(Level.WARNING, "", e);
+                Logger.getLogger(ChangeCVSRootAction.class.getName()).log(Level.WARNING, "", e);  // NOI18N
                 // ignore for now
             }
         }
@@ -163,8 +163,8 @@ public class ChangeCVSRootAction extends AbstractAction {
         try {
             return CvsRootRewriter.getCvsRoot(file);
         } catch (IOException e) {
-            Logger.getLogger(ChangeCVSRootAction.class.getName()).log(Level.WARNING, "", e);
-            return "";
+            Logger.getLogger(ChangeCVSRootAction.class.getName()).log(Level.WARNING, "", e);  // NOI18N
+            return "";  // NOI18N
         }
     }
     
@@ -172,7 +172,7 @@ public class ChangeCVSRootAction extends AbstractAction {
         StringBuilder sb = new StringBuilder();
         for (File file : ctx.getRootFiles()) {
             sb.append(file.getAbsolutePath());
-            sb.append(", ");
+            sb.append(", ");  // NOI18N
         }
         sb.delete(sb.length() - 2, sb.length());
         return sb.toString();

@@ -36,8 +36,8 @@ import org.openide.awt.StatusDisplayer;
  * @author Michael Nascimento Santos
  */
 public class CvsRootRewriter {
-    private static final String CVS_FOLDER = "CVS";
-    private static final String ROOT_FILE = "Root";
+    private static final String CVS_FOLDER = "CVS";  // NOI18N
+    private static final String ROOT_FILE = "Root";  // NOI18N
 
     private final File file;
     private final String newRoot;
@@ -49,15 +49,15 @@ public class CvsRootRewriter {
     }
     
     public void rewrite() {
-        StatusDisplayer.getDefault().setStatusText("");
+        StatusDisplayer.getDefault().setStatusText("");  // NOI18N
         
         try {
             final Collection toRewrite = scanForFiles();
             rewriteFolders(toRewrite);
             
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CvsRootRewriter.class, "MSG_CVSRootRewriter_Success"));
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CvsRootRewriter.class, "MSG_CVSRootRewriter_Success"));  // NOI18N
         } catch (IOException ex) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CvsRootRewriter.class, "MSG_CVSRootRewriter_Failure", ex.getMessage()));
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CvsRootRewriter.class, "MSG_CVSRootRewriter_Failure", ex.getMessage()));  // NOI18N
         };
     }
     
@@ -66,7 +66,7 @@ public class CvsRootRewriter {
         Collection<File> toScan = new HashSet<File>();
         toScan.add(file);
         
-        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CvsRootRewriter.class, "MSG_CVSRootRewriter_Progress"));
+        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CvsRootRewriter.class, "MSG_CVSRootRewriter_Progress"));  // NOI18N
         
         int i = 0;
         int totalSize = 1;
@@ -87,7 +87,7 @@ public class CvsRootRewriter {
                     continue;
                 }
                 
-                handle.progress(NbBundle.getMessage(CvsRootRewriter.class, "MSG_CVSRootRewriter_Scanning", folder.getPath()));
+                handle.progress(NbBundle.getMessage(CvsRootRewriter.class, "MSG_CVSRootRewriter_Scanning", folder.getPath()));  // NOI18N
                 
                 toRewrite.add(rootFile);
                 toAdd.addAll(Arrays.asList(folder.listFiles(new FileFilter() {

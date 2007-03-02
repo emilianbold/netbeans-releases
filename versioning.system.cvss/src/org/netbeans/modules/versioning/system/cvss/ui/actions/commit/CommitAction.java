@@ -51,7 +51,7 @@ import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
  */
 public class CommitAction extends AbstractSystemAction {
     
-    static final String RECENT_COMMIT_MESSAGES = "commitAction.commitMessage";
+    static final String RECENT_COMMIT_MESSAGES = "commitAction.commitMessage";  // NOI18N
 
     public CommitAction() {
         setIcon(null);
@@ -78,14 +78,14 @@ public class CommitAction extends AbstractSystemAction {
         }
         
         CommitCommand cmd = new CommitCommand();
-        cmd.setDisplayName(NbBundle.getMessage(CommitAction.class, "BK0001"));
+        cmd.setDisplayName(NbBundle.getMessage(CommitAction.class, "BK0001"));  // NOI18N
         
         final CommitSettings settings = new CommitSettings();
         final JButton commit = new JButton(loc.getString("CTL_CommitForm_Action_Commit"));
-        commit.setToolTipText(NbBundle.getMessage(CommitAction.class, "TT_CommitDialog_Action_Commit"));
+        commit.setToolTipText(NbBundle.getMessage(CommitAction.class, "TT_CommitDialog_Action_Commit"));  // NOI18N
         commit.setEnabled(false);
         JButton cancel = new JButton(loc.getString("CTL_CommitForm_Action_Cancel"));
-        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog_Action_Cancel"));
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog_Action_Cancel"));  // NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings, 
                 MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), contentTitle),
@@ -106,8 +106,8 @@ public class CommitAction extends AbstractSystemAction {
         settings.putClientProperty("contentTitle", contentTitle);  // NOI18N
         settings.putClientProperty("DialogDescriptor", descriptor); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.addWindowListener(new DialogBoundsPreserver(CvsModuleConfig.getDefault().getPreferences(), "svn.commit.dialog"));
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog"));
+        dialog.addWindowListener(new DialogBoundsPreserver(CvsModuleConfig.getDefault().getPreferences(), "svn.commit.dialog"));  // NOI18N
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog"));  // NOI18N
         dialog.setVisible(true);
         if (descriptor.getValue() != commit) return;
 
@@ -116,7 +116,7 @@ public class CommitAction extends AbstractSystemAction {
         cmd.setMessage(settings.getCommitMessage());
         org.netbeans.modules.versioning.util.Utils.insert(CvsModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, cmd.getMessage(), 20);
         if (runningName == null) {
-            runningName = NbBundle.getMessage(CommitAction.class, "BK0002");
+            runningName = NbBundle.getMessage(CommitAction.class, "BK0002");  // NOI18N
         }
         ExecutorGroup group = new ExecutorGroup(runningName);
         addCommit(group, settings);

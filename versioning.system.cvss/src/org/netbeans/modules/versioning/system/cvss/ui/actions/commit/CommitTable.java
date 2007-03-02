@@ -65,7 +65,7 @@ class CommitTable implements AncestorListener, TableModelListener {
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         label.setLabelFor(table);
-        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitTable.class, "ACSD_CommitTable"));
+        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitTable.class, "ACSD_CommitTable"));  // NOI18N
     }
 
     public void ancestorAdded(AncestorEvent event) {

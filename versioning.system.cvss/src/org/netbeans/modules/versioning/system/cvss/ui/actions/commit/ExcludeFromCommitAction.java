@@ -44,9 +44,9 @@ public class ExcludeFromCommitAction extends AbstractAction implements Presenter
         putValue(Action.NAME, NbBundle.getBundle(ExcludeFromCommitAction.class).getString("CTL_MenuItem_ExcludeFromCommit"));
         status = getActionStatus();
         if (status == 1) {
-            putValue("BooleanState.Selected", Boolean.FALSE);
+            putValue("BooleanState.Selected", Boolean.FALSE);  // NOI18N
         } else if (status == 2) {
-            putValue("BooleanState.Selected", Boolean.TRUE);
+            putValue("BooleanState.Selected", Boolean.TRUE);  // NOI18N
         }
         setEnabled(status != -1);
     }

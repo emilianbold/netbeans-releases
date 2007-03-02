@@ -142,7 +142,7 @@ class SearchExecutor implements Runnable {
         rcmd.setUserFilter(criteria.getUsername());
         lcmd.setUserFilter(criteria.getUsername());
 
-        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SearchExecutor.class, "BK0001"), false);
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SearchExecutor.class, "BK0001"), false);  // NOI18N
         RLogExecutor [] rexecutors;
         if (folders.length > 0) {
             rexecutors = RLogExecutor.splitCommand(rcmd, folders, null);
@@ -224,7 +224,7 @@ class SearchExecutor implements Runnable {
             public void outputLineCleared(OutputEvent ev) {
             }
         });
-        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SearchExecutor.class, "MSG_StatusSymlinkWarning"));
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SearchExecutor.class, "MSG_StatusSymlinkWarning"));  // NOI18N
     }
 
     private List processResults(RLogExecutor[] rexecutors, LogExecutor[] lexecutors) {

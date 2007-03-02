@@ -80,10 +80,10 @@ class RevisionNode extends AbstractNode {
         this.path = revision.getPath();
         this.revision = revision;
         if (revision.getRevision().getNumber() == VersionsCache.REVISION_CURRENT) {
-            setName(NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy"));
+            setName(NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy"));  // NOI18N
         } else if (revision.isBranchRoot()) {
             if (revision.getBranchName() != null) {
-                setName(revision.getRevision().getNumber() + " - " + revision.getBranchName());
+                setName(revision.getRevision().getNumber() + " - " + revision.getBranchName());  // NOI18N
             } else {
                 setName(revision.getRevision().getNumber());
             }
@@ -166,23 +166,23 @@ class RevisionNode extends AbstractNode {
         }
                                 
         protected String messageName() {
-            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();
+            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();  // NOI18N
         }
         
         protected String messageSave() {
-            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();
+            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();  // NOI18N
         }
         
         protected java.lang.String messageToolTip() {
-            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();
+            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();  // NOI18N
         }
 
         protected java.lang.String messageOpening() {
-            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName());
+            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName());  // NOI18N
         }
         
         protected java.lang.String messageOpened() {
-            return "";
+            return "";  // NOI18N
         }
 
         //#20646 associate the entry node with editor top component
@@ -284,7 +284,7 @@ class RevisionNode extends AbstractNode {
 
         public TagsProperty() {
             super(COLUMN_NAME_TAGS, List.class, COLUMN_NAME_TAGS, COLUMN_NAME_TAGS);
-            if (revision != null) setValue("dispRevision", revision);
+            if (revision != null) setValue("dispRevision", revision);  // NOI18N
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -322,15 +322,15 @@ class RevisionNode extends AbstractNode {
         public FindCommitAction(boolean allProjects) {
             this.allProjects = allProjects;
             if (allProjects) {
-                putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommitInProjects"));
+                putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommitInProjects"));  // NOI18N
             } else {
                 File file = revision.getRevision().getLogInfoHeader().getFile();
                 Project project = Utils.getProject(file);
                 if (project != null) {
                     String prjName = ProjectUtils.getInformation(project).getDisplayName();
-                    putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommitInProject", prjName));
+                    putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommitInProject", prjName));  // NOI18N
                 } else {
-                    putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommit"));
+                    putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommit"));  // NOI18N
                     setEnabled(false);
                 }
             }
@@ -343,7 +343,7 @@ class RevisionNode extends AbstractNode {
                 int n = projects.length;
                 SearchHistoryAction.openSearch(
                         (n == 1) ? ProjectUtils.getInformation(projects[0]).getDisplayName() : 
-                        NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_OpenProjects_Title", Integer.toString(n)),
+                        NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_OpenProjects_Title", Integer.toString(n)),  // NOI18N
                         revision.getRevision().getMessage().trim(), revision.getRevision().getAuthor(), revision.getRevision().getDate());
             } else {
                 Project project = Utils.getProject(file);                
@@ -359,7 +359,7 @@ class RevisionNode extends AbstractNode {
     private class RollbackAction extends AbstractAction {
 
         public RollbackAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getRevision().getNumber()));
+            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getRevision().getNumber()));  // NOI18N
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -371,7 +371,7 @@ class RevisionNode extends AbstractNode {
     private class RollbackChangeAction extends AbstractAction {
 
         public RollbackChangeAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"));
+            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"));  // NOI18N
             setEnabled(Utils.previousRevision(revision.getRevision().getNumber()) != null);
         }
 
@@ -437,7 +437,7 @@ class RevisionNode extends AbstractNode {
                         tagInfo += ","; // NOI18N
                         Color foreground = UIManager.getColor("List.selectionForeground"); // NOI18N
                         if (!gfx.getColor().equals(foreground)) {
-                            tagInfo += " <a href=\"\">...</a>"; // NOI  18N
+                            tagInfo += " <a href=\"\">...</a>"; // NOI18N
                         } else {
                             StringBuilder sb = new StringBuilder();
                             sb.append(" <a href=\"\" style=\"color:"); // NOI18N
@@ -449,14 +449,14 @@ class RevisionNode extends AbstractNode {
                             sb.append(foreground.getBlue());
                             sb.append(")"); // NOI18N
                             sb.append("\">"); // NOI18N
-                            sb.append("...");
+                            sb.append("...");  // NOI18N
                             sb.append("</a>"); // NOI18N
                             tagInfo += sb.toString();
                         }
                     }
                     renderer.setText(tagInfo);
                 } else {
-                    renderer.setText("");
+                    renderer.setText("");  // NOI18N
                 }
             }
             renderer.paint(gfx);
