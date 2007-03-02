@@ -166,7 +166,7 @@ abstract class UISelectOneBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_converter = new PropertyDescriptorBase("converter",beanClass,"getConverter","setConverter");
             prop_converter.setDisplayName(resources.getString("UISelectOne_converter_DisplayName"));
             prop_converter.setShortDescription(resources.getString("UISelectOne_converter_Description"));
-            prop_converter.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.ConverterPropertyEditor"));
+            prop_converter.setPropertyEditorClass(com.sun.rave.propertyeditors.ConverterPropertyEditor.class);
             prop_converter.setExpert(false);
             prop_converter.setHidden(false);
             prop_converter.setPreferred(false);
@@ -301,7 +301,7 @@ abstract class UISelectOneBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_validator = new PropertyDescriptorBase("validator",beanClass,"getValidator","setValidator");
             prop_validator.setDisplayName(resources.getString("UISelectOne_validator_DisplayName"));
             prop_validator.setShortDescription(resources.getString("UISelectOne_validator_Description"));
-            prop_validator.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.ValidatorPropertyEditor"));
+            prop_validator.setPropertyEditorClass(com.sun.rave.propertyeditors.ValidatorPropertyEditor.class);
             prop_validator.setExpert(false);
             prop_validator.setHidden(false);
             prop_validator.setPreferred(false);
@@ -312,7 +312,7 @@ abstract class UISelectOneBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_value = new PropertyDescriptorBase("value",beanClass,"getValue","setValue");
             prop_value.setDisplayName(resources.getString("UISelectOne_value_DisplayName"));
             prop_value.setShortDescription(resources.getString("UISelectOne_value_Description"));
-            prop_value.setPropertyEditorClass(loadClass("org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor"));
+            prop_value.setPropertyEditorClass(org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor.class);
             prop_value.setExpert(false);
             prop_value.setHidden(false);
             prop_value.setPreferred(false);
@@ -324,7 +324,7 @@ abstract class UISelectOneBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_valueChangeListener = new PropertyDescriptorBase("valueChangeListener",beanClass,"getValueChangeListener","setValueChangeListener");
             prop_valueChangeListener.setDisplayName(resources.getString("UISelectOne_valueChangeListener_DisplayName"));
             prop_valueChangeListener.setShortDescription(resources.getString("UISelectOne_valueChangeListener_Description"));
-            prop_valueChangeListener.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.MethodBindingPropertyEditor"));
+            prop_valueChangeListener.setPropertyEditorClass(com.sun.rave.propertyeditors.MethodBindingPropertyEditor.class);
             prop_valueChangeListener.setExpert(false);
             prop_valueChangeListener.setHidden(false);
             prop_valueChangeListener.setPreferred(false);

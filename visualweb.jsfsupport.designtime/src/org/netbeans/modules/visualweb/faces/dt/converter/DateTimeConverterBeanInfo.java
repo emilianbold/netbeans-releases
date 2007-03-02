@@ -18,12 +18,13 @@
  */
 package org.netbeans.modules.visualweb.faces.dt.converter;
 
-import com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor;
-import com.sun.jsfcl.std.property.DateTimePatternPropertyEditor;
-import com.sun.jsfcl.std.reference.ReferenceDataManager;
 import org.netbeans.modules.visualweb.faces.dt.HtmlNonGeneratedBeanInfoBase;
 import java.beans.*;
 import com.sun.rave.designtime.*;
+import com.sun.rave.propertyeditors.DomainPropertyEditor;
+import com.sun.rave.propertyeditors.SelectOneDomainEditor;
+import com.sun.rave.propertyeditors.domains.LocalesDomain;
+import com.sun.rave.propertyeditors.domains.TimeZonesDomain;
 import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import javax.faces.convert.DateTimeConverter;
 
@@ -75,13 +76,13 @@ public class DateTimeConverterBeanInfo extends HtmlNonGeneratedBeanInfoBase {  /
 
                 PropertyDescriptor _dateStyle = new PropertyDescriptor("dateStyle", beanClass, "getDateStyle", "setDateStyle"); //NOI18N
 //                _dateStyle.setShortDescription("");
-                _dateStyle.setPropertyEditorClass(ChooseOneReferenceDataPropertyEditor.class);
-                _dateStyle.setValue(ChooseOneReferenceDataPropertyEditor.REFERENCE_DATA_NAME, ReferenceDataManager.DATETIME_STYLES);
+                _dateStyle.setPropertyEditorClass(SelectOneDomainEditor.class);
+                _dateStyle.setValue(DomainPropertyEditor.DOMAIN_CLASS, DateTimeStylesDomain.class);
 
                 PropertyDescriptor _locale = new PropertyDescriptor("locale", beanClass, "getLocale", "setLocale"); //NOI18N
 //                _locale.setShortDescription("");
-                _locale.setPropertyEditorClass(ChooseOneReferenceDataPropertyEditor.class);
-                _locale.setValue(ChooseOneReferenceDataPropertyEditor.REFERENCE_DATA_NAME, ReferenceDataManager.LOCALES);
+                _locale.setPropertyEditorClass(SelectOneDomainEditor.class);
+                _locale.setValue(DomainPropertyEditor.DOMAIN_CLASS, LocalesDomain.class);
 
                 PropertyDescriptor _pattern = new PropertyDescriptor("pattern", beanClass, "getPattern", "setPattern"); //NOI18N
 //                _pattern.setShortDescription("");
@@ -89,18 +90,18 @@ public class DateTimeConverterBeanInfo extends HtmlNonGeneratedBeanInfoBase {  /
 
                 PropertyDescriptor _timeStyle = new PropertyDescriptor("timeStyle", beanClass, "getTimeStyle", "setTimeStyle"); //NOI18N
 //                _timeStyle.setShortDescription("");
-                _timeStyle.setPropertyEditorClass(ChooseOneReferenceDataPropertyEditor.class);
-                _timeStyle.setValue(ChooseOneReferenceDataPropertyEditor.REFERENCE_DATA_NAME, ReferenceDataManager.DATETIME_STYLES);
+                _timeStyle.setPropertyEditorClass(SelectOneDomainEditor.class);
+                _timeStyle.setValue(DomainPropertyEditor.DOMAIN_CLASS, DateTimeStylesDomain.class);
 
                 PropertyDescriptor _timeZone = new PropertyDescriptor("timeZone", beanClass, "getTimeZone", "setTimeZone"); //NOI18N
 //                _timeZone.setShortDescription("");
-                _timeZone.setPropertyEditorClass(ChooseOneReferenceDataPropertyEditor.class);
-                _timeZone.setValue(ChooseOneReferenceDataPropertyEditor.REFERENCE_DATA_NAME, ReferenceDataManager.TIME_ZONES);
+                _timeZone.setPropertyEditorClass(SelectOneDomainEditor.class);
+                _timeZone.setValue(DomainPropertyEditor.DOMAIN_CLASS, TimeZonesDomain.class);
 
                 PropertyDescriptor _type = new PropertyDescriptor("type", beanClass, "getType", "setType"); //NOI18N
 //                _type.setShortDescription("");
-                _type.setPropertyEditorClass(ChooseOneReferenceDataPropertyEditor.class);
-                _type.setValue(ChooseOneReferenceDataPropertyEditor.REFERENCE_DATA_NAME, ReferenceDataManager.DATETIME_TYPES);
+                _type.setPropertyEditorClass(SelectOneDomainEditor.class);
+                _type.setValue(DomainPropertyEditor.DOMAIN_CLASS, DateTimeTypesDomain.class);
 
                 propDescriptors = new PropertyDescriptor[] {
                     _dateStyle,

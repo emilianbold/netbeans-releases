@@ -47,7 +47,7 @@ class Properties {
             PropertyDescriptor prop_style = new PropertyDescriptorBase("style", beanClass, "getStyle", "setStyle");
             prop_style.setDisplayName(resources.getString("Properties_style_DisplayName"));
             prop_style.setShortDescription(resources.getString("Properties_style_Description"));
-            prop_style.setPropertyEditorClass(com.sun.jsfcl.std.css.CssStylePropertyEditor.class);
+            prop_style.setPropertyEditorClass(com.sun.rave.propertyeditors.css.CssStylePropertyEditor.class);
             attrib = new AttributeDescriptor("style", false, null, true);
             prop_style.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR, attrib);
             prop_style.setValue(Constants.PropertyDescriptor.CATEGORY, CategoryDescriptors.APPEARANCE);
@@ -96,11 +96,11 @@ class Properties {
             PropertyDescriptor prop_dir = new PropertyDescriptorBase("dir",beanClass,"getDir","setDir");
             prop_dir.setDisplayName(resources.getString("Properties_dir_DisplayName"));
             prop_dir.setShortDescription(resources.getString("Properties_dir_Description"));
-            prop_dir.setPropertyEditorClass(com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor.class);
+            prop_dir.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             attrib = new AttributeDescriptor("dir",false,null,true);
             prop_dir.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_dir.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.ADVANCED);
-            prop_dir.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.TEXT_DIRECTIONS);
+            prop_dir.setValue(com.sun.rave.propertyeditors.DomainPropertyEditor.DOMAIN_CLASS, com.sun.rave.propertyeditors.domains.TextDirectionDomain.class);
 
             PropertyDescriptor prop_label = new PropertyDescriptorBase("label", beanClass, "getLabel", "setLabel");
             prop_label.setDisplayName(resources.getString("Properties_label_DisplayName"));

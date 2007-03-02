@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.faces.dt;
 import com.sun.data.provider.DataProvider;
 import com.sun.data.provider.FieldKey;
 import com.sun.rave.designtime.faces.FacesDesignProperty;
-import com.sun.rave.propertyeditors.binding.data.DataBindingHelper;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -73,6 +72,7 @@ import org.netbeans.modules.visualweb.faces.dt.component.html.HtmlFormDesignInfo
 import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import org.netbeans.modules.visualweb.faces.dt.converter.NumberConverterCustomizer;
 import javax.faces.el.ValueBinding;
+import org.netbeans.modules.visualweb.propertyeditors.binding.data.DataBindingHelper;
 
 public abstract class HtmlDesignInfoBase implements DesignInfo {
 

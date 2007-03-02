@@ -134,7 +134,7 @@ public abstract class UIDataBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_rows = new PropertyDescriptorBase("rows",beanClass,"getRows","setRows");
             prop_rows.setDisplayName(resources.getString("UIData_rows_DisplayName"));
             prop_rows.setShortDescription(resources.getString("UIData_rows_Description"));
-            prop_rows.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_rows.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_rows.setExpert(false);
             prop_rows.setHidden(false);
             prop_rows.setPreferred(false);
@@ -147,7 +147,7 @@ public abstract class UIDataBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_value = new PropertyDescriptorBase("value",beanClass,"getValue","setValue");
             prop_value.setDisplayName(resources.getString("UIData_value_DisplayName"));
             prop_value.setShortDescription(resources.getString("UIData_value_Description"));
-            prop_value.setPropertyEditorClass(loadClass("org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor"));
+            prop_value.setPropertyEditorClass(org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor.class);
             prop_value.setExpert(false);
             prop_value.setHidden(false);
             prop_value.setPreferred(false);

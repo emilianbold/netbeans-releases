@@ -103,7 +103,7 @@ public class HtmlInputTextareaBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_cols = new PropertyDescriptorBase("cols",beanClass,"getCols","setCols");
             prop_cols.setDisplayName(resources.getString("HtmlInputTextarea_cols_DisplayName"));
             prop_cols.setShortDescription(resources.getString("HtmlInputTextarea_cols_Description"));
-            prop_cols.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_cols.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_cols.setExpert(false);
             prop_cols.setHidden(false);
             prop_cols.setPreferred(false);
@@ -136,7 +136,7 @@ public class HtmlInputTextareaBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_rows = new PropertyDescriptorBase("rows",beanClass,"getRows","setRows");
             prop_rows.setDisplayName(resources.getString("HtmlInputTextarea_rows_DisplayName"));
             prop_rows.setShortDescription(resources.getString("HtmlInputTextarea_rows_Description"));
-            prop_rows.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_rows.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_rows.setExpert(false);
             prop_rows.setHidden(false);
             prop_rows.setPreferred(false);
@@ -149,7 +149,7 @@ public class HtmlInputTextareaBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_tabindex = new PropertyDescriptorBase("tabindex",beanClass,"getTabindex","setTabindex");
             prop_tabindex.setDisplayName(resources.getString("HtmlInputTextarea_tabindex_DisplayName"));
             prop_tabindex.setShortDescription(resources.getString("HtmlInputTextarea_tabindex_Description"));
-            prop_tabindex.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_tabindex.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_tabindex.setExpert(false);
             prop_tabindex.setHidden(false);
             prop_tabindex.setPreferred(false);

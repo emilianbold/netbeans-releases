@@ -65,14 +65,14 @@ public abstract class UIMessageBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_for = new PropertyDescriptorBase("for",beanClass,"getFor","setFor");
             prop_for.setDisplayName(resources.getString("UIMessage_for_DisplayName"));
             prop_for.setShortDescription(resources.getString("UIMessage_for_Description"));
-            prop_for.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_for.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_for.setExpert(false);
             prop_for.setHidden(false);
             prop_for.setPreferred(false);
             attrib = new AttributeDescriptor("for",true,null,true);
             prop_for.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_for.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.APPEARANCE);
-            prop_for.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.COMPONENT_IDS);
+            prop_for.setValue(com.sun.rave.propertyeditors.DomainPropertyEditor.DOMAIN_CLASS, com.sun.rave.propertyeditors.domains.ComponentIdsDomain.class);
 
             PropertyDescriptor prop_showDetail = new PropertyDescriptorBase("showDetail",beanClass,"isShowDetail","setShowDetail");
             prop_showDetail.setDisplayName(resources.getString("UIMessage_showDetail_DisplayName"));

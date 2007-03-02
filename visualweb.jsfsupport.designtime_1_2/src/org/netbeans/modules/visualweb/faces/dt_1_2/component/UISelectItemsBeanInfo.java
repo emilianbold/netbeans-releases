@@ -25,6 +25,8 @@ import com.sun.rave.designtime.markup.*;
 import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import com.sun.rave.propertyeditors.binding.ValueBindingPropertyEditor;
 import javax.faces.component.UISelectItems;
+import org.netbeans.modules.visualweb.propertyeditors.binding.data.BindOptionsToDataProviderPanel;
+import org.netbeans.modules.visualweb.propertyeditors.binding.data.BindValueToObjectPanel;
 
 public class UISelectItemsBeanInfo extends HtmlNonGeneratedBeanInfoBase {
 
@@ -74,8 +76,8 @@ public class UISelectItemsBeanInfo extends HtmlNonGeneratedBeanInfoBase {
                 prop_value.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR, attrib_value);
                 prop_value.setPropertyEditorClass(ValueBindingPropertyEditor.class);
 
-                prop_value.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.binding.ValueBindingPropertyEditor"));
-                prop_value.setValue("bindingPanelClassNames", new Class[] {com.sun.rave.propertyeditors.binding.data.BindOptionsToDataProviderPanel.class, com.sun.rave.propertyeditors.binding.data.BindValueToObjectPanel.class });
+                prop_value.setPropertyEditorClass(com.sun.rave.propertyeditors.binding.ValueBindingPropertyEditor.class);
+                prop_value.setValue("bindingPanelClassNames", new Class[] {BindOptionsToDataProviderPanel.class, BindValueToObjectPanel.class });
 
                 /* The <f:selectItems> tag does not have a "rendered" attribute
                 PropertyDescriptor prop_rendered = new PropertyDescriptor("rendered", beanClass, "isRendered", "setRendered"); //NOI18N

@@ -18,11 +18,11 @@
  */
 package org.netbeans.modules.visualweb.faces.dt_1_2.component.html;
 
-import com.sun.jsfcl.util.ComponentBundle;
 import com.sun.rave.designtime.*;
-import com.sun.rave.propertyeditors.binding.data.DataBindingHelper;
 import java.util.ArrayList;
 import javax.faces.component.html.HtmlOutputFormat;
+import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
+import org.netbeans.modules.visualweb.propertyeditors.binding.data.DataBindingHelper;
 
 //import org.openide.ErrorManager;
 

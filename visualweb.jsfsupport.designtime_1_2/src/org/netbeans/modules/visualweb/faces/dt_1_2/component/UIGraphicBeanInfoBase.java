@@ -66,7 +66,7 @@ public abstract class UIGraphicBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_url = new PropertyDescriptorBase("url",beanClass,"getUrl","setUrl");
             prop_url.setDisplayName(resources.getString("UIGraphic_url_DisplayName"));
             prop_url.setShortDescription(resources.getString("UIGraphic_url_Description"));
-            prop_url.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.UrlPropertyEditor"));
+            prop_url.setPropertyEditorClass(com.sun.rave.propertyeditors.UrlPropertyEditor.class);
             prop_url.setExpert(false);
             prop_url.setHidden(true);
             prop_url.setPreferred(false);
@@ -75,7 +75,7 @@ public abstract class UIGraphicBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_value = new PropertyDescriptorBase("value",beanClass,"getValue","setValue");
             prop_value.setDisplayName(resources.getString("UIGraphic_value_DisplayName"));
             prop_value.setShortDescription(resources.getString("UIGraphic_value_Description"));
-            prop_value.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.UrlPropertyEditor"));
+            prop_value.setPropertyEditorClass(com.sun.rave.propertyeditors.UrlPropertyEditor.class);
             prop_value.setExpert(false);
             prop_value.setHidden(false);
             prop_value.setPreferred(false);

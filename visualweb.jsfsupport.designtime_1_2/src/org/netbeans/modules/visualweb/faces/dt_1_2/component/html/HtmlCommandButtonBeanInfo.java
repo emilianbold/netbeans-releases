@@ -28,10 +28,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-
-import com.sun.rave.designtime.CategoryDescriptor;
 import com.sun.rave.designtime.Constants;
-import com.sun.rave.designtime.faces.FacetDescriptor;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
 import org.netbeans.modules.visualweb.faces.dt.BeanDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt.PropertyDescriptorBase;
@@ -124,14 +121,14 @@ public class HtmlCommandButtonBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_dir = new PropertyDescriptorBase("dir",beanClass,"getDir","setDir");
             prop_dir.setDisplayName(resources.getString("HtmlCommandButton_dir_DisplayName"));
             prop_dir.setShortDescription(resources.getString("HtmlCommandButton_dir_Description"));
-            prop_dir.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_dir.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_dir.setExpert(false);
             prop_dir.setHidden(false);
             prop_dir.setPreferred(false);
             attrib = new AttributeDescriptor("dir",false,null,true);
             prop_dir.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_dir.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.ADVANCED);
-            prop_dir.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.TEXT_DIRECTIONS);
+            prop_dir.setValue(com.sun.rave.propertyeditors.DomainPropertyEditor.DOMAIN_CLASS, com.sun.rave.propertyeditors.domains.TextDirectionDomain.class);
 
             PropertyDescriptor prop_disabled = new PropertyDescriptorBase("disabled",beanClass,"isDisabled","setDisabled");
             prop_disabled.setDisplayName(resources.getString("HtmlCommandButton_disabled_DisplayName"));
@@ -146,7 +143,7 @@ public class HtmlCommandButtonBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_image = new PropertyDescriptorBase("image",beanClass,"getImage","setImage");
             prop_image.setDisplayName(resources.getString("HtmlCommandButton_image_DisplayName"));
             prop_image.setShortDescription(resources.getString("HtmlCommandButton_image_Description"));
-            prop_image.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.UrlPropertyEditor"));
+            prop_image.setPropertyEditorClass(com.sun.rave.propertyeditors.UrlPropertyEditor.class);
             prop_image.setExpert(false);
             prop_image.setHidden(false);
             prop_image.setPreferred(false);
@@ -157,7 +154,7 @@ public class HtmlCommandButtonBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_lang = new PropertyDescriptorBase("lang",beanClass,"getLang","setLang");
             prop_lang.setDisplayName(resources.getString("HtmlCommandButton_lang_DisplayName"));
             prop_lang.setShortDescription(resources.getString("HtmlCommandButton_lang_Description"));
-            prop_lang.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_lang.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_lang.setExpert(false);
             prop_lang.setHidden(false);
             prop_lang.setPreferred(false);
@@ -179,7 +176,7 @@ public class HtmlCommandButtonBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_tabindex = new PropertyDescriptorBase("tabindex",beanClass,"getTabindex","setTabindex");
             prop_tabindex.setDisplayName(resources.getString("HtmlCommandButton_tabindex_DisplayName"));
             prop_tabindex.setShortDescription(resources.getString("HtmlCommandButton_tabindex_Description"));
-            prop_tabindex.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_tabindex.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_tabindex.setExpert(false);
             prop_tabindex.setHidden(false);
             prop_tabindex.setPreferred(false);
@@ -192,14 +189,14 @@ public class HtmlCommandButtonBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_type = new PropertyDescriptorBase("type",beanClass,"getType","setType");
             prop_type.setDisplayName(resources.getString("HtmlCommandButton_type_DisplayName"));
             prop_type.setShortDescription(resources.getString("HtmlCommandButton_type_Description"));
-            prop_type.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_type.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_type.setExpert(false);
             prop_type.setHidden(false);
             prop_type.setPreferred(false);
             attrib = new AttributeDescriptor("type",false,"\"submit\"",true);
             prop_type.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_type.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.ADVANCED);
-            prop_type.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.COMMAND_BUTTON_TYPES);
+            prop_type.setValue(com.sun.rave.propertyeditors.DomainPropertyEditor.DOMAIN_CLASS, HtmlCommandButtonTypesDomain.class);
 
             List<PropertyDescriptor> propertyDescriptorList = new ArrayList<PropertyDescriptor>();
             propertyDescriptorList.add(prop_accesskey);

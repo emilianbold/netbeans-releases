@@ -70,7 +70,7 @@ public abstract class UIOutputBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_converter = new PropertyDescriptorBase("converter",beanClass,"getConverter","setConverter");
             prop_converter.setDisplayName(resources.getString("UIOutput_converter_DisplayName"));
             prop_converter.setShortDescription(resources.getString("UIOutput_converter_Description"));
-            prop_converter.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.ConverterPropertyEditor"));
+            prop_converter.setPropertyEditorClass(com.sun.rave.propertyeditors.ConverterPropertyEditor.class);
             prop_converter.setExpert(false);
             prop_converter.setHidden(false);
             prop_converter.setPreferred(false);
@@ -89,7 +89,7 @@ public abstract class UIOutputBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_value = new PropertyDescriptorBase("value",beanClass,"getValue","setValue");
             prop_value.setDisplayName(resources.getString("UIOutput_value_DisplayName"));
             prop_value.setShortDescription(resources.getString("UIOutput_value_Description"));
-            prop_value.setPropertyEditorClass(loadClass("org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor"));
+            prop_value.setPropertyEditorClass(org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor.class);
             prop_value.setExpert(false);
             prop_value.setHidden(false);
             prop_value.setPreferred(false);

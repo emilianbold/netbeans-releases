@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-
-import com.sun.rave.designtime.CategoryDescriptor;
 import com.sun.rave.designtime.Constants;
-import com.sun.rave.designtime.faces.FacetDescriptor;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
+import com.sun.rave.propertyeditors.DomainPropertyEditor;
+import com.sun.rave.propertyeditors.SelectOneDomainEditor;
+import com.sun.rave.propertyeditors.domains.TextDirectionDomain;
 import org.netbeans.modules.visualweb.faces.dt.BeanDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt.PropertyDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt_1_1.component.UIGraphicBeanInfoBase;
@@ -107,19 +107,19 @@ public class HtmlGraphicImageBeanInfo extends UIGraphicBeanInfoBase {
             PropertyDescriptor prop_dir = new PropertyDescriptorBase("dir",beanClass,"getDir","setDir");
             prop_dir.setDisplayName(resources.getString("HtmlGraphicImage_dir_DisplayName"));
             prop_dir.setShortDescription(resources.getString("HtmlGraphicImage_dir_Description"));
-            prop_dir.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_dir.setPropertyEditorClass(SelectOneDomainEditor.class);
             prop_dir.setExpert(false);
             prop_dir.setHidden(false);
             prop_dir.setPreferred(false);
             attrib = new AttributeDescriptor("dir",false,null,true);
             prop_dir.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_dir.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.ADVANCED);
-            prop_dir.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.TEXT_DIRECTIONS);
+            prop_dir.setValue(DomainPropertyEditor.DOMAIN_CLASS, TextDirectionDomain.class);
 
             PropertyDescriptor prop_height = new PropertyDescriptorBase("height",beanClass,"getHeight","setHeight");
             prop_height.setDisplayName(resources.getString("HtmlGraphicImage_height_DisplayName"));
             prop_height.setShortDescription(resources.getString("HtmlGraphicImage_height_Description"));
-            prop_height.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.LengthPropertyEditor"));
+            prop_height.setPropertyEditorClass(com.sun.rave.propertyeditors.LengthPropertyEditor.class);
             prop_height.setExpert(false);
             prop_height.setHidden(false);
             prop_height.setPreferred(false);
@@ -140,7 +140,7 @@ public class HtmlGraphicImageBeanInfo extends UIGraphicBeanInfoBase {
             PropertyDescriptor prop_lang = new PropertyDescriptorBase("lang",beanClass,"getLang","setLang");
             prop_lang.setDisplayName(resources.getString("HtmlGraphicImage_lang_DisplayName"));
             prop_lang.setShortDescription(resources.getString("HtmlGraphicImage_lang_Description"));
-            prop_lang.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_lang.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_lang.setExpert(false);
             prop_lang.setHidden(false);
             prop_lang.setPreferred(false);
@@ -172,7 +172,7 @@ public class HtmlGraphicImageBeanInfo extends UIGraphicBeanInfoBase {
             PropertyDescriptor prop_usemap = new PropertyDescriptorBase("usemap",beanClass,"getUsemap","setUsemap");
             prop_usemap.setDisplayName(resources.getString("HtmlGraphicImage_usemap_DisplayName"));
             prop_usemap.setShortDescription(resources.getString("HtmlGraphicImage_usemap_Description"));
-            prop_usemap.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StringPropertyEditor"));
+            prop_usemap.setPropertyEditorClass(com.sun.rave.propertyeditors.StringPropertyEditor.class);
             prop_usemap.setExpert(false);
             prop_usemap.setHidden(false);
             prop_usemap.setPreferred(false);
@@ -183,7 +183,7 @@ public class HtmlGraphicImageBeanInfo extends UIGraphicBeanInfoBase {
             PropertyDescriptor prop_width = new PropertyDescriptorBase("width",beanClass,"getWidth","setWidth");
             prop_width.setDisplayName(resources.getString("HtmlGraphicImage_width_DisplayName"));
             prop_width.setShortDescription(resources.getString("HtmlGraphicImage_width_Description"));
-            prop_width.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.LengthPropertyEditor"));
+            prop_width.setPropertyEditorClass(com.sun.rave.propertyeditors.LengthPropertyEditor.class);
             prop_width.setExpert(false);
             prop_width.setHidden(false);
             prop_width.setPreferred(false);

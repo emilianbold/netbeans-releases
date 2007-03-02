@@ -145,7 +145,7 @@ public class HtmlSelectOneListboxBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_size = new PropertyDescriptorBase("size",beanClass,"getSize","setSize");
             prop_size.setDisplayName(resources.getString("HtmlSelectOneListbox_size_DisplayName"));
             prop_size.setShortDescription(resources.getString("HtmlSelectOneListbox_size_Description"));
-            prop_size.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_size.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_size.setExpert(false);
             prop_size.setHidden(false);
             prop_size.setPreferred(false);
@@ -158,7 +158,7 @@ public class HtmlSelectOneListboxBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_tabindex = new PropertyDescriptorBase("tabindex",beanClass,"getTabindex","setTabindex");
             prop_tabindex.setDisplayName(resources.getString("HtmlSelectOneListbox_tabindex_DisplayName"));
             prop_tabindex.setShortDescription(resources.getString("HtmlSelectOneListbox_tabindex_Description"));
-            prop_tabindex.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_tabindex.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_tabindex.setExpert(false);
             prop_tabindex.setHidden(false);
             prop_tabindex.setPreferred(false);

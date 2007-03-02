@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-
-import com.sun.rave.designtime.CategoryDescriptor;
 import com.sun.rave.designtime.Constants;
-import com.sun.rave.designtime.faces.FacetDescriptor;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
+import com.sun.rave.propertyeditors.DomainPropertyEditor;
+import com.sun.rave.propertyeditors.SelectOneDomainEditor;
+import com.sun.rave.propertyeditors.domains.TextDirectionDomain;
 import org.netbeans.modules.visualweb.faces.dt.BeanDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt.PropertyDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt_1_1.component.UIDataBeanInfoBase;
@@ -104,7 +104,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_border = new PropertyDescriptorBase("border",beanClass,"getBorder","setBorder");
             prop_border.setDisplayName(resources.getString("HtmlDataTable_border_DisplayName"));
             prop_border.setShortDescription(resources.getString("HtmlDataTable_border_Description"));
-            prop_border.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_border.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_border.setExpert(false);
             prop_border.setHidden(false);
             prop_border.setPreferred(false);
@@ -116,7 +116,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_cellpadding = new PropertyDescriptorBase("cellpadding",beanClass,"getCellpadding","setCellpadding");
             prop_cellpadding.setDisplayName(resources.getString("HtmlDataTable_cellpadding_DisplayName"));
             prop_cellpadding.setShortDescription(resources.getString("HtmlDataTable_cellpadding_Description"));
-            prop_cellpadding.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.LengthPropertyEditor"));
+            prop_cellpadding.setPropertyEditorClass(com.sun.rave.propertyeditors.LengthPropertyEditor.class);
             prop_cellpadding.setExpert(false);
             prop_cellpadding.setHidden(false);
             prop_cellpadding.setPreferred(false);
@@ -127,7 +127,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_cellspacing = new PropertyDescriptorBase("cellspacing",beanClass,"getCellspacing","setCellspacing");
             prop_cellspacing.setDisplayName(resources.getString("HtmlDataTable_cellspacing_DisplayName"));
             prop_cellspacing.setShortDescription(resources.getString("HtmlDataTable_cellspacing_Description"));
-            prop_cellspacing.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.LengthPropertyEditor"));
+            prop_cellspacing.setPropertyEditorClass(com.sun.rave.propertyeditors.LengthPropertyEditor.class);
             prop_cellspacing.setExpert(false);
             prop_cellspacing.setHidden(false);
             prop_cellspacing.setPreferred(false);
@@ -138,7 +138,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_columnClasses = new PropertyDescriptorBase("columnClasses",beanClass,"getColumnClasses","setColumnClasses");
             prop_columnClasses.setDisplayName(resources.getString("HtmlDataTable_columnClasses_DisplayName"));
             prop_columnClasses.setShortDescription(resources.getString("HtmlDataTable_columnClasses_Description"));
-            prop_columnClasses.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_columnClasses.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_columnClasses.setExpert(false);
             prop_columnClasses.setHidden(false);
             prop_columnClasses.setPreferred(false);
@@ -149,19 +149,19 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_dir = new PropertyDescriptorBase("dir",beanClass,"getDir","setDir");
             prop_dir.setDisplayName(resources.getString("HtmlDataTable_dir_DisplayName"));
             prop_dir.setShortDescription(resources.getString("HtmlDataTable_dir_Description"));
-            prop_dir.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_dir.setPropertyEditorClass(SelectOneDomainEditor.class);
             prop_dir.setExpert(false);
             prop_dir.setHidden(false);
             prop_dir.setPreferred(false);
             attrib = new AttributeDescriptor("dir",false,null,true);
             prop_dir.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_dir.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.ADVANCED);
-            prop_dir.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.TEXT_DIRECTIONS);
+            prop_dir.setValue(DomainPropertyEditor.DOMAIN_CLASS, TextDirectionDomain.class);
 
             PropertyDescriptor prop_footerClass = new PropertyDescriptorBase("footerClass",beanClass,"getFooterClass","setFooterClass");
             prop_footerClass.setDisplayName(resources.getString("HtmlDataTable_footerClass_DisplayName"));
             prop_footerClass.setShortDescription(resources.getString("HtmlDataTable_footerClass_Description"));
-            prop_footerClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_footerClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_footerClass.setExpert(false);
             prop_footerClass.setHidden(false);
             prop_footerClass.setPreferred(false);
@@ -172,7 +172,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_frame = new PropertyDescriptorBase("frame",beanClass,"getFrame","setFrame");
             prop_frame.setDisplayName(resources.getString("HtmlDataTable_frame_DisplayName"));
             prop_frame.setShortDescription(resources.getString("HtmlDataTable_frame_Description"));
-            prop_frame.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_frame.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_frame.setExpert(false);
             prop_frame.setHidden(false);
             prop_frame.setPreferred(false);
@@ -184,7 +184,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_headerClass = new PropertyDescriptorBase("headerClass",beanClass,"getHeaderClass","setHeaderClass");
             prop_headerClass.setDisplayName(resources.getString("HtmlDataTable_headerClass_DisplayName"));
             prop_headerClass.setShortDescription(resources.getString("HtmlDataTable_headerClass_Description"));
-            prop_headerClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_headerClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_headerClass.setExpert(false);
             prop_headerClass.setHidden(false);
             prop_headerClass.setPreferred(false);
@@ -195,7 +195,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_lang = new PropertyDescriptorBase("lang",beanClass,"getLang","setLang");
             prop_lang.setDisplayName(resources.getString("HtmlDataTable_lang_DisplayName"));
             prop_lang.setShortDescription(resources.getString("HtmlDataTable_lang_Description"));
-            prop_lang.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_lang.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_lang.setExpert(false);
             prop_lang.setHidden(false);
             prop_lang.setPreferred(false);
@@ -207,7 +207,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_rowClasses = new PropertyDescriptorBase("rowClasses",beanClass,"getRowClasses","setRowClasses");
             prop_rowClasses.setDisplayName(resources.getString("HtmlDataTable_rowClasses_DisplayName"));
             prop_rowClasses.setShortDescription(resources.getString("HtmlDataTable_rowClasses_Description"));
-            prop_rowClasses.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_rowClasses.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_rowClasses.setExpert(false);
             prop_rowClasses.setHidden(false);
             prop_rowClasses.setPreferred(false);
@@ -218,7 +218,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_rules = new PropertyDescriptorBase("rules",beanClass,"getRules","setRules");
             prop_rules.setDisplayName(resources.getString("HtmlDataTable_rules_DisplayName"));
             prop_rules.setShortDescription(resources.getString("HtmlDataTable_rules_Description"));
-            prop_rules.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_rules.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_rules.setExpert(false);
             prop_rules.setHidden(false);
             prop_rules.setPreferred(false);
@@ -250,7 +250,7 @@ public class HtmlDataTableBeanInfo extends UIDataBeanInfoBase {
             PropertyDescriptor prop_width = new PropertyDescriptorBase("width",beanClass,"getWidth","setWidth");
             prop_width.setDisplayName(resources.getString("HtmlDataTable_width_DisplayName"));
             prop_width.setShortDescription(resources.getString("HtmlDataTable_width_Description"));
-            prop_width.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.LengthPropertyEditor"));
+            prop_width.setPropertyEditorClass(com.sun.rave.propertyeditors.LengthPropertyEditor.class);
             prop_width.setExpert(false);
             prop_width.setHidden(false);
             prop_width.setPreferred(false);

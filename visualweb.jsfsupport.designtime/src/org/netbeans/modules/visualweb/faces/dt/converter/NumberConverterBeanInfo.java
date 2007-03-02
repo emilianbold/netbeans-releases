@@ -18,15 +18,14 @@
  */
 package org.netbeans.modules.visualweb.faces.dt.converter;
 
-import com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor;
-import com.sun.jsfcl.std.property.NumberConverterTypePropertyEditor;
-import com.sun.jsfcl.std.property.NumberPatternPropertyEditor;
-import com.sun.jsfcl.std.reference.ReferenceDataManager;
 import org.netbeans.modules.visualweb.faces.dt.HtmlNonGeneratedBeanInfoBase;
 import java.beans.*;
 import com.sun.rave.designtime.*;
+import com.sun.rave.propertyeditors.DomainPropertyEditor;
 import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import com.sun.rave.propertyeditors.IntegerPropertyEditor;
+import com.sun.rave.propertyeditors.SelectOneDomainEditor;
+import com.sun.rave.propertyeditors.domains.LocalesDomain;
 import javax.faces.convert.NumberConverter;
 
 public class NumberConverterBeanInfo extends HtmlNonGeneratedBeanInfoBase {  // SimpleBeanInfo
@@ -109,8 +108,8 @@ public class NumberConverterBeanInfo extends HtmlNonGeneratedBeanInfoBase {  // 
                 
                 PropertyDescriptor _locale = new PropertyDescriptor("locale", beanClass, "getLocale", "setLocale");   //NOI18N
 //                _locale.setShortDescription("");
-                _locale.setPropertyEditorClass(ChooseOneReferenceDataPropertyEditor.class);
-                _locale.setValue(ChooseOneReferenceDataPropertyEditor.REFERENCE_DATA_NAME, ReferenceDataManager.LOCALES);
+                _locale.setPropertyEditorClass(SelectOneDomainEditor.class);
+                _locale.setValue(DomainPropertyEditor.DOMAIN_CLASS, LocalesDomain.class);
 
                 PropertyDescriptor _pattern = new PropertyDescriptor("pattern", beanClass, "getPattern", "setPattern");   //NOI18N
 //                _pattern.setShortDescription("");

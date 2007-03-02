@@ -66,7 +66,7 @@ public abstract class UICommandBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_actionExpression = new PropertyDescriptorBase("actionExpression",beanClass,"getAction","setAction");
             prop_actionExpression.setDisplayName(resources.getString("UICommand_actionExpression_DisplayName"));
             prop_actionExpression.setShortDescription(resources.getString("UICommand_actionExpression_Description"));
-            prop_actionExpression.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.MethodBindingPropertyEditor"));
+            prop_actionExpression.setPropertyEditorClass(com.sun.rave.propertyeditors.MethodBindingPropertyEditor.class);
             prop_actionExpression.setExpert(false);
             prop_actionExpression.setHidden(true);
             prop_actionExpression.setPreferred(false);
@@ -77,7 +77,7 @@ public abstract class UICommandBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_actionListener = new PropertyDescriptorBase("actionListener",beanClass,"getActionListener","setActionListener");
             prop_actionListener.setDisplayName(resources.getString("UICommand_actionListener_DisplayName"));
             prop_actionListener.setShortDescription(resources.getString("UICommand_actionListener_Description"));
-            prop_actionListener.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.MethodBindingPropertyEditor"));
+            prop_actionListener.setPropertyEditorClass(com.sun.rave.propertyeditors.MethodBindingPropertyEditor.class);
             prop_actionListener.setExpert(false);
             prop_actionListener.setHidden(false);
             prop_actionListener.setPreferred(false);
@@ -98,7 +98,7 @@ public abstract class UICommandBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_value = new PropertyDescriptorBase("value",beanClass,"getValue","setValue");
             prop_value.setDisplayName(resources.getString("UICommand_value_DisplayName"));
             prop_value.setShortDescription(resources.getString("UICommand_value_Description"));
-            prop_value.setPropertyEditorClass(loadClass("org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor"));
+            prop_value.setPropertyEditorClass(org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor.class);
             prop_value.setExpert(false);
             prop_value.setHidden(false);
             prop_value.setPreferred(false);

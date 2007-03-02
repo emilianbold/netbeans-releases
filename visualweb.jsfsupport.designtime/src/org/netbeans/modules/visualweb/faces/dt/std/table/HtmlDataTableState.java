@@ -44,7 +44,7 @@ import javax.faces.el.ValueBinding;
 import javax.sql.RowSet;
 import com.sun.rave.faces.data.DefaultSelectItemsArray;
 import com.sun.rave.faces.data.CachedRowSetDataModel;
-import com.sun.jsfcl.util.ComponentBundle;
+import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignEvent;

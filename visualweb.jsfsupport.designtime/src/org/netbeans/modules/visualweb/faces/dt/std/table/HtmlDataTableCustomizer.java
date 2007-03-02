@@ -19,7 +19,7 @@
 package org.netbeans.modules.visualweb.faces.dt.std.table;
 
 import java.awt.Component;
-import com.sun.jsfcl.util.ComponentBundle;
+import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.impl.BasicCustomizer2;

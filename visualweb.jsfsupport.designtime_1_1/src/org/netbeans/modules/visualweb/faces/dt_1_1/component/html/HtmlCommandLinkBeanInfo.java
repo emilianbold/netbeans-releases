@@ -20,9 +20,7 @@
 package org.netbeans.modules.visualweb.faces.dt_1_1.component.html;
 
 import org.netbeans.modules.visualweb.faces.dt_1_1.component.UICommandBeanInfoBase;
-import java.awt.Image;
 import java.beans.BeanDescriptor;
-import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.Locale;
@@ -30,13 +28,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-
-import com.sun.rave.designtime.CategoryDescriptor;
 import com.sun.rave.designtime.Constants;
-import com.sun.rave.designtime.faces.FacetDescriptor;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
-
-import org.netbeans.modules.visualweb.faces.dt.HtmlBeanInfoBase;
+import com.sun.rave.propertyeditors.DomainPropertyEditor;
+import com.sun.rave.propertyeditors.SelectOneDomainEditor;
+import com.sun.rave.propertyeditors.domains.TextDirectionDomain;
 import org.netbeans.modules.visualweb.faces.dt.BeanDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt.PropertyDescriptorBase;
 
@@ -116,7 +112,7 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_charset = new PropertyDescriptorBase("charset",beanClass,"getCharset","setCharset");
             prop_charset.setDisplayName(resources.getString("HtmlOutputLink_charset_DisplayName"));
             prop_charset.setShortDescription(resources.getString("HtmlOutputLink_charset_Description"));
-            prop_charset.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_charset.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_charset.setExpert(false);
             prop_charset.setHidden(false);
             prop_charset.setPreferred(false);
@@ -128,7 +124,7 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_coords = new PropertyDescriptorBase("coords",beanClass,"getCoords","setCoords");
             prop_coords.setDisplayName(resources.getString("HtmlOutputLink_coords_DisplayName"));
             prop_coords.setShortDescription(resources.getString("HtmlOutputLink_coords_Description"));
-            prop_coords.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StringPropertyEditor"));
+            prop_coords.setPropertyEditorClass(com.sun.rave.propertyeditors.StringPropertyEditor.class);
             prop_coords.setExpert(false);
             prop_coords.setHidden(false);
             prop_coords.setPreferred(false);
@@ -139,19 +135,19 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_dir = new PropertyDescriptorBase("dir",beanClass,"getDir","setDir");
             prop_dir.setDisplayName(resources.getString("HtmlCommandLink_dir_DisplayName"));
             prop_dir.setShortDescription(resources.getString("HtmlCommandLink_dir_Description"));
-            prop_dir.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_dir.setPropertyEditorClass(SelectOneDomainEditor.class);
             prop_dir.setExpert(false);
             prop_dir.setHidden(false);
             prop_dir.setPreferred(false);
             attrib = new AttributeDescriptor("dir",false,null,true);
             prop_dir.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_dir.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.ADVANCED);
-            prop_dir.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.TEXT_DIRECTIONS);
+            prop_dir.setValue(DomainPropertyEditor.DOMAIN_CLASS, TextDirectionDomain.class);
 
             PropertyDescriptor prop_hreflang = new PropertyDescriptorBase("hreflang",beanClass,"getHreflang","setHreflang");
             prop_hreflang.setDisplayName(resources.getString("HtmlCommandLink_hreflang_DisplayName"));
             prop_hreflang.setShortDescription(resources.getString("HtmlCommandLink_hreflang_Description"));
-            prop_hreflang.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_hreflang.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_hreflang.setExpert(false);
             prop_hreflang.setHidden(false);
             prop_hreflang.setPreferred(false);
@@ -163,7 +159,7 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_lang = new PropertyDescriptorBase("lang",beanClass,"getLang","setLang");
             prop_lang.setDisplayName(resources.getString("HtmlCommandLink_lang_DisplayName"));
             prop_lang.setShortDescription(resources.getString("HtmlCommandLink_lang_Description"));
-            prop_lang.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_lang.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_lang.setExpert(false);
             prop_lang.setHidden(false);
             prop_lang.setPreferred(false);
@@ -175,7 +171,7 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_rel = new PropertyDescriptorBase("rel",beanClass,"getRel","setRel");
             prop_rel.setDisplayName(resources.getString("HtmlCommandLink_rel_DisplayName"));
             prop_rel.setShortDescription(resources.getString("HtmlCommandLink_rel_Description"));
-            prop_rel.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_rel.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_rel.setExpert(false);
             prop_rel.setHidden(false);
             prop_rel.setPreferred(false);
@@ -187,7 +183,7 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_rev = new PropertyDescriptorBase("rev",beanClass,"getRev","setRev");
             prop_rev.setDisplayName(resources.getString("HtmlCommandLink_rev_DisplayName"));
             prop_rev.setShortDescription(resources.getString("HtmlCommandLink_rev_Description"));
-            prop_rev.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_rev.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_rev.setExpert(false);
             prop_rev.setHidden(false);
             prop_rev.setPreferred(false);
@@ -199,7 +195,7 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_shape = new PropertyDescriptorBase("shape",beanClass,"getShape","setShape");
             prop_shape.setDisplayName(resources.getString("HtmlCommandLink_shape_DisplayName"));
             prop_shape.setShortDescription(resources.getString("HtmlCommandLink_shape_Description"));
-            prop_shape.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_shape.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_shape.setExpert(false);
             prop_shape.setHidden(false);
             prop_shape.setPreferred(false);
@@ -211,7 +207,7 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_tabindex = new PropertyDescriptorBase("tabindex",beanClass,"getTabindex","setTabindex");
             prop_tabindex.setDisplayName(resources.getString("HtmlCommandLink_tabindex_DisplayName"));
             prop_tabindex.setShortDescription(resources.getString("HtmlCommandLink_tabindex_Description"));
-            prop_tabindex.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_tabindex.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_tabindex.setExpert(false);
             prop_tabindex.setHidden(false);
             prop_tabindex.setPreferred(false);
@@ -224,7 +220,7 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_target = new PropertyDescriptorBase("target",beanClass,"getTarget","setTarget");
             prop_target.setDisplayName(resources.getString("HtmlCommandLink_target_DisplayName"));
             prop_target.setShortDescription(resources.getString("HtmlCommandLink_target_Description"));
-            prop_target.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_target.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_target.setExpert(false);
             prop_target.setHidden(false);
             prop_target.setPreferred(false);
@@ -246,7 +242,7 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
             PropertyDescriptor prop_type = new PropertyDescriptorBase("type",beanClass,"getType","setType");
             prop_type.setDisplayName(resources.getString("HtmlCommandLink_type_DisplayName"));
             prop_type.setShortDescription(resources.getString("HtmlCommandLink_type_Description"));
-            prop_type.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_type.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_type.setExpert(false);
             prop_type.setHidden(false);
             prop_type.setPreferred(false);

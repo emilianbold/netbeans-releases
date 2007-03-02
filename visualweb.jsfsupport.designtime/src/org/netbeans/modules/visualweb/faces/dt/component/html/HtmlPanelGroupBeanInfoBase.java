@@ -211,7 +211,7 @@ abstract class HtmlPanelGroupBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_style = new PropertyDescriptorBase("style",beanClass,"getStyle","setStyle");
             prop_style.setDisplayName(resources.getString("HtmlPanelGroup_style_DisplayName"));
             prop_style.setShortDescription(resources.getString("HtmlPanelGroup_style_Description"));
-            prop_style.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.css.CssStylePropertyEditor"));
+            prop_style.setPropertyEditorClass(com.sun.rave.propertyeditors.css.CssStylePropertyEditor.class);
             prop_style.setExpert(false);
             prop_style.setHidden(false);
             prop_style.setPreferred(false);
@@ -222,7 +222,7 @@ abstract class HtmlPanelGroupBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_styleClass = new PropertyDescriptorBase("styleClass",beanClass,"getStyleClass","setStyleClass");
             prop_styleClass.setDisplayName(resources.getString("HtmlPanelGroup_styleClass_DisplayName"));
             prop_styleClass.setShortDescription(resources.getString("HtmlPanelGroup_styleClass_Description"));
-            prop_styleClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_styleClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_styleClass.setExpert(false);
             prop_styleClass.setHidden(false);
             prop_styleClass.setPreferred(false);

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.visualweb.faces.dt_1_1.component.html;
 
-import com.sun.jsfcl.std.URLPanel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -33,7 +32,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -46,8 +44,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
 import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
+import org.netbeans.modules.visualweb.propertyeditors.StandardUrlPanel;
 
 public class HtmlDataTableCustomizerPagingPanel extends JPanel {
 
@@ -266,7 +264,7 @@ public class HtmlDataTableCustomizerPagingPanel extends JPanel {
 	        JTextField[] textFields = {tfFirst, tfPrevious, tfNext, tfLast};
 	        for (int i = 0; i < browseButtons.length; i++) {
 		    	if (e.getSource() == browseButtons[i]) {
-		            URLPanel urlPanel = new URLPanel();
+		            StandardUrlPanel urlPanel = new StandardUrlPanel();
 		            urlPanel.setDesignProperty(null);
 		            urlPanel.setDesignContext(table.getTableBean().getDesignContext());
 		            urlPanel.initialize();
@@ -405,10 +403,10 @@ public class HtmlDataTableCustomizerPagingPanel extends JPanel {
 
     private class URLDialog extends JDialog {
     	private JButton btnOk, btnCancel;
-    	private URLPanel urlPanel;
+    	private StandardUrlPanel urlPanel;
     	private String urlString;
 
-    	public URLDialog(Frame parent, URLPanel urlPanel) {
+    	public URLDialog(Frame parent, StandardUrlPanel urlPanel) {
     		super(parent, bundle.getMessage("urlDlgTitle"), true);	//NOI18N
     		this.urlPanel = urlPanel;
        		ActionListener dialogActionListener = new ActionListener() {

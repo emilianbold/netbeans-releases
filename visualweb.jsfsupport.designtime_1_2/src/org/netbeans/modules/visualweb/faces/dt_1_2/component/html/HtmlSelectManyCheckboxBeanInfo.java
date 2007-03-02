@@ -105,7 +105,7 @@ public class HtmlSelectManyCheckboxBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_border = new PropertyDescriptorBase("border",beanClass,"getBorder","setBorder");
             prop_border.setDisplayName(resources.getString("HtmlSelectManyCheckbox_border_DisplayName"));
             prop_border.setShortDescription(resources.getString("HtmlSelectManyCheckbox_border_Description"));
-            prop_border.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_border.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_border.setExpert(false);
             prop_border.setHidden(false);
             prop_border.setPreferred(false);
@@ -128,7 +128,7 @@ public class HtmlSelectManyCheckboxBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_disabledClass = new PropertyDescriptorBase("disabledClass",beanClass,"getDisabledClass","setDisabledClass");
             prop_disabledClass.setDisplayName(resources.getString("HtmlSelectManyCheckbox_disabledClass_DisplayName"));
             prop_disabledClass.setShortDescription(resources.getString("HtmlSelectManyCheckbox_disabledClass_Description"));
-            prop_disabledClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_disabledClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_disabledClass.setExpert(false);
             prop_disabledClass.setHidden(false);
             prop_disabledClass.setPreferred(false);
@@ -139,7 +139,7 @@ public class HtmlSelectManyCheckboxBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_enabledClass = new PropertyDescriptorBase("enabledClass",beanClass,"getEnabledClass","setEnabledClass");
             prop_enabledClass.setDisplayName(resources.getString("HtmlSelectManyCheckbox_enabledClass_DisplayName"));
             prop_enabledClass.setShortDescription(resources.getString("HtmlSelectManyCheckbox_enabledClass_Description"));
-            prop_enabledClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_enabledClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_enabledClass.setExpert(false);
             prop_enabledClass.setHidden(false);
             prop_enabledClass.setPreferred(false);
@@ -150,7 +150,7 @@ public class HtmlSelectManyCheckboxBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_layout = new PropertyDescriptorBase("layout",beanClass,"getLayout","setLayout");
             prop_layout.setDisplayName(resources.getString("HtmlSelectManyCheckbox_layout_DisplayName"));
             prop_layout.setShortDescription(resources.getString("HtmlSelectManyCheckbox_layout_Description"));
-            prop_layout.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_layout.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_layout.setExpert(false);
             prop_layout.setHidden(false);
             prop_layout.setPreferred(false);
@@ -180,7 +180,7 @@ public class HtmlSelectManyCheckboxBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_tabindex = new PropertyDescriptorBase("tabindex",beanClass,"getTabindex","setTabindex");
             prop_tabindex.setDisplayName(resources.getString("HtmlSelectManyCheckbox_tabindex_DisplayName"));
             prop_tabindex.setShortDescription(resources.getString("HtmlSelectManyCheckbox_tabindex_Description"));
-            prop_tabindex.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_tabindex.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_tabindex.setExpert(false);
             prop_tabindex.setHidden(false);
             prop_tabindex.setPreferred(false);

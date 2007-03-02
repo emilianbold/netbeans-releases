@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-
-import com.sun.rave.designtime.CategoryDescriptor;
 import com.sun.rave.designtime.Constants;
-import com.sun.rave.designtime.faces.FacetDescriptor;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
+import com.sun.rave.propertyeditors.DomainPropertyEditor;
+import com.sun.rave.propertyeditors.SelectOneDomainEditor;
+import com.sun.rave.propertyeditors.domains.TextDirectionDomain;
 import org.netbeans.modules.visualweb.faces.dt.BeanDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt.PropertyDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt_1_1.component.UIInputBeanInfoBase;
@@ -104,7 +104,7 @@ public class HtmlSelectOneRadioBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_border = new PropertyDescriptorBase("border",beanClass,"getBorder","setBorder");
             prop_border.setDisplayName(resources.getString("HtmlSelectOneRadio_border_DisplayName"));
             prop_border.setShortDescription(resources.getString("HtmlSelectOneRadio_border_Description"));
-            prop_border.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_border.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_border.setExpert(false);
             prop_border.setHidden(false);
             prop_border.setPreferred(false);
@@ -116,14 +116,14 @@ public class HtmlSelectOneRadioBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_dir = new PropertyDescriptorBase("dir",beanClass,"getDir","setDir");
             prop_dir.setDisplayName(resources.getString("HtmlSelectOneRadio_dir_DisplayName"));
             prop_dir.setShortDescription(resources.getString("HtmlSelectOneRadio_dir_Description"));
-            prop_dir.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_dir.setPropertyEditorClass(SelectOneDomainEditor.class);
             prop_dir.setExpert(false);
             prop_dir.setHidden(false);
             prop_dir.setPreferred(false);
             attrib = new AttributeDescriptor("dir",false,null,true);
             prop_dir.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_dir.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.ADVANCED);
-            prop_dir.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.TEXT_DIRECTIONS);
+            prop_dir.setValue(DomainPropertyEditor.DOMAIN_CLASS, TextDirectionDomain.class);
 
             PropertyDescriptor prop_disabled = new PropertyDescriptorBase("disabled",beanClass,"isDisabled","setDisabled");
             prop_disabled.setDisplayName(resources.getString("HtmlSelectOneRadio_disabled_DisplayName"));
@@ -138,7 +138,7 @@ public class HtmlSelectOneRadioBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_disabledClass = new PropertyDescriptorBase("disabledClass",beanClass,"getDisabledClass","setDisabledClass");
             prop_disabledClass.setDisplayName(resources.getString("HtmlSelectOneRadio_disabledClass_DisplayName"));
             prop_disabledClass.setShortDescription(resources.getString("HtmlSelectOneRadio_disabledClass_Description"));
-            prop_disabledClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_disabledClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_disabledClass.setExpert(false);
             prop_disabledClass.setHidden(false);
             prop_disabledClass.setPreferred(false);
@@ -149,7 +149,7 @@ public class HtmlSelectOneRadioBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_enabledClass = new PropertyDescriptorBase("enabledClass",beanClass,"getEnabledClass","setEnabledClass");
             prop_enabledClass.setDisplayName(resources.getString("HtmlSelectOneRadio_enabledClass_DisplayName"));
             prop_enabledClass.setShortDescription(resources.getString("HtmlSelectOneRadio_enabledClass_Description"));
-            prop_enabledClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_enabledClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_enabledClass.setExpert(false);
             prop_enabledClass.setHidden(false);
             prop_enabledClass.setPreferred(false);
@@ -160,7 +160,7 @@ public class HtmlSelectOneRadioBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_lang = new PropertyDescriptorBase("lang",beanClass,"getLang","setLang");
             prop_lang.setDisplayName(resources.getString("HtmlSelectOneRadio_lang_DisplayName"));
             prop_lang.setShortDescription(resources.getString("HtmlSelectOneRadio_lang_Description"));
-            prop_lang.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_lang.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_lang.setExpert(false);
             prop_lang.setHidden(false);
             prop_lang.setPreferred(false);
@@ -172,7 +172,7 @@ public class HtmlSelectOneRadioBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_layout = new PropertyDescriptorBase("layout",beanClass,"getLayout","setLayout");
             prop_layout.setDisplayName(resources.getString("HtmlSelectOneRadio_layout_DisplayName"));
             prop_layout.setShortDescription(resources.getString("HtmlSelectOneRadio_layout_Description"));
-            prop_layout.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_layout.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_layout.setExpert(false);
             prop_layout.setHidden(false);
             prop_layout.setPreferred(false);
@@ -194,7 +194,7 @@ public class HtmlSelectOneRadioBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_tabindex = new PropertyDescriptorBase("tabindex",beanClass,"getTabindex","setTabindex");
             prop_tabindex.setDisplayName(resources.getString("HtmlSelectOneRadio_tabindex_DisplayName"));
             prop_tabindex.setShortDescription(resources.getString("HtmlSelectOneRadio_tabindex_Description"));
-            prop_tabindex.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_tabindex.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_tabindex.setExpert(false);
             prop_tabindex.setHidden(false);
             prop_tabindex.setPreferred(false);

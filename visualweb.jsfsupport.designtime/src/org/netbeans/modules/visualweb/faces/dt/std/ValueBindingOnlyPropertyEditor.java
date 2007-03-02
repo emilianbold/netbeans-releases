@@ -26,9 +26,10 @@ package org.netbeans.modules.visualweb.faces.dt.std;
 
 import java.awt.Component;
 import javax.faces.application.Application;
-import com.sun.jsfcl.std.property.LocalizedMessageRuntimeException;
+//import com.sun.jsfcl.std.property.LocalizedMessageRuntimeException;
 import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import com.sun.rave.designtime.faces.FacesDesignContext;
+import org.netbeans.modules.visualweb.propertyeditors.IllegalTextArgumentException;
 
 /**
  * @author eric
@@ -72,6 +73,6 @@ public class ValueBindingOnlyPropertyEditor extends ValueBindingPropertyEditor {
         } else if (string.trim().length() == 0) {
             return;
         }
-        throw new LocalizedMessageRuntimeException(bundle.getMessage("vbExpected", string)); // NOI18N
+        throw new IllegalTextArgumentException(bundle.getMessage("vbExpected", string)); // NOI18N
     }
 }

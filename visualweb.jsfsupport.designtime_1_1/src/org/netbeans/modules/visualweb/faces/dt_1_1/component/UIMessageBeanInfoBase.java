@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.visualweb.faces.dt_1_1.component;
 
-import java.awt.Image;
-import java.beans.BeanDescriptor;
-import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.Locale;
@@ -29,14 +26,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-
-import com.sun.rave.designtime.CategoryDescriptor;
 import com.sun.rave.designtime.Constants;
-import com.sun.rave.designtime.faces.FacetDescriptor;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
-
-import org.netbeans.modules.visualweb.faces.dt.HtmlBeanInfoBase;
-import org.netbeans.modules.visualweb.faces.dt.BeanDescriptorBase;
+import com.sun.rave.propertyeditors.DomainPropertyEditor;
+import com.sun.rave.propertyeditors.SelectOneDomainEditor;
+import com.sun.rave.propertyeditors.domains.ComponentIdsDomain;
 import org.netbeans.modules.visualweb.faces.dt.PropertyDescriptorBase;
 
 
@@ -65,14 +59,14 @@ public abstract class UIMessageBeanInfoBase extends UIComponentBeanInfoBase {
             PropertyDescriptor prop_for = new PropertyDescriptorBase("for",beanClass,"getFor","setFor");
             prop_for.setDisplayName(resources.getString("UIMessage_for_DisplayName"));
             prop_for.setShortDescription(resources.getString("UIMessage_for_Description"));
-            prop_for.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_for.setPropertyEditorClass(SelectOneDomainEditor.class);
             prop_for.setExpert(false);
             prop_for.setHidden(false);
             prop_for.setPreferred(false);
             attrib = new AttributeDescriptor("for",true,null,true);
             prop_for.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_for.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.APPEARANCE);
-            prop_for.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.COMPONENT_IDS);
+            prop_for.setValue(DomainPropertyEditor.DOMAIN_CLASS, ComponentIdsDomain.class);
 
             PropertyDescriptor prop_showDetail = new PropertyDescriptorBase("showDetail",beanClass,"isShowDetail","setShowDetail");
             prop_showDetail.setDisplayName(resources.getString("UIMessage_showDetail_DisplayName"));

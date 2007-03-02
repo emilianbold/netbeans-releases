@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.visualweb.faces.dt.component.html;
 
-import java.awt.Image;
+import com.sun.rave.propertyeditors.DomainPropertyEditor;
+import com.sun.rave.propertyeditors.SelectOneDomainEditor;
 import java.beans.BeanDescriptor;
-import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.Locale;
@@ -30,6 +30,7 @@ import com.sun.rave.designtime.CategoryDescriptor;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.faces.FacetDescriptor;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
+import com.sun.rave.propertyeditors.domains.TextDirectionDomain;
 
 import org.netbeans.modules.visualweb.faces.dt.HtmlBeanInfoBase;
 import org.netbeans.modules.visualweb.faces.dt.BeanDescriptorBase;
@@ -174,14 +175,14 @@ abstract class HtmlFormBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_dir = new PropertyDescriptorBase("dir",beanClass,"getDir","setDir");
             prop_dir.setDisplayName(resources.getString("HtmlForm_dir_DisplayName"));
             prop_dir.setShortDescription(resources.getString("HtmlForm_dir_Description"));
-            prop_dir.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_dir.setPropertyEditorClass(SelectOneDomainEditor.class);
             prop_dir.setExpert(false);
             prop_dir.setHidden(false);
             prop_dir.setPreferred(false);
             attrib = new AttributeDescriptor("dir",false,null,true);
             prop_dir.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_dir.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.ADVANCED);
-            prop_dir.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.TEXT_DIRECTIONS);
+            prop_dir.setValue(DomainPropertyEditor.DOMAIN_CLASS, TextDirectionDomain.class);
 
             PropertyDescriptor prop_enctype = new PropertyDescriptorBase("enctype",beanClass,"getEnctype","setEnctype");
             prop_enctype.setDisplayName(resources.getString("HtmlForm_enctype_DisplayName"));
@@ -402,7 +403,7 @@ abstract class HtmlFormBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_style = new PropertyDescriptorBase("style",beanClass,"getStyle","setStyle");
             prop_style.setDisplayName(resources.getString("HtmlForm_style_DisplayName"));
             prop_style.setShortDescription(resources.getString("HtmlForm_style_Description"));
-            prop_style.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.css.CssStylePropertyEditor"));
+            prop_style.setPropertyEditorClass(com.sun.rave.propertyeditors.css.CssStylePropertyEditor.class);
             prop_style.setExpert(false);
             prop_style.setHidden(false);
             prop_style.setPreferred(false);

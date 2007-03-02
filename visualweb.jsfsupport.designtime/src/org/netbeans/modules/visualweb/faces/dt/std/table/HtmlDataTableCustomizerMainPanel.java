@@ -22,7 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import com.sun.jsfcl.util.ComponentBundle;
+import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.Result;
 

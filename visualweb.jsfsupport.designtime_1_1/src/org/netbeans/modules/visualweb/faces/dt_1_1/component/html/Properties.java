@@ -47,7 +47,7 @@ class Properties {
             PropertyDescriptor prop_style = new PropertyDescriptorBase("style", beanClass, "getStyle", "setStyle");
             prop_style.setDisplayName(resources.getString("Properties_style_DisplayName"));
             prop_style.setShortDescription(resources.getString("Properties_style_Description"));
-            prop_style.setPropertyEditorClass(com.sun.jsfcl.std.css.CssStylePropertyEditor.class);
+            prop_style.setPropertyEditorClass(com.sun.rave.propertyeditors.css.CssStylePropertyEditor.class);
             attrib = new AttributeDescriptor("style", false, null, true);
             prop_style.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR, attrib);
             prop_style.setValue(Constants.PropertyDescriptor.CATEGORY, CategoryDescriptors.APPEARANCE);

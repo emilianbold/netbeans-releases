@@ -80,14 +80,14 @@ public class UIParameterBeanInfo extends HtmlNonGeneratedBeanInfoBase {
                 AttributeDescriptor attrib_name = new AttributeDescriptor("name"); //NOI18N
                 attrib_name.setBindable(true);
                 prop_name.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR, attrib_name);
-                prop_name.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StringPropertyEditor"));
+                prop_name.setPropertyEditorClass(com.sun.rave.propertyeditors.StringPropertyEditor.class);
                 prop_name.setValue(Constants.PropertyDescriptor.CATEGORY, CategoryDescriptors.DATA);
 
                 PropertyDescriptor prop_value = new PropertyDescriptor("value", beanClass, "getValue", "setValue"); //NOI18N
                 AttributeDescriptor attrib_value = new AttributeDescriptor("value"); //NOI18N
                 attrib_value.setBindable(true);
                 prop_value.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR, attrib_value);
-                prop_value.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StringPropertyEditor"));
+                prop_value.setPropertyEditorClass(com.sun.rave.propertyeditors.StringPropertyEditor.class);
                 prop_value.setValue(Constants.PropertyDescriptor.CATEGORY, CategoryDescriptors.DATA);
                 
                 propertyDescriptors = new PropertyDescriptor[] {

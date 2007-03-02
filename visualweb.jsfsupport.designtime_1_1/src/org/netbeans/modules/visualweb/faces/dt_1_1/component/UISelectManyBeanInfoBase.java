@@ -287,7 +287,7 @@ abstract class UISelectManyBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_validator = new PropertyDescriptorBase("validator",beanClass,"getValidator","setValidator");
             prop_validator.setDisplayName(resources.getString("UISelectMany_validator_DisplayName"));
             prop_validator.setShortDescription(resources.getString("UISelectMany_validator_Description"));
-            prop_validator.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.ValidatorPropertyEditor"));
+            prop_validator.setPropertyEditorClass(com.sun.rave.propertyeditors.ValidatorPropertyEditor.class);
             prop_validator.setExpert(false);
             prop_validator.setHidden(false);
             prop_validator.setPreferred(false);
@@ -298,7 +298,7 @@ abstract class UISelectManyBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_value = new PropertyDescriptorBase("value",beanClass,"getValue","setValue");
             prop_value.setDisplayName(resources.getString("UISelectMany_value_DisplayName"));
             prop_value.setShortDescription(resources.getString("UISelectMany_value_Description"));
-            prop_value.setPropertyEditorClass(loadClass("org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor"));
+            prop_value.setPropertyEditorClass(org.netbeans.modules.visualweb.faces.dt.std.ValueBindingPropertyEditor.class);
             prop_value.setExpert(false);
             prop_value.setHidden(false);
             prop_value.setPreferred(false);
@@ -310,7 +310,7 @@ abstract class UISelectManyBeanInfoBase extends HtmlBeanInfoBase {
             PropertyDescriptor prop_valueChangeListener = new PropertyDescriptorBase("valueChangeListener",beanClass,"getValueChangeListener","setValueChangeListener");
             prop_valueChangeListener.setDisplayName(resources.getString("UISelectMany_valueChangeListener_DisplayName"));
             prop_valueChangeListener.setShortDescription(resources.getString("UISelectMany_valueChangeListener_Description"));
-            prop_valueChangeListener.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.MethodBindingPropertyEditor"));
+            prop_valueChangeListener.setPropertyEditorClass(com.sun.rave.propertyeditors.MethodBindingPropertyEditor.class);
             prop_valueChangeListener.setExpert(false);
             prop_valueChangeListener.setHidden(false);
             prop_valueChangeListener.setPreferred(false);

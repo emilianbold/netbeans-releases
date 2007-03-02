@@ -69,7 +69,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import com.sun.jsfcl.util.ComponentBundle;
+import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;

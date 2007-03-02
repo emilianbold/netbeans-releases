@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-
-import com.sun.rave.designtime.CategoryDescriptor;
 import com.sun.rave.designtime.Constants;
-import com.sun.rave.designtime.faces.FacetDescriptor;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
+import com.sun.rave.propertyeditors.DomainPropertyEditor;
+import com.sun.rave.propertyeditors.SelectOneDomainEditor;
+import com.sun.rave.propertyeditors.domains.TextDirectionDomain;
 import org.netbeans.modules.visualweb.faces.dt.BeanDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt.PropertyDescriptorBase;
 import org.netbeans.modules.visualweb.faces.dt_1_1.component.UIInputBeanInfoBase;
@@ -103,7 +103,7 @@ public class HtmlInputTextareaBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_cols = new PropertyDescriptorBase("cols",beanClass,"getCols","setCols");
             prop_cols.setDisplayName(resources.getString("HtmlInputTextarea_cols_DisplayName"));
             prop_cols.setShortDescription(resources.getString("HtmlInputTextarea_cols_Description"));
-            prop_cols.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_cols.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_cols.setExpert(false);
             prop_cols.setHidden(false);
             prop_cols.setPreferred(false);
@@ -116,14 +116,14 @@ public class HtmlInputTextareaBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_dir = new PropertyDescriptorBase("dir",beanClass,"getDir","setDir");
             prop_dir.setDisplayName(resources.getString("HtmlInputTextarea_dir_DisplayName"));
             prop_dir.setShortDescription(resources.getString("HtmlInputTextarea_dir_Description"));
-            prop_dir.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.property.ChooseOneReferenceDataPropertyEditor"));
+            prop_dir.setPropertyEditorClass(SelectOneDomainEditor.class);
             prop_dir.setExpert(false);
             prop_dir.setHidden(false);
             prop_dir.setPreferred(false);
             attrib = new AttributeDescriptor("dir",false,null,true);
             prop_dir.setValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR,attrib);
             prop_dir.setValue(Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.ADVANCED);
-            prop_dir.setValue("referenceDataDefiner", com.sun.jsfcl.std.reference.ReferenceDataManager.TEXT_DIRECTIONS);
+            prop_dir.setValue(DomainPropertyEditor.DOMAIN_CLASS, TextDirectionDomain.class);
 
             PropertyDescriptor prop_disabled = new PropertyDescriptorBase("disabled",beanClass,"isDisabled","setDisabled");
             prop_disabled.setDisplayName(resources.getString("HtmlInputTextarea_disabled_DisplayName"));
@@ -138,7 +138,7 @@ public class HtmlInputTextareaBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_lang = new PropertyDescriptorBase("lang",beanClass,"getLang","setLang");
             prop_lang.setDisplayName(resources.getString("HtmlInputTextarea_lang_DisplayName"));
             prop_lang.setShortDescription(resources.getString("HtmlInputTextarea_lang_Description"));
-            prop_lang.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_lang.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_lang.setExpert(false);
             prop_lang.setHidden(false);
             prop_lang.setPreferred(false);
@@ -160,7 +160,7 @@ public class HtmlInputTextareaBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_rows = new PropertyDescriptorBase("rows",beanClass,"getRows","setRows");
             prop_rows.setDisplayName(resources.getString("HtmlInputTextarea_rows_DisplayName"));
             prop_rows.setShortDescription(resources.getString("HtmlInputTextarea_rows_Description"));
-            prop_rows.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_rows.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_rows.setExpert(false);
             prop_rows.setHidden(false);
             prop_rows.setPreferred(false);
@@ -173,7 +173,7 @@ public class HtmlInputTextareaBeanInfo extends UIInputBeanInfoBase {
             PropertyDescriptor prop_tabindex = new PropertyDescriptorBase("tabindex",beanClass,"getTabindex","setTabindex");
             prop_tabindex.setDisplayName(resources.getString("HtmlInputTextarea_tabindex_DisplayName"));
             prop_tabindex.setShortDescription(resources.getString("HtmlInputTextarea_tabindex_Description"));
-            prop_tabindex.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.IntegerPropertyEditor"));
+            prop_tabindex.setPropertyEditorClass(com.sun.rave.propertyeditors.IntegerPropertyEditor.class);
             prop_tabindex.setExpert(false);
             prop_tabindex.setHidden(false);
             prop_tabindex.setPreferred(false);

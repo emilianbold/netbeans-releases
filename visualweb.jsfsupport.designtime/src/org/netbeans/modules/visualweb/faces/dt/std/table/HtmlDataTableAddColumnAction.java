@@ -20,7 +20,7 @@ package org.netbeans.modules.visualweb.faces.dt.std.table;
 
 import javax.faces.component.UIColumn;
 import javax.faces.component.html.HtmlOutputText;
-import com.sun.jsfcl.util.ComponentBundle;
+import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignProperty;

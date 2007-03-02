@@ -95,7 +95,7 @@ public class HtmlMessagesBeanInfo extends UIMessagesBeanInfoBase {
             PropertyDescriptor prop_errorClass = new PropertyDescriptorBase("errorClass",beanClass,"getErrorClass","setErrorClass");
             prop_errorClass.setDisplayName(resources.getString("HtmlMessages_errorClass_DisplayName"));
             prop_errorClass.setShortDescription(resources.getString("HtmlMessages_errorClass_Description"));
-            prop_errorClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_errorClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_errorClass.setExpert(false);
             prop_errorClass.setHidden(false);
             prop_errorClass.setPreferred(false);
@@ -106,7 +106,7 @@ public class HtmlMessagesBeanInfo extends UIMessagesBeanInfoBase {
             PropertyDescriptor prop_errorStyle = new PropertyDescriptorBase("errorStyle",beanClass,"getErrorStyle","setErrorStyle");
             prop_errorStyle.setDisplayName(resources.getString("HtmlMessages_errorStyle_DisplayName"));
             prop_errorStyle.setShortDescription(resources.getString("HtmlMessages_errorStyle_Description"));
-            prop_errorStyle.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.css.CssStylePropertyEditor"));
+            prop_errorStyle.setPropertyEditorClass(com.sun.rave.propertyeditors.css.CssStylePropertyEditor.class);
             prop_errorStyle.setExpert(false);
             prop_errorStyle.setHidden(false);
             prop_errorStyle.setPreferred(false);
@@ -117,7 +117,7 @@ public class HtmlMessagesBeanInfo extends UIMessagesBeanInfoBase {
             PropertyDescriptor prop_fatalClass = new PropertyDescriptorBase("fatalClass",beanClass,"getFatalClass","setFatalClass");
             prop_fatalClass.setDisplayName(resources.getString("HtmlMessages_fatalClass_DisplayName"));
             prop_fatalClass.setShortDescription(resources.getString("HtmlMessages_fatalClass_Description"));
-            prop_fatalClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_fatalClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_fatalClass.setExpert(false);
             prop_fatalClass.setHidden(false);
             prop_fatalClass.setPreferred(false);
@@ -128,7 +128,7 @@ public class HtmlMessagesBeanInfo extends UIMessagesBeanInfoBase {
             PropertyDescriptor prop_fatalStyle = new PropertyDescriptorBase("fatalStyle",beanClass,"getFatalStyle","setFatalStyle");
             prop_fatalStyle.setDisplayName(resources.getString("HtmlMessages_fatalStyle_DisplayName"));
             prop_fatalStyle.setShortDescription(resources.getString("HtmlMessages_fatalStyle_Description"));
-            prop_fatalStyle.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.css.CssStylePropertyEditor"));
+            prop_fatalStyle.setPropertyEditorClass(com.sun.rave.propertyeditors.css.CssStylePropertyEditor.class);
             prop_fatalStyle.setExpert(false);
             prop_fatalStyle.setHidden(false);
             prop_fatalStyle.setPreferred(false);
@@ -139,7 +139,7 @@ public class HtmlMessagesBeanInfo extends UIMessagesBeanInfoBase {
             PropertyDescriptor prop_infoClass = new PropertyDescriptorBase("infoClass",beanClass,"getInfoClass","setInfoClass");
             prop_infoClass.setDisplayName(resources.getString("HtmlMessages_infoClass_DisplayName"));
             prop_infoClass.setShortDescription(resources.getString("HtmlMessages_infoClass_Description"));
-            prop_infoClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_infoClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_infoClass.setExpert(false);
             prop_infoClass.setHidden(false);
             prop_infoClass.setPreferred(false);
@@ -150,7 +150,7 @@ public class HtmlMessagesBeanInfo extends UIMessagesBeanInfoBase {
             PropertyDescriptor prop_infoStyle = new PropertyDescriptorBase("infoStyle",beanClass,"getInfoStyle","setInfoStyle");
             prop_infoStyle.setDisplayName(resources.getString("HtmlMessages_infoStyle_DisplayName"));
             prop_infoStyle.setShortDescription(resources.getString("HtmlMessages_infoStyle_Description"));
-            prop_infoStyle.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.css.CssStylePropertyEditor"));
+            prop_infoStyle.setPropertyEditorClass(com.sun.rave.propertyeditors.css.CssStylePropertyEditor.class);
             prop_infoStyle.setExpert(false);
             prop_infoStyle.setHidden(false);
             prop_infoStyle.setPreferred(false);
@@ -161,7 +161,7 @@ public class HtmlMessagesBeanInfo extends UIMessagesBeanInfoBase {
             PropertyDescriptor prop_layout = new PropertyDescriptorBase("layout",beanClass,"getLayout","setLayout");
             prop_layout.setDisplayName(resources.getString("HtmlMessages_layout_DisplayName"));
             prop_layout.setShortDescription(resources.getString("HtmlMessages_layout_Description"));
-            prop_layout.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.SelectOneDomainEditor"));
+            prop_layout.setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);
             prop_layout.setExpert(false);
             prop_layout.setHidden(false);
             prop_layout.setPreferred(false);
@@ -193,7 +193,7 @@ public class HtmlMessagesBeanInfo extends UIMessagesBeanInfoBase {
             PropertyDescriptor prop_warnClass = new PropertyDescriptorBase("warnClass",beanClass,"getWarnClass","setWarnClass");
             prop_warnClass.setDisplayName(resources.getString("HtmlMessages_warnClass_DisplayName"));
             prop_warnClass.setShortDescription(resources.getString("HtmlMessages_warnClass_Description"));
-            prop_warnClass.setPropertyEditorClass(loadClass("com.sun.rave.propertyeditors.StyleClassPropertyEditor"));
+            prop_warnClass.setPropertyEditorClass(com.sun.rave.propertyeditors.StyleClassPropertyEditor.class);
             prop_warnClass.setExpert(false);
             prop_warnClass.setHidden(false);
             prop_warnClass.setPreferred(false);
@@ -204,7 +204,7 @@ public class HtmlMessagesBeanInfo extends UIMessagesBeanInfoBase {
             PropertyDescriptor prop_warnStyle = new PropertyDescriptorBase("warnStyle",beanClass,"getWarnStyle","setWarnStyle");
             prop_warnStyle.setDisplayName(resources.getString("HtmlMessages_warnStyle_DisplayName"));
             prop_warnStyle.setShortDescription(resources.getString("HtmlMessages_warnStyle_Description"));
-            prop_warnStyle.setPropertyEditorClass(loadClass("com.sun.jsfcl.std.css.CssStylePropertyEditor"));
+            prop_warnStyle.setPropertyEditorClass(com.sun.rave.propertyeditors.css.CssStylePropertyEditor.class);
             prop_warnStyle.setExpert(false);
             prop_warnStyle.setHidden(false);
             prop_warnStyle.setPreferred(false);

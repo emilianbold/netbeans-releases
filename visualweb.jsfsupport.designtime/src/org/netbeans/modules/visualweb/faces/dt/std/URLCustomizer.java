@@ -19,14 +19,13 @@
 package org.netbeans.modules.visualweb.faces.dt.std;
 
 import java.awt.Component;
-import com.sun.jsfcl.util.ComponentBundle;
+import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.impl.BasicCustomizer2;
-
-import com.sun.rave.propertyeditors.PropertyPanelBase;
-import com.sun.rave.propertyeditors.UrlPropertyPanel;
+import org.netbeans.modules.visualweb.propertyeditors.PropertyPanelBase;
+import org.netbeans.modules.visualweb.propertyeditors.UrlPropertyPanel;
 
 //!CQ TODO: rename this to UrlCustomizer
 public class URLCustomizer extends BasicCustomizer2 {

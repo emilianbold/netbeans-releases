@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.visualweb.faces.dt_1_2.component.html;
 
-import com.sun.jsfcl.util.ComponentBundle;
 import javax.faces.component.UIComponent;
 
 import org.w3c.dom.DocumentFragment;
@@ -37,6 +36,7 @@ import com.sun.rave.designtime.markup.MarkupPosition;
 import com.sun.rave.designtime.markup.MarkupRenderContext;
 import javax.faces.component.html.HtmlOutputLabel;
 import javax.faces.component.html.HtmlOutputText;
+import org.netbeans.modules.visualweb.faces.dt.util.ComponentBundle;
 
 public class HtmlOutputLabelDesignInfo implements MarkupDesignInfo {
 

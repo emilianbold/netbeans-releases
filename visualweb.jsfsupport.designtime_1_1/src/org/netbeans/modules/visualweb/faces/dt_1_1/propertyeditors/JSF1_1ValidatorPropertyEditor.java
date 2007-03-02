@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.visualweb.faces.dt_1_1.propertyeditors;
 
-import com.sun.rave.propertyeditors.ValidatorPropertyEditor;
+import org.netbeans.modules.visualweb.propertyeditors.ValidatorPropertyEditor;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
