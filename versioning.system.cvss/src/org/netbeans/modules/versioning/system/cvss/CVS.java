@@ -24,6 +24,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.util.*;
@@ -44,7 +45,7 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
     }
     
     public String getDisplayName() {
-        return "CVS";
+        return NbBundle.getMessage(CVS.class, "CTL_CVS_MainMenu");
     }
 
     /**
