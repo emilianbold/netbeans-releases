@@ -25,6 +25,8 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <include name="org/netbeans/api/java/source/gen/FieldTest1.class"/>
+
                 <exclude name="org/netbeans/api/java/source/JavaSourceTest.class/testJavaSourceIsReclaimable" />
                 <exclude name="org/netbeans/modules/java/source/usages/CompromiseSATest.class/testClassSignatureFromElement" />
                 <exclude name="org/netbeans/modules/java/source/BasicPerformanceTest.class" />
@@ -50,7 +52,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/api/java/source/gen/FeatureAddingTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/ClashingImportsTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/EnumTest.class"/>
-                <exclude name="org/netbeans/api/java/source/gen/CommentsTest.class"/>
                 <exclude name="org/netbeans/modules/java/source/usages/LucenePerformanceTest.class"/>
 		<!--requires test source:-->
 		<exclude name="org/netbeans/api/java/source/UiUtilsTest.class" />
