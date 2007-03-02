@@ -67,15 +67,18 @@ public class ImportsTest extends GeneratorTestMDRCompat {
     public void testAddFirst() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.IOException;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.IOException;\n" +
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
@@ -358,6 +361,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
