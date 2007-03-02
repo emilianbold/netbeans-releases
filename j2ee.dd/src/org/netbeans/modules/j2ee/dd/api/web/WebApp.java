@@ -191,6 +191,10 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
         
 	public void setJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig value) throws VersionNotSupportedException;
 	public org.netbeans.modules.j2ee.dd.api.web.JspConfig getSingleJspConfig() throws VersionNotSupportedException;
+        
+        public int addJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig valueInterface) throws VersionNotSupportedException;
+	
+        public int removeJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig valueInterface) throws VersionNotSupportedException;
 
 	public void setSecurityConstraint(int index, org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint valueInterface);
 

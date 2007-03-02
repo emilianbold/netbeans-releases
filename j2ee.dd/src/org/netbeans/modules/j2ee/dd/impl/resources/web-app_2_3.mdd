@@ -24,6 +24,12 @@
                 public org.netbeans.modules.j2ee.dd.api.web.JspConfig getSingleJspConfig() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
+                public int addJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
+                }
+                public int removeJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
+                }
                 public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.common.ServiceRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }

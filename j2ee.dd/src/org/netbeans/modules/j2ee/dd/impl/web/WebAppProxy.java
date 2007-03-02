@@ -19,13 +19,14 @@
 
 package org.netbeans.modules.j2ee.dd.impl.web;
 
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.web.JspConfig;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
 import org.netbeans.modules.schema2beans.Schema2BeansUtil;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileLock;
-
 import java.io.OutputStream;
 
 /**
@@ -990,5 +991,13 @@ public class WebAppProxy implements WebApp {
     
     public boolean isMetadataComplete() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException{
         return webApp==null?false:webApp.isMetadataComplete();
+    }
+
+    public int addJspConfig(JspConfig valueInterface) throws VersionNotSupportedException {
+        return webApp == null ? 0 : webApp.addJspConfig(valueInterface); 
+    }
+
+    public int removeJspConfig(JspConfig valueInterface) throws VersionNotSupportedException {
+        return webApp == null ? 0 : webApp.removeJspConfig(valueInterface);
     }
 }
