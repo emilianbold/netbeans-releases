@@ -21,10 +21,20 @@ package org.netbeans.modules.vmd.api.io;
 import java.util.Collection;
 
 /**
+ * This interface is used for obtaining objects that should be added into the lookup of a TopComponent related to a particular view.
+ *
  * @author David Kaspar
  */
 public interface DataEditorViewLookupFactory {
 
+    /**
+     * This method is called to obtains a collection of objects.
+     * These objects will be automatically added into the lookup of a TopComponent which is related to a particular view
+     * For example: it could a PaletteController instance or NavigatorLookupHint.
+     * @param context the data object context
+     * @param view the view
+     * @return the collection of objects
+     */
     public Collection<? extends Object> getLookupObjects (DataObjectContext context, DataEditorView view);
 
 }
