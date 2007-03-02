@@ -1640,13 +1640,13 @@ public class WebForm implements Designer {
         return htmlDomProvider.pasteComponents(t, parentComponentRootElement, location, coordinateTranslator);
     }
 
-    void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
-        htmlDomProvider.importData(comp, t, transferData, dimension, location, coordinateTranslator, dropAction);
-    }
+//    void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
+//        htmlDomProvider.importData(comp, t, transferData, dimension, location, coordinateTranslator, dropAction);
+//    }
 
-    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
-        htmlDomProvider.importString(string, location, coordinateTranslator);
-    }
+//    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+//        htmlDomProvider.importString(string, location, coordinateTranslator);
+//    }
 
 //    public DesignBean findHtmlContainer(DesignBean parent) {
 //        return htmlDomProvider.findHtmlContainer(parent);

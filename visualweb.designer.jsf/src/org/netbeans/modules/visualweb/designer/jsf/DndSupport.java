@@ -97,15 +97,15 @@ class DndSupport {
 //                new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
 //    }
 
-    void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension,
-            HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
-        getFacesModel().getDnDSupport().importData(comp, t, transferData, dimension, new LocationImpl(location),
-                new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
-    }
+//    void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension,
+//            HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
+//        getFacesModel().getDnDSupport().importData(comp, t, transferData, dimension, new LocationImpl(location),
+//                new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
+//    }
     
-    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
-        getFacesModel().getDnDSupport().importString(string, new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
-    }
+//    void importString(String string, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
+//        getFacesModel().getDnDSupport().importString(string, new LocationImpl(location), new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
+//    }
     
 
     DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, FacesDnDSupport.UpdateSuspender updateSuspender) {
