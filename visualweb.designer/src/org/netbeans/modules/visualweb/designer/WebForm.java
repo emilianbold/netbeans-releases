@@ -2032,6 +2032,10 @@ public class WebForm implements Designer {
     void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
         htmlDomProvider.dumpHtmlMarkupForNode(node);
     }
+
+    boolean canPasteTransferable(Transferable trans) {
+        return htmlDomProvider.canPasteTransferable(trans);
+    }
     
     
     private static class HtmlDomProviderListener implements HtmlDomProvider.HtmlDomProviderListener {
