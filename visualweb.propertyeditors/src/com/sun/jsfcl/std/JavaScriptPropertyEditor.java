@@ -21,6 +21,6 @@ package com.sun.jsfcl.std;
 /**
  * @deprecated
  */
-public class JavaScriptPropertyEditor extends com.sun.rave.propertyeditors.JavaScriptPropertyEditor {
+public class JavaScriptPropertyEditor extends org.netbeans.modules.visualweb.propertyeditors.JavaScriptPropertyEditor {
 
 }

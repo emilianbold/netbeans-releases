@@ -21,5 +21,5 @@ package com.sun.jsfcl.std;
 /**
  * @deprecated
  */
-public class ValueBindingPropertyEditor extends com.sun.rave.propertyeditors.binding.ValueBindingPropertyEditor {
+public class ValueBindingPropertyEditor extends org.netbeans.modules.visualweb.propertyeditors.binding.ValueBindingPropertyEditor {
 }

@@ -19,7 +19,6 @@
 package com.sun.jsfcl.std.property;
 
 import com.sun.jsfcl.util.ComponentBundle;
-import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import com.sun.rave.designtime.DesignProperty;
 import org.openide.ErrorManager;
 

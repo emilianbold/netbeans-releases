@@ -1,28 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-The contents of this file are subject to the terms of the Common Development
-and Distribution License (the License). You may not use this file except in
-compliance with the License.
-
-You can obtain a copy of the License at http://www.netbeans.org/cddl.html
-or http://www.netbeans.org/cddl.txt.
-
-When distributing Covered Code, include this CDDL Header Notice in each file
-and include the License file at http://www.netbeans.org/cddl.txt.
-If applicable, add the following below the CDDL Header, with the fields
-enclosed by brackets [] replaced by your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
-Microsystems, Inc. All Rights Reserved.
--->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>com.sun.rave.propertyeditors</code-name-base>
+            <code-name-base>org.netbeans.modules.visualweb.propertyeditors</code-name-base>
             <suite-component/>
             <javadoc/>
             <module-dependencies>
@@ -32,7 +13,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -41,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0.0</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -50,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -58,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -66,25 +47,23 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.propertyeditors.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.visualweb.libs.rowset</code-name-base>
+                    <code-name-base>org.netbeans.modules.visualweb.propertyeditors.resolver</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.visualweb.sql</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -128,6 +107,14 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.5.22</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -153,9 +140,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.visualweb.complib</friend>
-                <friend>org.netbeans.modules.visualweb.dataprovider.designtime</friend>
-                <friend>org.netbeans.modules.visualweb.designer</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
@@ -163,19 +147,14 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_1</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_2</friend>
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
-                <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
-                <friend>org.netbeans.modules.visualweb.xhtml</friend>
-                <package>com.sun.jsfcl.std</package>
-                <package>com.sun.jsfcl.std.css</package>
-                <package>com.sun.jsfcl.std.property</package>
-                <package>com.sun.jsfcl.std.reference</package>
-                <package>com.sun.jsfcl.util</package>
-                <package>com.sun.rave.propertyeditors</package>
-                <package>com.sun.rave.propertyeditors.binding</package>
-                <package>com.sun.rave.propertyeditors.binding.data</package>
-                <package>com.sun.rave.propertyeditors.binding.nodes</package>
-                <package>com.sun.rave.propertyeditors.domains</package>
-                <package>com.sun.rave.propertyeditors.util</package>
+                <package>org.netbeans.modules.visualweb.propertyeditors</package>
+                <package>org.netbeans.modules.visualweb.propertyeditors.binding</package>
+                <package>org.netbeans.modules.visualweb.propertyeditors.binding.data</package>
+                <package>org.netbeans.modules.visualweb.propertyeditors.binding.nodes</package>
+                <package>org.netbeans.modules.visualweb.propertyeditors.css</package>
+                <package>org.netbeans.modules.visualweb.propertyeditors.css.model</package>
+                <package>org.netbeans.modules.visualweb.propertyeditors.resolver</package>
+                <package>org.netbeans.modules.visualweb.propertyeditors.util</package>
             </friend-packages>
         </data>
     </configuration>
