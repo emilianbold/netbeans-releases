@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.uml.integration.netbeans;
 
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 
 import java.awt.List;
 
@@ -27,25 +27,21 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
-import org.netbeans.jmi.javamodel.CallableFeature;
-import org.netbeans.jmi.javamodel.ClassMember;
-import org.netbeans.jmi.javamodel.Constructor;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
+import javax.lang.model.element.TypeElement;
+
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.UiUtils;
+
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
-import org.openide.cookies.SourceCookie;
+//import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.src.ClassElement;
-import org.openide.src.ConstructorElement;
-import org.openide.src.FieldElement;
-import org.openide.src.JavaDoc;
-import org.openide.src.MemberElement;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
@@ -59,6 +55,8 @@ import org.netbeans.modules.uml.integration.ide.events.ClassInfo;
 import org.netbeans.modules.uml.integration.ide.events.MemberInfo;
 import org.netbeans.modules.uml.integration.ide.events.MethodInfo;
 //import org.netbeans.modules.uml.integration.netbeans.actions.NBSourcePaneAction;
+
+
 /**
  * The class NBSourceNavigator implements the interface
  * {@link com.embarcadero.integration.SourceNavigator SourceNavigator} to
@@ -79,6 +77,7 @@ public class NBSourceNavigator implements SourceNavigator
     {
         Log.entry("Entering function NBSourceNavigator::NBSourceNavigator");
     }
+
     
     /**
      *  Implementation for navigating to the forte source file
@@ -89,14 +88,14 @@ public class NBSourceNavigator implements SourceNavigator
         if(SourceNavigateAction.Round_Trip)
         {
             Log.out("In navigateTo class " + cli.getName());
-//		ClassElement clazz = getClassElement(cli);
-            JavaClass clazz = getJavaClass(cli);
+            ElementAndFile clazz = getJavaClass(cli);
             if(clazz != null /*FIXME:&& NBSourcePaneAction.isNavigable*/)
                 showSourceFile(clazz);
         }
         SourceNavigateAction.Round_Trip=false;
     }
     
+
     /**
      *  Implementation for navigating to the method/operation in the forte source file
      *  @param methodInfo MethodInfo object
@@ -108,13 +107,13 @@ public class NBSourceNavigator implements SourceNavigator
             Log.entry("Entering function NBSourceNavigator::navigateTo Method");
             Log.out(" To get the method " + methodInfo.getName());
             ClassInfo clsInfo = methodInfo.getContainingClass();
-            lineNoOffset = methodInfo.getLineNo();
+            // ?? lineNoOffset = methodInfo.getLineNo();
 			String name = clsInfo.getName();
 			// in case the class is an inner class take the simple name, #6323040
 			name = name.substring(name.lastIndexOf(".")+1);
             boolean isConstructor = methodInfo.getName().equals(name);
 //			ConstructorElement consElement =  NBUtils.getMethod(methodInfo,isConstructor);
-            CallableFeature consElement =  NBUtils.getMethod(methodInfo,isConstructor);
+            ElementAndFile consElement =  NBUtils.getMethod(methodInfo,isConstructor);
             if ( consElement != null /*FIXME:&& NBSourcePaneAction.isNavigable*/)
             {
                 Log.out("Got the method displaying..");
@@ -129,9 +128,9 @@ public class NBSourceNavigator implements SourceNavigator
             }
         }
         SourceNavigateAction.Round_Trip=false;
-    }
+    }    
     
-    
+
     /**
      *  Implementation for navigating to the member/field in the forte source file
      *  @param memberInfo MemberInfo object
@@ -142,8 +141,7 @@ public class NBSourceNavigator implements SourceNavigator
         {
             Log.entry("Entering function NBSourceNavigator::navigateTo Member");
             Log.out("The member is " + memberInfo.getName());
-//    		FieldElement fEle = NBUtils.getFieldElement(memberInfo);
-            Field fEle = NBUtils.getField(memberInfo);
+            ElementAndFile fEle = NBUtils.getField(memberInfo);
             if  ( fEle != null /*FIXME:&& NBSourcePaneAction.isNavigable*/)
             {
 //    			Log.out(" Got the field element !!! " + fEle.toString());
@@ -211,76 +209,22 @@ public class NBSourceNavigator implements SourceNavigator
             }
         }
     }*/
-    protected void showSourceFile(final ClassMember element)
+
+
+    protected void showSourceFile(ElementAndFile element)
     {
         Log.entry("Entering function NBSourceNavigator::showSourceFile");
         
         if(element != null)
         {
-            Log.out("In showSourceFile .. " + element.getClass().getName());
-            
-            Resource source = element.getResource();
-            FileObject obj = JavaModel.getFileObject(source);
-            
-            DataObject dataObj = null;
-            try
-            {
-                dataObj = DataObject.find(obj);
-            }
-            catch (DataObjectNotFoundException e1)
-            {
-                // TODO Auto-generated catch block
-                Log.stackTrace(e1);
-            }
-            if (dataObj == null)
-                return;
-            
-            final EditorCookie editor = (EditorCookie)dataObj.getCookie(EditorCookie.class);
-            final LineCookie lineCookie = (LineCookie)dataObj.getCookie(LineCookie.class);
-            final SourceCookie.Editor sEditor = (SourceCookie.Editor)dataObj.getCookie(SourceCookie.Editor.class);
-            
-            final Line.Set lineSet = lineCookie.getLineSet();
-//            SwingUtilities.invokeLater(new Runnable(){
-//                    public void run() {
-//                        lineSet.getCurrent(0).show(Line.SHOW_SHOW);
-//                    }});
-//                lineSet.getCurrent(0).show(Line.SHOW_SHOW);
-            
-            final int startOffset = element.getStartOffset();            
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                public void run()
-                {
-                    if(editor != null)
-                    {
-                        try
-                        {
-                            // Convert the source code element to the text element.  With the text I
-                            // can find the position in the file to jump to.
-//                           StyledDocument doc = editor.getDocument ();
-                            
-//                           int lineNum = JavaMetamodel.getManager().getElementPosition(element).getBegin().getLine();
-                            editor.open();
-//                            int startOffset = element.getStartOffset();
-                            int line = NbDocument.findLineNumber(editor.getDocument(), startOffset);
-                            lineSet.getCurrent(line).show(Line.SHOW_GOTO);
-                            lineNoOffset = 0;
-                        }
-                        catch (IndexOutOfBoundsException ex)
-                        {
-                            lineSet.getOriginal(0).show(Line.SHOW_GOTO);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.stackTrace(e);
-                        }
-                    }
-                }
-                
-            });
+
+	    UiUtils.open(element.getFileObject(), element.getElementHandle());
+
         }
-    }
+    }    
     
+
+
 //FIXME:
 //    private boolean isMaximized() {
 //        TopComponent ptree = GDSystemTreeComponent.getDefault();
@@ -303,6 +247,8 @@ public class NBSourceNavigator implements SourceNavigator
             return ((FieldElement) el).getJavaDoc();
         return null;
     }*/
+
+    /* NB60TBD
     protected org.netbeans.jmi.javamodel.JavaDoc getJavaDoc(ClassMember el)
     {
         if (el instanceof JavaClass)
@@ -313,7 +259,9 @@ public class NBSourceNavigator implements SourceNavigator
             return ((Field) el).getJavadoc();
         return null;
     }
-    
+    */    
+
+    /* NB60TBD
     protected void annotate(ClassMember element, Line.Set lineset)
     {
         try
@@ -333,13 +281,15 @@ public class NBSourceNavigator implements SourceNavigator
             Log.stackTrace(e);
         }
     }
-    
+    */    
+
     /**
      * Finds the ClassElement that represents the class symbol.  The method
      * will only operate on CLD_Class symbols.
      * @param sym The symbol used to find a ClassElement.
      * @deprecated Use getJavaClass(ClassInfo clazz) instead.
      */
+    /* NB60TBD
     protected ClassElement getClassElement(ClassInfo clazz)
     {
         Log.entry("Entering function NBSourceNavigator::getClassElement");
@@ -365,12 +315,14 @@ public class NBSourceNavigator implements SourceNavigator
         
         return retVal;
     }
-    protected JavaClass getJavaClass(ClassInfo clazz)
+    */
+
+    protected ElementAndFile getJavaClass(ClassInfo clazz)
     {
         Log.entry("Entering function NBSourceNavigator::getClassElement");
         
         NBFileUtils util = new NBFileUtils();
-        JavaClass retVal = util.findJavaClass(clazz);
+        ElementAndFile retVal = util.findJavaClass(clazz);
         
         StatusDisplayer status = StatusDisplayer.getDefault();
         if(retVal == null)

@@ -24,16 +24,20 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-//import org.netbeans.jmi.javamodel.Codebase;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.JavaModelPackage;
-//import org.netbeans.jmi.javamodel.Resource;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -42,18 +46,19 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-//import org.openide.src.ClassElement;
-//import org.openide.src.Identifier;
-//import org.openide.src.SourceElement;
 
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.integration.ide.JavaClassUtils;
 import org.netbeans.modules.uml.integration.ide.events.ClassInfo;
 import org.netbeans.modules.uml.project.AssociatedSourceProvider;
 
+
 public class NBFileUtils
 {
     
+
+
+
     /**
      * Retrieves the FileSystem that contains the specified file or null if no
      * available FileSystem contains the file.  <p> The FileSystem is located by
@@ -271,21 +276,23 @@ public class NBFileUtils
         return retVal;
     }
     */
-    /* NB60TBD
-    public static Resource findResource(String filename)
+
+
+    public static JavaSource findResource(String filename)
     {
         Log.entry("Entering function NBFileUtils::findResource(String)");
         
         if(filename == null || filename.length() <= 0) return null;
         
         filename = normalizeFile(filename);
-        Resource retVal = null;
+        JavaSource retVal = null;
         FileObject fo = FileUtil.toFileObject(new File(filename));
         if(fo!=null)
-            retVal = JavaModel.getResource(fo);
+            retVal = JavaSource.forFileObject(fo);
         return retVal;
     }
-    */
+    
+   
     public static FileObject findFileObject(String fullPath)
     {
         Log.entry("Entering function NBFileUtils::findFileObject");
@@ -486,78 +493,64 @@ public class NBFileUtils
         return retVal;
     }
     */
+
+
     /**
-     * Finds the JavaClass that represents the class symbol.  The method
+     * Finds the Element that represents the class symbol.  The method
      * will only operate on CLD_Class symbols.
      * @param sym The symbol used to find a ClassElement.
      */
-    /* NB60TBD
-    public static JavaClass findJavaClass(ClassInfo clazz)
+    public static ElementAndFile findJavaClass(ClassInfo clazz)
     {
         Log.entry("Entering function NBFileUtils::findJavaClass");
-        
-        if (clazz.getChangeType() != ClassInfo.DELETE)
-        {
-            if (clazz.getFilename() == null || clazz.getFilename().length() == 0)
-                clazz.updateFilename(null);
-        }
-        
-        JavaClass retVal = null;
+                
+        ElementAndFile retVal = null;
         if (clazz != null)
         {
-            JavaModel.getJavaRepository().beginTrans(false);
             try
             {
-                ClassInfo outerClass = clazz.getOuterClass();
-                String className = JavaClassUtils.getInnerClassName(clazz.getName());
-                
-                // If the symbol is a inner class then we have to start with the outer
-                // class and search down to find the inner class of interest.
-                // This is a perfect example of recursion.  Therefore, I will be
-                // using recursion to accomplish the task.
-                if (outerClass != null)
+		JavaSource source = findResource(clazz);
+		if (source != null)
                 {
-                    JavaClass outerElement = findJavaClass(outerClass);
-                    if (outerElement != null)
-                    {
-                        retVal = outerElement.getInnerClass(className, false);
-                    }
-                }
-                else
-                {
-                    Resource source = findResource(clazz);
-                    if (source != null)
-                    {
-                        retVal = getTopLevel(source, className);
-                    }
-                }
+		    String fullName = clazz.getPackage() + "." + clazz.getName();
+		    retVal = getTypeElement(source, fullName);
+		}		
             }
             catch (Exception E)
             {
                 Log.stackTrace(E);
             }
-            finally
-            {
-                JavaModel.getJavaRepository().endTrans();
-            }
         }
         return retVal;
     }
-    */
-    /* NB60TBD
-    public static JavaClass getTopLevel(Resource resource, String simpleName)
+
+
+    public static ElementAndFile getTypeElement(JavaSource resource, final String name)
     {
-        for (Iterator it = resource.getClassifiers().iterator(); it.hasNext();)
-        {
-            JavaClass cls = (JavaClass) it.next();
-            if (simpleName.equals(cls.getSimpleName()))
-            {
-                return cls;
-            }
-        }
-        return null;
+	final ElementAndFile[] retVal = new ElementAndFile[1];
+	try {
+	    resource.runUserActionTask(new CancellableTask<CompilationController>() {
+		public void run(CompilationController cc) {
+		    Elements els = cc.getElements();
+		    TypeElement classFound = els.getTypeElement(name);
+		    if (classFound != null) {
+			retVal[0] = new ElementAndFile(ElementHandle.create(classFound),
+						       cc.getFileObject());
+			Iterator<? extends Element> iter = els.getAllMembers(classFound).iterator();
+			while(iter.hasNext()) {
+			    Element nxt = iter.next();
+			}
+		    }
+		}
+		public void cancel() {
+		}
+	    }, true);
+	} catch (IOException ioex) {
+            Log.stackTrace(ioex);		    
+	}
+	return retVal[0];
     }
-    */
+    
 
     /**
      * Retrieve the source file that contains the implementation of the Describe
@@ -592,8 +585,9 @@ public class NBFileUtils
         return retVal;
     }
     */    
-    /* NB60TBD
-    public static Resource findResource(ClassInfo clazz)
+
+
+    public static JavaSource findResource(ClassInfo clazz)
     {
         Log.entry("Entering function NBFileUtils::findResource");
 
@@ -605,7 +599,12 @@ public class NBFileUtils
                 clazz.updateFilename(null);
         }
         
-        Resource retVal = null;
+	ClassInfo outerClass = clazz.getOuterClass();
+	if (outerClass != null) {
+	    return findResource(outerClass);
+	}
+	
+        JavaSource retVal = null;
         try
         {
             if (clazz != null)
@@ -619,7 +618,9 @@ public class NBFileUtils
         
         return retVal;
     }
-    */
+    
+
+
     //    /**
     //     * get the Associated
     //     *

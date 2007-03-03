@@ -29,6 +29,7 @@ import java.awt.Window;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -39,18 +40,23 @@ import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.editor.java.Utilities;
+
 //import org.netbeans.modules.projects.CurrentProjectNode;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.TypeReference;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
-//import org.openide.src.ClassElement;
-//import org.openide.src.ConstructorElement;
-//import org.openide.src.FieldElement;
-//import org.openide.src.Identifier;
-//import org.openide.src.MethodParameter;
-//import org.openide.src.SourceElement;
 import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -64,14 +70,7 @@ import org.netbeans.modules.uml.integration.ide.events.EventManager;
 import org.netbeans.modules.uml.integration.ide.events.MemberInfo;
 import org.netbeans.modules.uml.integration.ide.events.MethodInfo;
 import org.netbeans.modules.uml.integration.ide.events.MethodParameterInfo;
-import java.util.Collection;
-//import org.netbeans.jmi.javamodel.Constructor;
-//import org.netbeans.jmi.javamodel.Field;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.jmi.javamodel.Parameter;
-//import org.netbeans.jmi.javamodel.Type;
-//import org.netbeans.modules.javacore.api.JavaModel;
+
 
 /**
  *  Utility functions for general NetBeans housekeeping. Try not to put in
@@ -745,29 +744,28 @@ methodHunt:
         return mElement;
     }*/
     
+
     /**
-     *  Retrieves a CallableFeature for the given MethodInfo.
+     *  Retrieves an ElementHandle for the given MethodInfo.
      *
      * @param method The MethodInfo for the method to be located. The
      *               MethodInfo must have a non-null containing class.
      * @param isConstructor Use <code>true</code> if you're looking for a
      *                      constructor, <code>false</code> if you're looking
      *                      for an ordinary method.
-     * @return A <code>CallableFeature</code> for the method, if found, or
+     * @return An <code>ElementHandle</code> for the method, if found, or
      *         <code>null</code> otherwise.
      */
-    /* NB60TBD 
-    public static CallableFeature getMethod(MethodInfo method,boolean isConstructor)
+    public static ElementAndFile getMethod(MethodInfo method, final boolean isConstructor)
     {
-        CallableFeature mElement = null;
         
         Log.out("Entering method NBEventProcessor :: methodExists");
         Log.out("Looking for method " + method.toString());
-        ClassInfo clazz = method.getContainingClass();
-        JavaClass javaClazz=NBFileUtils.findJavaClass(clazz);
-        String methodName =method.getName();
+        final String methodName =method.getName();
+	if (methodName == null) 
+	    return null;
         MethodParameterInfo[] paraminfo = method.getParameters();
-        List typeList=new ArrayList();
+        final List<String> typeList=new ArrayList<String>();
         for (int i = 0; i < paraminfo.length; i++)
         {
             String umlType = paraminfo[i].getFullyQualifiedType();
@@ -782,28 +780,80 @@ methodHunt:
             }
             
             String paramTypeName = umlTypeToType(umlType);
-            Type javaType = JavaModel.getDefaultExtent().getType().resolve(paramTypeName);
-            if(javaType!=null)
-            {
-                typeList.add(javaType);
-            }
+	    if (paramTypeName == null) 
+		return null;
+	    typeList.add(paramTypeName);
         }
-        if(!isConstructor && javaClazz!=null)
-        {
-            mElement = javaClazz.getMethod(methodName,typeList,false);
-        }
-        if(isConstructor && javaClazz!=null)
-        {
-            mElement = javaClazz.getConstructor(typeList,false);
-        }
-        
-        if((mElement == null) && (javaClazz != null))
-        {
-            mElement = resolveMethod(method, javaClazz, isConstructor);
-        }
-        return mElement;
+
+        ClassInfo clazz = method.getContainingClass();
+        final ElementAndFile javaClazz=NBFileUtils.findJavaClass(clazz);
+	if (javaClazz == null || javaClazz.getElementHandle() == null 
+	    || javaClazz.getFileObject() == null) 
+	{
+	    return null;
+	}
+	JavaSource src = JavaSource.forFileObject(javaClazz.getFileObject());
+	if (src == null) 
+	    return null;
+	final ElementAndFile[] retVal = new ElementAndFile[1];
+	try {
+	    src.runUserActionTask(new CancellableTask<CompilationController>() {
+		public void run(CompilationController cc) {
+		    Element clazz = javaClazz.getElementHandle().resolve(cc);
+		    List<? extends Element> elements = clazz.getEnclosedElements();
+		    if (elements == null) 
+			return; 
+		    List<ExecutableElement> methods;
+		    if (isConstructor) {
+			methods = ElementFilter.constructorsIn(elements);
+		    } else {
+			methods = ElementFilter.methodsIn(elements);
+		    }
+		    if (methods == null) 
+			return;
+		    int typeListSize = typeList.size();
+		    Iterator<ExecutableElement> iter = methods.iterator();
+		    while(iter.hasNext()) {
+			ExecutableElement method = iter.next();
+			if (method.getSimpleName() == null 
+			    || ( ( ! isConstructor) &&  (! method.getSimpleName().contentEquals(methodName)))) 
+			{
+			    continue;
+			}
+			List<? extends VariableElement> tparms = method.getParameters();			
+			if (method.getParameters().size() != typeListSize) {
+			    continue;
+			}
+			boolean paramsMatch = true;
+			Iterator<String> listIter = typeList.iterator();
+			Iterator<? extends VariableElement> tparmIter = tparms.iterator();
+			while(listIter.hasNext() && tparmIter.hasNext()) {
+			    VariableElement tparm = tparmIter.next();
+			    String listName =  listIter.next();
+			    if ( ! listName.contentEquals(Utilities.getTypeName(tparm.asType(), true))) {
+				paramsMatch = false;
+				break;
+			    }
+			}
+			if (paramsMatch) {
+			    retVal[0] = new ElementAndFile(ElementHandle.create(method),
+							   cc.getFileObject());
+			    return;					    
+			}
+		    }
+		}
+		public void cancel() {
+		}	
+	    }, true);
+	} catch (Exception e) {
+	    Log.stackTrace(e);	    
+	}
+	return retVal[0];
+
     }
-    */
+    
+
+
     private static String umlTypeToType(String umlType) {
         
         String retVal = umlType;
@@ -999,18 +1049,51 @@ methodHunt:
         return ce.getField(Identifier.create(attr.getName()));
     }
 */    
-/* NB60TBD 
-    public static Field getField(MemberInfo attr) {
-        if (attr == null) return null;
+
+
+    public static ElementAndFile getField(final MemberInfo attr) {
+        if (attr == null || attr.getName() == null) return null;
         ClassInfo ci = attr.getContainingClass();
         if (ci == null) return null;
 
-        JavaClass ce = fileUtils.findJavaClass(ci);
-        if (ce == null) return null;
+        final ElementAndFile ce = fileUtils.findJavaClass(ci);
+        if (ce == null || ce.getElementHandle() == null || ce.getFileObject() == null) return null;
 
-        return ce.getField(attr.getName(), false);
+	JavaSource src = JavaSource.forFileObject(ce.getFileObject());
+	if (src == null) return null;
+
+	final ElementAndFile[] retVal = new ElementAndFile[1];
+	try {
+	    src.runUserActionTask(new CancellableTask<CompilationController>() {
+		public void run(CompilationController cc) {
+		    Element clazz = ce.getElementHandle().resolve(cc);
+		    List<? extends Element> elements = clazz.getEnclosedElements();
+		    if (elements == null) return; 
+		    List<VariableElement> fields = ElementFilter.fieldsIn(elements);
+		    if (fields == null) return;
+		    Iterator<VariableElement> iter = fields.iterator();
+		    while(iter.hasNext()) {
+			VariableElement nxt = iter.next();
+			if (nxt.getSimpleName() != null 
+			    && nxt.getSimpleName().contentEquals(attr.getName())) 
+			{
+			    retVal[0] = new ElementAndFile(ElementHandle.create(nxt),
+							   cc.getFileObject());
+			    return;
+			}		    
+		    }
+		}
+		public void cancel() {
+		}	
+	    }, true);
+	} catch (Exception e) {
+	    Log.stackTrace(e);	    
+	}
+	return retVal[0];
     }
-*/
+
+
+
     /**
      *  Updates a ClassInfo to the Describe model.
      * @param ci The <code>ClassInfo</code> containing information to be updated
