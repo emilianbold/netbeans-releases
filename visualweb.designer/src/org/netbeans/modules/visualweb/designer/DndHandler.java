@@ -50,10 +50,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
-import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.DisplayItem;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupPosition;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.Document;
 import org.netbeans.modules.visualweb.text.Position;
