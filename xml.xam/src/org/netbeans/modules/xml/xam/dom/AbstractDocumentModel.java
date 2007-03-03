@@ -194,12 +194,17 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     }
     
     public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {
-        assert pathToRoot.size() > 0;
+        // we already handle change on root before enter here
+        if (pathToRoot.size() < 1) {
+            throw new IllegalArgumentException("pathToRoot here should be at least 1");
+        }
         if (pathToRoot.get(pathToRoot.size()-1) instanceof Document) {
             pathToRoot.remove(pathToRoot.size()-1);
         }
         
-        assert pathToRoot.size() > 1;
+        if (pathToRoot.size() < 2) {
+            throw new IllegalArgumentException("pathToRoot here should be at least 2");
+        }
         Node current = null;
         Element parent = null;
         boolean changedIsDomainElement = true;
@@ -240,7 +245,9 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         
         if (! changedIsDomainElement) {
             int i = pathToRoot.indexOf(current);
-            assert i > 0;
+            if (i < 1) {
+                throw new IllegalArgumentException("pathToRoot does not contain element");
+            }
             parent = (Element) current;
             current = pathToRoot.get(i-1);
         }
@@ -264,7 +271,9 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     }
     
     public SyncUnit prepareSyncUnit(ChangeInfo change, SyncUnit order) {
-        assert (change.getChangedNode() != null);
+        if (change.getChangedNode() == null) {
+            throw new IllegalStateException("Bad change info");
+        }
         AbstractDocumentComponent parentComponent = (AbstractDocumentComponent) change.getParentComponent();
         if (parentComponent == null) {
             parentComponent = (AbstractDocumentComponent) findComponent(change.getRootToParentPath());
@@ -328,7 +337,9 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     
     public void processSyncUnit(SyncUnit syncOrder) {
         AbstractDocumentComponent targetComponent = (AbstractDocumentComponent) syncOrder.getTarget();
-        assert targetComponent != null;
+        if (targetComponent == null) {
+            throw new IllegalArgumentException("sync unit should not be null");
+        }
         // skip target component whose some ancestor removed in previous processed syncUnit
         if (! targetComponent.isInDocumentModel()) {
             return;
@@ -357,7 +368,9 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     
     private DocumentComponent createChildComponent(DocumentComponent parent, Element e) {
         DocumentModel m = (DocumentModel) parent.getModel();
-        assert m != null : "Cannot create child component from a deleted component.";
+        if (m == null) {
+            throw new IllegalArgumentException("Cannot create child component from a deleted component.");
+        }
         return m.createComponent(parent, e);
     }
     

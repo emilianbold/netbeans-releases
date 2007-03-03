@@ -45,12 +45,16 @@ public class SyncUnit {
     private boolean hasTextContentChanges = false;
     
     public SyncUnit(DocumentComponent syncTarget) {
-        assert syncTarget != null;
+        if (syncTarget == null) {
+            throw new IllegalArgumentException("Null syncTarget");
+        }
         target = syncTarget;
     }
     
     public void addChange(ChangeInfo change) {
-        assert target.referencesSameNode(change.getParent());
+        if (! target.referencesSameNode(change.getParent())) {
+            throw new IllegalArgumentException("ChangeInfo does not match target id");
+        }
         changes.add(change);
         if (change.getChangedNode() instanceof Attr)  {
             Attr attr = (Attr) change.getChangedNode();
@@ -63,7 +67,10 @@ public class SyncUnit {
             Node actualChanged = change.getActualChangedNode();
             if (! (actualChanged instanceof Attribute || actualChanged instanceof Element)) {
                 // should be text, cdata, comment...
-                setHasTextContentChanges(true);
+                if (actualChanged.getNodeType() != Node.TEXT_NODE ||
+                    ((Text)actualChanged).getNodeValue().trim().length() != 0) {
+                    setHasTextContentChanges(true);
+                }
             }
         }
     }
@@ -72,12 +79,16 @@ public class SyncUnit {
     public DocumentComponent getTarget() { return target; }
     public List<DocumentComponent> getToRemoveList() { return toRemove; }
     public void addToRemoveList(DocumentComponent c) { 
-        assert c != null;
+        if (c == null) {
+            throw new IllegalArgumentException("Null component");
+        }
         toRemove.add(c); 
     }
     public List<DocumentComponent> getToAddList() { return toAdd; }
     public void addToAddList(DocumentComponent c) { 
-        assert c != null;
+        if (c == null) {
+            throw new IllegalArgumentException("Null component");
+        }
         toAdd.add(c); 
     }
     public void setComponentChanged(boolean v) { componentChanged = v; }
@@ -98,7 +109,9 @@ public class SyncUnit {
     }
 
     public void merge(SyncUnit su) {
-        assert target == su.getTarget();
+        if (target != su.getTarget()) {
+            throw new IllegalArgumentException("Invalid sync unit for merge");
+        }
         changes.addAll(su.getChanges());
         for (String name : su.getRemovedAttributes().keySet()) {
             addToRemovedAttributes(su.getRemovedAttributes().get(name));
@@ -106,7 +119,6 @@ public class SyncUnit {
         for (String name : su.getAddedAttributes().keySet()) {
             addToAddedAttributes(su.getAddedAttributes().get(name));
         }
-        
         
         if (! su.getToAddList().isEmpty()) {
             HashSet<Element> addSet = new HashSet<Element>();

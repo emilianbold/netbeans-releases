@@ -581,7 +581,7 @@ public class SyncTest extends TestCase {
         Util.setDocumentContentTo(model, "resources/TwoSequences.xsd");
         model.sync();
         
-        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
+        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
         clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema()); // maybe not
         
         String xpath = "/xsd:schema/xsd:complexType";
@@ -597,14 +597,16 @@ public class SyncTest extends TestCase {
     }
     
     public void testComponentPeerTokensChange() throws Exception {
-        SchemaModel model = Util.loadSchemaModel("resources/Empty.xsd");
+        SchemaModel model = Util.loadSchemaModel("resources/Empty_1.xsd");
         setup(model);
+        Node peerBefore = model.getSchema().getPeer();
 
         Util.setDocumentContentTo(model, "resources/Schema_tokenChanges.xsd");
         model.sync();
 
-        clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema());
-        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
+        clistener.assertNoEvents(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema());
+        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
+        assertNotSame(peerBefore, model.getSchema().getPeer());
     }
 
     public void testAppInfoHavingChildrenElementsWithXsdLocalName() throws Exception {
@@ -618,7 +620,7 @@ public class SyncTest extends TestCase {
         model.sync();
 
         clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, appInfo);
-        plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, appInfo);
+        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, appInfo);
         clistener.assertNoEvents(ComponentEvent.EventType.CHILD_REMOVED, appInfo);
         clistener.assertNoEvents(ComponentEvent.EventType.CHILD_ADDED, appInfo);
     }

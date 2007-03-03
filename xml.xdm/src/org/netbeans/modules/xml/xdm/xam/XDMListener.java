@@ -168,7 +168,9 @@ public class XDMListener implements PropertyChangeListener {
             model.firePropertyChangeEvent(new PropertyChangeEvent(model,
                 Model.STATE_PROPERTY, Model.State.NOT_SYNCED, Model.State.VALID));
         } else {
-            assert eventNode.getId() != pathToRoot.get(0).getId() : "event node has same id as parent";
+            if (eventNode.getId() == pathToRoot.get(0).getId()) {
+                throw new IllegalArgumentException("Event node has same id as parent");
+            }
             pathToRoot = new ArrayList(pathToRoot);
             pathToRoot.add(0, eventNode);
             ChangeInfo change = model.prepareChangeInfo(toDomNodes(pathToRoot));

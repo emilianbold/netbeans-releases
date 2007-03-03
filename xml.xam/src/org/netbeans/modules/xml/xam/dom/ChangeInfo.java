@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.xam.dom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -37,6 +38,10 @@ public class ChangeInfo {
         private boolean domainElement;
         private boolean added;
         private List<Element> rootToParent;
+        /**
+         * List of non-domain element nodes beside the changed node.
+         * The order is increasing distance from root.
+         */
         private List<Node> otherNonDomainElementNodes;
         
         /**
@@ -123,5 +128,16 @@ public class ChangeInfo {
             parent = (Element) changed;
             changed = otherNonDomainElementNodes.remove(0);
             parentComponent = null;
+        }
+        
+        public String toString() {
+            String op = added ? "ADD: " : "REMOVE: ";
+            if (changed instanceof Element) {
+                return op + ((Element)changed).getTagName();
+            } else if (changed instanceof Attr) {
+                return op + ((Attr)changed).getNodeName()+"="+((Attr)changed).getNodeValue();
+            } else {
+                return op + changed.getNodeValue();
+            }
         }
 }
