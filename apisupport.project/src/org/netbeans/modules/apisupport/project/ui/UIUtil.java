@@ -73,7 +73,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -549,12 +549,12 @@ public final class UIUtil {
                         ProjectUtils.getInformation(project).getDisplayName())));
                 return null;
             }
-            NbModuleTypeProvider nmtp = project.getLookup().lookup(NbModuleTypeProvider.class);
+            NbModuleProvider nmtp = project.getLookup().lookup(NbModuleProvider.class);
             if (nmtp == null) { // not netbeans module
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNonNBModule",
                         ProjectUtils.getInformation(project).getDisplayName())));
-            } else if (nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
+            } else if (nmtp.getModuleType() == NbModuleProvider.SUITE_COMPONENT) {
                 Object[] params = new Object[] {
                     ProjectUtils.getInformation(project).getDisplayName(),
                     getSuiteProjectName(project),
@@ -568,9 +568,9 @@ public final class UIUtil {
                 if (confirmation.getValue() == NotifyDescriptor.OK_OPTION) {
                     suiteComponent = (NbModuleProject) project;
                 }
-            } else if (nmtp.getModuleType() == NbModuleTypeProvider.STANDALONE) {
+            } else if (nmtp.getModuleType() == NbModuleProvider.STANDALONE) {
                 suiteComponent = (NbModuleProject) project;
-            } else if (nmtp.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG) {
+            } else if (nmtp.getModuleType() == NbModuleProvider.NETBEANS_ORG) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNBORGModule",
                         ProjectUtils.getInformation(project).getDisplayName())));

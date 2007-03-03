@@ -33,7 +33,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -130,18 +131,18 @@ public final class ProjectXMLManager {
         Document doc = confData.getOwnerDocument();
         
         Element standaloneEl = findElement(confData, ProjectXMLManager.STANDALONE);
-        if (standaloneEl != null && moduleType == NbModuleTypeProvider.STANDALONE) {
+        if (standaloneEl != null && moduleType == NbModuleProvider.STANDALONE) {
             // nothing needs to be done - standalone is already set
             return;
         }
         
         Element suiteCompEl = findElement(confData, ProjectXMLManager.SUITE_COMPONENT);
-        if (suiteCompEl != null && moduleType == NbModuleTypeProvider.SUITE_COMPONENT) {
+        if (suiteCompEl != null && moduleType == NbModuleProvider.SUITE_COMPONENT) {
             // nothing needs to be done - suiteCompEl is already set
             return;
         }
         
-        if (suiteCompEl == null && standaloneEl == null && moduleType == NbModuleTypeProvider.NETBEANS_ORG) {
+        if (suiteCompEl == null && standaloneEl == null && moduleType == NbModuleProvider.NETBEANS_ORG) {
             // nothing needs to be done - nb.org modules don't have any element
             return;
         }
@@ -935,9 +936,9 @@ public final class ProjectXMLManager {
     
     private static Element createTypeElement(Document dataDoc, NbModuleType type) {
         Element result = null;
-        if (type == NbModuleTypeProvider.STANDALONE) {
+        if (type == NbModuleProvider.STANDALONE) {
             result = createModuleElement(dataDoc, STANDALONE);
-        } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
+        } else if (type == NbModuleProvider.SUITE_COMPONENT) {
             result = createModuleElement(dataDoc, SUITE_COMPONENT);
         }
         return result;

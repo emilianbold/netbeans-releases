@@ -42,6 +42,7 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -159,7 +160,8 @@ final class NewProjectIterator extends BasicWizardIterator {
     
     public static void generateFileChanges(DataModel model) {
         CreatedModifiedFiles fileChanges = new CreatedModifiedFiles(model.getProject());
-        NbModuleProject project = model.getProject();
+        Project project = model.getProject();
+        NbModuleProvider moduleInfo = model.getModuleInfo();
         final String category = model.getCategory();
         final String displayName = model.getDisplayName();
         final String name = model.getName();
@@ -173,7 +175,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         
         
         // 1. create project description file
-        final String descName = getRelativePath(project, packageName,
+        final String descName = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName,
                 name, "Description.html"); //NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         URL template = NewProjectIterator.class.getResource("templateDescription.html");//NOI18N
@@ -185,7 +187,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         }
 
         fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName)); // NOI18N
-        String bundlePath = getRelativePath(project, packageName, "", "Bundle.properties");//NOI18N
+        String bundlePath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, "", "Bundle.properties");//NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_CreateProjectStep",  "Name and Location")); // NOI18N
         
         // 3. create sample template
@@ -196,27 +198,27 @@ final class NewProjectIterator extends BasicWizardIterator {
         Set externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip")); // NOI18N
         fileChanges.add(fileChanges.layerModifications(
                 new CreateProjectZipOperation(model.getTemplate(), name, packageName,
-                category, ManifestManager.getInstance(project.getManifest(), false)),externalFiles));
+                category, ManifestManager.getInstance(Util.getManifest(moduleInfo.getManifestFile()), false)),externalFiles));
         
         // x. generate java classes
-        final String iteratorName = getRelativePath(project, packageName,
+        final String iteratorName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "WizardIterator.java"); //NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewProjectIterator.class.getResource("templateWizardIterator.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(iteratorName, template, replaceTokens));
-        final String panelName = getRelativePath(project, packageName,
+        final String panelName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "WizardPanel.java"); //NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewProjectIterator.class.getResource("templateWizardPanel.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(panelName, template, replaceTokens));
         
-        final String formName = getRelativePath(project, packageName,
+        final String formName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "PanelVisual.form"); //NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewProjectIterator.class.getResource("templatePanelVisual.frmx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(formName, template, replaceTokens));
         
-        final String panelVisName = getRelativePath(project, packageName,
+        final String panelVisName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "PanelVisual.java"); //NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewProjectIterator.class.getResource("templatePanelVisual.javx");//NOI18N
@@ -226,10 +228,10 @@ final class NewProjectIterator extends BasicWizardIterator {
         model.setCreatedModifiedFiles(fileChanges);
     }
     
-    private static String getRelativePath(NbModuleProject project, String fullyQualifiedPackageName,
+    private static String getRelativePath(String rootPath, String fullyQualifiedPackageName,
             String prefix, String postfix) {
         StringBuffer sb = new StringBuffer();
-        sb.append(project.getSourceDirectoryPath()).append('/').
+        sb.append(rootPath).append('/').
                 append(fullyQualifiedPackageName.replace('.','/')).
                 append('/').append(prefix).append(postfix);
         return sb.toString();

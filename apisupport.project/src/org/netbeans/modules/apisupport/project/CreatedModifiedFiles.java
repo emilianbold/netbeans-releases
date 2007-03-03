@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -106,8 +107,8 @@ public final class CreatedModifiedFiles {
     private final SortedSet<String> modifiedPaths = new TreeSet();
     private final SortedSet<String> invalidPaths = new TreeSet();
     
-    /** {@link NbModuleProject} this instance manage. */
-    private final NbModuleProject project;
+    /** {@link Project} this instance manage. */
+    private final Project project;
     private final List<CreatedModifiedFiles.Operation> operations = new ArrayList();
     
     // For use from CreatedModifiedFilesFactory.LayerModifications; XXX would be better to have an operation context or similar
@@ -124,7 +125,7 @@ public final class CreatedModifiedFiles {
      * Create instance for managing given {@link NbModuleProject}'s files.
      * @param project project this instance will operate upon
      */
-    public CreatedModifiedFiles(NbModuleProject project) {
+    public CreatedModifiedFiles(Project project) {
         this.project = project;
     }
     

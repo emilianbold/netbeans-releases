@@ -29,6 +29,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -147,7 +148,12 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private boolean checkPlatformValidity() {
-        NbPlatform platform = data.getProject().getPlatform(false);
+        NbModuleProject nbprj = data.getProject().getLookup().lookup(NbModuleProject.class);
+        if (nbprj == null) {
+            //ignore this check for non default netbeans projects.
+            return true;
+        }
+        NbPlatform platform = nbprj.getPlatform(false);
         if (platform == null) {
             setError(getMessage("ERR_No_Platform"));
             return false;

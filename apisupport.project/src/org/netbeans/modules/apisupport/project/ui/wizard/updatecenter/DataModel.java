@@ -22,6 +22,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard.updatecenter;
 import java.net.URL;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
@@ -56,7 +57,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
         URL url = DataModel.class.getResource ("update_center.xml"); //NOI18N
         assert url != null : "File 'update_center.xml must exist in package of " + getClass().getName() + "!";
-        String serviceTypeName = getProject ().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N
+        String serviceTypeName = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N
         FileSystem layer = LayerUtils.layerForProject (getProject ()).layer (false);
         
         String pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + serviceTypeName + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
@@ -72,13 +73,13 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
         cmf.add (cmf.createLayerEntry (pathToAutoUpdateType, url, null, null, null));
         
-        String url_key_base = getProject ().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; //NOI18N
+        String url_key_base = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; //NOI18N
         String url_key = sequence == 0 ? url_key_base : url_key_base + '_' + sequence; // NOI18N
         cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "url_key", url_key)); //NOI18N
         cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "enabled", Boolean.TRUE)); //NOI18N
         
         // write into bundle
-        ManifestManager mm = ManifestManager.getInstance(getProject ().getManifest (), false);
+        ManifestManager mm = ManifestManager.getInstance(Util.getManifest(getModuleInfo().getManifestFile()), false);
         String localizingBundle = mm.getLocalizingBundle ();
         localizingBundle = localizingBundle.substring (0, localizingBundle.indexOf ('.'));
         localizingBundle = localizingBundle.replace ('/', '.');

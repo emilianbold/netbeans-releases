@@ -43,7 +43,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
@@ -118,7 +118,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     // helpers for storing and retrieving real values currently stored on the disk
-    private NbModuleTypeProvider.NbModuleType moduleType;
+    private NbModuleProvider.NbModuleType moduleType;
     private SuiteProvider suiteProvider;
     private ProjectXMLManager projectXMLManager;
     private final LocalizedBundleInfo.Provider bundleInfoProvider;
@@ -168,7 +168,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * Creates a new instance of SingleModuleProperties
      */
     SingleModuleProperties(AntProjectHelper helper, PropertyEvaluator evaluator,
-            SuiteProvider sp, NbModuleTypeProvider.NbModuleType moduleType,
+            SuiteProvider sp, NbModuleProvider.NbModuleType moduleType,
             LocalizedBundleInfo.Provider bundleInfoProvider) {
         // XXX consider SingleModuleProperties(NbModuleProject) constructor. Life would be easier.
         super(helper, evaluator);
@@ -176,7 +176,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         refresh(moduleType, sp);
     }
     
-    protected void refresh(NbModuleTypeProvider.NbModuleType moduleType,
+    protected void refresh(NbModuleProvider.NbModuleType moduleType,
             SuiteProvider suiteProvider) {
         reloadProperties();
         // reset
@@ -279,7 +279,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * NetBeans.org modules.
      */
     NbPlatform getActivePlatform() {
-        if (moduleType != NbModuleTypeProvider.NETBEANS_ORG
+        if (moduleType != NbModuleProvider.NETBEANS_ORG
                 && (activePlatform == null || !NbPlatform.getPlatforms().contains(activePlatform))) {
             ModuleProperties.reportLostPlatform(activePlatform);
             activePlatform = NbPlatform.getDefaultPlatform();
@@ -355,15 +355,15 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     boolean isStandalone() {
-        return moduleType == NbModuleTypeProvider.STANDALONE;
+        return moduleType == NbModuleProvider.STANDALONE;
     }
     
     boolean isNetBeansOrg() {
-        return moduleType == NbModuleTypeProvider.NETBEANS_ORG;
+        return moduleType == NbModuleProvider.NETBEANS_ORG;
     }
     
     boolean isSuiteComponent() {
-        return moduleType == NbModuleTypeProvider.SUITE_COMPONENT;
+        return moduleType == NbModuleProvider.SUITE_COMPONENT;
     }
 
     public void setModuleListRefreshNeeded(boolean moduleListRefreshNeeded) {

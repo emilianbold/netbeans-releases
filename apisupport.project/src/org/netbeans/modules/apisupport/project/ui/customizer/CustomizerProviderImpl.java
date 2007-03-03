@@ -22,7 +22,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
@@ -75,7 +75,7 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
     protected void prepareData() {
         Lookup lookup = getProject().getLookup();
         SuiteProvider sp = (SuiteProvider) lookup.lookup(SuiteProvider.class);
-        NbModuleTypeProvider.NbModuleType type = Util.getModuleType((NbModuleProject) getProject());
+        NbModuleProvider.NbModuleType type = Util.getModuleType((NbModuleProject) getProject());
         if (moduleProps == null) { // first initialization
             moduleProps = new SingleModuleProperties(helper, evaluator, sp, type,
                     (LocalizedBundleInfo.Provider) lookup.lookup(LocalizedBundleInfo.Provider.class));

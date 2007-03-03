@@ -38,8 +38,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -59,52 +61,52 @@ import org.openide.modules.SpecificationVersion;
 public final class CreatedModifiedFilesFactory {
     
     static CreatedModifiedFiles.Operation addLoaderSection(
-            NbModuleProject project, String dataLoaderClass, String installBefore) {
+            Project project, String dataLoaderClass, String installBefore) {
         return new AddLoaderSection(project, dataLoaderClass, installBefore);
     }
     
     static CreatedModifiedFiles.Operation addLookupRegistration(
-            NbModuleProject project, String interfaceClass, String implClass, boolean inTests) {
+            Project project, String interfaceClass, String implClass, boolean inTests) {
         return new AddLookupRegistration(project, interfaceClass, implClass, inTests);
     }
     
-    static CreatedModifiedFiles.Operation addModuleDependency(NbModuleProject project,
+    static CreatedModifiedFiles.Operation addModuleDependency(Project project,
             String codeNameBase, String releaseVersion, SpecificationVersion version, boolean useInCompiler) {
         return new AddModuleDependency(project, codeNameBase, releaseVersion, version, useInCompiler);
     }
     
-    static CreatedModifiedFiles.Operation bundleKey(NbModuleProject project,
+    static CreatedModifiedFiles.Operation bundleKey(Project project,
             String key, String value, String bundlePath) {
         return new BundleKey(project, key, value, bundlePath);
     }
     
     static CreatedModifiedFiles.Operation bundleKeyDefaultBundle(
-            NbModuleProject project, String key, String value) {
+            Project project, String key, String value) {
         return new BundleKey(project, key, value);
     }
     
-    static CreatedModifiedFiles.Operation createFile(NbModuleProject project,
+    static CreatedModifiedFiles.Operation createFile(Project project,
             String path, URL content) {
         return new CreateFile(project, path, content);
     }
     
-    static CreatedModifiedFiles.Operation createFileWithSubstitutions(NbModuleProject project,
+    static CreatedModifiedFiles.Operation createFileWithSubstitutions(Project project,
             String path, URL content, Map<String,String> tokens) {
         return new CreateFile(project, path, content, tokens);
     }
     
-    static CreatedModifiedFiles.Operation layerModifications(NbModuleProject project, CreatedModifiedFiles.LayerOperation op, Set<String> externalFiles, CreatedModifiedFiles cmf) {
+    static CreatedModifiedFiles.Operation layerModifications(Project project, CreatedModifiedFiles.LayerOperation op, Set<String> externalFiles, CreatedModifiedFiles cmf) {
         return new LayerModifications(project, op, externalFiles, cmf);
     }
     
-    static CreatedModifiedFiles.Operation createLayerEntry(CreatedModifiedFiles cmf, NbModuleProject project,
+    static CreatedModifiedFiles.Operation createLayerEntry(CreatedModifiedFiles cmf, Project project,
             String layerPath, URL content,
             Map<String,String> substitutionTokens, String localizedDisplayName, Map attrs) {
         return new CreateLayerEntry(cmf, project, layerPath, content,
                 substitutionTokens, localizedDisplayName, attrs);
     }
     
-    static CreatedModifiedFiles.Operation manifestModification(NbModuleProject project, String section,
+    static CreatedModifiedFiles.Operation manifestModification(Project project, String section,
             Map<String,String> attributes) {
         CreatedModifiedFilesFactory.ModifyManifest retval =
                 new CreatedModifiedFilesFactory.ModifyManifest(project);
@@ -117,7 +119,7 @@ public final class CreatedModifiedFilesFactory {
         return retval;
     }
     
-    static CreatedModifiedFiles.Operation propertiesModification(NbModuleProject project,
+    static CreatedModifiedFiles.Operation propertiesModification(Project project,
             String propertyPath, Map<String,String> properties) {
         CreatedModifiedFilesFactory.ModifyProperties retval =
                 new CreatedModifiedFilesFactory.ModifyProperties(project, propertyPath);
@@ -133,17 +135,21 @@ public final class CreatedModifiedFilesFactory {
     
     public static abstract class OperationBase implements CreatedModifiedFiles.Operation {
         
-        private NbModuleProject project;
+        private Project project;
         private SortedSet<String> createdPaths;
         private SortedSet<String> modifiedPaths;
         private SortedSet<String> invalidPaths;
         
-        protected OperationBase(NbModuleProject project) {
+        protected OperationBase(Project project) {
             this.project = project;
         }
         
-        protected NbModuleProject getProject() {
+        protected Project getProject() {
             return project;
+        }
+        
+        protected NbModuleProvider getModuleInfo() {
+            return getProject().getLookup().lookup(NbModuleProvider.class);
         }
         
         public String[] getModifiedPaths() {
@@ -216,7 +222,7 @@ public final class CreatedModifiedFilesFactory {
          */
         private String getProjectPath(FileObject file) {
             return PropertyUtils.relativizeFile(
-                    getProject().getProjectDirectoryFile(),
+                    FileUtil.toFile(getProject().getProjectDirectory()),
                     FileUtil.normalizeFile(FileUtil.toFile(file)));
         }
         
@@ -228,11 +234,11 @@ public final class CreatedModifiedFilesFactory {
         private URL content;
         private Map<String,String> tokens;
         
-        public CreateFile(NbModuleProject project, String path, URL content) {
+        public CreateFile(Project project, String path, URL content) {
             this(project, path, content, null);
         }
         
-        public CreateFile(NbModuleProject project, String path, URL content, Map<String,String> tokens) {
+        public CreateFile(Project project, String path, URL content, Map<String,String> tokens) {
             super(project);
             this.path = path;
             this.content = content;
@@ -317,17 +323,18 @@ public final class CreatedModifiedFilesFactory {
         private final String key;
         private final String value;
         
-        public BundleKey(NbModuleProject project, String key, String value) {
+        public BundleKey(Project project, String key, String value) {
             this(project, key, value, null);
         }
         
-        public BundleKey(NbModuleProject project, String key, String value, String bundlePath) {
+        public BundleKey(Project project, String key, String value, String bundlePath) {
             super(project);
             this.key = key;
             this.value = value;
             if (bundlePath == null) {
-                ManifestManager mm = ManifestManager.getInstance(getProject().getManifest(), false);
-                String srcDir = getProject().getSourceDirectoryPath();
+                
+                ManifestManager mm = ManifestManager.getInstance(Util.getManifest(getModuleInfo().getManifestFile()), false);
+                String srcDir = getModuleInfo().getResourceDirectoryPath(false);
                 this.bundlePath = srcDir + "/" + mm.getLocalizingBundle(); // NOI18N
             } else {
                 this.bundlePath = bundlePath;
@@ -352,11 +359,11 @@ public final class CreatedModifiedFilesFactory {
         private String dataLoaderClass;
         private String installBefore;
         
-        public AddLoaderSection(NbModuleProject project, String dataLoaderClass, String installBefore) {
+        public AddLoaderSection(Project project, String dataLoaderClass, String installBefore) {
             super(project);
             this.dataLoaderClass = dataLoaderClass + ".class"; // NOI18N
             this.installBefore = installBefore;
-            this.mfFO = getProject().getManifestFile();
+            this.mfFO = getModuleInfo().getManifestFile();
             addModifiedFileObject(mfFO);
         }
         
@@ -391,18 +398,18 @@ public final class CreatedModifiedFilesFactory {
         private SpecificationVersion specVersion;
         private boolean useInCompiler;
         
-        public AddModuleDependency(NbModuleProject project, String codeNameBase,
+        public AddModuleDependency(Project project, String codeNameBase,
                 String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler) {
             super(project);
             this.codeNameBase = codeNameBase;
             this.releaseVersion = releaseVersion;
             this.specVersion = specVersion;
             this.useInCompiler = useInCompiler;
-            getModifiedPathsSet().add("nbproject/project.xml"); // NOI18N
+            getModifiedPathsSet().add(getModuleInfo().getProjectFilePath()); // NOI18N
         }
         
         public void run() throws IOException {
-            Util.addDependency(getProject(), codeNameBase, releaseVersion, specVersion, useInCompiler);
+            getModuleInfo().addDependency(codeNameBase, releaseVersion, specVersion, useInCompiler);
             // XXX consider this carefully
             ProjectManager.getDefault().saveProject(getProject());
         }
@@ -414,10 +421,10 @@ public final class CreatedModifiedFilesFactory {
         private String interfaceClassPath;
         private String implClass;
         
-        public AddLookupRegistration(NbModuleProject project, String interfaceClass, String implClass, boolean inTests) {
+        public AddLookupRegistration(Project project, String interfaceClass, String implClass, boolean inTests) {
             super(project);
             this.implClass = implClass;
-            this.interfaceClassPath = getProject().evaluator().getProperty(inTests ? "test.unit.src.dir" : "src.dir") + // NOI18N
+            this.interfaceClassPath = getModuleInfo().getResourceDirectoryPath(inTests) + // NOI18N
                     "/META-INF/services/" + interfaceClass; // NOI18N
             addCreatedOrModifiedPath(interfaceClassPath, true);
         }
@@ -464,7 +471,7 @@ public final class CreatedModifiedFilesFactory {
         private CreatedModifiedFiles.Operation createBundleKey;
         private CreatedModifiedFiles.Operation layerOp;
         
-        public CreateLayerEntry(CreatedModifiedFiles cmf, NbModuleProject project, final String layerPath,
+        public CreateLayerEntry(CreatedModifiedFiles cmf, Project project, final String layerPath,
                 final URL content,
                 final Map<String,String> tokens, final String localizedDisplayName, final Map attrs) {
             
@@ -485,7 +492,7 @@ public final class CreatedModifiedFilesFactory {
                         }
                     }
                     if (localizedDisplayName != null) {
-                        String bundlePath = ManifestManager.getInstance(getProject().getManifest(), false).getLocalizingBundle();
+                        String bundlePath = ManifestManager.getInstance(Util.getManifest(getModuleInfo().getManifestFile()), false).getLocalizingBundle();
                         String suffix = ".properties"; // NOI18N
                         if (bundlePath != null && bundlePath.endsWith(suffix)) {
                             String name = bundlePath.substring(0, bundlePath.length() - suffix.length()).replace('/', '.');
@@ -531,12 +538,12 @@ public final class CreatedModifiedFilesFactory {
     
     private static final class LayerModifications implements CreatedModifiedFiles.Operation {
         
-        private final NbModuleProject project;
+        private final Project project;
         private final CreatedModifiedFiles.LayerOperation op;
         private final Set<String> externalFiles;
         private final CreatedModifiedFiles cmf;
         
-        public LayerModifications(NbModuleProject project, CreatedModifiedFiles.LayerOperation op, Set<String> externalFiles, CreatedModifiedFiles cmf) {
+        public LayerModifications(Project project, CreatedModifiedFiles.LayerOperation op, Set<String> externalFiles, CreatedModifiedFiles cmf) {
             this.project = project;
             this.op = op;
             this.externalFiles = externalFiles;
@@ -595,7 +602,7 @@ public final class CreatedModifiedFilesFactory {
         /**
          * @param project
          */
-        public ModifyManifest(final NbModuleProject project) {
+        public ModifyManifest(final Project project) {
             super(project);
             this.attributesToAdd = new HashMap();
             addModifiedFileObject(getManifestFile());
@@ -666,7 +673,7 @@ public final class CreatedModifiedFilesFactory {
         
         private FileObject getManifestFile() {
             if (manifestFile == null) {
-                manifestFile = getProject().getManifestFile();
+                manifestFile = getModuleInfo().getManifestFile();
             }
             return manifestFile;
         }
@@ -700,7 +707,7 @@ public final class CreatedModifiedFilesFactory {
         private EditableProperties ep;
         private FileObject propertiesFile;
         
-        private ModifyProperties(final NbModuleProject project, final String propertyPath) {
+        private ModifyProperties(final Project project, final String propertyPath) {
             super(project);
             this.propertyPath= propertyPath;
             addCreatedOrModifiedPath(propertyPath,true);

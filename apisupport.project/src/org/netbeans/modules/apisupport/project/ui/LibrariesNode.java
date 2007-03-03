@@ -40,7 +40,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.ModulesNodeFactory.AddNewLibraryWrapperAction;
@@ -98,7 +98,7 @@ final class LibrariesNode extends AbstractNode {
         super(new LibrariesChildren(project));
         setName(LIBRARIES_NAME);
         setDisplayName(DISPLAY_NAME);
-        if (Util.getModuleType(project) == NbModuleTypeProvider.SUITE_COMPONENT) {
+        if (Util.getModuleType(project) == NbModuleProvider.SUITE_COMPONENT) {
             actions = new Action[] {
                 new AddModuleDependencyAction(project),
                 new AddNewLibraryWrapperAction(project, project)
@@ -465,7 +465,7 @@ final class LibrariesNode extends AbstractNode {
         }
         
         public boolean isEnabled() {
-            if (Util.getModuleType(project) == NbModuleTypeProvider.NETBEANS_ORG) {
+            if (Util.getModuleType(project) == NbModuleProvider.NETBEANS_ORG) {
                 currectJavadoc = Util.findJavadocForNetBeansOrgModules(dep);
             } else {
                 currectJavadoc = Util.findJavadoc(dep, project.getPlatform(true));

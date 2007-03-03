@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -89,15 +90,15 @@ public class NbModuleProjectTest extends TestBase {
     }
 
     public void testGetType() throws Exception {
-        assertEquals(NbModuleTypeProvider.NETBEANS_ORG, Util.getModuleType(javaProjectProject));
+        assertEquals(NbModuleProvider.NETBEANS_ORG, Util.getModuleType(javaProjectProject));
         FileObject suite1 = resolveEEP("suite1");
         FileObject action = suite1.getFileObject("action-project");
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
-        assertEquals(NbModuleTypeProvider.SUITE_COMPONENT, Util.getModuleType(actionProject));
+        assertEquals(NbModuleProvider.SUITE_COMPONENT, Util.getModuleType(actionProject));
         FileObject suite3 = resolveEEP("suite3");
         FileObject dummy = suite3.getFileObject("dummy-project");
         NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
-        assertEquals(NbModuleTypeProvider.STANDALONE, Util.getModuleType(dummyProject));
+        assertEquals(NbModuleProvider.STANDALONE, Util.getModuleType(dummyProject));
     }
 
     public void testSupportsJavadoc() throws Exception {

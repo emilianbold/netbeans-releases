@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,7 +74,7 @@ public class NbModuleProjectGenerator {
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
-                    createProjectXML(dirFO, cnb, NbModuleTypeProvider.STANDALONE);
+                    createProjectXML(dirFO, cnb, NbModuleProvider.STANDALONE);
                     createPlatformProperties(dirFO, platformID);
                     createManifest(dirFO, cnb, bundlePath, layerPath);
                     if (bundlePath != null) {
@@ -104,7 +105,7 @@ public class NbModuleProjectGenerator {
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
-                    createProjectXML(dirFO, cnb, NbModuleTypeProvider.SUITE_COMPONENT);
+                    createProjectXML(dirFO, cnb, NbModuleProvider.SUITE_COMPONENT);
                     createSuiteProperties(dirFO, suiteDir);
                     createManifest(dirFO, cnb, bundlePath, layerPath);
                     if (bundlePath != null) {
@@ -200,7 +201,7 @@ public class NbModuleProjectGenerator {
                     }
                     ProjectXMLManager.generateLibraryModuleTemplate(
                             createFileObject(dirFO, AntProjectHelper.PROJECT_XML_PATH),
-                            cnb, NbModuleTypeProvider.SUITE_COMPONENT, packageList, classPathExtensions);
+                            cnb, NbModuleProvider.SUITE_COMPONENT, packageList, classPathExtensions);
                     createSuiteProperties(dirFO, suiteDir);
                     createManifest(dirFO, cnb, bundlePath, null);
                     createBundle(dirFO, bundlePath, name);
@@ -239,7 +240,7 @@ public class NbModuleProjectGenerator {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
                     createNetBeansOrgBuildXML(dirFO, cnb, nborg);
-                    createProjectXML(dirFO, cnb, NbModuleTypeProvider.NETBEANS_ORG);
+                    createProjectXML(dirFO, cnb, NbModuleProvider.NETBEANS_ORG);
                     createManifest(dirFO, cnb, bundlePath, layerPath);
                     createBundle(dirFO, bundlePath, name);
                     createLayerInSrc(dirFO, layerPath);
@@ -260,7 +261,7 @@ public class NbModuleProjectGenerator {
      * <em>standalone</em> or <em>module in suite</em> module.
      */
     private static void createProjectXML(FileObject projectDir,
-            String cnb, NbModuleTypeProvider.NbModuleType type) throws IOException {
+            String cnb, NbModuleProvider.NbModuleType type) throws IOException {
         ProjectXMLManager.generateEmptyModuleTemplate(
                 createFileObject(projectDir, AntProjectHelper.PROJECT_XML_PATH),
                 cnb, type);

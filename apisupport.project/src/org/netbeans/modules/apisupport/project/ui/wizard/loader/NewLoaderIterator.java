@@ -185,11 +185,11 @@ final class NewLoaderIterator extends BasicWizardIterator {
         }
         
         // 1. create dataloader file
-        String loaderName = model.getDefaultPackagePath(namePrefix + "DataLoader.java"); // NOI18N
+        String loaderName = model.getDefaultPackagePath(namePrefix + "DataLoader.java", false); // NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         URL template = NewLoaderIterator.class.getResource("templateDataLoader.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderName, template, replaceTokens));
-        String loaderInfoName = model.getDefaultPackagePath(namePrefix + "DataLoaderBeanInfo.java"); // NOI18N
+        String loaderInfoName = model.getDefaultPackagePath(namePrefix + "DataLoaderBeanInfo.java", false); // NOI18N
         template = NewLoaderIterator.class.getResource("templateDataLoaderBeanInfo.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderInfoName, template, replaceTokens));
         
@@ -208,12 +208,10 @@ final class NewLoaderIterator extends BasicWizardIterator {
             replaceTokens.put("@@EDITOR_SUPPORT_IMPORT@@", "");//NOI18N
         }
         
-        String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java"); // NOI18N
+        String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java", false); // NOI18N
         template = null;
         try {
-            ModuleList moduleList = model.getProject().getModuleList();
-            ModuleEntry entry = moduleList.getEntry("org.openide.loaders"); // NOI18N
-            SpecificationVersion current = new SpecificationVersion(entry.getSpecificationVersion());
+            SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders");
             SpecificationVersion desired = new SpecificationVersion("6.0"); // NOI18N
             if (current.compareTo(desired) >= 0) {
                 template = NewLoaderIterator.class.getResource("templateDataObjectWithLookup.javx");//NOI18N
@@ -227,7 +225,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createFileWithSubstitutions(doName, template, replaceTokens));
         
         // 3. node file
-        String nodeName = model.getDefaultPackagePath(namePrefix + "DataNode.java"); // NOI18N
+        String nodeName = model.getDefaultPackagePath(namePrefix + "DataNode.java", false); // NOI18N
         template = NewLoaderIterator.class.getResource("templateDataNode.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(nodeName, template, replaceTokens));
         
@@ -252,7 +250,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         }
         
         // 6. update/create bundle file
-        String bundlePath = model.getDefaultPackagePath("Bundle.properties"); // NOI18N
+        String bundlePath = model.getDefaultPackagePath("Bundle.properties", true); // NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_loader_name",  // NOI18N
                 NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix))); //NOI18N
         

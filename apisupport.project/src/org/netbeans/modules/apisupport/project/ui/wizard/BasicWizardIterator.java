@@ -38,6 +38,7 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -103,7 +104,8 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
     /** DataModel that is passed through individual panels.*/
     public static class BasicDataModel {
         
-        private NbModuleProject project;
+        private Project project;
+        private NbModuleProvider module;
         private SourceGroup sourceRootGroup;
         private String packageName;
         
@@ -114,13 +116,12 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             if (tmpProject == null) {
                 throw new IllegalArgumentException();
             }
-            // XXX never cast to NbModuleProject... use lookup instead
-            if (!(tmpProject instanceof NbModuleProject)) {
-                // XXX this happens after apisupport/project reload, which is annoying...
+            module = tmpProject.getLookup().lookup(NbModuleProvider.class);
+            if (module == null) {
                 throw new IllegalArgumentException(tmpProject.getClass().toString());
             }
             
-            project = (NbModuleProject) tmpProject;
+            project = tmpProject;
             // #66339 need to prefetch the packagename and populate data with it..
             FileObject fo = Templates.getTargetFolder(wiz);
             if (fo != null) {
@@ -137,8 +138,12 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             }
         }
         
-        public NbModuleProject getProject() {
+        public Project getProject() {
             return project;
+        }
+        
+        public NbModuleProvider getModuleInfo() {
+            return module;
         }
         
         public String getPackageName() {
@@ -151,7 +156,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         
         public SourceGroup getSourceRootGroup() {
             if (sourceRootGroup == null) {
-                FileObject tempSrcRoot = getProject().getSourceDirectory();
+                FileObject tempSrcRoot = getModuleInfo().getSourceDirectory();
                 assert tempSrcRoot != null;
                 
                 Sources sources = ProjectUtils.getSources(project);
@@ -165,8 +170,8 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             return sourceRootGroup;
         }
         
-        public String getDefaultPackagePath(String fileName) {
-            return getProject().getSourceDirectoryPath() + '/' +
+        public String getDefaultPackagePath(String fileName, boolean resource) {
+            return (resource ? getModuleInfo().getResourceDirectoryPath(false) : getModuleInfo().getSourceDirectoryPath()) + '/' +
                     getPackageName().replace('.','/') + '/' + fileName;
         }
         
@@ -182,8 +187,8 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         public String addCreateIconOperation(CreatedModifiedFiles cmf, String origIconPath) {
             FileObject origIconFO = FileUtil.toFileObject(new File(origIconPath));
             String relativeIconPath = null;
-            if (!FileUtil.isParentOf(getProject().getSourceDirectory(), origIconFO)) {
-                String iconPath = getDefaultPackagePath(origIconFO.getNameExt());
+            if (!FileUtil.isParentOf(Util.getResourceDirectory(getProject()), origIconFO)) {
+                String iconPath = getDefaultPackagePath(origIconFO.getNameExt(), true);
                 try {
                     cmf.add(cmf.createFile(iconPath, origIconFO.getURL()));
                     relativeIconPath = getPackageName().replace('.', '/') + '/' + origIconFO.getNameExt();
@@ -191,7 +196,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
                     Util.err.notify(exc);
                 }
             } else {
-                relativeIconPath = FileUtil.getRelativePath(getProject().getSourceDirectory(), origIconFO);
+                relativeIconPath = FileUtil.getRelativePath(Util.getResourceDirectory(getProject()), origIconFO);
             }
             return relativeIconPath;
         }

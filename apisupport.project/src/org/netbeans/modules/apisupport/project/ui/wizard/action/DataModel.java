@@ -126,7 +126,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         cmf = new CreatedModifiedFiles(getProject());
         
-        String actionPath = getDefaultPackagePath(className + ".java"); // NOI18N
+        String actionPath = getDefaultPackagePath(className + ".java", false); // NOI18N
         // XXX use nbresloc URL protocol rather than DataModel.class.getResource(...):
         URL template = DataModel.class.getResource(alwaysEnabled
                 ? "callableSystemAction.javx" : "cookieAction.javx"); // NOI18N
@@ -173,7 +173,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
         
         // Bundle.properties for localized action name
-        cmf.add(cmf.bundleKey(getDefaultPackagePath("Bundle.properties"), actionNameKey, displayName)); // NOI18N
+        cmf.add(cmf.bundleKey(getDefaultPackagePath("Bundle.properties", true), actionNameKey, displayName)); // NOI18N
         
         // Copy action icon
         if (origIconPath != null) {
@@ -282,7 +282,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     /** Checks whether a proposed class exists. */
     boolean classExists() {
         FileObject classFO = getProject().getProjectDirectory().getFileObject(
-                getDefaultPackagePath(className + ".java")); // NOI18N
+                getDefaultPackagePath(className + ".java", false)); // NOI18N
         return classFO != null;
     }
     

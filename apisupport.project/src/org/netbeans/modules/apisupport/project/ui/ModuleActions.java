@@ -36,7 +36,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
@@ -75,7 +75,7 @@ public final class ModuleActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_rebuild"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(ModuleActions.class, "ACTION_clean"), null));
         actions.add(null);
-        boolean isNetBeansOrg = Util.getModuleType(project) == NbModuleTypeProvider.NETBEANS_ORG;
+        boolean isNetBeansOrg = Util.getModuleType(project) == NbModuleProvider.NETBEANS_ORG;
         if (isNetBeansOrg) {
             String path = project.getPathWithinNetBeansOrg();
             actions.add(createMasterAction(project, new String[] {"init", "all-" + path}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps")));
@@ -502,14 +502,14 @@ public final class ModuleActions implements ActionProvider {
                 if (findBuildXml(project) == null) {
                     return false;
                 }
-                NbModuleTypeProvider.NbModuleType type = Util.getModuleType(project);
-                if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+                NbModuleProvider.NbModuleType type = Util.getModuleType(project);
+                if (type == NbModuleProvider.NETBEANS_ORG) {
                     return true;
-                } else if (type == NbModuleTypeProvider.STANDALONE) {
+                } else if (type == NbModuleProvider.STANDALONE) {
                     NbPlatform p = project.getPlatform(false);
                     return p != null && p.isDefault();
                 } else {
-                    assert type == NbModuleTypeProvider.SUITE_COMPONENT : type;
+                    assert type == NbModuleProvider.SUITE_COMPONENT : type;
                     try {
                         SuiteProject suite = SuiteUtils.findSuite(project);
                         if (suite == null) {

@@ -30,8 +30,10 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.openide.modules.ModuleInfo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * @author Tomas Musil
@@ -49,6 +51,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
     
     //this tests if node draws subnodes    
     public void testLibrariesNodeDrawingDeps() throws Exception {
+        Lookup.getDefault().lookup(ModuleInfo.class);
         //initial check
         NbModuleProject p = generateStandaloneModule("module");
         if((p.getModuleList().getEntry(JUNIT_CNB)) != null) {
@@ -83,6 +86,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
     
     //test action on node
     public void testActions() throws Exception{
+        Lookup.getDefault().lookup(ModuleInfo.class);
         NbModuleProject p = generateStandaloneModule("module");
         LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);

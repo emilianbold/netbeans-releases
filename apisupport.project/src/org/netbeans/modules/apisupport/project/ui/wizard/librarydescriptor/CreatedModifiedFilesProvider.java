@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory;
@@ -76,8 +77,10 @@ final class CreatedModifiedFilesProvider  {
     }
     
     
-    private static String getPackagePlusBundle(NbModuleProject project) {
-        ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
+    private static String getPackagePlusBundle(Project project) {
+        NbModuleProject nbproj = project.getLookup().lookup(NbModuleProject.class);
+        assert nbproj != null : "this template works only with default netbeans modules.";
+        ManifestManager mm = ManifestManager.getInstance(nbproj.getManifest(), false);
         
         String bundle = mm.getLocalizingBundle().replace('/', '.');
         if (bundle.endsWith(".properties")) { // NOI18N
@@ -105,7 +108,7 @@ final class CreatedModifiedFilesProvider  {
         return sb.toString();
     }
     
-    private static Map getTokens(CreatedModifiedFiles fileSupport, NbModuleProject project, NewLibraryDescriptor.DataModel data) {
+    private static Map getTokens(CreatedModifiedFiles fileSupport, Project project, NewLibraryDescriptor.DataModel data) {
         Map retval = new HashMap();
         Library library = data.getLibrary();
         retval.put("name_to_substitute",data.getLibraryName());//NOI18N
@@ -131,7 +134,7 @@ final class CreatedModifiedFilesProvider  {
             String archiveName;
             archiveName = addArchiveToCopy(fileSupport, data, originalURL, "release/"+pathPrefix);//NOI18N
             if (archiveName != null) {
-                String codeNameBase = ManifestManager.getInstance(data.getProject().getManifest(), false).getCodeNameBase();
+                String codeNameBase = data.getModuleInfo().getCodeNameBase();
                 String urlToString = transformURL(codeNameBase, pathPrefix, archiveName);//NOI18N
                 sb.append("<resource>");//NOI18N
                 sb.append(urlToString);
@@ -175,7 +178,7 @@ final class CreatedModifiedFilesProvider  {
     private static class ZipAndCopyOperation extends CreatedModifiedFilesFactory.OperationBase {
         private FileObject folderToZip;
         private String relativePath;
-        ZipAndCopyOperation(NbModuleProject prj, FileObject folderToZip, String relativePath) {
+        ZipAndCopyOperation(Project prj, FileObject folderToZip, String relativePath) {
             super(prj);
             this.folderToZip = folderToZip;
             this.relativePath = relativePath;

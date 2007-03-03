@@ -92,7 +92,7 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
         public CreatedModifiedFiles getCreatedModifiedFiles() {
             if (files == null) {
                 // org.netbeans.modules.foo
-                String codeNameBase = ManifestManager.getInstance(getProject().getManifest(), false).getCodeNameBase();
+                String codeNameBase = getModuleInfo().getCodeNameBase();
                 // foo
                 String basename = codeNameBase.substring(codeNameBase.lastIndexOf('.') + 1);
                 // org/netbeans/modules/foo/docs/

@@ -79,19 +79,19 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             replaceTokens.put("@@STEP_NAME@@", "Step #" + stepNumber); // NOI18N
             
             // generate .java file for visual panel
-            String path = getDefaultPackagePath(visualPanelClass + ".java"); // NOI18N
+            String path = getDefaultPackagePath(visualPanelClass + ".java", false); // NOI18N
             // XXX use nbresloc URL protocol rather than
             // DataModel.class.getResource(...) and all such a cases below
             URL template = DataModel.class.getResource("visualPanel.javx"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
             
             // generate .form file for visual panel
-            path = getDefaultPackagePath(visualPanelClass + ".form"); // NOI18N
+            path = getDefaultPackagePath(visualPanelClass + ".form", false); // NOI18N
             template = DataModel.class.getResource("visualPanel.forx"); // NOI18N
             cmf.add(cmf.createFile(path, template));
             
             // generate .java file for wizard panel
-            path = getDefaultPackagePath(wizardPanelClass + ".java"); // NOI18N
+            path = getDefaultPackagePath(wizardPanelClass + ".java", false); // NOI18N
             template = DataModel.class.getResource("wizardPanel.javx"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
             
@@ -111,7 +111,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             Map replaceTokens = new HashMap(basicTokens);
             replaceTokens.put("@@PANELS_DEFINITION_BLOCK@@", panelsDefinitionBlock.toString()); // NOI18N
             replaceTokens.put("@@ITERATOR_CLASS@@", iteratorClass); // NOI18N
-            String path = getDefaultPackagePath(iteratorClass + ".java"); // NOI18N
+            String path = getDefaultPackagePath(iteratorClass + ".java", false); // NOI18N
             URL template = DataModel.class.getResource(fileTemplateType
                     ? "instantiatingIterator.javx" : "wizardIterator.javx"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
@@ -120,7 +120,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 // generate .html description for the template
                 String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase(Locale.ENGLISH) + prefix.substring(1);
                 template = DataModel.class.getResource("wizardDescription.html"); // NOI18N
-                cmf.add(cmf.createFile(getDefaultPackagePath(lowerCasedPrefix) + ".html", template)); // NOI18N
+                cmf.add(cmf.createFile(getDefaultPackagePath(lowerCasedPrefix, true) + ".html", template)); // NOI18N
                 
                 // add layer entry about a new file wizard
                 String instanceFullPath = category + '/' + lowerCasedPrefix;
@@ -151,7 +151,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         } else {
             Map replaceTokens = new HashMap(basicTokens);
             replaceTokens.put("@@PANELS_DEFINITION_BLOCK@@", panelsDefinitionBlock.toString()); // NOI18N
-            String path = getDefaultPackagePath(prefix + "WizardAction.java"); // NOI18N
+            String path = getDefaultPackagePath(prefix + "WizardAction.java", false); // NOI18N
             URL template = DataModel.class.getResource("sampleAction.javx"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
         }

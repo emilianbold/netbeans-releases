@@ -34,7 +34,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
@@ -219,7 +219,7 @@ public final class SuiteUtils {
                         removeModule(suiteComponent, suiteProps);
                         suiteProps.storeProperties();
                         ProjectManager.getDefault().saveProject(suite);
-                    } else if (Util.getModuleType(suiteComponent) == NbModuleTypeProvider.SUITE_COMPONENT) {
+                    } else if (Util.getModuleType(suiteComponent) == NbModuleProvider.SUITE_COMPONENT) {
                         removeModule(suiteComponent, null);
                     }
                     return null;
@@ -249,8 +249,8 @@ public final class SuiteUtils {
      * </p>
      */
     private static void removeModule(final NbModuleProject subModule, final SuiteProperties/*or null*/ suiteProps) {
-        NbModuleTypeProvider.NbModuleType type = Util.getModuleType(subModule);
-        assert type == NbModuleTypeProvider.SUITE_COMPONENT : "Not a suite component: " + subModule;
+        NbModuleProvider.NbModuleType type = Util.getModuleType(subModule);
+        assert type == NbModuleProvider.SUITE_COMPONENT : "Not a suite component: " + subModule;
         try {
             subModule.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
@@ -292,7 +292,7 @@ public final class SuiteUtils {
                             }
                         }
                         
-                        SuiteUtils.setNbModuleType(subModule, NbModuleTypeProvider.STANDALONE);
+                        SuiteUtils.setNbModuleType(subModule, NbModuleProvider.STANDALONE);
                         // save subModule
                         ProjectManager.getDefault().saveProject(subModule);
                     } finally {
@@ -374,7 +374,7 @@ public final class SuiteUtils {
         
         // adjust subModule's properties
         NbModuleProjectGenerator.createSuiteProperties(subModule.getProjectDirectory(), suiteDirF);
-        setNbModuleType(subModule, NbModuleTypeProvider.SUITE_COMPONENT);
+        setNbModuleType(subModule, NbModuleProvider.SUITE_COMPONENT);
         ProjectManager.getDefault().saveProject(subModule);
     }
     
@@ -389,7 +389,7 @@ public final class SuiteUtils {
         return key;
     }
     
-    private static void setNbModuleType(Project module, NbModuleTypeProvider.NbModuleType type) throws IOException {
+    private static void setNbModuleType(Project module, NbModuleProvider.NbModuleType type) throws IOException {
         ProjectXMLManager pxm = new ProjectXMLManager(((NbModuleProject) module));
         pxm.setModuleType(type);
     }

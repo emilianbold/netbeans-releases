@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.util.Utilities;
@@ -378,7 +379,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
                     key = getReplacement(key);
                 } 
                 String value = getBundleValue(key);
-                files.add(files.bundleKey(getDefaultPackagePath("Bundle.properties"),key,value));// NOI18N                        
+                files.add(files.bundleKey(getDefaultPackagePath("Bundle.properties", true),key,value));// NOI18N                        
             }
         }
         
@@ -403,21 +404,21 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         private String getFilePath(final String templateSuffix) {
             String fileName = getClassNamePrefix()+templateSuffix+ ".java"; // NOI18N
-            return getDefaultPackagePath(fileName);//NOI18N
+            return getDefaultPackagePath(fileName, false);//NOI18N
         }
         
         private CreatedModifiedFiles.Operation createFormFileCopyOperation(final String templateSuffix) {
             URL template = NewOptionsIterator.class.getResource(FORM_TEMPLATE_PREFIX+templateSuffix);
             assert template != null : JAVA_TEMPLATE_PREFIX+templateSuffix;
             String fileName = getClassNamePrefix()+templateSuffix+ ".form";// NOI18N
-            String filePath = getDefaultPackagePath(fileName);
+            String filePath = getDefaultPackagePath(fileName, false);
             return files.createFile(filePath, template);
         }
         
         private String getCodeNameBase() {
             if (codeNameBase == null) {
-                ManifestManager mm = ManifestManager.getInstance(getProject().getManifest(), false);
-                codeNameBase = mm.getCodeNameBase();
+                NbModuleProvider mod = getProject().getLookup().lookup(NbModuleProvider.class);
+                codeNameBase = mod.getCodeNameBase();
             }
             return codeNameBase;
         }

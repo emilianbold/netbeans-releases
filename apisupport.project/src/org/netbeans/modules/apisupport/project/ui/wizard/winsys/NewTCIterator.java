@@ -25,8 +25,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -135,7 +137,8 @@ final class NewTCIterator extends BasicWizardIterator {
     
     public static void generateFileChanges(DataModel model) {
         CreatedModifiedFiles fileChanges = new CreatedModifiedFiles(model.getProject());
-        NbModuleProject project = model.getProject();
+        Project project = model.getProject();
+        NbModuleProvider moduleInfo = model.getModuleInfo();
         final String name = model.getName();
         final String packageName = model.getPackageName();
         final String mode = model.getMode();
@@ -158,8 +161,8 @@ final class NewTCIterator extends BasicWizardIterator {
         if (fil != null) {
             FileObject fo = FileUtil.toFileObject(fil);
             String relativeIconPath = null;
-            if (!FileUtil.isParentOf(model.getProject().getSourceDirectory(), fo)) {
-                String iconPath = getRelativePath(model.getProject(), packageName, 
+            if (!FileUtil.isParentOf(Util.getResourceDirectory(project), fo)) {
+                String iconPath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, 
                                                 "", fo.getNameExt()); //NOI18N
                 try {
                     fileChanges.add(fileChanges.createFile(iconPath, fo.getURL()));
@@ -168,7 +171,7 @@ final class NewTCIterator extends BasicWizardIterator {
                     ErrorManager.getDefault().notify(exc);
                 }
             } else {
-                relativeIconPath = FileUtil.getRelativePath(model.getProject().getSourceDirectory(), fo);
+                relativeIconPath = FileUtil.getRelativePath(Util.getResourceDirectory(project), fo);
             }
             replaceTokens.put("@@ICONPATH@@", relativeIconPath);//NOI18N
             replaceTokens.put("@@COMMENTICON@@", "");//NOI18N
@@ -180,27 +183,27 @@ final class NewTCIterator extends BasicWizardIterator {
         
         
         // 2. update project dependencies
-        replaceTokens.put("@@MODULENAME@@", project.getCodeNameBase()); // NOI18N
+        replaceTokens.put("@@MODULENAME@@", moduleInfo.getCodeNameBase()); // NOI18N
         //TODO how to figure the currect specification version for module?
-        replaceTokens.put("@@SPECVERSION@@", project.getSpecVersion()); // NOI18N
+        replaceTokens.put("@@SPECVERSION@@", moduleInfo.getSpecVersion()); // NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
         
         // x. generate java classes
-        final String tcName = getRelativePath(project, packageName,
+        final String tcName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "TopComponent.java"); //NOI18N
         // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         URL template = NewTCIterator.class.getResource("templateTopComponent.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(tcName, template, replaceTokens));
         // x. generate java classes
-        final String tcFormName = getRelativePath(project, packageName,
+        final String tcFormName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "TopComponent.form"); //NOI18N
         // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewTCIterator.class.getResource("templateTopComponent.frmx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(tcFormName, template, replaceTokens));
         
-        final String actionName = getRelativePath(project, packageName,
+        final String actionName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "Action.java"); //NOI18N
         // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewTCIterator.class.getResource("templateAction.javx");//NOI18N
@@ -219,7 +222,7 @@ final class NewTCIterator extends BasicWizardIterator {
         
         fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName), // NOI18N
                                                        Collections.EMPTY_SET));
-        String bundlePath = getRelativePath(model.getProject(), packageName, "", "Bundle.properties"); //NOI18N
+        String bundlePath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, "", "Bundle.properties"); //NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action",  // NOI18N
                                 NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateActionName", name))); //NOI18N
         
@@ -231,11 +234,11 @@ final class NewTCIterator extends BasicWizardIterator {
         model.setCreatedModifiedFiles(fileChanges);
     }
     
-    private static String getRelativePath(NbModuleProject project, String fullyQualifiedPackageName,
+    private static String getRelativePath(String rootpath, String fullyQualifiedPackageName,
             String prefix, String postfix) {
         StringBuffer sb = new StringBuffer();
         
-        sb.append(project.getSourceDirectoryPath()).append('/').append(fullyQualifiedPackageName.replace('.','/'))
+        sb.append(rootpath).append('/').append(fullyQualifiedPackageName.replace('.','/'))
                         .append('/').append(prefix).append(postfix);
         
         return sb.toString();

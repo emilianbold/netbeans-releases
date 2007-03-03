@@ -24,7 +24,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
@@ -91,8 +91,8 @@ public class SuiteOperationsTest extends TestBase {
         prjDir.createFolder("branding");
         NbModuleProject module1 = TestBase.generateSuiteComponent(suite, "module1");
         NbModuleProject module2 = TestBase.generateSuiteComponent(suite, "module2");
-        assertEquals("module1 is suite component", NbModuleTypeProvider.SUITE_COMPONENT, Util.getModuleType(module1));
-        assertEquals("module2 is suite component", NbModuleTypeProvider.SUITE_COMPONENT, Util.getModuleType(module2));
+        assertEquals("module1 is suite component", NbModuleProvider.SUITE_COMPONENT, Util.getModuleType(module1));
+        assertEquals("module2 is suite component", NbModuleProvider.SUITE_COMPONENT, Util.getModuleType(module2));
         module1.open();
         module2.open();
         
@@ -121,8 +121,8 @@ public class SuiteOperationsTest extends TestBase {
         prjDir.getFileSystem().refresh(true);
         assertNull(prjDir.getFileObject("build"));
         
-        assertEquals("module1 became standalone module", NbModuleTypeProvider.STANDALONE, Util.getModuleType(module1));
-        assertEquals("module2 became standalone module", NbModuleTypeProvider.STANDALONE, Util.getModuleType(module2));
+        assertEquals("module1 became standalone module", NbModuleProvider.STANDALONE, Util.getModuleType(module1));
+        assertEquals("module2 became standalone module", NbModuleProvider.STANDALONE, Util.getModuleType(module2));
     }
     
     public void testMoveModule() throws Exception {

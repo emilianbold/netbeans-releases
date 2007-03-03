@@ -143,7 +143,7 @@ final class ModuleInstallPanel extends BasicWizardIterator.Panel {
     private String getModuleInstall() {
         String moduleInstall = null;
         try {
-            EditableManifest mf = Util.loadManifest(data.getProject().getManifestFile());
+            EditableManifest mf = Util.loadManifest(data.getModuleInfo().getManifestFile());
             moduleInstall = mf.getAttribute(DataModel.OPENIDE_MODULE_INSTALL, null);
         } catch (IOException e) {
             assert false : e;

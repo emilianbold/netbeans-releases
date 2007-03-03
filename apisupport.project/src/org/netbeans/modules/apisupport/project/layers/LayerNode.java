@@ -28,7 +28,7 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
@@ -267,17 +267,17 @@ public final class LayerNode extends FilterNode {
      * Make a runtime classpath indicative of what is accessible from a sample resource.
      */
     private static ClassPath createClasspath(NbModuleProject p) throws IOException {
-        NbModuleTypeProvider.NbModuleType type = Util.getModuleType(p);
-        if (type == NbModuleTypeProvider.STANDALONE) {
+        NbModuleProvider.NbModuleType type = Util.getModuleType(p);
+        if (type == NbModuleProvider.STANDALONE) {
             return LayerUtils.createLayerClasspath(Collections.singleton(p), LayerUtils.getPlatformJarsForStandaloneProject(p));
-        } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
+        } else if (type == NbModuleProvider.SUITE_COMPONENT) {
             SuiteProject suite = SuiteUtils.findSuite(p);
             if (suite == null) {
                 throw new IOException("Could not load suite for " + p); // NOI18N
             }
             Set<NbModuleProject> modules = SuiteUtils.getSubProjects(suite);
             return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(p, suite));
-        } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+        } else if (type == NbModuleProvider.NETBEANS_ORG) {
             return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject(p), Collections.EMPTY_SET);
         } else {
             throw new AssertionError(type);

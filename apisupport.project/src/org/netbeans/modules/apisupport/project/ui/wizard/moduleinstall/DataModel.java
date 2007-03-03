@@ -52,11 +52,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // obtain unique class name
         String className = INSTALLER_CLASS_NAME;
-        String path = getDefaultPackagePath(className + ".java"); // NOI18N
+        String path = getDefaultPackagePath(className + ".java", false); // NOI18N
         int i = 0;
         while (alreadyExist(path)) {
             className = INSTALLER_CLASS_NAME + '_' + ++i;
-            path = getDefaultPackagePath(className + ".java"); // NOI18N
+            path = getDefaultPackagePath(className + ".java", false); // NOI18N
         }
         
         // generate .java file for ModuleInstall

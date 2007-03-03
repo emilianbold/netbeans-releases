@@ -72,6 +72,11 @@ Microsystems, Inc. All Rights Reserved.
     </api>
    </li>
   </ul>
+   <p>
+   This module provides the <api group="java" name="APISupportAPI" type="export" category="friend" url="@TOP@index.html"/> 
+   SPI which allows to share parts of the ApiSupport UI with alternate project types.
+  </p>
+ 
  </answer>
 
 
@@ -223,7 +228,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   1.4.
+   1.5.
   </p>
  </answer>
 
@@ -484,7 +489,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   No public packages.
+   Only SPI package are exported, and only to the friend modules.
   </p>
  </answer>
 

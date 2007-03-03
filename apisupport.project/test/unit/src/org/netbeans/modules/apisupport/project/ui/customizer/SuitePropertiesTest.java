@@ -27,7 +27,7 @@ import javax.swing.JList;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
@@ -161,16 +161,16 @@ public class SuitePropertiesTest extends TestBase {
         assertEquals("one module should be left", 1, spp.getSubprojects().size());
         NbModuleProject project = (NbModuleProject) spp.getSubprojects().toArray()[0];
         assertEquals("module1b should be the one", "org.example.module1b", project.getCodeNameBase());
-        NbModuleTypeProvider libProjectNmtp = (NbModuleTypeProvider) project.
-                getLookup().lookup(NbModuleTypeProvider.class);
-        assertSame("module1b module is still suite component module", NbModuleTypeProvider.SUITE_COMPONENT,
+        NbModuleProvider libProjectNmtp = (NbModuleProvider) project.
+                getLookup().lookup(NbModuleProvider.class);
+        assertSame("module1b module is still suite component module", NbModuleProvider.SUITE_COMPONENT,
                 libProjectNmtp.getModuleType());
         
         // assert that the remove module (module1a) is standalone
-        NbModuleTypeProvider module1aNmtp = (NbModuleTypeProvider) module1a.
-                getLookup().lookup(NbModuleTypeProvider.class);
+        NbModuleProvider module1aNmtp = (NbModuleProvider) module1a.
+                getLookup().lookup(NbModuleProvider.class);
         assertNotNull(module1aNmtp);
-        assertSame("module1a module is standalone module now", NbModuleTypeProvider.STANDALONE,
+        assertSame("module1a module is standalone module now", NbModuleProvider.STANDALONE,
                 module1aNmtp.getModuleType());
     }
     

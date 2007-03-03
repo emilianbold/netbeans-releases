@@ -39,7 +39,7 @@ import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
@@ -542,8 +542,8 @@ public class SingleModulePropertiesTest extends TestBase {
                 (LocalizedBundleInfo.Provider) project.getLookup().lookup(LocalizedBundleInfo.Provider.class));
     }
     
-    private static NbModuleTypeProvider.NbModuleType getModuleType(Project p) {
-        NbModuleTypeProvider nmtp = (NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class);
+    private static NbModuleProvider.NbModuleType getModuleType(Project p) {
+        NbModuleProvider nmtp = (NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class);
         return nmtp.getModuleType();
     }
     

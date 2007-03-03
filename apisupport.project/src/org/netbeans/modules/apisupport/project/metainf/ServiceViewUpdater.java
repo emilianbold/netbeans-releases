@@ -30,7 +30,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -60,12 +60,12 @@ final class ServiceViewUpdater {
                  }
             }
         } else {
-            NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) handler.getProject().getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
-            if (type == NbModuleTypeProvider.STANDALONE) { 
+            NbModuleProvider.NbModuleType type = ((NbModuleProvider) handler.getProject().getLookup().lookup(NbModuleProvider.class)).getModuleType();
+            if (type == NbModuleProvider.STANDALONE) { 
                 // standalone module
                 // update only this project
                 handler.updateService(service);
-            } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+            } else if (type == NbModuleProvider.NETBEANS_ORG) {
                // nb org project type
                 // update all opened projects
                 File nbroot =  ModuleList.findNetBeansOrg(FileUtil.toFile(handler.getProject().getProjectDirectory()));
@@ -78,8 +78,8 @@ final class ServiceViewUpdater {
                         // for all opened projects for nb_all  
                         if (projects[i] instanceof NbModuleProject) {
                             NbModuleProject prj = (NbModuleProject) projects[i];
-                            NbModuleTypeProvider.NbModuleType prjType = ((NbModuleTypeProvider) handler.getProject().getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
-                            if (prjType == NbModuleTypeProvider.NETBEANS_ORG &&
+                            NbModuleProvider.NbModuleType prjType = ((NbModuleProvider) handler.getProject().getLookup().lookup(NbModuleProvider.class)).getModuleType();
+                            if (prjType == NbModuleProvider.NETBEANS_ORG &&
                                 FileUtil.isParentOf(nbAllfo,prj.getProjectDirectory())) {
                                  ServiceNodeHandler handler2 = (ServiceNodeHandler) prj.getLookup().lookup(ServiceNodeHandler.class);
                                  if (handler2 != null) {
@@ -98,8 +98,8 @@ final class ServiceViewUpdater {
     private static SuiteProject getSuite(ServiceNodeHandler handler) throws IOException {
         SuiteProject retPrj = null;
         NbModuleProject p = handler.getProject();
-        NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
-        if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
+        NbModuleProvider.NbModuleType type = ((NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class)).getModuleType();
+        if (type == NbModuleProvider.SUITE_COMPONENT) {
             SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
             assert suiteProv != null : p;
             File suiteDir = suiteProv.getSuiteDirectory();

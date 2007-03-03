@@ -37,7 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
@@ -158,10 +158,10 @@ final class Service {
             // testing
             return SUtil.getPlatformJars();
         } else {
-            NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
-            if (type == NbModuleTypeProvider.STANDALONE) {
+            NbModuleProvider.NbModuleType type = ((NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class)).getModuleType();
+            if (type == NbModuleProvider.STANDALONE) {
                 return LayerUtils.getPlatformJarsForStandaloneProject(p);
-            } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
+            } else if (type == NbModuleProvider.SUITE_COMPONENT) {
                 SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
                 assert suiteProv != null : p;
                 File suiteDir = suiteProv.getSuiteDirectory();
@@ -173,7 +173,7 @@ final class Service {
                     throw new IOException("Could not load suite for " + p + " from " + suiteDir); // NOI18N
                 }
                 return LayerUtils.getPlatformJarsForSuiteComponentProject(p,(SuiteProject)suite);
-            } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+            } else if (type == NbModuleProvider.NETBEANS_ORG) {
                 /// Is it really correct?
                 // [TODO]
                 return LayerUtils.getPlatformJarsForStandaloneProject(p);
@@ -184,9 +184,9 @@ final class Service {
     }
     
     static List <Service> getPlatfromServices(NbModuleProject p) throws IOException {
-        NbModuleTypeProvider.NbModuleType type = Util.getModuleType(p);
+        NbModuleProvider.NbModuleType type = Util.getModuleType(p);
         List<Service> services = new ArrayList<Service>();
-        if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+        if (type == NbModuleProvider.NETBEANS_ORG) {
             // special case fro nborg modules
             Set<NbModuleProject> projects = LayerUtils.getProjectsForNetBeansOrgProject(p);
             Iterator it = projects.iterator();

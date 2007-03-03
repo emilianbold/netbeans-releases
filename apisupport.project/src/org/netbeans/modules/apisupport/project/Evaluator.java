@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -73,7 +74,7 @@ import org.w3c.dom.Element;
 final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntProjectListener {
     
     private final NbModuleProject project;
-    private final NbModuleTypeProvider typeProvider;
+    private final NbModuleProvider typeProvider;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
     private PropertyEvaluator delegate;
@@ -114,7 +115,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
     }
     
-    public Evaluator(NbModuleProject project, NbModuleTypeProvider typeProvider) {
+    public Evaluator(NbModuleProject project, NbModuleProvider typeProvider) {
         this.project = project;
         this.typeProvider = typeProvider;
         delegate = createEvaluator(null);
@@ -240,9 +241,9 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         PropertyProvider predefs = project.getHelper().getStockPropertyPreprovider();
         Map<String,String> stock = new HashMap();
         File dir = project.getProjectDirectoryFile();
-        NbModuleTypeProvider.NbModuleType type = typeProvider.getModuleType();
+        NbModuleProvider.NbModuleType type = typeProvider.getModuleType();
         File nbroot;
-        if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+        if (type == NbModuleProvider.NETBEANS_ORG) {
             nbroot = ModuleList.findNetBeansOrg(dir);
             assert nbroot != null : "netbeans.org-type module not in a complete netbeans.org source root " + dir;
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
@@ -272,7 +273,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         List<PropertyProvider> providers = new ArrayList();
         providers.add(PropertyUtils.fixedPropertyProvider(stock));
         // XXX should listen to changes in values of properties which refer to property files:
-        if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
+        if (type == NbModuleProvider.SUITE_COMPONENT) {
             providers.add(project.getHelper().getPropertyProvider("nbproject/private/suite-private.properties")); // NOI18N
             providers.add(project.getHelper().getPropertyProvider("nbproject/suite.properties")); // NOI18N
             PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
@@ -282,11 +283,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(suiteDir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "platform-private.properties"))); // NOI18N
                 providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(suiteDir, "nbproject" + File.separatorChar + "platform.properties"))); // NOI18N
             }
-        } else if (type == NbModuleTypeProvider.STANDALONE) {
+        } else if (type == NbModuleProvider.STANDALONE) {
             providers.add(project.getHelper().getPropertyProvider("nbproject/private/platform-private.properties")); // NOI18N
             providers.add(project.getHelper().getPropertyProvider("nbproject/platform.properties")); // NOI18N
         }
-        if (type == NbModuleTypeProvider.SUITE_COMPONENT || type == NbModuleTypeProvider.STANDALONE) {
+        if (type == NbModuleProvider.SUITE_COMPONENT || type == NbModuleProvider.STANDALONE) {
             PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
             providers.add(new Util.UserPropertiesFileProvider(baseEval, dir));
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
@@ -308,7 +309,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             }
             providers.add(new DestDirProvider(baseEval));
         }
-        if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+        if (type == NbModuleProvider.NETBEANS_ORG) {
             // For local definitions of nbjdk.* properties:
             File nbbuild = new File(nbroot, "nbbuild"); // NOI18N
             providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(nbbuild, "user.build.properties"))); // NOI18N
@@ -343,7 +344,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
             buildDefaults.put("test.unit.cp.extra", ""); // NOI18N
             String testJars; // #68685 - follow Ant script
-            if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+            if (type == NbModuleProvider.NETBEANS_ORG) {
                 // Cf. nbbuild/templates/projectized.xml#test-lib-init
                 buildDefaults.put("xtest.home", "${nb_all}/xtest"); // NOI18N
                 testJars =
@@ -678,12 +679,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         
         String testDistDir =  evaluator.getProperty("test.dist.dir"); // NOI18N
         if (testDistDir == null) {
-            NbModuleTypeProvider.NbModuleType type = typeProvider.getModuleType();
-            if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+            NbModuleProvider.NbModuleType type = typeProvider.getModuleType();
+            if (type == NbModuleProvider.NETBEANS_ORG) {
                 // test.dist.dir = ${nb_all}/nbbuild/build/testdist
                 String nball = evaluator.getProperty("nb_all"); // NOI18N
                 testDistDir = nball + File.separatorChar + "nbbuild" + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
-            } else if ( type == NbModuleTypeProvider.SUITE_COMPONENT) {
+            } else if ( type == NbModuleProvider.SUITE_COMPONENT) {
                 // test.dist.dir = ${suite.dir}/build/testdist
                 String suiteDir = evaluator.getProperty("suite.dir"); // NOI18N
                 testDistDir = suiteDir + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N

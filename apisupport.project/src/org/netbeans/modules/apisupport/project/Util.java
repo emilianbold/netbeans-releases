@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -49,10 +50,14 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
@@ -718,7 +723,7 @@ public final class Util {
         return resources.iterator();
     }
     
-    private static Manifest getManifest(FileObject manifestFO) {
+    public static Manifest getManifest(FileObject manifestFO) {
         if (manifestFO != null) {
             try {
                 InputStream is = manifestFO.getInputStream();
@@ -879,11 +884,11 @@ public final class Util {
     }
     
     /**
-     * Returns {@link NbModuleTypeProvider.NbModuleType} from a project's lookup.
+     * Returns {@link NbModuleProvider.NbModuleType} from a project's lookup.
      */
-    public static NbModuleTypeProvider.NbModuleType getModuleType(final Project project) {
-        NbModuleTypeProvider provider = project.getLookup().lookup(NbModuleTypeProvider.class);
-        assert provider != null : "has NbModuleTypeProvider in the lookup";
+    public static NbModuleProvider.NbModuleType getModuleType(final Project project) {
+        NbModuleProvider provider = project.getLookup().lookup(NbModuleProvider.class);
+        assert provider != null : "has NbModuleProvider in the lookup";
         return provider.getModuleType();
     }
     
@@ -994,6 +999,23 @@ public final class Util {
                 break;
             }
         }
+    }
+    
+    /**
+     * when ever there is need for non-java files creation or lookup,
+     * use this method to get the right location for all projects. 
+     * Eg. maven places resources not next to the java files.
+     */ 
+    public static FileObject getResourceDirectory(Project prj) {
+        Sources srcs = ProjectUtils.getSources(prj);
+        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (grps != null && grps.length > 0) {
+            return grps[0].getRootFolder();
+        }
+        // fallback to sources..
+        NbModuleProvider prov = prj.getLookup().lookup(NbModuleProvider.class);
+        assert prov != null;
+        return prov.getSourceDirectory();
     }
     
 }

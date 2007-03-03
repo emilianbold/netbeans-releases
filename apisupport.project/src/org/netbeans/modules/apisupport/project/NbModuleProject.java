@@ -43,7 +43,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
@@ -79,15 +79,18 @@ import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
 import org.netbeans.modules.apisupport.project.queries.JavadocForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.SourceForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.SubprojectProviderImpl;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * A NetBeans module project.
@@ -108,7 +111,7 @@ public final class NbModuleProject implements Project {
     private Lookup lookup;
     private Map<FileObject,Element> extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
-    private final NbModuleTypeProviderImpl typeProvider;
+    private final NbModuleProviderImpl typeProvider;
     
     NbModuleProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -117,8 +120,8 @@ public final class NbModuleProject implements Project {
         if (getCodeNameBase() == null) {
             throw new IOException("Misconfigured project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " has no defined <code-name-base>"); // NOI18N
         }
-        typeProvider = new NbModuleTypeProviderImpl();
-        if (typeProvider.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG && ModuleList.findNetBeansOrg(getProjectDirectoryFile()) == null) {
+        typeProvider = new NbModuleProviderImpl();
+        if (typeProvider.getModuleType() == NbModuleProvider.NETBEANS_ORG && ModuleList.findNetBeansOrg(getProjectDirectoryFile()) == null) {
             // #69097: preferable to throwing an assertion error later...
             throw new IOException("netbeans.org-type module not in a complete netbeans.org source root: " + this); // NOI18N
         }
@@ -298,14 +301,14 @@ public final class NbModuleProject implements Project {
         return evaluator().getProperty("src.dir"); // NOI18N
     }
     
-    private NbModuleTypeProvider.NbModuleType getModuleType() {
+    private NbModuleProvider.NbModuleType getModuleType() {
         Element data = getPrimaryConfigurationData();
         if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) { // NOI18N
-            return NbModuleTypeProvider.SUITE_COMPONENT;
+            return NbModuleProvider.SUITE_COMPONENT;
         } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null) { // NOI18N
-            return NbModuleTypeProvider.STANDALONE;
+            return NbModuleProvider.STANDALONE;
         } else {
-            return NbModuleTypeProvider.NETBEANS_ORG;
+            return NbModuleProvider.NETBEANS_ORG;
         }
     }
     
@@ -314,20 +317,7 @@ public final class NbModuleProject implements Project {
     }
     
     public Manifest getManifest() {
-        FileObject manifestFO = getManifestFile();
-        if (manifestFO != null) {
-            try {
-                InputStream is = manifestFO.getInputStream();
-                try {
-                    return new Manifest(is);
-                } finally {
-                    is.close();
-                }
-            } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        return null;
+        return Util.getManifest(getManifestFile());
     }
 
     public AntProjectHelper getHelper() {
@@ -497,9 +487,9 @@ public final class NbModuleProject implements Project {
         } catch (IOException e) {
             // #60094: see if we can fix it quietly by resetting platform to default.
             FileObject platformPropertiesFile = null;
-            if (typeProvider.getModuleType() == NbModuleTypeProvider.STANDALONE) {
+            if (typeProvider.getModuleType() == NbModuleProvider.STANDALONE) {
                 platformPropertiesFile = getProjectDirectory().getFileObject("nbproject/platform.properties"); // NOI18N
-            } else if (typeProvider.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
+            } else if (typeProvider.getModuleType() == NbModuleProvider.SUITE_COMPONENT) {
                 PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(
                         getHelper().getStockPropertyPreprovider(),
                         new PropertyProvider[] {
@@ -553,6 +543,14 @@ public final class NbModuleProject implements Project {
     }
     
     private NbPlatform getPlatform(PropertyEvaluator eval) {
+        File file = getPlatformFile(eval);
+        if (file == null) {
+            return null;
+        }
+        return NbPlatform.getPlatformByDestDir(file);
+    }
+    
+    private File getPlatformFile(PropertyEvaluator eval) {
         if (eval == null) {
             eval = evaluator();
         }
@@ -560,7 +558,7 @@ public final class NbModuleProject implements Project {
         if (prop == null) {
             return null;
         }
-        return NbPlatform.getPlatformByDestDir(getHelper().resolveFile(prop));
+        return getHelper().resolveFile(prop);
     }
 
     /**
@@ -705,7 +703,7 @@ public final class NbModuleProject implements Project {
         
         protected void projectOpened() {
             // write user.properties.file=$userdir/build.properties to platform-private.properties
-            if (getModuleType() == NbModuleTypeProvider.STANDALONE) {
+            if (getModuleType() == NbModuleProvider.STANDALONE) {
                 // XXX skip this in case nbplatform.active is not defined
                 ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
                     public Void run() {
@@ -739,7 +737,7 @@ public final class NbModuleProject implements Project {
             source = _source;
             compile = _compile;
             // refresh build.xml and build-impl.xml for external modules
-            if (getModuleType() != NbModuleTypeProvider.NETBEANS_ORG) {
+            if (getModuleType() != NbModuleProvider.NETBEANS_ORG) {
                 try {
                     refreshBuildScripts(true);
                 } catch (IOException e) {
@@ -779,7 +777,7 @@ public final class NbModuleProject implements Project {
         
         protected void projectXmlSaved() throws IOException {
             // refresh build.xml and build-impl.xml for external modules
-            if (getModuleType() != NbModuleTypeProvider.NETBEANS_ORG) {
+            if (getModuleType() != NbModuleProvider.NETBEANS_ORG) {
                 refreshBuildScripts(false);
             }
         }
@@ -806,11 +804,11 @@ public final class NbModuleProject implements Project {
         
     }
     
-    private class NbModuleTypeProviderImpl implements NbModuleTypeProvider, AntProjectListener {
+    private class NbModuleProviderImpl implements NbModuleProvider, AntProjectListener {
         
         private NbModuleType type;
         
-        public NbModuleTypeProviderImpl() {
+        public NbModuleProviderImpl() {
             getHelper().addAntProjectListener(this);
         }
         
@@ -826,10 +824,56 @@ public final class NbModuleProject implements Project {
                 type = null;
             }
         }
-
+        
         public void propertiesChanged(AntProjectEvent ev) {
             // do not need to react here, type is encoded in project.xml
         }
+        public String getSpecVersion() {
+            return NbModuleProject.this.getSpecVersion();
+        }
+        
+        public String getCodeNameBase() {
+            return NbModuleProject.this.getCodeNameBase();
+        }
+        
+        public String getSourceDirectoryPath() {
+            return NbModuleProject.this.getSourceDirectoryPath();
+        }
+        
+        public FileObject getSourceDirectory() {
+            return NbModuleProject.this.getSourceDirectory();
+        }
+        
+        public FileObject getManifestFile() {
+            return NbModuleProject.this.getManifestFile();
+        }
+        
+        public String getResourceDirectoryPath(boolean inTests) {
+            return evaluator().getProperty(inTests ? "test.unit.src.dir" : "src.dir");
+        }
+        
+        public boolean addDependency(String codeNameBase, String releaseVersion,
+                SpecificationVersion version,
+                boolean useInCompiler) throws IOException {
+            return Util.addDependency(NbModuleProject.this, codeNameBase, releaseVersion, version, useInCompiler);
+        }
+        
+        public SpecificationVersion getDependencyVersion(String codenamebase) throws IOException {
+            ModuleList moduleList = getModuleList();
+            ModuleEntry entry = moduleList.getEntry(codenamebase); // NOI18N
+            SpecificationVersion current = new SpecificationVersion(entry.getSpecificationVersion());
+            return current;
+            
+        }
+        
+        public String getProjectFilePath() {
+            return "nbproject/project.xml";
+        }
+        
+        public File getActivePlatformLocation() {
+            return NbModuleProject.this.getPlatformFile(null);
+        }
+
         
     }
     
@@ -866,6 +910,7 @@ public final class NbModuleProject implements Project {
             "junit",                // NOI18N                    
             "simple-files",         // NOI18N
             "nbm-specific",         // NOI18N
+            "nbm-specific2",         // NOI18N
         };
         
         public String[] getPrivilegedTemplates() {
