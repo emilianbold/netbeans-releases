@@ -20,14 +20,12 @@ import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.web.jsf.navigation.graph.NavigationGraphScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -39,14 +37,14 @@ import org.openide.windows.TopComponent;
  */
 public class PageFlowView  extends TopComponent{
     private JSFConfigEditorContext context;
-    private PageFlowScene scene;
+    private GraphPinScene scene;
     private JSFConfigModel configModel;
     
     PageFlowView(JSFConfigEditorContext context){
         this.context = context;
         init();
     }
-    
+      
     /*
      * Initializes the Panel and the graph 
      **/
@@ -55,7 +53,8 @@ public class PageFlowView  extends TopComponent{
         configModel = ConfigurationUtils.getConfigModel(context.getFacesConfigFile(),true);
         
         scene = new PageFlowScene();
-        add(scene.createView());
+        add(scene.createView());     
+        
         
         try{
             Node node = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
@@ -67,6 +66,10 @@ public class PageFlowView  extends TopComponent{
     }
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
     private static final Image IMAGE_LIST = null; // NOI18N
+    
+    private void clearGraph() {
+        scene.removeChildren();
+    }
     
     /* 
      * Setup The Graph
@@ -107,7 +110,7 @@ public class PageFlowView  extends TopComponent{
             }
         }
         for( String page : pages ) {
-            createNode((GraphPinScene)scene, IMAGE_LIST, page, null, null);
+            createNode(scene, IMAGE_LIST, page, null, null);
         }
     }
 
@@ -175,22 +178,6 @@ public class PageFlowView  extends TopComponent{
         
         
     }
-    
-    
-    //    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-    //        out.writeObject(context);
-    //    }
-    //
-    //    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-    //        Object object = in.readObject();
-    //        if (! (object instanceof JSFConfigEditorContext))
-    //            throw new ClassNotFoundException("JSFConfigEditorContext expected but not found");
-    //        context = (JSFConfigEditorContext) object;
-    //    }
-    
-    //    public int getPersistenceType() {
-    //        return TopComponent.PERSISTENCE_NEVER;
-    //    }
     
     
 }

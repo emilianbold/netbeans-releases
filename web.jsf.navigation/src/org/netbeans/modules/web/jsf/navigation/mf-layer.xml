@@ -4,19 +4,22 @@
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <!--
-    <folder name="Services">
-        <file name="navigationsettings.settings" url="navigationsettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.navigation.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/web/jsf/navigation/resources/navigation.gif"/>
-        </file>
-    </folder>
-
-    <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="NavigationEditor.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.navigation.options.NavigationOptionCategory"/>
-            </file>
+    
+    <!--<folder name="Actions">
+        <folder name="PageFlow">
+            <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageAction.instance"/>
         </folder>
+    </folder>
+    
+    
+    <folder name="PageFlowEditor">
+        <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageAction.shadow">
+            <attr name="originalFile" stringvalue="/Actions/PageFlow/org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageAction.instance"/>
+        </file>
     </folder>-->
+    
+    <folder name="PageFlowEditor">
+            <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageAction.instance"/>
+    </folder>
+    
 </filesystem>

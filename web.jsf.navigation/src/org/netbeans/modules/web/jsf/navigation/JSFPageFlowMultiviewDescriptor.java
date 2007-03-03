@@ -9,14 +9,12 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
-import java.awt.BorderLayout;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.Serializable;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
@@ -78,7 +76,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
     public MultiViewElement createElement() {
         return new PageFlowElement(context);
     }
-   
+    
     
     static class PageFlowElement implements MultiViewElement, Serializable {
         private transient JScrollPane panel;
@@ -99,8 +97,8 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             tc = new PageFlowView(context);
             panel = new JScrollPane(tc);
             panel.setName(context.getFacesConfigFile().getName());
-//            this.setName(context.getFacesConfigFile().getName());
-//            add(panel, BorderLayout.CENTER);
+            //            this.setName(context.getFacesConfigFile().getName());
+            //            add(panel, BorderLayout.CENTER);
         }
         
         public JComponent getVisualRepresentation() {
