@@ -584,7 +584,7 @@ import org.openide.util.lookup.ProxyLookup;
     /**
      * Not private because of the tests.
      */
-    private static Lookup createActionContext(JTextComponent c) {
+    static Lookup createActionContext(JTextComponent c) {
         Lookup nodeLookup = null;
         DataObject dobj = (c != null) ? NbEditorUtilities.getDataObject(c.getDocument()) : null;
         if (dobj != null && dobj.isValid()) {
