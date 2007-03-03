@@ -120,7 +120,9 @@ public class XDMAccess extends DocumentModelAccess {
                 error = false;
                 xdmListener.endSync();
             } catch(IllegalArgumentException ex) {
-                throw new IOException(ex);
+                IOException ioe = new IOException();
+                ioe.initCause(ex);
+                throw ioe;
             } finally {
                 if (error) {
                     xdmListener.endSync(false);
