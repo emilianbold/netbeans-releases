@@ -210,44 +210,48 @@ public class DndHandler /*extends TransferHandler*/ {
             
             Class rc = importFlavor.getRepresentationClass();
             
-            if (rc == DisplayItem.class) {
-                // Create a new type
-                transferData = t.getTransferData(importFlavor);
-
-                if (!(transferData instanceof DisplayItem)) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                            new IllegalStateException("Invalid transfer data=" + transferData));
-
-                    return false;
-                }
-            } else if (rc == DesignBean.class) {
-                transferData = t.getTransferData(importFlavor);
-
-                if (!(transferData instanceof DesignBean[])) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                            new IllegalStateException("Invalid transfer data=" + transferData));
-
-                    return false;
-                }
-            } else if (rc.isAssignableFrom(List.class)) {
-                transferData = t.getTransferData(importFlavor);
-
-                if (!(transferData instanceof List)) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                            new IllegalStateException("Invalid transfer data=" + transferData));
-
-                    return false;
-                }
-            } else if (rc.isAssignableFrom(org.openide.nodes.Node.class)) {
-                transferData = t.getTransferData(importFlavor);
-
-                if (!(transferData instanceof org.openide.nodes.Node)) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                            new IllegalStateException("Invalid transfer data=" + transferData));
-
-                    return false;
-                }
-            } else if (rc == String.class) {
+            transferData = t.getTransferData(importFlavor);
+            
+//            if (rc == DisplayItem.class) {
+//                // Create a new type
+//                transferData = t.getTransferData(importFlavor);
+//
+//                if (!(transferData instanceof DisplayItem)) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                            new IllegalStateException("Invalid transfer data=" + transferData));
+//
+//                    return false;
+//                }
+//            } else if (rc == DesignBean.class) {
+//                transferData = t.getTransferData(importFlavor);
+//
+//                if (!(transferData instanceof DesignBean[])) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                            new IllegalStateException("Invalid transfer data=" + transferData));
+//
+//                    return false;
+//                }
+//            } else if (rc.isAssignableFrom(List.class)) {
+//                transferData = t.getTransferData(importFlavor);
+//
+//                if (!(transferData instanceof List)) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                            new IllegalStateException("Invalid transfer data=" + transferData));
+//
+//                    return false;
+//                }
+//            } else if (rc.isAssignableFrom(org.openide.nodes.Node.class)) {
+//                transferData = t.getTransferData(importFlavor);
+//
+//                if (!(transferData instanceof org.openide.nodes.Node)) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                            new IllegalStateException("Invalid transfer data=" + transferData));
+//
+//                    return false;
+//                }
+//            } else
+                
+            if (rc == String.class) {
                 transferData = t.getTransferData(importFlavor);
 
                 // XXX #6332049 When in inline editing we shouldn't steal the paste
