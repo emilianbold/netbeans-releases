@@ -77,7 +77,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.html"/>
-                <attr name="templateCategory" stringvalue="nbm-specific"/>
+                <attr name="templateCategory" stringvalue="nbm-specific2"/>
             </file>
             <file name="newOptions">
                 <attr boolvalue="true" name="template"/>
