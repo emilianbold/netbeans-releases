@@ -33,24 +33,16 @@ import org.openide.modules.SpecificationVersion;
  */
 public interface NbModuleProvider {
 
-    NbModuleType STANDALONE = new NbModuleType("Standalone Module"); // NOI18N
-    NbModuleType SUITE_COMPONENT = new NbModuleType("Suite Component Module"); // NOI18N
-    NbModuleType NETBEANS_ORG = new NbModuleType("NetBeans.org Module"); // NOI18N
+    // These are just for convenience:
+    NbModuleType STANDALONE = NbModuleType.STANDALONE;
+    NbModuleType SUITE_COMPONENT = NbModuleType.SUITE_COMPONENT;
+    NbModuleType NETBEANS_ORG = NbModuleType.NETBEANS_ORG;
     
     /** Used for a type-safe enumeration of NetBeans module types. */
-    final class NbModuleType {
-        
-        /** Human readable description of this type utilized by toString. */
-        private final String description;
-        
-        /** Prevents creating of instances. Use constants instead. */
-        private NbModuleType(String description) {
-            this.description = description;
-        }
-        
-        public String toString() {
-            return description;
-        }
+    enum NbModuleType {
+        STANDALONE,
+        SUITE_COMPONENT,
+        NETBEANS_ORG
     }
     
     /** Returns type of this NetBeans module. 
