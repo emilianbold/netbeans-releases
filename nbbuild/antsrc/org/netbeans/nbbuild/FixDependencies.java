@@ -108,7 +108,7 @@ public class FixDependencies extends Task {
             Ant cleanTask = null;
             if (ant != null && target != null) {
                 task = (org.apache.tools.ant.taskdefs.Ant)getProject ().createTask ("ant");
-                script = FileUtils.newFileUtils().resolveFile(xml, ant);
+                script = FileUtils.getFileUtils().resolveFile(xml, ant);
                 if (!script.exists ()) {
                     String msg = "Skipping. Cannot find file " + ant + " from + " + xml;
                     if (fail) {

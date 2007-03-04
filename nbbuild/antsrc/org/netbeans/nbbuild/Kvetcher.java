@@ -185,7 +185,7 @@ public class Kvetcher extends Task implements BuildListener {
                         if (m.find()) {
                             if (mail == null) {
                                 // OK, time to start sending.
-                                log("Sending mail to " + ((Address)c.to.get(0)).name);
+                                log("Sending mail to " + c.to.get(0).name);
                                 mail = new MailMessage(mailhost);
                                 if (from == null) from = "kvetcher@" + mailhost;
                                 mail.from(from);

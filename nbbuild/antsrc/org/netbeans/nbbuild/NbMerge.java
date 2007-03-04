@@ -171,8 +171,7 @@ public class NbMerge extends Task {
         while (targets.contains (dummyName))
             dummyName += "-x";
         dummy.setName (dummyName);
-        for (int i = 0; i < buildfixedmodules.size (); i++) {
-            String fixedmodule = (String) buildfixedmodules.elementAt (i);
+        for (String fixedmodule : buildfixedmodules) {
             dummy.addDependency (targetprefix + fixedmodule);
         }
         getProject().addTarget(dummy);
@@ -207,11 +206,9 @@ public class NbMerge extends Task {
     
     /** Execute targets which can fail _without_ throwing BuildException */
     private void modulesBuild() throws BuildException {
-        String module;
         if ( ! failonerror ) {
             // build the rest of modules
-            for (int i = 0; i < buildmodules.size (); i++) {
-                module = (String) buildmodules.elementAt (i);
+            for (String module : buildmodules) {
                 dummy = new Target ();
                 dummyName = "nbmerge-" + getOwningTarget().getName() + "-" + module;
                 while (targets.contains (dummyName))

@@ -117,7 +117,7 @@ public class GetL9eFiles extends Task {
         
         // Setup the file utils. //
         if( fileUtils == null) {
-            fileUtils = FileUtils.newFileUtils() ;
+            fileUtils = FileUtils.getFileUtils() ;
         }
         
         // Use the l10n task to read the list file and get a list of the //

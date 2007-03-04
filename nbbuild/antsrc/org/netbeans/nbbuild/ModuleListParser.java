@@ -363,7 +363,7 @@ final class ModuleListParser {
         }
         // Resolve against basedir, and normalize ../ sequences and so on in case they are used.
         // Neither operation is likely to be needed, but just in case.
-        File build = FileUtils.newFileUtils().normalize(FileUtils.newFileUtils().resolveFile(basedir, buildS).getAbsolutePath());
+        File build = FileUtils.getFileUtils().normalize(FileUtils.getFileUtils().resolveFile(basedir, buildS).getAbsolutePath());
         if (!build.isDirectory()) {
             throw new IOException("No such netbeans.dest.dir: " + build);
         }
@@ -463,7 +463,7 @@ final class ModuleListParser {
         if (suiteDir == null) {
             throw new IOException("No definition of suite.dir in " + basedir);
         }
-        File suite = FileUtils.newFileUtils().resolveFile(basedir, suiteDir);
+        File suite = FileUtils.getFileUtils().resolveFile(basedir, suiteDir);
         if (!suite.isDirectory()) {
             throw new IOException("No such suite " + suite);
         }

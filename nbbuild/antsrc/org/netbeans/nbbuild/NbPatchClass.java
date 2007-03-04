@@ -108,7 +108,7 @@ public class NbPatchClass extends MatchingTask {
 
         boolean fs_empty = true;
         for (int i=0; i<filesets.size() && fs_empty; i++) {
-            FileSet n = (FileSet) filesets.elementAt(i);
+            FileSet n = filesets.elementAt(i);
             if ( n != null ) {
                 DirectoryScanner ds = n.getDirectoryScanner(getProject());
                 String[] files = ds.getIncludedFiles();
@@ -135,8 +135,8 @@ public class NbPatchClass extends MatchingTask {
         
         java.lang.reflect.Method m;
         try {
-            Class c = cl.loadClass (patchClass);
-            m = c.getMethod(patchMethod, new Class[] { byte[].class, String.class });
+            Class<?> c = cl.loadClass(patchClass);
+            m = c.getMethod(patchMethod, byte[].class, String.class);
             if (m.getReturnType() != byte[].class) {
                 throw new BuildException ("Method does not return byte[]: " + m);
             }
@@ -157,8 +157,7 @@ public class NbPatchClass extends MatchingTask {
         // Ok we have the method and we can do the patching
         // go over fileset includes
 
-        for (int i=0; i<filesets.size(); i++) {
-            FileSet n = (FileSet) filesets.elementAt(i);
+        for (FileSet n : filesets) {
             if ( n != null ) {
                 DirectoryScanner ds = n.getDirectoryScanner(getProject());
                 String[] files = ds.getIncludedFiles();
@@ -212,7 +211,7 @@ public class NbPatchClass extends MatchingTask {
                             throw new BuildException (ex);
                         }
                         
-                        byte[] original = (byte[])arr.clone ();
+                        byte[] original = arr.clone();
                         byte[] out;
                         try {
                             out = (byte[])m.invoke (null, new Object[] { arr, name });

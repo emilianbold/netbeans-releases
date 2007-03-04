@@ -333,12 +333,12 @@ public class JHIndexer extends MatchingTask {
                 }
                 AntClassLoader loader = new AntClassLoader(getProject(), classpath);
                 try {
-                    Class clazz = loader.loadClass ("com.sun.java.help.search.Indexer");
-                    Method main = clazz.getMethod ("main", new Class[] { String[].class });
-                    List<String> args = Arrays.asList(new String[] {
+                    Class<?> clazz = loader.loadClass("com.sun.java.help.search.Indexer");
+                    Method main = clazz.getMethod("main", String[].class);
+                    List<String> args = Arrays.asList(
                         "-c", config.getAbsolutePath(),
                         "-db", db.getAbsolutePath()
-                    });
+                    );
                     if (locale != null) {
                         args = new ArrayList<String>(args); // #35244
                         args.add("-locale");

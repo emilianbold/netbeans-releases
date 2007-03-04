@@ -133,7 +133,7 @@ public class NbEnhanceClass extends Task {
         
         Method m;
         try {
-            Class c = cl.loadClass (patchClass);
+            Class<?> c = cl.loadClass(patchClass);
             m = c.getMethod(enhanceMethod, byte[].class, Map.class);
             if (m.getReturnType() != byte[].class) {
                 throw new BuildException ("Method does not return byte[]: " + m);

@@ -228,9 +228,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         TreeMap<ModuleInfo,TreeSet<String>> friendExports = new TreeMap<ModuleInfo,TreeSet<String>>();
         
         {
-            Iterator<ModuleInfo> it = modules.iterator();
-            while (it.hasNext()) {
-                ModuleInfo m = (ModuleInfo)it.next();
+            for (ModuleInfo m : modules) {
                 if (justPublic) {
                     if (m.friends != null) {
                         continue;

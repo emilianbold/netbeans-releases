@@ -294,11 +294,11 @@ public class LocalizedJar extends MatchingTask {
         {
 	    String localeDir ;
             for (Map.Entry<String, File> entry: allFiles.entrySet()) {
-                String path = (String) entry.getKey ();
+                String path = entry.getKey ();
 
 log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
 
-                File file = (File) entry.getValue ();
+                File file = entry.getValue ();
                 // First see if it matches a known branding, locale, or pair of one of each.
                 String testpath = path;
                 int idx = testpath.lastIndexOf ('/');

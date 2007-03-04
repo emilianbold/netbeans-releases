@@ -173,7 +173,7 @@ public class SortSuiteModules extends Task {
             if (path.length() > 0) {
                 path.append(File.pathSeparatorChar);
             }
-            path.append(((File) basedirsByCNB.get(cnb)).getAbsolutePath());
+            path.append(basedirsByCNB.get(cnb).getAbsolutePath());
         }
         getProject().setNewProperty(sortedModulesProperty, path.toString());
     }

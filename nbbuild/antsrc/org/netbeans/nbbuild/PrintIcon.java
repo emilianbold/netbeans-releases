@@ -91,7 +91,7 @@ public class PrintIcon extends Task {
             for (String f : first.getDirectoryScanner(getProject()).getIncludedFiles()) {
                 File baseDir = first.getDir(getProject());
                 File file = new File(baseDir, f);
-                firstSet.add(new IconInfo(file.toURL(), getProject()));
+                firstSet.add(new IconInfo(file.toURI().toURL(), getProject()));
             }
 
             SortedSet<IconInfo> sndSet = new TreeSet<IconInfo>();
@@ -99,7 +99,7 @@ public class PrintIcon extends Task {
                 for (String f : second.getDirectoryScanner(getProject()).getIncludedFiles()) {
                     File baseDir = second.getDir(getProject());
                     File file = new File(baseDir, f);
-                    sndSet.add(new IconInfo(file.toURL(), getProject()));
+                    sndSet.add(new IconInfo(file.toURI().toURL(), getProject()));
                 }
             }
             
