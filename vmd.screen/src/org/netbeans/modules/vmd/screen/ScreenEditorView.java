@@ -13,14 +13,6 @@
  */
 package org.netbeans.modules.vmd.screen;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.io.IOException;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
@@ -32,6 +24,10 @@ import org.netbeans.modules.vmd.screen.ui.Toolbar;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
 
 /**
  * 
@@ -111,8 +107,7 @@ public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness
      * @see org.netbeans.modules.vmd.api.io.DataEditorView#canShowSideWindows()
      */
     public boolean canShowSideWindows() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }    
         
     
