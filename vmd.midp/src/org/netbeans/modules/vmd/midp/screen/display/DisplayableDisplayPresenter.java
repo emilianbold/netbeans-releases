@@ -13,38 +13,16 @@
  */
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Shape;
-import java.util.Collection;
-
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignEvent;
-import org.netbeans.modules.vmd.api.model.DesignEventFilter;
-import org.netbeans.modules.vmd.api.model.DesignListener;
-import org.netbeans.modules.vmd.api.model.ListenerManager;
-import org.netbeans.modules.vmd.api.model.PresenterEvent;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.screen.display.DeviceInfo;
-import org.netbeans.modules.vmd.api.screen.display.DisplayPresenter;
-import org.netbeans.modules.vmd.api.screen.display.Injector;
-import org.netbeans.modules.vmd.api.screen.display.ScreenComponentElement;
-import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyElement;
+import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.screen.display.*;
 import org.netbeans.modules.vmd.api.screen.display.DeviceInfo.DeviceViewResources;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.openide.util.Utilities;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Collection;
 
 /**
  * 
@@ -78,18 +56,12 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
     
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.DisplayPresenter#getScreenComponentElements()
-     */
     @Override
     public Collection<ScreenComponentElement> getScreenComponentElements() {
         // TODO Auto-generated method stub
         return null;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.ScreenComponentElement#getScreenPropertyElement(java.awt.Point)
-     */
     @Override
     public ScreenPropertyElement getScreenPropertyElement(Point point) {
         // TODO Auto-generated method stub
@@ -127,9 +99,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
     }
     
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.DisplayPresenter#showNotify()
-     */
     @Override
     public void showNotify(Dimension screenSize, DeviceViewResources deviceViewResources) {
         this.deviceViewResources = deviceViewResources;
@@ -142,9 +111,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
     
     
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.DisplayPresenter#hideNotify()
-     */
     @Override
     public void hideNotify() {
         ListenerManager listenerManager = getComponent().getDocument().getListenerManager();
@@ -154,9 +120,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
 
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.DisplayPresenter#getHooverShape(java.awt.Point)
-     */
     @Override
     public Shape getHooverShape(Point point) {
         // TODO Auto-generated method stub
@@ -164,9 +127,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
     }
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.DisplayPresenter#getSelectionShape(java.awt.Point)
-     */
     @Override
     public Shape getSelectionShape(Point point) {
         // TODO Auto-generated method stub
@@ -175,18 +135,12 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
 
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.model.DynamicPresenter#designChanged(org.netbeans.modules.vmd.api.model.DesignEvent)
-     */
     @Override
     protected void designChanged(DesignEvent event) {
         // TODO Auto-generated method stub
         
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.model.DynamicPresenter#getEventFilter()
-     */
     @Override
     protected DesignEventFilter getEventFilter() {
         DesignComponent dc = getComponent(); 
@@ -195,17 +149,11 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
                 .addHierarchyFilter(dc, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.ScreenInfoListener#deviceScreenSizeChanged(int, int)
-     */
     public void deviceScreenSizeChanged(int width, int height) {
         // TODO Auto-generated method stub
         
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.ScreenInfoListener#profileChanged(java.lang.String)
-     */
     public void profileChanged(String currentProfile) {
         // TODO Auto-generated method stub
         
@@ -213,27 +161,18 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
 
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.DisplayPresenter#getView(java.awt.Dimension)
-     */
     @Override
     public JComponent getView() {
         return deviceDisplay;
     }
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.DisplayPresenter#getActualDisplaySize()
-     */
     @Override
     public Dimension getActualDisplaySize() {
         return displaySize;
     }
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.ScreenComponentElement#getDefaultInjector()
-     */
     @Override
     public Injector getDefaultInjector() {
         // TODO Auto-generated method stub
@@ -242,9 +181,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
 
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.ScreenComponentElement#getScreenPropertyElements()
-     */
     @Override
     public Collection<ScreenPropertyElement> getScreenPropertyElements() {
         // TODO Auto-generated method stub
@@ -252,9 +188,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
     }
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.display.ScreenComponentElement#getSelectionShape()
-     */
     @Override
     public Shape getSelectionShape() {
         // TODO Auto-generated method stub
@@ -262,9 +195,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
     }
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.ScreenInfoListener#deviceChanged(java.lang.String)
-     */
     public void deviceChanged(String deviceID) {
         // TODO Auto-generated method stub
         
@@ -306,25 +236,16 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
     // title property element
     private class TitlePropertyElement extends ScreenPropertyElement {
 
-        /**
-         * @param propertyName
-         */
         public TitlePropertyElement() {
             super(DisplayableCD.PROP_TITLE);
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.vmd.api.screen.display.ScreenPropertyElement#getHooverShape()
-         */
         @Override
         public Shape getHooverShape() {
             // TODO Auto-generated method stub
             return foreground.title.getBounds();
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.vmd.api.model.DynamicPresenter#designChanged(org.netbeans.modules.vmd.api.model.DesignEvent)
-         */
         @Override
         protected void designChanged(DesignEvent event) {
             if (hasMyPropertyChanged(event)) {
@@ -448,9 +369,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
         }
         
         
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.vmd.api.model.DesignListener#designChanged(org.netbeans.modules.vmd.api.model.DesignEvent)
-         */
         public void designChanged(DesignEvent event) {
             final DesignComponent dc = DisplayableDisplayPresenter.this.getComponent();
             // currently doing just fullscreen - this one disables background

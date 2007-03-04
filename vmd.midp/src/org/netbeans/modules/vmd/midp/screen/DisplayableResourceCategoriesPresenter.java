@@ -36,9 +36,6 @@ public class DisplayableResourceCategoriesPresenter extends ScreenResourceCatego
     }
     
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.screen.ScreenResourceCategoriesPresenter#getCategoryDescriptors()
-     */
     @Override
     public Collection<ResourceCategoryDescriptor> getCategoryDescriptors() {
         return CATEGORIES;

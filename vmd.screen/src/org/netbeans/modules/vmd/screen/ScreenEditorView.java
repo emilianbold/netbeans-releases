@@ -30,11 +30,9 @@ import java.awt.*;
 import java.io.IOException;
 
 /**
- * 
  * ScrenEditorView component
  * 
  * @author breh
- *
  */
 public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness {
 
@@ -66,8 +64,6 @@ public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness
         this.ctx.addDesignDocumentAwareness(this);
     }    
 
-    
-    
     // init the class
     private void init() {   
         this.editorModel = new ScreenEditorModel();
@@ -80,7 +76,6 @@ public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness
         screenEditorMainView = new MainView(this.editorModel);
         switchEditorPanels(true);
     }
-    
     
     private void switchEditorPanels(boolean useLoadingPanel) {
         //System.err.println("Switching to loading: "+useLoadingPanel);
@@ -101,17 +96,11 @@ public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness
         }
         topEditorComponent.validate();
     }
-    
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#canShowSideWindows()
-     */
+
     public boolean canShowSideWindows() {
         return true;
     }    
-        
-    
-    
+
     private JComponent getLoadingPanel() {
         if (loadingPanel == null) {
             loadingPanel = IOUtils.createLoadingPanel();
@@ -119,146 +108,80 @@ public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness
         return loadingPanel;
     }
     
-    
     private JComponent getMainView() {
         return screenEditorMainView.getVisualComponent();
     }
     
-   
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getContext()
-     */
     public DataObjectContext getContext() {
         return ctx;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getDisplayName()
-     */
     public String getDisplayName() {
         return VIEW_NAME;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getEditPriority()
-     */
     public int getEditPriority() {
         return getOrder();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getOpenPriority()
-     */
     public int getOpenPriority() {
         return - getOrder();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getOrder()
-     */
     public int getOrder() {
         return 1000;
     }    
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getKind()
-     */
     public Kind getKind() {
         return Kind.MODEL;
     }
 
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getToolbarRepresentation()
-     */
     public JComponent getToolbarRepresentation() {
         return screenEditorToolbar.getVisualComponent();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getVisualRepresentation()
-     */
     public JComponent getVisualRepresentation() {
         return topEditorComponent;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#preferredID()
-     */
     public String preferredID() {
         return VIEW_ID;
     }
     
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#componentActivated()
-     */
     public void componentActivated () {
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#componentClosed()
-     */
     public void componentClosed() {
         // TODO Auto-generated method stub
-
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#componentDeactivated()
-     */
     public void componentDeactivated() {
         // TODO Auto-generated method stub
-
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#componentHidden()
-     */
     public void componentHidden() {
         // TODO Auto-generated method stub
-
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#componentOpened()
-     */
     public void componentOpened() {
         // TODO Auto-generated method stub
-
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#componentShowing()
-     */
     public void componentShowing() {
         // TODO Auto-generated method stub
-
     }
 
-
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getHelpCtx()
-     */
     public HelpCtx getHelpCtx() {
         // TODO Auto-generated method stub
         return null;
     }
 
-
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DataEditorView#getUndoRedo()
-     */
     public UndoRedo getUndoRedo() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    
-    
-    
     private void writeObject (java.io.ObjectOutputStream out) throws IOException {
         out.writeObject (ctx);
     }
@@ -272,9 +195,6 @@ public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness
         ctx.addDesignDocumentAwareness(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.io.DesignDocumentAwareness#setDesignDocument(org.netbeans.modules.vmd.api.model.DesignDocument)
-     */
     public void setDesignDocument(final DesignDocument designDocument) {
         IOUtils.runInAWTNoBlocking (new Runnable () {
             public void run() {
@@ -285,8 +205,5 @@ public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness
         });
         
     }
-
-
-    
 
 }

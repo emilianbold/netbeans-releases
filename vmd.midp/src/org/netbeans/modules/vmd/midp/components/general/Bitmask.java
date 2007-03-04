@@ -73,9 +73,6 @@ public abstract class Bitmask {
         }
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     public boolean equals(Object obj) {
         if (obj instanceof Bitmask) {
             return equals((Bitmask)obj);
