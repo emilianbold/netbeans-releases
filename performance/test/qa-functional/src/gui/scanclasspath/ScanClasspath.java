@@ -19,13 +19,11 @@
 
 package gui.scanclasspath;
 
+import gui.Utilities;
 import java.util.ArrayList;
-
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
-
 import org.netbeans.performance.test.utilities.LoggingScanClasspath;
 
 
@@ -81,10 +79,11 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public void openJEditProject() {
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/jEdit41");
-        
-        //wait until scan finished and at least some timeout, because we find  that scandialog is still opened
-        checkScanFinished();
+        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/jEdit41");
+        measureClassPathScan();
+    }
+    
+    protected void measureClassPathScan() {
         
         LoggingScanClasspath.printMeasuredValues(getLog());
         
