@@ -227,7 +227,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/hints</project>
                 <project>../editor/hints/highlights</project>
                 <project>../editor/lib</project>
-                <project>../editor/lib/bridge</project>
                 <project>../editor/lib2</project>
                 <project>../editor/mimelookup</project>
                 <project>../editor/mimelookup/impl</project>
@@ -255,16 +254,20 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../ide/welcome</project>
                 <project>../image</project>
                 <project>../j2ee/archiveproject</project>
+                <project>../j2ee/blueprints</project>
                 <project>../j2ee/clientproject</project>
                 <project>../j2ee/ddapi</project>
+                <project>../j2ee/ddloaders</project>
                 <project>../j2ee/debug</project>
                 <project>../j2ee/earproject</project>
                 <project>../j2ee/ejbapi</project>
+                <project>../j2ee/ejbcore</project>
                 <project>../j2ee/ejbfreeform</project>
                 <project>../j2ee/ejbjarproject</project>
                 <project>../j2ee/genericserver</project>
                 <project>../j2ee/metadata</project>
                 <project>../j2ee/persistence</project>
+                <project>../j2ee/persistence/verification</project>
                 <project>../j2ee/persistenceapi</project>
                 <project>../j2ee/platform</project>
                 <project>../j2ee/samples</project>
@@ -293,14 +296,20 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../javacvs/cvsmodule</project>
                 <project>../javacvs/libmodule</project>
                 <project>../javadoc</project>
+                <project>../javawebstart</project>
                 <project>../junit</project>
                 <project>../lexer</project>
                 <project>../lexer/nbbridge</project>
                 <project>../libs/commons_logging</project>
+                <project>../libs/freemarker</project>
                 <project>../libs/jsch</project>
+                <project>../libs/jsr223</project>
                 <project>../libs/resolver</project>
                 <project>../libs/swing-layout</project>
                 <project>../libs/xerces</project>
+                <project>../logger/uihandler</project>
+                <project>../logger/uihandlerforprojects</project>
+                <project>../logger/uihandlerlib</project>
                 <project>../monitor</project>
                 <project>../openide/actions</project>
                 <project>../openide/awt</project>
@@ -315,11 +324,13 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../openide/modules</project>
                 <project>../openide/nodes</project>
                 <project>../openide/options</project>
+                <project>../openide/templates</project>
                 <project>../openide/text</project>
                 <project>../openide/util</project>
                 <project>../openide/util/enum</project>
                 <project>../openide/windows</project>
                 <project>../openidex</project>
+                <project>../profiler</project>
                 <project>../projects/libraries</project>
                 <project>../projects/projectapi</project>
                 <project>../projects/projectui</project>
@@ -344,11 +355,13 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../tasklist/docscan</project>
                 <project>../tasklist/suggestions</project>
                 <project>../tomcatint/tomcat5</project>
+                <project>../tomcatint/tomcat5/bundled</project>
                 <project>../usersguide</project>
                 <project>../usersguide/j2seexamples</project>
                 <project>../utilities</project>
                 <project>../utilities/project</project>
                 <project>../versioncontrol</project>
+                <project>../versioncontrol/localhistory</project>
                 <project>../web/core</project>
                 <project>../web/el/lexer</project>
                 <project>../web/examples</project>
@@ -368,10 +381,12 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../websvc/core</project>
                 <project>../websvc/customization</project>
                 <project>../websvc/jaxrpc16</project>
+                <project>../websvc/jaxrpcsupport</project>
                 <project>../websvc/jaxws20</project>
                 <project>../websvc/jaxwsapi</project>
                 <project>../websvc/jaxwsmodel</project>
                 <project>../websvc/registry</project>
+                <project>../websvc/serviceapi</project>
                 <project>../websvc/websvcapi</project>
                 <project>../websvc/websvcddapi</project>
                 <project>../xml/api</project>
