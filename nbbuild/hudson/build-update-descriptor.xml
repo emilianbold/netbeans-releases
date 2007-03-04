@@ -13,5 +13,6 @@
 	        <fileset dir="workspace/nbbuild/netbeans" includes="platform*/lib/*.jar"/>
 	    </classpath>
 	</vuc>
+        <gzip src="workspace/nbbuild/nbms/updates.xml" destfile="workspace/nbbuild/nbms/updates.xml.gz"/>
     </target>
 </project>
