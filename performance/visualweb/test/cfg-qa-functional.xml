@@ -307,7 +307,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 
-                <include name="gui/scanclasspath/ScanClasspath.class"/>
+                <include name="gui/scanclasspath/WebScanClasspath.class"/>
             </patternset>
         </testset>
     </testbag>
