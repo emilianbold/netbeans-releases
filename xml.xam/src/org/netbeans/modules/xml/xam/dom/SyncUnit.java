@@ -173,7 +173,7 @@ public class SyncUnit {
     public boolean hasWhitespaceChangeOnly() {
         for (ChangeInfo ci : getChanges()) {
             if (ci.isDomainElement()) {
-                return false;
+                continue;
             }
             Node n = ci.getActualChangedNode();
             if (n.getNodeType() == Node.TEXT_NODE) {
