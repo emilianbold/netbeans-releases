@@ -582,7 +582,7 @@ public class SyncTest extends TestCase {
         model.sync();
         
         plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY, model.getSchema());
-        clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema()); // maybe not
+        clistener.assertEvent(ComponentEvent.EventType.CHILD_ADDED, model.getSchema()); // maybe not
         
         String xpath = "/xsd:schema/xsd:complexType";
         GlobalComplexType gct = (GlobalComplexType) Util.findComponent(model.getSchema(), xpath);
