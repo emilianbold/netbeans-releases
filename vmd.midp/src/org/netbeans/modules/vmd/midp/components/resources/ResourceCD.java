@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
+import org.netbeans.modules.vmd.midp.screen.OtherDesignResourcesScreenPresenter;
 
 /**
  * @author David Kaspar
@@ -60,7 +61,8 @@ public final class ResourceCD extends ComponentDescriptor {
         return Arrays.asList(
             // inspector
             InspectorFolderPresenter.create(true),
-            InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical())
+            InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
+            new OtherDesignResourcesScreenPresenter()
         );
     }
     

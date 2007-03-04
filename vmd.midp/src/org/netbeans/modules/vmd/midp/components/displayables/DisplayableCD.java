@@ -18,9 +18,26 @@
  */
 package org.netbeans.modules.vmd.midp.components.displayables;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
-import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
+import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
+import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
@@ -45,14 +62,8 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
-import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
+import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 
 /**
  * @author David Kaspar
@@ -153,7 +164,9 @@ public final class DisplayableCD extends ComponentDescriptor {
             },
             // delete
             DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_TICKER),
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_COMMAND_LISTENER)
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_COMMAND_LISTENER),
+            new DisplayableDisplayPresenter(),
+            new DisplayableResourceCategoriesPresenter()
         );
     }
     
