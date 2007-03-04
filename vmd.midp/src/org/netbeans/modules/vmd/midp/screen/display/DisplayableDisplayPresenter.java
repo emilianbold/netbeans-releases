@@ -15,7 +15,7 @@ package org.netbeans.modules.vmd.midp.screen.display;
 
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.screen.display.*;
-import org.netbeans.modules.vmd.api.screen.display.DeviceInfo.DeviceViewResources;
+import org.netbeans.modules.vmd.api.screen.display.DeviceInfo.DeviceTheme;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.openide.util.Utilities;
@@ -39,7 +39,7 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
     private static final Image BATTERY = Utilities.loadImage("/org/netbeans/modules/vmd/midp/screen/display/resources/battery.png"); // NOI18M
     private static final Image SIGNAL = Utilities.loadImage("/org/netbeans/modules/vmd/midp/screen/display/resources/signal.png"); // NOI18M    
 
-    private DeviceInfo.DeviceViewResources deviceViewResources;
+    private DeviceInfo.DeviceTheme deviceTheme;
     
     private JComponent deviceDisplay;    
     private DisplayableBackground background;
@@ -100,8 +100,8 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
     
     
     @Override
-    public void showNotify(Dimension screenSize, DeviceViewResources deviceViewResources) {
-        this.deviceViewResources = deviceViewResources;
+    public void showNotify(Dimension screenSize, DeviceTheme deviceTheme) {
+        this.deviceTheme = deviceTheme;
         initialize(screenSize);
         ListenerManager listenerManager = getComponent().getDocument().getListenerManager();
         listenerManager.addDesignListener(background, background.getDesignEventFilter(getComponent()));
@@ -279,9 +279,9 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
             this.setOpaque(false);
             this.setBackground(Color.yellow);
             title = new JLabel();
-            title.setBackground(deviceViewResources.getColor(DeviceViewResources.COLOR_BACKGROUND));
-            title.setForeground(deviceViewResources.getColor(DeviceViewResources.COLOR_FOREGROUND));
-            title.setFont(deviceViewResources.getFont(DeviceViewResources.FontFace.PROPORTIONAL,DeviceViewResources.FontSize.LARGE));            
+            title.setBackground(deviceTheme.getColor(DeviceTheme.COLOR_BACKGROUND));
+            title.setForeground(deviceTheme.getColor(DeviceTheme.COLOR_FOREGROUND));
+            title.setFont(deviceTheme.getFont(DeviceTheme.FontFace.PROPORTIONAL, DeviceTheme.FontSize.LARGE));
             title.setText("dummy");
             this.add(title);
             title.setBounds(10, 20, 100, 100);
@@ -306,8 +306,8 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
         
         
         public Color getDefinedBgColor() {
-            if (deviceViewResources != null) {
-                return deviceViewResources.getColor(DeviceInfo.DeviceViewResources.COLOR_BACKGROUND);
+            if (deviceTheme != null) {
+                return deviceTheme.getColor(DeviceInfo.DeviceTheme.COLOR_BACKGROUND);
             } else {
                 return Color.WHITE;
             }
