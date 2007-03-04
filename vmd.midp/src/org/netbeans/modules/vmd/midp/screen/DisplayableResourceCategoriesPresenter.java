@@ -13,11 +13,11 @@
  */
 package org.netbeans.modules.vmd.midp.screen;
 
+import org.netbeans.modules.vmd.api.screen.resources.ScreenResourceCategoryDescriptor;
+import org.netbeans.modules.vmd.api.screen.resources.ScreenResourceCategoriesPresenter;
+
 import java.util.ArrayList;
 import java.util.Collection;
-
-import org.netbeans.modules.vmd.api.screen.resources.ResourceCategoryDescriptor;
-import org.netbeans.modules.vmd.api.screen.resources.ScreenResourceCategoriesPresenter;
 
 /**
  * @author breh
@@ -25,19 +25,17 @@ import org.netbeans.modules.vmd.api.screen.resources.ScreenResourceCategoriesPre
  */
 public class DisplayableResourceCategoriesPresenter extends ScreenResourceCategoriesPresenter {
 
-    
-    private static final ArrayList<ResourceCategoryDescriptor> CATEGORIES = new ArrayList<ResourceCategoryDescriptor>();
+    private static final ArrayList<ScreenResourceCategoryDescriptor> CATEGORIES = new ArrayList<ScreenResourceCategoryDescriptor>();
     static {
-        CATEGORIES.add(ResourceCategoryDescriptors.ASSIGNED_COMMANDS);
-        CATEGORIES.add(ResourceCategoryDescriptors.OTHER_DESIGN_RESOURCES);
+        CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.ASSIGNED_COMMANDS);
+        CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.OTHER_DESIGN_RESOURCES);
     }
     
     public DisplayableResourceCategoriesPresenter() {
     }
     
-    
     @Override
-    public Collection<ResourceCategoryDescriptor> getCategoryDescriptors() {
+    public Collection<ScreenResourceCategoryDescriptor> getCategoryDescriptors() {
         return CATEGORIES;
     }
 

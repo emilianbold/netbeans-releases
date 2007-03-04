@@ -15,9 +15,8 @@ package org.netbeans.modules.vmd.midp.screen.display;
 
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.screen.display.*;
-import org.netbeans.modules.vmd.api.screen.display.DeviceInfo.DeviceTheme;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
-import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -25,53 +24,40 @@ import java.awt.*;
 import java.util.Collection;
 
 /**
- * 
  * A presenter for Displayable MIDP class. ALl other presenters should
  * inherit from this presenter (e.g. TextBoxDisplayPresenter, 
  * FormDisplayPresenter, ...)
  * 
  * @author breh
- *
  */
-public class DisplayableDisplayPresenter extends DisplayPresenter {
+public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
 
-    
-    private static final Image BATTERY = Utilities.loadImage("/org/netbeans/modules/vmd/midp/screen/display/resources/battery.png"); // NOI18M
-    private static final Image SIGNAL = Utilities.loadImage("/org/netbeans/modules/vmd/midp/screen/display/resources/signal.png"); // NOI18M    
+    private static final Image BATTERY = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/battery.png"); // NOI18N
+    private static final Image SIGNAL = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/signal.png"); // NOI18N
 
-    private DeviceInfo.DeviceTheme deviceTheme;
+    private ScreenDeviceInfo.DeviceTheme deviceTheme;
     
     private JComponent deviceDisplay;    
     private DisplayableBackground background;
     private DisplayableForeground foreground;
-    
-    
-    private TitlePropertyElement titlePropertyElement;
     
     private Dimension displaySize;
     
     public DisplayableDisplayPresenter() {                
     }
 
-    
-
-
     @Override
-    public Collection<ScreenComponentElement> getScreenComponentElements() {
+    public Collection<ScreenComponentPresenter> getScreenComponentElements() {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public ScreenPropertyElement getScreenPropertyElement(Point point) {
+    public ScreenPropertyPresenter getPropertyPresenterAt (Point point) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    
-    
-    
-    
     private void initialize(Dimension displaySize) {
         background = new DisplayableBackground();
         foreground = new DisplayableForeground();        
@@ -98,7 +84,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
         deviceDisplay = null;
     }
     
-    
     @Override
     public void showNotify(Dimension screenSize, DeviceTheme deviceTheme) {
         this.deviceTheme = deviceTheme;
@@ -106,39 +91,30 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
         ListenerManager listenerManager = getComponent().getDocument().getListenerManager();
         listenerManager.addDesignListener(background, background.getDesignEventFilter(getComponent()));
         
-        titlePropertyElement = new TitlePropertyElement();
+//        titlePropertyPresenter = new TitlePropertyPresenter ();
     }
-    
-    
     
     @Override
     public void hideNotify() {
+        // TODO - possible bug when a presenter is removed from a component, then a getComponent () may return null
         ListenerManager listenerManager = getComponent().getDocument().getListenerManager();
         listenerManager.removeDesignListener(background);
         dispose();
     }
 
-
-
     @Override
     public Shape getHooverShape(Point point) {
-        // TODO Auto-generated method stub
-        return null;
+        return getSelectionShape (point);
     }
-
 
     @Override
     public Shape getSelectionShape(Point point) {
-        // TODO Auto-generated method stub
-        return null;
+        return deviceDisplay != null ? deviceDisplay.getBounds () : null;
     }
-
-
 
     @Override
     protected void designChanged(DesignEvent event) {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
@@ -151,7 +127,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
 
     public void deviceScreenSizeChanged(int width, int height) {
         // TODO Auto-generated method stub
-        
     }
 
     public void profileChanged(String currentProfile) {
@@ -159,41 +134,33 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
         
     }
 
-
-
     @Override
     public JComponent getView() {
         return deviceDisplay;
     }
-
 
     @Override
     public Dimension getActualDisplaySize() {
         return displaySize;
     }
 
-
     @Override
-    public Injector getDefaultInjector() {
+    public ScreenInjectorPresenter getDefaultInjector() {
         // TODO Auto-generated method stub
         return null;
     }
 
-
-
     @Override
-    public Collection<ScreenPropertyElement> getScreenPropertyElements() {
+    public Collection<ScreenPropertyPresenter> getPropertyPresenters () {
         // TODO Auto-generated method stub
         return null;
     }
 
-
-    @Override
-    public Shape getSelectionShape() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
+//    @Override
+//    public Shape getSelectionShape() {
+////         TODO Auto-generated method stub
+//        return null;
+//    }
 
     public void deviceChanged(String deviceID) {
         // TODO Auto-generated method stub
@@ -215,8 +182,7 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
         // TODO need to add real implementation
         return 30;
     }
-    
-    
+
     /**
      * Gets height of the footer of the display. Footer
      * usually contains commands. Please note,
@@ -230,49 +196,39 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
         return 20;
     }
         
-     
-    
-    
-    // title property element
-    private class TitlePropertyElement extends ScreenPropertyElement {
-
-        public TitlePropertyElement() {
-            super(DisplayableCD.PROP_TITLE);
-        }
-
-        @Override
-        public Shape getHooverShape() {
-            // TODO Auto-generated method stub
-            return foreground.title.getBounds();
-        }
-
-        @Override
-        protected void designChanged(DesignEvent event) {
-            if (hasMyPropertyChanged(event)) {
-                // TODO this is just a proof of concept
-                foreground.title.setText(getPropertyInfo().getValueAsString());
-            }
-        }
-        
-    }
+//    // title property element
+//    private class TitlePropertyPresenter extends ScreenPropertyPresenter {
+//
+//        public TitlePropertyPresenter () {
+//            super(DisplayableCD.PROP_TITLE);
+//        }
+//
+//        @Override
+//        public Shape getHooverShape() {
+//            // TODO Auto-generated method stub
+//            return foreground.title.getBounds();
+//        }
+//
+//        @Override
+//        protected void designChanged(DesignEvent event) {
+//            if (isPropertyChanged (event)) {
+//                // TODO this is just a proof of concept
+//                foreground.title.setText(getPropertyInfo().getValueAsString());
+//            }
+//        }
+//
+//    }
     
     // commands property element?
-
-    
-    
-    
-    
     
     // foreground
     private class DisplayableForeground extends JComponent {
-        
         
         private JLabel title;
         
         public DisplayableForeground() {
             initializeUI();
         }
-        
         
         private void initializeUI() {
             this.setLayout(null);
@@ -288,11 +244,8 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
             System.out.println("Title added !!!");
         }
         
-        
     }
-    
 
-    
     // background
     private class DisplayableBackground extends JPanel implements DesignListener {
 
@@ -304,16 +257,13 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
             initializeUI();
         }
         
-        
         public Color getDefinedBgColor() {
             if (deviceTheme != null) {
-                return deviceTheme.getColor(DeviceInfo.DeviceTheme.COLOR_BACKGROUND);
+                return deviceTheme.getColor(ScreenDeviceInfo.DeviceTheme.COLOR_BACKGROUND);
             } else {
                 return Color.WHITE;
             }
         }
-        
-        
         
         public void initializeUI() {
             this.setLayout(new GridBagLayout());
@@ -332,7 +282,6 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
             constraints.fill = GridBagConstraints.HORIZONTAL;            
             this.add(statusPanel,constraints);
             
-            
             JPanel bgFill = new JPanel();
             bgFill.setBackground(getDefinedBgColor());
             constraints = new GridBagConstraints();
@@ -342,16 +291,11 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
             this.add(bgFill,constraints);
-            
         }
 
-        
-        
-        
         public DesignEventFilter getDesignEventFilter(DesignComponent component) {
             return new DesignEventFilter().addComponentFilter(component, false);
         }
-        
         
         private void setFullScreen(boolean fullScreen) {            
             if (fullScreen != this.fullScreen) {
@@ -367,20 +311,18 @@ public class DisplayableDisplayPresenter extends DisplayPresenter {
                 }
             }
         }
-        
-        
+
         public void designChanged(DesignEvent event) {
             final DesignComponent dc = DisplayableDisplayPresenter.this.getComponent();
             // currently doing just fullscreen - this one disables background
             if (event.isComponentPropertyChanged(dc, CanvasCD.PROP_IS_FULL_SCREEN)) {
-                // get the new value
+                // TODO - schedule in invokeLater
                 dc.getDocument().getTransactionManager().readAccess(new Runnable() {
                     public void run() {
-                        PropertyValue propertyValue = dc.readProperty(CanvasCD.PROP_IS_FULL_SCREEN);
-                        // now get a binary value                    
-                        Object value = propertyValue.getPrimitiveValue();
+                        // now get a binary value
+                        Object value = dc.readProperty(CanvasCD.PROP_IS_FULL_SCREEN).getPrimitiveValue();
                         if (value instanceof Boolean) {
-                            boolean booleanValue = ((Boolean)value).booleanValue();
+                            boolean booleanValue = (Boolean) value;
                             setFullScreen(booleanValue);
                         }
                     }

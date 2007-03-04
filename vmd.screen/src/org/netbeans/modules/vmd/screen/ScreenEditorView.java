@@ -20,7 +20,7 @@ import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.screen.model.ScreenEditorModel;
 import org.netbeans.modules.vmd.screen.ui.MainView;
-import org.netbeans.modules.vmd.screen.ui.Toolbar;
+import org.netbeans.modules.vmd.screen.ui.ToolbarView;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -47,7 +47,7 @@ public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness
     private transient ScreenEditorModel editorModel;
     
     private transient MainView screenEditorMainView;
-    private transient Toolbar screenEditorToolbar;
+    private transient ToolbarView screenEditorToolbar;
     
     private static final String VIEW_NAME = NbBundle.getMessage(ScreenEditorView.class, "LBL_SCREEN_VIEW"); // NOI18N
     public static final String VIEW_ID = "screen"; // NOI18N
@@ -72,7 +72,7 @@ public class ScreenEditorView implements DataEditorView, DesignDocumentAwareness
         topEditorComponent = new JScrollPane(topEditorPanel);
         
         topEditorPanel.setLayout(new GridBagLayout());
-        screenEditorToolbar = new Toolbar(this.editorModel);
+        screenEditorToolbar = new ToolbarView (this.editorModel);
         screenEditorMainView = new MainView(this.editorModel);
         switchEditorPanels(true);
     }

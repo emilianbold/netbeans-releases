@@ -132,7 +132,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return true;
     }
     
-//    public InplaceEditor getInplaceEditor() {
+//    public ScreenInplaceEditor getInplaceEditor() {
 //        if (inplaceEditor == null) {
 //            inplaceEditor = new CheckboxInplaceEditor();
 //        }
