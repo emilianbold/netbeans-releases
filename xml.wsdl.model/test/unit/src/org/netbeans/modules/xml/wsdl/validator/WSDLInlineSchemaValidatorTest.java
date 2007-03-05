@@ -128,6 +128,15 @@ public class WSDLInlineSchemaValidatorTest extends TestCase {
     }
       
             
+      public void testInlineSchemaImportingAnotherSchemaUsingCatalogValid() throws Exception {
+          //this test is to mimic wsdl importing xsd which imports another xsd from different projevt
+           //so it uses catalog.xml at project level
+           String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/inlineSchemaTests/InventoryService.wsdl";
+          URL url = getClass().getResource(fileName);
+          URI uri = url.toURI();
+          
+          validate(uri, 0);
+      }       
     
     private void validate(URI uri, int expectedErrorCount)
         throws Exception {

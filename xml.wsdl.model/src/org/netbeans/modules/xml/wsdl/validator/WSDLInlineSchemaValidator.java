@@ -363,7 +363,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                 	}
                 }
              }
-             return null;                      
+             return lsi;                      
         }
 
         private WSDLSchema findSchema(String namespaceURI) {
