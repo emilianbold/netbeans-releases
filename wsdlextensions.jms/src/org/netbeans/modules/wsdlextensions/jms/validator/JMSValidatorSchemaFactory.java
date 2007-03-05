@@ -21,9 +21,8 @@ package org.netbeans.modules.wsdlextensions.jms.validator;
 
 import java.io.InputStream;
 import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
-
-import org.netbeans.modules.wsdlextensions.jms.JMSQName;
 
 /**
  * This class implements ValidatorSchemaFactory interface.
@@ -41,8 +40,14 @@ public class JMSValidatorSchemaFactory extends ValidatorSchemaFactory{
         InputStream is = JMSValidatorSchemaFactory.class.getResourceAsStream(jmsXSDUrl);
         return is;
     }
-
+    
+     /**
+     * Returns the Inputstream related to this schema
+     */
     public Source getSchemaSource() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        InputStream in = JMSValidatorSchemaFactory.class.getResourceAsStream(jmsXSDUrl);
+        Source s = new StreamSource(in);
+        s.setSystemId(JMSValidatorSchemaFactory.class.getResource(jmsXSDUrl).toString());
+        return s;
     }
 }
