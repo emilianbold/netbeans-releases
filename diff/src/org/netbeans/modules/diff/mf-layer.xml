@@ -39,6 +39,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="DiffVisualizers">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
+      <file name="org-netbeans-modules-diff-builtin-visualizer-editable-EditableDiffVisualizer.settings" url="EditableDiffVisualizer.settings">
+        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.visualizer.editable.EditableDiffVisualizer"/>
+      </file>
       <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings" url="GraphicalDiffVisualizer.settings">
         <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer"/>
       </file>
@@ -92,5 +95,10 @@ Microsystems, Inc. All Rights Reserved.
       </folder>
     </folder>
   </folder>
+    
+    <folder name="Editors">
+        <file name="org-netbeans-modules-diff-builtin-visualizer-editable-DiffHighlightsLayerFactory.instance" />
+    </folder>
+    
 </filesystem>
 

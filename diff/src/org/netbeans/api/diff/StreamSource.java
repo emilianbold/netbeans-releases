@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,6 +35,8 @@ import java.io.Writer;
 import java.io.IOException;
 
 import org.openide.util.io.ReaderInputStream;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.diff.EncodedReaderFactory;
@@ -61,6 +63,38 @@ public abstract class StreamSource extends Object {
      * Get the MIME type of the source.
      */
     public abstract String getMIMEType();
+    
+    /**
+     * Hint for a diff visualizer about editability of this source. The source will only be made editable if it provides
+     * some editable entity in its lookup (eg. FileObject) and this method returns true and the diff visualizer supports it.
+     * 
+     * @return true if this source can be editable in the diff visualizer, false otherwise
+     * @since 1.17
+     */ 
+    public boolean isEditable() {
+        return false;
+    }
+
+    /**
+     * Source lookup that may define the content of this source. In case the lookup does not provide anything
+     * usable, createReader() is used instead. Diff engines can process these inputs: 
+     * <ul>
+     * <li> instance of {@link org.openide.filesystems.FileObject} - in this case, the content of the source is defined 
+     * by calling DataObject.find(fileObject).openDocument(). If the source is editable then it is
+     * saved back via SaveCookie.save() when the Diff component closes.
+     * <li> instance of {@link javax.swing.text.Document} - in this case, the content of the source is defined 
+     * by this Document and the source will NOT be editable.
+     * </ul>
+     * 
+     * For compatibility purposes, it is still adviced to fully implement createReader() as older Diff providers may
+     * not use this method of obtaining the source.
+     * 
+     * @return an instance of Lookup
+     * @since 1.17
+     */ 
+    public Lookup getLookup() {
+        return Lookups.fixed();
+    }
     
     /**
      * Create a reader, that reads the source.

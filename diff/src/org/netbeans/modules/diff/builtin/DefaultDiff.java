@@ -40,6 +40,7 @@ import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.spi.diff.*;
 import org.netbeans.modules.diff.builtin.visualizer.DiffViewImpl;
+import org.netbeans.modules.diff.builtin.visualizer.editable.EditableDiffView;
 import org.openide.DialogDisplayer;
 
 /**
@@ -111,7 +112,8 @@ public class DefaultDiff extends Diff implements Serializable {
     }
 
     public DiffView createDiff(StreamSource s1, StreamSource s2) throws IOException {
-        return new DiffViewImpl(s1, s2);
+        if (System.getProperty("netbeans.experimental.diff55") != null) return new DiffViewImpl(s1, s2);
+        return new EditableDiffView(s1, s2);
     }
 
     /** Getter for property showDiffSelector.
