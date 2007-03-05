@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="defaulttheme" default="default" basedir=".">
+    
+    <description>Builds the themes library.</description>
+    <import file="nbproject/build-impl.xml"/>
+    
+    <target name="jar" depends="init,copy-theme-files">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.jar}" basedir="${build.classes.dir}" manifest="${build.dir}/META-INF/manifest.mf"/>
+    </target>
+    
+    <target name="copy-theme-files">
+        <copy todir="${build.classes.dir}/${theme.defaulttheme.path}/javascript">
+            <fileset dir="javascript">
+                <exclude name="**/CVS/**"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.classes.dir}/${theme.defaulttheme.path}/images">
+            <fileset dir="defaulttheme/images">
+                <exclude name="**/CVS/**"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.classes.dir}/${theme.defaulttheme.path}/css">
+            <fileset dir="defaulttheme/css">
+                <exclude name="**/CVS/**"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.classes.dir}/${theme.defaulttheme.path}/messages">
+            <fileset dir="messages">
+                <exclude name="**/CVS/**"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.classes.dir}/${theme.defaulttheme.path}/properties">
+            <fileset dir="defaulttheme/props">
+                <include name="**.properties"/>
+            </fileset>
+            <filterset>
+                <filter token="THEME_NAME" value="${theme.defaulttheme.name}"/>
+            </filterset>
+        </copy>
+        <copy todir="${build.dir}/META-INF">
+            <fileset dir="META-INF">
+                <include name="manifest.mf"/>
+            </fileset>
+            <filterset>
+                <filter token="THEME_NAME" value="${theme.defaulttheme.name}"/>
+            </filterset>
+        </copy>
+    </target>
+    
+</project>

@@ -1,0 +1,142 @@
+/*
+ * ident "%Z%%M% %I% %E% SMI"
+ *
+ * Copyright 2005 Sun Microsystems, Inc. All rights reserved.
+ * Use is subject to license terms.
+ * Version:2005_08_24_v1_bde-defaulttheme
+ */
+
+/* ADDITIONAL CSS FOR IE5.5+ SUPPORT */ 
+ 
+/* GLOBAL STYLES */
+BODY, TH, TD, P, DIV, SPAN, INPUT, SELECT, TEXTAREA, FORM, B, STRONG, I, U, H1, H2, H3, H4, H5, H6, 
+ DL, DD, DT, UL, LI, OL, OPTION, OPTGROUP, A {font-family:arial, helvetica, sans-serif;font-size:12px}
+
+/*---*/
+
+/* ADDREMOVE [originalName: ADD-REMOVE-IDIOM]*/
+table.AddRmvBtnTbl .Btn1, table.AddRmvBtnTbl .Btn1Hov, table.AddRmvBtnTbl .Btn1Dis, table.AddRmvBtnTbl .Btn2, table.AddRmvBtnTbl .Btn2Hov, table.AddRmvBtnTbl .Btn2Dis {padding:0px 10px;width:100%}
+.AddRmvVrtFst {margin:5px 0px 10px 0px;width:100px}
+.AddRmvVrtWin {margin:5px 0px 10px 5px;width:100px}
+.AddRmvVrtBwn {margin:5px 0px 10px 10px;width:100px}
+.AddRmvHrzWin {margin-top:3px;width:125px}
+.AddRmvHrzBwn {margin-top:8px;width:125px}
+/*---*/
+
+/* ALERT [originalName: INLINE ALERTS]*/
+.AlrtErrTxt img, .AlrtWrnTxt img, .AlrtInfTxt img {margin-right:5px}
+.AlrtInfTxt img {vertical-align:text-bottom}
+/*---*/
+
+/* BREADCRUMBS */
+/*---*/
+
+/* BUTTONS */
+.Btn1, .Btn1Hov, .Btn1Dis, .Btn1Hov, .Btn2, .Btn2Hov, .Btn2Dis {padding:0px 8px;width:30px;overflow:visible}
+.Btn1Hov, .Btn1MniHov, .Btn2Hov, .Btn2MniHov {cursor:hand}
+.Btn1Mni, .Btn1MniHov, .Btn1MniDis, .Btn2Mni, .Btn2MniHov, .Btn2MniDis {width:30px;overflow:visible}
+.MstDiv .Btn1, .MstDiv .Btn1Hov, .MstDiv .Btn2, .MstDiv .Btn2Hov, .MstDiv .Btn1Mni, .MstDiv .Btn1MniHov, .MstDiv .Btn2Mni, .MstDiv .Btn2MniHov {vertical-align:bottom}
+/*---*/
+
+/*CALENDAR */
+.CalPopDiv .DatSelDiv {border-bottom:none}
+.CalPopDiv .DatCalDiv {padding:0px;border-left:1px solid #C0C2C1;border-right:1px solid #C0C2C1;border-bottom:1px solid #C0C2C1;border-top:none}
+.CalPopDiv .DatCalTbl {border-top:1px solid #AEAFAF;border-bottom:none;width:auto}
+.CalPopDiv .DatCalTbl th {border-top:none}
+.CalPopFldImg img {margin-top:2px}
+
+/* CHECKBOXES AND RADIO BUTTONS */
+.RbSpn input, .CbSpn input {vertical-align: 3px;}
+/*---*/
+
+/* HELPINLINE [originalName: INLINE HELP]*/
+/*---*/
+
+/* LABEL [originalName: GENERIC FIELD LABELS]*/
+/*---*/
+
+/* LEFT PANE HELP */
+.LftHlpHlp, .LftHlpBdy {position:absolute}
+.LftHlpHlp{width:30%;right:0}
+.LftHlpBdy {width:70%}
+/*---*/
+
+/* LISTS */
+/*---*/
+
+/* MESSAGE AND MESSAGE GROUPS */
+.MsgGrpTbl {margin-top:15px}
+.MsgGrpTbl td {padding: 4px 10px 10px 10px}
+.MsgGrpTblTtl {margin-top:0px}
+.MsgGrpDiv ul {padding:5px 3px 10px 18px;margin:0px}
+.MsgGrpDiv ul li {padding:3px;margin-bottom:-12px}
+.MsgGrpSumTxt {padding-bottom:1px}
+/*---*/
+
+/* MENUS */
+/*---*/
+
+/* MINI-TABS */
+/*---*/
+
+/* PAGEALERT [originalName: FULL ALERTS]*/
+/*---*/
+
+/* PROGRESS BAR */
+.PrgInBar, .PrgInBarBak {height:10px}
+/* progress dialog with steps */
+.PrgStpMst {position:absolute;top:0px;left:0px;right:0px}
+.PrgStpTtl, .PrgStpLft, .PrgStpBdy, .PrgStpBtn {position:absolute}
+.PrgStpLft, .PrgStpBdy {bottom:42px}
+.PrgStpBtn {width:100%}
+/*---*/
+
+/* PROPERTYPAGE [originalName: CONTENT-PROPERTIES PAGES]*/
+.ConFldSet {border:none;margin-top:7px;margin-left:10px}
+.ConFldSetLgd {font-size:16px;font-weight:bold;margin:0px 0px 5px -8px}
+.ConSubSecTtlTxt {margin:10px 0px 0px 15px;font-size:16px;font-weight:bold}
+.ConSubSecDiv {margin:0px 10px 5px 0px}
+/*---*/
+
+/* TABLE [originalName: ACTION TABLE] */
+table.Tbl {width:100%;padding:0px}
+.TblMgn {margin:0px}
+caption.TblTtlTxt {background-position:0px 0px}
+table.Tbl span.TblTtlTxtSpn {float:left;font-weight:bold;font-size:14px}
+table.Tbl span.TblTtlMsgSpn {float:right;font-weight:normal;font-size:12px;color:#000;margin-top:1px}
+table.Tbl td.TblActTd, table.Tbl td.TblActTdLst {padding:6px;vertical-align:middle} 
+table.Tbl td.TblActTd img {margin-top:1px} 
+table.Tbl td.TblActTdLst img {margin-top:2px} 
+table.Tbl .TblPnlHlpTxt {width:350px}
+table.Tbl table.TblHdrTbl img {margin-right:5px;margin-left:5px;padding-right:0px;padding-left:0px}
+table.Tbl a.TblHdrImgLnk img {margin-right:2px; padding-right:0px}
+table.Tbl span.TblColHdrSrtDis img {margin-right:2px; padding-right:0px}
+table.Tbl .TblHdrSrtNum {width:auto}
+table.Tbl td.TblFtrRow {padding:5px 10px; border-bottom:solid 1px #999}
+table.Tbl .TblTdLyt img, table.Tbl .TblTdSrt img, table.Tbl .TblTdAlm img,  table.Tbl .TblTdSrtAlm img {margin-bottom:0px}
+/*Table Sub-Grouping */
+table.Tbl .TblGrpLft input {margin:-1px 0px}
+.TblGrpTxt {color:#333;font-weight:bold;margin:0px 3px}
+table.Tbl .TblGrpCbImg img {margin-left:-4px;margin-bottom:-3px}
+/* For when appearing in titledbox*/
+.TtldBoxInrDiv .Tbl {margin:0px;width:96%}
+/*---*/
+
+/* TABLE - LIGHTER WEIGHT DESIGN */
+table.TblLt td.TblFtrRow {border-bottom:none}
+
+
+/* TABSET [originalName: LEVEL TABS]*/
+/*---*/
+
+/* TEXT AND PASSWORD FIELDS */
+/*---*/
+
+/* TEXTAREAS */ 
+/*---*/
+
+/*TITLED BOX */
+/*---*/
+
+/* TREE */
+/*---*/
