@@ -1932,7 +1932,7 @@ public class CasualDiff {
             return removalBounds;
         }
         // copy to start position
-        copyTo(localPointer, posHint = oldList.get(0).pos);
+        copyTo(localPointer, posHint = getOldPos(oldList.get(0)));
         int i = 0;
         // go on, match it!
         for (int j = 0; j < result.length; j++) {
