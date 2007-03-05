@@ -57,8 +57,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <!-- 
+            <friend-packages>
                 <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.model</friend>
@@ -68,10 +67,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
-                -->
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel</package>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.schema.resources</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

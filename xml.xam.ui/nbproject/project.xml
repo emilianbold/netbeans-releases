@@ -142,8 +142,7 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <!-- 
+            <friend-packages>
                 <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
@@ -156,7 +155,6 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
-                -->
                 <package>org.netbeans.modules.xml.xam.ui</package>
                 <package>org.netbeans.modules.xml.xam.ui.actions</package>
                 <package>org.netbeans.modules.xml.xam.ui.category</package>
@@ -168,7 +166,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.xml.xam.ui.multiview</package>
                 <package>org.netbeans.modules.xml.xam.ui.search</package>
                 <package>org.netbeans.modules.xml.xam.ui.undo</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
