@@ -13,37 +13,35 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.localhistory.ui.view;
 
-import org.netbeans.modules.localhistory.ui.view.DiffPanel;
-import org.netbeans.modules.localhistory.ui.view.*;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.diff.Diff;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -114,16 +112,15 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                         StreamSource ss1 = StreamSource.createSource("historyfile", entry.getFile().getName() + " " + StoreEntryNode.getFormatedDate(entry), entry.getMIMEType(), new InputStreamReader(entry.getStoreFileInputStream()));
                         
                         String title;
-                        Reader r;
+                        StreamSource ss2;
                         File file = entry.getFile();
                         if(file.exists()) {
                             title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_CurrentFile");
-                            r = new FileReader(file);
+                            ss2 = new LHStreamSource(file, title, entry.getMIMEType());
                         } else {
                             title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_FileDeleted");
-                            r = new StringReader(""); // XXX
+                            ss2 = StreamSource.createSource("currentfile", title, entry.getMIMEType(), new StringReader(""));
                         }
-                        StreamSource ss2 = StreamSource.createSource("currentfile", title, entry.getMIMEType(), r);
                         
                         diffView = diff.createDiff(ss1, ss2);  
                         
@@ -198,4 +195,50 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         panel.prevButton.setEnabled(currentDifference > 0);
         panel.nextButton.setEnabled(currentDifference < diffView.getDifferenceCount() - 1);
     }    
+    
+    private class LHStreamSource extends StreamSource {
+        
+        private final File file;
+        private final String title;
+        private final String mimeType;
+
+        public LHStreamSource(File file, String title, String mimeType) {
+            this.file = file;
+            this.title = title;
+            this.mimeType = mimeType;
+        }
+
+        public boolean isEditable() {
+            return true;
+        }
+
+        public Lookup getLookup() {
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                return Lookups.fixed(fo);                 
+            } else {
+                return Lookups.fixed(); 
+            }
+        }
+
+        public String getName() {
+            return title;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getMIMEType() {
+            return mimeType;
+        }
+
+        public Reader createReader() throws IOException {
+            return new FileReader(file);
+        }
+
+        public Writer createWriter(Difference[] conflicts) throws IOException {
+            return null;
+        }
+    }
 }
