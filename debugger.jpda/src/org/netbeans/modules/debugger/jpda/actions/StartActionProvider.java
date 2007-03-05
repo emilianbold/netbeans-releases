@@ -236,6 +236,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
     ) {
         return new Operator (
             virtualMachine,
+            debuggerImpl,
             new Executor () {
                 public boolean exec(Event event) {
                     synchronized(startLock) {

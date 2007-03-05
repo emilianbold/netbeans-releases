@@ -176,7 +176,16 @@ public final class JPDAThreadImpl implements JPDAThread {
      *
      * @return true if this thread is suspended by debugger
      */
-    public boolean isSuspended () {
+    public synchronized boolean isSuspended () {
+        return suspended;
+    }
+    
+    /**
+     * Returns true if this thread is suspended by debugger.
+     *
+     * @return true if this thread is suspended by debugger
+     */
+    public boolean isThreadSuspended () {
         try {
             return threadReference.isSuspended ();
         } catch (ObjectCollectedException ex) {
@@ -444,7 +453,7 @@ public final class JPDAThreadImpl implements JPDAThread {
     public void notifySuspended() {
         Boolean suspendedToFire = null;
         synchronized (this) {
-            if (!suspended && isSuspended()) {
+            if (!suspended && isThreadSuspended()) {
                 suspended = true;
                 suspendedToFire = Boolean.TRUE;
             }

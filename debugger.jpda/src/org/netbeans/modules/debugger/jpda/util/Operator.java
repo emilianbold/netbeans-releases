@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.ErrorManager;
 
 /**
@@ -79,6 +81,7 @@ public class Operator {
     */
     public Operator (
         VirtualMachine virtualMachine,
+        final JPDADebuggerImpl debugger,
         Executor starter,
         Runnable finalizer,
         final Object resumeLock
@@ -143,9 +146,36 @@ public class Operator {
                          }
                      }
                      boolean resume = true, startEventOnly = true;
-                     EventIterator i = eventSet.eventIterator ();
+                     int suspendPolicy = eventSet.suspendPolicy();
+                     boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
+                     JPDAThreadImpl suspendedThread = null;
+                     if (suspendedAll) debugger.notifySuspendAll();
+                     if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
+                         EventIterator i = eventSet.eventIterator ();
+                         ThreadReference tref = null;
+                         while (i.hasNext ()) {
+                            Event e = i.nextEvent ();
+                            if (e instanceof LocatableEvent) {
+                                tref = ((LocatableEvent) e).thread();
+                                break;
+                            }
+                            if (e instanceof ClassPrepareEvent) {
+                                tref = ((ClassPrepareEvent) e).thread();
+                            }
+                            if (e instanceof ThreadStartEvent) {
+                                tref = ((ThreadStartEvent) e).thread();
+                            }
+                            if (e instanceof ThreadDeathEvent) {
+                                tref = ((ThreadDeathEvent) e).thread();
+                            }
+                         }
+                         if (tref != null) {
+                            suspendedThread = ((JPDAThreadImpl) debugger.getThread(tref));
+                            suspendedThread.notifySuspended();
+                         }
+                     }
                      if (logger.isLoggable(Level.FINE)) {
-                         switch (eventSet.suspendPolicy ()) {
+                         switch (suspendPolicy) {
                              case EventRequest.SUSPEND_ALL:
                                  logger.fine("JDI new events (suspend all)=============================================");
                                  break;
@@ -160,6 +190,7 @@ public class Operator {
                                  break;
                          }
                      }
+                     EventIterator i = eventSet.eventIterator ();
                      while (i.hasNext ()) {
                          Event e = i.nextEvent ();
                          if ((e instanceof VMDeathEvent) ||
@@ -226,6 +257,12 @@ public class Operator {
                          logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
                      }
                      if (resume && (!startEventOnly)) {
+                         if (suspendedAll) {
+                             debugger.notifyToBeResumedAll();
+                         }
+                         if (suspendedThread != null) {
+                             suspendedThread.notifyToBeRunning();
+                         }
                          synchronized (resumeLock) {
                             eventSet.resume ();
                          }

@@ -1007,6 +1007,17 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             setState (STATE_STOPPED);
         }
+        notifySuspendAll();
+    }
+    
+    public void notifySuspendAll() {
+        Collection threads = threadsTranslation.getTranslated();
+        for (Iterator it = threads.iterator(); it.hasNext(); ) {
+            Object threadOrGroup = it.next();
+            if (threadOrGroup instanceof JPDAThreadImpl) {
+                ((JPDAThreadImpl) threadOrGroup).notifySuspended();
+            }
+        }
     }
     
     /**
@@ -1024,13 +1035,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return ;
         }
         setState (STATE_RUNNING);
-        Collection threads = threadsTranslation.getTranslated();
-        for (Iterator it = threads.iterator(); it.hasNext(); ) {
-            Object threadOrGroup = it.next();
-            if (threadOrGroup instanceof JPDAThreadImpl) {
-                ((JPDAThreadImpl) threadOrGroup).notifyToBeRunning();
-            }
-        }
+        notifyToBeResumedAll();
         VirtualMachine vm;
         synchronized (this) {
             vm = virtualMachine;
@@ -1039,6 +1044,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (vm != null) {
                 logger.fine("VM resume");
                 vm.resume ();
+            }
+        }
+    }
+    
+    public void notifyToBeResumedAll() {
+        Collection threads = threadsTranslation.getTranslated();
+        for (Iterator it = threads.iterator(); it.hasNext(); ) {
+            Object threadOrGroup = it.next();
+            if (threadOrGroup instanceof JPDAThreadImpl) {
+                ((JPDAThreadImpl) threadOrGroup).notifyToBeRunning();
             }
         }
     }
