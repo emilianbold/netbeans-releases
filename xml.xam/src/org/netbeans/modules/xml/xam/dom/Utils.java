@@ -28,7 +28,7 @@ import java.util.HashSet;
 public final class Utils {
 
     public static boolean isValidNCName( String str ) {
-        if (str.length() == 0) {
+        if (str == null || str.length() == 0) {
             return false;
         }
         char ch = str.charAt(0);
