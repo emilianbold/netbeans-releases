@@ -287,7 +287,7 @@ public class LineBoxGroup extends ContainerBox {
                     int oldContentHeight = contentHeight;
                     int indent = 0; // XXX Can you have indents here?
                     lineBox = new LineBox(webform, box.getElement(), containingBlockWidth, indent);
-                    lineBox.isFloated = true;
+                    lineBox.isFloated = box.getBoxType() == BoxType.FLOAT;
                     lineBox.setParent(this);
                     lineBox.setContainingBlock(containingBlockX, containingBlockY,
                         containingBlockWidth, containingBlockHeight);
