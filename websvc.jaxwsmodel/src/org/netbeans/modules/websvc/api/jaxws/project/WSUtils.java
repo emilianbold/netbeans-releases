@@ -53,6 +53,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -323,8 +324,11 @@ public class WSUtils {
             String postfix = "/jaxws-api.jar!/javax/xml/ws/WebServiceFeature.class"; //NOI18N
             String jaxWsUrl = wsFeatureUrl.toExternalForm();
             if (jaxWsUrl.startsWith(prefix) && jaxWsUrl.endsWith(postfix));
+            // the resource name on Windows starts with (example) : "jar:file:/C:/Program Files/java/..."
+            // on Linux : "jar:file:/usr/java/...
+            int startPosition = Utilities.isWindows() ? 10 : 9;
             int endPosition = jaxWsUrl.indexOf(postfix);
-            return jaxWsUrl.substring(9,endPosition);
+            return jaxWsUrl.substring(startPosition,endPosition);
         }
         return null;
     }
