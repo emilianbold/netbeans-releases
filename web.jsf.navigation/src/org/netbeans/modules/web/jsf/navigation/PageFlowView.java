@@ -11,9 +11,11 @@ package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import javax.swing.Action;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
@@ -27,8 +29,14 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
+import org.netbeans.spi.palette.PaletteActions;
+import org.netbeans.spi.palette.PaletteController;
+import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 
 /**
@@ -41,19 +49,25 @@ public class PageFlowView  extends TopComponent{
     private JSFConfigModel configModel;
     
     PageFlowView(JSFConfigEditorContext context){
+        this(context, new InstanceContent());
+    }
+    
+    PageFlowView(JSFConfigEditorContext context, InstanceContent ic ){
+        super( new AbstractLookup( ic ) );
+        ic.add( initializePalette() );
         this.context = context;
         init();
     }
-      
+    
     /*
-     * Initializes the Panel and the graph 
+     * Initializes the Panel and the graph
      **/
     private void init(){
         setLayout(new BorderLayout());
         configModel = ConfigurationUtils.getConfigModel(context.getFacesConfigFile(),true);
         
         scene = new PageFlowScene();
-        add(scene.createView());     
+        add(scene.createView());
         
         
         try{
@@ -71,7 +85,7 @@ public class PageFlowView  extends TopComponent{
         scene.removeChildren();
     }
     
-    /* 
+    /*
      * Setup The Graph
      * Should only be called by init();
      **/
@@ -80,15 +94,15 @@ public class PageFlowView  extends TopComponent{
         
         FacesConfig facesConfig = configModel.getRootComponent();
         
-        List<NavigationRule> rules = facesConfig.getNavigationRules();        
-        createAllPageNodes(rules);        
-        createAllEdges(rules);       
+        List<NavigationRule> rules = facesConfig.getNavigationRules();
+        createAllPageNodes(rules);
+        createAllEdges(rules);
         
         if(  scene instanceof PageFlowScene ) {
             ((PageFlowScene)scene).layoutScene();
         }
     }
-
+    
     private void createAllEdges( List<NavigationRule> rules ){
         for( NavigationRule rule : rules ) {
             List<NavigationCase> navCases = rule.getNavigationCases();
@@ -113,7 +127,7 @@ public class PageFlowView  extends TopComponent{
             createNode(scene, IMAGE_LIST, page, null, null);
         }
     }
-
+    
     
     
     private VMDNodeWidget createNode(GraphPinScene graphScene, Image image, String page, String type, List<Image> glyphs) {
@@ -172,12 +186,41 @@ public class PageFlowView  extends TopComponent{
 //                }
 //            }
 //        }
-//        
+//
 //        graphScene.setEdgeTarget(navCase, targetPin);
 //        graphScene.setEdgeSource(navCase, sourcePin);
         
         
     }
+    
+    public PaletteController initializePalette() {
+        try {
+            return PaletteFactory.createPalette( "MyPalette", new PaletteActions() {
+                public Action[] getCustomCategoryActions(Lookup lookup) {
+                    return new Action[0];
+                }
+                public Action[] getCustomItemActions(Lookup lookup) {
+                    return new Action[0];
+                }
+                public Action[] getCustomPaletteActions() {
+                    return new Action[0];
+                }
+                public Action[] getImportActions() {
+                    return new Action[0];
+                }
+                public Action getPreferredAction(Lookup lookup) {
+                    return null; //TODO
+                }
+            });
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            
+        }
+        return null;
+    }
+    
+    
+    
     
     
 }

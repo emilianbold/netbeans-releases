@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : simple-item.xml
+    Created on : March 3, 2007, 4:17 PM
+    Author     : joelle
+    Description:
+        Purpose of the document follows.
+-->
+
+<!DOCTYPE editor_palette_item PUBLIC '-//NetBeans//Editor Palette Item 1.0//EN' "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
+<editor_palette_item version="1.0" >                     
+    <icon16 urlvalue="org/netbeans/modules/web/jsf/navigation/graph/resources/doc01.gif" />
+    <icon32 urlvalue="org/netbeans/modules/web/jsf/navigation/graph/resources/doc01.gif" />
+    <description localizing-bundle="org.netbeans.modules.web.jsf.navigation.palette.Bundle"
+                 display-name-key="Item_Name"
+                 tooltip-key="Item_Tooltip" />
+    
+</editor_palette_item>

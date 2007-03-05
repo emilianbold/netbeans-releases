@@ -26,6 +26,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -85,14 +88,14 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         private JSFConfigEditorContext context;
         
         
-        public PageFlowElement() {
-        }
+//        public PageFlowElement() {
+//        }
         
         public PageFlowElement(JSFConfigEditorContext context) {
             this.context = context;
             init();
         }
-        
+                
         private void init() {
             tc = new PageFlowView(context);
             panel = new JScrollPane(tc);
@@ -127,9 +130,11 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         public Lookup getLookup() {
             //return tc.getLookup();
             try {
-                DataObject dataObject = org.openide.loaders.DataObject.find(context.getFacesConfigFile());
                 
-                return dataObject.getLookup();
+                /* I needed to add the top component's lookup to the multiview elements lookup inorder to have an associated palette.*/
+                DataObject dataObject = org.openide.loaders.DataObject.find(context.getFacesConfigFile());
+                return new ProxyLookup(new Lookup[] {dataObject.getLookup(), tc.getLookup()});
+                
             } catch (DataObjectNotFoundException ex) {
                 java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
                         ex.getMessage(),

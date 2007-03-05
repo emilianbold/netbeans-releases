@@ -19,7 +19,20 @@
     </folder>-->
     
     <folder name="PageFlowEditor">
+        <folder name="PopupActions">
             <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageAction.instance"/>
+            <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-ConnectToAction.instance"/>
+        </folder>
+    </folder>
+    
+    
+    <folder name="MyPalette">
+        <folder name="Category1">
+            <file name="PaletteItem_1.xml" url="palette/simple-item.xml"/>
+        </folder>
+        <folder name="Category2">
+            <file name="PaletteItem_2.xml" url="palette/simple-item.xml"/>
+        </folder>
     </folder>
     
 </filesystem>

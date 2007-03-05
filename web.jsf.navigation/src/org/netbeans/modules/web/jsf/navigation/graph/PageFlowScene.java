@@ -45,6 +45,7 @@ import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
 import org.openide.util.Utilities;
 
@@ -74,6 +75,7 @@ public class PageFlowScene extends GraphPinScene<String, NavigationCase, String>
 //    private WidgetAction popupNodeAction = ActionFactory.createPopupMenuAction (new NodePopupMenuProvider(this));
     private WidgetAction popupGraphAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this));
     private WidgetAction moveAction = ActionFactory.createMoveAction();
+    private WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
 //    private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
 //    private WidgetAction deleteAction = new DeleteAction(this);
     
@@ -97,6 +99,7 @@ public class PageFlowScene extends GraphPinScene<String, NavigationCase, String>
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
         actions.addAction(popupGraphAction);
+        actions.addAction(dragNdropAction);
         //        getActions ().addAction (deleteAction);
         
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, new GridGraphLayout<String, NavigationCase> ().setChecker(true));

@@ -49,7 +49,7 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     
     
     // <actions from layers>
-    private static final String PATH_PAGEFLOW_ACTIONS = "PageFlowEditor"; // NOI18N
+    private static final String PATH_PAGEFLOW_ACTIONS = "PageFlowEditor/PopupActions"; // NOI18N
 //        private static final String PATH_PAGEFLOW_ACTIONS = "PageFlowEditor/application/x-pageflow/Popup"; // NOI18N
     private void initialize() {
         graphPopup = Utilities.actionsToPopup(
