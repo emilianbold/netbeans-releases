@@ -183,20 +183,6 @@
       Build
     ======================================================================== -->
     
-    <target name="-pre-build">
-        <!-- substitute the params in product's source tree -->
-        <for-each from="1" to="${product.params.length}" property="i">
-            <set property="current.token" 
-                 source="product.params.${i}.token"/>
-            <set property="current.value" 
-                 source="product.params.${i}.value"/>
-            
-            <replace dir="${cvs.dir}" 
-                     token="${current.token}" 
-                     value="${current.value}"/>
-        </for-each>
-    </target>
-    
     <!--
       Builds the product package.
       

@@ -403,7 +403,23 @@
       This target is not intended to be called directly.
     -->
     <target name=".checkout" 
-            depends=".checkout-trunk,.checkout-branch,.checkout-copy"/>
+            depends=".checkout-trunk,.checkout-branch,.checkout-copy">
+        <copy todir="${cvs.dir}" failonerror="false">
+            <fileset dir="${translatedfiles.dir}"/>
+        </copy>
+        
+        <!-- substitute the params in the source tree -->
+        <for-each from="1" to="${sources.params.length}" property="i">
+            <set property="current.token" 
+                 source="sources.params.${i}.token"/>
+            <set property="current.value" 
+                 source="sources.params.${i}.value"/>
+            
+            <replace dir="${cvs.dir}" 
+                     token="${current.token}" 
+                     value="${current.value}"/>
+        </for-each>
+    </target>
     
     <!--
       Checks out sources from trunk.
@@ -426,9 +442,6 @@
              package="${translatedfiles.module}/${translatedfiles.path}"
              dest="${work.dir}"
              failonerror="false"/>
-        <copy todir="${cvs.dir}" failonerror="false">
-            <fileset dir="${translatedfiles.dir}"/>
-        </copy>
     </target>
     
     <!--
@@ -454,9 +467,6 @@
              tag="${cvs.branch}" 
              dest="${work.dir}"
              failonerror="false"/>
-        <copy todir="${cvs.dir}" failonerror="false">
-            <fileset dir="${translatedfiles.dir}"/>
-        </copy>
     </target>
     
     <!--

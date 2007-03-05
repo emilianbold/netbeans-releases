@@ -136,38 +136,21 @@
       custom functionality that is required for correctly building the group 
       package.
       
-      The build process for the grup package consists of five steps.
-      1) The search-and-replace is run over the group's sources, based on the
-         [token] => [value] pairs defined in ${group.params.N.token} and
-         ${group.params.N.value}
-      
-      2) The group's icon is copied from its location to the group's package 
+      The build process for the grup package consists of four steps.
+      1) The group's icon is copied from its location to the group's package 
          directory structure and some metadata is calculated
       
-      3) The group's localizing bundle is loaded and the group package 
+      2) The group's localizing bundle is loaded and the group package 
          descriptor is generated
       
-      4) The manifest for the group package is generated
+      3) The manifest for the group package is generated
       
-      5) The package directory structure is jarred, digitally signed and moved 
+      4) The package directory structure is jarred, digitally signed and moved 
          to the distributives directory
       
       This target is not intended to be called directly.
     -->
     <target name="-build" depends=".build">
-        <!-- substitute the params in group's source tree (normally that would
-             consist only of the icon and the localizing bundle -->
-        <for-each from="1" to="${group.params.length}" property="i">
-            <set property="current.token" 
-                          source="group.params.${i}.token"/>
-            <set property="current.value" 
-                          source="group.params.${i}.value"/>
-            
-            <replace dir="${cvs.dir}" 
-                     token="${current.token}" 
-                     value="${current.value}"/>
-        </for-each>
-        
         <!-- copy the group's icon to the soon-to-be package directory 
              structure and calculate some metadata for it -->
         <copy file="${group.icon}" 
