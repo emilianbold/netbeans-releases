@@ -19,6 +19,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.Action;
 
 import org.netbeans.jemmy.QueueTool;
@@ -91,6 +92,10 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
     
     protected void shutdown() {
         log(":: shutdown");
-        surface.closeDiscard();
+        cleanupTest();
+    }
+    private void cleanupTest() {
+          String ComponentUndoCMD = "Undo Drop Component"; // from Bundle?
+          MainWindowOperator.getDefault().menuBar().pushMenu("Edit|"+ComponentUndoCMD);
     }
 }
