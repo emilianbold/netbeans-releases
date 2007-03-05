@@ -21,7 +21,7 @@
 ============================================================================ -->
 
 <!--
-  This is the build script for [name] nbi engine instance.
+  This is the build script for the [name] nbi engine instance.
   
   It inherits most of the functionality from the base script for building nbi 
   engine instances, while providing this instance-specific values for several
