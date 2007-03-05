@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.earproject.ui.wizards;
 import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +42,9 @@ import org.netbeans.modules.j2ee.earproject.EarProjectTest;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
@@ -269,7 +273,17 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         }
         
         public ClassPath getBootstrapLibraries() {
-            return null;
+            return ClassPathFactory.createClassPath(new ClassPathImplementation() {
+                public List<? extends PathResourceImplementation> getResources() {
+                    return new ArrayList<PathResourceImplementation>(0);
+                }
+
+                public void addPropertyChangeListener(PropertyChangeListener listener) {
+                }
+
+                public void removePropertyChangeListener(PropertyChangeListener listener) {
+                }
+            });
         }
         
         public Collection getInstallFolders() {
