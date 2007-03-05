@@ -785,8 +785,8 @@ public class Registry {
     
     // basic queries ////////////////////////////////////////////////////////////////
     public List<RegistryNode> query(final RegistryFilter filter) {
-        List<RegistryNode>  matches = new ArrayList<RegistryNode>();
-        Queue<RegistryNode> queue    = new LinkedList<RegistryNode>();
+        List<RegistryNode> matches = new LinkedList<RegistryNode>();
+        Queue<RegistryNode> queue = new LinkedList<RegistryNode>();
         
         queue.offer(registryRoot);
         while (queue.peek() != null) {
@@ -912,10 +912,10 @@ public class Registry {
     }
     
     public Product getProduct(final String uid, final Version version) {
-        final List<Product> candidates = queryProducts(new ProductFilter(
+        final List<Product> candidates = getProducts(
                 uid,
                 version,
-                targetPlatform));
+                targetPlatform);
         
         return (candidates.size() > 0) ? candidates.get(0) : null;
     }

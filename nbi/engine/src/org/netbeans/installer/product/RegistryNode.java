@@ -207,6 +207,12 @@ public abstract class RegistryNode implements PropertyContainer {
         children.remove(child);
     }
     
+    public void attachRegistry(Registry registry) {
+        for (RegistryNode node: registry.getRegistryRoot().getChildren()) {
+            addChild(node);
+        }
+    }
+    
     public boolean isAncestor(final RegistryNode candidate) {
         for (RegistryNode node: getChildren()) {
             if ((node == candidate) || node.isAncestor(candidate)) {

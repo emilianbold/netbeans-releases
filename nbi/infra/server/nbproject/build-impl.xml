@@ -88,10 +88,8 @@ is divided into following sections:
     </target>
     <target name="init-check" depends="pre-init,init-private,init-userdir,init-user,init-project,do-init">
         <fail unless="build.dir">Must set build.dir</fail>
-        <fail unless="build.archive.dir">Must set build.archive.dir</fail>
         <fail unless="build.generated.dir">Must set build.generated.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
-        <fail unless="build.classes.dir">Must set build.classes.dir</fail>
         <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
         <fail unless="dist.jar">Must set dist.jar</fail>
     </target>
@@ -111,9 +109,7 @@ is divided into following sections:
             <property name="dist.ear.dir" location="${build.dir}"/>
         </ant>
     </target>
-    <target name="pre-pre-compile" depends="init,deps-jar,deps-j2ee-archive">
-        <mkdir dir="${build.classes.dir}"/>
-    </target>
+    <target name="pre-pre-compile" depends="init,deps-jar,deps-j2ee-archive"/>
     <target name="pre-compile">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
@@ -288,6 +284,20 @@ is divided into following sections:
                 <path path="${ear.docbase.dirs}"/>
             </sourcepath>
         </nbjpdaconnect>
+    </target>
+    <target name="-init-debug-args">
+        <property name="version-output" value="java version &quot;${ant.java.version}"/>
+        <condition property="have-jdk-older-than-1.4">
+            <or>
+                <contains string="${version-output}" substring="java version &quot;1.0"/>
+                <contains string="${version-output}" substring="java version &quot;1.1"/>
+                <contains string="${version-output}" substring="java version &quot;1.2"/>
+                <contains string="${version-output}" substring="java version &quot;1.3"/>
+            </or>
+        </condition>
+        <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
+            <istrue value="${have-jdk-older-than-1.4}"/>
+        </condition>
     </target>
     <target name="run-debug-appclient" depends="init,-init-debug-args" if="can.debug.appclient">
         <macrodef name="debug-appclient" uri="http://www.netbeans.org/ns/j2ee-earproject/2">

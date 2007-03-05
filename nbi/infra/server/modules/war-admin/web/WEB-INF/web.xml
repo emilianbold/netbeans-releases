@@ -5,12 +5,12 @@
         <servlet-class>org.netbeans.installer.infra.server.admin.servlets.RunCommand</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>update-component</servlet-name>
-        <servlet-class>org.netbeans.installer.infra.server.admin.servlets.UpdateComponent</servlet-class>
+        <servlet-name>add-package</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.admin.servlets.AddPackage</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>remove-component</servlet-name>
-        <servlet-class>org.netbeans.installer.infra.server.admin.servlets.RemoveComponent</servlet-class>
+        <servlet-name>remove-product</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.admin.servlets.RemoveProduct</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>update-engine</servlet-name>
@@ -23,10 +23,6 @@
     <servlet>
         <servlet-name>remove-registry</servlet-name>
         <servlet-class>org.netbeans.installer.infra.server.admin.servlets.RemoveRegistry</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>update-group</servlet-name>
-        <servlet-class>org.netbeans.installer.infra.server.admin.servlets.UpdateGroup</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>remove-group</servlet-name>
@@ -53,12 +49,12 @@
         <url-pattern>/run-command</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>update-component</servlet-name>
-        <url-pattern>/update-component</url-pattern>
+        <servlet-name>add-package</servlet-name>
+        <url-pattern>/add-package</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>remove-component</servlet-name>
-        <url-pattern>/remove-component</url-pattern>
+        <servlet-name>remove-product</servlet-name>
+        <url-pattern>/remove-product</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>update-engine</servlet-name>
@@ -71,10 +67,6 @@
     <servlet-mapping>
         <servlet-name>remove-registry</servlet-name>
         <url-pattern>/remove-registry</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>update-group</servlet-name>
-        <url-pattern>/update-group</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>remove-group</servlet-name>

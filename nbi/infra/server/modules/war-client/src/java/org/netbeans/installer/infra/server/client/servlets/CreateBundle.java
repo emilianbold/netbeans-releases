@@ -108,7 +108,7 @@ public class CreateBundle extends HttpServlet {
             out.println("        </select>");
             
             out.println("        <div class=\"registry\">");
-            buildRegistryTable(out, manager.getRoot(platform, registries), platform);
+            buildRegistryTable(out, manager.loadRegistries(platform, registries), platform);
             out.println("        </div>");
             
             out.println("            <input type=\"submit\" value=\"Create Bundle\"/>");
