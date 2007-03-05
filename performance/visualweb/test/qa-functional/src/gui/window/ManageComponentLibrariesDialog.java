@@ -54,18 +54,20 @@ public class ManageComponentLibrariesDialog  extends org.netbeans.performance.te
         openNode.callPopup().pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibAction"));
         parent = new DialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplib"));
         
+        
     }
     public void prepare() {
         log("::prepare");
-        String btnName = org.netbeans.jellytools.Bundle.getStringTrimmed("com.sun.rave.complib.ui.Bundle", "ComplibChooser.edit");
-        log("trimmed str = "+btnName);
-        manageComponentLibsButton = new JButtonOperator(parent,"Manage Component Libraries...");
+        //String btnName = org.netbeans.jellytools.Bundle.getStringTrimmed("com.sun.rave.complib.ui.Bundle", "ComplibChooser.edit");
+        String btnName = "Manage Component Libraries...";
+        log("str = "+btnName);
+        manageComponentLibsButton = new JButtonOperator(parent,btnName);
     }
 
     public ComponentOperator open() {
         log(":: open");
         manageComponentLibsButton.pushNoBlock();
-        return new JDialogOperator(org.netbeans.jellytools.Bundle.getString("com.sun.rave.complib.ui.Bundle", "manager.dialogTitle"));
+        return new JDialogOperator("Component Library Manager");
     }
 
     protected void shutdown() {
