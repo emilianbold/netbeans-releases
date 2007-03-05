@@ -25,121 +25,53 @@ import org.netbeans.api.lexer.TokenId;
 /**
  * Provides extra properties of a token.
  * <br/>
- * A special kind of token <code>PropertyToken</code> allows to carry token properties.
+ * Normally each token has an extra instance of the property provider:
+ * <pre>
+ * final class MyTokenPropertyProvider implements TokenPropertyProvider {
+ *
+ *     private final Object value;
+ *
+ *     TokenPropProvider(Object value) {
+ *         this.value = value;
+ *     }
+ *      
+ *     public Object getValue (Token token, Object key) {
+ *         if ("type".equals(key))
+ *             return value;
+ *         return null;
+ *     }
+ *
+ * }
+ * </pre>
  * <br/>
- * That token may store a value of one property in its instance
- * (see <code>PropertyToken.tokenStoreValue</code>. If the provider
- * wants to use that field for storing of the value it needs to return
- * the corresponding key for that value from {@link #tokenStoreKey()}.
- * 
- * <p/>
- * Generally this interface can be used in multiple ways:
- * <ul>
- *  <li>
- *    A new instance of the provider per each token.
- *    <br/>
- *    Example of storing a value for "key" key in the provider:
- *    <pre>
- *    final class MyTokenPropertyProvider implements TokenPropertyProvider {
- * 
- *       private final Object value;
- * 
- *       MyTokenPropertyProvider(Object value) {
- *           this.value = value;
- *       }
+ * However multiple flyweight instances of the provider may be used to save memory
+ * if there are just several values for a property.
+ * <br/>
+ * Example of two instances of a provider for boolean property "key":
+ * <pre>
+ * final class MyTokenPropertyProvider implements TokenPropertyProvider {
  *
- *       public Object getValue(Token token, Object key) {
- *           if ("key".equals(key)) {
- *               return value;
- *           }
- *           return null;
- *       }
- * 
- *       public Object getValue(Token token, Object tokenStoreKey, Object tokenStoreValue) {
- *           return null; // not using token's storage
- *       }
- * 
- *       public Object tokenStoreKey() {
- *           return null; // not using token's storage
- *       }
- * 
- *    }
- *    </pre>
- *  </li>
- * 
- *  <li>
- *    A single instance of the provider for multiple tokens.
- *    Each token may have a specific value of the given property.
- *    <br/>
- *    This might be achieved by returning the particular key
- *    from {@link #tokenStoreKey()} and using the token store value
- *    for the storage of the property value.
- *    <br/>
- *    Example of storing a value for "key" by the token's storage:
- *    <pre>
- *    final class MyTokenPropertyProvider implements TokenPropertyProvider {
- * 
- *       static final MyTokenPropertyProvider INSTANCE = new MyTokenPropertyProvider();
- * 
- *       private MyTokenPropertyProvider() {
- *       }
+ *     static final MyTokenPropertyProvider TRUE = new MyTokenPropertyProvider(Boolean.TRUE);
  *
- *       public Object getValue(Token token, Object key) {
- *           return null; // no extra properties
- *       }
+ *     static final MyTokenPropertyProvider FALSE = new MyTokenPropertyProvider(Boolean.FALSE);
  * 
- *       public Object getValue(Token token, Object tokenStoreKey, Object tokenStoreValue) {
- *           // Assuming that the appropriate tokenStoreValue was passed to
- *           // TokenFactory.createPropertyToken(id, length, propertyProvider, tokenStoreValue);
- *           return tokenStoreValue;
- *       }
- * 
- *       public Object tokenStoreKey() {
- *           return "key";
- *       }
- * 
- *    }
- *    </pre>
- *  </li>
- * 
- *  <li>
- *    Multiple flyweight instances of the provider.
- *    This might be useful if there is just several values for the property.
- *    <br/>
- *    Example of two instances of a provider for "key":
- *    <pre>
- *    final class MyTokenPropertyProvider implements TokenPropertyProvider {
- * 
- *       static final MyTokenPropertyProvider TRUE = new MyTokenPropertyProvider(Boolean.TRUE);
- * 
- *       static final MyTokenPropertyProvider FALSE = new MyTokenPropertyProvider(Boolean.FALSE);
- * 
- *       private final Boolean value;
- * 
- *       private MyTokenPropertyProvider(Boolean value) {
- *           this.value = value;
- *       }
+ *     private final Boolean value;
  *
- *       public Object getValue(Token token, Object key) {
- *           if ("key".equals(key)) {
- *               return value;
- *           }
- *           return null;
- *       }
- * 
- *       public Object getValue(Token token, Object tokenStoreKey, Object tokenStoreValue) {
- *           return null; // not using token's storage
- *       }
- * 
- *       public Object tokenStoreKey() {
- *           return null; // not using token's storage
- *       }
- * 
- *    }
- *    </pre>
- *  </li>
- * </ul>
+ *     private MyTokenPropertyProvider(Boolean value) {
+ *         this.value = value;
+ *     }
  *
+ *     public Object getValue(Token token, Object key) {
+ *         if ("key".equals(key)) {
+ *             return value;
+ *         }
+ *         return null;
+ *     }
+ *
+ * }
+ * </pre>
+ * <br/>
+ * A special kind of token <code>PropertyToken</code> allows to carry token properties.
  *
  * @author Miloslav Metelka
  * @version 1.00
@@ -148,41 +80,13 @@ import org.netbeans.api.lexer.TokenId;
 public interface TokenPropertyProvider<T extends TokenId> {
     
     /**
-     * Get value of a property which is not a token-store property.
+     * Get value of a token property.
      *
      * @param token non-null token for which the property is being retrieved.
+     *  It might be useful if the property would be computed dynamically.
      * @param key non-null key for which the value should be retrieved.
      * @return value of the property or null if there is no value for the given key.
      */
     Object getValue(Token token, Object key);
-
-    /**
-     * Get value of a token-store property.
-     * <br/>
-     * This method is only invoked if {@link #tokenStoreKey()} returned non-null value.
-     * <br/>
-     * When called for the first time the <code>tokenStoreValue</code>
-     * will have the value given to
-     * {@link TokenFactory#createPropertyToken(TokenId,int,TokenPropertyProvider,Object)}.
-     * <br/>
-     * For subsequent invocations of this method the value returned from
-     * a last call to it (for the given token) will be used.
-     *
-     * @param token non-null token for which the property is being retrieved.
-     * @param tokenStoreKey non-null key for which the value should be retrieved.
-     * @param tokenStoreValue value that was is currently stored in the token.
-     * @return value for the tokenStoreKey. The value will be both returned
-     *  and stored in the token.
-     */
-    Object getValue(Token token, Object tokenStoreKey, Object tokenStoreValue);
-    
-    /**
-     * Get a key of the property that is stored in the token.
-     *
-     * @return key of the property which is stored in the token itself
-     *  or null if the property provider does not want any property
-     *  to be stored in the token.
-     */
-    Object tokenStoreKey();
 
 }

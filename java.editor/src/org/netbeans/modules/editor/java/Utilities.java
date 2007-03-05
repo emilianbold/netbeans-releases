@@ -101,19 +101,15 @@ public class Utilities {
                 if (ts.token().text().charAt(0) == '.')
                     break;
             case CHAR_LITERAL:
-            case CHAR_LITERAL_INCOMPLETE:
             case FLOAT_LITERAL:
             case FLOAT_LITERAL_INVALID:
             case INT_LITERAL:
             case INVALID_COMMENT_END:
             case JAVADOC_COMMENT:
-            case JAVADOC_COMMENT_INCOMPLETE:
             case LONG_LITERAL:
             case STRING_LITERAL:
-            case STRING_LITERAL_INCOMPLETE:
             case LINE_COMMENT:
             case BLOCK_COMMENT:
-            case BLOCK_COMMENT_INCOMPLETE:
                 return false;
         }
         return true;

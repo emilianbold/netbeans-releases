@@ -20,6 +20,7 @@
 package org.netbeans.lib.java.lexer;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -79,7 +80,8 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                             case '\r': input.consumeNewline();
                             case '\n':
                             case EOF:
-                                return token(JavaTokenId.STRING_LITERAL_INCOMPLETE);
+                                return tokenFactory.createToken(JavaTokenId.STRING_LITERAL,
+                                        input.readLength(), PartType.START);
                         }
 
                 case '\'': // char literal
@@ -93,7 +95,8 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                             case '\r': input.consumeNewline();
                             case '\n':
                             case EOF:
-                                return token(JavaTokenId.CHAR_LITERAL_INCOMPLETE);
+                                return tokenFactory.createToken(JavaTokenId.CHAR_LITERAL,
+                                        input.readLength(), PartType.START);
                         }
 
                 case '/':
@@ -120,10 +123,12 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                                             if (c == '/')
                                                 return token(JavaTokenId.JAVADOC_COMMENT);
                                             else if (c == EOF)
-                                                return token(JavaTokenId.JAVADOC_COMMENT_INCOMPLETE);
+                                                return tokenFactory.createToken(JavaTokenId.JAVADOC_COMMENT,
+                                                        input.readLength(), PartType.START);
                                         }
                                         if (c == EOF)
-                                            return token(JavaTokenId.JAVADOC_COMMENT_INCOMPLETE);
+                                            return tokenFactory.createToken(JavaTokenId.JAVADOC_COMMENT,
+                                                        input.readLength(), PartType.START);
                                         c = input.read();
                                     }
 
@@ -135,10 +140,12 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                                         if (c == '/')
                                             return token(JavaTokenId.BLOCK_COMMENT);
                                         else if (c == EOF)
-                                            return token(JavaTokenId.BLOCK_COMMENT_INCOMPLETE);
+                                            return tokenFactory.createToken(JavaTokenId.BLOCK_COMMENT,
+                                                    input.readLength(), PartType.START);
                                     }
                                     if (c == EOF)
-                                        return token(JavaTokenId.BLOCK_COMMENT_INCOMPLETE);
+                                        return tokenFactory.createToken(JavaTokenId.BLOCK_COMMENT,
+                                                input.readLength(), PartType.START);
                                 }
                             }
                     } // end of switch()

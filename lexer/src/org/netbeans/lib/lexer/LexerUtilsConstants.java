@@ -257,16 +257,6 @@ public final class LexerUtilsConstants {
             || (state1 != null && state1.equals(state2));
     }
     
-    public static <T extends TokenId> Object getTokenProperty(Token<T> token,
-    TokenPropertyProvider propertyProvider, Object key, Object tokenStoreValue) {
-        Object tokenStoreKey = propertyProvider.tokenStoreKey();
-        if (tokenStoreKey != null && tokenStoreKey.equals(key)) { // token store value
-            return propertyProvider.getValue(token, tokenStoreKey, tokenStoreValue);
-        } else {
-            return propertyProvider.getValue(token, key);
-        }
-    }
-    
     public static String idToString(TokenId id) {
         return id.name() + '[' + id.ordinal() + ']'; // NOI18N;
     }

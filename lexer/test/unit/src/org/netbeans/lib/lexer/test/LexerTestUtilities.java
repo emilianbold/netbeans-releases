@@ -217,6 +217,7 @@ public final class LexerTestUtilities {
             TestCase.assertEquals(message + "Invalid token.state()", state(ts), state(ts2));
         }
         TestCase.assertEquals(message + "Invalid token length", t.length(), t2.length());
+        TestCase.assertEquals(message + "Invalid token part", t.partType(), t2.partType());
     }
     
     /**

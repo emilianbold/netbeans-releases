@@ -20,13 +20,15 @@
 package org.netbeans.lib.lexer.token;
 
 import org.netbeans.api.lexer.PartType;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.PreprocessedTextStorage;
+import org.netbeans.spi.lexer.CharPreprocessor;
 import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
- * Token that holds information about preprocessed characters.
+ * Token that holds information about preprocessed characters
+ * and also carries properties.
  *
  * <p>
  * Instances of this token are more costly than other token types
@@ -37,19 +39,22 @@ import org.netbeans.spi.lexer.TokenPropertyProvider;
  * @version 1.00
  */
 
-public final class PropertyToken<T extends TokenId> extends DefaultToken<T> {
+public final class ComplexToken<T extends TokenId> extends PreprocessedTextToken<T> {
+
+    private final TokenPropertyProvider propertyProvider; // 36 bytes (32-super + 4)
+
+    private final CharSequence customText; // 40 bytes
     
-    private final TokenPropertyProvider propertyProvider; // 28 bytes (24-super + 4)
-    
-    private final PartType partType; // 32 bytes
-    
-    public PropertyToken(T id, int length,
-    TokenPropertyProvider propertyProvider, PartType partType) {
+    private final PartType partType; // 44 bytes
+
+    public ComplexToken(T id, int length,
+    TokenPropertyProvider propertyProvider, CharSequence customText, PartType partType) {
         super(id, length);
         this.propertyProvider = propertyProvider;
+        this.customText = customText;
         this.partType = partType;
     }
-    
+
     @Override
     public boolean hasProperties() {
         return (propertyProvider != null);
@@ -61,13 +66,18 @@ public final class PropertyToken<T extends TokenId> extends DefaultToken<T> {
     }
     
     @Override
+    public CharSequence text() {
+        return (customText != null) ? customText : super.text();
+    }
+    
+    @Override
     public PartType partType() {
         return partType;
     }
 
     @Override
     protected String dumpInfoTokenType() {
-        return "ProT"; // NOI18N "PrepToken"
+        return "PPrT"; // NOI18N "PrepToken"
     }
     
 }

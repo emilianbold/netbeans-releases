@@ -194,6 +194,12 @@ public abstract class Token<T extends TokenId> {
      * @return true if the token is flyweight or false otherwise.
      */
     public abstract boolean isFlyweight();
+    
+    /**
+     * Check whether this token represents a complete token
+     * or whether it's a part of a complete token.
+     */
+    public abstract PartType partType();
 
     /**
      * Check whether this token has preprocessed text

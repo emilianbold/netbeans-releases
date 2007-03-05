@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import org.netbeans.api.java.lexer.JavaStringTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -55,7 +56,8 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.BLOCK_COMMENT, "/**/");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.JAVADOC_COMMENT, "/***/");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.JAVADOC_COMMENT, "/**\n*javadoc-comment*/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.BLOCK_COMMENT_INCOMPLETE, "/* a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.BLOCK_COMMENT, "/* a");
+        assertEquals(PartType.START, ts.token().partType());
     }
     
     public void testIdentifiers() {
@@ -95,7 +97,8 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.CHAR_LITERAL, "'\\n'");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.CHAR_LITERAL_INCOMPLETE, "'a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.CHAR_LITERAL, "'a");
+        assertEquals(PartType.START, ts.token().partType());
     }
     
     public void testStringLiterals() {
@@ -115,7 +118,8 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.STRING_LITERAL, "\"\\n\"");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.STRING_LITERAL_INCOMPLETE, "\"a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.STRING_LITERAL, "\"a");
+        assertEquals(PartType.START, ts.token().partType());
     }
     
     public void testNumberLiterals() {

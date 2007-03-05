@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.token;
 
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
 
 /**
@@ -32,24 +33,29 @@ import org.netbeans.api.lexer.TokenId;
  */
 
 public class CustomTextToken<T extends TokenId> extends DefaultToken<T> {
-
+    
     private final CharSequence text; // 28 bytes (24-super + 4)
-
+    
+    private final PartType partType; // 32 bytes
+    
     /**
      * @param id non-null identification of the token.
      * @param length length of the token.
      * @param text non-null text of the token.
      */
-    public CustomTextToken(T id, int length, CharSequence text) {
+    public CustomTextToken(T id, int length, CharSequence text, PartType partType) {
         super(id, length);
         assert (text != null);
         this.text = text;
+        this.partType = partType;
     }
-
+    
+    @Override
     public final CharSequence text() {
         return text;
     }
     
+    @Override
     protected String dumpInfoTokenType() {
         return "CusT"; // NOI18N "TextToken" or "FlyToken"
     }

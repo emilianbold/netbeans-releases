@@ -42,7 +42,7 @@ public class WhitespaceIgnoringDiff implements Diff {
     public WhitespaceIgnoringDiff() {
     }
 
-    private Set<JavaTokenId> IGNORED_TOKENS = EnumSet.of(JavaTokenId.WHITESPACE, JavaTokenId.LINE_COMMENT, JavaTokenId.BLOCK_COMMENT, JavaTokenId.BLOCK_COMMENT_INCOMPLETE, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.JAVADOC_COMMENT_INCOMPLETE);
+    private Set<JavaTokenId> IGNORED_TOKENS = EnumSet.of(JavaTokenId.WHITESPACE, JavaTokenId.LINE_COMMENT, JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT);
     
     public boolean diff(File first, File second, File diff) throws IOException {
         boolean result = diffImpl(first, second);

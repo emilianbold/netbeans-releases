@@ -69,10 +69,12 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
         this.text = text;
     }
 
+    @Override
     public final int length() {
         return text.length();
     }
 
+    @Override
     public final CharSequence text() {
         return text;
     }
@@ -81,6 +83,7 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
         return new TextToken<T>(id(), tokenList, rawOffset, text());
     }
     
+    @Override
     protected String dumpInfoTokenType() {
         return isFlyweight() ? "FlyT" : "TexT"; // NOI18N "TextToken" or "FlyToken"
     }

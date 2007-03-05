@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
@@ -232,14 +233,14 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 tokenId,
                 v.endOffset - v.startOffset,
                 (TokenProperties) v.property,
-                null
+                PartType.COMPLETE
             );
         else
             return tokenFactory.createPropertyToken (
                 tokenId,
                 v.endOffset - v.startOffset,
-                tokenPropertyProvider,
-                v.property
+                new TokenPropProvider(v.property),
+                PartType.COMPLETE
             );
     }
         
@@ -264,22 +265,21 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     // innerclasses ............................................................
     
-    private static TokenPropertyProvider tokenPropertyProvider = new TokenPropertyProvider () {
+    private static final class TokenPropProvider implements TokenPropertyProvider {
+        
+        private final Object value;
+        
+        TokenPropProvider(Object value) {
+            this.value = value;
+        }
         
         public Object getValue (Token token, Object key) {
+            if ("type".equals(key))
+                return value;
             return null;
         }
 
-        public Object getValue (Token token, Object tokenStoreKey, Object tokenStoreValue) {
-            if (tokenStoreKey.equals ("type"))
-                return tokenStoreValue;
-            return null;
-        }
-
-        public Object tokenStoreKey() {
-            return "type";
-        }
-    };
+    }
     
     static class TokenProperties implements TokenPropertyProvider {
         
@@ -304,13 +304,6 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             return null;
         }
 
-        public Object getValue (Token token, Object tokenStoreKey, Object tokenStoreValue) {
-            return null;
-        }
-
-        public Object tokenStoreKey() {
-            return null;
-        }
     };
     
     static class Vojta {

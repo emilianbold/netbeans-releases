@@ -3,7 +3,7 @@ BLOCK_COMMENT   "/*ml-comment*/"
 BLOCK_COMMENT   "/**/"
 JAVADOC_COMMENT  "/***/"
 JAVADOC_COMMENT  "/**\n*javadoc-comment*/"
-BLOCK_COMMENT_INCOMPLETE  "/* a", la=1
+BLOCK_COMMENT   "/* a", la=1
 ----- EOF -----
 
 .t.e.s.t. Identifiers
@@ -37,7 +37,7 @@ CHAR_LITERAL    "'\\\\\\''"
 WHITESPACE      " ", la=1
 CHAR_LITERAL    "'\\n'"
 WHITESPACE      " ", la=1
-CHAR_LITERAL_INCOMPLETE  "'a", la=1
+CHAR_LITERAL    "'a", la=1
 ----- EOF -----
 
 .t.e.s.t. String Literals
@@ -51,7 +51,7 @@ STRING_LITERAL  ""\\\\""
 WHITESPACE      "\n", la=1
 STRING_LITERAL  ""\\\\\\\\\\\\\\"\\"""
 WHITESPACE      "\n", la=1
-STRING_LITERAL_INCOMPLETE  ""\\n\\" \\"a", la=1
+STRING_LITERAL  ""\\n\\" \\"a", la=1
 ----- EOF -----
 
 .t.e.s.t. Number Literals

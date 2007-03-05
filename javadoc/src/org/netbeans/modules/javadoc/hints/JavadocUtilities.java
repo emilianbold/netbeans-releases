@@ -21,6 +21,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -578,7 +579,6 @@ public class JavadocUtilities {
         IGNORE_TOKES = new HashSet<TokenId>();
         IGNORE_TOKES.add(JavaTokenId.WHITESPACE);
         IGNORE_TOKES.add(JavaTokenId.BLOCK_COMMENT);
-        IGNORE_TOKES.add(JavaTokenId.BLOCK_COMMENT_INCOMPLETE);
     }
 
 }

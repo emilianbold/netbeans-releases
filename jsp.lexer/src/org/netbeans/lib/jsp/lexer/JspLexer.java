@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.netbeans.spi.lexer.Lexer;
@@ -1112,7 +1113,8 @@ public class JspLexer implements Lexer<JspTokenId> {
                 throw new IllegalStateException("Unsupported scriptlet type " + lexerStateJspScriptlet);
         }
         
-        return tokenFactory.createPropertyToken(tokenId, input.readLength(), new JspTokenPropertyProvider(), scriptletType);
+        return tokenFactory.createPropertyToken(tokenId, input.readLength(),
+                new JspTokenPropertyProvider(scriptletType), PartType.COMPLETE);
     }
     
     private void checkToken(JspTokenId tokenId) {
@@ -1127,19 +1129,19 @@ public class JspLexer implements Lexer<JspTokenId> {
     
     private static class JspTokenPropertyProvider implements TokenPropertyProvider {
         
+        private final JspTokenId.JavaCodeType scriptletType;
+        
+        JspTokenPropertyProvider(JspTokenId.JavaCodeType scriptletType) {
+            this.scriptletType = scriptletType;
+        }
+
         public Object getValue(Token token, Object key) {
+            if (JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY.equals(key))
+                return scriptletType;
             return null;
         }
 
-        public Object getValue(Token token, Object tokenStoreKey,
-                               Object tokenStoreValue) {
-            return tokenStoreValue;
-        }
-
-        public Object tokenStoreKey() {
-            return JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY;
-        }
-}
+    }
     
 }
 

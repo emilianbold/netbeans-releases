@@ -25,12 +25,13 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.GapList;
+import org.netbeans.lib.lexer.token.ComplexToken;
+import org.netbeans.lib.lexer.token.PreprocessedTextToken;
 import org.netbeans.spi.lexer.CharPreprocessor;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
-import org.netbeans.lib.lexer.token.PreprocessedTextToken;
-import org.netbeans.lib.lexer.token.PropertyCustomTextToken;
+import org.netbeans.lib.lexer.token.ComplexToken;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
@@ -318,8 +319,8 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
         PreprocessedTextStorage storage = preprocessorOperation.createPreprocessedTextStorage(
                 token.text(), extraPreprocessedChars);
         
-        if (token.getClass() == PropertyCustomTextToken.class) {
-            ((PropertyCustomTextToken)token).initPrep(storage, error);
+        if (token.getClass() == ComplexToken.class) {
+            ((ComplexToken)token).initPrep(storage, error);
         } else {
             ((PreprocessedTextToken)token).initPrep(storage, error);
         }

@@ -20,6 +20,7 @@
 package org.netbeans.spi.lexer;
 
 import java.util.Set;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -28,9 +29,9 @@ import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.TokenIdImpl;
 import org.netbeans.lib.lexer.token.CustomTextToken;
 import org.netbeans.lib.lexer.token.DefaultToken;
+import org.netbeans.lib.lexer.token.ComplexToken;
 import org.netbeans.lib.lexer.token.PreprocessedTextToken;
-import org.netbeans.lib.lexer.token.PropertyCustomTextToken;
-import org.netbeans.lib.lexer.token.PropertyPreprocessedTextToken;
+import org.netbeans.lib.lexer.token.ComplexToken;
 import org.netbeans.lib.lexer.token.PropertyToken;
 import org.netbeans.lib.lexer.token.TextToken;
 
@@ -104,6 +105,39 @@ public final class TokenFactory<T extends TokenId> {
     }
 
     /**
+     * Create regular token instance with an explicit length and part type.
+     *
+     * @param id non-null token id recognized by the lexer.
+     * @param length >=0 length of the token to be created. The length must not
+     *  exceed the number of characters read from the lexer input.
+     * @param partType whether this token is complete token or a part of a complete token.
+     * @return non-null regular token instance.
+     *  <br/>
+     *  If there were any characters preprocessed by {@link CharPreprocessor}
+     *  then a special token instance will be created for it.
+     *  <br/>
+     *  {@link #SKIP_TOKEN} will be returned
+     *  if tokens for the given token id should be skipped
+     *  because of token id filter.
+     */
+    public Token<T> createToken(T id, int length, PartType partType) {
+        checkPartTypeNonNull(partType);
+        if (partType == PartType.COMPLETE)
+            return createToken(id, length);
+
+        if (isSkipToken(id)) {
+            operation.tokenRecognized(length, true);
+            return skipToken();
+        } else { // Do not skip the token
+            if (operation.tokenRecognized(length, false)) { // Create preprocessed token
+                return new ComplexToken<T>(id, operation.tokenLength(), null, null, partType);
+            } else {
+                return new PropertyToken<T>(id, operation.tokenLength(), null, partType);
+            }
+        }
+    }
+
+    /**
      * Get flyweight token for the given arguments.
      * <br/>
      * <b>Note:</b> The returned token will not be flyweight under certain
@@ -165,9 +199,7 @@ public final class TokenFactory<T extends TokenId> {
      * @param length >=0 length of the token to be created. The length must not
      *  exceed the number of characters read from the lexer input.
      * @param propertyProvider non-null token property provider.
-     * @param tokenStoreValue explicit value for property stored in the token itself
-     *  or null if there is no explicit value (value will be computed lazily when asked).
-     *  <br/>
+     * @param partType whether this token is complete or just a part of complete token.
      *  See {@link TokenPropertyProvider} for examples how this parameter may be used.
      * @return non-null property token instance.
      *  <br/>
@@ -179,17 +211,18 @@ public final class TokenFactory<T extends TokenId> {
      *  because of token id filter.
      */
     public Token<T> createPropertyToken(T id, int length,
-    TokenPropertyProvider propertyProvider, Object tokenStoreValue) {
+    TokenPropertyProvider propertyProvider, PartType partType) {
+        checkPartTypeNonNull(partType);
         if (isSkipToken(id)) {
             operation.tokenRecognized(length, true);
             return skipToken();
         } else { // Do not skip the token
             if (operation.tokenRecognized(length, false)) { // Create preprocessed token
-                return new PropertyPreprocessedTextToken<T>(id, operation.tokenLength(),
-                    propertyProvider, tokenStoreValue);
+                return new ComplexToken<T>(id, operation.tokenLength(),
+                    propertyProvider, null, partType);
             } else {
                 return new PropertyToken<T>(id, operation.tokenLength(),
-                    propertyProvider, tokenStoreValue);
+                    propertyProvider, partType);
             }
         }
     }
@@ -198,16 +231,16 @@ public final class TokenFactory<T extends TokenId> {
      * Create token with a custom text that possibly differs from the text
      * represented by the token in the input text.
      */
-    public Token<T> createCustomTextToken(T id, CharSequence text, int length) {
+    public Token<T> createCustomTextToken(T id, CharSequence text, int length, PartType partType) {
+        checkPartTypeNonNull(partType);
         if (isSkipToken(id)) {
             operation.tokenRecognized(length, true);
             return skipToken();
         } else { // Do not skip the token
             if (operation.tokenRecognized(length, false)) { // Create preprocessed token
-                return new PropertyCustomTextToken<T>(id,
-                        operation.tokenLength(), text, null, null);
+                return new ComplexToken<T>(id, operation.tokenLength(), null, text, partType);
             } else {
-                return new CustomTextToken<T>(id, operation.tokenLength(), text);
+                return new CustomTextToken<T>(id, operation.tokenLength(), text, partType);
             }
         }
     }
@@ -220,6 +253,11 @@ public final class TokenFactory<T extends TokenId> {
     @SuppressWarnings("unchecked") // NOI18N
     private Token<T> skipToken() {
         return SKIP_TOKEN;
+    }
+    
+    private void checkPartTypeNonNull(PartType partType) {
+        if (partType == null)
+            throw new IllegalArgumentException("partType must be non-null");
     }
     
 }

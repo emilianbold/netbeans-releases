@@ -90,6 +90,10 @@ public class CustomTokenClassTest extends NbTestCase {
             return false;
         }
         
+        public PartType partType() {
+            return null;
+        }
+        
     }
 
 }

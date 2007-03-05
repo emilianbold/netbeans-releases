@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.token;
 
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -63,6 +64,7 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
      *
      * @return non-null identification of this token.
      */
+    @Override
     public final T id() {
         return id;
     }
@@ -70,6 +72,7 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
     /**
      * Get text represented by this token.
      */
+    @Override
     public CharSequence text() {
         if (tokenList != null) {
             if (tokenList.getClass() == EmbeddedTokenList.class) {
@@ -113,6 +116,7 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         this.rawOffset = rawOffset;
     }
 
+    @Override
     public final boolean isFlyweight() {
         return (rawOffset == -1);
     }
@@ -121,10 +125,17 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         setRawOffset(-1);
     }
     
+    @Override
+    public PartType partType() {
+        return PartType.COMPLETE;
+    }
+
+    @Override
     public boolean isCustomText() {
         return false;
     }
 
+    @Override
     public final int offset(TokenHierarchy<?> tokenHierarchy) {
         if (rawOffset == -1) { // flyweight token
             return -1;
@@ -140,26 +151,32 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         }
     }
     
+    @Override
     public boolean isPreprocessedText() {
         return false;
     }
     
+    @Override
     public CharSequence preprocessedText() {
         return null;
     }
     
+    @Override
     public String preprocessError() {
         return null;
     }
 
+    @Override
     public int preprocessErrorIndex() {
         return -1;
     }
     
+    @Override
     public boolean hasProperties() {
         return false;
     }
     
+    @Override
     public Object getProperty(Object key) {
         return null;
     }

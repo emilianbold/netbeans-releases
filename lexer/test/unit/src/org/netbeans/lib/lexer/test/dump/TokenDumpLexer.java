@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.test.dump;
 
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -182,7 +183,7 @@ final class TokenDumpLexer implements Lexer<TokenDumpTokenId> {
                 case EOF:
                     input.backup(1);
                     return tokenFactory.createPropertyToken(id, input.readLength(),
-                        UnicodeCharValueProvider.INSTANCE, new Character(ch));
+                        new UnicodeCharValueProvider(new Character(ch)), PartType.COMPLETE);
             }
         }
         input.backup(1);
@@ -198,18 +199,16 @@ final class TokenDumpLexer implements Lexer<TokenDumpTokenId> {
 
     private static final class UnicodeCharValueProvider implements TokenPropertyProvider {
         
-        static final UnicodeCharValueProvider INSTANCE = new UnicodeCharValueProvider();
+        private Character ch;
+        
+        UnicodeCharValueProvider(Character ch) {
+            this.ch = ch;
+        }
         
         public Object getValue(Token token, Object key) {
+            if (TokenDumpTokenId.UNICODE_CHAR_TOKEN_PROPERTY.equals(key))
+                return ch;
             return null; // no non-tokenStore value
-        }
-        
-        public Object getValue(Token token, Object tokenStoreKey, Object tokenStoreValue) {
-            return tokenStoreValue;
-        }
-        
-        public Object tokenStoreKey() {
-            return TokenDumpTokenId.UNICODE_CHAR_TOKEN_PROPERTY;
         }
         
     }

@@ -58,10 +58,12 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
         this.length = 0;
     }
 
+    @Override
     public final int length() {
         return length;
     }
 
+    @Override
     protected String dumpInfoTokenType() {
         return "DefT"; // NOI18N "TextToken" or "FlyToken"
     }
