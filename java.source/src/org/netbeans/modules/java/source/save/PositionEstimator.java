@@ -19,10 +19,10 @@
 package org.netbeans.modules.java.source.save;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCImport;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -44,15 +44,26 @@ import org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType;
  */
 abstract class PositionEstimator {
     
+    final List<? extends Tree> oldL;
+    final List<? extends Tree> newL;
+    final WorkingCopy copy;
+    boolean initialized;
+    final TokenSequence<JavaTokenId> seq;
+
+    PositionEstimator(final List<? extends Tree> oldL, final List<? extends Tree> newL, final WorkingCopy copy) {
+        this.oldL = oldL;
+        this.newL = newL;
+        this.copy = copy;
+        this.seq = copy != null ? copy.getTokenHierarchy().tokenSequence() : null;
+        initialized = false;
+    }
+        
     int[][] matrix;
     
     /**
-     * Initialize data for provided list.
-     *
-     * @param  oldL  list of existing elements, i.e. imports, members etc.
-     * @param  copy  copy used for obtaining positions, tokens etc.
+     * Initialize data for provided lists.
      */
-    public abstract void initialize(List<? extends JCTree> oldL, WorkingCopy copy);
+    protected abstract void initialize();
 
     /**
      * Computes the offset position when inserting to {@code index}.
@@ -81,8 +92,17 @@ abstract class PositionEstimator {
      * @param   aTail     buffer where tail formatting stuff will be added
      * @return  position where to start
      */
-    public abstract int prepare(final int startPos, StringBuilder aHead, StringBuilder aTail);
+    abstract int prepare(final int startPos, StringBuilder aHead, StringBuilder aTail);
 
+    /**
+     * Returns of whole section. Used, when all item in the list are removed,
+     * e.g. when all imports are removed.
+     * 
+     * @param  replacement can contain the text which will replace the whole
+     *         section
+     * 
+     * @return start offset and end offset of the section
+     */
     public abstract int[] sectionRemovalBounds(StringBuilder replacement);
             
     /**
@@ -97,25 +117,37 @@ abstract class PositionEstimator {
     public abstract String getIndentString();
     
     // remove the method after all calls will be refactored!
-    public int[][] getMatrix() { return matrix; }
+    public int[][] getMatrix() { 
+        if (!initialized) initialize();
+        return matrix; 
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // implementors
     static class ImplementsEstimator extends BaseEstimator {
-        ImplementsEstimator() {
-            super(IMPLEMENTS);
+        ImplementsEstimator(List<? extends Tree> oldL, 
+                            List<? extends Tree> newL,
+                            WorkingCopy copy)
+        {
+            super(IMPLEMENTS, oldL, newL, copy);
         }
     }
     
     static class ExtendsEstimator extends BaseEstimator {
-        ExtendsEstimator() {
-            super(EXTENDS);
+        ExtendsEstimator(List<? extends Tree> oldL, 
+                         List<? extends Tree> newL,
+                         WorkingCopy copy)
+        {
+            super(EXTENDS, oldL, newL, copy);
         }
     }
     
     static class ThrowsEstimator extends BaseEstimator {
-        ThrowsEstimator() {
-            super(THROWS);
+        ThrowsEstimator(List<? extends ExpressionTree> oldL, 
+                        List<? extends ExpressionTree> newL,
+                        WorkingCopy copy)
+        {
+            super(THROWS, oldL, newL, copy);
         }
     }
 
@@ -125,22 +157,12 @@ abstract class PositionEstimator {
      */
     static class ImportsEstimator extends PositionEstimator {
         
-        private final List<JCImport> oldL;
-        private final List<JCImport> newL;
-        private final WorkingCopy copy;
-        private boolean initialized;
-        private final TokenSequence<JavaTokenId> seq;
-        
-        public ImportsEstimator(final List<JCImport> oldL, final List<JCImport> newL, final WorkingCopy copy) {
-            this.oldL = oldL;
-            this.newL = newL;
-            this.copy = copy;
-            this.seq = copy.getTokenHierarchy().tokenSequence();
-            initialized = false;
+        public ImportsEstimator(final List<? extends ImportTree> oldL, final List<? extends ImportTree> newL, final WorkingCopy copy) {
+            super(oldL, newL, copy);
         }
 
         @Override()
-        public void initialize(List<? extends JCTree> unusedOldL, WorkingCopy wc) { // parameters should be removed
+        public void initialize() {
             int size = oldL.size();
             matrix = new int[size+1][3];
             matrix[size] = new int[] { -1, -1, -1 };
@@ -148,7 +170,7 @@ abstract class PositionEstimator {
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             int i = 0;
             
-            for (JCTree item : oldL) {
+            for (Tree item : oldL) {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
                 
@@ -175,7 +197,7 @@ abstract class PositionEstimator {
 
         @Override()
         public int getInsertPos(int index) {
-            if (!initialized) initialize(null, null);
+            if (!initialized) initialize();
             int tokenIndex = matrix[index][0];
             // cannot do any decision about the position - probably first
             // element is inserted, no information is available. Call has
@@ -190,6 +212,7 @@ abstract class PositionEstimator {
         // do decision about adding new lines.
         @Override()
         public int prepare(final int startPos, StringBuilder aHead, StringBuilder aTail) {
+            if (!initialized) initialize();
             CompilationUnitTree cut = copy.getCompilationUnit();
             int resultPos = 0;
             if (cut.getTypeDecls().isEmpty()) {
@@ -236,7 +259,7 @@ abstract class PositionEstimator {
         
         @Override()
         public int[] getPositions(int index) {
-            if (!initialized) initialize(null, null);
+            if (!initialized) initialize();
             int tokenIndex = matrix[index][0];
             if (tokenIndex != -1) {
                 seq.moveIndex(tokenIndex);
@@ -307,18 +330,22 @@ abstract class PositionEstimator {
      */
     static class MembersEstimator extends PositionEstimator {
         
-        TokenSequence<JavaTokenId> seq;
+        public MembersEstimator(final List<? extends Tree> oldL, 
+                                final List<? extends Tree> newL, 
+                                final WorkingCopy copy)
+        {
+            super(oldL, newL, copy);
+        }
         
-        public void initialize(List<? extends JCTree> oldL, WorkingCopy copy) {
+        public void initialize() {
             int size = oldL.size();
             matrix = new int[size+1][5];
             matrix[size] = new int[] { -1, -1, -1, -1, -1 };
-            seq = copy.getTokenHierarchy().tokenSequence();
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             int i = 0;
             
-            for (JCTree item : oldL) {
+            for (Tree item : oldL) {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
                 if (treeEnd < 0) {
@@ -361,10 +388,12 @@ abstract class PositionEstimator {
                     matrix[i][2] = seq.index();
                 }
             }
+            initialized = true;
         }
         
         @Override()
         public int getInsertPos(int index) {
+            if (!initialized) initialize();
             int tokenIndex = matrix[index][2];
             // cannot do any decision about the position - probably first
             // element is inserted, no information is available. Call has
@@ -382,6 +411,7 @@ abstract class PositionEstimator {
         public String getIndentString() { return ""; }
         
         public int[] getPositions(int index) {
+            if (!initialized) initialize();
             int begin = getInsertPos(index);
             if (matrix[index][4] != -1) {
                 seq.moveIndex(matrix[index][4]);
@@ -411,18 +441,22 @@ abstract class PositionEstimator {
      */
     static class TopLevelEstimator extends PositionEstimator {
         
-        TokenSequence<JavaTokenId> seq;
-        
-        public void initialize(List<? extends JCTree> oldL, WorkingCopy copy) {
+        public TopLevelEstimator(List<? extends Tree> oldL, 
+                                 List<? extends Tree> newL,
+                                 WorkingCopy copy)
+        {
+            super(oldL, newL, copy);
+        }
+
+        public void initialize() {
             int size = oldL.size();
             matrix = new int[size+1][5];
             matrix[size] = new int[] { -1, -1, -1, -1, -1 };
-            seq = copy.getTokenHierarchy().tokenSequence();
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             int i = 0;
             
-            for (JCTree item : oldL) {
+            for (Tree item : oldL) {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
                 // stupid hack, we have to remove syntetic constructors --
@@ -448,6 +482,7 @@ abstract class PositionEstimator {
         
         @Override()
         public int getInsertPos(int index) {
+            if (!initialized) initialize();
             int tokenIndex = matrix[index][2];
             // cannot do any decision about the position - probably first
             // element is inserted, no information is available. Call has
@@ -466,6 +501,7 @@ abstract class PositionEstimator {
         public String getIndentString() { return ""; }
         
         public int[] getPositions(int index) {
+            if (!initialized) initialize();
             int begin = getInsertPos(index);
             if (matrix[index][4] != -1) {
                 seq.moveIndex(matrix[index][4]);
@@ -495,14 +531,19 @@ abstract class PositionEstimator {
         JavaTokenId precToken;
         private ArrayList<String> separatorList;
 
-        private BaseEstimator(JavaTokenId precToken) {
+        private BaseEstimator(JavaTokenId precToken,
+                List<? extends Tree> oldL,
+                List<? extends Tree> newL,
+                WorkingCopy copy)
+        {
+            super(oldL, newL, copy);
             this.precToken = precToken;
         }
         
         public String head() { return " " + precToken.fixedText() + " "; }
         public String sep()  { return ", "; }
         
-        public void initialize(List<? extends JCTree> oldL, WorkingCopy copy) {
+        public void initialize() {
             separatorList = new ArrayList<String>(oldL.size());
             boolean first = true;
             int size = oldL.size();
@@ -512,7 +553,7 @@ abstract class PositionEstimator {
             int i = 0;
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
-            for (JCTree item : oldL) {
+            for (Tree item : oldL) {
                 String separatedText = "";
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
@@ -555,9 +596,11 @@ abstract class PositionEstimator {
                 }
                 seq.move(treeEnd);
             }
+            initialized = true;
         }
         
         public String getIndentString() {
+            if (!initialized) initialize();
             Map<String, Integer> map = new HashMap<String, Integer>();
             for (String item : separatorList) {
                 String s = item;

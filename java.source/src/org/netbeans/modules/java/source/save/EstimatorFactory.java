@@ -18,12 +18,9 @@
  */
 package org.netbeans.modules.java.source.save;
 
-import com.sun.source.tree.ImportTree;
-import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.source.tree.*;
 import java.util.List;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.lexer.TokenSequence;
 
 /**
  * Factory used for creating instances of position provider.
@@ -36,24 +33,39 @@ final class EstimatorFactory {
     private EstimatorFactory() {
     }
     
-    static PositionEstimator throwz() {
-        return new PositionEstimator.ThrowsEstimator();
+    static PositionEstimator throwz(List<? extends ExpressionTree> oldL, 
+                                    List<? extends ExpressionTree> newL,
+                                    WorkingCopy copy)
+    {
+        return new PositionEstimator.ThrowsEstimator(oldL, newL, copy);
     }
     
-    static PositionEstimator implementz() {
-        return new PositionEstimator.ImplementsEstimator();
+    static PositionEstimator implementz(List<? extends Tree> oldL, 
+                                        List<? extends Tree> newL,
+                                        WorkingCopy copy)
+    {
+        return new PositionEstimator.ImplementsEstimator(oldL, newL, copy);
     }
     
-    static PositionEstimator extendz() {
-        return new PositionEstimator.ExtendsEstimator();
+    static PositionEstimator extendz(List<? extends Tree> oldL, 
+                                     List<? extends Tree> newL,
+                                     WorkingCopy copy)
+    {
+        return new PositionEstimator.ExtendsEstimator(oldL, newL, copy);
     }
     
-    static PositionEstimator members() {
-        return new PositionEstimator.MembersEstimator();
+    static PositionEstimator members(List<? extends Tree> oldL, 
+                                     List<? extends Tree> newL,
+                                     WorkingCopy copy)
+    {
+        return new PositionEstimator.MembersEstimator(oldL, newL, copy);
     }
     
-    static PositionEstimator toplevel() {
-        return new PositionEstimator.TopLevelEstimator();
+    static PositionEstimator toplevel(List<? extends Tree> oldL, 
+                                      List<? extends Tree> newL,
+                                      WorkingCopy copy)
+    {
+        return new PositionEstimator.TopLevelEstimator(oldL, newL, copy);
     }
 
     /**
@@ -91,8 +103,8 @@ final class EstimatorFactory {
      * These bounds are returned when user ask for offset of the specified
      * import statement.
      */
-    static PositionEstimator imports(List<JCImport> oldL, 
-                                     List<JCImport> newL,
+    static PositionEstimator imports(List<? extends ImportTree> oldL, 
+                                     List<? extends ImportTree> newL,
                                      WorkingCopy copy)
     {
         return new PositionEstimator.ImportsEstimator(oldL, newL, copy);
