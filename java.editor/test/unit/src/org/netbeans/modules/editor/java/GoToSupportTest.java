@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.editor.java;
@@ -591,6 +591,49 @@ public class GoToSupportTest extends NbTestCase {
         }, false);
         
         assertTrue(wasCalled[0]);
+    }
+    
+    public void testBeepOnDeclarations() throws Exception {
+        String code = "package test; public class Test {public void test(String s) {} public String test2(String s) {} public void test3() {} private static class AB {} private String FIELD; private void test4(String name1, String name2) {}}";
+        final boolean[] wasCalled = new boolean[1];
+        
+        for (final int pos : new int[] {53, 71, 103, 134, 165, 187, 220, 234}) {
+            performTest(code, pos - 24, new UiUtilsCaller() {
+                public void open(FileObject fo, int pos) {
+                    fail("Should not be called, position= " + pos + ".");
+                }
+                public void beep() {
+                    wasCalled[0] = true;
+                }
+                public void open(ClasspathInfo info, Element el) {
+                    fail("Should not be called, position= " + pos + ".");
+                }
+            }, false);
+            
+            assertTrue(wasCalled[0]);
+            
+            wasCalled[0] = false;
+        }
+        
+        for (final int pos : new int[] {77, 97, 109, 181, 214, 228}) {
+            performTest(code, pos - 24, new UiUtilsCaller() {
+                public void open(FileObject fo, int pos) {
+                    fail("Should not be called, position= " + pos + ".");
+                }
+                public void beep() {
+                    fail("Should not be called, position= " + pos + ".");
+                }
+                public void open(ClasspathInfo info, Element el) {
+                    assertEquals(ElementKind.CLASS, el.getKind());
+                    assertEquals("java.lang.String", ((TypeElement) el).getQualifiedName().toString());
+                    wasCalled[0] = true;
+                }
+            }, false);
+            
+            assertTrue(wasCalled[0]);
+            
+            wasCalled[0] = false;
+        }
     }
     
     private void writeIntoFile(FileObject file, String what) throws Exception {

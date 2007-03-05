@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -191,36 +191,35 @@ public class GoToSupport {
                     } else {
                         Tree tree = controller.getTrees().getTree(el);
                         
-                        if (tree != null) {
-                            long pos = controller.getTrees().getSourcePositions().getStartPosition(controller.getCompilationUnit(), tree);
+                        if (tree == null && (el.getKind() == ElementKind.PARAMETER || el.getKind() == ElementKind.LOCAL_VARIABLE)) {
+                            while (path.getLeaf().getKind() != Kind.METHOD && path.getLeaf().getKind() != Kind.CLASS) {
+                                path = path.getParentPath();
+                            }
                             
-                            if (pos != (-1)) {
-                                CALLER.open(fo, (int) pos);
+                            FindVariableDeclarationVisitor v = new FindVariableDeclarationVisitor();
+                            
+                            v.info = controller;
+                            v.scan(path, el);
+                            
+                            tree = v.found;
+                        }
+                        
+                        if (tree != null) {
+                            long startPos = controller.getTrees().getSourcePositions().getStartPosition(controller.getCompilationUnit(), tree);
+                            long endPos   = controller.getTrees().getSourcePositions().getEndPosition(controller.getCompilationUnit(), tree);
+                            
+                            if (startPos != (-1)) {
+                                //check if the caret is inside the declaration itself, as jump in this case is not very usefull:
+                                if (startPos <= offset && offset <= endPos) {
+                                    CALLER.beep();
+                                } else {
+                                    CALLER.open(fo, (int) startPos);
+                                }
                             } else {
                                 CALLER.beep();
                             }
                         } else {
-                            if (el.getKind() == ElementKind.PARAMETER || el.getKind() == ElementKind.LOCAL_VARIABLE) {
-                                while (path.getLeaf().getKind() != Kind.METHOD && path.getLeaf().getKind() != Kind.CLASS) {
-                                    path = path.getParentPath();
-                                }
-                                
-                                FindVariableDeclarationVisitor v = new FindVariableDeclarationVisitor();
-                                
-                                v.info = controller;
-                                v.scan(path, el);
-                                
-                                Tree t = v.found;
-                                long pos = t != null ? controller.getTrees().getSourcePositions().getStartPosition(controller.getCompilationUnit(), t) : -1;
-                                
-                                if (pos != (-1)) {
-                                    CALLER.open(fo, (int) pos);
-                                } else {
-                                    CALLER.beep();
-                                }
-                            } else {
-                                CALLER.open(controller.getClasspathInfo(), el);
-                            }
+                            CALLER.open(controller.getClasspathInfo(), el);
                         }
                     }
                 }
