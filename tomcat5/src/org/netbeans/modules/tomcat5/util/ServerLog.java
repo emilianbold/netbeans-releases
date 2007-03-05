@@ -25,11 +25,14 @@
 
 package org.netbeans.modules.tomcat5.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.BufferedReader;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.openide.ErrorManager;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -97,6 +100,10 @@ class ServerLog extends Thread {
             }
         } else {
             writer.println(line);
+            if (line.startsWith("SEVERE: WSSERVLET11: failed to parse runtime descriptor: java.lang.LinkageError:")) { // NOI18N
+                File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+                writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11", file.getParent()));
+            }
         }
     }
 
