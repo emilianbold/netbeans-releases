@@ -112,6 +112,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.project</friend>
+                <friend>org.netbeans.modules.iep.project</friend>
                 <friend>org.netbeans.modules.xml.xam.ui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.xml.catalogsupport</package>
