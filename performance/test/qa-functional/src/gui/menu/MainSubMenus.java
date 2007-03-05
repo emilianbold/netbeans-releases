@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -69,40 +69,40 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     
     //TODO open more than one project (nice to have open 10 projects) and close 5 projects
     public void testFileOpenRecentProjectMenu(){
-        testSubMenu("org.netbeans.core.Bundle","File", "org.netbeans.modules.project.ui.actions.Bundle", "LBL_RecentProjectsAction_Name");
+        testSubMenu("org.netbeans.core.Bundle","Menu/File", "org.netbeans.modules.project.ui.actions.Bundle", "LBL_RecentProjectsAction_Name");
     }
     
     //TODO open more than one project (nice to have open 10 projects)
     public void testFileSetMainProjectMenu(){
-        testSubMenu("org.netbeans.core.Bundle","File", "org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetMainProjectAction_Name");
+        testSubMenu("org.netbeans.core.Bundle","Menu/File", "org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetMainProjectAction_Name");
     }
 
     public void testViewDocumentationIndicesMenu(){
-        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
+        testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
     }
     
     public void testViewCodeFoldsMenu(){
         editor = Utilities.openSmallJavaFile();
         waitNoEvent(5000);
-        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
+        testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
     }
     
     public void testViewEditorsMenu(){
         editor = Utilities.openSmallFormFile();
         waitNoEvent(10000);
-        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.core.multiview.Bundle", "CTL_EditorsAction");
+        testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.core.multiview.Bundle", "CTL_EditorsAction");
     }
     
     public void testViewToolbarsMenu(){
-        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
+        testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
     }
     
     public void testRunStackMenu(){
-        testSubMenu("org.netbeans.modules.project.ui.Bundle", "RunProject", "Stack"); // this can't be localized
+        testSubMenu("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject", "Stack"); // this can't be localized
     }
     
     public void testRunRunFileMenu(){
-        testSubMenu("org.netbeans.modules.project.ui.Bundle", "RunProject", "org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
+        testSubMenu("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject", "org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
     }
     
     public void testVersLocalHistoryMenu() {
@@ -118,23 +118,23 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     }
     
     public void testToolsI18nMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
+        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
     }
     
     public void testWinDebuggingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
+        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
     }
     
     public void testWinVersioningMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning");
+        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning");
     }
 
     public void testWinProfilingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.profiler.actions.Bundle","Menu/Window/Profile");
+        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.profiler.actions.Bundle","Menu/Window/Profile");
     }
     
     public void testHelpTutorials(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Help", " org.netbeans.modules.url.Bundle", "Menu/Help/Tutorials");
+        testSubMenu("org.netbeans.core.Bundle", "Menu/Help", " org.netbeans.modules.url.Bundle", "Menu/Help/Tutorials");
     }
 
     public void testHelpJavadoc(){
@@ -149,11 +149,11 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     }
     
     private void testSubMenu(String bundle, String mainMenu, String subMenu) {
-        testSubMenu(getFromBundle(bundle,"Menu/"+mainMenu),subMenu);
+        testSubMenu(getFromBundle(bundle,mainMenu),subMenu);
     }
     
     private void testSubMenu(String bundle, String mainMenu, String bundle_2, String subMenu) {
-        testSubMenu(getFromBundle(bundle,"Menu/"+mainMenu),getFromBundle(bundle_2,subMenu));
+        testSubMenu(getFromBundle(bundle,mainMenu),getFromBundle(bundle_2,subMenu));
     }
     
     private String getFromBundle(String bundle, String key){
