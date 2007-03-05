@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -50,7 +50,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
         mUrl = url;
     }
 
-    private void parse() {
+    private void parse() throws ValidationException {
         if (mParsed) {
             return;
         }
@@ -61,7 +61,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
         // Protocol
         int i = r.indexOf("://");
         if (i < 0) {
-            throw new RuntimeException("Invalid URL [" + mUrl + "]: no protocol specified");
+            throw new ValidationException ("Invalid URL [" + mUrl + "]: no protocol specified");
         }
         mProtocol = r.substring(0, i);
         r = r.substring(i + "://".length());
@@ -135,7 +135,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      *
      * @param port int
      */
-    public void setPort(int port) {
+    public void setPort(int port) throws ValidationException{
         parse();
         mPort = port;
         mUrl = null;
@@ -146,7 +146,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      * 
      * @param host String 
      */
-    public void setHost(String host) {
+    public void setHost(String host) throws ValidationException {
        parse();
        mHost = host;
        mUrl = null;
@@ -157,7 +157,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      * 
      * @param host String 
      */
-    public void setService(String service) {
+    public void setService(String service) throws ValidationException {
        parse();
        mService = service;
        mUrl = null;
@@ -189,7 +189,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      *
      * @return  the protocol of this <code>URL</code>.
      */
-    public String getProtocol() {
+    public String getProtocol() throws ValidationException {
         parse();
         return mProtocol;
     }
@@ -199,7 +199,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      *
      * @return  the host name of this <code>URL</code>.
      */
-    public String getHost() {
+    public String getHost() throws ValidationException {
         parse();
         return mHost;
     }
@@ -209,7 +209,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      *
      * @return  the port number, or -1 if the port is not set
      */
-    public int getPort() {
+    public int getPort() throws ValidationException {
         parse();
         return mPort;
     }
@@ -219,7 +219,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      *
      * @return  the connection service name
      */
-    public String getService() {
+    public String getService() throws ValidationException {
         parse();
         return mService;
     }
@@ -235,7 +235,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      * @return  the file name of this <code>URL</code>,
      * or an empty string if one does not exist
      */
-    public String getFile() {
+    public String getFile() throws ValidationException {
         parse();
         return mFile;
     }
@@ -246,7 +246,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      * @return  the path part of this <code>URL</code>, or an
      * empty string if one does not exist
      */
-    public String getPath() {
+    public String getPath() throws ValidationException {
         parse();
         return mPath;
     }
@@ -257,7 +257,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      * @return  the query part of this <code>URL</code>,
      * or <CODE>null</CODE> if one does not exist
      */
-    public String getQuery() {
+    public String getQuery() throws ValidationException {
         parse();
         return mQuery;
     }
@@ -267,7 +267,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      *
      * @param toAddTo Properties key-value pairs will be added to this properties set
      */
-    public void getQueryProperties(Properties toAddTo) {
+    public void getQueryProperties(Properties toAddTo) throws ValidationException {
         if (mUrl == null) {
             return;
         }
@@ -282,7 +282,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
      * @param q String
      * @param toAddTo Properties
      */
-    public static void getQueryProperties(String q, Properties toAddTo) {
+    public static void getQueryProperties(String q, Properties toAddTo) throws ValidationException {
         if (q == null || q.length() == 0) {
             return;
         }
@@ -291,7 +291,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
             String pair = (String) iter.nextToken();
             int split = pair.indexOf('=');
             if (split <= 0) {
-                throw new RuntimeException("Invalid pair [" + pair
+                throw new ValidationException("Invalid pair [" + pair
                     + "] in query string [" + q + "]");
             } else {
                 String key = pair.substring(0, split);
@@ -300,7 +300,7 @@ public class SunOneConnectionUrl extends ConnectionUrl {
                     key = URLDecoder.decode(key, "UTF-8");
                     value = URLDecoder.decode(value, "UTF-8");
                 } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException("Invalid encoding in [" + pair
+                    throw new ValidationException("Invalid encoding in [" + pair
                         + "] in query string [" + q + "]",
                         e);
                 }

@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://schemas.sun.com/jbi/wsdl-extensions/jms/" targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/jms/">
-	<xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="http://schemas.xmlsoap.org/wsdl/"/>
+	<xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd"/>
 
     <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
     <!-- Start complex type defintions to define JMS binding extensibility -->
@@ -58,6 +78,61 @@
 			<xs:documentation>
 	      	"operation" indicates a JMS protocol based operation.
 	      </xs:documentation>
+              <xs:appinfo>
+                <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:PropertyGroup name="Common" groupOrder="1" />
+                    <prop:PropertyGroup name="Consumer" groupOrder="2" />
+                    <prop:PropertyGroup name="Provider" groupOrder="3" />                    
+                    <prop:Property attributeName="destination" groupName="Common" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="destinationType" groupName="Common" propertyOrder="2">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="transaction" groupName="Common" propertyOrder="3">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="deliveryMode" groupName="Provider" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="timeToLive" groupName="Provider" propertyOrder="2">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="priority" groupName="Provider" propertyOrder="3">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="disableMessageID" groupName="Provider" propertyOrder="4">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="disableMessageTimeStamp" groupName="Provider" propertyOrder="5">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="timeout" groupName="Provider" propertyOrder="6">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="clientID" groupName="Consumer" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="messageSelector" groupName="Consumer" propertyOrder="2">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="subscriptionDurability" groupName="Consumer" propertyOrder="3">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="subscriptionName" groupName="Consumer" propertyOrder="4">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="maxConcurrentConsumers" groupName="Consumer" propertyOrder="5">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="batchSize" groupName="Consumer" propertyOrder="6">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="redeliveryHandling" groupName="Consumer" propertyOrder="7">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>	      	      
 		</xs:annotation>
 	</xs:element>
 	<xs:complexType name="tOperation">
@@ -100,12 +175,12 @@
 				</xs:attribute>
 				<xs:attribute name="disableMessageID" type="xs:boolean" use="optional">
 					<xs:annotation>
-						<xs:documentation>Enables or disables the auto-generation of message IDs on messages sent</xs:documentation>
+						<xs:documentation>Enables or disables the auto-generation of message IDs on messages sent. This only serves as a hint to the JMS provider; check with the provider you are using to see if this is supported.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="disableMessageTimeStamp" type="xs:boolean" use="optional">
 					<xs:annotation>
-						<xs:documentation>Enables or disables the auto-generation of timestamps on messages sent</xs:documentation>
+						<xs:documentation>Enables or disables the auto-generation of timestamps on messages sent. This only serves as a hint to the JMS provider; check with the provider you are using to see if this is supported.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="timeout" type="xs:long" use="optional">
@@ -172,8 +247,69 @@ This causes no delay up to the 5th delivery; a 1000 ms delay is invoked when the
 			<xs:documentation>
 	      	"message" indicates a JMS protocol based JMS message to/from WSDL message mapping
 	      </xs:documentation>
-		</xs:annotation>
-	</xs:element>
+              <xs:appinfo>
+                <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:PropertyGroup name="Message" groupOrder="1" />
+                    <prop:PropertyGroup name="Read-Write Message Headers" groupOrder="2" />
+                    <prop:PropertyGroup name="Read-Only Message Headers" groupOrder="3" />
+                    <prop:PropertyGroup name="Encoding" groupOrder="4" />
+                    
+                    <prop:Property attributeName="messageType" groupName="Message" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="textPart" groupName="Message" propertyOrder="2" >
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    
+                    <prop:Property attributeName="correlationIdPart" groupName="Read-Write Message Headers" propertyOrder="1" >
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="deliveryModePart" groupName="Read-Write Message Headers" propertyOrder="2">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="priorityPart" groupName="Read-Write Message Headers" propertyOrder="3">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="typePart" groupName="Read-Write Message Headers" propertyOrder="4">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    
+                    <prop:Property attributeName="messageIDPart" groupName="Read-Only Message Headers" propertyOrder="1">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="redeliveredPart" groupName="Read-Only Message Headers" propertyOrder="2">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="timestampPart" groupName="Read-Only Message Headers" propertyOrder="3">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    
+                    <prop:Property attributeName="use" groupName="Encoding" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="encodingStyle" groupName="Encoding" propertyOrder="2">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
 	<xs:complexType name="tMessage">
 		<xs:complexContent>
 			<xs:extension base="wsdl:tExtensibilityElement">
@@ -273,6 +409,15 @@ This causes no delay up to the 5th delivery; a 1000 ms delay is invoked when the
 			<xs:documentation>
 	      	"property" defines a single JMS Message user property to a WSDL Message part mapping
 	      </xs:documentation>
+                        <xs:appinfo>
+                            <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                                <prop:Property attributeName="part" propertyOrder="1" >
+                                    <prop:BuiltInCustomizer>
+                                        <prop:SimpleCustomizer name="PartChooser"/>
+                                    </prop:BuiltInCustomizer>
+                                </prop:Property>
+                            </prop:ElementProperties>
+                        </xs:appinfo>
 		</xs:annotation>
 	</xs:element>
 	<xs:complexType name="tProperty">
@@ -319,6 +464,15 @@ This causes no delay up to the 5th delivery; a 1000 ms delay is invoked when the
 			<xs:documentation>
 	      	"mappart" defines a single JMS MapMessage entry to a WSDL Message part mapping
 	      </xs:documentation>
+                        <xs:appinfo>
+                            <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                                <prop:Property attributeName="part" propertyOrder="1" >
+                                    <prop:BuiltInCustomizer>
+                                        <prop:SimpleCustomizer name="PartChooser"/>
+                                    </prop:BuiltInCustomizer>
+                                </prop:Property>
+                            </prop:ElementProperties>
+                        </xs:appinfo>
 		</xs:annotation>
 	</xs:element>
 	<xs:complexType name="tMapPart">

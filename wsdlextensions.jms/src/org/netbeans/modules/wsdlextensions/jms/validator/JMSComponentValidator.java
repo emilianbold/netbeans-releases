@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.wsdlextensions.jms.validator;
@@ -132,19 +132,16 @@ public class JMSComponentValidator
             
             while (bindings.hasNext()) {
                 Binding binding = bindings.next();
-
-                PortType portType = binding.getType().get();
                 
-                if (portType == null) {
-                    results.add(
-                            new Validator.ResultItem(this,
-                            Validator.ResultType.ERROR,
-                            binding,
-                            getMessage("JMSBindingValidation.BINDING_REFERENCES_INVALID_PORTTYPE",
-                                       new Object[]{binding.getName()})));
+                if (binding.getType() == null || binding.getType().get() == null) {
                     continue;
                 }
+                
                 int numJMSBindings = binding.getExtensibilityElements(JMSBinding.class).size();
+                if (numJMSBindings == 0) {
+                    continue;
+                }
+                
                 if (numJMSBindings > 0 && numJMSBindings != 1) {
                     results.add(
                             new Validator.ResultItem(this,
@@ -256,6 +253,19 @@ public class JMSComponentValidator
                             }                        
                         }                        
                     }
+                    
+                    // check to ensure options are defined at the right level
+                    List <JMSOptions> jmsOptions = bindingOp.getExtensibilityElements(JMSOptions.class);
+                    if (jmsOptions.size() > 0) {
+                            results.add(
+                                    new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    jmsOptions.get(0),
+                                    getMessage("JMSBindingValidation.IMPROPER_USAGE_OF_OPTIONS", 
+                                                new Object[] {binding.getName(),
+                                                              jmsOptions.size()})));
+                    }
+                    
                 }
                 // there is jms:binding but no jms:operation
                 if ( numJMSBindings > 0 && !foundJMSOp ) {
@@ -329,105 +339,109 @@ public class JMSComponentValidator
         
         String connectionURL = target.getConnectionURL();
         
-        Validator.ResultItem sunOneValidationErr = null;
+        if (!isAToken(connectionURL, target)) {
         
-        // first try sun one url parser
-        try {
-            SunOneUrlParser urlParser = new SunOneUrlParser(connectionURL);
-            urlParser.validate();
-        } catch (ValidationException ex) {
-            sunOneValidationErr = new Validator.ResultItem(this,
-                                      Validator.ResultType.ERROR,
-                                      target,
-                                      getMessage("JMSAddress.INVALID_CONNECTION_URL",
-                                      new Object[] {target.getConnectionURL(), ex}));
-        }
+            Validator.ResultItem sunOneValidationErr = null;
 
-        boolean genericError = false;
-        
-        // try generic url parser
-        if (sunOneValidationErr != null) {
-        
-            UrlParser url = new UrlParser(target.getConnectionURL());
-
-            // cause url to be parsed
-            String protocol = null;
-            String host = null;
-            int UNLIKELY_PORT = -291; // unlikely that user will enter this number
-            int port = UNLIKELY_PORT;
+            // first try sun one url parser
             try {
-                 protocol = url.getProtocol();
-                 host = url.getHost();
-                 port = url.getPort();
-            } catch (Throwable t) {
-                genericError = true;
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        getMessage("JMSAddress.INVALID_CONNECTION_URL",
-                                   new Object[] {target.getConnectionURL(), t.getLocalizedMessage()})));
-            } 
+                SunOneUrlParser urlParser = new SunOneUrlParser(connectionURL);
+                urlParser.validate();
+            } catch (ValidationException ex) {
+                sunOneValidationErr = new Validator.ResultItem(this,
+                                          Validator.ResultType.ERROR,
+                                          target,
+                                          getMessage("JMSAddress.INVALID_CONNECTION_URL",
+                                          new Object[] {target.getConnectionURL(), ex}));
+            }
 
-            if (protocol == null || protocol.length() == 0) {
-                genericError = true;
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        getMessage("JMSAddress.NO_PROTOCOL_SPECIFIED",
-                                   new Object[] {target.getConnectionURL()})));            
-            } else {
-                if (!protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_SUN_JAVA_SYSTEM_MQ) &&
-                    !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEPSHERE_MQ) &&
-                    !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_JBOSS) &&
-                    !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_STCMS) &&
-                    !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WAVE) &&
-                    !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEBLOGIC)) {
+            boolean genericError = false;
+
+            // try generic url parser
+            if (sunOneValidationErr != null) {
+
+                UrlParser url = new UrlParser(target.getConnectionURL());
+
+                // cause url to be parsed
+                String protocol = null;
+                String host = null;
+                int UNLIKELY_PORT = -291; // unlikely that user will enter this number
+                int port = UNLIKELY_PORT;
+                try {
+                     protocol = url.getProtocol();
+                     host = url.getHost();
+                     port = url.getPort();
+                } catch (Throwable t) {
                     genericError = true;
                     results.add(new Validator.ResultItem(this,
                             Validator.ResultType.ERROR,
                             target,
-                            getMessage("JMSAddress.PROVIDER_NOT_SUPPORTED",
-                                       new Object[] {target.getConnectionURL(), protocol})));
+                            getMessage("JMSAddress.INVALID_CONNECTION_URL",
+                                       new Object[] {target.getConnectionURL(), t.getLocalizedMessage()})));
+                } 
+
+                if (protocol == null || protocol.length() == 0) {
+                    genericError = true;
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            getMessage("JMSAddress.NO_PROTOCOL_SPECIFIED",
+                                       new Object[] {target.getConnectionURL()})));            
+                } else {
+                    if (!protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_SUN_JAVA_SYSTEM_MQ) &&
+                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEPSHERE_MQ) &&
+                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_JBOSS) &&
+                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_STCMS) &&
+                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WAVE) &&
+                        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEBLOGIC)) {
+                        genericError = true;
+                        results.add(new Validator.ResultItem(this,
+                                Validator.ResultType.ERROR,
+                                target,
+                                getMessage("JMSAddress.PROVIDER_NOT_SUPPORTED",
+                                           new Object[] {target.getConnectionURL(), protocol})));
+                    }
+                }
+
+                if (host == null || host.length() == 0) {
+                    genericError = true;
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            getMessage("JMSAddress.NO_HOST_SPECIFIED",
+                                       new Object[] {target.getConnectionURL()})));            
+                }
+
+                if (port == UNLIKELY_PORT) {
+                    genericError = true;
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            getMessage("JMSAddress.NO_PORT_SPECIFIED",
+                                       new Object[] {target.getConnectionURL()})));            
+                } else if (port <= 0) {
+                    genericError = true;
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            getMessage("JMSAddress.INVALID_PORT_SPECIFIED",
+                                       new Object[] {target.getConnectionURL(),
+                                                     new Integer(port)})));            
                 }
             }
 
-            if (host == null || host.length() == 0) {
-                genericError = true;
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        getMessage("JMSAddress.NO_HOST_SPECIFIED",
-                                   new Object[] {target.getConnectionURL()})));            
-            }
-
-            if (port == UNLIKELY_PORT) {
-                genericError = true;
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        getMessage("JMSAddress.NO_PORT_SPECIFIED",
-                                   new Object[] {target.getConnectionURL()})));            
-            } else if (port <= 0) {
-                genericError = true;
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        getMessage("JMSAddress.INVALID_PORT_SPECIFIED",
-                                   new Object[] {target.getConnectionURL(),
-                                                 new Integer(port)})));            
-            }
-        }
-
-        if (genericError) {
-            // add provider specific errors to error bundle
-            if (sunOneValidationErr != null) {
-                results.add(sunOneValidationErr);
+            if (genericError) {
+                // add provider specific errors to error bundle
+                if (sunOneValidationErr != null) {
+                    results.add(sunOneValidationErr);
+                }
             }
         }
         
         String username = target.getUsername();
         
         if (username != null) {
+            isAToken(username, target);
             String password = target.getPassword();
             if (password == null) {
                 results.add(new Validator.ResultItem(this,
@@ -435,6 +449,8 @@ public class JMSComponentValidator
                         target,
                         getMessage("JMSAddress.MISSING_PASSWORD",
                                    new Object[] {username})));                
+            } else {
+                isAToken(password, target);
             }
         }
     }
@@ -457,6 +473,8 @@ public class JMSComponentValidator
         }
         
         String destination = target.getDestination();
+        isAToken(destination, target);
+        
         String destinationType = target.getDestinationType();
         if (destination == null && destination.length() == 0) {
             results.add(new Validator.ResultItem(this,
@@ -465,17 +483,7 @@ public class JMSComponentValidator
                     getMessage("JMSOperation.EMPTY_DESTINATION_EMPTY",
                                new Object[] {bindingOp.getName()})));            
         } 
-        
-        String transaction = target.getTransaction();
-        if (transaction != null &&
-            transaction.equals(JMSConstants.TRANSACTION_XA) && mep.equals("in-out")) {
-            results.add(new Validator.ResultItem(this,
-                    Validator.ResultType.ERROR,
-                    target,
-                    getMessage("JMSOperation.XA_NOT_SUPPORTED_FOR_IN_OUT_XCHANGE",
-                               new Object[] {bindingOp.getName()})));            
-        }
-        
+                
         String subscriptionDurability = target.getSubscriptionDurability();
         if (subscriptionDurability != null &&
             subscriptionDurability.equals(JMSConstants.DURABLE)) {
@@ -487,6 +495,8 @@ public class JMSComponentValidator
                         getMessage("JMSOperation.DURABLE_SUBSCRIBER_BUT_NO_SUBSCRIPTION_NAME",
                                    new Object[] {bindingOp.getName()})));                            
             }
+            isAToken(subscriptionName, target);
+            
             if (destinationType.equals(JMSConstants.QUEUE)) {
                 results.add(new Validator.ResultItem(this,
                         Validator.ResultType.ERROR,
@@ -494,6 +504,7 @@ public class JMSComponentValidator
                         getMessage("JMSOperation.DURABLE_SUBSCRIBER_BUT_DESTINATION_TYPE_IS_QUEUE",
                                    new Object[] {bindingOp.getName()})));                
             }
+            
             String clientID = target.getClientID();
             if (clientID == null || clientID.length() == 0) {
                 results.add(new Validator.ResultItem(this,
@@ -502,6 +513,7 @@ public class JMSComponentValidator
                         getMessage("JMSOperation.DURABLE_SUBSCRIBER_BUT_NO_CLIENT_ID",
                                    new Object[] {bindingOp.getName()})));                
             }
+            isAToken(clientID, target);
         }
 
         int maxConcurrentConsumers = target.getMaxConcurrentConsumers();
@@ -526,6 +538,7 @@ public class JMSComponentValidator
                                                  batchSize})));     
             }
              **/
+            String transaction = target.getTransaction();             
             if (transaction != null &&
                 transaction.equals(JMSConstants.TRANSACTION_XA)) {
                 results.add(new Validator.ResultItem(this,
@@ -539,16 +552,18 @@ public class JMSComponentValidator
 
         String redeliveryHandling = target.getRedeliveryHandling();
         if (redeliveryHandling != null && redeliveryHandling.length() > 0) {
-            try {
-                RedeliveryHandlingParser.parse(redeliveryHandling,"none",JMSConstants.QUEUE);
-            } catch (Throwable t) {
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        getMessage("JMSOperation.INVALID_REDELIVERY_HANDLING_ACTIONS",
-                                   new Object[] {bindingOp.getName(),
-                                                 redeliveryHandling, 
-                                                 t.getLocalizedMessage()})));                
+            if (!isAToken(redeliveryHandling, target)) {
+                try {
+                    RedeliveryHandlingParser.parse(redeliveryHandling,"none",JMSConstants.QUEUE);
+                } catch (Throwable t) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            getMessage("JMSOperation.INVALID_REDELIVERY_HANDLING_ACTIONS",
+                                       new Object[] {bindingOp.getName(),
+                                                     redeliveryHandling, 
+                                                     t.getLocalizedMessage()})));                
+                }
             }
         } 
         
@@ -571,6 +586,17 @@ public class JMSComponentValidator
                 String value = jmsOption.getValue();
             }
         }*/
+        
+        // ensure that option elements are child elements of options element
+        List <JMSOption> option = target.getExtensibilityElements(JMSOption.class);
+        if (option.size() > 0) {
+            results.add(new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    option.get(0),
+                    getMessage("JMSOperation.IMPROPER_USAGE_OF_OPTION",
+                               new Object[] {bindingOp.getName(),
+                                             option.size()})));        
+        }
     }
 
     private void validate(BindingOperation bindingOp,
@@ -1051,8 +1077,15 @@ public class JMSComponentValidator
         }
         return result;        
     }
+    
     private boolean referencesValidMessagePart (NamedComponentReference<Message> wsdlMessage, 
                                                 String partName) {
+        
+        // Let wsdl validator catch undefined message for operation input or output
+        if (wsdlMessage == null || wsdlMessage.get() == null || wsdlMessage.get().getParts() == null) {
+            return true;
+        }
+        
         boolean isValdPartReference = false;
         Iterator<Part> partIter = wsdlMessage.get().getParts().iterator();
         while(partIter.hasNext()) {
@@ -1063,6 +1096,27 @@ public class JMSComponentValidator
             }
         }
         return isValdPartReference;
+    }
+    
+    private boolean isAToken(String name, JMSComponent target) {
+        Collection<ResultItem> results =
+                mValidationResult.getValidationResult();
+        
+    	boolean isToken = false;
+    	
+        if (name != null && name.startsWith("${")) {
+            isToken = true;
+            if (!name.endsWith("}")) {
+                results.add(
+                        new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("JMSComponentValidator.INVALID_ENVIRONMENT_TOKEN_NAME",
+                                   new Object[]{name})));               
+            }
+        }
+        
+        return isToken;
     }
     
     private String getMessage(String key, String param) {

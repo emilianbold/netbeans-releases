@@ -2,51 +2,41 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.wsdlextensions.file.validator;
 
-import java.net.URI;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.ResourceBundle;
 
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
-import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Input;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.Port;
-import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.Service;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -124,19 +114,17 @@ public class FileComponentValidator
             while (bindings.hasNext()) {
                 Binding binding = bindings.next();
             	
-                PortType portType = binding.getType().get();
-            	if (portType == null) {
-                    results.add(
-                            new Validator.ResultItem(this,
-                            Validator.ResultType.ERROR,
-                            binding,
-                            getMessage("FileBindingValidation.invalid_null_port_type",
-                                       new Object[]{binding.getName()})));
+                if (binding.getType() == null || binding.getType().get() == null) {
                     continue;
                 }
                 
 
                 int numFileBindings = binding.getExtensibilityElements(FileBinding.class).size();
+                
+                if (numFileBindings == 0) {
+                    continue;
+                }
+                
                 if (numFileBindings > 0 && numFileBindings != 1) {
                     results.add(
                             new Validator.ResultItem(this,

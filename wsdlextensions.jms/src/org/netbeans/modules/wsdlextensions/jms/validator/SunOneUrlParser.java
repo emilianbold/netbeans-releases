@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -91,9 +91,12 @@ public class SunOneUrlParser extends ConnectionUrl {
     }
 
     /**
+     * @param  toAddTo  properties to be added to.
+     * @throws  ValidationException
+     *          if the URL validation failed.
      * @see com.stc.jmsjca.util.ConnectionUrl#getQueryProperties(java.util.Properties)
      */
-    public void getQueryProperties(Properties toAddTo) {
+    public void getQueryProperties(Properties toAddTo) throws ValidationException {
         SunOneConnectionUrl[] urls = getConnectionUrls();
         for (int i = 0; i < urls.length; i++) {
             urls[i].getQueryProperties(toAddTo);
@@ -103,8 +106,8 @@ public class SunOneUrlParser extends ConnectionUrl {
     /**
      * Checks the validity of the URL; adjusts the port number if necessary
      * 
-     * @param aurl UrlParser
-     * @throws javax.jms.ValidationException on format failure
+     * @throws  ValidationException
+     *          if the URL validation failed.
      * @return boolean true if the url specified url object was changed by this
      *         validation
      */
@@ -144,8 +147,10 @@ public class SunOneUrlParser extends ConnectionUrl {
      * Constructs a comma delimited string of schema://host:port/service
      * 
      * @return String
+     * @throws  ValidationException
+     *          if the URL validation failed.
      */
-    public String getSunOneUrlSet() {
+    public String getSunOneUrlSet() throws ValidationException {
         SunOneConnectionUrl[] urls = getConnectionUrls();
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < urls.length; i++) {
@@ -161,8 +166,10 @@ public class SunOneUrlParser extends ConnectionUrl {
      * Constructs a comma delimited string of schema://host:port/admin or schema://host:port/ssladmin 
      * 
      * @return String
+     * @throws  ValidationException
+     *          if the URL validation failed.
      */
-    public String getSunOneUrlAdminSet() {
+    public String getSunOneUrlAdminSet() throws ValidationException {
         SunOneConnectionUrl[] urls = getConnectionUrls();
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < urls.length; i++) {
