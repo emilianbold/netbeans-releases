@@ -113,7 +113,7 @@ public class ManageRegistries extends HttpServlet {
                 for (String registry: registries) {
                     out.println("        <div class=\"registry\" id=\"registry-" + registry + "\">");
                     
-                    buildRegistryTable(out, registry, manager.getRoot(platform, registry), platform);
+                    buildRegistryTable(out, registry, manager.loadRegistries(platform, registry), platform);
                     
                     out.println("        </div>");
                 }
@@ -256,8 +256,7 @@ public class ManageRegistries extends HttpServlet {
                 } else {
                     out.println("                    <td class=\"option\"></td>");
                 }
-                out.println("                    <td class=\"option\"><a href=\"javascript: add_component('" + uid + "', '" + version + "', '" + platforms + "')\">Add Component</a></td>");
-                out.println("                    <td class=\"option\"><a href=\"javascript: add_group('" + uid + "', '" + version + "', '" + platforms + "')\">Add Group</a></td>");
+                out.println("                    <td class=\"option\"><a href=\"javascript: add_package('" + uid + "', '" + version + "', '" + platforms + "')\">Add Package</a></td>");
                 
                 out.println("                </tr>");
                 
@@ -265,7 +264,7 @@ public class ManageRegistries extends HttpServlet {
                     out.println("                <tr id=\"" + id + "-children\">");
                     
                     out.println("                    <td class=\"tree-handle\"></td>");
-                    out.println("                    <td colspan=\"5\" class=\"children\">");
+                    out.println("                    <td colspan=\"4\" class=\"children\">");
                     out.println("                    <table class=\"registry\">");
                     buildRegistryNodes(out, registry, node.getChildren(), platform);
                     out.println("                    </table>");

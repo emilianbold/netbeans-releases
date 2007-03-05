@@ -26,7 +26,7 @@ public interface Manager {
     public static final File   REGISTRIES_LIST = new File(ROOT, "registries.list");
     public static final File   ENGINE          = new File(ROOT, "nbi-engine.jar");
     
-    public static final String COMPONENTS      = "components";
+    public static final String PRODUCTS        = "products";
     public static final String GROUPS          = "groups";
     public static final String REGISTRY_XML    = "registry.xml";
     
@@ -69,13 +69,10 @@ public interface Manager {
     
     void updateEngine(File engine) throws ManagerException;
     
-    // component operations /////////////////////////////////////////////////////////
-    void updateComponent(String name, File archive, String parentUid, String parentVersion, String parentPlatforms, String uriPrefix) throws ManagerException;
+    // components operations ////////////////////////////////////////////////////////
+    void addPackage(String name, File archive, String parentUid, String parentVersion, String parentPlatforms, String uriPrefix) throws ManagerException;
     
-    void removeComponent(String name, String uid, String version, String platforms) throws ManagerException;
-    
-    // group operations /////////////////////////////////////////////////////////////
-    void updateGroup(String name, File archive, String parentUid, String parentVersion, String parentPlatforms, String uriPrefix) throws ManagerException;
+    void removeProduct(String name, String uid, String version, String platforms) throws ManagerException;
     
     void removeGroup(String name, String uid) throws ManagerException;
     
@@ -86,13 +83,13 @@ public interface Manager {
     
     File getFile(String name, String file) throws ManagerException;
     
-    RegistryNode getRoot(Platform platform, String... names) throws ManagerException;
+    RegistryNode loadRegistries(Platform platform, String... names) throws ManagerException;
     
-    List<Product> getComponents(Platform platform, String... names) throws ManagerException;
+    List<Product> getProducts(Platform platform, String... names) throws ManagerException;
     
     File createBundle(Platform platform, String[] names, String[] components) throws ManagerException;
     
-    void deleteBundles(String[] names) throws ManagerException;
+    void deleteBundles() throws ManagerException;
     
     void generateBundles(String[] names) throws ManagerException;
 }

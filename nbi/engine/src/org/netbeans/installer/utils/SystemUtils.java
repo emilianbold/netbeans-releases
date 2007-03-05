@@ -576,6 +576,17 @@ public final class SystemUtils {
         return false;
     }
     
+    public static <T> List<T> intersect(List<? extends T> list1, List<? extends T> list2) {
+        final List<T> intersection = new LinkedList<T>();
+        
+        for (T item: list1) {
+            if (list2.contains(item)) {
+                intersection.add(item);
+            }
+        }
+        
+        return intersection;
+    }
     
     // native accessor //////////////////////////////////////////////////////////////
     public static synchronized NativeUtils getNativeUtils() {

@@ -85,7 +85,7 @@ function remove_component(uid, version, platforms) {
     if (version == "null") {
         action = "remove-group";
     } else {
-        action = "remove-component";
+        action = "remove-product";
     }
     
     document.forms["Form"].action          = action;
@@ -95,17 +95,8 @@ function remove_component(uid, version, platforms) {
     document.forms["Form"].submit();
 }
 
-function add_component(uid, version, platforms) {
-    document.forms["Form"].action          = "update-component";
-    document.forms["Form"].uid.value       = uid;
-    document.forms["Form"].version.value   = version;
-    document.forms["Form"].platforms.value = platforms;
-    
-    show_form_archive();
-}
-
-function add_group(uid, version, platforms) {
-    document.forms["Form"].action          = "update-group";
+function add_package(uid, version, platforms) {
+    document.forms["Form"].action          = "add-package";
     document.forms["Form"].uid.value       = uid;
     document.forms["Form"].version.value   = version;
     document.forms["Form"].platforms.value = platforms;

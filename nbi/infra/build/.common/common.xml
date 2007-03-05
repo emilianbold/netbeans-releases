@@ -39,14 +39,23 @@
     ======================================================================== -->
     
     <!--
+      Cleans the project.
+      
+      This is an aggregation target, which does not contain any functionality,
+      but defines a dependency on the 'clean' target.
+      For more details, please consult the documentation for this target.
+    -->
+    <target name="clean-all" depends="clean"/>
+    
+    <!--
       Cleans and builds the project.
       
       This is an aggregation target, which does not contain any functionality,
-      but defines dependencies on the 'clean', 'checkout' and 'build' targets.
-      For more details, please consult the documentation for these targets. The 
-      targets themselves are declared in the derivative scripts.
+      but defines dependencies on the 'clean-all', 'checkout' and 'build' 
+      targets. For more details, please consult the documentation for these 
+      targets.
     -->
-    <target name="build-all" depends="clean,checkout,build"/>
+    <target name="build-all" depends="clean-all,checkout,build"/>
     
     <!--
       Cleans, builds and releases the project.
@@ -54,10 +63,9 @@
       This is an aggregation target, which does not contain any functionality,
       but defines dependencies on the 'clean', 'checkout', 'build' and 
       'release' targets. For more details, please consult the documentation 
-      for these targets. The targets themselves are declared in the derivative 
-      scripts.
+      for these targets.
     -->
-    <target name="release-all" depends="clean,checkout,build,release"/>
+    <target name="release-all" depends="build-all,release"/>
     
     <!-- =======================================================================
       Initialization
@@ -94,9 +102,6 @@
       This target is not intended to be called directly.
     -->
     <target name=".init" depends=".build-custom-tasks" unless="skip.initialization">
-        <!-- set the line.separator property to a shorter name -->
-        <property name="nl" value="${line.separator}"/>
-        
         <!-- define custom ant tasks -->
         <taskdef 
             name="for-each" 
@@ -180,7 +185,7 @@
       
       This target is not intended to be called directly.
     -->
-    <target name=".build-custom-tasks" unless="skip.build.custom.tasks">
+    <target name=".build-custom-tasks" unless="dont.build.custom.tasks">
         <!-- quick clean-up and initialization -->
         <delete dir="${custom.tasks.cls}"/>
         <mkdir dir="${custom.tasks.cls}"/>
@@ -191,7 +196,7 @@
             destdir="${custom.tasks.cls}" 
             debug="true"/>
         
-        <property name="skip.build.custom.tasks" value="true"/>
+        <property name="dont.build.custom.tasks" value="true"/>
     </target>
     
     <!--
@@ -336,7 +341,7 @@
                 <arg value="${nb.platform.home}"/>
                 <arg value="${nb.ignore.native}"/>
                 <arg value="${nb.no.dependencies}"/>
-                <arg value="${nb.skip.build.custom.tasks}"/>
+                <arg value="${nb.dont.build.custom.tasks}"/>
                 <arg value="${nb.custom.tasks.cls}"/>
                 <arg value="${nb.custom.parameter}"/>
             </exec>
@@ -631,8 +636,10 @@
              just been set above -->
         <set property="current.ssh.arguments" 
              source="ssh.arguments"/>
-        <set property="current.ssh.command" 
-             source="ssh.command"/>
+        <set property="current.ssh.command.clean" 
+             source="ssh.command.clean"/>
+        <set property="current.ssh.command.build" 
+             source="ssh.command.build"/>
         
         <set property="current.scp.arguments" 
              source="scp.arguments"/>
@@ -645,7 +652,7 @@
              everything -->
         <exec executable="${ssh.executable}" failonerror="true">
             <arg line="${current.ssh.arguments}"/>
-            <arg value="${current.ssh.command}"/>
+            <arg value="${current.ssh.command.build}"/>
         </exec>
         
         <!-- run the scp command to copy the resulting file back to the 
@@ -655,6 +662,12 @@
             <arg line="${current.scp.arguments}"/>
             <arg value="${current.scp.remote.dir}/${current.native.dist.file}"/>
             <arg value="${current.scp.local.dir}/${current.native.dist.file}"/>
+        </exec>
+        
+        <!-- run the ssh command - we need to clean after us -->
+        <exec executable="${ssh.executable}" failonerror="true">
+            <arg line="${current.ssh.arguments}"/>
+            <arg value="${current.ssh.command.clean}"/>
         </exec>
     </target>
     
@@ -679,7 +692,7 @@
             <arg value="${nb.platform.home}"/>
             <arg value="${nb.ignore.native}"/>
             <arg value="${nb.no.dependencies}"/>
-            <arg value="${nb.skip.build.custom.tasks}"/>
+            <arg value="${nb.dont.build.custom.tasks}"/>
             <arg value="${nb.custom.tasks.cls}"/>
             <arg value="${nb.custom.parameter}"/>
         </exec>

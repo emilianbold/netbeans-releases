@@ -79,7 +79,7 @@ public class RunCommand extends HttpServlet {
             
             String getFilePrefix = null;
             if (registry != null) {
-                getFilePrefix = getHostUrl(request) + "/nbi/milestone11/get-file?registry=" +
+                getFilePrefix = getHostUrl(request) + "/nbi/milestone13/get-file?registry=" +
                         URLEncoder.encode(registry, "UTF-8") + "&file=";
             }
             
@@ -95,16 +95,12 @@ public class RunCommand extends HttpServlet {
                 manager.updateEngine(archive);
             }
             
-            if (command.equals("update-component")) {
-                manager.updateComponent(registry, archive, uid, version, platforms, getFilePrefix);
+            if (command.equals("add-package")) {
+                manager.addPackage(registry, archive, uid, version, platforms, getFilePrefix);
             }
             
-            if (command.equals("remove-component")) {
-                manager.removeComponent(registry, uid, version, platforms);
-            }
-            
-            if (command.equals("update-group")) {
-                manager.updateGroup(registry, archive, uid, version, platforms, getFilePrefix);
+            if (command.equals("remove-product")) {
+                manager.removeProduct(registry, uid, version, platforms);
             }
             
             if (command.equals("remove-group")) {
@@ -116,7 +112,7 @@ public class RunCommand extends HttpServlet {
             }
             
             if (command.equals("delete-bundles")) {
-                manager.deleteBundles(new String[]{registry});
+                manager.deleteBundles();
             }
             
             if (command.equals("export-registry")) {

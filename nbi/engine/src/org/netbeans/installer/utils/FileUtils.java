@@ -494,7 +494,7 @@ public final class FileUtils {
         FilesList list = new FilesList();
         
         if (!source.renameTo(target)) {
-            list = copyFile(source, target);
+            list = copyFile(source, target, true);
             deleteFile(source);
         }
         

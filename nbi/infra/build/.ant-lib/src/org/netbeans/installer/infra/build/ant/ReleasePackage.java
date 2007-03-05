@@ -26,15 +26,36 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.installer.infra.build.ant.utils.AntUtils;
 
-public class ReleaseEngine extends Task {
+public class ReleasePackage extends Task {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private String url      = "";
-    private String archive  = "";
+    private String url       = "";
+    
+    private String registry  = "";
+    private String uid       = "";
+    private String version   = "";
+    private String platforms = "";
+    private String archive   = "";
     
     // setters //////////////////////////////////////////////////////////////////////
     public void setUrl(String url) {
         this.url = url;
+    }
+    
+    public void setRegistry(String registry) {
+        this.registry = registry;
+    }
+    
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+    
+    public void setVersion(String version) {
+        this.version = version;
+    }
+    
+    public void setPlatforms(String platforms) {
+        this.platforms = platforms;
     }
     
     public void setArchive(String archive) {
@@ -51,9 +72,13 @@ public class ReleaseEngine extends Task {
                 file = new File(getProject().getBaseDir(), archive);
             }
             
+            args.put("registry", registry);
+            args.put("uid", uid);
+            args.put("version", version);
+            args.put("platforms", platforms);
             args.put("archive", file);
             
-            log(AntUtils.post(url + "/update-engine", args));
+            log(AntUtils.post(url + "/add-package", args));
         } catch (IOException e) {
             throw new BuildException(e);
         }

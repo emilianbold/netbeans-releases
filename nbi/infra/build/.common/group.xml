@@ -87,8 +87,8 @@
             classname="org.netbeans.installer.infra.build.ant.GroupDescriptor" 
             classpath="${custom.tasks.cls}"/>
         <taskdef
-            name="release-group"
-            classname="org.netbeans.installer.infra.build.ant.ReleaseGroup"
+            name="release-package"
+            classname="org.netbeans.installer.infra.build.ant.ReleasePackage"
             classpath="${custom.tasks.cls}"/>
     </target>
     
@@ -208,7 +208,7 @@
       This target is not intended to be called directly.
     -->
     <target name="-release">
-        <release-group url="${release.url}"
+        <release-package url="${release.url}"
                       registry="${release.registry}"
                       uid="${release.parent.uid}"
                       version="${release.parent.version}"

@@ -78,6 +78,14 @@
             name="md5" 
             classname="org.netbeans.installer.infra.build.ant.Md5" 
             classpath="${custom.tasks.cls}"/>
+        <taskdef
+            name="sum"
+            classname="org.netbeans.installer.infra.build.ant.Sum"
+            classpath="${custom.tasks.cls}"/>
+        <taskdef
+            name="package"
+            classname="org.netbeans.installer.infra.build.ant.Package"
+            classpath="${custom.tasks.cls}"/>
         <taskdef 
             name="load-locales" 
             classname="org.netbeans.installer.infra.build.ant.LoadLocales" 
@@ -87,16 +95,12 @@
             classname="org.netbeans.installer.infra.build.ant.ProductDescriptor" 
             classpath="${custom.tasks.cls}"/>
         <taskdef
-            name="release-product"
-            classname="org.netbeans.installer.infra.build.ant.ReleaseProduct"
+            name="release-package"
+            classname="org.netbeans.installer.infra.build.ant.ReleasePackage"
             classpath="${custom.tasks.cls}"/>
         <taskdef
             name="absolutize"
             classname="org.netbeans.installer.infra.build.ant.Absolutize"
-            classpath="${custom.tasks.cls}"/>
-        <taskdef
-            name="sum"
-            classname="org.netbeans.installer.infra.build.ant.Sum"
             classpath="${custom.tasks.cls}"/>
         
         <!-- check whether the engine should be built -->
@@ -213,41 +217,34 @@
         <property name="product.disk.space" 
                   value="${product.disk.space.modificator}"/>
         
+        <!-- init several shorthands -->
+        <set 
+            property="product.logic.dir" 
+            value="${package.dir}/${product.logic.path}"/>
+        <set 
+            property="product.data.dir" 
+            value="${package.dir}/${product.data.path}"/>
+        
         <!-- some necessary mkdirs -->
         <mkdir dir="${packaged.data.dir}"/>
         <mkdir dir="${downloads.cache.dir}"/>
-        <mkdir dir="${package.dir}/${product.logic.path}"/>
-        <mkdir dir="${package.dir}/${product.data.path}"/>
+        <mkdir dir="${product.logic.dir}"/>
+        <mkdir dir="${product.data.dir}"/>
         
         <!-- fetch the configuration logic jars; the first jar is handled 
              separately, if the the ${build.nbproject} has been set to true - 
              we don't need to fetch it, as we ca just copy -->
         <if property="build.nbproject" value="true">
-            <property 
-                name="i" 
+            <set 
+                property="i" 
                 value="1"/>
             <set 
                 property="current.file" 
-                value="${package.dir}/${product.logic.path}/${product.logic.file}"/>
+                value="${product.logic.dir}/${product.logic.file.name}"/>
             
             <copy 
                 file="${nbproject.dist.dir}/${nbproject.dist.file.name}"
                 tofile="${current.file}"/>
-            
-            <property 
-                name="start.index" 
-                value="2"/>
-        </if>
-        <property name="start.index" value="1"/>
-        
-        <for-each from="${start.index}" to="${product.logic.length}" property="i">
-            <!-- set the properties relevant to the current file -->
-            <set property="current.uri" 
-                 source="product.logic.${i}.uri"/>
-            <set property="current.file" 
-                 value="${package.dir}/${product.logic.path}/${product.logic.file}"/>
-            
-            <get src="${current.uri}" dest="${current.file}"/>
             
             <!-- sign the current jar file -->
             <signjar jar="${current.file}" 
@@ -260,19 +257,61 @@
             <sizeof file="${current.file}" property="product.logic.${i}.size"/>
             <md5 file="${current.file}" property="product.logic.${i}.md5"/>
             <set property="product.logic.${i}.uri"
-                 value="resource:${product.logic.path}/${product.logic.file}"/>
+                 value="resource:${product.logic.path}/${product.logic.file.name}"/>
+            
+            <property 
+                name="start.index" 
+                value="2"/>
+        </if>
+        <property name="start.index" value="1"/>
+        
+        <for-each from="${start.index}" 
+                  to="${product.logic.length}" 
+                  property="i">
+            <!-- set the properties relevant to the current file -->
+            <set 
+                property="current.uri" 
+                source="product.logic.${i}.uri"/>
+            <set 
+                property="current.file" 
+                value="${product.logic.dir}/${product.logic.file.name}"/>
+            
+            <get 
+                src="${current.uri}" 
+                dest="${current.file}" 
+                usetimestamp="true"/>
+            
+            <!-- sign the current jar file -->
+            <signjar 
+                jar="${current.file}" 
+                keystore="${jarsigner.keystore}"
+                storepass="${jarsigner.storepass}"
+                alias="${jarsigner.alias}"
+                maxmemory="${jarsigner.xmx}"/>
+            
+            <!-- calculate the metadata for the file -->
+            <sizeof 
+                file="${current.file}" 
+                property="product.logic.${i}.size"/>
+            <md5 
+                file="${current.file}" 
+                property="product.logic.${i}.md5"/>
+            <set 
+                property="product.logic.${i}.uri"
+                value="resource:${product.logic.path}/${product.logic.file.name}"/>
         </for-each>
         
         <!-- fetch and repackage installation data zips -->
         <for-each from="1" to="${product.data.length}" property="i">
             <!-- define the path to the current working file and the temporary
                  directory which should be used for repackaging -->
+                 <echo message="${product.data.1.uri}"/>
             <set 
                 property="current.uri" 
                 source="product.data.${i}.uri"/>
             <set 
                 property="current.file" 
-                value="${package.dir}/${product.data.path}/${product.data.file}"/>
+                value="${product.data.dir}/${product.data.file.name}"/>
             <set 
                 property="current.download" 
                 value="${product.downloaded.data.file}"/>
@@ -323,7 +362,8 @@
             <!-- if the data needs to be packaged -->
             <if property="do.package.data" value="true">
                 <get src="${current.uri}" 
-                     dest="${current.download}"/>
+                     dest="${current.download}"
+                     usetimestamp="true"/>
                 
                 <copy file="${current.download}"
                       tofile="${current.file}"/>
@@ -365,7 +405,7 @@
                     <copy file="${current.file}" 
                           tofile="${current.packaged.data.file}"/>
                     <echo 
-                        message="product.packaged.data.${i}.original.size=${current.disk.space}" 
+                        message="product.data.${i}.size=${current.disk.space}" 
                         file="${current.packaged.data.properties.file}"/>
                 </if>
                 
@@ -385,7 +425,7 @@
                 
                 <set 
                     property="current.disk.space" 
-                    source="product.packaged.data.${i}.original.size"/>
+                    source="product.data.${i}.size"/>
                 <sum 
                     arg1="${product.disk.space}" 
                     arg2="${current.disk.space}" 
@@ -409,18 +449,22 @@
                 property="product.data.${i}.md5"/>
             <set 
                 property="product.data.${i}.uri"
-                value="resource:${product.data.path}/${product.data.file}"/>
+                value="resource:${product.data.path}/${product.data.file.name}"/>
         </for-each>
         
         <!-- fetch the icon -->
+        <set 
+            property="product.icon.file" 
+            value="${package.dir}/${product.icon.path}"/>
+        
         <copy 
             file="${product.icon}" 
-            tofile="${package.dir}/${product.icon.path}"/>
+            tofile="${product.icon.file}"/>
         <sizeof 
-            file="${package.dir}/${product.icon.path}" 
+            file="${product.icon.file}" 
             property="product.icon.size"/>
         <md5 
-            file="${package.dir}/${product.icon.path}" 
+            file="${product.icon.file}" 
             property="product.icon.md5"/>
         <set 
             property="product.icon.uri"
@@ -433,9 +477,13 @@
         <product-descriptor 
             file="${package.dir}/${package.descriptor.path}"/>
         
-        <!-- create the distributive jar file -->
+        <!-- create the distributive jar file and sign it -->
+        <set 
+            property="product.dist.file" 
+            value="${dist.dir}/${product.dist.file.name}"/>
+        
         <jar basedir="${package.dir}"
-             destfile="${work.dir}/${product.dist.file.name}" 
+             destfile="${product.dist.file}" 
              compress="true">
             <manifest>
                 <attribute 
@@ -444,13 +492,8 @@
             </manifest>
         </jar>
         
-        <copy 
-            file="${work.dir}/${product.dist.file.name}" 
-            todir="${dist.dir}"/>
-        
-        <!-- sign it -->
         <signjar 
-            jar="${dist.dir}/${product.dist.file.name}" 
+            jar="${product.dist.file}" 
             keystore="${jarsigner.keystore}"
             storepass="${jarsigner.storepass}"
             alias="${jarsigner.alias}"
@@ -522,12 +565,12 @@
       This target is not intended to be called directly.
     -->
     <target name="-release">
-        <release-product url="${release.url}"
+        <release-package url="${release.url}"
                          registry="${release.registry}"
                          uid="${release.parent.uid}"
                          version="${release.parent.version}"
                          platforms="${product.platforms}"
-                         archive="${dist.dir}/${product.dist.file.name}"/>
+                         archive="${product.dist.file}"/>
     </target>
     
     <!-- =======================================================================

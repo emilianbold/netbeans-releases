@@ -29,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
-import java.util.zip.ZipOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.installer.infra.build.ant.utils.AntUtils;
@@ -67,10 +66,17 @@ public class Package extends Task {
     public void execute() throws BuildException {
         AntUtils.setProject(getProject());
         
-        String string       = null;
+        File file = new File(fileName);
+        if (!file.equals(file.getAbsoluteFile())) {
+            file = new File(getProject().getBaseDir(), fileName);
+        }
         
-        File file      = new File(fileName);
         File directory = new File(directoryName);
+        if (!directory.equals(directory.getAbsoluteFile())) {
+            directory = new File(getProject().getBaseDir(), directoryName);
+        }
+        
+        String string = null;
         
         JarOutputStream output = null;
         try {
