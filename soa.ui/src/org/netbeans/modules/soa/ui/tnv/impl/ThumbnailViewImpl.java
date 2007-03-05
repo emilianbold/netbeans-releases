@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -26,20 +26,28 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
+import javax.swing.Timer;
 import org.netbeans.modules.soa.ui.tnv.api.ThumbnailPaintable;
 import org.netbeans.modules.soa.ui.tnv.api.ThumbnailView;
+import org.openide.util.NbBundle;
 
 /**
  * The implementation of the Thumbnail view which uses the double coordinates.
@@ -79,27 +87,42 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
     // used only when the JComponent is used as content
     private ComponentChangeTracker compChangeTracker = null;
     
-    protected boolean repaintMainViewRightAway = false;
+    protected boolean repaintMainViewRightAway = true;
+    protected boolean repaintThumbnailViewRightAway = true;
     
     // indicates if the TNV is now in the DnD mode
     protected boolean dndMode = false;
     
+    protected transient Dimension prevMainVisibleDimension;
+    protected transient Dimension prevMainDimension;
+    protected transient Dimension prevTnvDimension;
+    
+    private Timer changeUpdateDelayTimer;
+    
     public ThumbnailViewImpl() {
         //
-        repaintMainViewRightAway = true;
+        changeUpdateDelayTimer = new Timer(100, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                processObservableChange();
+            }
+        });
+        changeUpdateDelayTimer.setRepeats(false);
         //
         setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         //
-//        addComponentListener(new ComponentAdapter() {
-//            public void componentResized(ComponentEvent e) {
-//                processTnvResize();
-//                repaint();
-//            }
-//        });
+        //        addComponentListener(new ComponentAdapter() {
+        //            public void componentResized(ComponentEvent e) {
+        //                processTnvResize();
+        //                repaint();
+        //            }
+        //        });
         //
         addMouseMotionListener(new MouseMotionAdapter() {
             public void mouseDragged(MouseEvent e) {
-                if (myContent != null) {
+                if (myContent == null) {
+                    return;
+                }
+                if ((e.getModifiers() & InputEvent.BUTTON1_DOWN_MASK) != 0) {
                     dndMode = true;
                     processDrag(e);
                     repaint();
@@ -110,7 +133,10 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
         addMouseListener(new MouseAdapter() {
             
             public void mouseClicked(MouseEvent e) {
-                if (myContent != null) {
+                if (myContent == null) {
+                    return;
+                }
+                if (e.getButton() == MouseEvent.BUTTON1) {
                     processClick(e);
                     scrollMainView();
                     repaint();
@@ -118,10 +144,10 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
             }
             
             public void mousePressed(MouseEvent e) {
-                if (e.getButton() != MouseEvent.BUTTON1) {
+                if (myContent == null) {
                     return;
                 }
-                if (myContent != null) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
                     dndMode = false;
                     //
                     double zoom = getZoom();
@@ -132,24 +158,77 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
                     xDndProcessor.startDnd(e.getX(), xTnState, zoom);
                     yDndProcessor.startDnd(e.getY(), yTnState, zoom);
                 }
+                if (e.isPopupTrigger()) {
+                    constructPopupMenu().show(
+                            ThumbnailViewImpl.this, e.getX(), e.getY());
+                }
             }
             
             public void mouseReleased(MouseEvent e) {
-                if (e.getButton() != MouseEvent.BUTTON1) {
+                if (myContent == null) {
                     return;
                 }
-                // Clear temporary variables for other case
-                xDndProcessor.stopDnd();
-                yDndProcessor.stopDnd();
-                //
-                if (dndMode && !repaintMainViewRightAway) {
-                    scrollMainView();
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    // Clear temporary variables for other case
+                    xDndProcessor.stopDnd();
+                    yDndProcessor.stopDnd();
+                    //
+                    if (dndMode && !repaintMainViewRightAway) {
+                        scrollMainView();
+                    }
+                    //
+                    dndMode = false;
                 }
-                //
-                dndMode = false;
+                if (e.isPopupTrigger()) {
+                    constructPopupMenu().show(
+                            ThumbnailViewImpl.this, e.getX(), e.getY());
+                }
             }
             
         });
+        //
+    }
+    
+    private JPopupMenu constructPopupMenu() {
+        JPopupMenu result = new JPopupMenu();
+        //
+        String text = NbBundle.getMessage(
+                ThumbnailView.class, "REPAINT_MAIN_VIEW_RIGHT_AWAY");
+        JMenuItem item = new JCheckBoxMenuItem(text, isRepaintMainViewRightAway());
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                repaintMainViewRightAway(!isRepaintMainViewRightAway());
+            }
+        });
+        result.add(item);
+        //
+        text = NbBundle.getMessage(
+                ThumbnailView.class, "REPAINT_THUMBNAIL_VIEW_RIGHT_AWAY");
+        item = new JCheckBoxMenuItem(text, isRepaintThumbnailViewRightAway());
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                repaintThumbnailViewRightAway(!isRepaintThumbnailViewRightAway());
+            }
+        });
+        result.add(item);
+        //
+        return result;
+    }
+    
+    public void repaintMainViewRightAway(boolean newValue) {
+        repaintMainViewRightAway = newValue;
+    }
+    
+    public boolean isRepaintMainViewRightAway() {
+        return repaintMainViewRightAway;
+    }
+    
+    public void repaintThumbnailViewRightAway(boolean newValue) {
+        repaintThumbnailViewRightAway = newValue;
+    }
+    
+    public boolean isRepaintThumbnailViewRightAway() {
+        return repaintThumbnailViewRightAway;
     }
     
     private void recalculateTnPositionStates(ThumbnailPositionState xTnState,
@@ -181,7 +260,7 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
         Rectangle2D.Double newVisiblePart = new Rectangle2D.Double(
                 xTnState.vaPosition,
                 yTnState.vaPosition,
-                xTnState.vaHalfSize * 2d, 
+                xTnState.vaHalfSize * 2d,
                 yTnState.vaHalfSize * 2d);
         setVisiblePart(newVisiblePart);
     }
@@ -348,6 +427,14 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
     }
     
     public void observableChanged() {
+        if (repaintThumbnailViewRightAway) {
+            processObservableChange();
+        } else {
+            changeUpdateDelayTimer.restart();
+        }
+    }
+    
+    private void processObservableChange() {
         if (myContent != null) {
             recalculateZoomAndTnv();
             centerSmallView();
@@ -396,9 +483,9 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
                 Rectangle2D.Double tnvVisibleRect = getTnvVisibleRect();
                 g2.translate(-tnvVisibleRect.x, -tnvVisibleRect.y);
                 //
-                assert myContent instanceof ThumbnailPaintable : 
+                assert myContent instanceof ThumbnailPaintable :
                     "The observable component has to implement " +
-                        "the ThumbnailPaintable interface"; // NOI18N
+                    "the ThumbnailPaintable interface"; // NOI18N
                 ((ThumbnailPaintable)myContent).paintThumbnail(g2);
                 //
                 // Paint view rectangle
@@ -478,11 +565,11 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
         Rectangle2D currVisiblePart = myContent.getVisibleRect().getBounds2D();
         Dimension fullAreaSize = myContent.getSize();
         //
-//        System.out.println("centerX: " + x);
-//        System.out.println("event.getX(): " + event.getX());
-//        System.out.println("newCenter: " + newCenter);
-//        System.out.println("currVisiblePart: " + currVisiblePart);
-//        System.out.println("fullArea: " + fullArea);
+        //        System.out.println("centerX: " + x);
+        //        System.out.println("event.getX(): " + event.getX());
+        //        System.out.println("newCenter: " + newCenter);
+        //        System.out.println("currVisiblePart: " + currVisiblePart);
+        //        System.out.println("fullArea: " + fullArea);
         //
         double halfWidth = currVisiblePart.getWidth() / 2d;
         double halfHeight = currVisiblePart.getHeight() / 2d;
@@ -554,32 +641,14 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
             tnvVisibleRect.x += xShift;
             tnvVisibleRect.y += yShift;
         }
-//        System.out.println("tnvVisibleRect: " + tnvVisibleRect);
+        //        System.out.println("tnvVisibleRect: " + tnvVisibleRect);
     }
     
     /**
      * Calculates current ratio of thumbnail view size relative to main view size.
      * In usual case it has to be less then 1.
+     * It also corrects the thumbnail view location.
      */
-    protected double recalculateZoom() {
-        if (myContent == null) {
-            return getZoom();
-        }
-        Rectangle2D bounds = this.getBounds().getBounds2D();
-        Rectangle2D.Double tnvVisibleRect = getTnvVisibleRect();
-        //
-        double xScale = bounds.getWidth() / tnvVisibleRect.width;
-        double yScale = bounds.getHeight() / tnvVisibleRect.height;
-        double scale = Math.min(xScale, yScale);
-        //
-        return scale;
-    }
-    
-    
-    protected transient Dimension prevMainVisibleDimension;
-    protected transient Dimension prevMainDimension;
-    protected transient Dimension prevTnvDimension;
-    
     protected double recalculateZoomAndTnv() {
         double newScale = 0.1d;
         //
@@ -627,7 +696,7 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
                 }
                 //
                 newScale = Math.min(xScale, yScale);
-//                System.out.println("new ZOOM: " + newScale);
+                //                System.out.println("new ZOOM: " + newScale);
                 //
                 if (myZoom != newScale) {
                     //
@@ -652,24 +721,24 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
                     myTnvVisibleRect.y = mainViewCenter.y - resizeFixedPoint.y / newScale;
                     myTnvVisibleRect.width = tnvDimension.width / newScale;
                     myTnvVisibleRect.height = tnvDimension.height / newScale;
-                    //
-                    // Correct the TNV visible rectangle position
-                    // to prevent it's moveint out of full area border
-                    Rectangle mainBounds = myContent.getBounds();
-                    if (myTnvVisibleRect.x < 0) {
-                        myTnvVisibleRect.x = 0;
-                    } else if (myTnvVisibleRect.x + myTnvVisibleRect.width >
-                            mainBounds.width) {
-                        myTnvVisibleRect.x =
-                                mainBounds.width - myTnvVisibleRect.width;
-                    }
-                    if (myTnvVisibleRect.y < 0) {
-                        myTnvVisibleRect.y = 0;
-                    } else if (myTnvVisibleRect.y + myTnvVisibleRect.height >
-                            mainBounds.height) {
-                        myTnvVisibleRect.y =
-                                mainBounds.height - myTnvVisibleRect.height;
-                    }
+                }
+                //
+                // Correct the TNV visible rectangle position
+                // to prevent it's moveint out of full area border
+                Rectangle mainBounds = myContent.getBounds();
+                if (myTnvVisibleRect.x < 0) {
+                    myTnvVisibleRect.x = 0;
+                } else if (myTnvVisibleRect.x + myTnvVisibleRect.width >
+                        mainBounds.width) {
+                    myTnvVisibleRect.x =
+                            mainBounds.width - myTnvVisibleRect.width;
+                }
+                if (myTnvVisibleRect.y < 0) {
+                    myTnvVisibleRect.y = 0;
+                } else if (myTnvVisibleRect.y + myTnvVisibleRect.height >
+                        mainBounds.height) {
+                    myTnvVisibleRect.y =
+                            mainBounds.height - myTnvVisibleRect.height;
                 }
             }
         }
@@ -714,7 +783,7 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
                 }
                 //
                 newScale = Math.min(xScale, yScale);
-//                System.out.println("new ZOOM: " + newScale);
+                //                System.out.println("new ZOOM: " + newScale);
                 //
                 if (myZoom != newScale) {
                     myZoom = newScale;

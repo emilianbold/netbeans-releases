@@ -29,7 +29,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import javax.swing.Box;
 import javax.swing.JComboBox;
-import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -41,10 +40,10 @@ import org.netbeans.modules.bpel.design.NavigationTools;
 import org.netbeans.modules.bpel.design.PartnerLinkFilterButton;
 import org.netbeans.modules.bpel.design.SequenceFilterButton;
 import org.netbeans.modules.bpel.design.DiagramImpl;
+import org.netbeans.modules.soa.ui.tnv.api.ThumbnailView;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataNode;
 import org.openide.windows.TopComponent;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
@@ -55,14 +54,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
-
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.text.JTextComponent;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
-
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.validation.BPELValidationController;
 import org.netbeans.modules.bpel.core.validation.SelectBpelElement;
@@ -132,6 +129,7 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
+import org.netbeans.modules.soa.ui.tnv.scrollpane.ThumbnailScrollPane;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponentGroup;
@@ -477,9 +475,13 @@ public class DesignerMultiViewElement extends TopComponent
         setLayout(new BorderLayout());
         
         myDesignView = createDesignView();
-//        ThumbnailScrollPain scroll = new ThumbnailScrollPain(myDesignView.getView());
-//        scroll.setTnvIndent(10);
-        JScrollPane scroll = new JScrollPane(myDesignView.getView());
+        ThumbnailScrollPane scroll = new ThumbnailScrollPane(myDesignView.getView());
+        scroll.getThumbnailView().getUIComponent().
+                setPreferredSize(new Dimension(100, 150));
+        scroll.getThumbnailView().repaintMainViewRightAway(false);
+        scroll.getThumbnailView().repaintThumbnailViewRightAway(false);
+        scroll.setTnvIndent(10);
+//        JScrollPane scroll = new JScrollPane(myDesignView.getView());
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         scroll.getHorizontalScrollBar().setUnitIncrement(16);

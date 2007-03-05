@@ -72,4 +72,24 @@ public interface ThumbnailView extends ObservableChangeTracker.UpdateListener {
      */
     JComponent getUIComponent();
     
+    
+    /**
+     * Indicates if it necessary to repaint main view right away
+     * after the thumbnail view has changed.
+     */ 
+    boolean isRepaintMainViewRightAway();
+    
+    /**
+     * Set flag which indicates if it necessary to repaint main view right away
+     */ 
+    void repaintMainViewRightAway(boolean newValue);
+ 
+    /**
+     * Indicates if it necessary to repaint thumbnail view right away 
+     * after the main view has changed.
+     */ 
+    boolean isRepaintThumbnailViewRightAway();
+    
+    void repaintThumbnailViewRightAway(boolean newValue);
+    
 }

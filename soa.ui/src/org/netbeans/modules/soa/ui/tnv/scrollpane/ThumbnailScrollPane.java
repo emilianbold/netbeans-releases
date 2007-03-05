@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -84,14 +84,15 @@ public class ThumbnailScrollPane extends JScrollPane {
         //
         setTnvVisible(false, null);
         //
-        ClassLoader loader = this.getClass().getClassLoader();
-        URL url = loader.getResource("org/netbeans/modules/soa/ui/tnv/scrollpain/thumbnail_view.png"); // NOI18N
+        ClassLoader loader = ThumbnailScrollPane.class.getClassLoader();
+        URL url = loader.getResource("org/netbeans/modules/soa/ui/tnv/scrollpane/thumbnail_view.png"); // NOI18N
         if (url != null) {
             Image img =  Toolkit.getDefaultToolkit().createImage(url);
             ImageIcon icon = new ImageIcon(img);
             btnShowTNV.setIcon(icon);
         }
-        String tooltip = NbBundle.getMessage(this.getClass(), "TOOLTIP_TNV_BUTTON");
+        String tooltip = NbBundle.getMessage(
+                ThumbnailView.class, "TOOLTIP_TNV_BUTTON");
         btnShowTNV.setToolTipText(tooltip);
         btnShowTNV.setFocusable(false);
         //
@@ -99,21 +100,23 @@ public class ThumbnailScrollPane extends JScrollPane {
         if (!(viewableComp instanceof ThumbnailPaintable)) {
             // Only components which implements the ThumbnailPaintable are allowed
             setTnvEnabled(false, null);
-        } 
+        }
     }
     
     public void setTnvVisible(boolean newValue, Object source) {
         if (newValue != isTnvVisible) {
+            boolean tnvWasVisible = isTnvVisible && isTnvEnabled;
+            //
             isTnvVisible = newValue;
             //
-            if (isTnvVisible && myTNView == null) {
-                ThumbnailView newTNView = createDefaultThumbnailView();
-                setThumbnailView(newTNView);
+            if (isTnvVisible && isTnvEnabled) {
+                getThumbnailView().getUIComponent().setVisible(true);
+            } else {
+                if (myTNView != null) {
+                    myTNView.getUIComponent().setVisible(false);
+                }
             }
             //
-            if (myTNView != null) {
-                myTNView.getUIComponent().setVisible(isTnvVisible && isTnvEnabled);
-            }
             //
             ignoreMsg = true;
             try {
@@ -123,11 +126,18 @@ public class ThumbnailScrollPane extends JScrollPane {
             } finally {
                 ignoreMsg = false;
             }
+            //
+            if (tnvWasVisible != (isTnvVisible && isTnvEnabled)) {
+                revalidate();
+                repaint();
+            }
         }
     }
     
     public void setTnvEnabled(boolean newValue, Object source) {
         if (isTnvEnabled != newValue) {
+            boolean tnvWasVisible = isTnvVisible && isTnvEnabled;
+            //
             isTnvEnabled = newValue;
             //
             btnShowTNV.setEnabled(isTnvEnabled);
@@ -142,6 +152,11 @@ public class ThumbnailScrollPane extends JScrollPane {
             if (myTNView != null) {
                 myTNView.getUIComponent().setVisible(isTnvVisible && isTnvEnabled);
             }
+            //
+            if (tnvWasVisible != (isTnvVisible && isTnvEnabled)) {
+                revalidate();
+                repaint();
+            }
         }
     }
     
@@ -151,7 +166,6 @@ public class ThumbnailScrollPane extends JScrollPane {
     
     public boolean isTnvVisible() {
         return isTnvVisible;
-        // return myTNView != null && myTNView.getUIComponent().isVisible();
     }
     
     protected ThumbnailView createDefaultThumbnailView() {
@@ -160,7 +174,7 @@ public class ThumbnailScrollPane extends JScrollPane {
         return tnView;
     }
     
-    public void setThumbnailView(ThumbnailView newValue) {
+    public synchronized void setThumbnailView(ThumbnailView newValue) {
         if (myTNView != null) {
             myTNView.setScrollPane(null);
             JComponent thViewComp = myTNView.getUIComponent();
@@ -179,7 +193,11 @@ public class ThumbnailScrollPane extends JScrollPane {
         repaint();
     }
     
-    public ThumbnailView getThumbnailView() {
+    public synchronized ThumbnailView getThumbnailView() {
+        if (myTNView == null) {
+            ThumbnailView newTNView = createDefaultThumbnailView();
+            setThumbnailView(newTNView);
+        }
         return myTNView;
     }
     

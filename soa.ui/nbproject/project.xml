@@ -115,7 +115,7 @@
                 <package>org.netbeans.modules.soa.ui.form.valid</package>
                 <package>org.netbeans.modules.soa.ui.nodes</package>
                 <package>org.netbeans.modules.soa.ui.tnv.api</package>
-                <package>org.netbeans.modules.soa.ui.tnv.scrollpain</package>
+                <package>org.netbeans.modules.soa.ui.tnv.scrollpane</package>
             </friend-packages>
         </data>
     </configuration>
