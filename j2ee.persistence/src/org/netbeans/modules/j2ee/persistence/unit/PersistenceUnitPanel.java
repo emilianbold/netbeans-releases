@@ -40,6 +40,7 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.Error;
@@ -64,7 +65,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         
         assert project != null : "Could not resolve project for " + dObj.getPrimaryFile(); //NOI18N
         
-        if (ProviderUtil.getLibrary(persistenceUnit) != null && ProviderUtil.getConnection(persistenceUnit) != null) {
+        if (PersistenceLibrarySupport.getLibrary(persistenceUnit) != null && ProviderUtil.getConnection(persistenceUnit) != null) {
             isContainerManaged = false;
         } else if (persistenceUnit.getJtaDataSource() != null || persistenceUnit.getNonJtaDataSource() != null) {
             isContainerManaged = true;

@@ -39,6 +39,7 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -524,7 +525,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             }
             if (classPath != null) {
                 if (classPath.findResource("javax/persistence/EntityManager.class") == null && // NOI18N
-                        ProviderUtil.getProvidersFromLibraries().size() == 0) {
+                        PersistenceLibrarySupport.getProvidersFromLibraries().size() == 0) {
                     setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_NoJavaPersistenceAPI")); // NOI18N
                     return false;
                 }

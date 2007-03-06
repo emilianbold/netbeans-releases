@@ -38,6 +38,7 @@ import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.openide.util.NbBundle;
 
@@ -111,7 +112,7 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     }
     
     public Library getPersistenceLibrary() {
-        return ProviderUtil.getLibrary((Provider) libraryCombo.getSelectedItem());
+        return PersistenceLibrarySupport.getLibrary((Provider) libraryCombo.getSelectedItem());
     }
     
     public Provider getSelectedProvider(){

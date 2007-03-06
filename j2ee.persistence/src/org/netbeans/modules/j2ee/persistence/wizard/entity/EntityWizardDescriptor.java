@@ -31,6 +31,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -75,7 +76,7 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         if (wizardDescriptor == null) {
             return true;
         }
-        if (ProviderUtil.isSourceLevel14orLower(project)) {
+        if (SourceLevelChecker.isSourceLevel14orLower(project)) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage",
                     NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NeedProperSourceLevel")); // NOI18N
             return false;

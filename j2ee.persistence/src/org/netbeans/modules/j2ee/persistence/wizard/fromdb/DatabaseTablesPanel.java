@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
+import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -869,7 +870,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 return false;
             }
 
-            if (!cmp && ProviderUtil.isSourceLevel14orLower(project)) {
+            if (!cmp && SourceLevelChecker.isSourceLevel14orLower(project)) {
                 setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_NeedProperSourceLevel"));
                 return false;
             }

@@ -20,17 +20,11 @@
 package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -41,8 +35,6 @@ import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSup
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.j2ee.persistence.unit.*;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -54,9 +46,11 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Parameters;
 
 /**
- * Not final, more or less just space for all provider specific properties handling.
- * Some kind of provider plugins needs to be done in this area
- * @author Martin Adamek
+ * A utility class for handling persistence units and providers. Provides means
+ * for constructing a persistence unit and for getting/setting/changing 
+ * properties of persistence units.
+ * 
+ * @author Martin Adamek, Erno Mononen
  */
 public class ProviderUtil {
     
@@ -66,26 +60,7 @@ public class ProviderUtil {
     public static final Provider KODO_PROVIDER = new KodoProvider();
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
     
-    /**
-     * All known provider implementations.
-     */
-    private static final Provider[] PROVIDERS = new Provider[]{HIBERNATE_PROVIDER, TOPLINK_PROVIDER, KODO_PROVIDER};
-    
     private ProviderUtil() {
-    }
-    
-    /**
-     * @return the provider that given library represents or null if
-     *  there was no matching provider.
-     */
-    public static Provider getProvider(Library library){
-        
-        for (int i = 0; i < PROVIDERS.length; i++) {
-            if (PersistenceLibrarySupport.containsClass(library, PROVIDERS[i].getProviderClass())){
-                return PROVIDERS[i];
-            }
-        }
-        return null;
     }
     
     /**
@@ -106,9 +81,9 @@ public class ProviderUtil {
             return getContainerManagedProvider(project);
         }
         
-        for (int i = 0; i < PROVIDERS.length; i++) {
-            if (PROVIDERS[i].getProviderClass().equals(providerClass.trim())){
-                return PROVIDERS[i];
+        for (Provider each : getAllProviders()){
+            if (each.getProviderClass().equals(providerClass.trim())){
+                return each;
             }
         }
         // some unknown provider
@@ -140,8 +115,22 @@ public class ProviderUtil {
         return providerSupplier.getSupportedProviders().get(0);
     }
     
+    /**
+     * Gets the database connection specified in the given persistence
+     * unit.
+     * 
+     * @param pu the persistence unit whose database connection is to 
+     * be retrieved; must not be null.
+     * 
+     * @rerturn the connection specified in the given persistence unit or
+     * <code>null</code> if it didn't specify a connectioh.
+     * 
+     */ 
     public static DatabaseConnection getConnection(PersistenceUnit pu) {
-        if (pu == null || pu.getProperties() == null){
+        
+        Parameters.notNull("pu", pu); //NO18N
+        
+        if (pu.getProperties() == null){
             return null;
         }
         
@@ -178,42 +167,8 @@ public class ProviderUtil {
         return null;
     }
     
-    public static String getDatasourceName(PersistenceUnit pu) {
-        String datasourceName = pu.getJtaDataSource();
-        if (datasourceName == null) {
-            datasourceName = pu.getNonJtaDataSource();
-        }
-        return datasourceName;
-    }
-    
     /**
-     * @return the library in which given persistence unit's provider
-     * is defined, or null none could be found.
-     */
-    public static Library getLibrary(PersistenceUnit pu) {
-        return getLibrary(getProvider(pu));
-    }
-    
-    /**
-     * @return the library in which given provider
-     * is defined, or null none could be found.
-     */
-    public static Library getLibrary(Provider provider){
-        List libraries = createLibraries();
-        if (provider != null) {
-            for (Iterator it = libraries.iterator(); it.hasNext();) {
-                Library library = (Library) it.next();
-                if (provider.getProviderClass().equals(extractProvider(library))) {
-                    return library;
-                }
-            }
-        }
-        return null;
-        
-    }
-    
-    /**
-     * Sets given table generation strategy for given persistence unit.
+     * Sets the given table generation strategy for given persistence unit.
      * @param persistenceUnit
      * @param tableGenerationStrategy the strategy to set, see constants in <code>Provider</code>
      * @project the project of the given persistence unit
@@ -225,9 +180,11 @@ public class ProviderUtil {
     }
     
     /**
-     * Sets given table generation strategy for given persistence unit.
-     * @param persistenceUnit
-     * @param tableGenerationStrategy the strategy to set, see constants in <code>Provider</code>
+     * Sets the given table generation strategy for the given persistence unit.
+     *
+     * @param persistenceUnit the persistenceUnit to which the given strategy is to be set.
+     * @param tableGenerationStrategy the strategy to set, see constants in <code>Provider</code> for
+     * options.
      * @provider the provider whose table generation property will be used.
      */
     public static void setTableGeneration(PersistenceUnit persistenceUnit, String tableGenerationStrategy, Provider provider){
@@ -251,17 +208,22 @@ public class ProviderUtil {
     }
     
     /**
-     * Sets provider, connection and table generation strategy to given persistence unit. Note
-     * that given persistence unit's possibly existing provider's properties are not preserved
+     * Sets the given provider, connection and table generation strategy to the given persistence unit. Note
+     * that if the given persistence unit already had an existing provider, its existing  properties are not preserved
      * with the exception of the database connection properties. In other words, you have to explicitly set for
-     * example table generation strategy for persistence unit after changing provider.
-     * @param persistenceUnit
-     * @param provider the provider to set.
-     * @connection the connection to set.
+     * example a table generation strategy for the persistence unit after changing the provider.
+     *
+     * @param persistenceUnit the persistence unit to which the other params are to be set; must not be null.
+     * @param provider the provider to set; must not be null.
+     * @connection the connection to set; must not be null.
      * @tableGenerationStrategy the table generation strategy to set.
      */
     public static void setProvider(PersistenceUnit persistenceUnit, Provider provider,
             DatabaseConnection connection, String tableGenerationStrategy){
+        
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
+        Parameters.notNull("connection", connection); //NO18N
+        Parameters.notNull("provider", provider); //NO18N
         
         removeProviderProperties(persistenceUnit);
         persistenceUnit.setProvider(provider.getProviderClass());
@@ -271,11 +233,15 @@ public class ProviderUtil {
     
     
     /**
-     * Removes provider specific properties from given persistence unit. More
-     * specifically, removes properties of persistence unit's current provider,
-     * should be called before setting new provider for persistence unit.
+     * Removes all provider specific properties from the given persistence unit.
+     * Should be called before setting a new provider for persistence units.
+     *
+     * @param persistenceUnit the persistence unit whose provider specific
+     * properties are to be removed; must not be null.
      */
     public static void removeProviderProperties(PersistenceUnit persistenceUnit){
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
+        
         Provider old = getProvider(persistenceUnit);
         Property[] properties = getProperties(persistenceUnit);
         
@@ -292,7 +258,23 @@ public class ProviderUtil {
     }
     
     
+    /**
+     * Constructs a persistence unit based on the given paramaters. Takes care of
+     * setting the default vendor specific properties (if any) to the created
+     * persistence unit.
+     *
+     * @param name the name for the persistence unit; must not be null.
+     * @param provider the provider for the persitence unit; must not be null.
+     * @param connection the database connection for the persistence unit; must not be null.
+     *
+     * @return the created persistence unit.
+     */
     public static PersistenceUnit buildPersistenceUnit(String name, Provider provider, DatabaseConnection connection) {
+        
+        Parameters.notNull("name", name);
+        Parameters.notNull("provider", provider);
+        Parameters.notNull("connection", connection);
+        
         PersistenceUnit persistenceUnit = new PersistenceUnit();
         persistenceUnit.setName(name);
         persistenceUnit.setProvider(provider.getProviderClass());
@@ -321,9 +303,17 @@ public class ProviderUtil {
     
     
     /**
-     * Sets properties of given connection to given persistence unit.
+     * Sets the properties of the given connection to the given persistence unit.
+     * 
+     * @param persistenceUnit the persistence unit to which the connection properties
+     * are to be set. Must not be null.
+     * @param connection the database connections whose properties are to be set. Must
+     * not be null.
      */
     public static void setDatabaseConnection(PersistenceUnit persistenceUnit, DatabaseConnection connection){
+        
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
+        Parameters.notNull("connection", connection); //NO18N
         
         Provider provider = getProvider(persistenceUnit);
         Property[] properties = getProperties(persistenceUnit);
@@ -354,19 +344,22 @@ public class ProviderUtil {
     }
     
     /**
-     * Gets properties of given persistence unit. If properties of
-     * given unit was null, will return an empty array.
-     * @return array of properties, empty if given units properties was null.
+     * Gets the properties of the given persistence unit. If the properties of
+     * given unit were null, will return an empty array.
+     * 
+     * @return array of properties, empty if the given unit's properties were null.
      */
-    public static Property[] getProperties(PersistenceUnit persistenceUnit){
+    private static Property[] getProperties(PersistenceUnit persistenceUnit){
         if (persistenceUnit.getProperties() != null){
             return persistenceUnit.getProperties().getProperty2();
         }
         return new Property[0];
     }
+    
     /**
-     * @return Property from given properties whose name matches given propertyName
-     * or null if given properties didn't contain property with matching name.
+     * @return the property from the given properties whose name matches 
+     * the given propertyName
+     * or null if the given properties didn't contain property with a matching name.
      */
     private static Property getProperty(Property[] properties, String propertyName){
         
@@ -385,8 +378,11 @@ public class ProviderUtil {
     }
     
     /**
-     * @return Property from given persistence unit whose name matches given propertyName
-     * or null if given persistence unit didn't contain property with matching name.
+     * Gets the property that matches the given <code>propertyName</code> from the
+     * given <code>persistenceUnit</code>.
+     *
+     * @return the matching property or null if the given persistence unit didn't
+     * contain a property with a matching name.
      */
     public static Property getProperty(PersistenceUnit persistenceUnit, String propertyName){
         if (persistenceUnit.getProperties() == null){
@@ -396,13 +392,20 @@ public class ProviderUtil {
     }
     
     /**
-     * @return provider of given persistence unit. In case that no specific
+     * Gets the persistence provider of the given persistence unit.
+     * 
+     * @param persistenceUnit the persistence unit whose provider is to 
+     * be get. Must not be null.
+     * 
+     * @return the provider of the given persistence unit. In case that no specific
      * provider can be resolved <code>DEFAULT_PROVIDER</code> will be returned.
      */
     public static Provider getProvider(PersistenceUnit persistenceUnit){
-        for (int i = 0; i < PROVIDERS.length; i++) {
-            if (PROVIDERS[i].getProviderClass().equals(persistenceUnit.getProvider())){
-                return PROVIDERS[i];
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
+        
+        for (Provider each : getAllProviders()){
+            if(each.getProviderClass().equals(persistenceUnit.getProvider())){
+                return each;
             }
         }
         return DEFAULT_PROVIDER;
@@ -417,7 +420,13 @@ public class ProviderUtil {
     }
     
     /**
-     * @return persistence units specified in the given puDataObject.
+     * Gets the persistence units that are defined in the given <code>
+     * puDataObject</code>.
+     * 
+     * @param puDataObject the PUDataObject whose persistence units are to be retrived.
+     * 
+     * @return the persistence units specified in the given <code>puDataObject</code>
+     * or an empty array if there were no persistence units defined in it.
      */
     public static PersistenceUnit[] getPersistenceUnits(PUDataObject puDataObject){
         if (puDataObject.getPersistence() == null){
@@ -485,17 +494,19 @@ public class ProviderUtil {
     
     /**
      *Gets the <code>PUDataObject</code> associated with the given <code>fo</code>.
+     * 
      *@param fo the file object thas has an associated <code>PUDataObject</code>. Must
      * not be null.
-     *@return <code>PUDataObject</code> associated with given <code>fo</code>; never null.
+     * 
+     *@return the <code>PUDataObject</code> associated with the given <code>fo</code>.
+     * 
      *@throws IllegalArgumentException if the given <code>fo</code> is null.
      *@throws InvalidPersistenceXmlException if the given file object represents
      * an invalid persistence.xml file.
      */
     public static PUDataObject getPUDataObject(FileObject fo) throws InvalidPersistenceXmlException{
-        if (fo == null){
-            throw new IllegalArgumentException("Called PUDataObject#getPUDataObject with null FileObject param"); //NO18N
-        }
+        Parameters.notNull("fo", fo); //NO18N
+
         DataObject dataObject = null;
         try {
             dataObject = DataObject.find(fo);
@@ -513,12 +524,17 @@ public class ProviderUtil {
      * was no PUDataObject (i.e. no persistence.xml) in the project, a new one
      * will be created. Use
      * {@link #getDDFile} for testing whether a project has a persistence.xml file.
-     *@param project the project whose PUDataObject is to be get.
+     * 
+     *@param project the project whose PUDataObject is to be get. Must not be null.
+     * 
      *@return <code>PUDataObject</code> associated with the given project; never null.
+     * 
      * @throws InvalidPersistenceXmlException if the given <code>project</code> had an existing
      * invalid persitence.xml file.
      */
     public static PUDataObject getPUDataObject(Project project) throws InvalidPersistenceXmlException{
+        Parameters.notNull("project", project); //NO18N
+        
         FileObject puFileObject = getDDFile(project);
         if (puFileObject == null) {
             puFileObject = createPersistenceDDFile(project);
@@ -562,21 +578,27 @@ public class ProviderUtil {
     }
     
     /**
-     * Checks whether given project has a persistence.xml that contains at least one
+     * Checks whether the given project has a persistence.xml that contains at least one
      * persistence unit.
-     * @project the project
-     * @return true if given project has a persistence.xml containing
+     * 
+     * @project the project; must not be null.
+     * 
+     * @return true if the given project has a persistence.xml containing
      * at least one persitence unit, false otherwise.
+     * 
      * @throws InvalidPersistenceXmlException if the given <code>project</code> has an
      *  invalid persistence.xml file.
      */
     public static boolean persistenceExists(Project project) throws InvalidPersistenceXmlException{
+       Parameters.notNull("project", project); //NO18N
+        
         if (getDDFile(project) == null){
             return false;
         }
         PUDataObject pud = getPUDataObject(project);
         return pud.getPersistence().getPersistenceUnit().length > 0;
     }
+    
     /**
      * @return persistence.xml descriptor of first MetadataUnit found on project or null if none found
      */
@@ -588,87 +610,30 @@ public class ProviderUtil {
         return null;
     }
     
-    public static List<Library> createLibraries() {
-        List<Library> providerLibs = new ArrayList<Library>();
-        Library[] libs = LibraryManager.getDefault().getLibraries();
-        for (int i = 0; i < libs.length; i++) {
-            if (PersistenceLibrarySupport.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
-                providerLibs.add(libs[i]);
-            }
-        }
-        Collections.sort(providerLibs, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                assert (o1 instanceof Library) && (o2 instanceof Library);
-                String name1 = ((Library)o1).getDisplayName();
-                String name2 = ((Library)o2).getDisplayName();
-                return name1.compareToIgnoreCase(name2);
-            }
-        });
-        return providerLibs;
-    }
     
     /**
-     * @return list of providers that are defined in the IDE's libraries.
-     */
-    public static List<Provider> getProvidersFromLibraries() {
-        List<Provider> providerLibs = new ArrayList<Provider>();
-        Library[] libs = LibraryManager.getDefault().getLibraries();
-        for (int i = 0; i < libs.length; i++) {
-            if (PersistenceLibrarySupport.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
-                providerLibs.add(getProvider(libs[i]));
-            }
-        }
-        Collections.sort(providerLibs, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                String name1 = ((Provider)o1).getDisplayName();
-                String name2 = ((Provider)o2).getDisplayName();
-                return name1.compareToIgnoreCase(name2);
-            }
-        });
-        
-        return providerLibs;
-    }
-    
-    /**
-     * @return the first library in the IDE's libraries which contains
-     * a persistence provider.
-     */
-    public static Library getFirstProviderLibrary() {
-        List<Library> libraries = createLibraries();
-        if (libraries.size() > 0) {
-            return libraries.iterator().next();
-        }
-        return null;
-    }
-    
-    private static String extractProvider(Library library) {
-        for (int i = 0; i < PROVIDERS.length; i++) {
-            if (PersistenceLibrarySupport.containsClass(library, PROVIDERS[i].getProviderClass())){
-                return PROVIDERS[i].getProviderClass();
-            }
-        }
-        return null;
-    }
-    
-    
-    
-    
-    /** Returns array of providers known to the IDE.
+     * @return array of providers known to the IDE.
      */
     public static Provider[] getAllProviders() {
-        return new Provider[]{DEFAULT_PROVIDER, TOPLINK_PROVIDER, HIBERNATE_PROVIDER, KODO_PROVIDER};
+        return new Provider[]{TOPLINK_PROVIDER, HIBERNATE_PROVIDER, KODO_PROVIDER};
     }
     
     /**
-     * Makes given persistence unit portable if possible, i.e. removes provider class from it.
-     * A persistence unit may be made portable if it uses container's default provider, it doesn't
-     * specicify any properties and it is not defined in Java SE environment.
+     * Makes the given persistence unit portable if possible, i.e. removes the provider class from it.
+     * A persistence unit may be made portable if it uses the default provider of the project's target
+     * server, it doesn't specify any properties and it is not defined in Java SE environment.
+     * 
      * @param project the project in which the given persistence unit is defined. Must not be null.
      * @param persistenceUnit the persistence unit to be made portable. Must not be null.
+     * 
      * @return true if given persistence unit could be made portable, false otherwise.
+     * 
      * @throws NullPointerException if either project or persistenceUnit was null.
      */
     public static boolean makePortableIfPossible(Project project, PersistenceUnit persistenceUnit){
+        
+        Parameters.notNull("project", project); //NO18N
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
         
         if (Util.isJavaSE(project)){
             return false;
@@ -708,12 +673,4 @@ public class ProviderUtil {
         return serverStatusProvider.validServerInstancePresent();
     }
     
-    /**
-     * @return true if the source level of the given project was 1.4 or lower.
-     */
-    public static boolean isSourceLevel14orLower(Project project) {
-        SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
-        String srcLevel = sl.getSourceLevel(project.getProjectDirectory());
-        return srcLevel != null ? Double.parseDouble(srcLevel) <= 1.4 : false;
-    }
 }

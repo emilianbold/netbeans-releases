@@ -41,6 +41,7 @@ import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibraryCustomizer;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -165,7 +166,7 @@ public final class PersistenceProviderComboboxHelper {
      * Adds persistence providers found from libraries to the given model.
      */
     private void addProvidersFromLibraries(DefaultComboBoxModel model){
-        for (Provider each : ProviderUtil.getProvidersFromLibraries()){
+        for (Provider each : PersistenceLibrarySupport.getProvidersFromLibraries()){
             boolean found = false;
             for (int i = 0; i < model.getSize(); i++) {
                 Object elem = model.getElementAt(i);

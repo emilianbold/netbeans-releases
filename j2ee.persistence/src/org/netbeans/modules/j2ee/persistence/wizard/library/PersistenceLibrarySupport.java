@@ -23,9 +23,16 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -231,5 +238,92 @@ public class PersistenceLibrarySupport  {
         return false;
     }
     
+    /**
+     * @return the library in which given persistence unit's provider
+     * is defined, or null none could be found.
+     */
+    public static Library getLibrary(PersistenceUnit pu) {
+        return getLibrary(ProviderUtil.getProvider(pu));
+    }
+    
+    /**
+     * @return the library in which given provider
+     * is defined, or null none could be found.
+     */
+    public static Library getLibrary(Provider provider){
+        List<Library> libraries = createLibraries();
+        for (Library each : libraries){
+            if (provider.getProviderClass().equals(extractProvider(each))) {
+                return each;
+            }
+        }
+        return null;
+    }
+    
+    private static List<Library> createLibraries() {
+        List<Library> providerLibs = new ArrayList<Library>();
+        for (Library each : LibraryManager.getDefault().getLibraries()){
+            if (PersistenceLibrarySupport.containsClass(each, "javax.persistence.EntityManager") && extractProvider(each) != null) {
+                providerLibs.add(each);
+            }
+        }
+        Collections.sort(providerLibs, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                assert (o1 instanceof Library) && (o2 instanceof Library);
+                String name1 = ((Library)o1).getDisplayName();
+                String name2 = ((Library)o2).getDisplayName();
+                return name1.compareToIgnoreCase(name2);
+            }
+        });
+        return providerLibs;
+    }
+  
+    /**
+     * Gets the persistence providers that are defined in the libraries
+     * of the IDE.
+     * 
+     * @return list of the providers that are defined in the IDE's libraries.
+     */
+    public static List<Provider> getProvidersFromLibraries() {
+        List<Provider> providerLibs = new ArrayList<Provider>();
+        Library[] libs = LibraryManager.getDefault().getLibraries();
+        for (Library each : libs){
+            Provider provider = extractProvider(each);
+            if (PersistenceLibrarySupport.containsClass(each, "javax.persistence.EntityManager") && provider != null) {
+                providerLibs.add(provider);
+            }
+        }
+        Collections.sort(providerLibs, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                String name1 = ((Provider)o1).getDisplayName();
+                String name2 = ((Provider)o2).getDisplayName();
+                return name1.compareToIgnoreCase(name2);
+            }
+        });
+        
+        return providerLibs;
+    }
+    
+    /**
+     * @return the first library in the IDE's libraries which contains
+     * a persistence provider.
+     */
+    public static Library getFirstProviderLibrary() {
+        List<Library> libraries = createLibraries();
+        if (libraries.size() > 0) {
+            return libraries.iterator().next();
+        }
+        return null;
+    }
+    
+    
+    private static Provider extractProvider(Library library) {
+        for (Provider each : ProviderUtil.getAllProviders()){
+            if (PersistenceLibrarySupport.containsClass(library, each.getProviderClass())){
+                return each;
+            }
+        }
+        return null;
+    }
     
 }
