@@ -20,13 +20,14 @@
 package gui.window;
 
 import java.awt.Component;
-
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
@@ -36,19 +37,22 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class WebFormDesignerOperator  extends TopComponentOperator {
-    private String topComponentName;
-    private Component designerPaneComponent = null;
+    private Component surface = null;
     
     /**
      * Creates a new instance of WebFormDesignerOperator
      */
-    public WebFormDesignerOperator(String topComponentName) {
+    public WebFormDesignerOperator(String topComponentName)  throws Exception {
         this(topComponentName,0);
+        surface = this.findSubComponent(new DesignerPaneChooser());
+        if(surface == null) {
+            
+            throw new Exception("Cannot find DesignerPane surface");
+        }         
     }
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
-        super(waitTopComponent(null,topComponentName,Index,new WebFormDesignerSubchooser()));
-        this.topComponentName = topComponentName;
+        super(topComponentName,Index); 
     }
     
     public void switchToDesignView() {
@@ -63,78 +67,52 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
         new JToggleButtonOperator(this,"Java").pushNoBlock(); // NOI18N
     }
     
-    public void close() {
-        // need to find parent MultiviewTopComponent and close it
-        new TopComponentOperator(findParentTopComponent()).close();
-    }
-    
     public void closeDiscard() {
-        System.out.println("::	close and discard Designer surface");
-        TopComponentOperator tco = new TopComponentOperator(topComponentName);
-        //tco.closeDiscard();
-        tco.closeWindow();
-        //tco.close();
-        System.out.println("::closing and wait Question dialog");
-        try {
-            NbDialogOperator dialog = new NbDialogOperator(NbDialogOperator.waitJDialog("Question", false, false));
-            JButtonOperator db = new JButtonOperator(dialog,"Discard");
-            db.pushNoBlock();
-        } catch (org.netbeans.jemmy.TimeoutExpiredException e) {
-            //Do nothing
-        }
-        
+       close();
+       try {
+            JDialogOperator dop = new JDialogOperator("Question");
+            JButtonOperator but = new JButtonOperator(dop,"Discard");
+            but.pushNoBlock();           
+       } catch(TimeoutExpiredException e) {
+            //do nothing
+       }
     }
     
     public void cancelSelection() {
-        this.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        this.getDesignerPaneComponentOperator().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
     public void deleteSelection() {
-        this.pushKey(java.awt.event.KeyEvent.VK_DELETE);
+        this.getDesignerPaneComponentOperator().pushKey(java.awt.event.KeyEvent.VK_DELETE);
     }
     
     public void clickOnSurface() {
-        if(designerPaneComponent == null) {
-            designerPaneComponent = getDesignerPaneComponent();
-        }
-        ComponentOperator wrap = new ComponentOperator(designerPaneComponent);
-        wrap.clickMouse();
+        System.out.println("Click on surface...");
+        getDesignerPaneComponentOperator().clickMouse();
+        new QueueTool().waitEmpty();
     }
     
     public void clickOnSurface(int x, int y) {
-        if(designerPaneComponent == null) {
-            designerPaneComponent = getDesignerPaneComponent();
-            
-        }
-        ComponentOperator wrap = new ComponentOperator(designerPaneComponent);
+        System.out.println("Click on surface at: "+x+","+y);
         
-        wrap.clickMouse(x,y,1);
-        System.out.println("Mouse clicked on surface at: "+x+","+y);
+        getDesignerPaneComponentOperator().clickMouse(x,y,1);
+        new QueueTool().waitEmpty();
+
     }
     
     public JPopupMenuOperator clickPopup() {
-        if(designerPaneComponent == null) {
-            designerPaneComponent = getDesignerPaneComponent();
-            
-        }
-        ComponentOperator wrap = new ComponentOperator(designerPaneComponent);
-        wrap.clickForPopup();
         
+        getDesignerPaneComponentOperator().clickForPopup();
         return new JPopupMenuOperator();
     }
     
     public JPopupMenuOperator clickPopup(int x, int y) {
-        if(designerPaneComponent == null) { designerPaneComponent = getDesignerPaneComponent(); }
-        ComponentOperator wrap = new ComponentOperator(designerPaneComponent);
-        wrap.clickForPopup(x,y);
+        
+        getDesignerPaneComponentOperator().clickForPopup(x,y);
         return new JPopupMenuOperator();
     }
     
-    private Component getDesignerPaneComponent() {
-        return this.findSubComponent(new DesignerPaneChooser());
-    }
-    
     public ComponentOperator getDesignerPaneComponentOperator() {
-        return new ComponentOperator(designerPaneComponent);
+        return new ComponentOperator(surface);
     }
     
     public void dump() {
@@ -154,8 +132,18 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     public static final class DesignerPaneChooser implements ComponentChooser {
         
         public boolean checkComponent(Component component) {
-            System.out.println("passed component to DesignerPaneChooser = "+component.toString());
+            //dumpComponent(component);
+            // NB 5.5 class name
+            //return component.getClass().getName().equals("com.sun.rave.designer.DesignerPane");
+            // NB 6.0 class name
             return component.getClass().getName().equals("org.netbeans.modules.visualweb.designer.DesignerPane");
+        }
+        private void dumpComponent(Component component) {
+            System.out.println(component.getClass().toString());
+            System.out.println(component.getX());
+            System.out.println(component.getY());
+            System.out.println(component.getWidth());
+            System.out.println(component.getHeight());
         }
         public String getDescription() {
             return "Designer Surface";
@@ -164,7 +152,6 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     
     public static final class WebFormDesignerSubchooser implements ComponentChooser {
         public boolean checkComponent(Component component) {
-            System.out.println("passed component = "+component.toString());
             return component.getClass().getName().equals("org.netbeans.modules.visualweb.designer.DesignerTopComp");
         }
         
