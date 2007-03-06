@@ -29,6 +29,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.css2.CssBox;
+import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
@@ -2051,6 +2052,19 @@ public class WebForm implements Designer {
     Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, CoordinateTranslator coordinateTranslator, int dropAction) {
         htmlDomProvider.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, coordinateTranslator, dropAction);
+    }
+
+    // >> Designer implementation
+    public void startInlineEditing(Element componentRootElement, String propertyName) {
+        if (getManager().isInlineEditing() && getManager().getInlineEditor().isEditing(componentRootElement, propertyName)) {
+            return;
+        } else {
+            getManager().finishInlineEditing(false);
+        }
+
+        CssBox box = ModelViewMapper.findBoxForComponentRootElement(getPane().getPageBox(), componentRootElement);
+        getTopComponent().requestActive();
+        getManager().startInlineEditing(componentRootElement, propertyName, box, true, true, null, false);
     }
     
     

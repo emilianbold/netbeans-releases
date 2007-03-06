@@ -20,5 +20,42 @@ Microsystems, Inc. All Rights Reserved.
 
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="JSFSupport">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.designer.jsf.resources.Bundle"/>
+            <file name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
+        </folder>
+    </folder>
+    
+    <!-- XXX Actions for DesignBeanNodes, TODO revise the policy of naming of folders. -->
+    <folder name="DesignBeanNodes">
+        <folder name="application">
+            <folder name="x-designtime">
+                <folder name="Actions">
+                    <attr name="DesignerSeparator1.instance/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow/Separator1.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <!-- XXX Actions for Designer popup menu, TODO revise the policy of naming of folders. -->
+    <folder name="Designer">
+        <folder name="application">
+            <folder name="x-designer">
+                <folder name="Popup">
+                    <attr name="DesignerSeparator1.instance/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow/DesignerSeparator2.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>
 

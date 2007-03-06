@@ -25,6 +25,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
+import org.w3c.dom.Element;
 
 /**
  * Interface representing the designer.
@@ -50,4 +51,6 @@ public interface Designer {
     public void setMultiViewCallback(MultiViewElementCallback multiViewElementCallback);
     public CloseOperationState canCloseElement();
     // XXX Temp after moved TopComponent impl out <<<
+
+    public void startInlineEditing(Element componentRootElement, String propertyName);
 }
