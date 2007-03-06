@@ -230,8 +230,9 @@ public class PolicyModelHelper {
             try {
                 if ((d != null) && (policyUri != null)) {
                     Policy p = getPolicyForPolicyUri(policyUri, d);
-                    p.getParent().removeExtensibilityElement(p);
-
+                    if (p != null) {
+                        p.getParent().removeExtensibilityElement(p);
+                    }
                     List<PolicyReference> extPRefElems = c.getExtensibilityElements(PolicyReference.class);
                     if ((extPRefElems != null) && (extPRefElems.size() > 0)) {
                         PolicyReference pref = extPRefElems.get(0);

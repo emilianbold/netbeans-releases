@@ -24,7 +24,6 @@ import java.awt.Dialog;
 import java.util.Collection;
 import java.util.Set;
 import javax.swing.undo.UndoManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
@@ -71,12 +70,13 @@ public class ServicePanel extends SectionInnerPanel {
     private Binding binding;
     private UndoManager undoManager;
     private Project project;
-    private SectionView view;
     private Service service;
     private JaxWsModel jaxwsmodel;
 
     private String oldProfile;
-    
+
+    private boolean doNotSync = false;
+
     private boolean inSync = false;
     private boolean isFromJava = true;
 
@@ -147,13 +147,19 @@ public class ServicePanel extends SectionInnerPanel {
 
         model.addComponentListener(new ComponentListener() {
             public void valueChanged(ComponentEvent evt) {
-                sync();
+                if (!doNotSync) {
+                    sync();
+                }
             }
             public void childrenAdded(ComponentEvent evt) {
-                sync();
+                if (!doNotSync) {
+                    sync();
+                }
             }
             public void childrenDeleted(ComponentEvent evt) {
-                sync();
+                if (!doNotSync) {
+                    sync();
+                }
             }
         });
     }
@@ -264,7 +270,7 @@ public class ServicePanel extends SectionInnerPanel {
                 profileCombo.setSelectedItem(profile);
                 oldProfile = profile;
             } else {
-                SecurityPolicyModelHelper.disableSecurity(binding);
+                SecurityPolicyModelHelper.disableSecurity(binding, true);
             }
         }
 
@@ -277,10 +283,15 @@ public class ServicePanel extends SectionInnerPanel {
         }
         
         if (source.equals(profileCombo)) {
-            String profile = (String) profileCombo.getSelectedItem();
-            ProfilesModelHelper.setSecurityProfile(binding, profile, oldProfile);
-            profileInfoField.setText(ProfileUtil.getProfileInfo(profile));
-            oldProfile = profile;
+            doNotSync = true;
+            try {
+                String profile = (String) profileCombo.getSelectedItem();
+                ProfilesModelHelper.setSecurityProfile(binding, profile, oldProfile);
+                profileInfoField.setText(ProfileUtil.getProfileInfo(profile));
+                oldProfile = profile;
+            } finally {
+                doNotSync = false;
+            }
         }
         
         enableDisable();
@@ -374,12 +385,12 @@ public class ServicePanel extends SectionInnerPanel {
             profileCombo.setEnabled(secSelected);
             profileInfoField.setEnabled(secSelected);
             profConfigButton.setEnabled(secSelected);
-            stsChBox.setEnabled(secSelected/* && !isFromJava*/);
+            stsChBox.setEnabled(secSelected && !isFromJava);
 
             boolean stsSelected = stsChBox.isSelected();
             stsConfigButton.setEnabled(stsSelected);
 
-            boolean storeConfigRequired = isStoreConfigRequired();
+            boolean storeConfigRequired = true;
 
             boolean someSecSelected = secSelected;
             if (!someSecSelected) {
@@ -712,21 +723,6 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
             advancedRMPanel.storeState();
         }
     }//GEN-LAST:event_rmAdvancedActionPerformed
-
-    private boolean isStoreConfigRequired() {
-        if (project != null) {
-            J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            if (mp != null) {
-                String id = mp.getServerID();
-                String instid = mp.getServerInstanceID();
-                if ((instid != null) && (instid.toLowerCase().contains("sun:appserver"))) {     //NOI18N
-                    // TODO - when this gets clarified
-    //                return false;
-                }
-            }
-        }
-        return true;
-    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox fiChBox;

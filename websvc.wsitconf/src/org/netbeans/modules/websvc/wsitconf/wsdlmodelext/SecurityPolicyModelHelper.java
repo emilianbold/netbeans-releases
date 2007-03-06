@@ -80,7 +80,6 @@ import org.netbeans.modules.websvc.wsitmodelext.security.parameters.RequireServe
 import org.netbeans.modules.websvc.wsitmodelext.security.parameters.RequireSignatureConfirmation;
 import org.netbeans.modules.xml.wsdl.model.*;
 import org.openide.util.NbBundle;
-
 import javax.xml.namespace.QName;
 import java.util.Collections;
 import java.util.List;
@@ -108,16 +107,15 @@ public class SecurityPolicyModelHelper {
         return false;
     }
 
-    public static void disableSecurity(WSDLComponent c) {
+    public static void disableSecurity(WSDLComponent c, boolean removeStoreConfig) {
         assert ((c instanceof Binding) || (c instanceof BindingOperation));
-        WSDLModel model = c.getModel();
         setSecurityBindingType(c, null);
         SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
         disableWss(c);
         disableTrust10(c);
         removeTargets(c);
         Policy p = PolicyModelHelper.getPolicyForElement(c);
-        if (p != null) {
+        if ((p != null) && (removeStoreConfig)) {
             KeyStore ks = PolicyModelHelper.getTopLevelElement(p, KeyStore.class);
             TrustStore ts = PolicyModelHelper.getTopLevelElement(p, TrustStore.class);
             if (ks != null) PolicyModelHelper.removeElement(ks);
@@ -127,7 +125,7 @@ public class SecurityPolicyModelHelper {
             Binding b = (Binding)c;
             Collection<BindingOperation> ops = b.getBindingOperations();
             for (BindingOperation op : ops) {
-                disableSecurity(op);
+                disableSecurity(op, removeStoreConfig);
             }
         } else {
             BindingOperation bop = (BindingOperation)c;
@@ -711,7 +709,12 @@ public class SecurityPolicyModelHelper {
         
         WSDLModel model = comp.getModel();
 
-        Policy p = PolicyModelHelper.getPolicyForElement(comp);
+        Policy p = null;
+        if (comp instanceof Policy) {
+            p = (Policy) comp;
+        } else {
+            p = PolicyModelHelper.getPolicyForElement(comp);
+        }
         EncryptedParts encryptedParts = (EncryptedParts) PolicyModelHelper.getTopLevelElement(p, EncryptedParts.class);
         SignedParts signedParts = (SignedParts) PolicyModelHelper.getTopLevelElement(p, SignedParts.class);
         EncryptedElements encryptedElements = (EncryptedElements) PolicyModelHelper.getTopLevelElement(p, EncryptedElements.class);
@@ -725,30 +728,30 @@ public class SecurityPolicyModelHelper {
         }
 
         try {
-            All all = null;
+            WSDLComponent topLevel = null;
             if (encryptedParts != null) {
-                all = (All) encryptedParts.getParent();
-                all.removeExtensibilityElement(encryptedParts);
+                topLevel = encryptedParts.getParent();
+                topLevel.removeExtensibilityElement(encryptedParts);
                 encryptedParts = null;
             }
             if (signedParts != null) {
-                all = (All) signedParts.getParent();
-                all.removeExtensibilityElement(signedParts);
+                topLevel = signedParts.getParent();
+                topLevel.removeExtensibilityElement(signedParts);
                 signedParts = null;
             }
             if (encryptedElements != null) {
-                all = (All) encryptedElements.getParent();
-                all.removeExtensibilityElement(encryptedElements);
+                topLevel = encryptedElements.getParent();
+                topLevel.removeExtensibilityElement(encryptedElements);
                 encryptedElements = null;
             }
             if (signedElements != null) {
-                all = (All) signedElements.getParent();
-                all.removeExtensibilityElement(signedElements);
+                topLevel = signedElements.getParent();
+                topLevel.removeExtensibilityElement(signedElements);
                 signedElements = null;
             }
             if (requiredElements != null) {
-                all = (All) requiredElements.getParent();
-                all.removeExtensibilityElement(requiredElements);
+                topLevel = requiredElements.getParent();
+                topLevel.removeExtensibilityElement(requiredElements);
                 requiredElements = null;
             }
 
@@ -757,13 +760,15 @@ public class SecurityPolicyModelHelper {
             }
             
             if (p == null) {
-                all = PolicyModelHelper.createPolicy(comp);
+                topLevel = PolicyModelHelper.createPolicy(comp);
+            } else if (!(comp instanceof Policy)) {
+                topLevel = PolicyModelHelper.createTopExactlyOneAll(p);
             } else {
-                all = PolicyModelHelper.createTopExactlyOneAll(p);
+                topLevel = p;
             }
-
-            encryptedParts = PolicyModelHelper.createElement(all, SecurityPolicyQName.ENCRYPTEDPARTS.getQName(), EncryptedParts.class, false);
-            signedParts = PolicyModelHelper.createElement(all, SecurityPolicyQName.SIGNEDPARTS.getQName(), SignedParts.class, false);
+           
+            encryptedParts = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.ENCRYPTEDPARTS.getQName(), EncryptedParts.class, false);
+            signedParts = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.SIGNEDPARTS.getQName(), SignedParts.class, false);
 
             for (Vector v : targetModel) {
                 TargetElement te = (TargetElement) v.get(TargetElement.DATA);
@@ -782,19 +787,19 @@ public class SecurityPolicyModelHelper {
                     
                     if (encrypt) {
                         if (encryptedElements == null) {
-                            encryptedElements = PolicyModelHelper.createElement(all, SecurityPolicyQName.ENCRYPTEDELEMENTS.getQName(), EncryptedElements.class, false);
+                            encryptedElements = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.ENCRYPTEDELEMENTS.getQName(), EncryptedElements.class, false);
                         } 
                         addElementForListItem(te.toString(), encryptedElements, wcf);
                     }
                     if (sign) {
                         if (signedElements == null) {
-                            signedElements = PolicyModelHelper.createElement(all, SecurityPolicyQName.SIGNEDELEMENTS.getQName(), SignedElements.class, false);
+                            signedElements = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.SIGNEDELEMENTS.getQName(), SignedElements.class, false);
                         }
                         addElementForListItem(te.toString(), signedElements, wcf);
                     }
                     if (require) {
                         if (requiredElements == null) {
-                            requiredElements = PolicyModelHelper.createElement(all, SecurityPolicyQName.REQUIREDELEMENTS.getQName(), RequiredElements.class, false);            
+                            requiredElements = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.REQUIREDELEMENTS.getQName(), RequiredElements.class, false);            
                         }
                         addElementForListItem(te.toString(), requiredElements, wcf);
                     }

@@ -23,13 +23,13 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="algoSuiteCombo" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="layoutCombo" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="algoSuiteCombo" linkSize="3" pref="133" max="32767" attributes="1"/>
+                          <Component id="layoutCombo" linkSize="3" alignment="0" pref="133" max="32767" attributes="1"/>
                       </Group>
                   </Group>
                   <Component id="requireCertificateChBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -39,12 +39,12 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="algoSuiteLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="algoSuiteCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="algoSuiteCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="layoutLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="layoutCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="layoutCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="requireCertificateChBox" min="-2" max="-2" attributes="0"/>

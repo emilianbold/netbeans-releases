@@ -514,10 +514,43 @@ public class SecurityTokensModelHelper {
         }
         return null;
     }
+
+    public static void removeSupportingTokens(WSDLComponent c) {
+        if (c == null) return;
+        WSDLComponent p = c;
+        if ((c instanceof Binding) || (c instanceof BindingOperation) || 
+           (c instanceof BindingInput) || (c instanceof BindingOutput) || (c instanceof BindingFault)) {
+             p = PolicyModelHelper.getPolicyForElement(c);
+        }
+
+        if (p == null) return;
+        
+        ExtensibilityElement rem = null;
+
+        rem = PolicyModelHelper.getTopLevelElement(p, SupportingTokens.class);
+        if (rem != null) {
+            rem.getParent().removeExtensibilityElement(rem);
+        }
+        
+        rem = PolicyModelHelper.getTopLevelElement(p, SignedSupportingTokens.class);
+        if (rem != null) {
+            rem.getParent().removeExtensibilityElement(rem);
+        }
+
+        rem = PolicyModelHelper.getTopLevelElement(p, EndorsingSupportingTokens.class);
+        if (rem != null) {
+            rem.getParent().removeExtensibilityElement(rem);
+        }
+
+        rem = PolicyModelHelper.getTopLevelElement(p, SignedEndorsingSupportingTokens.class);
+        if (rem != null) {
+            rem.getParent().removeExtensibilityElement(rem);
+        }
+    }
     
     public static WSDLComponent setSupportingTokens(WSDLComponent c, String authToken, int supportingType) {
         if (c == null) return null;
-           
+        
         WSDLModel model = c.getModel();
         WSDLComponentFactory wcf = model.getFactory();
         WSDLComponent tokenType = null;
@@ -531,26 +564,41 @@ public class SecurityTokensModelHelper {
             for (int i=0; i < 4; i++) {
                 tokenKind = getSupportingToken(c, i);
                 if (tokenKind != null) {
-                    tokenKind.getParent().removeExtensibilityElement((ExtensibilityElement) tokenKind);
+                    if (ComboConstants.NONE.equals(authToken) || (authToken == null)) { 
+                        if ((i == supportingType) || (supportingType == NONE)) {
+                            tokenKind.getParent().removeExtensibilityElement((ExtensibilityElement) tokenKind);
+                        }
+                        if (supportingType != NONE) return null;
+                    } else {
+                        if (i == supportingType) {
+                            tokenKind.getParent().removeExtensibilityElement((ExtensibilityElement) tokenKind);
+                        }
+                    }
                 }
             }
-
+            
             if (supportingType == NONE) return null;
             
-            All all = PolicyModelHelper.createPolicy(c);
+            WSDLComponent topLevel = null;
+            if (c instanceof Policy) {
+                topLevel = c;
+            } else {
+                topLevel = PolicyModelHelper.createPolicy(c);
+            }
+        
             if (SUPPORTING == supportingType) {
-                tokenKind = wcf.create(all, TokensQName.SUPPORTINGTOKENS.getQName());
+                tokenKind = wcf.create(topLevel, TokensQName.SUPPORTINGTOKENS.getQName());
             }
             if (SIGNED_SUPPORTING == supportingType) {
-                tokenKind = wcf.create(all, TokensQName.SIGNEDSUPPORTINGTOKENS.getQName());
+                tokenKind = wcf.create(topLevel, TokensQName.SIGNEDSUPPORTINGTOKENS.getQName());
             }
             if (ENDORSING == supportingType) {
-                tokenKind = wcf.create(all, TokensQName.ENDORSINGSUPPORTINGTOKENS.getQName());
+                tokenKind = wcf.create(topLevel, TokensQName.ENDORSINGSUPPORTINGTOKENS.getQName());
             }
             if (SIGNED_ENDORSING == supportingType) {
-                tokenKind = wcf.create(all, TokensQName.SIGNEDENDORSINGSUPPORTINGTOKENS.getQName());
+                tokenKind = wcf.create(topLevel, TokensQName.SIGNEDENDORSINGSUPPORTINGTOKENS.getQName());
             }
-            all.addExtensibilityElement((ExtensibilityElement) tokenKind);
+            topLevel.addExtensibilityElement((ExtensibilityElement) tokenKind);
 
             if (ComboConstants.USERNAME.equals(authToken)) {
                 tokenType = PolicyModelHelper.createElement(tokenKind, TokensQName.USERNAMETOKEN.getQName(), UsernameToken.class, true);

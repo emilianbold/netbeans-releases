@@ -823,7 +823,7 @@ public class ProprietarySecurityPolicyModelHelper {
             if (ComboConstants.ISSUED_TOKENTYPE_SAML10.equals(tTypeShort)) {
                 tTypePolicyStr = ComboConstants.ISSUED_TOKENTYPE_SAML10_POLICYSTR;
             }            
-            ttype.setTokenType(tTypeShort);
+            ttype.setTokenType(tTypePolicyStr);
         } finally {
             if (!isTransaction) {
                 model.endTransaction();

@@ -29,10 +29,10 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="supportTokenCombo" linkSize="1" alignment="0" max="32767" attributes="1"/>
-                          <Component id="algoSuiteCombo" linkSize="1" alignment="0" max="32767" attributes="1"/>
-                          <Component id="layoutCombo" linkSize="1" alignment="0" max="32767" attributes="1"/>
-                          <Component id="wssVersionCombo" linkSize="1" alignment="0" max="32767" attributes="1"/>
+                          <Component id="algoSuiteCombo" linkSize="1" alignment="0" pref="145" max="32767" attributes="1"/>
+                          <Component id="layoutCombo" linkSize="1" alignment="0" pref="145" max="32767" attributes="1"/>
+                          <Component id="wssVersionCombo" linkSize="1" alignment="0" pref="145" max="32767" attributes="1"/>
+                          <Component id="supportTokenCombo" linkSize="1" alignment="0" pref="145" max="32767" attributes="1"/>
                       </Group>
                   </Group>
               </Group>
@@ -46,22 +46,22 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="supportTokenLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="supportTokenCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="supportTokenCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="wssVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="wssVersionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="wssVersionCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="algoSuiteLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="algoSuiteCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="algoSuiteCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="layoutLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="layoutCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="layoutCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="secConvChBox" min="-2" max="-2" attributes="0"/>
@@ -83,7 +83,7 @@
           <ComponentRef name="supportTokenCombo"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/service/profiles/Bundle.properties" key="LBL_SupportToken" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/service/profiles/Bundle.properties" key="LBL_AuthToken" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

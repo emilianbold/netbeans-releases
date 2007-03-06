@@ -113,8 +113,23 @@ public class ProfilesModelHelper {
         return ComboConstants.PROF_GENERIC;
     }
 
+    /** 
+     * Checks whether Secure Conversation is enabled
+     */
+    public static boolean isSCEnabled(WSDLComponent c) {
+        assert ((c instanceof BindingOperation) || (c instanceof Binding));
+        Policy p = PolicyModelHelper.getPolicyForElement(c);
+        SymmetricBinding sb = (SymmetricBinding)PolicyModelHelper.getTopLevelElement(p, SymmetricBinding.class);
+        if (sb == null) return false;
+        WSDLComponent protTokenKind = SecurityTokensModelHelper.getTokenElement(sb, ProtectionToken.class);
+        if (protTokenKind == null) return false;
+        WSDLComponent protToken = SecurityTokensModelHelper.getTokenTypeElement(protTokenKind);
+        if (protToken == null) return false;
+        boolean secConv = (protToken instanceof SecureConversationToken);
+        return secConv;        
+    }
+
     public static String getWSITSecurityProfile(WSDLComponent c) {
-        WSDLModel model = c.getModel();
         if ((c instanceof Binding) || (c instanceof BindingOperation)) {
             Policy p = PolicyModelHelper.getPolicyForElement(c);
 
@@ -138,7 +153,6 @@ public class ProfilesModelHelper {
                 tb = (TransportBinding)PolicyModelHelper.getTopLevelElement(p, TransportBinding.class);
             }
             if (tb != null) { // profiles 1,2,3
-                WSDLComponent algoSuite = AlgoSuiteModelHelper.getAlgorithmSuiteElement(tb);
                 // depends on message level policy
                 if (c instanceof BindingOperation) {
                     BindingInput input = ((BindingOperation)c).getBindingInput();
@@ -151,18 +165,18 @@ public class ProfilesModelHelper {
                     }
                     return ComboConstants.PROF_TRANSPORT;
                 } else {
-                    Collection<BindingOperation> operations = ((Binding)c).getBindingOperations();
-                    for (BindingOperation o : operations) {
-                        if (!SecurityPolicyModelHelper.isSecurityEnabled(o)) {
-                            BindingInput input = o.getBindingInput();
-                            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                            String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
-                            if (ComboConstants.SAML.equals(tokenType)) { // profile3
-                                return ComboConstants.PROF_SAMLSSL;
-                            } else if ((ComboConstants.USERNAME.equals(tokenType)) || (ComboConstants.X509.equals(tokenType))) {  // profile2
-                                return ComboConstants.PROF_MSGAUTHSSL;
-                            }
-                        }
+                    WSDLComponent tokenKind = null;
+                    if (secConv) {
+                        Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+                        tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                    } else {
+                        tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                    }
+                    String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
+                    if (ComboConstants.SAML.equals(tokenType)) { // profile3
+                        return ComboConstants.PROF_SAMLSSL;
+                    } else if ((ComboConstants.USERNAME.equals(tokenType)) || (ComboConstants.X509.equals(tokenType))) {  // profile2
+                        return ComboConstants.PROF_MSGAUTHSSL;
                     }
                     return ComboConstants.PROF_TRANSPORT;
                 }
@@ -229,18 +243,18 @@ public class ProfilesModelHelper {
                                 return ComboConstants.PROF_MUTUALCERT;
                             }
                         } else {
-                            Collection<BindingOperation> operations = ((Binding)c).getBindingOperations();
-                            for (BindingOperation o : operations) {
-                                if (!SecurityPolicyModelHelper.isSecurityEnabled(o)) {
-                                    BindingInput input = o.getBindingInput();
-                                    WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                                    String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
-                                    if (ComboConstants.SAML.equals(tokenType)) { // profile7
-                                        return ComboConstants.PROF_SAMLSENDER;
-                                    } else if (tokenType == null) {  // profile5
-                                        return ComboConstants.PROF_MUTUALCERT;
-                                    }
-                                }
+                            WSDLComponent tokenKind = null;
+                            if (secConv) {
+                                Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+                                tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                            } else {
+                                tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                            }
+                            String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
+                            if (ComboConstants.SAML.equals(tokenType)) { // profile7
+                                return ComboConstants.PROF_SAMLSENDER;
+                            } else if (tokenType == null) {  // profile5
+                                return ComboConstants.PROF_MUTUALCERT;
                             }
                         }
                     }
@@ -280,8 +294,6 @@ public class ProfilesModelHelper {
     public static void setSecurityProfile(WSDLComponent c, String profile) {
         WSDLModel model = c.getModel();
         
-        WSDLComponentFactory wcf = model.getFactory();
-        
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
             model.startTransaction();
@@ -298,7 +310,7 @@ public class ProfilesModelHelper {
                 AlgoSuiteModelHelper.setAlgorithmSuite(bt, ComboConstants.BASIC128);
                 WssElement wss = SecurityPolicyModelHelper.enableWss(c, false);
                 SecurityPolicyModelHelper.disableTrust10(c);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -312,7 +324,8 @@ public class ProfilesModelHelper {
                 WssElement wss = SecurityPolicyModelHelper.enableWss(c, false);
                 SecurityPolicyModelHelper.disableTrust10(c);
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
+                SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -326,7 +339,8 @@ public class ProfilesModelHelper {
                 WssElement wss = SecurityPolicyModelHelper.enableWss(c, false);
                 SecurityPolicyModelHelper.disableTrust10(c);
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
+                SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -346,7 +360,8 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefThumbprint(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefEncryptedKey(wss, true);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
+                SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -365,7 +380,7 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.disableTrust10(c);
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -387,6 +402,7 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefThumbprint(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefEncryptedKey(wss, true);
                 //endorsing supporting token
+                SecurityTokensModelHelper.removeSupportingTokens(c);
                 tokenType = SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.X509, SecurityTokensModelHelper.ENDORSING);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
@@ -407,7 +423,8 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.disableTrust10(c);
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
+                SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -427,7 +444,7 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.disableTrust10(c);
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -447,7 +464,7 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefThumbprint(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefEncryptedKey(wss, true);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -471,7 +488,7 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportIssuedTokens(trust, true);
                 SecurityPolicyModelHelper.enableRequireClientEntropy(trust, true);
                 SecurityPolicyModelHelper.enableRequireServerEntropy(trust, true);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -497,7 +514,7 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportIssuedTokens(trust, true);
                 SecurityPolicyModelHelper.enableRequireClientEntropy(trust, true);
                 SecurityPolicyModelHelper.enableRequireServerEntropy(trust, true);
-                SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
             }
@@ -523,6 +540,7 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableRequireClientEntropy(trust, true);
                 SecurityPolicyModelHelper.enableRequireServerEntropy(trust, true);
                 //endorsing supporting token
+                SecurityTokensModelHelper.removeSupportingTokens(c);
                 tokenType = SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.ISSUED, SecurityTokensModelHelper.ENDORSING);
                 setMessageLevelSecurityProfilePolicies(c, profile);
                 return;
@@ -553,8 +571,6 @@ public class ProfilesModelHelper {
         assert (o != null);
         
         WSDLModel model = o.getModel();
-        WSDLComponentFactory wcf = model.getFactory();
-        WSDLComponent tokenType = null;
         
         BindingInput input = o.getBindingInput();
         BindingOutput output = o.getBindingOutput();
@@ -575,17 +591,17 @@ public class ProfilesModelHelper {
             }
             // Profile #2
             if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
-                tokenType = SecurityTokensModelHelper.setSupportingTokens(input, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+//                SecurityTokensModelHelper.setSupportingTokens(input, null, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 return;
             }
             // Profile #3
             if (ComboConstants.PROF_SAMLSSL.equals(profile)) {
-                tokenType = SecurityTokensModelHelper.setSupportingTokens(input, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+//                SecurityTokensModelHelper.setSupportingTokens(input, null, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 return;
             }
             // Profile #4
             if (ComboConstants.PROF_USERNAME.equals(profile)) {
-                tokenType = SecurityTokensModelHelper.setSupportingTokens(input, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+//                SecurityTokensModelHelper.setSupportingTokens(input, null, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
                 SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
                 return;
@@ -604,7 +620,7 @@ public class ProfilesModelHelper {
             }
             // Profile #7
             if (ComboConstants.PROF_SAMLSENDER.equals(profile)) {
-                tokenType = SecurityTokensModelHelper.setSupportingTokens(input, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);                
+//                SecurityTokensModelHelper.setSupportingTokens(input, null, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 SecurityPolicyModelHelper.setTargets(input, DEFAULT_TARGETS);
                 SecurityPolicyModelHelper.setTargets(output, DEFAULT_TARGETS);
                 return;
@@ -665,7 +681,8 @@ public class ProfilesModelHelper {
                 
                 boolean onlySign = SecurityPolicyModelHelper.isSignEntireHeadersAndBody(c);
                 boolean includeTimestamp = SecurityPolicyModelHelper.isSignEntireHeadersAndBody(c);
-                
+                String algoSuite = AlgoSuiteModelHelper.getAlgorithmSuite(c);
+                        
                 BootstrapPolicy bp = (BootstrapPolicy) wcf.create(par, SecurityPolicyQName.BOOTSTRAPPOLICY.getQName());
                 par.addExtensibilityElement(bp);
                 Policy p = PolicyModelHelper.createElement(bp, PolicyQName.POLICY.getQName(), Policy.class, false);
@@ -702,13 +719,19 @@ public class ProfilesModelHelper {
 
                 // set top level secure conversation policy
                 SecurityPolicyModelHelper.setLayout(bType, ComboConstants.STRICT);
-                AlgoSuiteModelHelper.setAlgorithmSuite(bType, ComboConstants.BASIC128);
+                if (algoSuite != null) {
+                    AlgoSuiteModelHelper.setAlgorithmSuite(bType, algoSuite);
+                } else {
+                    AlgoSuiteModelHelper.setAlgorithmSuite(bType, ComboConstants.BASIC128);
+                }
                 if (includeTimestamp) {
                     SecurityPolicyModelHelper.enableIncludeTimestamp(bType, true);
                 }
                 if (onlySign) {
                     SecurityPolicyModelHelper.enableSignEntireHeadersAndBody(bType, true);
                 }
+                
+                SecurityPolicyModelHelper.setTargets(p, DEFAULT_TARGETS);
                 
                 SecurityPolicyModelHelper.disableWss(par);
                 WssElement wss = SecurityPolicyModelHelper.enableWss(par, true);

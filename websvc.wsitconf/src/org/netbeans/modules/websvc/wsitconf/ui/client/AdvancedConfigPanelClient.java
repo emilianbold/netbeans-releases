@@ -122,8 +122,8 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
 
         lifeTimeLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         lifeTimeTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        timestampTimeoutLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        timestampTimeoutField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+//        timestampTimeoutLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+//        timestampTimeoutField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         renewExpiredChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         requireCancelChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmAckRequestField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -137,7 +137,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         addImmediateModifier(rmCloseTimeoutField);
         addImmediateModifier(rmResendField);
         addImmediateModifier(lifeTimeTextField);
-        addImmediateModifier(timestampTimeoutField);
+//        addImmediateModifier(timestampTimeoutField);
         addImmediateModifier(renewExpiredChBox);
         addImmediateModifier(requireCancelChBox);
 
@@ -154,12 +154,12 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
             lifeTimeTextField.setText(lifeTime);
         } 
 
-        String timeout = ProprietarySecurityPolicyModelHelper.getTimestampTimeout(binding, true);
-        if (timeout == null) {
-            timestampTimeoutField.setText(DEFAULT_TIMEOUT);
-        } else {
-            timestampTimeoutField.setText(timeout);
-        } 
+//        String timeout = ProprietarySecurityPolicyModelHelper.getTimestampTimeout(binding, true);
+//        if (timeout == null) {
+//            timestampTimeoutField.setText(DEFAULT_TIMEOUT);
+//        } else {
+//            timestampTimeoutField.setText(timeout);
+//        } 
         
         String rmResendInterval = RMSunModelHelper.getResendInterval(binding);
         if (rmResendInterval == null) {
@@ -202,14 +202,14 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
                 }
             }
 
-            if (source.equals(timestampTimeoutField)) {
-                String timeout = timestampTimeoutField.getText();
-                if ((timeout == null) || (timeout.length() == 0) || (DEFAULT_TIMEOUT.equals(timeout))) {
-                    ProprietarySecurityPolicyModelHelper.setTimestampTimeout(binding, null, true);
-                } else {
-                    ProprietarySecurityPolicyModelHelper.setTimestampTimeout(binding, timeout, true);
-                }
-            }
+//            if (source.equals(timestampTimeoutField)) {
+//                String timeout = timestampTimeoutField.getText();
+//                if ((timeout == null) || (timeout.length() == 0) || (DEFAULT_TIMEOUT.equals(timeout))) {
+//                    ProprietarySecurityPolicyModelHelper.setTimestampTimeout(binding, null, true);
+//                } else {
+//                    ProprietarySecurityPolicyModelHelper.setTimestampTimeout(binding, timeout, true);
+//                }
+//            }
             
             if (source.equals(rmResendField)) {
                 String resendInt = rmResendField.getText();
@@ -266,8 +266,8 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         renewExpiredChBox.setEnabled(secConvConfigRequired);
         requireCancelChBox.setEnabled(secConvConfigRequired);
                 
-        timestampTimeoutLabel.setEnabled(timestampEnabled);
-        timestampTimeoutField.setEnabled(timestampEnabled);
+//        timestampTimeoutLabel.setEnabled(timestampEnabled);
+//        timestampTimeoutField.setEnabled(timestampEnabled);
     }
     
     private void setChBox(JCheckBox chBox, Boolean enable) {
@@ -310,10 +310,8 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         requireCancelChBox = new javax.swing.JCheckBox();
         rmResendLabel = new javax.swing.JLabel();
         rmAckRequestLabel = new javax.swing.JLabel();
-        timestampTimeoutLabel = new javax.swing.JLabel();
         rmResendField = new javax.swing.JFormattedTextField();
         rmAckRequestField = new javax.swing.JFormattedTextField();
-        timestampTimeoutField = new javax.swing.JFormattedTextField();
         lifeTimeTextField = new javax.swing.JFormattedTextField();
         rmCloseTimeoutLabel = new javax.swing.JLabel();
         rmCloseTimeoutField = new javax.swing.JFormattedTextField();
@@ -335,14 +333,9 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         rmAckRequestLabel.setLabelFor(rmAckRequestField);
         org.openide.awt.Mnemonics.setLocalizedText(rmAckRequestLabel, org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "LBL_AdvancedConfigPanel_AckRequestInterval")); // NOI18N
 
-        timestampTimeoutLabel.setLabelFor(timestampTimeoutField);
-        org.openide.awt.Mnemonics.setLocalizedText(timestampTimeoutLabel, org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "LBL_AdvancedConfigPanel_TimestampTimeout")); // NOI18N
-
         rmResendField.setFormatterFactory(rmSendDff);
 
         rmAckRequestField.setFormatterFactory(rmReqDff);
-
-        timestampTimeoutField.setFormatterFactory(timeoutDff);
 
         lifeTimeTextField.setFormatterFactory(lifetimeDff);
 
@@ -356,28 +349,24 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(rmResendLabel)
                             .add(rmCloseTimeoutLabel)
-                            .add(rmAckRequestLabel)
-                            .add(timestampTimeoutLabel)
-                            .add(lifeTimeLabel))
-                        .add(10, 10, 10)
+                            .add(rmAckRequestLabel))
+                        .add(49, 49, 49)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(rmResendField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
                             .add(rmCloseTimeoutField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
-                            .add(rmAckRequestField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
-                            .add(timestampTimeoutField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
-                            .add(lifeTimeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)))
+                            .add(rmAckRequestField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(renewExpiredChBox))
-                    .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(requireCancelChBox)))
+                        .add(lifeTimeLabel)
+                        .add(10, 10, 10)
+                        .add(lifeTimeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE))
+                    .add(renewExpiredChBox)
+                    .add(requireCancelChBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -395,10 +384,6 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rmAckRequestLabel)
                     .add(rmAckRequestField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(timestampTimeoutLabel)
-                    .add(timestampTimeoutField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lifeTimeLabel)
@@ -420,8 +405,6 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         rmResendLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSD_AdvancedConfigPanel_ResendInterval")); // NOI18N
         rmAckRequestLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSN_AdvancedConfigPanel_AckRequestInterval")); // NOI18N
         rmAckRequestLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSD_AdvancedConfigPanel_AckRequestInterval")); // NOI18N
-        timestampTimeoutLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSN_AdvancedConfigPanel_TimestampTimeout")); // NOI18N
-        timestampTimeoutLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSD_AdvancedConfigPanel_TimestampTimeout")); // NOI18N
         rmCloseTimeoutLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSN_AdvancedConfigPanel_CloseTimeout")); // NOI18N
         rmCloseTimeoutLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSD_AdvancedConfigPanel_CloseTimeout")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -438,8 +421,6 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     private javax.swing.JLabel rmCloseTimeoutLabel;
     private javax.swing.JFormattedTextField rmResendField;
     private javax.swing.JLabel rmResendLabel;
-    private javax.swing.JFormattedTextField timestampTimeoutField;
-    private javax.swing.JLabel timestampTimeoutLabel;
     // End of variables declaration//GEN-END:variables
     
 }

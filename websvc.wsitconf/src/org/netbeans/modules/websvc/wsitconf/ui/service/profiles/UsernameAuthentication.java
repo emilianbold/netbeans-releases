@@ -23,6 +23,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
@@ -55,6 +56,10 @@ public class UsernameAuthentication extends javax.swing.JPanel {
         this.comp = comp;
 
         inSync = true;
+        supportTokenCombo.removeAllItems();
+        supportTokenCombo.addItem(ComboConstants.X509);
+        supportTokenCombo.addItem(ComboConstants.USERNAME);
+
         layoutCombo.removeAllItems();
         layoutCombo.addItem(ComboConstants.STRICT);
         layoutCombo.addItem(ComboConstants.LAX);
@@ -103,12 +108,19 @@ public class UsernameAuthentication extends javax.swing.JPanel {
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(p));
             setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(bootPolicy));
             setChBox(encryptOrderChBox, SecurityPolicyModelHelper.isEncryptBeforeSigning(bootPolicy));
+            p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
+            setCombo(supportTokenCombo, tokenType);
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             setChBox(secConvChBox, false);
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(comp));
             setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(comp));
             setChBox(encryptOrderChBox, SecurityPolicyModelHelper.isEncryptBeforeSigning(comp));
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
+            setCombo(supportTokenCombo, tokenType);
         }
 
         WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, ProtectionToken.class);
@@ -117,7 +129,7 @@ public class UsernameAuthentication extends javax.swing.JPanel {
 
         setCombo(algoSuiteCombo, AlgoSuiteModelHelper.getAlgorithmSuite(secBinding));
         setCombo(layoutCombo, SecurityPolicyModelHelper.getMessageLayout(secBinding));
-
+        
         enableDisable();
         
         inSync = false;
@@ -149,11 +161,23 @@ public class UsernameAuthentication extends javax.swing.JPanel {
             if (source.equals(derivedKeysChBox)) {
                 SecurityPolicyModelHelper.enableRequireDerivedKeys(protToken, derivedKeysChBox.isSelected());
             }
+            p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+            if (source.equals(supportTokenCombo)) {
+                SecurityTokensModelHelper.setSupportingTokens(p, 
+                        (String)supportTokenCombo.getSelectedItem(), 
+                        SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            }
+            
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             if (source.equals(reqSigConfChBox)) {
                 SecurityPolicyModelHelper.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
             }
+            if (source.equals(supportTokenCombo)) {
+                SecurityTokensModelHelper.setSupportingTokens(comp, 
+                        (String)supportTokenCombo.getSelectedItem(), 
+                        SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            }            
         }
         
         if (source.equals(encryptSignatureChBox)) {
@@ -209,10 +233,6 @@ public class UsernameAuthentication extends javax.swing.JPanel {
         }
     }
 
-    private void setCombo(JComboBox combo, boolean second) {
-        combo.setSelectedIndex(second ? 1 : 0);
-    }
-        
     private void setChBox(JCheckBox chBox, Boolean enable) {
         if (enable == null) {
             chBox.setSelected(false);
@@ -239,6 +259,8 @@ public class UsernameAuthentication extends javax.swing.JPanel {
         encryptSignatureChBox = new javax.swing.JCheckBox();
         reqDerivedKeys = new javax.swing.JCheckBox();
         encryptOrderChBox = new javax.swing.JCheckBox();
+        supportTokenLabel = new javax.swing.JLabel();
+        supportTokenCombo = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(secConvChBox, org.openide.util.NbBundle.getMessage(UsernameAuthentication.class, "LBL_SecConvLabel")); // NOI18N
         secConvChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -312,13 +334,21 @@ public class UsernameAuthentication extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(supportTokenLabel, org.openide.util.NbBundle.getMessage(UsernameAuthentication.class, "LBL_AuthToken")); // NOI18N
+
+        supportTokenCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                supportTokenComboActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(reqDerivedKeys)
                     .add(reqSigConfChBox)
                     .add(secConvChBox)
@@ -328,17 +358,26 @@ public class UsernameAuthentication extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layoutLabel)
-                            .add(algoSuiteLabel))
+                            .add(algoSuiteLabel)
+                            .add(supportTokenLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(supportTokenCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 145, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 145, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 145, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {algoSuiteCombo, layoutCombo, supportTokenCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(supportTokenLabel)
+                    .add(supportTokenCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(algoSuiteLabel)
                     .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -361,6 +400,10 @@ public class UsernameAuthentication extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void supportTokenComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_supportTokenComboActionPerformed
+    setValue(supportTokenCombo);
+}//GEN-LAST:event_supportTokenComboActionPerformed
 
     private void encryptOrderChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptOrderChBoxActionPerformed
          setValue(encryptOrderChBox);
@@ -405,6 +448,8 @@ public class UsernameAuthentication extends javax.swing.JPanel {
     private javax.swing.JCheckBox reqDerivedKeys;
     private javax.swing.JCheckBox reqSigConfChBox;
     private javax.swing.JCheckBox secConvChBox;
+    private javax.swing.JComboBox supportTokenCombo;
+    private javax.swing.JLabel supportTokenLabel;
     // End of variables declaration//GEN-END:variables
     
 }

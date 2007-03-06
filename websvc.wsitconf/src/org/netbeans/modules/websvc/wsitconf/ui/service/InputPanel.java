@@ -211,20 +211,23 @@ public class InputPanel extends SectionInnerPanel {
         if (oSecurityEnabled) {
             profile = ProfilesModelHelper.getSecurityProfile(operation);
         }
-        
+
+        boolean secConversation = ProfilesModelHelper.isSCEnabled(binding);
+        boolean bindingScopeTokenPresent = SecurityTokensModelHelper.getSupportingToken(binding, 
+                SecurityTokensModelHelper.SIGNED_SUPPORTING) != null;
         boolean securityEnabled = bSecurityEnabled || oSecurityEnabled;
         boolean genericProfile = true;
 //        if (ComboConstants.PROF_GENERIC.equals(profile)) {
 //            genericProfile = true;
 //        }
         
-        tokenCombo.setEnabled(securityEnabled && genericProfile);
-        tokenComboLabel.setEnabled(securityEnabled && genericProfile);
+        tokenCombo.setEnabled(securityEnabled && genericProfile && !secConversation && !bindingScopeTokenPresent);
+        tokenComboLabel.setEnabled(securityEnabled && genericProfile && !secConversation && !bindingScopeTokenPresent);
 //        configButton.setEnabled(securityEnabled && genericProfile);
         targetsButton.setEnabled(securityEnabled);
         boolean tokenSelected = !ComboConstants.NONE.equals((String)tokenCombo.getSelectedItem());
-        signedChBox.setEnabled(securityEnabled && tokenSelected && genericProfile);
-        endorsingChBox.setEnabled(securityEnabled && tokenSelected && genericProfile);
+        signedChBox.setEnabled(securityEnabled && tokenSelected && genericProfile && !secConversation && !bindingScopeTokenPresent);
+        endorsingChBox.setEnabled(securityEnabled && tokenSelected && genericProfile && !secConversation && !bindingScopeTokenPresent);
     }
     
     /** This method is called from within the constructor to

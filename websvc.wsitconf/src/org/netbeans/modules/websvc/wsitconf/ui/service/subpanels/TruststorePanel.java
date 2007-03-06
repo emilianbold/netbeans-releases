@@ -309,17 +309,13 @@ public class TruststorePanel extends JPanel {
         String storePasswd = getStorePassword();
         if ((storePasswd != null) && (storePasswd.length() == 0)) {
             ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, true, false);
-        } else if (jsr109 && DEFAULT_PASSWORD.equals(storePasswd)) {
-            ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, true, false);
         } else {
             ProprietarySecurityPolicyModelHelper.setStorePassword(comp, storePasswd, true, false);
         }
         
         ProprietarySecurityPolicyModelHelper.setStoreType(comp, storeType, true, false);
         
-        if (!jsr109) {
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getStoreLocation(), true, false);
-        }
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getStoreLocation(), true, false);
     }
     
     private boolean reloadAliases() {

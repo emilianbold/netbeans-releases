@@ -28,10 +28,10 @@ import java.util.Set;
  */
 public enum FIQName {
     OPTIMIZEDFASTINFOSETSERIALIZATION(createFIQName("OptimizedFastInfosetSerialization")), //NOI18N
-    AUTOMATICALLYSELECTFASTINFOSET(createFIClientQName("AutomaticallySelectFastInfoset")); //NOI18N
+    AUTOMATICALLYSELECTFASTINFOSET(createFIClientQName("AutomaticallySelectOptimalEncoding")); //NOI18N
 
-    public static final String FI_NS_URI = "http://java.sun.com/xml/ns/wsit/2006/09/policy/optimizedfastinfosetserialization";    //NOI18N
-    public static final String FI_CLIENT_NS_URI = "http://java.sun.com/xml/ns/wsit/2006/09/policy/automaticallyselectfastinfoset";    //NOI18N
+    public static final String FI_NS_URI = "http://java.sun.com/xml/ns/wsit/2006/09/policy/fastinfoset/service";    //NOI18N
+    public static final String FI_CLIENT_NS_URI = "http://java.sun.com/xml/ns/wsit/2006/09/policy/encoding/client";    //NOI18N
     public static final String FI_NS_PREFIX = "fi";       //NOI18N
     
     public static QName createFIQName(String localName){

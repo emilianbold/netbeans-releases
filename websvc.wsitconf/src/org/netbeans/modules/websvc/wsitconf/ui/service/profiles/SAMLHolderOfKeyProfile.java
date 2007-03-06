@@ -22,13 +22,12 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 import java.awt.Dialog;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
-import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
@@ -68,7 +67,7 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
      * Called when there's another profile selected, or security is disabled at all.
      */ 
     public void profileDeselected(WSDLComponent component) {
-        //do nothing
+        SecurityPolicyModelHelper.disableSecurity(component, false);
     }
 
     /**

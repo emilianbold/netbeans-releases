@@ -211,7 +211,7 @@ private void usernameHandlerFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN
 
     private void passwdBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passwdBrowseButtonActionPerformed
         if (project != null) {
-            ClassDialog classDialog = new ClassDialog(project, "javax.security.auth.callback.PasswordCallback"); //NOI18N
+            ClassDialog classDialog = new ClassDialog(project, "javax.security.auth.callback.CallbackHandler"); //NOI18N
             classDialog.show();
             if (classDialog.okButtonPressed()) {
                 Set<String> selectedClasses = classDialog.getSelectedClasses();
@@ -226,7 +226,7 @@ private void usernameHandlerFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN
 
     private void usernameBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usernameBrowseButtonActionPerformed
         if (project != null) {
-            ClassDialog classDialog = new ClassDialog(project, "javax.security.auth.callback.NameCallback"); //NOI18N
+            ClassDialog classDialog = new ClassDialog(project, "javax.security.auth.callback.CallbackHandler"); //NOI18N
             classDialog.show();
             if (classDialog.okButtonPressed()) {
                 Set<String> selectedClasses = classDialog.getSelectedClasses();

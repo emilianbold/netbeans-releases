@@ -19,11 +19,11 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
-import java.util.Collection;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
@@ -33,9 +33,6 @@ import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.WssElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
-import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingInput;
-import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
@@ -116,35 +113,24 @@ public class MessageAuthentication extends javax.swing.JPanel {
             setCombo(wssVersionCombo, SecurityPolicyModelHelper.isWss11(p));
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(p));
             setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(bootPolicy));
+            p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
+            setCombo(supportTokenCombo, tokenType);
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             setChBox(secConvChBox, false);
             setCombo(wssVersionCombo, SecurityPolicyModelHelper.isWss11(comp));
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(comp));
             setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(comp));
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
+            setCombo(supportTokenCombo, tokenType);
         }
 
         setCombo(algoSuiteCombo, AlgoSuiteModelHelper.getAlgorithmSuite(secBinding));
         setCombo(layoutCombo, SecurityPolicyModelHelper.getMessageLayout(secBinding));
 
-        if (comp instanceof Binding) {
-            Collection<BindingOperation> ops = ((Binding)comp).getBindingOperations();
-            for (BindingOperation o : ops) {
-                if (!SecurityPolicyModelHelper.isSecurityEnabled(o)) {
-                    BindingInput input = o.getBindingInput();
-                    WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                    String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
-                    setCombo(supportTokenCombo, tokenType);
-                    break;
-                }
-            }
-        } else {
-            BindingInput input = ((BindingOperation)comp).getBindingInput();
-            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-            String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
-            setCombo(supportTokenCombo, tokenType);
-        }
-        
         enableDisable();
 
         inSync = false;
@@ -185,6 +171,12 @@ public class MessageAuthentication extends javax.swing.JPanel {
                 }
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
             }
+            p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+            if (source.equals(supportTokenCombo)) {
+                SecurityTokensModelHelper.setSupportingTokens(p, 
+                        (String)supportTokenCombo.getSelectedItem(), 
+                        SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            }
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             if (source.equals(reqSigConfChBox)) {
@@ -199,6 +191,11 @@ public class MessageAuthentication extends javax.swing.JPanel {
                             SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
                 }
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
+            }
+            if (source.equals(supportTokenCombo)) {
+                SecurityTokensModelHelper.setSupportingTokens(comp, 
+                        (String)supportTokenCombo.getSelectedItem(), 
+                        SecurityTokensModelHelper.SIGNED_SUPPORTING);
             }
         }
 
@@ -218,20 +215,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
             SecurityPolicyModelHelper.enableEncryptSignature(secBinding, encryptSignatureChBox.isSelected());
             if (secConv) {
                 SecurityPolicyModelHelper.enableEncryptSignature(topSecBinding, encryptSignatureChBox.isSelected());
-            }
-        }
-        if (source.equals(supportTokenCombo)) {
-            if (comp instanceof Binding) {
-                Collection<BindingOperation> ops = ((Binding)comp).getBindingOperations();
-                for (BindingOperation o : ops) {
-                    if (!SecurityPolicyModelHelper.isSecurityEnabled(o)) {
-                        BindingInput input = o.getBindingInput();
-                        SecurityTokensModelHelper.setSupportingTokens(input, (String)supportTokenCombo.getSelectedItem(), SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                    }
-                }
-            } else {
-                BindingInput input = ((BindingOperation)comp).getBindingInput();
-                SecurityTokensModelHelper.setSupportingTokens(input, (String)supportTokenCombo.getSelectedItem(), SecurityTokensModelHelper.SIGNED_SUPPORTING);
             }
         }
         
@@ -293,7 +276,7 @@ public class MessageAuthentication extends javax.swing.JPanel {
         encryptSignatureChBox = new javax.swing.JCheckBox();
 
         supportTokenLabel.setLabelFor(supportTokenCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(supportTokenLabel, org.openide.util.NbBundle.getMessage(MessageAuthentication.class, "LBL_SupportToken")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(supportTokenLabel, org.openide.util.NbBundle.getMessage(MessageAuthentication.class, "LBL_AuthToken")); // NOI18N
 
         supportTokenCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -383,10 +366,10 @@ public class MessageAuthentication extends javax.swing.JPanel {
                             .add(algoSuiteLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(supportTokenCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(algoSuiteCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(layoutCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(wssVersionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .add(algoSuiteCombo, 0, 145, Short.MAX_VALUE)
+                            .add(layoutCombo, 0, 145, Short.MAX_VALUE)
+                            .add(wssVersionCombo, 0, 145, Short.MAX_VALUE)
+                            .add(supportTokenCombo, 0, 145, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -421,6 +404,9 @@ public class MessageAuthentication extends javax.swing.JPanel {
                 .add(encryptSignatureChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new java.awt.Component[] {algoSuiteCombo, layoutCombo, supportTokenCombo, wssVersionCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
     }// </editor-fold>//GEN-END:initComponents
 
     private void reqSigConfChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reqSigConfChBoxActionPerformed

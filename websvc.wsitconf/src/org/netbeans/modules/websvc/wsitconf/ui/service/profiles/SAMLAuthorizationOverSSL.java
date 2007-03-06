@@ -307,35 +307,26 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(samlVersionLabel)
-                .addContainerGap(124, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(algoSuiteLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(wssVersionLabel)
-                            .add(31, 31, 31)
-                            .add(wssVersionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .add(samlVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(layoutLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(reqClientCertChBox)
+                    .add(encryptSignatureChBox)
                     .add(reqSigConfChBox)
-                    .add(encryptSignatureChBox))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(samlVersionLabel)
+                            .add(wssVersionLabel)
+                            .add(algoSuiteLabel)
+                            .add(layoutLabel))
+                        .add(12, 12, 12)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(samlVersionCombo, 0, 126, Short.MAX_VALUE)
+                            .add(wssVersionCombo, 0, 126, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 126, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 126, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(reqClientCertChBox)
-                .addContainerGap(49, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {algoSuiteCombo, samlVersionCombo, wssVersionCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {algoSuiteCombo, layoutCombo, samlVersionCombo, wssVersionCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -365,7 +356,7 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {algoSuiteCombo, samlVersionCombo, wssVersionCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {algoSuiteCombo, layoutCombo, samlVersionCombo, wssVersionCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
     }// </editor-fold>//GEN-END:initComponents
 

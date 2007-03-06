@@ -207,17 +207,13 @@ public class KeystorePanel extends JPanel {
         String keyStorePasswd = getKeystorePassword();
         if ((keyStorePasswd == null) || (keyStorePasswd.length() == 0)) {
             ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, false, false);
-        } else if (jsr109 && DEFAULT_PASSWORD.equals(keyStorePasswd)) {
-            ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, false, false);
         } else {
             ProprietarySecurityPolicyModelHelper.setStorePassword(comp, keyStorePasswd, false, false);
         }
         
         ProprietarySecurityPolicyModelHelper.setStoreType(comp, keystoreType, false, false);
         
-        if (!jsr109) {
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getKeystorePath(), false, false);
-        }
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getKeystorePath(), false, false);
     }
     
     /** This method is called from within the constructor to

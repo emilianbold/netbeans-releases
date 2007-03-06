@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.BindingContainerClientNode;
