@@ -157,10 +157,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             FLOAT_KEYWORD, INT_KEYWORD, LONG_KEYWORD, SHORT_KEYWORD
         };
         
-        private static final String[] VALUE_KEYWORDS = new String[] {
-            FALSE_KEYWORD, NULL_KEYWORD, TRUE_KEYWORD
-        };
-
         private static final String[] STATEMENT_KEYWORDS = new String[] {
             FOR_KEYWORD, SWITCH_KEYWORD, SYNCHRONIZED_KEYWORD, TRY_KEYWORD,
             VOID_KEYWORD, WHILE_KEYWORD
@@ -639,7 +635,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (offset <= sourcePositions.getStartPosition(root, im.getQualifiedIdentifier())) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, im, offset);
                 if (last.token().id() == JavaTokenId.IMPORT && Utilities.startsWith(STATIC_KEYWORD, prefix))
-                    addKeyword(env, STATIC_KEYWORD, SPACE);
+                    addKeyword(env, STATIC_KEYWORD, SPACE, false);
                 addPackages(env, prefix);
             }            
         }
@@ -687,8 +683,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (IMPLEMENTS_KEYWORD.equals(headerText)) {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null, controller.getTrees().getElement(path));
-                    } else if (Utilities.startsWith(IMPLEMENTS_KEYWORD, prefix)) {
-                        addKeyword(env, IMPLEMENTS_KEYWORD, SPACE);
+                    } else {
+                        addKeyword(env, IMPLEMENTS_KEYWORD, SPACE, false);
                     }
                     return;
                 }
@@ -714,16 +710,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                         addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null, controller.getTrees().getElement(path));
                     } else {
                         if (!tu.isAnnotation(cls)) {
-                            if (!tu.isEnum(cls) && Utilities.startsWith(EXTENDS_KEYWORD, prefix))
-                                addKeyword(env, EXTENDS_KEYWORD, SPACE);
-                            if (!tu.isInterface(cls) && Utilities.startsWith(IMPLEMENTS_KEYWORD, prefix))
-                                addKeyword(env, IMPLEMENTS_KEYWORD, SPACE);
+                            if (!tu.isEnum(cls))
+                                addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
+                            if (!tu.isInterface(cls))
+                                addKeyword(env, IMPLEMENTS_KEYWORD, SPACE, false);
                         }
                     }
                 } else {
                     if (lastTypeParam.getBounds().isEmpty()) {
-                        if (Utilities.startsWith(EXTENDS_KEYWORD, prefix))
-                            addKeyword(env, EXTENDS_KEYWORD, SPACE);
+                        addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
                     }
                 }
                 return;
@@ -741,10 +736,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case IDENTIFIER:
                         if (!tu.isAnnotation(cls)) {
-                            if (!tu.isEnum(cls) && Utilities.startsWith(EXTENDS_KEYWORD, prefix))
-                                addKeyword(env, EXTENDS_KEYWORD, SPACE);
-                            if (!tu.isInterface(cls) && Utilities.startsWith(IMPLEMENTS_KEYWORD, prefix))
-                                addKeyword(env, IMPLEMENTS_KEYWORD, SPACE);
+                            if (!tu.isEnum(cls))
+                                addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
+                            if (!tu.isInterface(cls))
+                                addKeyword(env, IMPLEMENTS_KEYWORD, SPACE, false);
                         }
                         break;
                 }
@@ -752,8 +747,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             lastNonWhitespaceToken = findLastNonWhitespaceToken(env, (int)sourcePositions.getStartPosition(root, cls), offset);
             if (lastNonWhitespaceToken != null && lastNonWhitespaceToken.token().id() == JavaTokenId.AT) {
-                if (Utilities.startsWith(INTERFACE_KEYWORD, env.getPrefix()))
-                    addKeyword(env, INTERFACE_KEYWORD, SPACE);
+                addKeyword(env, INTERFACE_KEYWORD, SPACE, false);
                 addTypes(env, EnumSet.of(ANNOTATION_TYPE), null, null);
             } else if (path.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                 addClassModifiers(env, cls.getModifiers().getFlags());
@@ -832,7 +826,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             if (lastThr != null) {
                 if (controller.getText().substring(startPos, offset).trim().equals(",")) { //NOI18N
-                    if (queryType == COMPLETION_QUERY_TYPE) {
+                    if (queryType == COMPLETION_QUERY_TYPE && mth.getBody() != null) {
                         controller.toPhase(Phase.RESOLVED);
                         Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
                         Trees trees = controller.getTrees();
@@ -873,11 +867,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     } else {
                         Tree mthParent = path.getParentPath().getLeaf();
                         if (mthParent.getKind() == Tree.Kind.CLASS && controller.getTreeUtilities().isAnnotation((ClassTree)mthParent)) {
-                            if (Utilities.startsWith(DEFAULT_KEYWORD, prefix))
-                                addKeyword(env, DEFAULT_KEYWORD, SPACE);
+                            addKeyword(env, DEFAULT_KEYWORD, SPACE, false);
                         } else {
-                            if (Utilities.startsWith(THROWS_KEYWORD, prefix))
-                                addKeyword(env, THROWS_KEYWORD, SPACE);
+                            addKeyword(env, THROWS_KEYWORD, SPACE, false);
                         }
                     }
                 } else {
@@ -943,8 +935,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }                
             };            
             if (lastNonWhitespaceTokenId == JavaTokenId.AT) {
-                if (Utilities.startsWith(INTERFACE_KEYWORD, env.getPrefix()))
-                    addKeyword(env, INTERFACE_KEYWORD, SPACE);
+                addKeyword(env, INTERFACE_KEYWORD, SPACE, false);
                 addTypes(env, EnumSet.of(ANNOTATION_TYPE), null, null);
                 return;
             }            
@@ -977,8 +968,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             int typeEndPos = (int)sourcePositions.getEndPosition(root, ann.getAnnotationType());
             if (offset <= typeEndPos) {                
                 TreePath parentPath = path.getParentPath();
-                if (Utilities.startsWith(INTERFACE_KEYWORD, prefix) && parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS)
-                    addKeyword(env, INTERFACE_KEYWORD, SPACE);
+                if (parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS)
+                    addKeyword(env, INTERFACE_KEYWORD, SPACE, false);
                 if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     Set<? extends TypeMirror> smarts = env.getSmartTypes();
@@ -1044,8 +1035,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null, controller.getTrees().getElement(path.getParentPath()));
                         break;
                     case IDENTIFIER:
-                        if (Utilities.startsWith(EXTENDS_KEYWORD, prefix) && ts.offset() == env.getSourcePositions().getStartPosition(env.getRoot(), tp))
-                            addKeyword(env, EXTENDS_KEYWORD, SPACE);
+                        if (ts.offset() == env.getSourcePositions().getStartPosition(env.getRoot(), tp))
+                            addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
                         break;
                 }
             }
@@ -1065,10 +1056,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null);
                         break;
                     case QUESTION:
-                        if (Utilities.startsWith(EXTENDS_KEYWORD, prefix))
-                            addKeyword(env, EXTENDS_KEYWORD, SPACE);
-                        if (Utilities.startsWith(SUPER_KEYWORD, prefix))
-                            addKeyword(env, SUPER_KEYWORD, SPACE);
+                        addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
+                        addKeyword(env, SUPER_KEYWORD, SPACE, false);
                         break;
                 }
             }
@@ -1108,8 +1097,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             } else if (last.getKind() == Tree.Kind.TRY) {
                 if (((TryTree)last).getFinallyBlock() == null) {
-                    addKeyword(env, CATCH_KEYWORD, null);
-                    addKeyword(env, FINALLY_KEYWORD, null);
+                    addKeyword(env, CATCH_KEYWORD, null, false);
+                    addKeyword(env, FINALLY_KEYWORD, null, false);
                 }
                 if (((TryTree)last).getCatches().size() == 0)
                     return;
@@ -1175,10 +1164,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (openLtNum > 0) {
                 switch (lastNonWhitespaceTokenId) {
                     case QUESTION:
-                        if (Utilities.startsWith(EXTENDS_KEYWORD, prefix))
-                            addKeyword(env, EXTENDS_KEYWORD, SPACE);
-                        if (Utilities.startsWith(SUPER_KEYWORD, prefix))
-                            addKeyword(env, SUPER_KEYWORD, SPACE);
+                        addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
+                        addKeyword(env, SUPER_KEYWORD, SPACE, false);
                         break;
                     case LT:
                     case COLON:
@@ -1252,7 +1239,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
                     } else if (parent.getKind() == Tree.Kind.METHOD && ((MethodTree)parent).getThrows().contains(fa)) {
                         Types types = controller.getTypes();
-                        if (queryType == COMPLETION_QUERY_TYPE) {
+                        if (queryType == COMPLETION_QUERY_TYPE && ((MethodTree)parent).getBody() != null) {
                             controller.toPhase(Phase.RESOLVED);
                             exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, ((MethodTree)parent).getBody()));
                             Trees trees = controller.getTrees();
@@ -1521,15 +1508,19 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (sourcePositions.getStartPosition(root, efl.getExpression()) >= offset) {
                 if (":".equals(controller.getText().substring((int)sourcePositions.getEndPosition(root, efl.getVariable()), offset).trim())) { //NOI18N
                     env.insideForEachExpressiion();
+                    addKeyword(env, NEW_KEYWORD, SPACE, false);
                     localResult(env);
                 }
                 return;
             }
-            if (controller.getText().substring((int)sourcePositions.getEndPosition(root, efl.getExpression()), offset).trim().endsWith(")")) //NOI18N
+            if (controller.getText().substring((int)sourcePositions.getEndPosition(root, efl.getExpression()), offset).trim().endsWith(")")) { //NOI18N
                 addKeywordsForStatement(env);
-            else
+            } else {
                 env.insideForEachExpressiion();
+                addKeyword(env, NEW_KEYWORD, SPACE, false);
+            }
             localResult(env);
+            
         }
         
         private void insideSwitch(Env env) throws IOException {
@@ -1553,10 +1544,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 } else {
                     TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, st, offset);
                     if (ts != null && ts.token().id() == JavaTokenId.LBRACE) {
-                        if (Utilities.startsWith(CASE_KEYWORD, prefix))
-                            addKeyword(env, CASE_KEYWORD, SPACE);
-                        if (Utilities.startsWith(DEFAULT_KEYWORD, prefix))
-                            addKeyword(env, DEFAULT_KEYWORD, COLON);
+                        addKeyword(env, CASE_KEYWORD, SPACE, false);
+                        addKeyword(env, DEFAULT_KEYWORD, COLON, false);
                     }
                 }
             }
@@ -1895,8 +1884,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         VariableElement ve = getFieldOrVar(env, e.getSimpleName().toString());
                         if (ve != null) {
-                            if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                                addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                            addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                         }
                         break;
                     case ENUM_CONSTANT:
@@ -1905,8 +1893,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case LOCAL_VARIABLE:
                     case PARAMETER:
                         if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
-                            if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                                addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                            addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                         }
                         TypeElement te = getTypeElement(env, e.getSimpleName().toString());
                         if (te != null) {
@@ -1947,8 +1934,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 Element e = controller.getTrees().getElement(exPath);
                 if (e == null) {
-                    if (exp.getKind() == Tree.Kind.TYPE_CAST && Utilities.startsWith(INSTANCEOF_KEYWORD, prefix)) {
-                        addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                    if (exp.getKind() == Tree.Kind.TYPE_CAST) {
+                        addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                     }
                     return;
                 }
@@ -1962,8 +1949,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (exp.getKind() == Tree.Kind.IDENTIFIER) {
                             VariableElement ve = getFieldOrVar(env, e.getSimpleName().toString());
                             if (ve != null) {
-                                if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                                    addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                                addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                             }
                             if (ve == null || tm.getKind() != TypeKind.ERROR) {
                                 localResult(env);
@@ -1971,14 +1957,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                         } else if (exp.getKind() == Tree.Kind.MEMBER_SELECT) {
                             if (tm.getKind() == TypeKind.ERROR || tm.getKind() == TypeKind.PACKAGE) {
-                                if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                                    addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                                addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                             }
                             localResult(env);
                             addValueKeywords(env);
                         } else if (exp.getKind() == Tree.Kind.PARENTHESIZED && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY)) {
-                            if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                                addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                            addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                         }
                         break;
                     case ENUM_CONSTANT:
@@ -1987,8 +1971,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case LOCAL_VARIABLE:
                     case PARAMETER:
                         if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
-                            if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                                addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                            addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                         }
                         TypeElement te = getTypeElement(env, e.getSimpleName().toString());
                         if (te != null || exp.getKind() == Tree.Kind.MEMBER_SELECT) {
@@ -1999,8 +1982,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case CONSTRUCTOR:
                     case METHOD:
                         if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
-                            if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                                addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                            addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                         }
                 }
                 return;
@@ -2009,8 +1991,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
             if (e == null) {
                 if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
-                    if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                        addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                    addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                 }
                 return;
             }
@@ -2032,8 +2013,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     for (String name : Utilities.varNamesSuggestions(tm, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
                         results.add(JavaCompletionItem.createVariableItem(name, offset, false));
                     if (et.getKind() == Tree.Kind.MEMBER_SELECT && tm.getKind() == TypeKind.ERROR) {
-                        if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                            addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                        addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                     }
                     break;
                 case ENUM_CONSTANT:
@@ -2044,8 +2024,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case CONSTRUCTOR:
                 case METHOD:
                     if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
-                        if (Utilities.startsWith(INSTANCEOF_KEYWORD, prefix))
-                            addKeyword(env, INSTANCEOF_KEYWORD, SPACE);
+                        addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                     }
             }
         }
@@ -2065,15 +2044,13 @@ public class JavaCompletionProvider implements CompletionProvider {
             final TreeUtilities tu = controller.getTreeUtilities();
             final Scope scope = env.getScope();
             Set<? extends TypeMirror> smartTypes = null;
+            boolean smartType = false;
             if (queryType == COMPLETION_QUERY_TYPE) {
                 smartTypes = env.getSmartTypes();
                 if (smartTypes != null) {
                     for (TypeMirror st : smartTypes) {
                         if (st.getKind() == TypeKind.BOOLEAN) {
-                            if (Utilities.startsWith(FALSE_KEYWORD, prefix))
-                                results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, offset));
-                            if (Utilities.startsWith(TRUE_KEYWORD, prefix))
-                                results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, offset));
+                            smartType = true;
                         }
                         if (st.getKind().isPrimitive())
                             st = types.boxedClass((PrimitiveType)st).asType();
@@ -2092,15 +2069,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             types.isAssignable(((VariableElement)e).asType(), type);
                                 }
                             };
-                            boolean csm = false;
                             for (Element ee : controller.getElementUtilities().getMembers(type, acceptor)) {
                                 results.add(JavaCompletionItem.createStaticMemberItem(type, ee, types.asMemberOf(type, ee), offset, elements.isDeprecated(ee)));
-                                csm = true;
-                            }
-                            if (csm) {
-                                String name = element.getSimpleName().toString();
-                                if (Utilities.startsWith(name, prefix))
-                                    results.add(JavaCompletionItem.createTypeItem(element, type, offset, false, elements.isDeprecated(element), true));
                             }
                         }
                     }
@@ -2108,9 +2078,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             if (env.getPath().getLeaf().getKind() != Tree.Kind.CASE) {
                 if (Utilities.startsWith(FALSE_KEYWORD, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, offset, smartType));
                 if (Utilities.startsWith(TRUE_KEYWORD, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, offset, smartType));
             }
             final TypeElement enclClass = scope.getEnclosingClass();
             final boolean isStatic = enclClass == null ? false :
@@ -2179,15 +2149,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             (e.getKind().isField() && isOfSmartType(env, ((VariableElement)e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement)e).getReturnType(), finalSmartTypes));
                                 }
                             };
-                            boolean csm = false;
                             for (Element ee : controller.getElementUtilities().getMembers(type, acceptor)) {
                                 results.add(JavaCompletionItem.createStaticMemberItem(type, ee, types.asMemberOf(type, ee), offset, elements.isDeprecated(ee)));
-                                csm = true;
-                            }
-                            if (csm) {
-                                String name = element.getSimpleName().toString();
-                                if (Utilities.startsWith(name, prefix))
-                                    results.add(JavaCompletionItem.createTypeItem(element, type, offset, false, elements.isDeprecated(element), true));
                             }
                         }
                     }
@@ -2238,7 +2201,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case FIELD:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, offset));
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, offset, false));
                         } else {
                             TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
                             results.add(JavaCompletionItem.createVariableItem((VariableElement)e, tm, offset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes)));
@@ -2339,7 +2302,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ENUM_CONSTANT:
                         String name = e.getSimpleName().toString();
                         if (CLASS_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, offset));
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, offset, false));
                         } else {
                             TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
                             results.add(JavaCompletionItem.createVariableItem((VariableElement)e, tm, offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes)));
@@ -2417,7 +2380,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case PARAMETER:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, offset));
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, offset, false));
                         } else {
                             TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
                             results.add(JavaCompletionItem.createVariableItem((VariableElement)e, tm, offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes)));
@@ -2657,8 +2620,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void addKeyword(Env env, String kw, String postfix) {
-            results.add(JavaCompletionItem.createKeywordItem(kw, postfix, env.getOffset()));
+        private void addKeyword(Env env, String kw, String postfix, boolean smartType) {
+            if (Utilities.startsWith(kw, env.getPrefix()))
+                results.add(JavaCompletionItem.createKeywordItem(kw, postfix, env.getOffset(), smartType));
         }
         
         private void addKeywordsForCU(Env env) {
@@ -2702,7 +2666,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             for (String kw : kws) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset, false));
             }
         }
         
@@ -2711,7 +2675,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             for (String kw : CLASS_BODY_KEYWORDS)
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset, false));
             addPrimitiveTypeKeywords(env);
         }
         
@@ -2720,11 +2684,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             for (String kw : STATEMENT_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, null, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, null, offset, false));
             }
             for (String kw : BLOCK_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset, false));
             }
             if (Utilities.startsWith(RETURN_KEYWORD, prefix)) {
                 TreePath mth = Utilities.getPathElementOfKind(Tree.Kind.METHOD, env.getPath());
@@ -2734,7 +2698,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (rt == null || (rt.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree)rt).getPrimitiveTypeKind() == TypeKind.VOID))
                         postfix = SEMI;
                 }
-                results.add(JavaCompletionItem.createKeywordItem(RETURN_KEYWORD, postfix, offset));
+                results.add(JavaCompletionItem.createKeywordItem(RETURN_KEYWORD, postfix, offset, false));
             }
             TreePath tp = env.getPath();
             while (tp != null) {
@@ -2750,21 +2714,21 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         if (lastCase == null || lastCase.getExpression() != null) {
                             if (Utilities.startsWith(CASE_KEYWORD, prefix))
-                                results.add(JavaCompletionItem.createKeywordItem(CASE_KEYWORD, SPACE, offset));
+                                results.add(JavaCompletionItem.createKeywordItem(CASE_KEYWORD, SPACE, offset, false));
                             if (Utilities.startsWith(DEFAULT_KEYWORD, prefix))
-                                results.add(JavaCompletionItem.createKeywordItem(DEFAULT_KEYWORD, COLON, offset));
+                                results.add(JavaCompletionItem.createKeywordItem(DEFAULT_KEYWORD, COLON, offset, false));
                         }
                         if (Utilities.startsWith(BREAK_KEYWORD, prefix))
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, offset));
+                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, offset, false));
                         break;
                     case DO_WHILE_LOOP:
                     case ENHANCED_FOR_LOOP:
                     case FOR_LOOP:
                     case WHILE_LOOP:
                         if (Utilities.startsWith(BREAK_KEYWORD, prefix))
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, offset));
+                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, offset, false));
                         if (Utilities.startsWith(CONTINUE_KEYWORD, prefix))
-                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, SEMI, offset));
+                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, SEMI, offset, false));
                         break;
                 }
                 tp = tp.getParentPath();
@@ -2776,11 +2740,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             for (String kw : STATEMENT_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, null, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, null, offset, false));
             }
             for (String kw : STATEMENT_SPACE_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset, false));
             }
             if (Utilities.startsWith(RETURN_KEYWORD, prefix)) {
                 TreePath mth = Utilities.getPathElementOfKind(Tree.Kind.METHOD, env.getPath());
@@ -2790,7 +2754,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (rt.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree)rt).getPrimitiveTypeKind() == TypeKind.VOID)
                         postfix = SEMI;
                 }
-                results.add(JavaCompletionItem.createKeywordItem(RETURN_KEYWORD, postfix, offset));
+                results.add(JavaCompletionItem.createKeywordItem(RETURN_KEYWORD, postfix, offset, false));
             }
             TreePath tp = env.getPath();
             while (tp != null) {
@@ -2800,10 +2764,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case FOR_LOOP:
                     case WHILE_LOOP:
                         if (Utilities.startsWith(CONTINUE_KEYWORD, prefix))
-                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, SEMI, offset));
+                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, SEMI, offset, false));
                     case SWITCH:
                         if (Utilities.startsWith(BREAK_KEYWORD, prefix))
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, offset));
+                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, offset, false));
                         break;
                 }
                 tp = tp.getParentPath();
@@ -2813,26 +2777,26 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void addValueKeywords(Env env) throws IOException {
             int offset = env.getOffset();
             String prefix = env.getPrefix();
+            boolean smartType = false;
             if (queryType == COMPLETION_QUERY_TYPE) {
                 Set<? extends TypeMirror> smartTypes = env.getSmartTypes();
                 if (smartTypes != null && !smartTypes.isEmpty()) {
                     for (TypeMirror st : smartTypes) {
                         if (st.getKind() == TypeKind.BOOLEAN) {
-                            if (Utilities.startsWith(FALSE_KEYWORD, prefix))
-                                results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, offset));
-                            if (Utilities.startsWith(TRUE_KEYWORD, prefix))
-                                results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, offset));
+                            smartType = true;
+                            break;
                         }
                     }
                 }
-                return;
             }
-            for (String kw : VALUE_KEYWORDS) {
-                if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, null, offset));
-            }
+            if (Utilities.startsWith(FALSE_KEYWORD, prefix))
+                results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, offset, smartType));
+            if (Utilities.startsWith(TRUE_KEYWORD, prefix))
+                results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, offset, smartType));
+            if (Utilities.startsWith(NULL_KEYWORD, prefix))
+                results.add(JavaCompletionItem.createKeywordItem(NULL_KEYWORD, null, offset, false));
             if (Utilities.startsWith(NEW_KEYWORD, prefix))
-                results.add(JavaCompletionItem.createKeywordItem(NEW_KEYWORD, SPACE, offset));
+                results.add(JavaCompletionItem.createKeywordItem(NEW_KEYWORD, SPACE, offset, false));
         }
 
         private void addPrimitiveTypeKeywords(Env env) {
@@ -2840,7 +2804,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             for (String kw : PRIM_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, null, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, null, offset, false));
             }
         }
         
@@ -2860,7 +2824,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             kws.add(ENUM_KEYWORD);
             for (String kw : kws) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset, false));
             }
         }
         
@@ -2897,11 +2861,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             for (String kw : kws) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset, false));
             }
             for (String kw : PRIM_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset));
+                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, offset, false));
             }
         }
         
@@ -3368,7 +3332,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case CASE:
                         CaseTree ct = (CaseTree)tree;
                         ExpressionTree exp = ct.getExpression();
-                        if (exp == null || env.getSourcePositions().getEndPosition(env.getRoot(), exp) >= offset) {
+                        if (exp != null && env.getSourcePositions().getEndPosition(env.getRoot(), exp) >= offset) {
                             parentPath = path.getParentPath();
                             if (parentPath.getLeaf().getKind() == Tree.Kind.SWITCH) {
                                 exp = ((SwitchTree)parentPath.getLeaf()).getExpression();
@@ -3458,6 +3422,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                         ret.add(types.getPrimitiveType(TypeKind.LONG));
                         ret.add(types.getPrimitiveType(TypeKind.SHORT));
                         return ret;
+                    case EXPRESSION_STATEMENT:
+                        exp = ((ExpressionStatementTree)tree).getExpression();
+                        if (exp.getKind() == Tree.Kind.PARENTHESIZED) {
+                            text = controller.getText().substring((int)env.getSourcePositions().getStartPosition(env.getRoot(), exp), offset).trim();
+                            if (text.endsWith(")")) //NOI18N
+                                return null;
+                        }
                 }
                 lastTree = tree;
                 path = path.getParentPath();

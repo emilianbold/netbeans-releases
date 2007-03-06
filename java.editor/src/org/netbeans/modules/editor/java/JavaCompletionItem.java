@@ -57,8 +57,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     protected static int SMART_TYPE = 1000;
         
-    public static final JavaCompletionItem createKeywordItem(String kwd, String postfix, int substitutionOffset) {
-        return new KeywordItem(kwd, 0, postfix, substitutionOffset);
+    public static final JavaCompletionItem createKeywordItem(String kwd, String postfix, int substitutionOffset, boolean smartType) {
+        return new KeywordItem(kwd, 0, postfix, substitutionOffset, smartType);
     }
     
     public static final JavaCompletionItem createPackageItem(String pkgFQN, int substitutionOffset, boolean isDeprecated) {
@@ -88,7 +88,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             dim++;
         }
         if (tm.getKind().isPrimitive())
-            return new KeywordItem(tm.toString(), dim, null, substitutionOffset);
+            return new KeywordItem(tm.toString(), dim, null, substitutionOffset, true);
         if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ERROR) {
             DeclaredType dt = (DeclaredType)tm;
             TypeElement elem = (TypeElement)dt.asElement();
@@ -310,17 +310,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String kwd;
         private int dim;
         private String postfix;
+        private boolean smartType;
         private String leftText;
 
-        private KeywordItem(String kwd, int dim, String postfix, int substitutionOffset) {
+        private KeywordItem(String kwd, int dim, String postfix, int substitutionOffset, boolean smartType) {
             super(substitutionOffset);
             this.kwd = kwd;
             this.dim = dim;
             this.postfix = postfix;
+            this.smartType = smartType;
         }
         
         public int getSortPriority() {
-            return 600;
+            return smartType ? 600 - SMART_TYPE : 600;
         }
         
         public CharSequence getSortText() {
@@ -1947,7 +1949,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         public CharSequence getSortText() {
             if (sortText == null) {
                 if (params == null) {
-                    sortText = memberName;
+                    sortText = memberName + "#" + typeName; //NOI18N
                 } else {
                     StringBuilder sortParams = new StringBuilder();
                     sortParams.append('(');
@@ -1961,7 +1963,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         cnt++;
                     }
                     sortParams.append(')');
-                    sortText = memberName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+                    sortText = memberName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString() + "#" + typeName; //NOI18N
                 }
             }
             return sortText;

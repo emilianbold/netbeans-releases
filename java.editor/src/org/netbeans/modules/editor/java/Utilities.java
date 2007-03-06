@@ -20,6 +20,7 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
@@ -166,6 +167,10 @@ public class Utilities {
                         }
                     }
                     return refs;
+                case ENHANCED_FOR_LOOP:
+                    EnhancedForLoopTree efl = (EnhancedForLoopTree)path.getLeaf();
+                    if (sourcePositions.getEndPosition(path.getCompilationUnit(), efl.getExpression()) >= pos)
+                        refs.add(trees.getElement(new TreePath(path, efl.getVariable())));                        
             }
             path = path.getParentPath();
         }
