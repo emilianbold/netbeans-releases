@@ -250,7 +250,7 @@ public class RunTask extends Task
             {
                 if (jarFile != null && jarFile.isFile() && jadFile.isFile() && jarFile.getParentFile() != null && jarFile.getParentFile().equals(jadFile.getParentFile())) try
                 {
-                    tempFolder = File.createTempFile("nbrun#", "", jarFile.getParentFile()); //NOI18N
+                    tempFolder = File.createTempFile("nbrun", "", jarFile.getParentFile()); //NOI18N
                     tempFolder.delete();
                     copy(jadFile, tempFolder);
                     copy(jarFile, tempFolder);
