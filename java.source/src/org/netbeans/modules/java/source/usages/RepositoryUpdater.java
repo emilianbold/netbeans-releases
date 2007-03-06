@@ -142,6 +142,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {
         try {
+            this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
+            this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());            
             this.delay = new Delay();
             this.cpImpl = GlobalSourcePath.getDefault();
             this.cpImpl.setExcludesListener (this);
@@ -150,8 +152,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             this.ucp = ClassPathFactory.createClassPath (this.cpImpl.getUnknownSourcePath());
             this.binCp = ClassPathFactory.createClassPath(this.cpImpl.getBinaryPath());
             this.registerFileSystemListener();
-            this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
-            this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
             submitBatch();
         } catch (TooManyListenersException e) {
             throw new IllegalStateException ();
