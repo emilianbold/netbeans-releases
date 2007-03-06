@@ -154,7 +154,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     
-    <target name="runidetest_scan" depends="copy_unzip_jedit_project, copy_unzip_test_folder_project, init-cp">
+    <target name="runidetest_scan" depends="init-cp,copy_unzip_jedit_project,copy_unzip_j2ee_project,check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <executeTests pluginName="ide">
@@ -163,7 +163,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path location="${test.qa-functional.run.cp.extra}"/>
             </classpath>
             
-            <property name="xtest.ide.commandline.suffix" value="-J-Dperf.refactoring.test=true"/>
+            <property name="xtest.ide.commandline.suffix" value="-J-Dperf.refactoring.test=true  -J-Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot;"/>
             
             <property name="xtest.enable.assertions" value="false" />
             <property name="xtest.timeout" value="3600000" />
@@ -173,7 +173,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     
-    <target name="runidetest_footprint" depends="copy_unzip_jedit_project, prepare_measure_footprint, ide_command_line_suffix, check-appserver, init-cp">
+    <target name="runidetest_footprint" depends="init-cp,copy_unzip_jedit_project,prepare_measure_footprint,ide_command_line_suffix,check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <!-- Opens project at specified location -->
