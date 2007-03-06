@@ -43,6 +43,8 @@ import java.util.Collection;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingContainerServiceNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author Martin Grebac
@@ -75,6 +77,14 @@ public class ServiceView extends SectionView {
         Node[] bindingNodes = new Node[bindings.size()];
         Children rootChildren = new Children.Array();
        
+        FileObject jc = null;
+        if (s != null) {
+            String wsdlUrl = s.getWsdlUrl();
+            if (wsdlUrl == null) { // WS from Java
+                jc = (FileObject)node.getLookup().lookup(FileObject.class);
+            }
+        }
+                
         // if there's only one binding, make the dialog simpler
         if (bindingNodes.length > 1) {
             Node root = new AbstractNode(rootChildren);
@@ -83,9 +93,9 @@ public class ServiceView extends SectionView {
 
             for (Binding binding : bindings) {
 
-//                if (jc != null) {
-//                    JMIUtils.refreshOperations(b, jc);
-//                }
+                if (jc != null) {
+                    Util.refreshOperations(binding, jc);
+                }
                 
                 // main node container for a specific binding
                 Children bindingChildren = new Children.Array();
@@ -147,9 +157,9 @@ public class ServiceView extends SectionView {
             rootChildren.add(bindingNodes);
         } else {
             Binding b = (Binding) bindings.toArray()[0];
-//            if (jc != null) {
-//                JMIUtils.refreshOperations(b, jc);
-//            }
+            if (jc != null) {
+                Util.refreshOperations(b, jc);
+            }
             Node root = new AbstractNode(rootChildren);
             setRoot(root);
 
