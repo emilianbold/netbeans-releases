@@ -28,6 +28,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -92,13 +93,16 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
+import org.netbeans.modules.websvc.core.MultiViewCookie;
+import org.netbeans.modules.websvc.core.MultiViewCookieProvider;
 import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.actions.EditAction;
 import org.openide.filesystems.FileLock;
-import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
-public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCookie, JaxWsTesterCookie, JaxWsRefreshCookie,
+public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTesterCookie, JaxWsRefreshCookie,
         ConfigureHandlerCookie{
     Service service;
     FileObject srcRoot;
@@ -123,7 +127,36 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         content.add(service);
         content.add(implBeanClass);
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
+        OpenCookie cookie = getMultiViewCookie(this);
+        if(cookie==null) {
+            cookie = new OpenCookie() {
+                public void open() {
+                    OpenCookie oc = getOpenCookie();
+                    if (oc != null) {
+                        oc.open();
+                    }
+                }
+            };
+        }
+        content.add(cookie);
         project = FileOwnerQuery.getOwner(srcRoot);
+    }
+    
+    private static final Lookup.Result<MultiViewCookieProvider> multiviewCookieProviders =
+        Lookup.getDefault().lookup(new Lookup.Template<MultiViewCookieProvider>(MultiViewCookieProvider.class));
+    
+    /** 
+     * Find MultiViewCookie for given this node
+     */
+    public static MultiViewCookie getMultiViewCookie(JaxWsNode node) {
+        Collection<? extends MultiViewCookieProvider> instances = multiviewCookieProviders.allInstances();
+        for (MultiViewCookieProvider impl: instances) {
+            MultiViewCookie cookie = impl.getMultiViewCookie(node, node.getDataObject());
+            if (cookie != null) {
+                return cookie;
+            }
+        }
+        return null;
     }
     
     public String getDisplayName() {
@@ -168,14 +201,19 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
     public Image getOpenedIcon(int type){
         return getIcon( type);
     }
-    
-    public void open() {
-        OpenCookie oc = getOpenCookie();
-        if (oc != null) {
-            oc.open();
+
+    private DataObject getDataObject() {
+        FileObject f = getImplBean();
+        if (f != null) {
+            try {
+                return  DataObject.find(f);
+            } catch (DataObjectNotFoundException de) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+            }
         }
+        return null;
     }
-    
+
     private OpenCookie getOpenCookie() {
         OpenCookie oc = null;
         FileObject f = getImplBean();
@@ -199,6 +237,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
     public Action[] getActions(boolean context) {
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
+            SystemAction.get(EditAction.class),
             SystemAction.get(JaxWsRefreshAction.class),
             null,
             SystemAction.get(AddOperationAction.class),
