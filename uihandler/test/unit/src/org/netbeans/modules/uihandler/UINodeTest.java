@@ -96,7 +96,24 @@ public class UINodeTest extends TestCase {
 
         {
             ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
-            LogRecord nr = LogRecords.read(is);
+            class H extends Handler {
+                public LogRecord nr;
+                
+                public void publish(LogRecord arg0) {
+                    assertNull("First call", nr);
+                    nr = arg0;
+                }
+
+                public void flush() {
+                }
+
+                public void close() throws SecurityException {
+                }
+            }
+            
+            H handler = new H();
+            LogRecords.scan(is, handler);
+            LogRecord nr = handler.nr;
             is.close();
 
             Node newNode = UINode.create(nr);
@@ -105,7 +122,6 @@ public class UINodeTest extends TestCase {
             assertEquals("displayName", n.getDisplayName(), newNode.getDisplayName());
             assertEquals("htmlName", n.getHtmlDisplayName(), newNode.getHtmlDisplayName());
         }
-        
         class H extends Handler {
             LogRecord one;
             

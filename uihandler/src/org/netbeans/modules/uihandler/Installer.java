@@ -88,7 +88,10 @@ import org.xml.sax.SAXException;
  * Registers and unregisters loggers.
  */
 public class Installer extends ModuleInstall {
-    public static final String USER_CONFIGURATION = "UI_USER_CONFIGURATION";   // NOI18N
+    /**
+     * 
+     */
+    static final String USER_CONFIGURATION = "UI_USER_CONFIGURATION";   // NOI18N
     private static Queue<LogRecord> logs = new LinkedList<LogRecord>();
     private static UIHandler ui = new UIHandler(logs, false);
     private static UIHandler handler = new UIHandler(logs, true);
@@ -347,7 +350,7 @@ public class Installer extends ModuleInstall {
     static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
         URLConnection conn = postURL.openConnection();
         
-        conn.setReadTimeout(10000);
+        conn.setReadTimeout(20000);
         conn.setDoOutput(true);
         conn.setDoInput(true);
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");
@@ -601,29 +604,36 @@ public class Installer extends ModuleInstall {
             return null;
         }
         
+        private void uploadAndPost(List<LogRecord> recs, URL u) {
+            URL nextURL = null;
+            try {
+                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs);
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
+            if (nextURL != null) {
+                clearLogs();
+                HtmlBrowser.URLDisplayer.getDefault().showURL(nextURL);
+            }
+        }
         
         public void actionPerformed(ActionEvent e) {
-            URL[] url = new URL[1];
+            final URL[] url = new URL[1];
             String actionURL = decodeButtons(e.getSource(), url);
             
             if ("submit".equals(e.getActionCommand())) { // NOI18N
-                List<LogRecord> recs = getLogs();
+                final List<LogRecord> recs = getLogs();
                 if (report) reportPanel.saveUserName();
                 recs.add(getUserData());
-                URL nextURL = null;
-                try {
-                    nextURL = uploadLogs(url[0], findIdentity(), Collections.<String,String>emptyMap(), recs);
-                } catch (IOException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-                if (nextURL != null) {
-                    clearLogs();
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(nextURL);
-                    okToExit = false;
-                    // this should close the descriptor
-                    dd.setValue(DialogDescriptor.CLOSED_OPTION);
-                    d.setVisible(false);
-                }
+                RP.post (new Runnable() {
+                    public void run() {
+                        uploadAndPost(recs, url[0]);
+                    }
+                });
+                okToExit = false;
+                // this should close the descriptor
+                dd.setValue(DialogDescriptor.CLOSED_OPTION);
+                d.setVisible(false);
                 return;
             }
             

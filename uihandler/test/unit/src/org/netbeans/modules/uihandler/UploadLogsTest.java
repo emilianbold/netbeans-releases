@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -136,7 +137,25 @@ public class UploadLogsTest extends NbTestCase {
             assertEquals("Handler keeps name of the right file", files[times], handler.getFile("logs"));
 
             DataInputStream is = new DataInputStream(new FileInputStream(files[0]));
-            LogRecord rec = LogRecords.read(is);
+            class H extends Handler {
+                public LogRecord nr;
+                
+                public void publish(LogRecord arg0) {
+                    assertNull("First call", nr);
+                    nr = arg0;
+                }
+
+                public void flush() {
+                }
+
+                public void close() throws SecurityException {
+                }
+            }
+            
+            H h2 = new H();
+            LogRecords.scan(is, h2);
+            is.close();
+            LogRecord rec = h2.nr;
 
             assertEquals("Same msg", recs.get(0).getMessage(), rec.getMessage());
 
