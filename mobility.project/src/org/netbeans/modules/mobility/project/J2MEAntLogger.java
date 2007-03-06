@@ -57,6 +57,7 @@ public final class J2MEAntLogger extends AntLogger {
     
     public boolean interestedInScript(File script, AntSession session) {
         FileObject projfile = FileUtil.toFileObject(FileUtil.normalizeFile(script));
+        if (projfile == null) return false;
         Project proj = FileOwnerQuery.getOwner(projfile);
         if (proj == null) return false;
         AntProjectHelper helper = proj.getLookup().lookup(AntProjectHelper.class);
@@ -86,9 +87,16 @@ public final class J2MEAntLogger extends AntLogger {
     
     public void messageLogged(AntEvent event) {
         if (event.isConsumed()) return;
-        HashMap<File, String> roots = (HashMap)event.getSession().getCustomData(this);
-        if (roots == null) return;
-        String srcRoot = roots.get(event.getScriptLocation());
+        Object cd=event.getSession().getCustomData(this);        
+        String srcRoot;
+        if (cd instanceof HashMap)
+        {
+            HashMap<File, String> roots = (HashMap)cd;
+            if (roots == null) return;
+            srcRoot = roots.get(event.getScriptLocation());
+        }
+        else 
+            srcRoot = (String)cd;
         if (srcRoot == null) return;
         String message = event.getMessage();
         String newMessage = PREPROCESSED.matcher(message).replaceFirst(srcRoot);

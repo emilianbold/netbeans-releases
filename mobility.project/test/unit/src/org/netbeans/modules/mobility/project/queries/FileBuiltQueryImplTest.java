@@ -31,6 +31,9 @@ import javax.swing.event.ChangeListener;
 import junit.framework.*;
 import java.io.File;
 import java.net.URL;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.Project;
@@ -48,6 +51,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -86,7 +90,7 @@ public class FileBuiltQueryImplTest extends NbTestCase {
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
     }
-    
+    static final Object syncObj=new Object();
     static
     {
         TestUtil.setLookup( new Object[] {
@@ -96,8 +100,39 @@ public class FileBuiltQueryImplTest extends NbTestCase {
             TestUtil.testLogger("J2MEActionProvider.COMMAND_COMPILE_SINGLE"),
             new MyProvider()
         }, FileBuiltQueryImplTest.class.getClassLoader());
+        
+         Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
+                public void publish(LogRecord record) {
+                    String s=record.getMessage();
+                    if (s==null)
+                        return;
+                    if (s.startsWith("Work finished") &&
+                            s.indexOf("J2MEProject$6")!=-1 &&
+                            s.indexOf("RequestProcessor")!=-1) {
+                        synchronized (syncObj) {
+                            syncObj.notify();
+                        }
+                    }
+                }
+                public void flush() {}
+                public void close() throws SecurityException {}
+            });
     }
     
+    void waitFinished()
+    {
+        while (true)
+        {
+            try   {
+                syncObj.wait();
+                break;
+            }
+            catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+      
     public FileBuiltQueryImplTest(String testName) {
         super(testName);
     }
@@ -108,8 +143,12 @@ public class FileBuiltQueryImplTest extends NbTestCase {
         File wtkdemo=getGoldenFile("WTKDemo");
         projDir=FileUtil.toFileObject(getWorkDir()).createFolder("Demo");
         TestUtil.cpDir(FileUtil.toFileObject(wtkdemo),projDir);
-        aph=J2MEProjectGenerator.
+        
+        synchronized(syncObj) {
+            aph=J2MEProjectGenerator.
                 createProjectFromWtkProject(FileUtil.toFile(projDir),"WTKDemo",null,FileUtil.toFile(projDir).getAbsolutePath());
+            waitFinished();
+        }
         assertNotNull(aph);
         TestUtil.setHelper(aph);
         File build=File.createTempFile("build",".properties",FileUtil.toFile(projDir));

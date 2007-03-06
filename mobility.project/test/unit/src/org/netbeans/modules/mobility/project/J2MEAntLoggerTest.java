@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import junit.framework.*;
 import org.apache.tools.ant.module.run.LoggerTrampoline;
 import org.apache.tools.ant.module.spi.AntEvent;
@@ -42,9 +45,8 @@ import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.MasterFileSystem;
-import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtenderTest;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
-
 import org.openide.windows.OutputListener;
 //import org.openide.windows.OutputListener;
 
@@ -55,12 +57,43 @@ import org.openide.windows.OutputListener;
  * @author Michal Skvor
  */
 public class J2MEAntLoggerTest extends NbTestCase {
-    
+    static final Object syncObj=new Object();
     static
     {
         TestUtil.setLookup( new Object[] {            
         }, J2MEAntLoggerTest.class.getClassLoader());
         assertNotNull(MasterFileSystem.settingsFactory(null));
+        
+        Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
+                public void publish(LogRecord record) {
+                    String s=record.getMessage();
+                    if (s==null)
+                        return;
+                    if (s.startsWith("Work finished") &&
+                            s.indexOf("J2MEProject$6")!=-1 &&
+                            s.indexOf("RequestProcessor")!=-1) {
+                        synchronized (syncObj) {
+                            syncObj.notify();
+                        }
+                    }
+                }
+                public void flush() {}
+                public void close() throws SecurityException {}
+            });
+    }
+    
+    void waitFinished()
+    {
+        while (true)
+        {
+            try   {
+                J2MEAntLoggerTest.syncObj.wait();
+                break;
+            }
+            catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     public J2MEAntLoggerTest(String testName) {
@@ -120,11 +153,6 @@ public class J2MEAntLoggerTest extends NbTestCase {
     public void testInterestedInScript() throws Exception {
         File workDir = getWorkDir();
         File proj = new File(workDir, "testProject");
-        proj.mkdir();
-        File srcRoot = new File(workDir, "src");
-        srcRoot.mkdir();
-        File testRoot = new File(workDir, "test");
-        testRoot.mkdir();
         
         TestUtil.makeScratchDir(this);
         
@@ -133,14 +161,17 @@ public class J2MEAntLoggerTest extends NbTestCase {
             TestUtil.testProjectChooserFactory()
         }, J2MEAntLoggerTest.class.getClassLoader());
  
-        J2MEProjectGenerator.createNewProject(proj, "testProject", null, null,null);
+        synchronized(J2MEAntLoggerTest.syncObj) {
+            J2MEProjectGenerator.createNewProject(proj, "testProject", null, null,null);
+            waitFinished();
+        }
         
         AntLogger[] loggers = new AntLogger[] { new J2MEAntLogger() };
         BogusAntSession session = new BogusAntSession(loggers, AntEvent.LOG_INFO);
         AntSession realSession = LoggerTrampoline.ANT_SESSION_CREATOR.makeAntSession(session);
         
-        assertFalse( "is false", loggers[0].interestedInScript( new File("/tmp/bogus"),  realSession ));
-        assertFalse( "is false", loggers[0].interestedInScript( new File("/tmp/bogus/build-impl.xml"),  realSession ));
+        assertFalse( "is false", loggers[0].interestedInScript( new File(File.separator),  realSession ));
+        assertFalse( "is false", loggers[0].interestedInScript( new File(proj,"bogus"),  realSession ));
         
         assertTrue( "is true", loggers[0].interestedInScript(
                 new File( new File(proj, "nbproject"), "build-impl.xml"),  realSession ));

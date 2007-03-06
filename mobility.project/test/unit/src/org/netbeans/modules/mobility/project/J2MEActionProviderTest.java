@@ -33,7 +33,9 @@ import java.net.URI;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import junit.framework.*;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -41,9 +43,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.mdr.NBMDRepositoryImpl;
 import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtender;
-import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -65,18 +66,34 @@ import org.openide.util.lookup.Lookups;
  */
 public class J2MEActionProviderTest extends NbTestCase {
     
-    
+    static final Object syncObj=new Object();
     static
     {
         TestUtil.setLookup( new Object[] {
             //TestUtil.testProjectFactory(),
             TestUtil.testProjectChooserFactory(),
             TestUtil.testFileLocator(),
-            new NBMDRepositoryImpl(),
             TestUtil.testLogger(J2MEActionProvider.COMMAND_COMPILE_SINGLE)
         }, J2MEActionProvider.class.getClassLoader());
         
         assertNotNull(MasterFileSystem.settingsFactory(null));
+        
+        Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
+                public void publish(LogRecord record) {
+                    String s=record.getMessage();
+                    if (s==null)
+                        return;
+                    if (s.startsWith("Work finished") &&
+                            s.indexOf("J2MEProject$6")!=-1 &&
+                            s.indexOf("RequestProcessor")!=-1) {
+                        synchronized (syncObj) {
+                            syncObj.notify();
+                        }
+                    }
+                }
+                public void flush() {}
+                public void close() throws SecurityException {}
+            });
     }
     
     public J2MEActionProviderTest(String testName) {
@@ -97,6 +114,20 @@ public class J2MEActionProviderTest extends NbTestCase {
     private DataObject someSource3;
     private final String LCP="${reference.xx.xx.1}:/xxx/xxx:${libs.x}/xxxx.xxx";
     
+    void waitFinished()
+    {
+        while (true)
+        {
+            try   {
+                syncObj.wait();
+                break;
+            }
+            catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
     protected void setUp() throws Exception {
         super.setUp();
         this.clearWorkDir();
@@ -107,9 +138,12 @@ public class J2MEActionProviderTest extends NbTestCase {
         File build=File.createTempFile("build",".properties",FileUtil.toFile(projectDir));
         System.setProperty("user.properties.file",build.getAbsolutePath());
         
-        antProjectHelper =
+        synchronized(syncObj) {
+            antProjectHelper =
                 J2MEProjectGenerator.createNewProject(
                 FileUtil.toFile( projectDir ), "testProject", null, null, null );
+            waitFinished();
+        }
         TestUtil.setHelper(antProjectHelper);
         /* Set classpath to fake midp */
         EditableProperties props=antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -267,9 +301,13 @@ public class J2MEActionProviderTest extends NbTestCase {
         J2MEProject p= (J2MEProject)ProjectManager.getDefault().findProject(projectDir);
         OpenProjectList.getDefault().open(p,true);
         Project prj[]=OpenProjectList.getDefault().getOpenProjects();
+        
+        for (Project p1:prj)
+            System.out.println(((J2MEProject)(p)).getName());
+        
         assertTrue(prj.length == 1);
         assertTrue(prj[0]==p);
-        OpenProjectList.getDefault().close(new Project[] {p});
+        OpenProjectList.getDefault().close(new Project[] {p},false);
         prj=OpenProjectList.getDefault().getOpenProjects();
         assertTrue(prj.length == 0);
         AntArtifactProvider ant=p.getLookup().lookup(AntArtifactProvider.class);
@@ -418,7 +456,8 @@ public class J2MEActionProviderTest extends NbTestCase {
         AntArtifact art[]=refs.getBuildArtifacts();
         URI locs[]=art[0].getArtifactLocations();
         ReferenceHelper refsh = pr.getLookup().lookup(ReferenceHelper.class);
-        J2MEProjectClassPathExtender instance = new J2MEProjectClassPathExtender(pr,antProjectHelper,refsh);
+        ProjectConfigurationsHelper pcfgh = pr.getLookup().lookup(ProjectConfigurationsHelper.class);
+        J2MEProjectClassPathExtender instance = new J2MEProjectClassPathExtender(pr,antProjectHelper,refsh,pcfgh);
         boolean res = instance.addAntArtifact(art[0], locs[0]);
         assertTrue(res);
         try {

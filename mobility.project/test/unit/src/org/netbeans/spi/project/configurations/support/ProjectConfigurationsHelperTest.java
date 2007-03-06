@@ -31,6 +31,9 @@ import java.util.Collection;
 import junit.framework.*;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ProjectConfiguration;
@@ -41,6 +44,7 @@ import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -50,17 +54,48 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
     
     static ProjectConfigurationsHelper instance = null;
     static AntProjectHelper aph=null;
-    
+    static final Object syncObj=new Object();
     static
     {
         TestUtil.setLookup( new Object[] {            
         }, ProjectConfigurationsHelperTest.class.getClassLoader());
         assertNotNull(MasterFileSystem.settingsFactory(null));
+        
+        Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
+                public void publish(LogRecord record) {
+                    String s=record.getMessage();
+                    if (s==null)
+                        return;
+                    if (s.startsWith("Work finished") &&
+                            s.indexOf("J2MEProject$6")!=-1 &&
+                            s.indexOf("RequestProcessor")!=-1) {
+                        synchronized (syncObj) {
+                            syncObj.notify();
+                        }
+                    }
+                }
+                public void flush() {}
+                public void close() throws SecurityException {}
+            });
     }
     
     public ProjectConfigurationsHelperTest(String testName) {
         super(testName);
         TestUtil.setEnv();
+    }
+    
+    void waitFinished()
+    {
+        while (true)
+        {
+            try   {
+                syncObj.wait();
+                break;
+            }
+            catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     protected void setUp() throws Exception {
@@ -70,7 +105,10 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
         
         System.setProperty("netbeans.user","test/tiredTester");
         
-        aph = J2MEProjectGenerator.createNewProject(proj, "testProject", null, null,null);
+        synchronized(syncObj) {
+            aph = J2MEProjectGenerator.createNewProject(proj, "testProject", null, null,null);
+            waitFinished();
+        }
         Project p=ProjectManager.getDefault().findProject(FileUtil.toFileObject(proj));
         assertNotNull(p);
         instance = p.getLookup().lookup(ProjectConfigurationsHelper.class);

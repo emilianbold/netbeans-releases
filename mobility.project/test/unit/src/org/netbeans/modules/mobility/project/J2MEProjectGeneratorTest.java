@@ -39,6 +39,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
@@ -53,6 +56,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
@@ -90,14 +94,32 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         }
     }
     
+    static final Object syncObj=new Object();
     static
-    {
+    {        
         TestUtil.setLookup( new Object[] {
             TestUtil.testProjectFactory(),
             TestUtil.testFileLocator(),
             TestUtil.testProjectChooserFactory(),
             new MyProvider()
         }, J2MEProjectGeneratorTest.class.getClassLoader());
+        
+        Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
+                public void publish(LogRecord record) {
+                    String s=record.getMessage();
+                    if (s==null)
+                        return;
+                    if (s.startsWith("Work finished") &&
+                            s.indexOf("J2MEProject$6")!=-1 &&
+                            s.indexOf("RequestProcessor")!=-1) {
+                        synchronized (syncObj) {
+                            syncObj.notify();
+                        }
+                    }
+                }
+                public void flush() {}
+                public void close() throws SecurityException {}
+            });
     }
     
     public J2MEProjectGeneratorTest(String testName) {
@@ -201,6 +223,7 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         "platform.device",
         "platform.profile",
         "platform.trigger",
+        "platform.type",
     };
     
     private final static String[][] manifestData = {
@@ -272,6 +295,20 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         return suite;
     }
     
+    void waitFinished()
+    {
+        while (true)
+        {
+            try   {
+                org.netbeans.modules.mobility.project.J2MEProjectGeneratorTest.syncObj.wait();
+                break;
+            }
+            catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
     public void testProjectUtil() throws Exception {
         File f=getGoldenFile("Studio/MIDletSuite.jar");
         File ch=f.getParentFile().getParentFile().getParentFile();
@@ -294,11 +331,14 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         TestUtil.cpDir(FileUtil.toFileObject(studiodemo),projectDir);
         
         AntProjectHelper aph=null;
-        try {
-            aph=J2MEProjectGenerator.
-                    createProjectFromSuite(FileUtil.toFile(projectDir),"Suite",null,FileUtil.toFile(projectDir).getAbsolutePath()+"/MIDletSuite.adContent",".");
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        synchronized(J2MEProjectGeneratorTest.syncObj) {
+            try {
+                aph=J2MEProjectGenerator.
+                        createProjectFromSuite(FileUtil.toFile(projectDir),"Suite",null,FileUtil.toFile(projectDir).getAbsolutePath()+"/MIDletSuite.adContent",".");
+                waitFinished();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
         assertNotNull(aph);
         
@@ -326,14 +366,17 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
     }
     
     public void testCreateProjectFromTemplate() throws Exception {
-        FileObject projectDir=FileUtil.toFileObject(getWorkDir()).createFolder("Suite");
-        File tmpl=getGoldenFile("converter.zip");
+        final FileObject projectDir=FileUtil.toFileObject(getWorkDir()).createFolder("Suite");
+        final File tmpl=getGoldenFile("converter.zip");
         AntProjectHelper aph=null;
-        try {
-            aph=J2MEProjectGenerator.
+        synchronized(J2MEProjectGeneratorTest.syncObj) {
+            try {
+                aph=J2MEProjectGenerator.
                     createProjectFromTemplate(FileUtil.toFileObject(tmpl),FileUtil.toFile(projectDir),"Suite",null);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+                waitFinished();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }        
         }
         assertNotNull(aph);
         assertTrue(checkFiles(projectDir,aph,false));
@@ -344,8 +387,11 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         FileObject projectDir=FileUtil.toFileObject(getWorkDir()).createFolder("Demo");
         TestUtil.cpDir(FileUtil.toFileObject(wtkdemo),projectDir);
         AntProjectHelper aph=null;
-        aph=J2MEProjectGenerator.
-                createProjectFromWtkProject(FileUtil.toFile(projectDir),"WTKDemo",null,FileUtil.toFile(projectDir).getAbsolutePath());
+        synchronized(J2MEProjectGeneratorTest.syncObj) {
+            aph=J2MEProjectGenerator.
+                createProjectFromWtkProject(FileUtil.toFile(projectDir),"WTKDemo",null,FileUtil.toFile(projectDir).getAbsolutePath());            
+            waitFinished();
+        }
         assertNotNull(aph);
         assertTrue(checkFiles(projectDir,aph,false));
     }
@@ -359,17 +405,24 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         FileObject main=sources.createData("Main.java");
         createMain(main);
         AntProjectHelper aph=null;
-        try {
-            
-            aph=J2MEProjectGenerator.
-                    createProjectFromSources(FileUtil.toFile(projectDir),"Test",
-                    null,FileUtil.toFile(sources).getAbsolutePath(),jad.getAbsolutePath());
-        } catch (Exception e) {
-            e.printStackTrace();
+        synchronized(J2MEProjectGeneratorTest.syncObj) {
+            try {
+                aph=J2MEProjectGenerator.
+                        createProjectFromSources(FileUtil.toFile(projectDir),"Test",
+                        null,FileUtil.toFile(sources).getAbsolutePath(),jad.getAbsolutePath());
+                waitFinished();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         
         J2MEProject p1=(J2MEProject)ProjectManager.getDefault().findProject(projectDir);
-        AntProjectHelper dph=J2MEProjectGenerator.duplicateProject(p1,FileUtil.toFile(dupldir),"Duplicate",true);
+        
+        AntProjectHelper dph=null;
+        synchronized(J2MEProjectGeneratorTest.syncObj) {
+            dph=J2MEProjectGenerator.duplicateProject(p1,FileUtil.toFile(dupldir),"Duplicate",true);
+            waitFinished();
+        }
         J2MEProject p2=(J2MEProject)ProjectManager.getDefault().findProject(dupldir);
         assertNotNull(aph);
         assertNotNull(p2);
@@ -389,8 +442,12 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         list.add(fo);
         
         ProjectManager pm = ProjectManager.getDefault();
-        AntProjectHelper aph =
-                J2MEProjectGenerator.createNewProject(proj, "testProject", null, null,list);
+        AntProjectHelper aph=null;
+        synchronized(J2MEProjectGeneratorTest.syncObj) {
+            aph =
+                    J2MEProjectGenerator.createNewProject(proj, "testProject", null, null,list);
+            waitFinished();
+        }
         assertNotNull(aph);
         File build=File.createTempFile("build",".properties",FileUtil.toFile(root));
         System.setProperty("user.properties.file",build.getAbsolutePath());
@@ -468,5 +525,4 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         
         return FileUtil.toFile( manifest );
     }
-    
 }

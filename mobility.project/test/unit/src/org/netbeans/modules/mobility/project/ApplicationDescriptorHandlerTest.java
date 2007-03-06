@@ -29,6 +29,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import junit.framework.*;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -41,6 +44,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -57,6 +61,7 @@ public class ApplicationDescriptorHandlerTest extends NbTestCase {
     final File api;
     final File tmp;
     
+    static final Object syncObj=new Object();
     static
     { //Prepare for project creation
         TestUtil.setLookup( new Object[] {
@@ -69,6 +74,37 @@ public class ApplicationDescriptorHandlerTest extends NbTestCase {
         
         mfs=MasterFileSystem.settingsFactory(null);
         assertNotNull(mfs);
+        
+        Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
+                public void publish(LogRecord record) {
+                    String s=record.getMessage();
+                    if (s==null)
+                        return;
+                    if (s.startsWith("Work finished") &&
+                            s.indexOf("J2MEProject$6")!=-1 &&
+                            s.indexOf("RequestProcessor")!=-1) {
+                        synchronized (syncObj) {
+                            syncObj.notify();
+                        }
+                    }
+                }
+                public void flush() {}
+                public void close() throws SecurityException {}
+            });
+    }
+    
+    void waitFinished()
+    {
+        while (true)
+        {
+            try   {
+                syncObj.wait();
+                break;
+            }
+            catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     public ApplicationDescriptorHandlerTest(String testName) throws IOException {
@@ -96,8 +132,11 @@ public class ApplicationDescriptorHandlerTest extends NbTestCase {
             clearWorkDir();
             
             TemplateWizard wiz=new TemplateWizard();
-            p=J2MEProjectGenerator.createNewProject(dirFile,"MyProject"+dirFile.getName(),null,new ArrayList(10),
-                    (List)wiz.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES));
+            synchronized(syncObj) {
+                p=J2MEProjectGenerator.createNewProject(dirFile,"MyProject"+dirFile.getName(),null,new ArrayList(10),
+                        (List)wiz.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES));
+                waitFinished();
+            }
             TestUtil.setHelper(p);
             /* Set classpath to fake midp */
             EditableProperties props=p.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

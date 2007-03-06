@@ -38,6 +38,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.TestUtil;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -79,8 +80,9 @@ public class J2MEProjectClassPathExtenderTest extends NbTestCase {
         Project p=ProjectManager.getDefault().findProject(projDir);
         assertNotNull(p);
         ReferenceHelper refs = p.getLookup().lookup(ReferenceHelper.class);
+        ProjectConfigurationsHelper pcfgs = p.getLookup().lookup(ProjectConfigurationsHelper.class);
         assertNotNull(refs);
-        instance=new J2MEProjectClassPathExtender(p,aph,refs);
+        instance=new J2MEProjectClassPathExtender(p,aph,refs,pcfgs);
         assertNotNull(instance);
     }
     
