@@ -14,13 +14,13 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="QA functional config">
 
-    <testbag testattribs="validation" executor="ide-appserver" name="web/jspdebug validation">
+    <testbag testattribs="stable-j2ee,validation" executor="ide-appserver" name="web/jspdebug validation">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="validation/JSPDebuggingOverallTest.class"/>
