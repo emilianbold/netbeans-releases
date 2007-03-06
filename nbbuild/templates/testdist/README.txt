@@ -27,7 +27,7 @@ Custom properties:
 xtest.attribs - xtest atributtes, default value for qa-functional is 'validation' ,
     for unit is 'stable'.
 
-xtest.module.list - list of modules seperated by ':' in format ${cluster}/${code-base-name}
+xtest.modules.list - list of modules seperated by ':' in format ${cluster}/${code-base-name}
     example: platform7/org-openide-filesystems:platform7/org-openide-masterfs
 
 test.required.modules - run tests only with listed modules when property is defined,
@@ -54,7 +54,7 @@ to directory with NetBeans 6.0 installation.
 
 Custom properties:
 
-unit.module.list - list of modules separated by ':' in format ${cluster}/${code-base-name}
+unit.modules.list - list of modules separated by ':' in format ${cluster}/${code-base-name}
     example: platform7/org-openide-filesystems:platform7/org-openide-masterfs
 
 test.required.modules - run tests only with listed modules when property is defined
