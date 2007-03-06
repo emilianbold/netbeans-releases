@@ -3367,11 +3367,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                         }
                         return null;
-                    case MULTIPLY_ASSIGNMENT:
-                    case DIVIDE_ASSIGNMENT:
                     case REMAINDER_ASSIGNMENT:
-                    case PLUS_ASSIGNMENT:
-                    case MINUS_ASSIGNMENT:
                     case AND_ASSIGNMENT:
                     case XOR_ASSIGNMENT:
                     case OR_ASSIGNMENT:
@@ -3400,6 +3396,41 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case CONDITIONAL_OR:
                     case LOGICAL_COMPLEMENT:
                         return Collections.singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN));
+                    case PLUS:
+                        BinaryTree bt = (BinaryTree)tree;
+                        TypeMirror tm = controller.getTrees().getTypeMirror(new TreePath(path, bt.getLeftOperand()));
+                        if (tm.getKind().isPrimitive()) {
+                            ret = new HashSet<TypeMirror>();
+                            types = controller.getTypes();
+                            ret.add(types.getPrimitiveType(TypeKind.BYTE));
+                            ret.add(types.getPrimitiveType(TypeKind.CHAR));
+                            ret.add(types.getPrimitiveType(TypeKind.DOUBLE));
+                            ret.add(types.getPrimitiveType(TypeKind.FLOAT));
+                            ret.add(types.getPrimitiveType(TypeKind.INT));
+                            ret.add(types.getPrimitiveType(TypeKind.LONG));
+                            ret.add(types.getPrimitiveType(TypeKind.SHORT));
+                            return ret;
+                        }
+                        return Collections.singleton(tm);
+                    case PLUS_ASSIGNMENT:
+                        CompoundAssignmentTree cat = (CompoundAssignmentTree)tree;
+                        tm = controller.getTrees().getTypeMirror(new TreePath(path, cat.getVariable()));
+                        if (tm.getKind().isPrimitive()) {
+                            ret = new HashSet<TypeMirror>();
+                            types = controller.getTypes();
+                            ret.add(types.getPrimitiveType(TypeKind.BYTE));
+                            ret.add(types.getPrimitiveType(TypeKind.CHAR));
+                            ret.add(types.getPrimitiveType(TypeKind.DOUBLE));
+                            ret.add(types.getPrimitiveType(TypeKind.FLOAT));
+                            ret.add(types.getPrimitiveType(TypeKind.INT));
+                            ret.add(types.getPrimitiveType(TypeKind.LONG));
+                            ret.add(types.getPrimitiveType(TypeKind.SHORT));
+                            return ret;
+                        }
+                        return Collections.singleton(tm);                        
+                    case MULTIPLY_ASSIGNMENT:
+                    case DIVIDE_ASSIGNMENT:
+                    case MINUS_ASSIGNMENT:
                     case DIVIDE:
                     case EQUAL_TO:
                     case GREATER_THAN:
@@ -3409,7 +3440,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case MINUS:
                     case MULTIPLY:
                     case NOT_EQUAL_TO:
-                    case PLUS:
                     case UNARY_PLUS:
                     case UNARY_MINUS:
                         ret = new HashSet<TypeMirror>();
