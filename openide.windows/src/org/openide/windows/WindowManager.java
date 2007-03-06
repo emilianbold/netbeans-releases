@@ -504,7 +504,34 @@ public abstract class WindowManager extends Object implements Serializable {
     public void invokeWhenUIReady(Runnable run) {
         EventQueue.invokeLater(run);
     }
+    
+    /**
+     * <p>Check whether the given TopComponent will be/is docked into an 'editor' Mode.</p>
+     * <p>Please note that some TopComponents may be docked into 'editor' modes as well as 
+     * 'view' modes, see method isTopComponentAllowedToMoveAnywhere().</p>
+     * 
+     * @param tc TopComponent to check.
+     * @return True if there is a Mode that the TopComponent will be/is docked to and
+     * the Mode is of 'editor' kind (i.e. holds editor windows).
+     * @since 6.13
+     */
+    public boolean isEditorTopComponent( TopComponent tc ) {
+        return false;
+    }
 
+    /**
+     * <p>Check whether the given Mode holds editor windows.</p>
+     * <p>Please note that some TopComponents may be docked into 'editor' modes as well as 
+     * 'view' modes, see method isTopComponentAllowedToMoveAnywhere().</p>
+     * 
+     * @param mode Mode to check.
+     * @return True the Mode contains editor windows.
+     * @since 6.13
+     */
+    public boolean isEditorMode( Mode mode ) {
+        return false;
+    }
+    
     /** A manager that handles operations on top components.
      * It is always attached to a {@link TopComponent}.
      * @deprecated Do not use anymore. This interface is replaced by bunch of protected methods

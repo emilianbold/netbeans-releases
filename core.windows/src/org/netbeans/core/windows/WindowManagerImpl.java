@@ -1174,6 +1174,26 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public void invokeWhenUIReady(Runnable run) {
         exclusive.register(run);
     }
+    
+    @Override
+    public boolean isEditorTopComponent( TopComponent tc ) {
+        for( Iterator it = getModes().iterator(); it.hasNext(); ) {
+            ModeImpl mode = (ModeImpl)it.next();
+            
+            if( mode.containsTopComponent( tc ) ) {
+                return isEditorMode( mode );
+            }
+        }
+
+        //unknown TopComponent
+        return false;
+    }
+    
+    @Override
+    public boolean isEditorMode( Mode mode ) {
+        ModeImpl modeImpl = findModeImpl( mode.getName() );
+        return null != modeImpl && modeImpl.getKind() == Constants.MODE_KIND_EDITOR;
+    }
 
     /** Handles exclusive invocation of Runnables.
      */
