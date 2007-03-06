@@ -624,6 +624,8 @@ public class ImageCustomizerPanel extends javax.swing.JPanel implements Property
     public Result customizerApply() {
         String newUrl;
         if(rbIconPanel.isSelected()) {
+		property = designBean.getProperty("url"); //NOI18N
+		property.unset();
             property = designBean.getProperty("icon"); // NOI18N
             property.setValue(iconList.getSelectedValue());
             
