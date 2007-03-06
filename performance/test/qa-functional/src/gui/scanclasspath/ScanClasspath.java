@@ -19,10 +19,9 @@
 
 package gui.scanclasspath;
 
-import gui.Utilities;
 import java.util.ArrayList;
+
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.performance.test.utilities.LoggingScanClasspath;
 
@@ -35,15 +34,12 @@ import org.netbeans.performance.test.utilities.LoggingScanClasspath;
  */
 public class ScanClasspath extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private String category, project, project_name;
-    
     // list of classpath roots we are interesting to measure
-    private static ArrayList reportCPR = new ArrayList();
+    protected static ArrayList<String> reportCPR = new ArrayList<String> ();
     
     static {
-        reportCPR.add("src.zip");
-        reportCPR.add("rt.jar");
-        reportCPR.add("jEdit41/src");
+        reportCPR.add("rt.jar");        // JDK/jre/lib/rt.jar
+        reportCPR.add("jEdit41/src");   // jEdit41/src
     }
     
     /**
@@ -79,7 +75,7 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public void openJEditProject() {
-        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/jEdit41");
+        gui.Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/jEdit41");
         measureClassPathScan();
     }
     
