@@ -105,7 +105,7 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         }
         kit.setActiveDocument(document);
         kit.update();
-        kit.refreshPalette();
+        //kit.refreshPalette();
     }
     
     public synchronized PaletteController getPaletteControllerForProjectType(String projectType) {

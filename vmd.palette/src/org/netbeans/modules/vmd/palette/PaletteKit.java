@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.vmd.palette;
 
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
@@ -192,19 +194,19 @@ public class PaletteKit implements Runnable {
         }
         
         // delete empty categories
-//        for (FileObject catFolder : categoryFolders.values()) {
-//            if (catFolder.getChildren().length == 0) {
-//                FileLock lock = null;
-//                try {
-//                    lock = catFolder.lock();
-//                    catFolder.delete(lock);
-//                } catch (IOException e) {
-//                    Debug.error("Can't delete empty directory for unused palette category: " + e);
-//                } finally {
-//                    lock.releaseLock();
-//                }
-//            }
-//        }
+        //        for (FileObject catFolder : categoryFolders.values()) {
+        //            if (catFolder.getChildren().length == 0) {
+        //                FileLock lock = null;
+        //                try {
+        //                    lock = catFolder.lock();
+        //                    catFolder.delete(lock);
+        //                } catch (IOException e) {
+        //                    Debug.error("Can't delete empty directory for unused palette category: " + e);
+        //                } finally {
+        //                    lock.releaseLock();
+        //                }
+        //            }
+        //        }
     }
     
     void checkValidity(final Lookup lookup) {
@@ -303,16 +305,16 @@ public class PaletteKit implements Runnable {
             DesignDocument doc = activeDocument;
             if (doc == null)
                 return null;
-            final String projectType = doc.getDocumentInterface ().getProjectType ();
-
-            Collection<? extends PaletteProvider> providers = Lookup.getDefault ().lookupAll (PaletteProvider.class);
+            final String projectType = doc.getDocumentInterface().getProjectType();
+            
+            Collection<? extends PaletteProvider> providers = Lookup.getDefault().lookupAll(PaletteProvider.class);
             ArrayList<Action> actions = new ArrayList<Action> ();
             for (PaletteProvider paletteProvider : providers) {
-                List<? extends Action> list = paletteProvider.getActions (projectType);
+                List<? extends Action> list = paletteProvider.getActions(projectType);
                 if (list != null)
-                    actions.addAll (list);
+                    actions.addAll(list);
             }
-            return actions.toArray (new Action[actions.size ()]);
+            return actions.toArray(new Action[actions.size()]);
         }
         
         public Action[] getCustomPaletteActions() {
@@ -329,6 +331,14 @@ public class PaletteKit implements Runnable {
         
         public Action getPreferredAction(Lookup item) {
             return null; // TODO
+        }
+        
+        public Action getRefreshAction() {
+            return new AbstractAction() {
+                public void actionPerformed(ActionEvent evt) {
+                    update();
+                }
+            };
         }
     }
     
