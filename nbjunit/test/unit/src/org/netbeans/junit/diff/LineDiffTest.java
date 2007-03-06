@@ -247,4 +247,21 @@ public class LineDiffTest extends NbTestCase {
         assertTrue(diff.diff(test1, test2, test3));
         assertEquals(" 1   a\n 2 - b\n   + x\n 3   c\n 4   d\n 5   x\n", getFileContent(test3));
     }
+    
+    public void testDiff11() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        try {
+            doOutputToFile(test1, "a\nx\nc\nd\nx\ny\n");
+            doOutputToFile(test2, "a\nb\nc\nd\nx\ny\n");
+            
+            System.setProperty("nbjunit.linediff.context", "0");
+            LineDiff diff = new LineDiff();
+            assertTrue(diff.diff(test1, test2, test3));
+            assertEquals(" 2 - b\n   + x\n", getFileContent(test3));
+        } finally {
+            System.setProperty("nbjunit.linediff.context", "");
+        }
+    }
 }

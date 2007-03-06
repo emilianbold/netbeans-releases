@@ -30,16 +30,17 @@ import java.util.List;
 
 /**
  * Line Diff with formated textual output.
- *
+ * Number of context lines in output is configurable through system property 'nbjunit.linediff.context'.
  *
  * @author  ehucka
  */
 public class LineDiff implements Diff {
     
-    public static final int CONTEXT = 3;
+    public static int CONTEXT = 3;
     
     boolean ignoreCase;
     boolean ignoreEmptyLines;
+    int contextLines;
     
     public LineDiff() {
         this(false, false);
@@ -52,6 +53,18 @@ public class LineDiff implements Diff {
     public LineDiff(boolean ignoreCase, boolean ignoreEmptyLines) {
         this.ignoreCase = ignoreCase;
         this.ignoreEmptyLines = ignoreEmptyLines;
+        //set number of context lines
+        String value = System.getProperty("nbjunit.linediff.context");
+        int number = -1;
+        if (value != null) {
+            try {
+            number = Integer.parseInt(value);
+            } catch (NumberFormatException ex) {ex.printStackTrace();}
+        }
+        if (number < 0) {
+            number = CONTEXT;
+        }
+        contextLines = number;
     }
     
     public boolean getIgnoreCase() {
@@ -74,6 +87,10 @@ public class LineDiff implements Diff {
         return false;
     }
     
+    public int getNContextLines() {
+        return contextLines;
+    }
+
     /**
      * @param first first file to compare
      * @param second second file to compare
@@ -214,7 +231,7 @@ public class LineDiff implements Diff {
         for (int i = 0; i < results.size(); i++) {
             Result rs = results.get(i);
             if (!precontext) {
-                int si = rs.passIndex-CONTEXT;
+                int si = rs.passIndex-contextLines;
                 if (si < 0) si = 0;
                 for (int j=si;j < rs.passIndex;j++) {
                     printContext(passLines, ps, j, numLength);
@@ -224,7 +241,7 @@ public class LineDiff implements Diff {
             }
             results.get(i).print(passLines, refLines, ps, numLength);
             int e1 = (rs.newLine) ? rs.passIndex : rs.end;
-            int e2 = e1+CONTEXT;
+            int e2 = e1+contextLines;
             if (i < results.size()-1 && results.get(i+1).passIndex < e2) {
                 e2 = results.get(i+1).passIndex;
                 precontext=true;
