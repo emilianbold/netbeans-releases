@@ -57,8 +57,6 @@ public class IDESettings  {
     public static final String PROP_SHOW_FILE_EXTENSIONS = "showFileExtensions"; // NOI18N
     /** Web Browser prefered by user */
     public static final String PROP_WWWBROWSER = "WWWBrowser"; // NOI18N
-    /** UI Mode */
-    public static final String PROP_UIMODE = "UIMode"; // NOI18N
     
     /** files that should be ignored
      *
@@ -243,15 +241,6 @@ public class IDESettings  {
         } catch (Exception ex) {
             Exceptions.printStackTrace (ex);
         }
-    }
-    
-    /** Sets ui mode (MDI, SDI, Dialog SDI...) */
-    public void setUIMode (int uiMode) {
-        getPreferences().putInt(PROP_UIMODE, uiMode);
-    }
-    
-    public int getUIMode () {
-        return getPreferences().getInt(PROP_UIMODE, 2);
     }
     
     // PRIVATE METHODS

@@ -108,9 +108,6 @@ public abstract class Constants {
     /** For view, do not show emty documents area, i.e. when no document is opened. */
     public static final boolean SWITCH_HIDE_EMPTY_DOCUMENT_AREA = Boolean.getBoolean("netbeans.winsys.hideEmptyDocArea"); // NOI18N
     
-    // XXX #32920 Older switch, comaptibility.
-    public static final boolean SWITCH_START_IN_SEPARATE_MODE = "sdi".equals(System.getProperty("netbeans.windows")); // NOI18N
-
     //Issue 39166, OS-X will display a strange gray rectangle while dragging - they
     //really require an image to be supplied.  Leaving this off for other platforms pending
     //HIE approval and performance impact evaluation - probably safe for Windows, probably

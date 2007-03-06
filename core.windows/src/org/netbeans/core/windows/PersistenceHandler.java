@@ -152,12 +152,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         }
         
         wm.setEditorAreaConstraints(wmc.editorAreaConstraints);
-        
-        if (Constants.SWITCH_START_IN_SEPARATE_MODE) {
-            wm.setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
-        } else {
-            wm.setEditorAreaState(wmc.editorAreaState);
-        }
+        wm.setEditorAreaState(wmc.editorAreaState);
 
         ModeImpl activeMode    = null;
         ModeImpl editorMaximizedMode = null;

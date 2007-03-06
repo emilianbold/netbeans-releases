@@ -362,19 +362,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     void revalidateWindow () {
         // PENDING
         toolbarPanel().revalidate();
-        IDESettings settings = IDESettings.getInstance();
-        int uiMode = settings.getUIMode();
-        if (uiMode == 1) { // perform in SDI only
-            java.awt.Window w = SwingUtilities.windowForComponent(toolbarPanel());
-            if (w != null) {
-//                w.validate();
-                int width = toolbarPanel().getRootPane().getSize().width;
-                int height = toolbarPanel().getRootPane().getPreferredSize().height;
-                Insets insets = w.getInsets();
-                w.setSize(new Dimension(width + insets.left + insets.right, height + insets.top + insets.bottom));
-                w.validate();
-            }
-        }
         // #15930. Always replane even we are in AWT thread already.
 //        SwingUtilities.invokeLater(new Runnable () {
 //            public void run () {

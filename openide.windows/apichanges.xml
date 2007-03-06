@@ -24,6 +24,21 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+<change id="netbeans.windows=sdi">
+    <api name="winsys"/>
+    <summary>Removal of netbeans.windows=sdi and netbeans.windows=mdi cmnd line option.</summary>
+    <version major="6" minor="14"/>
+    <date day="06" month="03" year="2007"/>
+    <author login="dsimonek"/>
+    <compatibility addition="no" binary="compatible" source="compatible" semantic="incompatible" deprecation="no" deletion="yes" modification="no"/>
+    <description>
+        Command line option netbeans.windows=(mdi,sdi) used for starting the system
+        either in sdi or mdi mode, was deleted. Support for sdi was dropped and
+        replaced by floating windows support. System will now always start in mdi mode.
+    </description>
+    <issue number="50352"/>
+</change>    
+    
 <change id="isEditorTopComponent">
     <api name="winsys"/>
     <summary>Added a method to check the type of a TopComponent - 'editor' or 'view'</summary>

@@ -36,8 +36,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
     /** Provides an explicit property info. */
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
-    	    ResourceBundle bundleUIMode = NbBundle.getBundle(UIModePropertyEditor.class);
-
             PropertyDescriptor[] desc = new PropertyDescriptor[] {
                        new PropertyDescriptor (IDESettings.PROP_CONFIRM_DELETE, IDESettings.class,
                                                "getConfirmDelete", "setConfirmDelete"), // NOI18N
@@ -45,8 +43,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                                "getHomePage", "setHomePage"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_SHOW_FILE_EXTENSIONS, IDESettings.class,
                                                "getShowFileExtensions", "setShowFileExtensions"), // NOI18N
-                       new PropertyDescriptor (IDESettings.PROP_UIMODE, IDESettings.class, 
-                                               "getUIMode", "setUIMode"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TOOLTIPS_IN_IDE, IDESettings.class,
                                                "getShowToolTipsInIDE", "setShowToolTipsInIDE"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_IGNORED_FILES, IDESettings.class,
@@ -61,15 +57,11 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             
             desc[2].setHidden (true);
 
-            desc[3].setDisplayName(bundleUIMode.getString("PROP_UI_Mode"));
-            desc[3].setShortDescription(bundleUIMode.getString("HINT_UI_Mode"));
-            desc[3].setPropertyEditorClass(UIModePropertyEditor.class);
-
-            desc[4].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_SHOW_TOOLTIPS_IN_IDE"));
-            desc[4].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class, "HINT_SHOW_TOOLTIPS_IN_IDE"));
+            desc[3].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_SHOW_TOOLTIPS_IN_IDE"));
+            desc[3].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class, "HINT_SHOW_TOOLTIPS_IN_IDE"));
             
-            desc[5].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_ignoredFiles"));
-            desc[5].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class,"HINT_ignoredFiles"));            
+            desc[4].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_ignoredFiles"));
+            desc[4].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class,"HINT_ignoredFiles"));            
             
             return desc;
         } catch (IntrospectionException ex) {

@@ -68,10 +68,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /** Manages list of recently activated <code>TopCompoennt</code>s. */
     private final RecentViewList recentViewList = new RecentViewList(this);
 
-    // XXX
-    /** Manages consistency between core ui mode setting. */
-    private final UIModeHandler uiModeHandler = new UIModeHandler();
-    
     /** Only for hack 40237, to not call componentShowing twice */ 
     private TopComponent persistenceShowingTC;
     
@@ -638,8 +634,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /** Sets editor area state. */
     public void setEditorAreaState(int editorAreaState) {
         setEditorAreaStateImpl(editorAreaState);
-        // XXX
-        uiModeHandler.setUIMode(editorAreaState);
     }
     
     // XXX
