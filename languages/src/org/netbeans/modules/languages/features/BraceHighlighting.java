@@ -20,7 +20,11 @@
 package org.netbeans.modules.languages.features;
 
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
@@ -28,14 +32,17 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.lexer.STokenId;
+
 
 /**
  *
- * @author Jan Jancura
+ * @author Dan Prusa
  */
 public class BraceHighlighting extends ExtSyntaxSupport {
 
@@ -43,28 +50,28 @@ public class BraceHighlighting extends ExtSyntaxSupport {
         super (doc);
     }
 
-    public int[] findMatchingBlock(int offset, boolean simpleSearch) throws BadLocationException {
+    public int[] findMatchingBlock (int offset, boolean simpleSearch) throws BadLocationException {
         try {
-            NbEditorDocument doc = (NbEditorDocument)getDocument();
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+            BaseDocument doc = getDocument ();
+            TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.<BaseDocument>get (doc);
             TokenSequence tokens = tokenHierarchy.tokenSequence();
             tokens.move(offset);
             tokens.moveNext ();
-            Token token = tokens.token();
+            Token<STokenId> token = tokens.token ();
             String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
             Language language = ((LanguagesManagerImpl)LanguagesManager.getDefault()).getLanguage(mimeType);
-            Object[] bracesValue = (Object[]) language.getProperty (Language.BRACE);
+            Map<String,String>[] bracesValue = getBraces (language);
             if (bracesValue == null) {
                 return super.findMatchingBlock(offset, simpleSearch);
             }
 
             CharSequence text = token.text().toString();
             boolean moveToRight = false;
-            String bracket = (String) ((Map)bracesValue[0]).get(text);
+            String bracket = bracesValue [0].get (text);
             if (bracket != null) {
                 moveToRight = true;
             } else {
-                bracket = (String) ((Map)bracesValue[1]).get(text);
+                bracket = bracesValue [1].get (text);
                 if (bracket == null) {
                     return null;
                 }
@@ -90,6 +97,32 @@ public class BraceHighlighting extends ExtSyntaxSupport {
         } catch (ParseException e) {
         }
         return null;
+    }
+    
+    private static Map<Language,Map<String,String>[]> braces = new WeakHashMap<Language,Map<String,String>[]> ();
+    
+    private static Map<String,String>[] getBraces (Language l) {
+        if (!braces.containsKey (l)) {
+            Map<String,String> startToEnd = new HashMap<String,String> ();
+            Map<String,String> endToStart = new HashMap<String,String> ();
+            
+            List<Feature> indents = l.getFeatures ("BRACE");
+            Iterator<Feature> it = indents.iterator ();
+            while (it.hasNext ()) {
+                Feature indent = it.next ();
+                String s = (String) indent.getValue ();
+                int i = s.indexOf (':');
+                String start = s.substring (0, i);
+                String end = s.substring (i + 1);
+                startToEnd.put (start, end);
+                endToStart.put (end, start);
+            }
+            braces.put (
+                l,
+                new Map[] {startToEnd, endToStart}
+            );
+        }
+        return braces.get (l);
     }
 }
 

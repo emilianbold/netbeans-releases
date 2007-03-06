@@ -22,11 +22,12 @@ package org.netbeans.modules.languages.features;
 import org.netbeans.api.languages.*;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager.State;
+import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Language.Navigator;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.ErrorManager;
@@ -239,12 +240,11 @@ public class LanguagesNavigator implements NavigatorPanel {
         NbEditorDocument doc
     ) {
         ASTPath path2 = ASTPath.create (path);
-        Navigator navigator = null;
+        Feature navigator = null;
         try {
             Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                 getLanguage (item.getMimeType ());
-            navigator = (Navigator) language.getFeature 
-                (Language.NAVIGATOR, path2);
+            navigator = language.getFeature (Language.NAVIGATOR, path2);
         } catch (ParseException ex) {
             return null;
         }
@@ -255,43 +255,21 @@ public class LanguagesNavigator implements NavigatorPanel {
         int column = NbDocument.findLineColumn (doc, item.getOffset ());
         int start = item.getOffset ();
         int end = item.getEndOffset ();
-        String displayName = null;
-        if (navigator.getDisplayName () == null)
+        Context context = SyntaxContext.create (doc, path2);
+        String displayName = (String) navigator.getValue ("display_name", context);
+        if (displayName == null)
             try {
                 displayName = doc.getText (
                     start,
                     end - start
                 );
-            } catch (BadLocationException ex) {}
-        else {
-            displayName = (String) navigator.getDisplayName ().evaluate (
-                SyntaxContext.create (doc, path2)
-            );
-//            if (properties.containsKey (displayName))
-//                displayName = (String) properties.get (displayName);
-        }
-        String tooltip = null;
-        if (navigator.getTooltip () == null)
-            tooltip = "";
-        else {
-            tooltip = (String) navigator.getTooltip ().evaluate (
-                SyntaxContext.create (doc, path2)
-            );
-//            if (properties.containsKey (tooltip))
-//                tooltip = (String) properties.get (tooltip);
-        }
-        String icon = "/org/netbeans/modules/languages/resources/node.gif";
-        if (navigator.getIcon () != null)
-            icon = (String) navigator.getIcon ().evaluate (
-                SyntaxContext.create (doc, path2)
-            );
+            } catch (BadLocationException ex) {
+            }
+        String tooltip = (String) navigator.getValue ("tooltip", context);
+        String icon = (String) navigator.getValue ("icon", context);
         if (icon == null)
             icon = "/org/netbeans/modules/languages/resources/node.gif";
-        boolean isLeaf = false;
-        if (navigator.isLeaf () != null)
-            isLeaf = "true".equals (navigator.isLeaf ().evaluate (
-                SyntaxContext.create (doc, path2))
-            );
+        boolean isLeaf = navigator.getBoolean ("tooltip", context, false);
         return new NavigatorNode (
             item,
             path,
@@ -473,8 +451,10 @@ public class LanguagesNavigator implements NavigatorPanel {
                     try {
                         Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage 
                             (n.item.getMimeType ());
-                        Object sort = language.getProperty ("navigator-sort");
-                        if (sort != null && sort.equals ("true")) {
+                        Feature properties = language.getFeature ("PROPERTIES");
+                        if (properties != null &&
+                            properties.getBoolean ("navigator-sort", false)
+                        ) {
                             if (navigatorComparator == null)
                                 navigatorComparator = new NavigatorComparator ();
                             Collections.sort (nodes, navigatorComparator);

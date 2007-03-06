@@ -19,11 +19,15 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -37,7 +41,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
-import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.openide.ErrorManager;
@@ -68,7 +73,7 @@ public class IndentAction extends InsertBreakAction {
             }
             Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (ts.language ().mimeType ());
             Token token = ts.token ();
-            Object indentValue = l.getProperty (Language.INDENT);
+            Object indentValue = getIndentProperties (l);
 
             if (indentValue == null) return;
             if (indentValue instanceof Object[]) {
@@ -111,9 +116,9 @@ public class IndentAction extends InsertBreakAction {
                     caret.setDot (offset);
                 }
             } else
-            if (indentValue instanceof Evaluator.Method) {
-                Evaluator.Method m = (Evaluator.Method) indentValue;
-                m.evaluate (Context.create (doc, ts));
+            if (indentValue instanceof Feature) {
+                Feature m = (Feature) indentValue;
+                m.getValue (Context.create (doc, ts));
             }
         } catch (Exception ex) {
             ErrorManager.getDefault ().notify (ex);
@@ -181,5 +186,49 @@ public class IndentAction extends InsertBreakAction {
         } catch (BadLocationException ex) {
             ErrorManager.getDefault ().notify (ex);
         }
+    }
+    
+    private static Map indentProperties = new WeakHashMap ();
+    
+    private static Object getIndentProperties (Language l) {
+        if (!indentProperties.containsKey (l)) {
+            List<Pattern> patterns = new ArrayList<Pattern> ();
+            Set<String> start = new HashSet<String> ();
+            Set<String> end = new HashSet<String> ();
+            Map<String,String> endToStart = new HashMap<String,String> ();
+            
+            List<Feature> indents = l.getFeatures ("INDENT");
+            Iterator<Feature> it = indents.iterator ();
+            while (it.hasNext ()) {
+                Feature indent = it.next ();
+                if (indent.getType () == Type.METHOD_CALL) {
+                    return indent;
+                }
+                String s = (String) indent.getValue ();
+                int i = s.indexOf (':');
+                if (i < 1) {
+                    patterns.add (Pattern.compile (c (s)));
+                    continue;
+                }
+                start.add (s.substring (0, i));
+                end.add (s.substring (i + 1));
+                endToStart.put (s.substring (i + 1), s.substring (0, i));
+            }
+            indentProperties.put (
+                l,
+                new Object[] {patterns, start, end, endToStart}
+            );
+        }
+        return indentProperties.get (l);
+    }
+    
+    private static String c (String s) {
+        s = s.replace ("\\n", "\n");
+        s = s.replace ("\\r", "\r");
+        s = s.replace ("\\t", "\t");
+        s = s.replace ("\\\"", "\"");
+        s = s.replace ("\\\'", "\'");
+        s = s.replace ("\\\\", "\\");
+        return s;
     }
 }

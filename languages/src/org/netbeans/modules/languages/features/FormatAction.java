@@ -40,6 +40,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.ParserManagerImpl;
@@ -134,7 +135,8 @@ public class FormatAction extends BaseAction {
                     continue;
                 }
             }
-            indent = (String) language.getFeature (Language.INDENT, path2);
+            Feature indentProperties = language.getFeature (Language.INDENT, path2);
+            indent = (String) indentProperties.getValue ();
             
             // indent
             if (e instanceof ASTNode)

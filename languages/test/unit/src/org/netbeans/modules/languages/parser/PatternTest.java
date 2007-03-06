@@ -21,28 +21,6 @@ public class PatternTest extends TestCase {
     public PatternTest (String testName) {
         super (testName);
     }
-    
-    private static String mimeType = "text/test";
-    
-//    public void testToken () {
-//        assertEquals (
-//            Token.create (mimeType, "identifier", null),
-//            Token.create (mimeType, "identifier", null)
-//        );
-//        assertEquals (
-//            Token.create (mimeType, "identifier", null),
-//            Token.create (mimeType, "identifier", "test")
-//        );
-//
-//        assertNotSame (
-//            Token.create (mimeType, "identifier", "asd"),
-//            Token.create (mimeType, "identifier", "test")
-//        );
-//        assertNotSame (
-//            Token.create (mimeType, "identifier", null),
-//            Token.create (mimeType, "identifier2", null)
-//        );
-//    }
 
     public void testNext () throws ParseException {
         testReadToken ("'/'?'>'", "/>>", true, ">");
@@ -132,10 +110,10 @@ public class PatternTest extends TestCase {
         boolean result,
         String ext
     ) throws ParseException {
-        CharInput in = new StringInput (text, "test");
-        Pattern p = Pattern.create (expression, "text/test");
+        StringInput in = new StringInput (text, "test");
+        Pattern p = Pattern.create (expression);
         assertEquals (expression + " <" + text + ">", result, p.next (in) != null);
-        assertEquals (expression + " <" + text + ">", ext, in.toString ());
+        assertEquals (expression + " <" + text + ">", ext, in.getAsText ());
     }
     
     private static void testMatches (
@@ -143,7 +121,7 @@ public class PatternTest extends TestCase {
         String text,
         boolean result
     ) throws ParseException {
-        Pattern p = Pattern.create (expression, "text/test");
+        Pattern p = Pattern.create (expression);
         assertEquals (expression + " <" + text + ">", result, p.matches (text));
     }    
 }

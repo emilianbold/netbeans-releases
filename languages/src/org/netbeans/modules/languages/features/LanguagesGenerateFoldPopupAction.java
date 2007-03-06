@@ -22,6 +22,7 @@ package org.netbeans.modules.languages.features;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JMenu;
@@ -29,7 +30,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
-import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 
@@ -54,22 +55,17 @@ public class LanguagesGenerateFoldPopupAction extends GenerateFoldPopupAction {
     }
 
     private void addFoldTypes (JTextComponent target, JMenu menu, Language l, Set expands) {
-        Collection c = l.getFeatures (Language.FOLD);
-        if (c == null) return;
-        Iterator it = c.iterator ();
+        List<Feature> features = l.getFeatures (Language.FOLD);
+        Iterator<Feature> it = features.iterator ();
         while (it.hasNext ()) {
-            Object o = it.next ();
-            if (o instanceof Evaluator) continue;
-            Map feature = (Map) o;
-            Evaluator e = (Evaluator) feature.get ("expand_type_action_name");
-            if (e == null) continue;
-            String expand = (String) e.evaluate ();
+            Feature fold = it.next ();
+            String expand = (String) fold.getValue ("expand_type_action_name");
+            if (expand == null) continue;
             if (expands.contains (expand))
                 continue;
             expands.add (expand);
-            e = (Evaluator) feature.get ("collapse_type_action_name");
-            if (e == null) continue;
-            String collapse = (String) e.evaluate ();
+            String collapse = (String) fold.getValue ("collapse_type_action_name");
+            if (collapse == null) continue;
             addAction (target, menu, expand);
             addAction (target, menu, collapse);
             setAddSeparatorBeforeNextAction (true);

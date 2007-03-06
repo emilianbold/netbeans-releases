@@ -65,6 +65,7 @@ public class NBSTest extends TestCase {
             ln = br.readLine ();
         }
         TokenInput ti = TokenInput.create (
+            "text/test",
             l.getParser (), 
             new StringInput (sb.toString (), "NBS.nbs"),
             l.getSkipTokenTypes ()

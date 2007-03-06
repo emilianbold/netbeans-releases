@@ -8,12 +8,13 @@
 package org.netbeans.modules.languages.parser;
 
 import java.util.Map;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.SToken;
 import java.util.ArrayList;
 import java.util.List;
 import junit.framework.*;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.parser.Parser.Cookie;
 
@@ -122,8 +123,7 @@ public class ParserTest extends TestCase {
             String pattern = (String) l [i + 2];
             rules.add (Language.createTokenType (
                 (String) l [i],
-                Pattern.create (pattern, "text/test"),
-                "text/test",
+                Pattern.create (pattern),
                 tokenName,
                 (String) l [i + 3],
                 i / 4,
@@ -161,16 +161,16 @@ public class ParserTest extends TestCase {
             "test"
         );
         Cookie c = new MyCookie ();
-        assertEquals ("state: " + c.getState () + " text: " + in, "comment", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c.getState () + " text: " + in, "whitespace", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c.getState () + " text: " + in, "keyword", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c.getState () + " text: " + in, "whitespace", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c.getState () + " text: " + in, "identifier", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c.getState () + " text: " + in, "operator", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c.getState () + " text: " + in, "identifier", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c.getState () + " text: " + in, "operator", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c.getState () + " text: " + in, "identifier", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c.getState () + " text: " + in, "operator", ((SToken) parser.read (c, in)).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "comment", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "whitespace", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "keyword", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "whitespace", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "identifier", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "operator", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "identifier", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "operator", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "identifier", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c.getState () + " text: " + in, "operator", ((ASTToken) parser.read (c, in, "text/test")).getType ());
     }
     
     public void testReadHtml () throws ParseException {
@@ -200,24 +200,24 @@ public class ParserTest extends TestCase {
             "test"
         );
         Cookie c = new MyCookie ();
-        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "WHITESPACE", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ATTRIBUTE_NAME", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "OPERATOR", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ATTRIBUTE_VALUE", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "TEXT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "COMMENT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "TEXT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "TEXT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "WHITESPACE", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ATTRIBUTE_NAME", ((SToken) parser.read (c, in)).getType ());
-        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((SToken) parser.read (c, in)).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "WHITESPACE", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ATTRIBUTE_NAME", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "OPERATOR", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ATTRIBUTE_VALUE", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "TEXT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "COMMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "TEXT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "TEXT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "WHITESPACE", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ATTRIBUTE_NAME", ((ASTToken) parser.read (c, in, "text/test")).getType ());
+        assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, "text/test")).getType ());
         assertTrue (in.eof ());
     }
     
@@ -233,7 +233,7 @@ public class ParserTest extends TestCase {
             this.state = state;
         }
     
-        public void setProperties (Map properties) {
+        public void setProperties (Feature properties) {
         }
     }
 }

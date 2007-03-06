@@ -36,29 +36,29 @@ public class AnalyserTest extends TestCase {
 
     public void test1 () throws ParseException {
         Language l = new Language (mimeType);
-        l.addRule (LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
+        l.addRule (LLSyntaxAnalyser.Rule.create ("S", Arrays.asList (new Object[] {
             ASTToken.create (mimeType, "identifier", null, 0), 
             "S"
         })));
-        l.addRule (LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
+        l.addRule (LLSyntaxAnalyser.Rule.create ("S", Arrays.asList (new Object[] {
             ASTToken.create (mimeType, "operator", "{", 0), 
             "S", 
             ASTToken.create (mimeType, "operator", "}", 0), 
             "S"
         })));
-        l.addRule (LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
+        l.addRule (LLSyntaxAnalyser.Rule.create ("S", Arrays.asList (new Object[] {
         })));
         LLSyntaxAnalyser a = l.getAnalyser ();
         //PetraTest.print (Petra.first (r, 5));
         TokenInput input = TokenInput.create (new ASTToken[] {
-            ASTToken.create (mimeType, "identifier", "asd"),
-            ASTToken.create (mimeType, "identifier", "ss"),
-            ASTToken.create (mimeType, "operator", "{"),
-            ASTToken.create (mimeType, "identifier", "a"),
-            ASTToken.create (mimeType, "operator", "{"),
-            ASTToken.create (mimeType, "operator", "}"),
-            ASTToken.create (mimeType, "identifier", "asd"),
-            ASTToken.create (mimeType, "operator", "}"),
+            ASTToken.create (mimeType, "identifier", "asd", 0),
+            ASTToken.create (mimeType, "identifier", "ss", 0),
+            ASTToken.create (mimeType, "operator", "{", 0),
+            ASTToken.create (mimeType, "identifier", "a", 0),
+            ASTToken.create (mimeType, "operator", "{", 0),
+            ASTToken.create (mimeType, "operator", "}", 0),
+            ASTToken.create (mimeType, "identifier", "asd", 0),
+            ASTToken.create (mimeType, "operator", "}", 0),
         });
         assertNotNull (a.read (input, false));
         assert (input.eof ());
@@ -127,6 +127,7 @@ public class AnalyserTest extends TestCase {
         );
         ASTNode n = l.getAnalyser ().read (
             TokenInput.create (
+                "text/test",
                 l.getParser (),
                 input,
                 l.getSkipTokenTypes ()
@@ -161,6 +162,7 @@ public class AnalyserTest extends TestCase {
         );
         ASTNode n = l.getAnalyser ().read (
             TokenInput.create (
+                "text/test",
                 l.getParser (),
                 input,
                 l.getSkipTokenTypes ()
@@ -287,6 +289,7 @@ public class AnalyserTest extends TestCase {
         );
         ASTNode n = l.getAnalyser ().read (
             TokenInput.create (
+                "text/test",
                 l.getParser (),
                 input,
                 l.getSkipTokenTypes ()
@@ -322,6 +325,7 @@ public class AnalyserTest extends TestCase {
         );
         ASTNode n = l.getAnalyser ().read (
             TokenInput.create (
+                "text/test",
                 l.getParser (),
                 input,
                 l.getSkipTokenTypes ()

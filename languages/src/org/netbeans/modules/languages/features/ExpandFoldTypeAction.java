@@ -28,11 +28,12 @@ import java.util.Map;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 
@@ -65,21 +66,17 @@ public class ExpandFoldTypeAction extends BaseAction {
     }
 
     private boolean expand (FoldHierarchy hierarchy, Language l) {
-        Collection c = l.getFeatures (Language.FOLD);
-        Iterator it = c.iterator ();
+        List<Feature> folds = l.getFeatures (Language.FOLD);
+        Iterator<Feature> it = folds.iterator ();
         while (it.hasNext ()) {
-            Object o = it.next ();
-            if (o instanceof Evaluator) continue;
-            Map feature = (Map) o;
-            Evaluator e = (Evaluator) feature.get ("expand_type_action_name");
-            if (e == null) continue;
-            String expand = (String) e.evaluate ();
+            Feature fold = it.next ();
+            String expand = (String) fold.getValue ("expand_type_action_name");;
+            if (expand == null) continue;
             if (!expand.equals (getValue (NAME)))
                 continue;
-            e = (Evaluator) feature.get ("collapse_type_action_name");
-            if (e == null) continue;
-            String collapse = (String) e.evaluate ();
-            List types = new ArrayList ();
+            String collapse = (String) fold.getValue ("collapse_type_action_name");;
+            if (collapse == null) continue;
+            List<FoldType> types = new ArrayList<FoldType> ();
             types.add (Folds.getFoldType (collapse));
             FoldUtilities.expand (hierarchy, types);
             return true;

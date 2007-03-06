@@ -34,6 +34,7 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
@@ -41,7 +42,6 @@ import org.netbeans.spi.editor.fold.FoldOperation;
 import org.openide.text.NbDocument;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import java.util.ArrayList;
@@ -192,10 +192,10 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
 
 
     private static FoldType defaultFoldType = new FoldType ("default");
-    private List folds;
+    private List<F> folds;
     
     public void beforeEvaluation (State state, ASTNode root) {
-        folds = new ArrayList ();
+        folds = new ArrayList<F> ();
     }
 
     public void afterEvaluation (State state, ASTNode root) {
@@ -204,21 +204,18 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                 FoldHierarchy hierarchy = operation.getHierarchy ();
                 FoldHierarchyTransaction transaction = operation.openTransaction ();
                 try {
-                    Fold f = operation.getHierarchy ().getRootFold ();
-                    List l = new ArrayList (f.getFoldCount ());
-                    int i, k = f.getFoldCount ();
+                    Fold fold = operation.getHierarchy ().getRootFold ();
+                    List<Fold> l = new ArrayList<Fold> (fold.getFoldCount ());
+                    int i, k = fold.getFoldCount ();
                     for (i = 0; i < k; i++)
-                        l.add (f.getFold (i));
+                        l.add (fold.getFold (i));
                     for (i = 0; i < k; i++)
-                        operation.removeFromHierarchy ((Fold) l.get (i), transaction);
-                    Iterator it = folds.iterator ();
+                        operation.removeFromHierarchy (l.get (i), transaction);
+                    Iterator<F> it = folds.iterator ();
                     while (it.hasNext ()) {
-                        String foldName = (String) it.next ();
-                        int start = (Integer) it.next ();
-                        int end = (Integer) it.next ();
-                        FoldType foldType = (FoldType) it.next ();
+                        F f = it.next ();
                         operation.addToHierarchy (
-                            foldType, foldName, false, start, end, 0, 0, 
+                            f.type, f.foldName, false, f.start, f.end, 0, 0, 
                             hierarchy, transaction
                         );
                     }
@@ -241,41 +238,38 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             if (sln == eln) return;
             Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                 getLanguage (item.getMimeType ());
-            Object feature = language.getFeature (Language.FOLD, path);
-            if (feature == null) return;
-            if (feature instanceof Evaluator) {
-                String foldName = (String) ((Evaluator) feature).evaluate (
-                    SyntaxContext.create (doc, path)
-                );
+            Feature fold = language.getFeature (Language.FOLD, path);
+            if (fold == null) return;
+            if (fold.hasSingleValue ()) {
+                String foldName = (String) fold.getValue (SyntaxContext.create (doc, path));
                 if (foldName == null) return;            
-                folds.add (foldName);
-                folds.add (s);
-                folds.add (e);
-                folds.add (defaultFoldType);
+                folds.add (new F(foldName, s, e, defaultFoldType));
                 return;
             }
-            Map f = (Map) feature;
-            Evaluator evaluator = (Evaluator) f.get ("fold_display_name");
-            String foldName = evaluator == null ? "..." :
-                (String) evaluator.evaluate (
-                    SyntaxContext.create (doc, path)
-                );
-            evaluator = (Evaluator) f.get ("collapse_type_action_name");
-            String foldType = evaluator == null ? null : 
-                (String) evaluator.evaluate ();
-            folds.add (foldName);
-            folds.add (s);
-            folds.add (e);
-            if (foldType != null)
-                folds.add (Folds.getFoldType (foldType));
-            else
-                folds.add (null);
+            String foldName = (String) fold.getValue ("fold_display_name", SyntaxContext.create (doc, path));
+            if (foldName == null) foldName = "...";
+            String foldType = (String) fold.getValue ("collapse_type_action_name");
+            folds.add (new F (foldName, s, e, Folds.getFoldType (foldType)));
         } catch (ParseException ex) {
         }
     }
     
     
     // innerclasses ............................................................
+    
+    private static final class F {
+        String foldName;
+        int start;
+        int end;
+        FoldType type;
+        
+        F (String foldName, int start, int end, FoldType type) {
+            this.foldName = foldName;
+            this.start = start;
+            this.end = end;
+            this.type = type;
+        }
+    } 
         
     public static final class Factory implements FoldManagerFactory {
         

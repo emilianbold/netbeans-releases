@@ -25,6 +25,7 @@ import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.editor.BaseAction;
 
@@ -44,7 +45,7 @@ public class CollapseFoldTypeAction extends BaseAction {
     public void actionPerformed (ActionEvent evt, JTextComponent target) {
         FoldHierarchy hierarchy = FoldHierarchy.get (target);
         // Hierarchy locking done in the utility method
-        List types = new ArrayList ();
+        List<FoldType> types = new ArrayList<FoldType> ();
         types.add (Folds.getFoldType ((String) getValue (NAME)));
         FoldUtilities.collapse (hierarchy, types);
     }

@@ -37,11 +37,10 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Highlighting;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.ParserManagerImpl;
-
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -85,8 +84,8 @@ MouseListener {
             removeHighlihgt (doc);
         }
         if (r != null) {
-            Evaluator evaluator = (Evaluator) r [1];
-            runnable = (Runnable) evaluator.evaluate ((Context) r [0]);
+            Feature hyperlink = (Feature) r [1];
+            runnable = (Runnable) hyperlink.getValue ((Context) r [0]);
             if (runnable != null) {
                 context = (Context) r [0];
                 highlight (doc);
@@ -199,9 +198,9 @@ MouseListener {
                 tokenSequence.moveNext ();
                 Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
                 Token token = tokenSequence.token ();
-                Evaluator evaluator = (Evaluator) language.getFeature 
+                Feature hyperlink = language.getFeature 
                     (Language.HYPERLINK, token.id ().name ());
-                if (evaluator != null) return new Object[] {Context.create (doc, tokenSequence), evaluator};
+                if (hyperlink != null) return new Object[] {Context.create (doc, tokenSequence), hyperlink};
                 return null;
             }
             ASTPath path = ast.findPath (offset);
@@ -209,10 +208,9 @@ MouseListener {
             int i, k = path.size ();
             for (i = 0; i < k; i++) {
                 ASTPath p = path.subPath (i);
-                Evaluator evaluator = (Evaluator) language.getFeature 
-                    (Language.HYPERLINK, p);
-                if (evaluator != null) 
-                    return new Object[] {SyntaxContext.create (doc, p), evaluator};
+                Feature hyperlink = language.getFeature (Language.HYPERLINK, p);
+                if (hyperlink != null) 
+                    return new Object[] {SyntaxContext.create (doc, p), hyperlink};
             }
         } catch (ParseException ex) {
         }

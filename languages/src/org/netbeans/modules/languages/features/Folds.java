@@ -29,11 +29,12 @@ public class Folds {
     private static Map<String,WeakReference<FoldType>> nameToFoldType = new HashMap<String,WeakReference<FoldType>>();
     
     public static synchronized FoldType getFoldType (String name) {
+        if (name == null) return null;
         WeakReference<FoldType> wr = nameToFoldType.get (name);
         FoldType ft = wr == null ? null : wr.get ();
         if (ft == null) {
             ft = new FoldType (name);
-            nameToFoldType.put (name, new WeakReference (ft));
+            nameToFoldType.put (name, new WeakReference<FoldType> (ft));
         }
         return ft;
     }

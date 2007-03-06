@@ -30,8 +30,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.api.languages.Context;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.api.languages.SyntaxContext;
@@ -72,10 +72,9 @@ public class ToolTipAnnotation extends Annotation {
             Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage 
                 (mimeType);
             Token token = tokenSequence.token ();
-            Evaluator tooltip = (Evaluator) l.getFeature 
-                (Language.TOOLTIP, token.id ().name ());
+            Feature tooltip = l.getFeature (Language.TOOLTIP, token.id ().name ());
             if (tooltip != null) {
-                String s = c ((String) tooltip.evaluate (Context.create (doc, tokenSequence)));
+                String s = c ((String) tooltip.getValue (Context.create (doc, tokenSequence)));
                 return s;
             }
             ASTNode ast = null;
@@ -90,9 +89,9 @@ public class ToolTipAnnotation extends Annotation {
             int i, k = path.size ();
             for (i = 0; i < k; i++) {
                 ASTPath p = path.subPath (i);
-                tooltip = (Evaluator) l.getFeature (Language.TOOLTIP, p);
+                tooltip = l.getFeature (Language.TOOLTIP, p);
                 if (tooltip == null) continue;
-                String s = c ((String) tooltip.evaluate (SyntaxContext.create (doc, p)));
+                String s = c ((String) tooltip.getValue (SyntaxContext.create (doc, p)));
                 return s;
             }
         } catch (ParseException ex) {

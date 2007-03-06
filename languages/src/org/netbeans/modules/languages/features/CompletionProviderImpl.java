@@ -38,8 +38,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.ParserManagerImpl;
@@ -62,6 +62,9 @@ import java.util.Map;
  */
 public class CompletionProviderImpl implements CompletionProvider {
     
+    private static final String COMPLETION = "COMPLETION";
+    
+    
     public CompletionTask createTask (int queryType, JTextComponent component) {
         return new CompletionTaskImpl (component);
     }
@@ -72,14 +75,14 @@ public class CompletionProviderImpl implements CompletionProvider {
     
     private static class CompletionTaskImpl implements CompletionTask {
         
-        private JTextComponent      component;
-        private NbEditorDocument    doc;
-        private boolean             ignoreCase;
-        private List                items = new ArrayList ();
+        private JTextComponent          component;
+        private NbEditorDocument        doc;
+        private boolean                 ignoreCase;
+        private List<CompletionItem>    items = new ArrayList<CompletionItem> ();
         
         
         CompletionTaskImpl (JTextComponent component) {
-            this.component = component;
+            this.component = component; 
         }
         
         public void query (CompletionResultSet resultSet) {
@@ -106,9 +109,9 @@ public class CompletionProviderImpl implements CompletionProvider {
                 start = "";// [HACK]
             if (ignoreCase) start = start.toLowerCase ();
 
-            Iterator it = items.iterator ();
+            Iterator<CompletionItem> it = items.iterator ();
             while (it.hasNext ()) {
-                CompletionItem item = (CompletionItem) it.next ();
+                CompletionItem item = it.next ();
                 CharSequence chs = item.getInsertPrefix ();
                 String s = chs instanceof String ? (String) chs : chs.toString ();
                 if (s.startsWith (start))
@@ -138,7 +141,7 @@ public class CompletionProviderImpl implements CompletionProvider {
         ) {
             if (tokenSequence == null) return;
             String mimeType = tokenSequence.language ().mimeType ();
-            Map tags = null;
+            Feature feature = null;
             String start = null;
             try {
                 Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
@@ -152,20 +155,20 @@ public class CompletionProviderImpl implements CompletionProvider {
                     start = "";// [HACK]
                 String tokenType = token.id ().name ();
                 ignoreCase = false;
-                Evaluator e = (Evaluator) language.getProperty ("ignoreCase");
-                if (e != null)
-                    ignoreCase = "true".equals (e.evaluate ());
+                Feature f = language.getFeature ("PROPERTIES");
+                if (f != null)
+                    ignoreCase = f.getBoolean ("ignoreCase", false);
                 if (ignoreCase) start = start.toLowerCase ();
-                tags = (Map) language.getFeature (
+                feature = language.getFeature (
                     Language.COMPLETION, 
                     tokenType
                 );
             } catch (ParseException ex) {
             }
-            if (tags == null)
+            if (feature == null)
                 compute (tokenSequence.embedded (), offset, resultSet, doc);
             else
-                addTags (tags, start, Context.create (doc, tokenSequence), resultSet);
+                addTags (feature, start, Context.create (doc, tokenSequence), resultSet);
         }
 
         private void addParserTags (final CompletionResultSet resultSet) {
@@ -212,31 +215,27 @@ public class CompletionProviderImpl implements CompletionProvider {
                 try {
                     Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                         getLanguage (item.getMimeType ());
-                    Map tags = (Map) language.getFeature (Language.COMPLETION, path.subPath (i));
-                    if (tags != null) {
-                        boolean recursive = false;
-                        if (tags.containsKey ("recursive")) {
-                            Evaluator e = (Evaluator) tags.get ("recursive");
-                            recursive = ((String) e.evaluate ()).equals ("true");
-                        }
+                    Feature feature = language.getFeature (COMPLETION, path.subPath (i));
+                    if (feature != null) {
+                        boolean recursive = feature.getBoolean ("recursive", false);
                         if ((i != path.size () - 1) && !recursive) break;
-                        addTags (tags, start, SyntaxContext.create (doc, path.subPath (i)), resultSet);
+                        addTags (feature, start, SyntaxContext.create (doc, path.subPath (i)), resultSet);
                     }
                 } catch (ParseException ex) {
                 }
             }
         }
 
-        private void addTags (Map tags, String start, Context context, CompletionResultSet resultSet) {
+        private void addTags (Feature feature, String start, Context context, CompletionResultSet resultSet) {
             int j = 1;
             while (true) {
-                Evaluator e = (Evaluator) tags.get ("text" + j);
-                if (e == null) break;
-                if (e instanceof Evaluator.Expression)
-                    addTags ((String) e.evaluate (), tags, j, start, resultSet);
+                Object o = feature.getValue ("text" + j, context);
+                if (o == null) break;
+                if (o instanceof String)
+                    addTags ((String) o, feature, j, start, resultSet);
                 else {
                     addMethodCallTags (
-                        e,
+                        (List) o,
                         context,
                         resultSet,
                         start
@@ -250,12 +249,11 @@ public class CompletionProviderImpl implements CompletionProvider {
          * Adds completion items obtained by method call to result.
          */
         private void addMethodCallTags (
-            Evaluator           keysEvaluator, 
-            Context              context, 
+            List                keys, 
+            Context             context, 
             CompletionResultSet resultSet, 
             String              start
         ) {
-            List keys = (List) keysEvaluator.evaluate (context);
             Iterator it = keys.iterator ();
             while (it.hasNext ()) {
                 Object o = it.next ();
@@ -281,17 +279,17 @@ public class CompletionProviderImpl implements CompletionProvider {
         
         private void addTags (
             String              text, 
-            Map                 tags, 
+            Feature             feature, 
             int                 j, 
             String              start, 
             CompletionResultSet resultSet
         ) {
             if (ignoreCase)
                 text = text.toLowerCase ();
-            String description = (String) tags.get ("description" + j);
+            String description = (String) feature.getValue ("description" + j);
             if (description == null)
                 description = text;
-            String icon = (String) tags.get ("icon" + j);
+            String icon = (String) feature.getValue ("icon" + j);
             CompletionItem item = CompletionSupport.createCompletionItem (
                 text, description, icon
             );

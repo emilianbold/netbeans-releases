@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -30,7 +31,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
-import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.openide.ErrorManager;
@@ -57,22 +59,27 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
                 super.insertString (doc, dotPos, caret, str, overwrite);
                 return;
             }
-            Object[] indentValue = (Object[]) l.getProperty (Language.COMPLETE);
-
-            if (indentValue == null) {
+            List<Feature> completes = l.getFeatures ("COMPLETE");
+            if (completes == null) {
                 super.insertString (doc, dotPos, caret, str, overwrite);
                 return;
             }
-            List l1 = (List) indentValue [0];
-            List l2 = (List) indentValue [1];
-            Evaluator e = (Evaluator) indentValue [2];
-            int i, k = l2.size ();
-            for (i = 0; i < k; i++) {
+            Feature methodCall = null;
+            Iterator<Feature> it = completes.iterator ();
+            while (it.hasNext ()) {
+                Feature complete = it.next ();
+                if (complete.getType () == Type.METHOD_CALL) {
+                    methodCall = complete;
+                    continue;
+                }
+                String s = (String) complete.getValue ();
+                int i = s.indexOf (':');
                 String ss = doc.getText (
                     caret.getDot (), 
-                    ((String) l2.get (i)).length ()
+                    s.length () - i - 1
                 );
-                if (ss.equals (l2.get (i)) && str.equals (ss)) {
+                if (s.endsWith (ss) && str.equals (ss)) {
+                    // skip closing bracket / do not write it again
                     caret.setDot (caret.getDot () + 1);
                     return;
                 }
@@ -83,10 +90,10 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
 
             ts = th.tokenSequence ();
             ts.move (caret.getDot ());
-            if (e != null) {
+            if (methodCall != null) {
                 if (caret.getDot () < doc.getLength ())
                     ts.movePrevious ();
-                String s = (String) ((Evaluator.Method) e).evaluate (Context.create (doc, ts));
+                String s = (String) methodCall.getValue (Context.create (doc, ts));
                 if (s != null) {
                     int pos = caret.getDot ();
                     doc.insertString (pos, s, null);
@@ -101,11 +108,15 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
             int ln = NbDocument.findLineNumber (sdoc, caret.getDot ());
             int ls = NbDocument.findLineOffset (sdoc, ln);
             String text = sdoc.getText (ls, caret.getDot () - ls);
-            k = l1.size ();
-            for (i = 0; i < k; i++) {
-                if (text.endsWith ((String) l1.get (i))) {
+            it = completes.iterator ();
+            while (it.hasNext ()) {
+                Feature complete = it.next ();
+                if (complete.getType () == Type.METHOD_CALL) continue;
+                String s = (String) complete.getValue ();
+                int i = s.indexOf (':');
+                if (text.endsWith (s.substring (0, i))) {
                     int pos = caret.getDot ();
-                    doc.insertString (pos, (String) l2.get (i), null);
+                    doc.insertString (pos, s.substring (i + 1), null);
                     caret.setDot (pos);
                     return;
                 }

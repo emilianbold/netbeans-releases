@@ -30,12 +30,16 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
 import org.openide.ErrorManager;
 
+
+/**
+ * @author Dan Prusa
+ */
 public class GenericAction extends BaseAction {
     
     String performerName = null;
     String enablerName = null;
-    Evaluator.Method performer = null;
-    Evaluator.Method enabler = null;
+    Feature performer = null;
+    Feature enabler = null;
     
     public GenericAction(String name, String performerName, String enablerName) {
         super(name);
@@ -43,19 +47,19 @@ public class GenericAction extends BaseAction {
         this.enablerName = enablerName;
     }
     
-    private Evaluator.Method getPerformer() {
+    private Feature getPerformer() {
         if (performer == null) {
-            performer = (Evaluator.Method) Evaluator.createMethodEvaluator(performerName);
+            performer = Feature.createMethodCallFeature (null, null, performerName);
         }
         return performer;
     }
     
-    private Evaluator.Method getEnabler() {
+    private Feature getEnabler() {
         if (enablerName == null) {
             return null;
         }
         if (enabler == null) {
-            enabler = (Evaluator.Method) Evaluator.createMethodEvaluator(enablerName);
+            performer = Feature.createMethodCallFeature (null, null, enablerName);
         }
         return enabler;
     }
@@ -73,7 +77,7 @@ public class GenericAction extends BaseAction {
     public void actionPerformed(ActionEvent e, JTextComponent comp) {
         ASTNode node = getASTNode(comp);
         if (node != null) {
-            getPerformer().evaluate(new Object[] {node, comp});
+            getPerformer().getValue (new Object[] {node, comp});
         }
     }
     
@@ -84,11 +88,11 @@ public class GenericAction extends BaseAction {
         ASTNode node = getASTNode(comp);
         if (node == null)
             return false;
-        Evaluator.Method em = getEnabler();
+        Feature em = getEnabler();
         if (em == null) {
             return super.isEnabled();
         }
-        Object result = em.evaluate(new Object[] {node, comp});
+        Object result = em.getValue (new Object[] {node, comp});
         return ((Boolean)result).booleanValue();
     }
     

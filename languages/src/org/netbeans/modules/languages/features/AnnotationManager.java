@@ -33,11 +33,10 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.openide.text.Annotation;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -53,10 +52,11 @@ import javax.swing.text.Document;
  */
 public class AnnotationManager extends ASTEvaluator {
     
-    private NbEditorDocument    doc;
-    private ParserManager       parser;
-    private List                items;
-    private List<LanguagesAnnotation> annotations = new ArrayList<LanguagesAnnotation> ();
+    private NbEditorDocument            doc;
+    private ParserManager               parser;
+    private List<ASTItem>               items;
+    private List<Feature>               marks;
+    private List<LanguagesAnnotation>   annotations = new ArrayList<LanguagesAnnotation> ();
 
     
     /** Creates a new instance of AnnotationManager */
@@ -68,11 +68,12 @@ public class AnnotationManager extends ASTEvaluator {
     }
 
     public void beforeEvaluation (State state, ASTNode root) {
-        items = new ArrayList ();
+        items = new ArrayList<ASTItem> ();
+        marks = new ArrayList<Feature> ();
     }
 
     public void afterEvaluation (State state, ASTNode root) {
-        refresh (items);
+        refresh (items, marks);
     }
 
     public void evaluate (State state, ASTPath path) {
@@ -80,46 +81,39 @@ public class AnnotationManager extends ASTEvaluator {
             ASTItem item = path.getLeaf ();
             Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                 getLanguage (item.getMimeType ());
-            Map properties = (Map) language.getFeature (Language.MARK, path);
-            if (properties != null) {
-                if (evaluateCondition (doc, path, properties)) {
+            Feature mark = language.getFeature (Language.MARK, path);
+            if (mark != null) {
+                if (mark.getBoolean ("condition", SyntaxContext.create (doc, path), true)) {
                     items.add (item);
-                    items.add (properties);
+                    marks.add (mark);
                 }
             }
         } catch (ParseException ex) {
         }
     }
     
-    private void refresh (final List items) {
+    private void refresh (final List<ASTItem> items, final List<Feature> marks) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 try {
-                    Iterator it = annotations.iterator ();
+                    Iterator<LanguagesAnnotation> it = annotations.iterator ();
                     while (it.hasNext ())
-                        doc.removeAnnotation ((Annotation) it.next ());
-                    annotations = new ArrayList ();
-                    it = items.iterator ();
-                    while (it.hasNext ()) {
-                        Object o = it.next ();
-                        Map m = (Map) it.next ();
+                        doc.removeAnnotation (it.next ());
+                    annotations = new ArrayList<LanguagesAnnotation> ();
+                    Iterator<ASTItem> it2 = items.iterator ();
+                    Iterator<Feature> it3 = marks.iterator ();
+                    while (it2.hasNext ()) {
+                        ASTItem item = it2.next ();
+                        Feature mark = it3.next ();
                         LanguagesAnnotation la = new LanguagesAnnotation (
-                            (String) ((Evaluator) m.get ("type")).evaluate (),
-                            (String) ((Evaluator) m.get ("message")).evaluate ()
+                            (String) mark.getValue ("type"),
+                            (String) mark.getValue ("message")
                         );
-                        if (o instanceof ASTNode) {
-                            doc.addAnnotation (
-                                doc.createPosition (((ASTNode) o).getOffset ()),
-                                ((ASTNode) o).getLength (),
-                                la
-                            );
-                        } else {
-                            doc.addAnnotation (
-                                doc.createPosition (((ASTToken) o).getOffset ()),
-                                ((ASTToken) o).getLength (),
-                                la
-                            );
-                        }
+                        doc.addAnnotation (
+                            doc.createPosition (item.getOffset ()),
+                            item.getLength (),
+                            la
+                        );
                         annotations.add (la);
                     }
                 } catch (BadLocationException ex) {
@@ -128,14 +122,6 @@ public class AnnotationManager extends ASTEvaluator {
                 }
             }
         });
-    }
-    
-    private boolean evaluateCondition (Document doc, ASTPath path, Map m) {
-        Evaluator e = (Evaluator) m.get ("condition");
-        if (e == null) return true;
-        return ((Boolean) e.evaluate (
-            SyntaxContext.create (doc, path)
-        )).booleanValue ();
     }
 
     

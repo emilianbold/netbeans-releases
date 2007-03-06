@@ -9,11 +9,7 @@ package org.netbeans.modules.languages.parser;
 
 import java.util.Collections;
 import junit.framework.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+
 
 /**
  *
@@ -46,11 +42,19 @@ public class DGUtilsTest extends TestCase {
         dg.setProperty (new Integer (2), new Character ('b'), "dve b", null);
         dg.setProperty (new Integer (3), new Character ('a'), "tri a", null);
         dg.setProperty (new Integer (4), new Character ('b'), "ctyri b", null);
-        dg = DGUtils.reduce (dg);
+        dg = DGUtils.reduce (dg, nodeFactory);
         
-        assertEquals (dg.getStartNode (), Collections.singleton (new Integer (1)));
-        assertEquals (dg.getEnds (), Collections.singleton (Collections.singleton (new Integer (3))));
-        assertEquals (dg.getNodes ().size (), 3);
+        assertEquals (new Integer (1), dg.getStartNode ());
+        assertEquals (Collections.singleton (new Integer (3)), dg.getEnds ());
+        assertEquals (3, dg.getNodes ().size ());
         
     }
+    
+    private NodeFactory nodeFactory = new NodeFactory<Integer> () {
+        public Integer createNode() {
+            return Integer.valueOf (counter++);
+        }
+
+        private int counter = 1;
+    };
 }
