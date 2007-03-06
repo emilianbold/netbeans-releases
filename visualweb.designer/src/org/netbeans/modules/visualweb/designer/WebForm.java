@@ -1880,9 +1880,9 @@ public class WebForm implements Designer {
         return htmlDomProvider.createBean(className, parent, before);
     }
 
-    public boolean isFormBean(DesignBean designBean) {
-        return htmlDomProvider.isFormBean(designBean);
-    }
+//    public boolean isFormBean(DesignBean designBean) {
+//        return htmlDomProvider.isFormBean(designBean);
+//    }
 
     public Element getDefaultParentMarkupBeanElement() {
         return htmlDomProvider.getDefaultParentMarkupBeanElement();
