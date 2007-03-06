@@ -685,9 +685,9 @@
         <exec executable="${ant.executable}" 
               dir="${cvs.dir}/${nbproject.path}" 
               failonerror="true"
-              failifexecutionfails="true"
-              errorproperty="error.code">
-            <arg value="clean,compile"/>
+              failifexecutionfails="true">
+            <arg value="clean"/>
+            <arg value="compile"/>
             
             <arg value="${nb.platform.home}"/>
             <arg value="${nb.ignore.native}"/>
