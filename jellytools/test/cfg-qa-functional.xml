@@ -18,18 +18,132 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
+<mconfig name="jellytools qa-functional test config">
 
-<mconfig name="core qa-functional test config">
-
-    <testbag testattribs="all" executor="ide" name="All tests">
-	<testset dir="qa-functional/src">
-	    <patternset>
-                <include name="**/*.class"/>
-	    </patternset>
-	</testset>
+    <!-- Testbag with test of jellytools dialog operators
+         use ant runtests -Dxtest.attribs=dialogs to run only this testbag  -->
+    <testbag name="Test dialogs" testattribs="stable,all,dialogs" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/NewWebFreeFormSrcFoldersStepOperatorTest.class"/>
+                <include name="**/NewWebFreeFormWebSrcStepOperatorTest.class"/>
+                <include name="**/NewWebFreeFormActionsStepOperatorTest.class"/>
+                <include name="**/NewWebFreeFormNameStepOperatorTest.class"/>
+                <include name="**/DocumentsDialogOperatorTest.class"/>
+                <include name="**/FindInFilesOperatorTest.class"/>
+                <include name="**/NbDialogOperatorTest.class"/>
+                <include name="**/NewFileNameLocationStepOperatorTest.class"/>
+                <include name="**/NewFileWizardOperatorTest.class"/>
+                <include name="**/NewProjectWizardOperatorTest.class"/>
+                <include name="**/NewProjectNameLocationStepOperatorTest.class"/>
+                <exclude name="**/NewProjectNameLocationStepOperatorTest.class/testWebApplication"/>
+                <include name="**/QuestionDialogOperatorTest.class"/>
+                <include name="**/SaveAsTemplateOperatorTest.class"/>
+                <include name="**/WizardOperatorTest.class"/>
+                <include name="**/BreakpointsWindowOperatorTest.class"/>
+                <include name="**/javacvs/CheckoutWizardOperatorTest.class"/>
+                <include name="**/javacvs/ImportWizardOperatorTest.class"/>
+                <include name="**/javacvs/VersioningOperatorTest.class"/>
+                <!-- Need to be at the end because it causes other tests to fail (#67713). -->
+                <include name="**/OptionsOperatorTest.class"/>
+            </patternset>
+        </testset>
     </testbag>
     
-    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <testbag name="Test actions" testattribs="stable,all,actions" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/actions/*.class"/>
+                <include name="**/actions/FindActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
+                <include name="**/actions/ReplaceActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
+                <include name="**/actions/SaveActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
+                <include name="**/actions/SaveAllActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag name="Test nodes" testattribs="stable,all,nodes" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/nodes/*Test.class"/>
+                <exclude name="**/J2eeServerNodeTest.class"/>
+                <include name="**/nodes/ClassNodeTest.class/testVerifyPopup" expectedFail="Fails because of missing menu items (#88508)"/>
+                <include name="**/nodes/ClassNodeTest.class/testCut" expectedFail="Fails because of missing menu items (#88508)"/>
+                <include name="**/nodes/ClassNodeTest.class/testCopy" expectedFail="Fails because of missing menu items (#88508)"/>
+                <include name="**/nodes/ClassNodeTest.class/testDelete" expectedFail="Fails because of missing menu items (#88508)"/>
+                <include name="**/nodes/ClassNodeTest.class/testSaveAsTemplate" expectedFail="Fails because of missing menu items (#88508)"/>
+                <!--  Test seems to not fail anymore. Commented it can serve as example of expected fail declaration.
+                <include name="**/nodes/URLNodeTest.class/testSetSwingHTMLBrowser" expectedFail="Fails because of problem in Options (#35972)"/>
+                -->
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Testbag with test of jellytools frame operators, top component operators and others.
+         use ant runtests -Dxtest.attribs=frames to run only this testbag  -->
+    <testbag name="Test frames" testattribs="stable,all,frames" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/EditorOperatorTest.class"/>
+                <include name="**/EditorWindowOperatorTest.class"/>
+                <include name="**/FavoritesOperatorTest.class"/>
+                <include name="**/FilesTabOperatorTest.class"/>
+                <include name="**/HelpOperatorTest.class"/>
+                <include name="**/OutputOperatorTest.class"/>
+                <include name="**/OutputTabOperatorTest.class"/>
+                <include name="**/ProjectsTabOperatorTest.class"/>
+                <include name="**/RuntimeTabOperatorTest.class"/>
+                <include name="**/SearchResultsOperatorTest.class"/>
+                <include name="**/TopComponentOperatorTest.class"/>
+                <include name="**/form/*.class"/>
+                <include name="**/debugger/*.class"/>
+                <!-- need to the last because after switch from SDI, it garbabes windows layout. -->
+                <include name="**/MainWindowOperatorTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Testbag with test of jellytools utils.
+         use ant runtests -Dxtest.attribs=utils to run only this testbag  -->
+    <testbag name="Test utils" testattribs="stable,all,utils" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/BundleTest.class"/>
+                <include name="**/BundleKeysTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Testbag with test of jellytools properties.
+         use ant runtests -Dxtest.attribs=properties to run only this testbag  -->
+    <testbag name="Test properties" testattribs="stable,all,properties" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/properties/PropertySheetOperatorTest.class"/>
+                <include name="**/properties/PropertyTest.class"/>
+                <include name="**/properties/CustomPropertiesTest.class"/>
+                <include name="**/editors/CustomEditorOperatorsTest.class"/>
+                <include name="**/modules/form/properties/editors/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
 
+    <!-- Testbag with test of jellytools operators which need J2EE server.
+         use ant runtests -Dxtest.attribs=stable-j2ee to run only this testbag  -->
+    <testbag name="Test J2EE" testattribs="all,stable-j2ee" executor="ide-appserver">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/NewJspFileNameStepOperatorTest.class"/>
+                <include name="**/NewProjectNameLocationStepOperatorTest.class/testWebApplication"/>
+                <include name="**/J2eeServerNodeTest.class"/>
+                <include name="**/J2eeServerNodeTest.class/testProperties" expectedFail="Fails because of redundant menu items (#76102)"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally). -->
+    <executor antfile="build-qa-functional.xml" name="ide" target="runidetest" default="true"/> 
+    <executor antfile="build-qa-functional.xml" name="ide-appserver" target="runidetest-with-appserver"/> 
+    
+    <compiler antfile="build-qa-functional.xml" name="default-compiler" target="qa-functional-compiler" default="true"/>
 </mconfig>

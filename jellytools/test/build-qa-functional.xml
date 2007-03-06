@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
-    
+
     <target name="qa-functional-compiler" depends="init-cp">
         <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
             <classpath>
@@ -41,5 +41,5 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </buildTests>
     </target>
-    
+
 </project>

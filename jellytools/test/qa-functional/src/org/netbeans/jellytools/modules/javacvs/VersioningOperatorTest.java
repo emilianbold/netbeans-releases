@@ -46,7 +46,8 @@ public class VersioningOperatorTest extends JellyTestCase {
     public static Test suite() {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new VersioningOperatorTest("testInvoke"));
-        suite.addTest(new VersioningOperatorTest("testVerify"));
+        // It is empty by default
+        //suite.addTest(new VersioningOperatorTest("testVerify"));
         return suite;
     }
 
@@ -75,10 +76,9 @@ public class VersioningOperatorTest extends JellyTestCase {
         versioningOperator = VersioningOperator.invoke();
     }
 
-    /** Test of invoke method.*/
+    /** Test of verify method.*/
     public void testVerify() {
         versioningOperator = VersioningOperator.invoke(); //NOI18N
         versioningOperator.verify();
     }
-
 }
