@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.j2ee.earproject</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -298,21 +298,129 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <test-dependencies>
-                <test-type>
-                    <name>unit</name>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.earproject</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.core</code-name-base>
-                    </test-dependency>
-                </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
+          <test-dependencies>
+              <test-type>
+                  <name>unit</name>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.earproject</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.api.progress</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.bootstrap</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core.startup</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.libs.xerces</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.clientproject</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.dd.webservice</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.ejbcore</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.genericserver</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.persistence</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.persistenceapi</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.sun.appsrv</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.sun.appsrv81</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.sun.dd</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2ee.sun.ddui</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.j2eeapis</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.web.jspparser</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.websvc.clientapi</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.websvc.jaxwsapi</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.websvc.jaxwsmodel</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.xml.core</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.actions</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.awt</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.compat</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.dialogs</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.explorer</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.filesystems</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.loaders</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.modules</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.nodes</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.options</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.text</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.util</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.windows</code-name-base>
+                  </test-dependency>
+              </test-type>
             </test-dependencies>
             <public-packages/>
         </data>
