@@ -99,14 +99,6 @@ public final class WSITConfigProvider extends Object {
                                         return true;
                                     }
                                 }
-                                
-//                                bindings = wsdlModel.getDefinitions().getBindings();
-//                                for (Binding b : bindings) {
-//                                    if (PolicyModelHelper.getPolicyForElement(b) != null) {
-//                                        return true;
-//                                    }
-//                                }
-                                        
                             }
                         } else if (service != null) {
                             Collection<Binding> bindings = wsdlModel.getDefinitions().getBindings();

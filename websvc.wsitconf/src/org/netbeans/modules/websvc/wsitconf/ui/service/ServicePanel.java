@@ -58,7 +58,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**

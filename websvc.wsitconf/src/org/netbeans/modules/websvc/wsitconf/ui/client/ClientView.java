@@ -110,19 +110,17 @@ public class ClientView extends SectionView {
                 bindingCont.addSection(transportPanel);
                 nodes.add(transportNode);
                 
-                if (isManagedGFConfigRequired()) {
-                    Node keystoreNode = new KeystoreClientNode(this, binding);
-                    SectionPanel keystorePanel = new SectionPanel(this, keystoreNode, 
-                            KEYSTORE_NODE_ID + binding.getName());
-                    bindingCont.addSection(keystorePanel);
-                    nodes.add(keystoreNode);
+                Node keystoreNode = new KeystoreClientNode(this, binding);
+                SectionPanel keystorePanel = new SectionPanel(this, keystoreNode, 
+                        KEYSTORE_NODE_ID + binding.getName());
+                bindingCont.addSection(keystorePanel);
+                nodes.add(keystoreNode);
 
-                    Node callbackNode = new CallbackClientNode(this, binding);
-                    SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
-                            CALLBACK_NODE_ID + binding.getName());
-                    bindingCont.addSection(callbackPanel);
-                    nodes.add(callbackNode);
-                }
+                Node callbackNode = new CallbackClientNode(this, binding);
+                SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
+                        CALLBACK_NODE_ID + binding.getName());
+                bindingCont.addSection(callbackPanel);
+                nodes.add(callbackNode);
 
                 if (isClientSTSConfigRequired(binding)) {
                     Node stsNode = new STSClientNode(this, binding);
@@ -155,19 +153,17 @@ public class ClientView extends SectionView {
             addSection(transportPanel);
             nodes.add(transportNode);
             
-            if (isManagedGFConfigRequired()) {
-                Node keystoreNode = new KeystoreClientNode(this, binding);
-                SectionPanel keystorePanel = new SectionPanel(this, keystoreNode, 
-                        KEYSTORE_NODE_ID + binding.getName());
-                addSection(keystorePanel);
-                nodes.add(keystoreNode);
-                
-                Node callbackNode = new CallbackClientNode(this, binding);
-                SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
-                        CALLBACK_NODE_ID + binding.getName());
-                addSection(callbackPanel);
-                nodes.add(callbackNode);
-            }
+            Node keystoreNode = new KeystoreClientNode(this, binding);
+            SectionPanel keystorePanel = new SectionPanel(this, keystoreNode, 
+                    KEYSTORE_NODE_ID + binding.getName());
+            addSection(keystorePanel);
+            nodes.add(keystoreNode);
+
+            Node callbackNode = new CallbackClientNode(this, binding);
+            SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
+                    CALLBACK_NODE_ID + binding.getName());
+            addSection(callbackPanel);
+            nodes.add(callbackNode);
 
             if (isClientSTSConfigRequired(binding)) {
                 Node stsNode = new STSClientNode(this, binding);
@@ -212,36 +208,6 @@ public class ClientView extends SectionView {
     public SectionNode getRootNode() {
         return rootNode;
     }    
-
-    private boolean isManagedGFConfigRequired() {
-                
-        if (project != null) {
-            J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            if (mp != null) {
-                String id = mp.getServerID();
-                String instid = mp.getServerInstanceID();
-                if ((instid != null) && (instid.toLowerCase().contains("sun:appserver"))) {
-                    // TODO - when this gets clarified, do it
-    //                return false;
-                }
-    //                    J2eeModule jm = mp.getJ2eeModule();
-    //                    if (jm != null) {
-    //                        if (J2eeModule.WAR.equals(jm.getModuleType())) {
-    //                            if (WebApp.VERSION_2_5.equals(jm.getModuleVersion())) {
-    //                                return false;
-    //                            }
-    //                        }
-    //                        if (J2eeModule.EJB.equals(jm.getModuleType())) {
-    //                            if (EjbJar.VERSION_3_0.equals(jm.getModuleVersion())) {
-    //                                return false;
-    //                            }
-    //                        }
-    //                    }
-    //                }
-            }
-        }
-        return true;
-    }
 
     private boolean isClientSTSConfigRequired(Binding binding) {        
         return true;

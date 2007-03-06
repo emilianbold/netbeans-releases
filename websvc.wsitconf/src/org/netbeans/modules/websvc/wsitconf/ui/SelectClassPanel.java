@@ -81,7 +81,6 @@ public class SelectClassPanel extends JPanel implements ExplorerManager.Provider
     private void initComponents() {
         panel = new JPanel();
         setLayout(new BorderLayout());
-//        setPreferredSize(new Dimension(550, 440));
         panel.setLayout(new BorderLayout());
         add(panel, BorderLayout.CENTER);
         

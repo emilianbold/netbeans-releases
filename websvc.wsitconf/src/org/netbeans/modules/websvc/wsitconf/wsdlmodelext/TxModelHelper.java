@@ -21,7 +21,6 @@ package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
-import org.netbeans.modules.websvc.wsitconf.util.JMIUtils;
 import org.netbeans.modules.websvc.wsitmodelext.tx.ATAlwaysCapability;
 import org.netbeans.modules.websvc.wsitmodelext.tx.ATAssertion;
 import org.netbeans.modules.websvc.wsitmodelext.tx.TxQName;

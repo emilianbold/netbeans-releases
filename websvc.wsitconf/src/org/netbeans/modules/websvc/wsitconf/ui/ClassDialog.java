@@ -25,8 +25,6 @@ import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-//import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.websvc.wsitconf.util.JMIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,6 +63,7 @@ public class ClassDialog {
         Set<String> selectedClasses = new HashSet<String>();
         Node[] nodes = sPanel.getSelectedNodes();
         for(int i = 0; i < nodes.length; i++){
+            // TODO - retouche
 //            JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[i]);
 //            selectedClasses.add(jc.getName());
         }
@@ -103,6 +102,7 @@ public class ClassDialog {
                     Node[] selectedNodes = sPanel.getSelectedNodes();
                     for(int i = 0; i < selectedNodes.length; i++){
                         Node node = selectedNodes[i];
+            // TODO - retouche
 //                        JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
 //                        if(classElement == null){
 //                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotJavaClass_msg");    //NOI18N
@@ -130,6 +130,7 @@ public class ClassDialog {
                 }
             }
         }
+            // TODO - retouche
 //        private boolean isWantedClass(JavaClass ce) {
 //            if (ce != null) {
 //                JavaClass wantedClass = JMIUtils.findClass(extendingClass);

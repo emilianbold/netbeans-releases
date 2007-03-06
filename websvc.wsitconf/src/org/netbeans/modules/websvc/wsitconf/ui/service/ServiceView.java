@@ -82,6 +82,10 @@ public class ServiceView extends SectionView {
             setRoot(root);
 
             for (Binding binding : bindings) {
+
+//                if (jc != null) {
+//                    JMIUtils.refreshOperations(b, jc);
+//                }
                 
                 // main node container for a specific binding
                 Children bindingChildren = new Children.Array();
@@ -111,20 +115,20 @@ public class ServiceView extends SectionView {
                     SectionPanel opPanel = new SectionPanel(this, opNode, op, false);
                     opCont.addSection(opPanel, false);
 
-//                    BindingInput bi = op.getBindingInput();
-//                    if (bi != null) {
-//                        Node biNode = new BindingInputNode(this, bi);
-//                        subNodes.add(biNode);
-//                        SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
-//                        opCont.addSection(biPanel, false);
-//                    }
-//                    BindingOutput bo = op.getBindingOutput();
-//                    if (bo != null) {
-//                        Node boNode = new BindingOutputNode(this, bo);
-//                        subNodes.add(boNode);
-//                        SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
-//                        opCont.addSection(boPanel, false);
-//                    }
+                    BindingInput bi = op.getBindingInput();
+                    if (bi != null) {
+                        Node biNode = new BindingInputNode(this, bi);
+                        subNodes.add(biNode);
+                        SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
+                        opCont.addSection(biPanel, false);
+                    }
+                    BindingOutput bo = op.getBindingOutput();
+                    if (bo != null) {
+                        Node boNode = new BindingOutputNode(this, bo);
+                        subNodes.add(boNode);
+                        SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
+                        opCont.addSection(boPanel, false);
+                    }
                     Collection<BindingFault> bfs = op.getBindingFaults();
                     for (BindingFault bf : bfs) {
                         Node bfNode = new BindingFaultNode(this, bf);
@@ -171,20 +175,20 @@ public class ServiceView extends SectionView {
                 SectionPanel opPanel = new SectionPanel(this, opNode, op, false);
                 opCont.addSection(opPanel, false);
 
-//                BindingInput bi = op.getBindingInput();
-//                if (bi != null) {
-//                    Node biNode = new BindingInputNode(this, bi);
-//                    subNodes.add(biNode);
-//                    SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
-//                    opCont.addSection(biPanel, false);
-//                }
-//                BindingOutput bo = op.getBindingOutput();
-//                if (bo != null) {
-//                    Node boNode = new BindingOutputNode(this, bo);
-//                    subNodes.add(boNode);
-//                    SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
-//                    opCont.addSection(boPanel, false);
-//                }
+                BindingInput bi = op.getBindingInput();
+                if (bi != null) {
+                    Node biNode = new BindingInputNode(this, bi);
+                    subNodes.add(biNode);
+                    SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
+                    opCont.addSection(biPanel, false);
+                }
+                BindingOutput bo = op.getBindingOutput();
+                if (bo != null) {
+                    Node boNode = new BindingOutputNode(this, bo);
+                    subNodes.add(boNode);
+                    SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
+                    opCont.addSection(boPanel, false);
+                }
                 Collection<BindingFault> bfs = op.getBindingFaults();
                 for (BindingFault bf : bfs) {
                     Node bfNode = new BindingFaultNode(this, bf);
