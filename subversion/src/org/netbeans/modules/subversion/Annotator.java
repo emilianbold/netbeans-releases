@@ -57,6 +57,7 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
+import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -439,6 +440,7 @@ public class Annotator {
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(SystemAction.get(CheckoutAction.class));
             actions.add(SystemAction.get(ImportAction.class));
+            actions.add(new RelocateAction(loc.getString("CTL_MenuItem_Relocate"), ctx));
             actions.add(null);
             actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
             actions.add(null);
