@@ -95,7 +95,6 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
         cleanupTest();
     }
     private void cleanupTest() {
-          String ComponentUndoCMD = "Undo Drop Component"; // from Bundle?
-          MainWindowOperator.getDefault().menuBar().pushMenu("Edit|"+ComponentUndoCMD);
+        surface.closeDiscard();
     }
 }
