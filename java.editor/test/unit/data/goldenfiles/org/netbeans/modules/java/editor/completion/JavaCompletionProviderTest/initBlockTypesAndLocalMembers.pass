@@ -1,9 +1,17 @@
 public boolean b
+public boolean equals(Object arg0)
+false
+true
+public static final Boolean Boolean.FALSE
+public static final Boolean Boolean.TRUE
+public static boolean Boolean.getBoolean(String arg0)
+public static boolean Boolean.parseBoolean(String arg0)
+public static Boolean Boolean.valueOf(String arg0)
+public static Boolean Boolean.valueOf(boolean arg0)
 public int field
 public Number num
 public static int staticField
 protected native Object clone()
-public boolean equals(Object arg0)
 protected void finalize()
 public final native Class<? extends Object> getClass()
 public native int hashCode()
@@ -17,7 +25,6 @@ boolean
 byte
 char
 double
-false
 float
 int
 long
@@ -26,7 +33,6 @@ null
 short
 super
 this
-true
 AbstractMethodError
 Appendable
 ArithmeticException

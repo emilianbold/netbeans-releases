@@ -68,15 +68,15 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testEmptyFileBeforeTypingConstructorParam() throws Exception {
-        performTest("SimpleMethodBodyStart", 89, "boolean b;\nnew String(", "typesLocalMembersAndVars.pass");
+        performTest("SimpleMethodBodyStart", 89, "boolean b;\nnew String(", "typesLocalMembersVarsAndSmartString.pass");
     }
     
     public void testBeforeTypingConstructorParam() throws Exception {
-        performTest("SimpleEmptyMethodBody", 89, "boolean b;\nnew String(", "typesLocalMembersAndVars.pass");
+        performTest("SimpleEmptyMethodBody", 89, "boolean b;\nnew String(", "typesLocalMembersVarsAndSmartString.pass");
     }
     
     public void testBeforeConstructorParam() throws Exception {
-        performTest("AdvancedMethodBody", 128, null, "typesLocalMembersAndVars.pass");
+        performTest("AdvancedMethodBody", 128, null, "typesLocalMembersVarsAndSmartString.pass");
     }
     
     public void testEmptyFileTypingConstructorParam() throws Exception {
@@ -206,39 +206,39 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     // Expression in field init tests ------------------------------------------
     
     public void testEmptyFileTypingParenWithinInitOfField() throws Exception {
-        performTest("MethodStart", 40, "public static int staticField;\npublic int field;\npublic Number num = (", "typesAndLocalMembers1.pass");
+        performTest("MethodStart", 40, "public static int staticField;\npublic int field;\npublic Number num = (", "typesLocalMembersAndSmartNumber.pass");
     }
     
     public void testTypingParenWithinInitOfField() throws Exception {
-        performTest("FieldNoInit", 114, " = (", "typesAndLocalMembers1.pass");
+        performTest("FieldNoInit", 114, " = (", "typesLocalMembersAndSmartNumber.pass");
     }
     
     public void testAfterParenWithinInitOfField() throws Exception {
-        performTest("Field", 141, null, "typesAndLocalMembers1.pass");
+        performTest("Field", 141, null, "typesLocalMembersAndSmartNumber.pass");
     }
     
     public void testEmptyFileTypingSecondParenWithinInitOfField() throws Exception {
-        performTest("MethodStart", 40, "public static int staticField;\npublic int field;\npublic Number num = ((", "typesAndLocalMembers1.pass");
+        performTest("MethodStart", 40, "public static int staticField;\npublic int field;\npublic Number num = ((", "typesLocalMembersAndSmartNumber.pass");
     }
     
     public void testTypingSecondParenWithinInitOfField() throws Exception {
-        performTest("FieldNoInit", 114, " = ((", "typesAndLocalMembers1.pass");
+        performTest("FieldNoInit", 114, " = ((", "typesLocalMembersAndSmartNumber.pass");
     }
     
     public void testAfterSecondParenWithinInitOfField() throws Exception {
-        performTest("Field", 142, null, "typesAndLocalMembers1.pass");
+        performTest("Field", 142, null, "typesLocalMembersAndSmartNumber.pass");
     }
 
     public void testEmptyFileTypingSecondParenAndSpaceWithinInitOfField() throws Exception {
-        performTest("MethodStart", 40, "public static int staticField;\npublic int field;\npublic Number num = (( ", "typesAndLocalMembers1.pass");
+        performTest("MethodStart", 40, "public static int staticField;\npublic int field;\npublic Number num = (( ", "typesLocalMembersAndSmartNumber.pass");
     }
     
     public void testTypingSecondParenAndSpaceWithinInitOfField() throws Exception {
-        performTest("FieldNoInit", 114, " = (( ", "typesAndLocalMembers1.pass");
+        performTest("FieldNoInit", 114, " = (( ", "typesLocalMembersAndSmartNumber.pass");
     }
     
     public void testAfterSecondParenAndSpaceWithinInitOfField() throws Exception {
-        performTest("Field", 142, " ", "typesAndLocalMembers1.pass");
+        performTest("Field", 142, " ", "typesLocalMembersAndSmartNumber.pass");
     }
     
     public void testEmptyFileTypingCastTypeWithinInitOfField() throws Exception {
@@ -412,15 +412,15 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testEmptyFileBeforTypingForVarInit() throws Exception {
-        performTest("SimpleMethodBodyStart", 98, "for (int i = ", "typesLocalMembersAndVars1.pass");
+        performTest("SimpleMethodBodyStart", 98, "for (int i = ", "typesLocalMembersVarsAndSmartInt.pass");
     }
     
     public void testBeforTypingForVarInit() throws Exception {
-        performTest("SimpleEmptyMethodBody", 98, "for (int i = ", "typesLocalMembersAndVars1.pass");
+        performTest("SimpleEmptyMethodBody", 98, "for (int i = ", "typesLocalMembersVarsAndSmartInt.pass");
     }
     
     public void testBeforeForVarInit() throws Exception {
-        performTest("For", 111, null, "typesLocalMembersAndVars1.pass");
+        performTest("For", 111, null, "typesLocalMembersVarsAndSmartInt.pass");
     }
     
     public void testEmptyFileAfterTypingForVarInitAndSpace() throws Exception {
@@ -436,27 +436,27 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testEmptyFileBeforTypingForCondition() throws Exception {
-        performTest("SimpleMethodBodyStart", 98, "for (int i = 0;", "typesLocalMembersAndVars2.pass");
+        performTest("SimpleMethodBodyStart", 98, "for (int i = 0;", "typesLocalMembersVarsAndSmartBoolean.pass");
     }
     
     public void testBeforTypingForCondition() throws Exception {
-        performTest("SimpleEmptyMethodBody", 98, "for (int i = 0;", "typesLocalMembersAndVars2.pass");
+        performTest("SimpleEmptyMethodBody", 98, "for (int i = 0;", "typesLocalMembersVarsAndSmartBoolean.pass");
     }
     
     public void testBeforeForCondition() throws Exception {
-        performTest("For", 113, null, "typesLocalMembersAndVars2.pass");
+        performTest("For", 113, null, "typesLocalMembersVarsAndSmartBoolean.pass");
     }
     
     public void testEmptyFileBeforTypingForConditionAndSpace() throws Exception {
-        performTest("SimpleMethodBodyStart", 98, "for (int i = 0; ", "typesLocalMembersAndVars2.pass");
+        performTest("SimpleMethodBodyStart", 98, "for (int i = 0; ", "typesLocalMembersVarsAndSmartBoolean.pass");
     }
     
     public void testBeforTypingForConditionAndSpace() throws Exception {
-        performTest("SimpleEmptyMethodBody", 98, "for (int i = 0; ", "typesLocalMembersAndVars2.pass");
+        performTest("SimpleEmptyMethodBody", 98, "for (int i = 0; ", "typesLocalMembersVarsAndSmartBoolean.pass");
     }
     
     public void testBeforeForConditionAndSpace() throws Exception {
-        performTest("For", 114, null, "typesLocalMembersAndVars2.pass");
+        performTest("For", 114, null, "typesLocalMembersVarsAndSmartBoolean.pass");
     }
     
     public void testEmptyFileAfterTypingForConditionAndSpace() throws Exception {
@@ -545,29 +545,29 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     
     // For-each loop tests -----------------------------------------------------
     
-//    public void testEmptyFileBeforTypingForEachExpression() throws Exception {
-//        performTest("SimpleMethodBodyStart", 98, "for (Byte b :", "typesLocalMembersAndVars1.pass");
-//    }
-//    
-//    public void testBeforTypingForEachExpression() throws Exception {
-//        performTest("SimpleEmptyMethodBody", 98, "for (Byte b :", "typesLocalMembersAndVars1.pass");
-//    }
-//    
-//    public void testBeforeForEachExpression() throws Exception {
-//        performTest("ForEach", 111, null, "typesLocalMembersAndVars1.pass");
-//    }
-//    
-//    public void testEmptyFileBeforTypingForEachExpressionAndSpace() throws Exception {
-//        performTest("SimpleMethodBodyStart", 98, "for (Byte b : ", "typesLocalMembersAndVars1.pass");
-//    }
-//    
-//    public void testBeforTypingForEachExpressionAndSpace() throws Exception {
-//        performTest("SimpleEmptyMethodBody", 98, "for (Byte b : ", "typesLocalMembersAndVars1.pass");
-//    }
-//    
-//    public void testBeforeForEachExpressionAndSpace() throws Exception {
-//        performTest("ForEach", 112, null, "typesLocalMembersAndVars1.pass");
-//    }
+    public void testEmptyFileBeforTypingForEachExpression() throws Exception {
+        performTest("SimpleMethodBodyStart", 98, "for (Byte b :", "typesLocalMembersAndVars1.pass");
+    }
+    
+    public void testBeforTypingForEachExpression() throws Exception {
+        performTest("SimpleEmptyMethodBody", 98, "for (Byte b :", "typesLocalMembersAndVars1.pass");
+    }
+    
+    public void testBeforeForEachExpression() throws Exception {
+        performTest("ForEach", 111, null, "typesLocalMembersAndVars1.pass");
+    }
+    
+    public void testEmptyFileBeforTypingForEachExpressionAndSpace() throws Exception {
+        performTest("SimpleMethodBodyStart", 98, "for (Byte b : ", "typesLocalMembersAndVars1.pass");
+    }
+    
+    public void testBeforTypingForEachExpressionAndSpace() throws Exception {
+        performTest("SimpleEmptyMethodBody", 98, "for (Byte b : ", "typesLocalMembersAndVars1.pass");
+    }
+    
+    public void testBeforeForEachExpressionAndSpace() throws Exception {
+        performTest("ForEach", 112, null, "typesLocalMembersAndVars1.pass");
+    }
     
     public void testEmptyFileAfterTypingForEachExpressionAndSpace() throws Exception {
         performTest("SimpleMethodBodyStart", 98, "for (Byte b : field.getBytes() ", "empty.pass");
@@ -644,15 +644,15 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testEmptyFileAfterTypingSwitchKeywordAndParen() throws Exception {
-        performTest("SimpleMethodBodyStart", 98, "switch (", "typesLocalMembersAndVars1.pass");
+        performTest("SimpleMethodBodyStart", 98, "switch (", "typesLocalMembersVarsAndSmartEnumAndInt.pass");
     }
     
     public void testAfterTypingSwitchKeywordAndParen() throws Exception {
-        performTest("SimpleEmptyMethodBody", 98, "switch (", "typesLocalMembersAndVars1.pass");
+        performTest("SimpleEmptyMethodBody", 98, "switch (", "typesLocalMembersVarsAndSmartEnumAndInt.pass");
     }
     
     public void testAfterSwitchKeywordAndParen() throws Exception {
-        performTest("Switch", 106, null, "typesLocalMembersAndVars1.pass");
+        performTest("Switch", 106, null, "typesLocalMembersVarsAndSmartEnumAndInt.pass");
     }
     
     public void testEmptyFileAfterTypingSwitchExpression() throws Exception {
@@ -716,15 +716,15 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testEmptyFileAfterTypingCaseKeywordAndSpace() throws Exception {
-        performTest("SimpleMethodBodyStart", 98, "switch (a) {\ncase ", "declaredTypes.pass");
+        performTest("SimpleMethodBodyStart", 98, "switch (a) {\ncase ", "declaredTypesAndSmartInt.pass");
     }
     
     public void testAfterTypingCaseKeywordAndSpace() throws Exception {
-        performTest("SimpleEmptyMethodBody", 98, "switch (a) {\ncase ", "declaredTypes.pass");
+        performTest("SimpleEmptyMethodBody", 98, "switch (a) {\ncase ", "declaredTypesAndSmartInt.pass");
     }
     
     public void testAfterCaseKeywordAndSpace() throws Exception {
-        performTest("Switch", 127, " ", "declaredTypes.pass");
+        performTest("Switch", 127, " ", "declaredTypesAndSmartInt.pass");
     }
     
     public void testEmptyFileAfterTypingCaseKeywordAndColon() throws Exception {

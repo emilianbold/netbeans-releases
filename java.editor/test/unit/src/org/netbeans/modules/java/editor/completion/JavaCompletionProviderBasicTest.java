@@ -922,27 +922,27 @@ public class JavaCompletionProviderBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileAfterTypingAssignmentInField() throws Exception {
-        performTest("MethodStart", 40, "public static int staticField = 10;\npublic int field =", "typesAndLocalMembers.pass");
+        performTest("MethodStart", 40, "public static int staticField = 10;\npublic int field =", "typesLocalMembersAndSmartInt.pass");
     }
     
     public void testAfterTypingAssignmentInField() throws Exception {
-        performTest("FieldNoInit", 56, " =", "typesAndLocalMembers.pass");
+        performTest("FieldNoInit", 56, " =", "typesLocalMembersAndSmartInt.pass");
     }
     
     public void testAfterAssignmentInField() throws Exception {
-        performTest("Field", 58, null, "typesAndLocalMembers.pass");
+        performTest("Field", 58, null, "typesLocalMembersAndSmartInt.pass");
     }
     
     public void testEmptyFileBeforeTypingInitOfField() throws Exception {
-        performTest("MethodStart", 40, "public static int staticField = 10;\npublic int field = ", "typesAndLocalMembers.pass");
+        performTest("MethodStart", 40, "public static int staticField = 10;\npublic int field = ", "typesLocalMembersAndSmartInt.pass");
     }
     
     public void testBeforeTypingInitOfField() throws Exception {
-        performTest("FieldNoInit", 56, " = ", "typesAndLocalMembers.pass");
+        performTest("FieldNoInit", 56, " = ", "typesLocalMembersAndSmartInt.pass");
     }
     
     public void testBeforeInitOfField() throws Exception {
-        performTest("Field", 59, null, "typesAndLocalMembers.pass");
+        performTest("Field", 59, null, "typesLocalMembersAndSmartInt.pass");
     }
     
     public void testEmptyFileBeforeTypingInitOfStaticField() throws Exception {
@@ -958,15 +958,15 @@ public class JavaCompletionProviderBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileTypingInitOfField() throws Exception {
-        performTest("MethodStart", 40, "public int field = h", "hashCode.pass");
+        performTest("MethodStart", 40, "public int field = ha", "hashCode.pass");
     }
     
     public void testTypingInitOfField() throws Exception {
-        performTest("FieldNoInit", 56, " = h", "hashCode.pass");
+        performTest("FieldNoInit", 56, " = ha", "hashCode.pass");
     }
     
     public void testOnInitOfField() throws Exception {
-        performTest("Field", 60, null, "hashCode.pass");
+        performTest("Field", 61, null, "hashCode.pass");
     }
     
     public void testEmptyFileTypingMethodInvocationWithinInitOfField() throws Exception {
@@ -994,15 +994,15 @@ public class JavaCompletionProviderBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileAfterTypingOperatorWithinInitOfField() throws Exception {
-        performTest("MethodStart", 40, "public static int staticField = 10;\npublic int field = hashCode() /", "typesAndLocalMembers.pass");
+        performTest("MethodStart", 40, "public static int staticField = 10;\npublic int field = hashCode() /", "typesLocalMembersAndSmartPrimitives.pass");
     }
     
     public void testAfterTypingOperatorWithinInitOfField() throws Exception {
-        performTest("FieldNoInit", 56, " = hashCode() /", "typesAndLocalMembers.pass");
+        performTest("FieldNoInit", 56, " = hashCode() /", "typesLocalMembersAndSmartPrimitives.pass");
     }
     
     public void testAfterOperatorWithinInitOfField() throws Exception {
-        performTest("Field", 71, null, "typesAndLocalMembers.pass");
+        performTest("Field", 71, null, "typesLocalMembersAndSmartPrimitives.pass");
     }
     
     public void testEmptyFileAfterTypingConstantWithinInitOfField() throws Exception {
@@ -1204,27 +1204,27 @@ public class JavaCompletionProviderBasicTest extends CompletionTestBase {
     }
 
     public void testEmptyFileTypingMethodInvocationInMethodBody() throws Exception {
-        performTest("SimpleMethodBodyStart", 98, "boolean b;\nSystem.out.println(", "typesLocalMembersAndVars.pass");
+        performTest("SimpleMethodBodyStart", 98, "boolean b;\nSystem.out.println(", "typesLocalMembersVarsAndSmarts.pass");
     }
     
     public void testTypingMethodInvocationInMethodBody() throws Exception {
-        performTest("SimpleEmptyMethodBody", 98, "boolean b;\nSystem.out.println(", "typesLocalMembersAndVars.pass");
+        performTest("SimpleEmptyMethodBody", 98, "boolean b;\nSystem.out.println(", "typesLocalMembersVarsAndSmarts.pass");
     }
     
     public void testMethodInvocationInMethodBody() throws Exception {
-        performTest("SimpleMethodBody", 129, null, "typesLocalMembersAndVars.pass");
+        performTest("SimpleMethodBody", 129, null, "typesLocalMembersVarsAndSmarts.pass");
     }
     
     public void testEmptyFileTypingMethodInvocationParameterInMethodBody() throws Exception {
-        performTest("SimpleMethodBodyStart", 98, "boolean b;\nSystem.out.println(b", "typesLocalMembersAndVarsStartingWithB.pass");
+        performTest("SimpleMethodBodyStart", 98, "boolean b;\nSystem.out.println(b", "typesLocalMembersVarsAndSmartsStartingWithB.pass");
     }
     
     public void testTypingMethodInvocationParameterInMethodBody() throws Exception {
-        performTest("SimpleEmptyMethodBody", 98, "boolean b;\nSystem.out.println(b", "typesLocalMembersAndVarsStartingWithB.pass");
+        performTest("SimpleEmptyMethodBody", 98, "boolean b;\nSystem.out.println(b", "typesLocalMembersVarsAndSmartsStartingWithB.pass");
     }
     
     public void testOnMethodInvocationParameterInMethodBody() throws Exception {
-        performTest("SimpleMethodBody", 130, null, "typesLocalMembersAndVarsStartingWithB.pass");
+        performTest("SimpleMethodBody", 130, null, "typesLocalMembersVarsAndSmartsStartingWithB.pass");
     }
     
     public void testEmptyFileTypingMethodInvocationParameterAndSpaceInMethodBody() throws Exception {
