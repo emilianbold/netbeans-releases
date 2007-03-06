@@ -769,7 +769,6 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
             firstSourceAvailable = true;
         }
         jEditorPane1.initActions();        
-        kit.install(jEditorPane1.getEditorPane());
         jEditorPane1.getEditorPane().setDocument(doc);
         customizeEditor(jEditorPane1.getEditorPane());
         jViewport2 = jEditorPane2.getScrollPane().getViewport();
@@ -834,7 +833,6 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         }
         jEditorPane2.initActions();
         jSplitPane1.putClientProperty(UndoRedo.class, editorUndoRedo);
-        kit.install(jEditorPane2.getEditorPane());
         jEditorPane2.getEditorPane().setDocument(doc);
         jEditorPane2.getEditorPane().setEditable(editableCookie != null);
         if (jEditorPane2.getEditorPane().isEditable()) {
