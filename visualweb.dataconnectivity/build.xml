@@ -68,29 +68,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- move stuff to /bin  -->
     <basename property="my.cluster.dir" file="${cluster}"/>
     <filter token="CLUSTER_DIR" value="${my.cluster.dir}"/>
-      <copy file="release/startup/bin/db-start-bin.bat" toFile="${netbeans.dest.dir}/bin/db-start.bat" filtering="on"/>
-      <copy file="release/startup/bin/db-stop-bin.bat" toFile="${netbeans.dest.dir}/bin/db-stop.bat" filtering="on"/>
-      <copy file="release/startup/bin/db-start-bin.sh" toFile="${netbeans.dest.dir}/bin/db-start.sh" filtering="on"/>
-      <copy file="release/startup/bin/db-stop-bin.sh" toFile="${netbeans.dest.dir}/bin/db-stop.sh" filtering="on"/>
-      <copy file="release/startup/bin/create-travel-db-bin.sh" toFile="${netbeans.dest.dir}/bin/create-travel-db.sh" filtering="on"/>
-      <copy file="release/startup/bin/create-travel-db-bin.bat" toFile="${netbeans.dest.dir}/bin/create-travel-db.bat" filtering="on"/>
-      <copy file="release/startup/bin/create-sample-db-bin.sh" toFile="${netbeans.dest.dir}/bin/create-sample-db.sh" filtering="on"/>
-      <copy file="release/startup/bin/create-sample-db-bin.bat" toFile="${netbeans.dest.dir}/bin/create-sample-db.bat" filtering="on"/>
-      <copy file="release/startup/bin/db-runsql-bin.sh" toFile="${netbeans.dest.dir}/bin/db-runsql.sh" filtering="on"/>
-      <copy file="release/startup/bin/db-runsql-bin.bat" toFile="${netbeans.dest.dir}/bin/db-runsql.bat" filtering="on"/>
-      <copy file="release/startup/bin/restore-sample-db-bin.sh" toFile="${netbeans.dest.dir}/bin/restore-sample-db.sh" filtering="on"/>
-      <copy file="release/startup/bin/restore-sample-db-bin.bat" toFile="${netbeans.dest.dir}/bin/restore-sample-db.bat" filtering="on"/>
-      <copy file="release/startup/bin/import-datasource-bin.bat" toFile="${netbeans.dest.dir}/bin/import-datasource.bat" filtering="on"/>
-      <copy file="release/startup/bin/import-datasource-bin.sh" toFile="${netbeans.dest.dir}/bin/import-datasource.sh" filtering="on"/>
       <copy file="external/travel.zip" tofile="${cluster}/modules/ext/travel.zip" /> 
-      <chmod perm="ugo+x">
-        <fileset dir="${cluster}/startup/bin">
-          <include name="*.sh"/>
-        </fileset>
-        <fileset dir="${netbeans.dest.dir}/bin">
-          <include name="*.sh"/>
-        </fileset>
-      </chmod>
-    </target>
+  </target>
 </project>
 
