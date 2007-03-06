@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -127,10 +127,40 @@ public class XTestActionTask extends Task {
             newAnt.setAntfile(antFile.getAbsolutePath());
             newAnt.setTarget(target);
             log("XTest will execute action "+executeAction);
+            // For tests run from binary tests distribution store output messages to a log file
+            // (see nbbuild/templates/xtest.xml#runtestsdist)
+            if(executeAction.equals(ACTION_RUN_TESTS) && getProject().getProperty("xtest.distexec") != null) {
+                newAnt.setOutput(getLogFile());
+            }
             newAnt.execute();
         } else {
             throw new BuildException("Cannot execute unknown action '"+executeAction+"'");
         }
+    }
+
+    /** Returns path to log file composed from module name the following way
+     * ${xtest.results.testrun.dir}/logs/${xtest.module}_{xtest.testtype}.log
+     * (e.g. results/testrun_070306-115318/logs/ant_unit.log).
+     * @return path to log file.
+     */
+    private String getLogFile() {
+        String logsDir = getProject().getProperty("xtest.results.testrun.dir")+"/logs";
+        File logsDirFile = getProject().resolveFile(logsDir);
+        log("logsDirFile="+logsDirFile, Project.MSG_DEBUG);
+        if (!logsDirFile.exists()) {
+            logsDirFile.mkdirs();
+        }
+        String prefix = getProject().getProperty("xtest.module")+"_"+getProject().getProperty("xtest.testtype");
+        log("prefix="+prefix, Project.MSG_DEBUG);
+        String newPrefix = prefix.replace('/','_');
+        File logFile = new File(logsDirFile, newPrefix+".log");
+        int c = 1;
+        while (logFile.exists()) {
+            logFile = new File(logsDirFile, newPrefix+"_"+c+".log");
+            c++;
+        }
+        log("Output logFile="+logFile, Project.MSG_VERBOSE);
+        return logFile.getAbsolutePath();
     }
     
     public void execute() throws BuildException {
