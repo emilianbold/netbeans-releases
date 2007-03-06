@@ -173,7 +173,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     
-    <target name="runidetest_footprint" depends="init-cp,copy_unzip_jedit_project,prepare_measure_footprint,ide_command_line_suffix,check-appserver">
+    <target name="runidetest_footprint" depends="init-cp,prepare_measure_footprint,copy_unzip_jedit_project,copy_unzip_j2ee_project,ide_command_line_suffix,check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <!-- Opens project at specified location -->

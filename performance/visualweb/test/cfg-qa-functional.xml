@@ -365,7 +365,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
+                <include name="footprint/VWPFootprintTests.class/testOutOfTheBoxStartup"/>
             </patternset>
         </testset>
     </testbag>
@@ -374,7 +374,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
+                <include name="footprint/VWPFootprintTests.class/testOutOfTheBoxStartup"/>
             </patternset>
         </testset>
     </testbag>
@@ -383,7 +383,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
+                <include name="footprint/VWPFootprintTests.class/testOutOfTheBoxStartup"/>
             </patternset>
         </testset>
     </testbag>
@@ -393,7 +393,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
+                <include name="footprint/VWPFootprintTests.class/testJ2SEProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
@@ -402,7 +402,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
+                <include name="footprint/VWPFootprintTests.class/testJ2SEProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
@@ -411,7 +411,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
+                <include name="footprint/VWPFootprintTests.class/testJ2SEProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
@@ -421,7 +421,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
+                <include name="footprint/VWPFootprintTests.class/testWebProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
@@ -430,7 +430,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
+                <include name="footprint/VWPFootprintTests.class/testWebProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
@@ -439,7 +439,35 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
+                <include name="footprint/VWPFootprintTests.class/testWebProjectWorkflow"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Visual Web Project workflow -->
+    <testbag testattribs="footprint_all or visualweb_project" prio="320"
+             executor="ide_footprint" name="Footprint - Visual Web project workflow" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/VWPFootprintTests.class/testVisualWebProjectWorkflow"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or visualweb_project) and NOT once" prio="321"
+             executor="ide_footprint" name="Footprint - Visual Web project workflow" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/VWPFootprintTests.class/testVisualWebProjectWorkflow"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or visualweb_project) and NOT once" prio="322"
+             executor="ide_footprint" name="Footprint - Visual Web project workflow" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/VWPFootprintTests.class/testVisualWebProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,10 +35,15 @@ public class VisualWebProjectWorkflow extends MemoryFootprintTestCase {
     
     private String webproject;
     
+    /**
+     * Creates a new instance of VisualWebProjectWorkflow
+     * @param testName 
+     */
     public VisualWebProjectWorkflow(String testName) {
         super(testName);
         prefix = "Visual Web Project Workflow |";
     }
+    
     /**
      * Creates a new instance of VisualWebProjectWorkflow
      */
@@ -55,7 +60,7 @@ public class VisualWebProjectWorkflow extends MemoryFootprintTestCase {
         //webproject = FootprintUtilities.createproject("Web", "Visual Web Application", false);
         webproject = "HugeApp";
         
-        openProject(webproject);
+        VWPFootprintUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +webproject); // failing openProject(webproject);
         VWPFootprintUtilities.waitForPendingBackgroundTasks();
         VWPFootprintUtilities.openFile(webproject,webproject.toLowerCase(),"ApplicationBean1.java",true);
         VWPFootprintUtilities.buildproject(webproject);
