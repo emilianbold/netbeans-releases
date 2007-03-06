@@ -20,7 +20,6 @@
 
 package org.netbeans.spi.palette;
 
-import java.awt.event.InputEvent;
 import javax.swing.Action;
 import org.openide.util.Lookup;
 
@@ -67,4 +66,16 @@ public abstract class PaletteActions {
      * Return null to disable preferred action for this item.
      */
     public abstract Action getPreferredAction( Lookup item );
+    
+    /**
+     * An action that will be invoked as part of the palette refresh logic,
+     * for example when user chooses "Refresh" in palette's popup menu. Can be null.
+     * The action properties (label, icon) are not displayed to the user, the Palette module
+     * will provide its own.
+     * @return Custom refresh action or null.
+     * @since 1.9
+     */
+    public Action getRefreshAction() {
+        return null;
+}
 }

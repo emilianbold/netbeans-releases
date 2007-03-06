@@ -19,7 +19,9 @@
 
 package org.netbeans.spi.palette;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
@@ -188,4 +190,36 @@ public class ModelTest extends AbstractPaletteTestHid {
         assertEquals( source, movedCategories[0] );
     }
 
+    /**
+     * Test of getName method, of class org.netbeans.modules.palette.Model.
+     */
+    public void testCustomRefresh() throws IOException {
+        CustomRefresh refresh = new CustomRefresh();
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new CustomRefreshActions( refresh ) );
+        pc.refresh();
+        assertTrue( refresh.actionInvoked );
+}
+    
+    private static class CustomRefreshActions extends DummyActions {
+        private Action refresh;
+        public CustomRefreshActions( Action refresh ) {
+            this.refresh = refresh;
+        }
+    
+        @Override
+        public Action getRefreshAction() {
+            return refresh;
+        }
+    }
+
+    private static class CustomRefresh extends AbstractAction {
+        private boolean actionInvoked = false;
+        
+        public CustomRefresh() {
+        }
+    
+        public void actionPerformed(ActionEvent arg0) {
+            actionInvoked = true;
+        }
+    }
 }

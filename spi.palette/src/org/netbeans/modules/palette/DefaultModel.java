@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.palette;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import org.netbeans.spi.palette.PaletteController;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.netbeans.modules.palette.ui.Customizer;
+import org.netbeans.spi.palette.PaletteActions;
 
 /**
  * Default implementation of PaletteModel interface based on Nodes.
@@ -225,6 +227,11 @@ public class DefaultModel implements Model, NodeListener {
 
     private boolean isRefreshingChildren = false;
     public void refresh() {
+        PaletteActions customActions = (PaletteActions)rootNode.getLookup().lookup( PaletteActions.class );
+        Action customRefreshAction = customActions.getRefreshAction();
+        if( null != customRefreshAction ) {
+            customRefreshAction.actionPerformed( new ActionEvent( getRoot(), 0, "refresh" ) ); //NOI18N
+        }
         clearSelection();
         categories = null;
         isRefreshingChildren = true;
