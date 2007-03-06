@@ -31,10 +31,13 @@ import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.versioning.spi.OriginalContent;
 import org.openide.ErrorManager;
+import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
@@ -46,6 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io.*;
 
 /**
@@ -242,6 +247,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             SwingUtilities.convertPointToScreen(p, textComponent);
             return p;
         } catch (BadLocationException e) {
+            Logger.getLogger(DiffSidebar.class.getName()).log(Level.WARNING, "scrollToDifference", e); // NOI18N
         }
         return null;
     }
@@ -254,11 +260,14 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     }
 
     private static class DiffTopComponent extends TopComponent {
+        
+        private JComponent diffView;
 
         public DiffTopComponent() {
         }
 
         public DiffTopComponent(JComponent c) {
+            this.diffView = c;
             setLayout(new BorderLayout());
             c.putClientProperty(TopComponent.class, this);
             add(c, BorderLayout.CENTER);
@@ -266,6 +275,11 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 //            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
         }
 
+        public UndoRedo getUndoRedo() {
+            UndoRedo undoredo = (UndoRedo) diffView.getClientProperty(UndoRedo.class);
+            return undoredo == null ? UndoRedo.NONE : undoredo;
+        }
+        
         public int getPersistenceType(){
             return TopComponent.PERSISTENCE_NEVER;
         }
@@ -288,6 +302,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
                 int clickOffset = textUI.viewToModel(component, new Point(0, e.getY()));
                 line = Utilities.getLineOffset(document, clickOffset);
             }catch (BadLocationException ble){
+                Logger.getLogger(DiffSidebar.class.getName()).log(Level.WARNING, "getLineFromMouseEvent", ble); // NOI18N
             }
         }
         return line;
@@ -620,15 +635,24 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             this.isFirst = isFirst;
         }
 
+        public boolean isEditable() {
+            return !isFirst;
+        }
+
+        public Lookup getLookup() {
+            if (isFirst) return super.getLookup();
+            return Lookups.fixed(document);
+        }
+
         public String getName() {
             return originalContent.getWorkingCopy().getName();
         }
 
         public String getTitle() {
             if (isFirst) {
-                return "Original";
+                return NbBundle.getMessage(DiffSidebar.class, "LBL_DiffPane_Original");
             } else {
-                return "Working Copy";
+                return NbBundle.getMessage(DiffSidebar.class, "LBL_DiffPane_WorkingCopy");
             }
         }
 
