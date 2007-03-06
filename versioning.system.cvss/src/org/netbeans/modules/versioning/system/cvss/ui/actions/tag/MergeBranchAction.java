@@ -69,16 +69,15 @@ public class MergeBranchAction extends AbstractSystemAction {
     public void performCvsAction(Node[] nodes) {
         Context context = getContext(nodes);
 
-        String title = MessageFormat.format(NbBundle.getBundle(MergeBranchAction.class).getString("CTL_MergeBranchDialog_Title"), 
-                                         new Object[] { getContextDisplayName(nodes) });
+        String title = MessageFormat.format(NbBundle.getBundle(MergeBranchAction.class).getString("CTL_MergeBranchDialog_Title"), getContextDisplayName(nodes));  // NOI18N
         
-        MergeBranchPanel settings = new MergeBranchPanel(context.getFiles());
+        MergePanel settings = new MergePanel(context.getFiles());
 
-        JButton merge = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Merge"));
-        settings.putClientProperty("OKButton", merge);        
-        merge.setToolTipText(NbBundle.getMessage(MergeBranchAction.class, "TT_MergeBranchDialog_Action_Merge"));
-        JButton cancel = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Cancel"));
-        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeBranchAction.class, "ACSD_MergeBranchDialog_Action_Cancel"));
+        JButton merge = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Merge"));  // NOI18N
+        settings.putClientProperty("OKButton", merge);  // NOI18N
+        merge.setToolTipText(NbBundle.getMessage(MergeBranchAction.class, "TT_MergeBranchDialog_Action_Merge"));  // NOI18N
+        JButton cancel = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Cancel"));  // NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeBranchAction.class, "ACSD_MergeBranchDialog_Action_Cancel"));  // NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,
                 title,
@@ -91,7 +90,7 @@ public class MergeBranchAction extends AbstractSystemAction {
         descriptor.setClosingOptions(null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeBranchAction.class, "ACSD_MergeBranchDialog"));
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeBranchAction.class, "ACSD_MergeBranchDialog"));  // NOI18N
         dialog.setVisible(true);
         if (descriptor.getValue() != merge) return;
 
@@ -110,11 +109,11 @@ public class MergeBranchAction extends AbstractSystemAction {
     private static class MergeBranchExecutor implements Runnable {
 
         private final Context context;
-        private final MergeBranchPanel settings;
+        private final MergePanel settings;
         private String temporaryTag;
         private String name;
 
-        public MergeBranchExecutor(Context context, MergeBranchPanel settings, String name) {
+        public MergeBranchExecutor(Context context, MergePanel settings, String name) {
             this.context = context;
             this.settings = settings;
             this.name = name;
@@ -153,9 +152,17 @@ public class MergeBranchAction extends AbstractSystemAction {
         private UpdateExecutor [] update() {
             UpdateCommand cmd = new UpdateCommand();
 
-            String branchName = settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName();  // NOI18N
-            String headTag = temporaryTag != null ? temporaryTag : branchName; 
-
+            String headTag; 
+            if (temporaryTag != null) {
+                headTag = temporaryTag;
+            } else if (settings.isMergingFromTrunk()) {
+                headTag = "HEAD";  // NOI18N
+            } else if (settings.isMergingFromBranch()) {
+                headTag = settings.getBranchName();
+            } else {
+                headTag = settings.getEndTagName();
+            }
+            
             GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
             if (context.getExclusions().size() > 0) {
                 options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
