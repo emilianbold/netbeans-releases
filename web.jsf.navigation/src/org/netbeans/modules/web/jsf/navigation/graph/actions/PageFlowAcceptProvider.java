@@ -10,6 +10,7 @@
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ConnectorState;
@@ -31,6 +32,10 @@ public class PageFlowAcceptProvider implements AcceptProvider {
         System.out.println("Widget: " + widget);
         System.out.println("Point: " + point);
         System.out.println("Transferable: " + transferable);
+        DataFlavor[] dfs = transferable.getTransferDataFlavors();
+        for( DataFlavor flavor: dfs){
+            System.out.println("Data Flavor: " + flavor);
+        }
         return ConnectorState.REJECT_AND_STOP;
     }
 

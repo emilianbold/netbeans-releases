@@ -12,19 +12,15 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.awt.BorderLayout;
 import java.awt.Image;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.visual.graph.GraphPinScene;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
@@ -45,7 +41,7 @@ import org.openide.windows.TopComponent;
  */
 public class PageFlowView  extends TopComponent{
     private JSFConfigEditorContext context;
-    private GraphPinScene scene;
+    private PageFlowScene scene;
     private JSFConfigModel configModel;
     
     PageFlowView(JSFConfigEditorContext context){
@@ -57,6 +53,9 @@ public class PageFlowView  extends TopComponent{
         ic.add( initializePalette() );
         this.context = context;
         init();
+        PageFlowController pfc = new PageFlowController( context,  this );
+        layoutGraph();
+
     }
     
     /*
@@ -64,20 +63,23 @@ public class PageFlowView  extends TopComponent{
      **/
     private void init(){
         setLayout(new BorderLayout());
-        configModel = ConfigurationUtils.getConfigModel(context.getFacesConfigFile(),true);
         
         scene = new PageFlowScene();
-        add(scene.createView());
-        
+        add(scene.createView());        
         
         try{
             Node node = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
             setActivatedNodes(new Node[] { node });
         } catch (Exception e){}
         
-        setupGraph();
-        
     }
+    
+    protected void layoutGraph(){                
+        if(  scene instanceof PageFlowScene ) {
+            ((PageFlowScene)scene).layoutScene();
+        }
+    }
+    
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
     private static final Image IMAGE_LIST = null; // NOI18N
     
@@ -85,62 +87,17 @@ public class PageFlowView  extends TopComponent{
         scene.removeChildren();
     }
     
-    /*
-     * Setup The Graph
-     * Should only be called by init();
-     **/
-    private void setupGraph(){
-        assert configModel!=null;
-        
-        FacesConfig facesConfig = configModel.getRootComponent();
-        
-        List<NavigationRule> rules = facesConfig.getNavigationRules();
-        createAllPageNodes(rules);
-        createAllEdges(rules);
-        
-        if(  scene instanceof PageFlowScene ) {
-            ((PageFlowScene)scene).layoutScene();
-        }
-    }
-    
-    private void createAllEdges( List<NavigationRule> rules ){
-        for( NavigationRule rule : rules ) {
-            List<NavigationCase> navCases = rule.getNavigationCases();
-            for( NavigationCase navCase : navCases ){
-                createEdge(scene, rule, navCase);
-            }
-        }
-    }
-    
-    private void createAllPageNodes(List<NavigationRule> rules) {
-        Collection<String> pages = new HashSet<String>();
-        for( NavigationRule rule : rules ){
-            String page = rule.getFromViewId();
-            pages.add(page);
-            List<NavigationCase> navCases = rule.getNavigationCases();
-            for( NavigationCase navCase : navCases ){
-                String toPage = navCase.getToViewId();
-                pages.add(toPage);
-            }
-        }
-        for( String page : pages ) {
-            createNode(scene, IMAGE_LIST, page, null, null);
-        }
-    }
-    
-    
-    
-    private VMDNodeWidget createNode(GraphPinScene graphScene, Image image, String page, String type, List<Image> glyphs) {
-        VMDNodeWidget widget = (VMDNodeWidget) graphScene.addNode(page);
-        widget.setNodeProperties(image, page, type, glyphs);
-        graphScene.addPin(page, page +"pin");
+    protected VMDNodeWidget createNode(  String page, String type, List<Image> glyphs) {
+        VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(page);
+        widget.setNodeProperties(IMAGE_LIST, page, type, glyphs);
+        scene.addPin(page, page +"pin");
         
         return widget;
     }
     
-    private VMDPinWidget createPin(GraphPinScene graphScene, String page, String navComp) {
+    protected VMDPinWidget createPin( String page, String navComp) {
         //        Pin pin = new Pin(page, navComp);
-        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, navComp);
+        VMDPinWidget widget = (VMDPinWidget) scene.addPin(page, navComp);
         //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
         //        if( navComp != null ){
         //            widget.setProperties(navComp, Arrays.asList(navComp.getBufferedIcon()));
@@ -148,23 +105,23 @@ public class PageFlowView  extends TopComponent{
         return widget;
     }
     
-    private void createEdge(GraphPinScene graphScene, NavigationRule rule, NavigationCase navCase) {
+    protected void createEdge( NavigationRule rule, NavigationCase navCase) {
         
         String toPage = navCase.getToViewId();
         String caseName = navCase.getFromOutcome();
         String action = navCase.getFromAction();
         String fromPage = rule.getFromViewId();
         
-        ConnectionWidget widget = (ConnectionWidget)graphScene.addEdge(navCase);
+        ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCase);
         
-        LabelWidget label = new LabelWidget(graphScene, caseName);
+        LabelWidget label = new LabelWidget(scene, caseName);
         label.setOpaque(true);
         widget.addChild(label);
         widget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
         
         //        graphScene.setEdgeSource(navCase, label);
-        graphScene.setEdgeSource(navCase, fromPage+"pin");
-        graphScene.setEdgeTarget(navCase, toPage+"pin");
+        scene.setEdgeSource(navCase, fromPage+"pin");
+        scene.setEdgeTarget(navCase, toPage+"pin");
         
 //        Collection<String> pins = graphScene.getPins();
 //        String targetPin = null;

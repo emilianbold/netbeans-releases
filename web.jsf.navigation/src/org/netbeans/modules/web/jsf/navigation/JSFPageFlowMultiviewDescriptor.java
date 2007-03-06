@@ -102,6 +102,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             panel.setName(context.getFacesConfigFile().getName());
             //            this.setName(context.getFacesConfigFile().getName());
             //            add(panel, BorderLayout.CENTER);
+            
         }
         
         public JComponent getVisualRepresentation() {
