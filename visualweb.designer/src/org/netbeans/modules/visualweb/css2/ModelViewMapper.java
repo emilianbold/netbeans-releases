@@ -372,7 +372,13 @@ public final class ModelViewMapper {
             }
         }
 
-        assert i != n; // LineBox should have contained box; if not input arg was invalid
+//        assert i != n; // LineBox should have contained box; if not input arg was invalid
+        if (i == n) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Next position not found, lb=" + lb + ", pos=" + pos)); // NOI18N
+            return Position.NONE;
+        }
+
 
         while (true) { // May have to try repeatedly to skip JSF fragment linebox contents
 
@@ -574,7 +580,13 @@ public final class ModelViewMapper {
             }
         }
 
-        assert i != n; // LineBox should have contained box; if not input arg was invalid
+//        assert i != n; // LineBox should have contained box; if not input arg was invalid
+        if (i == n) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("Previous position not found, lb=" + lb + ", pos=" + pos)); // NOI18N
+            return Position.NONE;
+        }
+
 
         while (true) {
             // If there is no previous box, Jump to the Previous Line

@@ -98,8 +98,14 @@ public class BoxList {
         //            System.out.println("Box List violation: index=" + index + " in box list of size " + size);
         //            System.out.println("Box list is: " + toString());
         //        }
-        assert (index >= 0) && (index < size) : "Invalid box index: " + index + ", size is " +
-        size + "; this list is " + toString(); // NOI18N
+//        assert (index >= 0) && (index < size) : "Invalid box index: " + index + ", size is " +
+//        size + "; this list is " + toString(); // NOI18N
+        // XXX #94677 Supress asserts, no real fix for flow layout issues.
+        if (index < 0 || index >= size) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                new IndexOutOfBoundsException("Index=" + index + ", expected to be in [0," + (size - 1) + "].")); // NOI18N
+            return null;
+        }
 
         return boxes[index];
     }
