@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.xml.namespace.QName;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -60,6 +61,13 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 //import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -391,6 +399,97 @@ public class Util {
             }
         }
         return pt;
+    }
+
+    private static boolean isOperationInList(String operName, Collection<BindingOperation> operations) {
+        Iterator<BindingOperation> i = operations.iterator();
+        while (i.hasNext()) {
+            BindingOperation bo = i.next();
+            if ((bo != null) && (operName.equals(bo.getName()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static Collection<BindingOperation> refreshOperations(Binding binding, FileObject jc) {
+        
+        Collection<BindingOperation> operations = binding.getBindingOperations();
+        if ((binding == null) || (jc == null)) {
+            return operations;
+        }
+        
+        WSDLModel model = binding.getModel();
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        
+        WSDLComponentFactory wcf = model.getFactory();
+        Definitions d = (Definitions) binding.getParent();
+                
+        QName portTypeQName = binding.getType().getQName();
+        PortType portType = null;
+        
+        Collection<PortType> portTypes = d.getPortTypes();
+        Iterator<PortType> i = portTypes.iterator();
+        while (i.hasNext()) {
+            PortType pt = i.next();
+            if (pt != null) {
+                if (portTypeQName.getLocalPart().equals(pt.getName())) {
+                    portType = pt;
+                    break;
+                }
+            }
+        }
+        // create operations and add them to the binding element
+        List<String> bindingOperationNames = JavaWsdlMapper.getOperationNames(jc);
+        for (String name : bindingOperationNames) {
+            if (!isOperationInList(name, operations)) {
+                org.netbeans.modules.xml.wsdl.model.BindingOperation bindingOperation = wcf.createBindingOperation();
+                bindingOperation.setName(name);
+                binding.addBindingOperation(bindingOperation);
+
+                // add input/output messages
+                org.netbeans.modules.xml.wsdl.model.Message inputMsg = wcf.createMessage();
+                inputMsg.setName(name);
+                d.addMessage(inputMsg);
+
+                org.netbeans.modules.xml.wsdl.model.Message outMsg = wcf.createMessage();
+                outMsg.setName(name + "Response");                  //NOI18N
+                d.addMessage(outMsg);
+
+                org.netbeans.modules.xml.wsdl.model.RequestResponseOperation oper = wcf.createRequestResponseOperation();
+                oper.setName(name);
+                portType.addOperation(oper);
+
+                org.netbeans.modules.xml.wsdl.model.Input input = wcf.createInput();
+                oper.setInput(input);
+                input.setMessage(input.createReferenceTo(inputMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
+
+                org.netbeans.modules.xml.wsdl.model.Output out = wcf.createOutput();
+                oper.setOutput(out);
+                out.setMessage(out.createReferenceTo(outMsg, org.netbeans.modules.xml.wsdl.model.Message.class));
+
+                org.netbeans.modules.xml.wsdl.model.BindingOutput bindingOutput = wcf.createBindingOutput();
+                bindingOperation.setBindingOutput(bindingOutput);
+                org.netbeans.modules.xml.wsdl.model.BindingInput bindingInput = wcf.createBindingInput();
+                bindingOperation.setBindingInput(bindingInput);
+
+                //add faults
+                List<String> operationFaults = JavaWsdlMapper.getOperationFaults(jc, name);
+                for (String fault : operationFaults) {
+                    org.netbeans.modules.xml.wsdl.model.BindingFault bindingFault = wcf.createBindingFault();
+                    bindingOperation.addBindingFault(bindingFault);
+                }
+            }
+        }
+        
+        if (!isTransaction) {
+            model.endTransaction();
+        }
+        
+        return binding.getBindingOperations();
     }
     
 }
