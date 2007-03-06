@@ -1,0 +1,4 @@
+public void paint(Graphics arg0) - override
+public void paintAll(Graphics arg0) - override
+public void paintComponents(Graphics arg0) - override
+void paintHeavyweightComponents(Graphics arg0) - override

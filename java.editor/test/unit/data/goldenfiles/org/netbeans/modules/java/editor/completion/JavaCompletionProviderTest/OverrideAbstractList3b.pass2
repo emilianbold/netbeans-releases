@@ -1,0 +1,13 @@
+package test;
+
+import java.util.AbstractList;
+
+public class OverrideAbstractList3 extends AbstractList<String> {
+    
+    public OverrideAbstractList3() {}
+    
+    public String get(int arg0) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+}

@@ -23,6 +23,8 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -79,6 +81,16 @@ public class GeneratorUtils {
     public static final int SETTERS_ONLY = 2;
     
     private GeneratorUtils() {
+    }
+    
+    public static ClassTree insertClassMember(WorkingCopy copy, ClassTree clazz, Tree member) {
+        int idx = 0;
+        for (Tree tree : clazz.getMembers()) {
+            if (ClassMemberComparator.compare(member, tree) < 0)
+                break;
+            idx++;
+        }
+        return copy.getTreeMaker().insertClassMember(clazz, idx, member);        
     }
     
     public static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl) {
@@ -569,4 +581,82 @@ public class GeneratorUtils {
         return ((PackageElement) fromTopLevel.getEnclosingElement()).getQualifiedName().toString().contentEquals(((PackageElement) whatTopLevel.getEnclosingElement()).getQualifiedName());
     }
     
+    private static class ClassMemberComparator {
+        
+        public static int compare(Tree tree1, Tree tree2) {
+            if (tree1 == tree2)
+                return 0;
+            int importanceDiff = getSortPriority(tree1) - getSortPriority(tree2);
+            if (importanceDiff != 0)
+                return importanceDiff;
+            int alphabeticalDiff = getSortText(tree1).compareTo(getSortText(tree2));
+            if (alphabeticalDiff != 0)
+                return alphabeticalDiff;
+            return -1;
+        }
+        
+        private static int getSortPriority(Tree tree) {
+            int ret = 0;
+            ModifiersTree modifiers = null;
+            switch (tree.getKind()) {
+            case CLASS:
+                ret = 400;
+                modifiers = ((ClassTree)tree).getModifiers();
+                break;
+            case METHOD:
+                MethodTree mt = (MethodTree)tree;
+                if (mt.getName().contentEquals("<init>"))
+                    ret = 200;
+                else
+                    ret = 300;
+                modifiers = mt.getModifiers();
+                break;
+            case VARIABLE:
+                ret = 100;
+                modifiers = ((VariableTree)tree).getModifiers();
+                break;
+            }
+            if (modifiers != null) {
+                if (!modifiers.getFlags().contains(Modifier.STATIC))
+                    ret += 1000;
+                if (modifiers.getFlags().contains(Modifier.PUBLIC))
+                    ret += 10;
+                else if (modifiers.getFlags().contains(Modifier.PROTECTED))
+                    ret += 20;
+                else if (modifiers.getFlags().contains(Modifier.PRIVATE))
+                    ret += 40;
+                else
+                    ret += 30;
+            }
+            return ret;
+        }
+        
+        private static String getSortText(Tree tree) {
+            switch (tree.getKind()) {
+            case CLASS:
+                return ((ClassTree)tree).getSimpleName().toString();
+            case METHOD:
+                MethodTree mt = (MethodTree)tree;
+                StringBuilder sortParams = new StringBuilder();
+                sortParams.append('(');
+                int cnt = 0;
+                for(Iterator<? extends VariableTree> it = mt.getParameters().iterator(); it.hasNext();) {
+                    VariableTree param = it.next();
+                    if (param.getType().getKind() == Tree.Kind.IDENTIFIER)
+                        sortParams.append(((IdentifierTree)param.getType()).getName().toString());
+                    else if (param.getType().getKind() == Tree.Kind.MEMBER_SELECT)
+                        sortParams.append(((MemberSelectTree)param.getType()).getIdentifier().toString());
+                    if (it.hasNext()) {
+                        sortParams.append(',');
+                    }
+                    cnt++;
+                }
+                sortParams.append(')');
+                return mt.getName().toString() + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+            case VARIABLE:
+                return ((VariableTree)tree).getName().toString();
+            }
+            return ""; //NOI18N
+        }
+    }
 }

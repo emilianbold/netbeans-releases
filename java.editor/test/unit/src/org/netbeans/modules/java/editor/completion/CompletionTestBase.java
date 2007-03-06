@@ -33,24 +33,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
+import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import junit.framework.Assert;
 
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil2;
+import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.JavaDataObject.JavaEditorSupport;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
@@ -68,7 +75,7 @@ import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
- * @author Dusan Balek
+ * @author Dusan Balek, Jan Lahoda
  */
 public class CompletionTestBase extends NbTestCase {
     
@@ -105,7 +112,10 @@ public class CompletionTestBase extends NbTestCase {
     
     protected void setUp() throws Exception {
         XMLFileSystem system = new XMLFileSystem();
-        system.setXmlUrl(JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/defaults/mf-layer.xml"));
+        system.setXmlUrls(new URL[] {
+            JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/java/editor/resources/layer.xml"),
+            JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/defaults/mf-layer.xml")
+        });
         Repository repository = new Repository(system);
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
@@ -134,7 +144,13 @@ public class CompletionTestBase extends NbTestCase {
             }
         };                               
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
-        Lkp.initLookups(new Object[] {repository, loader, cpp});
+        MimeDataProvider mdp = new MimeDataProvider() {
+            public Lookup getLookup(MimePath mimePath) {
+                return Lookups.singleton(new JavaKit());
+            }
+        };
+        Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
+        JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
         Utilities.setCaseSensitive(true);
     }
     
@@ -142,6 +158,10 @@ public class CompletionTestBase extends NbTestCase {
     }
     
     protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName) throws Exception {
+        performTest(source, caretPos, textToInsert, goldenFileName, null, null);
+    }
+    
+    protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
         File testSource = new File(getWorkDir(), "test/Test.java");
         testSource.getParentFile().mkdirs();
         copyToWorkDir(new File(getDataDir(), "org/netbeans/modules/java/editor/completion/data/" + source + ".java"), testSource);
@@ -158,7 +178,7 @@ public class CompletionTestBase extends NbTestCase {
         if (textToInsertLength > 0)
             doc.insertString(caretPos, textToInsert, null);
         JavaSource js = JavaSource.forDocument(doc);
-        List items = JavaCompletionProvider.query(js, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength);
+        List<? extends CompletionItem> items = JavaCompletionProvider.query(js, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength);
         Collections.sort(items, CompletionItemComparator.BY_PRIORITY);
         
         File output = new File(getWorkDir(), getName() + ".out");
@@ -170,17 +190,43 @@ public class CompletionTestBase extends NbTestCase {
         out.close();
         
         File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + goldenFileName);
-        File diffFile = new File(getWorkDir(), getName() + ".diff");
-        
+        File diffFile = new File(getWorkDir(), getName() + ".diff");        
         assertFile(output, goldenFile, diffFile);
         
-        JavaEditorSupport s = (JavaEditorSupport) ec;
+        if (toPerformItemRE != null) {
+            assertNotNull(goldenFileName2);            
+
+            Pattern p = Pattern.compile(toPerformItemRE);
+            CompletionItem item = null;            
+            for (CompletionItem i : items) {
+                if (p.matcher(i.toString()).find()) {
+                    item = i;
+                    break;
+                }
+            }            
+            assertNotNull(item);
+            
+            JEditorPane editor = new JEditorPane();
+            editor.setDocument(doc);
+            editor.setCaretPosition(caretPos + textToInsertLength);
+            item.defaultAction(editor);
+            
+            File output2 = new File(getWorkDir(), getName() + ".out2");
+            Writer out2 = new FileWriter(output2);            
+            out2.write(doc.getText(0, doc.getLength()));
+            out2.close();
+            
+            File goldenFile2 = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + goldenFileName2);
+            File diffFile2 = new File(getWorkDir(), getName() + ".diff2");
+            
+            assertFile(output2, goldenFile2, diffFile2, new WhitespaceIgnoringDiff());
+        }
         
-        SourceUtilsTestUtil2.ignoreCompileRequests();
-        
+        JavaEditorSupport s = (JavaEditorSupport) ec;        
+        SourceUtilsTestUtil2.ignoreCompileRequests();        
         s.close(false);
     }
-    
+
     private void copyToWorkDir(File resource, File toFile) throws IOException {
         InputStream is = new FileInputStream(resource);
         OutputStream outs = new FileOutputStream(toFile);
