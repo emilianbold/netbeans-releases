@@ -348,6 +348,18 @@ public class InteractionManager {
         return inlineEditor;
     }
 
+    public void startInlineEditing(Element componentRootElement, String propertyName) {
+        if (isInlineEditing() && getInlineEditor().isEditing(componentRootElement, propertyName)) {
+            return;
+        } else {
+            finishInlineEditing(false);
+        }
+
+        CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
+        webform.getTopComponent().requestActive();
+        startInlineEditing(componentRootElement, propertyName, box, true, true, null, false);
+    }
+    
     /**
      * Inline edit the given DesignBean, if the bean supports it.
      * If so, inline edit the given bean and return true.
