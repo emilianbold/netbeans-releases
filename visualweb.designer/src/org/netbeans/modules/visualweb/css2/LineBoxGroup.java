@@ -34,7 +34,6 @@ import org.w3c.dom.Node;
 
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.DesignBean;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.Position;

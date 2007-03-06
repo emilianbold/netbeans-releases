@@ -875,7 +875,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //                        // XXX TODO get rid of using xhtml directly, 
 //                        // it should be shielded by api.
 //                        bean = lu.createBean(com.sun.rave.web.ui.component.Link.class.getName(), uihead,
-//                                new com.sun.rave.designtime.Position()); // NOI18N
+//                                new Position()); // NOI18N
 //                        bean.getProperty("url").setValue(local); // NOI18N
 //                    }
 //                }
@@ -2361,7 +2361,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //    }
     
 //    private DesignBean createBean(String className, DesignBean parent,
-//        com.sun.rave.designtime.Position pos, String facet) {
+//        Position pos, String facet) {
 //        LiveUnit unit = webform.getModel().getLiveUnit();
 //
 //        if (parent != null) {

@@ -2262,7 +2262,7 @@ public class SelectionManager {
 //        MarkupDesignBean component = null;
 //
 //        /** Resizability of this component. A bit mask representing state
-//         * according to com.sun.rave.designtime.Constants.ResizeConstraints. */
+//         * according to Constants.ResizeConstraints. */
 //        int resizeConstraints;
 //    }
 
@@ -2274,7 +2274,7 @@ public class SelectionManager {
     private static class SelectedComponent {
         private Element componentRootElement;
         /** Resizability of this component. A bit mask representing state
-         * according to com.sun.rave.designtime.Constants.ResizeConstraints. */
+         * according to Constants.ResizeConstraints. */
         private int resizeConstraints;
     } // End of SelectedComponent.
 
