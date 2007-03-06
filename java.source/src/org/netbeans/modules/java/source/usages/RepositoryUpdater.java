@@ -396,10 +396,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final Set<FileSystem> fss = new HashSet<FileSystem> ();
         for (File root : roots) {
             final FileObject fo = FileUtil.toFileObject (root);
-            if (fo == null) {
-                LOGGER.warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
-            }
-            else {
+            if (fo != null) {                
                 try {
                     final FileSystem fs = fo.getFileSystem();
                     if (!fss.contains(fs)) {
@@ -418,10 +415,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final Set<FileSystem> fss = new HashSet<FileSystem> ();
         for (File root : roots) {
             final FileObject fo = FileUtil.toFileObject (root);
-            if (fo == null) {
-                LOGGER.warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
-            }
-            else {
+            if (fo != null) {                
                 try {
                     final FileSystem fs = fo.getFileSystem();
                     if (!fss.contains(fs)) {
