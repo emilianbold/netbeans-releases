@@ -35,6 +35,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
@@ -88,18 +89,38 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @param name name prefix of a new file, timestamp will be added to avoid name clash
      */
     private String createFile(String project, String packageName, String category, String fileType, String name) {
+        return createFile(project, packageName, category, fileType, name, null);
+    }
+    
+    private String createFile(String project, String packageName, String category, String fileType, String name, String beanName) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(project);
         nfwo.selectCategory(category);
         nfwo.selectFileType(fileType);
         nfwo.next();
-        
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
-        nfnlso.txtObjectName().clearText();
+
         String fileName = name +  String.valueOf(new Date().getTime());
-        nfnlso.txtObjectName().typeText(fileName);
-        nfnlso.setPackage(packageName);
-        nfnlso.finish();
+        
+        if (beanName == null) {
+            NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+            nfnlso.txtObjectName().clearText();
+            nfnlso.txtObjectName().typeText(fileName);
+            nfnlso.setPackage(packageName);
+            nfnlso.finish();
+        } else {
+            NewBeanFormOperator nbfOp = new NewBeanFormOperator();
+            nbfOp.txtClassName().clearText();
+            nbfOp.txtClassName().typeText(fileName);
+
+            nbfOp.cboPackage().clearText();
+            nbfOp.typePackage(packageName);
+
+            nbfOp.next();
+            
+            NewBeanFormSuperclassOperator superOp = new NewBeanFormSuperclassOperator();
+            superOp.setSuperclass(beanName);
+            superOp.finish();
+        }
         
         // following code avoids issue nr. 60418
         ProjectsTabOperator pto = new ProjectsTabOperator();
@@ -114,6 +135,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         
         return fileName;
     }
+    
     
     /**
      * Removes file from actual project and actual test package
@@ -169,6 +191,11 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         openAction.perform(formnode);
         
         return formnode;
+    }
+    
+
+    public String createBeanFormFile(String beanClassName) {
+        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "Bean Form", "MyBeanForm", beanClassName); // NOI18N
     }
     
     /**

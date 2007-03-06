@@ -22,13 +22,13 @@ package data;
 import java.io.Serializable;
 
 /**
- *  Simple non-visual javabean
+ *  Creting simple visual and non-visual Bean Form
  * 
  * @author Jiri Vagner
  */
 public class TestNonVisualBean implements Serializable {
     private String _name = "Lancia Lybra"; // NOI18N
-    private int _power = 149;
+    private int _power = 140;
     
     /** Creates a new instance of NonVisualBean */
     public TestNonVisualBean() {

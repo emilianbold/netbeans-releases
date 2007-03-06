@@ -38,6 +38,11 @@ import org.netbeans.jemmy.operators.Operator;
  * @author Jiri Vagner
  */
 public class AddAndRemoveBeansTest  extends ExtJellyTestCase {
+    public static String VISUAL_BEAN_NAME = "TestVisualBean"; // NOI18N
+    public static String NONVISUAL_BEAN_NAME = "TestNonVisualBean"; // NOI18N
+    public static String TESTED_BEAN_TEXT = "Lancia Lybra"; // NOI18N
+    public static String TESTED_BEAN_POWER = "140"; // NOI18N
+
     
     /**
      * Constructor required by JUnit
@@ -69,29 +74,26 @@ public class AddAndRemoveBeansTest  extends ExtJellyTestCase {
      *  Tests "Add Bean" dialog
      */
     public void testAddingBeans() {
-        new ActionNoBlock("Tools|Add To Palette...", null).perform();
-        new NbDialogOperator("Information").close();
-        
-        addBean("TestVisualBean.java");
-        addBean("TestNonVisualBean.java");
+        addBean( VISUAL_BEAN_NAME + ".java"); // NOI18N
+        addBean( NONVISUAL_BEAN_NAME + ".java"); // NOI18N
     }
     
     /**
      * Tests removing bean using Palette Manager
      */
     public void testRemovingBeans() {
-        new ActionNoBlock("Tools|Palette Manager|Swing/AWT Components", null).perform();
+        new ActionNoBlock("Tools|Palette Manager|Swing/AWT Components", null).perform(); // NOI18N
         
         PaletteManagerOperator manOp = new PaletteManagerOperator();
         JTreeOperator treeOp = manOp.treePaletteContentsTree();
         
-        treeOp.clickOnPath( treeOp.findPath("Beans|TestVisualBean","|"));
+        treeOp.clickOnPath( treeOp.findPath("Beans|" + VISUAL_BEAN_NAME,"|")); // NOI18N
         manOp.remove();
-        new NbDialogOperator("Confirm").yes();
+        new NbDialogOperator("Confirm").yes(); // NOI18N
         
-        treeOp.clickOnPath( treeOp.findPath("Beans|TestNonVisualBean","|"));
+        treeOp.clickOnPath( treeOp.findPath("Beans|" + NONVISUAL_BEAN_NAME,"|")); // NOI18N
         manOp.remove();
-        new NbDialogOperator("Confirm").yes();
+        new NbDialogOperator("Confirm").yes(); // NOI18N
         
         manOp.close();
     }
@@ -111,10 +113,10 @@ public class AddAndRemoveBeansTest  extends ExtJellyTestCase {
         palette.collapseSwingControls();
         
         JListOperator list = palette.lstComponents();
-        list.clickOnItem("TestNonVisualBean", new Operator.DefaultStringComparator(true, false));
+        list.clickOnItem(NONVISUAL_BEAN_NAME, new Operator.DefaultStringComparator(true, false));
         
         // TODO: I'm not able to invoke popup menu :(
-        int i = list.findItemIndex("TestNonVisualBean", new Operator.DefaultStringComparator(true, false));
+        int i = list.findItemIndex(NONVISUAL_BEAN_NAME, new Operator.DefaultStringComparator(true, false));
         p(i);
         
         Component[] comps = list.getComponents();

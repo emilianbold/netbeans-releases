@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
    <testbag testattribs="validation, full, jv, my" executor="ide" name="testbag_Beans">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/qa/form/beans/AddAndRemoveBeansTest.class"/>
+                <include name="org/netbeans/qa/form/beans/*.*"/>
             </patternset>
         </testset>
     </testbag>
@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
 <!--  Marek G.  -->
 
 <!-- Marek G. -->
-   <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development">
+   <testbag testattribs="validation, full, jv" executor="ide" name="testbag_visual_development">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/visualDevelopment/*.*"/>                
@@ -108,7 +108,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/qa/form/palette/SwitchCategories.class"/>
                 -->
                 <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
-                
             </patternset>
         </testset>
     </testbag>
