@@ -55,7 +55,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author  mmirilovic@netbeans.org
  */
 public class Utilities {
-
+    
     public static final String SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
     public static final String TEST_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
     public static final String WEB_PAGES = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
@@ -63,7 +63,7 @@ public class Utilities {
     /** Creates a new instance of Utilities */
     public Utilities() {
     }
-
+    
     /**
      * Close Welcome.
      */
@@ -95,7 +95,7 @@ public class Utilities {
                 Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
                 Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory"));
     }
-
+    
     
     /**
      * Close UI Gestures Toolbar.
@@ -136,10 +136,10 @@ public class Utilities {
     
     /**
      * Choose ten selected files from JEdit project
-     * @return 
+     * @return
      */
     public static String[][] getTenSelectedFiles(){
-        String[][] files_path = { 
+        String[][] files_path = {
             {"bsh","Interpreter.java"},
             {"bsh","JThis.java"},
             {"bsh","Name.java"},
@@ -150,7 +150,7 @@ public class Utilities {
             {"org.gjt.sp.jedit","Buffer.java"},
             {"org.gjt.sp.jedit","EditPane.java"},
             {"org.gjt.sp.jedit","EditPlugin.java"},
-            {"org.gjt.sp.jedit","EditServer.java"} 
+            {"org.gjt.sp.jedit","EditServer.java"}
         };
         
         return files_path;
@@ -174,21 +174,25 @@ public class Utilities {
         Node[] openFileNodes = new Node[files_path.length];
         
         for(int i=0; i<files_path.length; i++) {
-                openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode(project),SOURCE_PACKAGES + '|' +  files_path[i][0] + '|' + files_path[i][1]);
-                
-                // open file one by one, opening all files at once causes never ending loop (java+mdr)
-                // new OpenAction().performAPI(openFileNodes[i]);
-        }
+            openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode(project),SOURCE_PACKAGES + '|' +  files_path[i][0] + '|' + files_path[i][1]);
             
-        // try to come back and open all files at-once, rises another problem with refactoring, if you do open file and next expand folder, 
+            // open file one by one, opening all files at once causes never ending loop (java+mdr)
+            // new OpenAction().performAPI(openFileNodes[i]);
+        }
+        
+        // try to come back and open all files at-once, rises another problem with refactoring, if you do open file and next expand folder,
         // it doesn't finish in the real-time -> hard to reproduced by hand
         new OpenAction().performAPI(openFileNodes);
     }
     
     /**
      * Copy file f1 to f2
+     * @param f1 file 1
+     * @param f2 file 2
+     * @throws java.io.FileNotFoundException 
+     * @throws java.io.IOException 
      */
-    public static void copyFile(File f1, File f2) throws Exception {
+    public static void copyFile(File f1, File f2) throws java.io.FileNotFoundException, java.io.IOException{
         int data;
         InputStream fis = new BufferedInputStream(new FileInputStream(f1));
         OutputStream fos = new BufferedOutputStream(new FileOutputStream(f2));
@@ -197,25 +201,27 @@ public class Utilities {
             fos.write(data);
         }
     }
-
-    /*
+    
+    /**
      * open a java file in the editor
+     * @return Editor tab with opened java file
      */
     public static EditorOperator openJavaFile(){
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),SOURCE_PACKAGES + "|bsh|Parser.java");
         new OpenAction().performAPI(openFile);
         return EditorWindowOperator.getEditor("Parser.java");
-
+        
     }
     
-    /*
+    /**
      * open small java file in the editor
+     * @return Editor tab with opened file
      */
     public static EditorOperator openSmallJavaFile(){
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java");
         new OpenAction().performAPI(openFile);
         return EditorWindowOperator.getEditor("Main20kB.java");
-
+        
     }
     
     /**
@@ -226,9 +232,8 @@ public class Utilities {
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),SOURCE_PACKAGES + "|org.netbeans.test.performance|JFrame20kB.java");
         new OpenAction().performAPI(openFile);
         return new FormDesignerOperator("JFrame20kB");
-
+        
     }
-    
     
     /**
      * Open project and wait until it's scanned
@@ -236,6 +241,13 @@ public class Utilities {
      */
     public static void waitProjectOpenedScanFinished(String projectFolder){
         ProjectSupport.openProject(projectFolder);
+        waitScanFinished();
+    }
+    
+    /**
+     * Wait finished scan - repeatedly
+     */
+    public static void waitScanFinished(){
         ProjectSupport.waitScanFinished();
         new QueueTool().waitEmpty(1000);
         ProjectSupport.waitScanFinished();
