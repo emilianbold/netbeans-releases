@@ -476,11 +476,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (e == null)
             return;
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+        JTextComponent comp = getActiveComponent();
+        boolean compEditable = (comp != null && comp.isEditable());
         Object obj = inputMap.get(ks);
         if (obj != null) {
             Action action = actionMap.get(obj);
             if (action != null) {
-                action.actionPerformed(null);
+                if (compEditable)
+                    action.actionPerformed(null);
                 e.consume();
                 return;
             }
@@ -488,14 +491,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (layout.isCompletionVisible()) {
             CompletionItem item = layout.getSelectedCompletionItem();
             if (item != null) {
-                item.processKeyEvent(e);
+                if (compEditable)
+                    item.processKeyEvent(e);
                 if (e.isConsumed()) {
                     return;
                 }
                 // Call default action if ENTER was pressed
                 if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED) {
                     e.consume();
-                    item.defaultAction(getActiveComponent());
+                    if (compEditable)
+                        item.defaultAction(getActiveComponent());
                     return;
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
@@ -505,7 +510,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             }
             if (e.getKeyCode() == KeyEvent.VK_TAB) {
                 e.consume();
-                insertCommonPrefix();
+                if (compEditable)
+                    insertCommonPrefix();
                 return;
             }
         }
@@ -721,7 +727,8 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 int caretOffset = getActiveComponent().getSelectionStart();
                 // completionResults = null;
                 if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery
-                        && CompletionSettings.INSTANCE.completionInstantSubstitution()) {
+                        && CompletionSettings.INSTANCE.completionInstantSubstitution()
+                        && getActiveComponent().isEditable()) {
                     try {
                         int[] block = Utilities.getIdentifierBlock(getActiveComponent(), caretOffset);
                         if (block == null || block[1] == caretOffset) { // NOI18N
