@@ -62,10 +62,10 @@
     </folder>
     
     <folder name="Shortcuts">
-        <file name="C-P.shadow">
+        <file name="D-P.shadow"> <!-- Ctrl-P -->
             <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
         </file>
-        <file name="AS-P.shadow">
+        <file name="OS-P.shadow"> <!-- Alt-Shift-P -->
             <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PreviewAction.instance"/>
         </file>
     </folder>
