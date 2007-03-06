@@ -227,7 +227,7 @@ public class HuntDiff {
             int end2 = start2 + 1;
             StringBuilder addedText = new StringBuilder();
             addedText.append(lines2[start2-1]).append('\n');
-            while (end2 <= m && J[end2] < start1) {
+            while (end2 <= m) {
                 String line = lines2[end2-1];
                 addedText.append(line).append('\n');
                 end2++;
