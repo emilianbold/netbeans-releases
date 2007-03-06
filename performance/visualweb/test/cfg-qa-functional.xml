@@ -443,63 +443,6 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-
-    <!-- Find Usages -->
-    <testbag testattribs="footprint_all or find_usages" prio="330"
-             executor="ide_footprint" name="Footprint - Find usages" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testFindUsages"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or find_usages) and NOT once" prio="331"
-             executor="ide_footprint" name="Footprint - Find usages" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testFindUsages"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or find_usages) and NOT once" prio="332"
-             executor="ide_footprint" name="Footprint - Find usages" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testFindUsages"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <!-- Refactor Rename -->
-    <testbag testattribs="footprint_all or rename_class" prio="340"
-             executor="ide_footprint" name="Footprint - Rename class" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testRefactoringRename"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or rename_class)) and NOT once" prio="341"
-             executor="ide_footprint" name="Footprint - Rename class" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testRefactoringRename"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or rename_class) and NOT once" prio="342"
-             executor="ide_footprint" name="Footprint - Rename class" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testRefactoringRename"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
     
     <!-- executors & compilers -->
     <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
