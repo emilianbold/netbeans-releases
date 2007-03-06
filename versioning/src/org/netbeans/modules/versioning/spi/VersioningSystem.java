@@ -166,6 +166,6 @@ public abstract class VersioningSystem {
      * @param file a file whose status changed 
      */ 
     protected final void fireStatusChanged(File file) {
-        fireStatusChanged(new HashSet<File>(Arrays.asList(new File[] { file })));
+        fireStatusChanged(new HashSet<File>(Arrays.asList(file)));
     }
 }

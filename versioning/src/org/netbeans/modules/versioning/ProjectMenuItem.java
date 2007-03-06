@@ -90,7 +90,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         if (an == null) return null;
         JMenu menu = new JMenu(owner.getDisplayName());
         VCSContext ctx = VCSContext.forNodes(nodes);
-        Action [] actions = an.getActions(ctx, VCSAnnotator.DEST_POPUPMENU);
+        Action [] actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
         JComponent [] items = new JComponent[actions.length];
         int i = 0;
         for (Action action : actions) {

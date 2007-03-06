@@ -178,7 +178,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             public void setSelected(boolean selected) {
                 if (selected && popupContructed == false) {
                     // lazy submenu construction
-                    Action [] actions = system.getVCSAnnotator().getActions(context, VCSAnnotator.DEST_POPUPMENU);
+                    Action [] actions = system.getVCSAnnotator().getActions(context, VCSAnnotator.ActionDestination.PopupMenu);
                     for (int i = 0; i < actions.length; i++) {
                         Action action = actions[i];
                         if (action == null) {

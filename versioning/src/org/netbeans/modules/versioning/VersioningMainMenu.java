@@ -63,7 +63,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         if (vs.length == 1) {
             if (vs[0].getVCSAnnotator() != null) {
                 ownerVS = vs[0];
-                List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.DEST_MAINMENU));
+                List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
                 items.addAll(systemItems);
             }
             items.add(new JSeparator());
@@ -121,7 +121,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
 
     private void constructMenu(JMenu menu, VersioningSystem system, VCSContext ctx) {
         if (system.getVCSAnnotator() != null) {
-            List<JComponent> systemItems = actionsToItems(system.getVCSAnnotator().getActions(ctx, VCSAnnotator.DEST_MAINMENU));
+            List<JComponent> systemItems = actionsToItems(system.getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
             for (JComponent systemItem : systemItems) {
                 menu.add(systemItem);
             }

@@ -396,7 +396,7 @@ public class Annotator {
      * @return Action[] array of versioning actions that may be used to construct a popup menu. These actions
      * will act on currently activated nodes.
      */ 
-    public static Action [] getActions(VCSContext ctx, int destination) {
+    public static Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         ResourceBundle loc = NbBundle.getBundle(Annotator.class);
         Node [] nodes = ctx.getNodes();
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
@@ -406,7 +406,7 @@ public class Annotator {
         boolean onlyProjects = onlyProjects(ctx.getNodes());
         
         List<Action> actions = new ArrayList<Action>(20);
-        if (destination == VCSAnnotator.DEST_MAINMENU) {
+        if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(SystemAction.get(CheckoutAction.class));
             actions.add(SystemAction.get(AddToRepositoryAction.class));
             actions.add(new ChangeCVSRootAction(loc.getString("CTL_MenuItem_ChangeCVSRoot"), ctx));

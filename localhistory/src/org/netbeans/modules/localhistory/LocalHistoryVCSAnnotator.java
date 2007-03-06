@@ -55,10 +55,10 @@ public class LocalHistoryVCSAnnotator extends VCSAnnotator {
         return super.annotateName(name, context);
     }
     
-    public Action[] getActions(VCSContext ctx, int destination) {
+    public Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         Lookup context = Lookups.fixed(ctx.getNodes());
         List<Action> actions = new ArrayList<Action>();
-        if (destination == VCSAnnotator.DEST_MAINMENU) {
+        if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(SystemAction.get(ShowLocalHistoryAction.class));
             actions.add(SystemAction.get(RevertDeletedAction.class));
             actions.add(SystemAction.get(RevertToAction.class));            

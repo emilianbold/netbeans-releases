@@ -32,15 +32,11 @@ import java.awt.Image;
 public abstract class VCSAnnotator {
 
     /**
-     * Indicates that returned actions will be used to construct the main menu.
+     * Specifies destination of returned actions.
+     * @link #getActions
      */
-    public static final int DEST_MAINMENU = 1;
+    public enum ActionDestination { MainMenu, PopupMenu }; 
 
-    /**
-     * Indicates that returned actions will be used to construct a popup menu.
-     */
-    public static final int DEST_POPUPMENU = 2;
-        
     /**
      * Allows a versioning system to decorate given name with HTML markup. This can be used to hilight file status. 
      * 
@@ -70,7 +66,7 @@ public abstract class VCSAnnotator {
      * @param destination where this actions will be used
      * @return Action[] array of actions to display for the given context, use null for separators
      */
-    public Action[] getActions(VCSContext context, int destination) {
+    public Action[] getActions(VCSContext context, ActionDestination destination) {
         return new Action[0];
     }
 }
