@@ -151,7 +151,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return this.getCompileTimeClasspath(type);
     }
     
-    private ClassPath getCompileTimeClasspath(int type) {        
+    private synchronized ClassPath getCompileTimeClasspath(int type) {        
         if (type < 0 || type > 1) {
             // Not a source file.
             return null;
@@ -173,7 +173,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return cp;
     }
     
-    private ClassPath getRunTimeClasspath(FileObject file) {
+    private synchronized ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < 0 || type > 4) {
             // Unregistered file, or in a JAR.
@@ -213,7 +213,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return this.getSourcepath(type);
     }
     
-    private ClassPath getSourcepath(int type) {
+    private synchronized ClassPath getSourcepath(int type) {
         if (type < 0 || type > 1) {
             return null;
         }
@@ -232,7 +232,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return cp;
     }
     
-    private ClassPath getBootClassPath() {
+    private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if ( cp== null ) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
@@ -265,7 +265,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         }
         if (ClassPath.COMPILE.equals(type)) {
             ClassPath[] l = new ClassPath[2];
-            l[0] = getCompileTimeClasspath(0);
+            l[0] = getCompileTimeClasspath(0);            
             l[1] = getCompileTimeClasspath(1);
             return l;
         }
