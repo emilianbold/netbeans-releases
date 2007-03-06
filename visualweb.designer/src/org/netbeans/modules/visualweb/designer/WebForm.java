@@ -437,6 +437,15 @@ public class WebForm implements Designer {
         }
     }
     
+    public static WebForm findWebFormForNode(org.openide.nodes.Node node) {
+        Designer[] designers = getHtmlDomProviderService().findDesignersForNode(node);
+        if (designers.length > 0 && designers[0] instanceof WebForm) {
+            return (WebForm)designers[0];
+        } else {
+            return null;
+        }
+    }
+    
     public static WebForm getWebFormForDataObject(DataObject jsfJspDataObject) {
         Designer[] designers = getHtmlDomProviderService().getDesignersForDataObject(jsfJspDataObject);
         if (designers.length > 0 && designers[0] instanceof WebForm) {
@@ -2482,6 +2491,10 @@ public class WebForm implements Designer {
 //        public HtmlDomProvider.Location computeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid, Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement) {
 //            return null;
 //        }
+
+        public Designer[] findDesignersForNode(org.openide.nodes.Node node) {
+            return new Designer[0];
+        }
     } // End of DummyHtmlDomProviderService.
     
     
