@@ -224,7 +224,15 @@ public class HuntDiff {
             }
         } while (start1 <= n);
         if (start2 <= m) { // There's something extra at the end of the second file
-            differences.add(new Difference(Difference.ADD, n, 0, start2, m, null, null));
+            int end2 = start2 + 1;
+            StringBuilder addedText = new StringBuilder();
+            addedText.append(lines2[start2-1]).append('\n');
+            while (end2 <= m && J[end2] < start1) {
+                String line = lines2[end2-1];
+                addedText.append(line).append('\n');
+                end2++;
+            }
+            differences.add(new Difference(Difference.ADD, n, 0, start2, m, null, addedText.toString()));
         }
         return differences;
     }
