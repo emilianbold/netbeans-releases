@@ -65,7 +65,6 @@ public class ColorsManager {
     }
     
     public static void initColorings (Language l) {
-        System.out.println("mimeType " + l.getMimeType ());
         FontColorSettingsFactory fcsf = EditorSettings.getDefault ().
             getFontColorSettings (new String[] {l.getMimeType ()});
         Map<String,AttributeSet> colorsMap = new HashMap<String,AttributeSet> ();
