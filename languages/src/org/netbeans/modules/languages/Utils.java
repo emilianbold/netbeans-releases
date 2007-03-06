@@ -33,35 +33,35 @@ import org.openide.util.RequestProcessor;
  */
 public class Utils {
 
-    private static Map collections;
+    private static Map<String,WeakReference> collections;
     
     
     public static void startTest (String name, Collection c) {
         if (collections == null) {
             // init
-            collections = new HashMap ();
+            collections = new HashMap<String,WeakReference> ();
             start ();
         }
-        collections.put (name, new WeakReference (c));
+        collections.put (name, new WeakReference<Collection> (c));
     }
     
     public static void startTest (String name, Map m) {
         if (collections == null) {
             // init
-            collections = new HashMap ();
+            collections = new HashMap<String,WeakReference> ();
             start ();
         }
-        collections.put (name, new WeakReference (m));
+        collections.put (name, new WeakReference<Map> (m));
     }
     
     private static void start () {
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                Map cs = new HashMap (collections);
-                Iterator it = cs.keySet ().iterator ();
+                Map<String,WeakReference> cs = new HashMap<String,WeakReference> (collections);
+                Iterator<String> it = cs.keySet ().iterator ();
                 while (it.hasNext ()) {
-                    String name = (String) it.next ();
-                    Object o = ((WeakReference) cs.get (name)).get ();
+                    String name = it.next ();
+                    Object o = cs.get (name).get ();
                     if (o == null)
                         collections.remove (name);
                     else

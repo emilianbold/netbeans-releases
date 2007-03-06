@@ -30,6 +30,8 @@ import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.parser.Pattern;
@@ -37,10 +39,8 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.spi.lexer.TokenPropertyProvider;
-import org.openide.ErrorManager;
 
 
 /**
@@ -51,7 +51,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     private Language                language;
     private CharInput               input;
-    private TokenFactory            tokenFactory;
+    private TokenFactory<STokenId>  tokenFactory;
     private Map<String,STokenId>    tokensMap;
     private Parser                  parser;
     private Object                  state;
@@ -78,7 +78,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     }
     
     public Token<STokenId> nextToken () {
-        Token t = nextTokenIn ();
+        Token<STokenId> t = nextTokenIn ();
 //        if (t == null)
 //            System.out.println("nextToken (" + language.getMimeType () + "): null");
 //        else
@@ -94,31 +94,25 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         if (input.eof ()) 
             return createToken (index);
         ASTToken token = null;
-        Evaluator.Method evaluator = null;
         token = parser.read (this, input, language.getMimeType ());
-        if (language != null && properties != null) {
-            evaluator = (Evaluator.Method) properties.get ("call");
-        }
-        if (evaluator != null) {
+        if (language != null && 
+            tokenProperties != null &&
+            tokenProperties.getType ("call") != Type.NOT_SET
+        ) {
             input.setIndex (index);
-            Object[] r = (Object[]) evaluator.evaluate (new Object[] {input});
+            Object[] r = (Object[]) tokenProperties.getValue ("call", new Object[] {input});
             token = (ASTToken) r [0];
             if (r [1] != null)
                 setState (((Integer) r [1]).intValue ());
         }
         
         if (token == null) {
-            try {
-                if (input.getIndex () > (index + 1))
-                    input.setIndex (index + 1);
-                else
-                if (input.getIndex () == index)
-                    input.read ();
-                return createToken ("error", index);
-            } catch (AssertionError ex) {
-                ErrorManager.getDefault ().notify (ex);
-                System.out.println(input.getIndex ());
-            }
+            if (input.getIndex () > (index + 1))
+                input.setIndex (index + 1);
+            else
+            if (input.getIndex () == index)
+                input.read ();
+            return createToken ("error", index);
         }
         return createToken (token.getType (), index);
     }
@@ -133,7 +127,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     // Cookie implementation ...................................................
     
-    private Map         properties;
+    private Feature         tokenProperties;
     
     public int getState () {
         if (state == null) return -1;
@@ -144,8 +138,8 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         this.state = new Integer (state);
     }
 
-    public void setProperties (Map properties) {
-        this.properties = properties;
+    public void setProperties (Feature tokenProperties) {
+        this.tokenProperties = tokenProperties;
     }
     
     
@@ -155,31 +149,30 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         LexerInput input, 
         Language language
     ) {
-        Map properties = (Map) language.getFeature (Language.IMPORT, Language.PREPROCESSOR_IMPORT);
+        Feature properties = language.getPreprocessorImport ();
         if (properties != null) {
             return new DelegatingInputBridge (
                 new InputBridge (input),
-                (Pattern) properties.get ("start"),
-                (Pattern) properties.get ("end"),
+                properties.getPattern ("start"),
+                properties.getPattern ("end"),
                 "PE"//(String) properties.get ("token")
             );
         }
         return new InputBridge (input);
     }
     
-    private Token createToken (String type, int start) {
+    private Token<STokenId> createToken (String type, int start) {
         STokenId tokenId = tokensMap.get (type);
-        assert tokenId != null : "Unknown type " + type;
+        assert tokenId != null : "Unknown token type \"" + type + "\"";
         if (!(input instanceof DelegatingInputBridge)) {
             return tokenFactory.createToken (tokenId);
         }
         List embeddings = ((DelegatingInputBridge) input).getEmbeddings ();
         if (embeddings.isEmpty ())
             return tokenFactory.createToken (tokenId);
-        Map imports = (Map) language.getFeature (Language.IMPORT, Language.TOKEN_IMPORT);
-        if (imports != null && 
-            imports.containsKey (type)
-        )   // no preprocessor imports in token import.
+        Map<String,Feature> imports = language.getTokenImports ();
+        if (imports.containsKey (type))   
+            // no preprocessor imports in token import.
             return tokenFactory.createToken (tokenId);
         Marenka marenka = new Marenka ((Integer) state);
         String property = "S";
@@ -198,7 +191,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         return createToken (marenka);
     }
     
-    private Token createToken (int start) {
+    private Token<STokenId> createToken (int start) {
         if (!(input instanceof DelegatingInputBridge)) {
             return null;
         }
@@ -218,7 +211,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         return createToken (marenka);
     }
     
-    private Token createToken (Marenka marenka) {
+    private Token<STokenId> createToken (Marenka marenka) {
         Vojta v = marenka.removeFirst ();
         STokenId tokenId = tokensMap.get (v.type);
         assert tokenId != null : "Unknown type " + v.type;
@@ -333,7 +326,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     static class Marenka {
         
         Integer state;
-        LinkedList vojta = new LinkedList ();
+        LinkedList<Vojta> vojta = new LinkedList<Vojta> ();
         
         Marenka (Integer state) {
             this.state = state;
@@ -344,7 +337,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         }
         
         Vojta removeFirst () {
-            return (Vojta) vojta.removeFirst ();
+            return vojta.removeFirst ();
         }
         
         boolean isEmpty () {

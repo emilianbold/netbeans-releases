@@ -29,11 +29,11 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
-import org.openide.ErrorManager;
+
 
 /**
  *
@@ -87,12 +87,9 @@ public class SLanguageProvider extends LanguageProvider {
                 org.netbeans.modules.languages.Language language = 
                     ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                     getLanguage (mimeType);
-                Map properties = (Map) language.getFeature (
-                    org.netbeans.modules.languages.Language.IMPORT, 
-                    org.netbeans.modules.languages.Language.PREPROCESSOR_IMPORT
-                );
+                Feature properties = language.getPreprocessorImport ();
                 if (properties != null) {
-                    String innerMT = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
+                    String innerMT = (String) properties.getValue ("mimeType");
                     preprocessorImport.put (
                         mimeType,
                         Language.find (innerMT)
@@ -116,16 +113,13 @@ public class SLanguageProvider extends LanguageProvider {
                 org.netbeans.modules.languages.Language language = 
                     ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                     getLanguage (mimeType);
-                Map<String,Map> tokenImports = (Map<String,Map>) language.getFeature (
-                    org.netbeans.modules.languages.Language.IMPORT, 
-                    org.netbeans.modules.languages.Language.TOKEN_IMPORT
-                );
+                Map<String,Feature> tokenImports = language.getTokenImports ();
                 if (tokenImports != null) {
                     Iterator<String> it = tokenImports.keySet ().iterator ();
                     while (it.hasNext ()) {
                         String tokenType2 = it.next ();
-                        Map properties = tokenImports.get (tokenType2);
-                        String innerMT = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
+                        Feature properties = tokenImports.get (tokenType2);
+                        String innerMT = (String) properties.getValue ("mimeType");
                         tokenTypeToLanguage.put (
                             tokenType2,
                             Language.find (innerMT)

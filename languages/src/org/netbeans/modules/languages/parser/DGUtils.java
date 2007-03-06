@@ -27,69 +27,116 @@ import java.util.*;
  */
 public class DGUtils {
 
-    
-    public static DG append (DG dg1, DG dg2) {
-        DG ndg = DG.createDG ();
-        Object what = dg2.getStartNode ();
-        Set where = dg1.getEnds ();
-        Set nn = new HashSet ();
-        nn.add (dg1.getStartNode ());
-        if (where.contains (dg1.getStartNode ()))
-            nn.add (what);
-        merge (dg1, dg2, nn, ndg, where, what, false, true);
-        ndg.setStart (nn);
+
+    public static <N,E,K,V> DG<N,E,K,V> cloneDG (DG<N,E,K,V> dg, boolean cloneProperties, NodeFactory<N> nodeFactory) {
+        DG<N,E,K,V> ndg = DG.<N,E,K,V>createDG ();
+        Map<N,N> oldToNew = new HashMap<N,N> ();
+        Iterator<N> it = dg.getNodes ().iterator ();
+        while (it.hasNext ()) {
+            N oldNode = it.next ();
+            N newNode = oldToNew.get (oldNode); 
+            if (newNode == null) {
+                newNode = nodeFactory.createNode ();
+                ndg.addNode (newNode);
+                oldToNew.put (oldNode, newNode);
+                if (cloneProperties)
+                    ndg.putAllProperties (newNode, dg.getProperties (oldNode));
+            }
+            Iterator<E> it2 = dg.getEdges (oldNode).iterator ();
+            while (it2.hasNext ()) {
+                E edge = it2.next ();
+                N oldEnd = dg.getNode (oldNode, edge);
+                N newEnd = oldToNew.get (oldEnd); 
+                if (newEnd == null) {
+                    newEnd = nodeFactory.createNode ();
+                    ndg.addNode (newEnd);
+                    oldToNew.put (oldEnd, newEnd);
+                    if (cloneProperties)
+                        ndg.putAllProperties (newEnd, dg.getProperties (oldEnd));
+                }
+                ndg.addEdge (newNode, newEnd, edge);
+                if (cloneProperties)
+                    ndg.putAllProperties (newNode, edge, dg.getProperties (oldNode, edge));
+            }
+            if (dg.getEnds ().contains (oldNode))
+                ndg.addEnd (newNode);
+        }
+        N newStart = oldToNew.get (dg.getStartNode ());
+        ndg.setStart (newStart);
         return ndg;
     }
     
-    public static DG plus (DG dg) {
-        DG ndg = DG.createDG ();
-        Object what = dg.getStartNode ();
-        Set where = dg.getEnds ();
-        Set nn = new HashSet ();
+    
+    public static <N,E,K,V> DG<N,E,K,V> append (DG<N,E,K,V> dg1, DG<N,E,K,V> dg2, E star, NodeFactory<N> nodeFactory) {
+        DG<N,E,K,V> ndg = DG.<N,E,K,V>createDG ();
+        Set<N> newStart = new HashSet<N> ();
+        newStart.add (dg1.getStartNode ());
+        if (dg1.getEnds ().contains (dg1.getStartNode ()))
+            newStart.add (dg2.getStartNode ());
+        Map<Set<N>,N> newToOld = new HashMap<Set<N>,N> ();
+        merge (dg1, dg2, newStart, ndg, newToOld, dg1.getEnds (), dg2.getStartNode (), false, true, star, nodeFactory);
+        N nnn = newToOld.get (newStart);
+        ndg.setStart (nnn);
+        return ndg;
+    }
+    
+    public static <N,E,K,V> DG<N,E,K,V> plus (DG<N,E,K,V> dg, E star, NodeFactory<N> nodeFactory) {
+        DG<N,E,K,V> ndg = DG.<N,E,K,V>createDG ();
+        N what = dg.getStartNode ();
+        Set<N> where = dg.getEnds ();
+        Set<N> nn = new HashSet<N> ();
         nn.add (dg.getStartNode ());
         if (where.contains (dg.getStartNode ()))
             nn.add (what);
-        merge (dg, dg, nn, ndg, where, what, true, true);
-        ndg.setStart (nn);
+        Map<Set<N>,N> newToOld = new HashMap<Set<N>,N> ();
+        merge (dg, dg, nn, ndg, newToOld, where, what, true, true, star, nodeFactory);
+        N nnn = newToOld.get (nn);
+        ndg.setStart (nnn);
         return ndg;
     }
     
-    private static void merge (
-        DG dg1,
-        DG dg2,
-        Set nn,
-        DG ndg,
-        Set where,
-        Object what,
-        boolean setEnds1,
-        boolean setEnds2
+    private static <N,E,K,V> void merge (
+        DG<N,E,K,V>         dg1,
+        DG<N,E,K,V>         dg2,
+        Set<N>              nn,
+        DG<N,E,K,V>         ndg,
+        Map<Set<N>,N>       newToOld,
+        Set<N>              where,
+        N                   what,
+        boolean             setEnds1,
+        boolean             setEnds2,
+        E                   star,
+        NodeFactory<N>      nodeFactory
     ) {
-        if (ndg.containsNode (nn)) return;
-        ndg.addNode (nn);
+        N nnn = newToOld.get (nn);
+        if (nnn != null) return;
+        nnn = nodeFactory.createNode ();
+        newToOld.put (nn, nnn);
+        ndg.addNode (nnn);
 
-        Map edges = new HashMap ();
-        Map properties = new HashMap ();
-        Iterator it = nn.iterator ();
+        Map<E,Set<N>> edges = new HashMap<E,Set<N>> ();
+        Map<E,Map<K,V>> properties = new HashMap<E,Map<K,V>> ();
+        Iterator<N> it = nn.iterator ();
         while (it.hasNext ()) {
-            Object n = it.next ();
-            DG cdg = dg1.containsNode (n) ? dg1 : dg2;
-            ndg.putAllProperties (nn, cdg.getProperties (n));
+            N n = it.next ();
+            DG<N,E,K,V> cdg = dg1.containsNode (n) ? dg1 : dg2;
+            ndg.putAllProperties (nnn, cdg.getProperties (n));
             if (setEnds1 && dg1.getEnds ().contains (n))
-                ndg.addEnd (nn);
+                ndg.addEnd (nnn);
             if (setEnds2 && dg2.getEnds ().contains (n))
-                ndg.addEnd (nn);
-            Iterator it2 = cdg.getEdges (n).iterator ();
+                ndg.addEnd (nnn);
+            Iterator<E> it2 = cdg.getEdges (n).iterator ();
             while (it2.hasNext ()) {
-                Object edge = it2.next ();
-                Set ends = (Set) edges.get (edge);
-                Map props = (Map) properties.get (edge);
+                E edge = it2.next ();
+                Set<N> ends = edges.get (edge);
+                Map<K,V> props = properties.get (edge);
                 if (ends == null) {
-                    ends = new HashSet ();
-                    props = new HashMap ();
+                    ends = new HashSet<N> ();
+                    props = new HashMap<K,V> ();
                     edges.put (edge, ends);
                     properties.put (edge, props);
                 }
-                Object en = cdg.getNode (n, edge);
+                N en = cdg.getNode (n, edge);
                 ends.add (en);
                 props.putAll (cdg.getProperties (n, edge));
                 if (where.contains (en))
@@ -98,60 +145,72 @@ public class DGUtils {
         }
         it = nn.iterator ();
         while (it.hasNext ()) {
-            Object n = it.next ();
-            DG cdg = dg1.containsNode (n) ? dg1 : dg2;
-            Object en = cdg.getNode (n, Pattern.STAR);
+            N n = it.next ();
+            DG<N,E,K,V> cdg = dg1.containsNode (n) ? dg1 : dg2;
+            N en = cdg.getNode (n, star);
             if (en == null) continue;
-            Iterator it2 = edges.keySet ().iterator ();
+            Iterator<E> it2 = edges.keySet ().iterator ();
             while (it2.hasNext ()) {
-                Object e = it2.next ();
+                E e = it2.next ();
                 if (cdg.getNode (n, e) != null) continue;
-                ((Set) edges.get (e)).add (en);
-                ((Map) properties.get (e)).putAll (cdg.getProperties (n, e));
+                edges.get (e).add (en);
+                properties.get (e).putAll (cdg.getProperties (n, e));
                 if (where.contains (en))
-                    ((Set) edges.get (e)).add (what);
+                    edges.get (e).add (what);
             }
         }
         
-        it = edges.keySet ().iterator ();
-        while (it.hasNext ()) {
-            Object edge = it.next ();
-            Set en = (Set) edges.get (edge);
-            merge (dg1, dg2, en, ndg, where, what, setEnds1, setEnds2);
-            ndg.addEdge (nn, en, edge);
-            ndg.putAllProperties (nn, edge, (Map) properties.get (edge));
+        Iterator<E> it2 = edges.keySet ().iterator ();
+        while (it2.hasNext ()) {
+            E edge = it2.next ();
+            Set<N> en = edges.get (edge);
+            merge (dg1, dg2, en, ndg, newToOld, where, what, setEnds1, setEnds2, star, nodeFactory);
+            N enn = newToOld.get (en);
+            ndg.addEdge (nnn, enn, edge);
+            ndg.putAllProperties (nnn, edge, properties.get (edge));
         }
     }
     
-    
-    
-    
-    
-    
-    public static DG merge (DG dg1, DG dg2) {
-        DG ndg = DG.createDG ();
-        Object startNode = merge (
+    public static <N,E,K,V> DG<N,E,K,V> merge (DG<N,E,K,V> dg1, DG<N,E,K,V> dg2, E star, NodeFactory<N>  nodeFactory) {
+        DG<N,E,K,V> ndg = DG.<N,E,K,V>createDG ();
+        Map<Set<N>,N> newToOld = new HashMap<Set<N>,N> ();
+        N startNode = merge (
             dg1, dg2, 
             dg1.getStartNode (), 
             dg2.getStartNode (), 
             ndg,
-            true, true
+            true, true,
+            star,
+            nodeFactory,
+            newToOld,
+            1
         );
         ndg.setStart (startNode);
         return ndg;
     }
     
-    private static Object merge (
-        DG dg1,
-        DG dg2,
-        Object n1,
-        Object n2,
-        DG ndg,
-        boolean addEnds1,
-        boolean addEnds2
+    private static <N,E,K,V> N merge (
+        DG<N,E,K,V>     dg1,
+        DG<N,E,K,V>     dg2,
+        N               n1,
+        N               n2,
+        DG<N,E,K,V>     ndg,
+        boolean         addEnds1,
+        boolean         addEnds2,
+        E               star,
+        NodeFactory<N>  nodeFactory,
+        Map<Set<N>,N>   newToOld,
+        int depth
     ) {
-        DNode dnode = new DNode (n1, n2);
-        if (ndg.containsNode (dnode)) return dnode;
+        if (depth == 100)
+            System.out.println("sto");
+        Set<N> nNode = new HashSet<N> ();
+        nNode.add (n1);
+        nNode.add (n2);
+        if (newToOld.containsKey (nNode)) 
+            return newToOld.get (nNode);
+        N dnode = nodeFactory.createNode ();
+        newToOld.put (nNode, dnode);
         ndg.addNode (dnode);
         ndg.putAllProperties (dnode, dg1.getProperties (n1));
         ndg.putAllProperties (dnode, dg2.getProperties (n2));
@@ -160,25 +219,25 @@ public class DGUtils {
         if (addEnds2 && dg2.getEnds ().contains (n2))
             ndg.addEnd (dnode);
         
-        Set edges2 = new HashSet (dg2.getEdges (n2));
-        Iterator it = dg1.getEdges (n1).iterator ();
+        Set<E> edges2 = new HashSet<E> (dg2.getEdges (n2));
+        Iterator<E> it = dg1.getEdges (n1).iterator ();
         while (it.hasNext ()) {
-            Object edge = it.next ();
-            Object nn1 = dg1.getNode (n1, edge);
-            Object nn2 = dg2.getNode (n2, edge);
-            Map properties = null;
-            if ( !edge.equals (Pattern.STAR) && 
-                 edges2.contains (Pattern.STAR) &&
+            E edge = it.next ();
+            N nn1 = dg1.getNode (n1, edge);
+            N nn2 = dg2.getNode (n2, edge);
+            Map<K,V> properties = null;
+            if ( !edge.equals (star) && 
+                 edges2.contains (star) &&
                  nn2 == null
             ) {
-                nn2 = dg2.getNode (n2, Pattern.STAR);
-                properties = dg2.getProperties (n2, Pattern.STAR);
+                nn2 = dg2.getNode (n2, star);
+                properties = dg2.getProperties (n2, star);
             } else
             if (nn2 != null)
                 properties = dg2.getProperties (n2, edge);
-            Object nnode = nn2 == null ?
+            N nnode = nn2 == null ?
                 merge (dg1, nn1, ndg, addEnds1) :
-                merge (dg1, dg2, nn1, nn2, ndg, addEnds1, addEnds2);
+                merge (dg1, dg2, nn1, nn2, ndg, addEnds1, addEnds2, star, nodeFactory, newToOld, depth + 1);
             ndg.addEdge (dnode, nnode, edge);
             ndg.putAllProperties (dnode, edge, dg1.getProperties (n1, edge));
             if (properties != null)
@@ -187,15 +246,15 @@ public class DGUtils {
         }
         it = edges2.iterator ();
         while (it.hasNext ()) {
-            Object edge = it.next ();
-            Object nn2 = dg2.getNode (n2, edge);
-            Object nnode = null;
-            Map properties = null;
-            if ( !edge.equals (Pattern.STAR) && 
-                 dg1.getEdges (n1).contains (Pattern.STAR)
+            E edge = it.next ();
+            N nn2 = dg2.getNode (n2, edge);
+            N nnode = null;
+            Map<K,V> properties = null;
+            if ( !edge.equals (star) && 
+                 dg1.getEdges (n1).contains (star)
             ) {
-                nnode = merge (dg1, dg2, dg1.getNode (n1, Pattern.STAR), nn2, ndg, addEnds1, addEnds2);
-                properties = dg1.getProperties (n1, Pattern.STAR);
+                nnode = merge (dg1, dg2, dg1.getNode (n1, star), nn2, ndg, addEnds1, addEnds2, star, nodeFactory, newToOld, depth + 1);
+                properties = dg1.getProperties (n1, star);
             } else
                 nnode = merge (dg2, nn2, ndg, addEnds2);
             ndg.addEdge (dnode, nnode, edge);
@@ -206,11 +265,11 @@ public class DGUtils {
         return dnode;
     }
     
-    private static Object merge (
-        DG dg,
-        Object n,
-        DG ndg,
-        boolean addEnds
+    private static <N,E,K,V> N merge (
+        DG<N,E,K,V>     dg,
+        N               n,
+        DG<N,E,K,V>     ndg,
+        boolean         addEnds
     ) {
         if (ndg.containsNode (n)) return n;
         ndg.addNode (n);
@@ -218,147 +277,127 @@ public class DGUtils {
         if (addEnds && dg.getEnds ().contains (n))
             ndg.addEnd (n);
         
-        Iterator it = dg.getEdges (n).iterator ();
+        Iterator<E> it = dg.getEdges (n).iterator ();
         while (it.hasNext ()) {
-            Object edge = it.next ();
-            Object nn = dg.getNode (n, edge);
-            Object endN = merge (dg, nn, ndg, addEnds);
+            E edge = it.next ();
+            N nn = dg.getNode (n, edge);
+            N endN = merge (dg, nn, ndg, addEnds);
             ndg.addEdge (n, endN, edge);
             ndg.putAllProperties (n, edge, dg.getProperties (n, edge));
         }
         return n;
     }
     
-    private static class DNode {
-        Object n1;
-        Object n2;
-        
-        DNode (Object n1, Object n2) {
-            this.n1 = n1;
-            this.n2 = n2;
-            if (n1 == null) throw new NullPointerException ();
-            if (n2 == null) throw new NullPointerException ();
-        }
-
-        public int hashCode () {
-            if (n1 != null)
-                if (n2 != null) return n1.hashCode () * n2.hashCode ();
-                else return n1.hashCode ();
-            else
-                return n2.hashCode ();
-        }
-        
-        public boolean equals (Object obj) {
-            return obj instanceof DNode &&
-                n1 == ((DNode) obj).n1 &&
-                n2 == ((DNode) obj).n2;
-        }
-        
-        public String toString () {
-            return "DN " + n1 + ":" + n2;
-        }
-    }
-    
-    static DG reduce (DG dg) {
-        Map ends = new HashMap ();
-        Set other = new HashSet ();
-        Iterator it = dg.getNodes ().iterator ();
+    static <N,E,K,V> DG<N,E,K,V> reduce (DG<N,E,K,V> dg, NodeFactory<N> nodeFactory) {
+        Map<Map<K,V>,Set<N>> ends = new HashMap<Map<K,V>,Set<N>> ();
+        Set<N> other = new HashSet<N> ();
+        Iterator<N> it = dg.getNodes ().iterator ();
         while (it.hasNext ()) {
-            Object node = it.next ();
+            N node = it.next ();
             if (!dg.getEnds ().contains (node))
                 other.add (node);
             else {
-                Set e = (Set) ends.get (dg.getProperties (node));
+                Set<N> e = ends.get (dg.getProperties (node));
                 if (e == null) {
-                    e = new HashSet ();
+                    e = new HashSet<N> ();
                     ends.put (dg.getProperties (node), e);
                 }
                 e.add (node);
             }
         }
-        Set newNodes = new HashSet ();
+        Set<Set<N>> newNodes = new HashSet<Set<N>> ();
         if (other.size () > 0) newNodes.add (other);
         newNodes.addAll (ends.values ());
-        Map ng = reduce (dg, newNodes);
+        Map<Set<N>,Map<E,Set<N>>> ng = reduce (dg, newNodes);
 
-        DG ndg = DG.createDG ();
-        it = ng.keySet ().iterator ();
-        while (it.hasNext ()) {
-            Set node = (Set) it.next ();
-            if (!ndg.containsNode (node))
-                ndg.addNode (node);
-            Map edgeToNode = (Map) ng.get (node);
-            Iterator it2 = edgeToNode.keySet ().iterator ();
-            while (it2.hasNext ()) {
-                Object edge = it2.next ();
-                Set end = (Set) edgeToNode.get (edge);
-                if (!ndg.containsNode (end))
-                    ndg.addNode (end);
-                ndg.addEdge (node, end, edge);
+        DG<N,E,K,V> ndg = DG.<N,E,K,V>createDG ();
+        Map<Set<N>,N> oldToNewNode = new HashMap<Set<N>,N> ();
+        Iterator<Set<N>> it2 = ng.keySet ().iterator ();
+        while (it2.hasNext ()) {
+            Set<N> node = it2.next ();
+            N newNode = oldToNewNode.get (node);
+            if (newNode == null) {
+                newNode = nodeFactory.createNode ();
+                oldToNewNode.put (node, newNode);
+                ndg.addNode (newNode);
+            }
+            Map<E,Set<N>> edgeToNode = ng.get (node);
+            Iterator<E> it3 = edgeToNode.keySet ().iterator ();
+            while (it3.hasNext ()) {
+                E edge = it3.next ();
+                Set<N> end = edgeToNode.get (edge);
+                N newNode2 = oldToNewNode.get (end);
+                if (newNode2 == null) {
+                    newNode2 = nodeFactory.createNode ();
+                    oldToNewNode.put (end, newNode2);
+                    ndg.addNode (newNode2);
+                }
+                ndg.addEdge (newNode, newNode2, edge);
             }
         }
-        ndg.setEnds (new HashSet ());
-        it = ndg.getNodes ().iterator ();
-        while (it.hasNext ()) {
-            Set node = (Set) it.next ();
-            Iterator it2 = node.iterator ();
-            while (it2.hasNext ()) {
-                Object n = it2.next ();
+        ndg.setEnds (new HashSet<N> ());
+        it2 = ng.keySet ().iterator ();
+        while (it2.hasNext ()) {
+            Set<N> node = it2.next ();
+            N newNode = oldToNewNode.get (node);
+            Iterator<N> it3 = node.iterator ();
+            while (it3.hasNext ()) {
+                N n = it3.next ();
                 if (dg.containsNode (n) && dg.getProperties (n) != null)
-                    ndg.putAllProperties (node, dg.getProperties (n));
-                Iterator it3 = ndg.getEdges (node).iterator ();
-                while (it3.hasNext ()) {
-                    Object edge = it3.next ();
+                    ndg.putAllProperties (newNode, dg.getProperties (n));
+                Iterator<E> it4 = ndg.getEdges (newNode).iterator ();
+                while (it4.hasNext ()) {
+                    E edge = it4.next ();
                     if (dg.containsNode (n) && dg.getProperties (n, edge) != null)
-                        ndg.putAllProperties (node, edge, dg.getProperties (n, edge));
+                        ndg.putAllProperties (newNode, edge, dg.getProperties (n, edge));
                 }
                 if (dg.getEnds ().contains (n))
-                    ndg.addEnd (node);
+                    ndg.addEnd (newNode);
                 if (dg.getStartNode ().equals (n))
-                    ndg.setStart (node);
+                    ndg.setStart (newNode);
             }
         }
         return ndg;
     }
     
-    private static Map reduce (DG dg, Set s) {
-        Map m = new HashMap ();
-        Iterator it = s.iterator ();
+    private static <N,E,K,V> Map<Set<N>,Map<E,Set<N>>> reduce (DG<N,E,K,V> dg, Set<Set<N>> s) {
+        Map<N,Set<N>> m = new HashMap<N,Set<N>> ();
+        Iterator<Set<N>> it = s.iterator ();
         while (it.hasNext ()) {
-            Set nnode = (Set) it.next ();
-            Iterator it2 = nnode.iterator ();
+            Set<N> nnode = it.next ();
+            Iterator<N> it2 = nnode.iterator ();
             while (it2.hasNext ()) {
-                Object node = it2.next ();
+                N node = it2.next ();
                 m.put (node, nnode);
             }
         }
         
-        Map nnodes = new HashMap ();
+        Map<Set<N>,Map<E,Set<N>>> nnodes = new HashMap<Set<N>,Map<E,Set<N>>> ();
         it = s.iterator ();
         while (it.hasNext ()) {
-            Set nnode = (Set) it.next ();
-            Map nodes = new HashMap ();
-            Iterator it2 = nnode.iterator ();
+            Set<N> nnode = it.next ();
+            Map<Map<E,Set<N>>,Set<N>> nodes = new HashMap<Map<E,Set<N>>,Set<N>> ();
+            Iterator<N> it2 = nnode.iterator ();
             while (it2.hasNext ()) {
-                Object node = it2.next ();
-                Map edges = new HashMap ();
-                Iterator it3 = dg.getEdges (node).iterator ();
+                N node = it2.next ();
+                Map<E,Set<N>> edges = new HashMap<E,Set<N>> ();
+                Iterator<E> it3 = dg.getEdges (node).iterator ();
                 while (it3.hasNext ()) {
-                    Object edge = it3.next ();
-                    Object endNode = dg.getNode (node, edge);
+                    E edge = it3.next ();
+                    N endNode = dg.getNode (node, edge);
                     edges.put (edge, m.get (endNode));
                 }
-                Set n = (Set) nodes.get (edges);
+                Set<N> n = nodes.get (edges);
                 if (n == null) {
-                    n = new HashSet ();
+                    n = new HashSet<N> ();
                     nodes.put (edges, n);
                 }
                 n.add (node);
             }
-            it2 = nodes.keySet ().iterator ();
-            while (it2.hasNext ()) {
-                Map edges = (Map) it2.next ();
-                Set newState = (Set) nodes.get (edges);
+            Iterator<Map<E,Set<N>>> it3 = nodes.keySet ().iterator ();
+            while (it3.hasNext ()) {
+                Map<E,Set<N>> edges = it3.next ();
+                Set<N> newState = nodes.get (edges);
                 nnodes.put (newState, edges);
             }
         }
@@ -366,7 +405,6 @@ public class DGUtils {
             return reduce (dg, nnodes.keySet ());
         return nnodes;
     }
-
   
 //      wrong: a*a  
 //    static DG append (DG dg1, DG dg2) {

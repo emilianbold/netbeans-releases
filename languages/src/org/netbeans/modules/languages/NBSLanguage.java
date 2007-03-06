@@ -22,6 +22,8 @@ package org.netbeans.modules.languages;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
 import java.util.Arrays;
+import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.Selector;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.Parser;
@@ -234,8 +236,8 @@ public class NBSLanguage {
         l.addRule (rule ("class1", new Object[] {DOT, IDENTIFIER, "class1"}));
         l.addRule (rule ("class1", new Object[] {}));
 
-        l.addSkipTokenType ("whitespace");
-        l.addSkipTokenType ("comment");
+        l.addFeature (Feature.create ("SKIP", Selector.create ("whitespace")));
+        l.addFeature (Feature.create ("SKIP", Selector.create ("comment")));
         return l;
     }
 

@@ -27,157 +27,168 @@ import java.util.*;
  *
  * @author Jan Jancura
  */
-public class DG {
+public class DG<N,E,K,V> {
 
     
-    static DG createDG (Object node) {
-        return new DG (node);
+    static <N,E,K,V> DG<N,E,K,V> createDG (N node) {
+        return new DG<N,E,K,V> (node);
     }
     
-    static DG createDG () {
-        return new DG ();
+    static <N,E,K,V> DG<N,E,K,V> createDG () {
+        return new DG<N,E,K,V> ();
     }
 
     
-    private Map idToNode = new HashMap ();
-    private Map nodeToId = new HashMap ();
-    private Object start;
-    private Set ends = new HashSet ();
+    private Map<N,Node<N,E,K,V>> idToNode = new HashMap<N,Node<N,E,K,V>> ();
+    private Map<Node<N,E,K,V>,N> nodeToId = new HashMap<Node<N,E,K,V>,N> ();
+    private N start;
+    private Set<N> ends = new HashSet<N> ();
     
     private DG () {
     }
     
-    private DG (Object node) {
+    private DG (N node) {
         start = node;
-        Node n = new Node ();
+        Node<N,E,K,V> n = new Node<N,E,K,V> ();
         idToNode.put (node, n);
         nodeToId.put (n, node);
         ends.add (node);
     }
     
-    Object getStartNode () {
+    N getStartNode () {
         return start;
     }
     
-    void setStart (Object node) {
+    void setStart (N node) {
         if (idToNode.get (node) == null) new NullPointerException ();
         start = node;
     }
     
-    Set getEnds () {
-        return Collections.unmodifiableSet (ends);
+    Set<N> getEnds () {
+        return Collections.<N>unmodifiableSet (ends);
     }
     
-    void setEnds (Set ends) {
-        this.ends = new HashSet (ends);
+    void setEnds (Set<N> ends) {
+        this.ends = new HashSet<N> (ends);
     }
     
-    void addEnd (Object end) {
+    void addEnd (N end) {
+        assert (end != null);
         ends.add (end);
     }
     
-    void removeEnd (Object end) {
+    void removeEnd (N end) {
         ends.remove (end);
     }
     
-    void addNode (Object node) {
+    void addNode (N node) {
+        assert (node != null);
         if (idToNode.containsKey (node)) throw new IllegalArgumentException ();
-        Node n = new Node ();
+        Node<N,E,K,V> n = new Node<N,E,K,V> ();
         idToNode.put (node, n);
         nodeToId.put (n, node);
     }
     
-    void removeNode (Object node) {
-        Node n = (Node) idToNode.remove (node);
+    void removeNode (N node) {
+        Node<N,E,K,V> n = idToNode.remove (node);
         nodeToId.remove (n);
     }
     
-    boolean containsNode (Object node) {
+    boolean containsNode (N node) {
         return idToNode.containsKey (node);
     }
     
-    Set getNodes () {
-        return Collections.unmodifiableSet (idToNode.keySet ());
+    Set<N> getNodes () {
+        return Collections.<N>unmodifiableSet (idToNode.keySet ());
     }
     
-    Object getNode (Object node, Object edge) {
-        Node s = (Node) idToNode.get (node);
-        Node e = s.getNode (edge);
+    N getNode (N node, E edge) {
+        Node<N,E,K,V> s = idToNode.get (node);
+        Node<N,E,K,V> e = s.getNode (edge);
         return nodeToId.get (e);
     }
     
     void addEdge (
-        Object startNode,
-        Object endNode,
-        Object edge
+        N startNode,
+        N endNode,
+        E edge
     ) {
-        Node s = (Node) idToNode.get (startNode);
-        Node e = (Node) idToNode.get (endNode);
+        assert (startNode != null);
+        assert (endNode != null);
+        assert (edge != null);
+        Node<N,E,K,V> s = idToNode.get (startNode);
+        Node<N,E,K,V> e = idToNode.get (endNode);
+        assert (s != null);
+        assert (e != null);
         s.addEdge (edge, e);
     }
     
-    Set getEdges (Object node) {
-        Node n = (Node) idToNode.get (node);
+    Set<E> getEdges (N node) {
+        Node<N,E,K,V> n = idToNode.get (node);
         return n.edges ();
     }
     
-    Object getEdge (Object node, Object edge) {
-        Node n = (Node) idToNode.get (node);
+    E getEdge (N node, E edge) {
+        Node<N,E,K,V> n = idToNode.get (node);
         return n.getEdge (edge);
     }
 
-    Object getProperty (Object node, Object key) {
-        Node n = (Node) idToNode.get (node);
+    V getProperty (N node, K key) {
+        Node<N,E,K,V> n = idToNode.get (node);
         return n.getProperty (key);
     }
     
-    Map getProperties (Object node) {
-        Node n = (Node) idToNode.get (node);
-        if (n.properties == null) return Collections.emptyMap ();
-        return Collections.unmodifiableMap (n.properties);
+    Map<K,V> getProperties (N node) {
+        if (node == null)
+            System.out.println("!");
+        Node<N,E,K,V> n = idToNode.get (node);
+        if (n == null)
+            System.out.println(node);
+        if (n.properties == null) return Collections.<K,V>emptyMap ();
+        return Collections.<K,V>unmodifiableMap (n.properties);
     }
     
-    void putAllProperties (Object node, Map properties) {
+    void putAllProperties (N node, Map<K,V> properties) {
         if (properties.size () == 0) return;
-        Node n = (Node) idToNode.get (node);
-        if (n.properties == null) n.properties = new HashMap ();
+        Node<N,E,K,V> n = idToNode.get (node);
+        if (n.properties == null) n.properties = new HashMap<K,V> ();
         n.properties.putAll (properties);
     }
 
-    void setProperty (Object node, Object key, Object value) {
-        Node n = (Node) idToNode.get (node);
+    void setProperty (N node, K key, V value) {
+        Node<N,E,K,V> n = idToNode.get (node);
         n.setProperty (key, value);
     }
 
-    Object getProperty (Object node, Object edge, Object key) {
-        Node n = (Node) idToNode.get (node);
+    V getProperty (N node, E edge, K key) {
+        Node<N,E,K,V> n = idToNode.get (node);
         return n.getEdgeProperty (edge, key);
     }
 
-    Map getProperties (Object node, Object edge) {
-        Node n = (Node) idToNode.get (node);
+    Map<K,V> getProperties (N node, E edge) {
+        Node<N,E,K,V> n = idToNode.get (node);
         if (n.idToProperties == null ||
             n.idToProperties.get (edge) == null
-        ) return Collections.emptyMap ();
-        return Collections.unmodifiableMap ((Map) n.idToProperties.get (edge));
+        ) return Collections.<K,V>emptyMap ();
+        return Collections.<K,V>unmodifiableMap (n.idToProperties.get (edge));
     }
 
-    void putAllProperties (Object node, Object edge, Map properties) {
+    void putAllProperties (N node, E edge, Map<K,V> properties) {
         if (properties.size () == 0) return;
-        Node n = (Node) idToNode.get (node);
-        if (n.idToProperties == null) n.idToProperties = new HashMap ();
+        Node<N,E,K,V> n = idToNode.get (node);
+        if (n.idToProperties == null) n.idToProperties = new HashMap<E,Map<K,V>> ();
         if (n.idToProperties.get (edge) == null)
-            n.idToProperties.put (edge, new HashMap ());
-        ((Map) n.idToProperties.get (edge)).putAll (properties);
+            n.idToProperties.put (edge, new HashMap<K,V> ());
+        n.idToProperties.get (edge).putAll (properties);
     }
     
-    void setProperty (Object node, Object edge, Object key, Object value) {
-        Node n = (Node) idToNode.get (node);
+    void setProperty (N node, E edge, K key, V value) {
+        Node<N,E,K,V> n = idToNode.get (node);
         n.setEdgeProperty (edge, key, value);
     }
     
-    void changeKey (Object oldNode, Object newNode) {
-        Node n = (Node) idToNode.get (oldNode);
+    void changeKey (N oldNode, N newNode) {
+        Node<N,E,K,V> n = idToNode.get (oldNode);
         idToNode.remove (oldNode);
         idToNode.put (newNode, n);
         nodeToId.put (n, newNode);
@@ -185,41 +196,44 @@ public class DG {
     
     public String toString () {
         StringBuffer sb = new StringBuffer ();
-        Iterator it = getNodes ().iterator ();
-        while (it.hasNext ()) {
-            Object node = it.next ();
-            sb.append (node).append ('(');
-            Iterator it2 = getEdges (node).iterator ();
-            while (it2.hasNext ()) {
-                Object edge = it2.next ();
-                Object end = getNode (node, edge);
-                sb.append (convert (edge)).append (end);
-                if (it2.hasNext ()) sb.append (',');
-            }
-            sb.append (')');
-            if (it.hasNext ()) sb.append ('\n');
-        }
+
         sb.append (" start: ").append (getStartNode ()).append (" end: ");
-        it = getEnds ().iterator ();
+        Iterator<N> it = getEnds ().iterator ();
         while (it.hasNext ()) {
-            Object end = it.next ();
+            N end = it.next ();
             sb.append (end);
             if (it.hasNext ()) sb.append (',');
         }
         sb.append ('\n');
+        
         it = getNodes ().iterator ();
         while (it.hasNext ()) {
-            Object node = it.next ();
-            Node n = (Node) idToNode.get (node);
+            N node = it.next ();
+            sb.append (node).append ('(');
+            Iterator<E> it2 = getEdges (node).iterator ();
+            while (it2.hasNext ()) {
+                E edge = it2.next ();
+                N end = getNode (node, edge);
+                sb.append (convert (edge)).append (end);
+                if (it2.hasNext ()) sb.append (',');
+            }
+            sb.append (')');
+            sb.append ('\n');
+        }
+        
+        it = getNodes ().iterator ();
+        while (it.hasNext ()) {
+            N node = it.next ();
+            Node<N,E,K,V> n = idToNode.get (node);
             sb.append ("  ").append (node).append (": ");
             if (n.properties != null)
                 sb.append (n.properties);
             sb.append ('\n');
             if (n.idToProperties != null) {
-                Iterator it2 = n.idToProperties.keySet ().iterator ();
+                Iterator<E> it2 = n.idToProperties.keySet ().iterator ();
                 while (it2.hasNext ()) {
-                    Object edge = it2.next ();
-                    Map m = (Map) n.idToProperties.get (edge);
+                    E edge = it2.next ();
+                    Map<K,V> m = n.idToProperties.get (edge);
                     sb.append ("    ").append (convert (edge)).append (": ").append (m).append ('\n');
                 }
             }
@@ -232,99 +246,68 @@ public class DG {
     private static Character NT = new Character ('\n');
     private static Character NS = new Character ('\n');
     
-    private String convert (Object edge) {
-        if (Pattern.STAR.equals (edge)) return ".";
+    private static final Character STAR = new Character ((char)0);
+    
+    private String convert (E edge) {
+        if (STAR.equals (edge)) return ".";
         if (NN.equals (edge)) return "\\n";
         if (NR.equals (edge)) return "\\r";
         if (NT.equals (edge)) return "\\t";
         if (NS.equals (edge)) return "' '";
         return edge.toString ();
     }
-
-    DG cloneDG (boolean cloneProperties) {
-        DG dg = DG.createDG ();
-        Iterator it = getNodes ().iterator ();
-        while (it.hasNext ()) {
-            Object node = it.next ();
-            Set nnode = Collections.singleton (node);
-            if (!dg.containsNode (nnode)) {
-                dg.addNode (nnode);
-                if (cloneProperties)
-                    dg.putAllProperties (nnode, getProperties (node));
-            }
-            Iterator it2 = getEdges (node).iterator ();
-            while (it2.hasNext ()) {
-                Object edge = it2.next ();
-                Object endN = getNode (node, edge);
-                Object nEndN = Collections.singleton (endN);
-                if (!dg.containsNode (nEndN)) {
-                    dg.addNode (nEndN);
-                    if (cloneProperties)
-                        dg.putAllProperties (nEndN, getProperties (endN));
-                }
-                dg.addEdge (nnode, nEndN, edge);
-                if (cloneProperties)
-                    dg.putAllProperties (nnode, edge, getProperties (node, edge));
-            }
-            if (getEnds ().contains (node))
-                dg.addEnd (nnode);
-        }
-        dg.setStart (Collections.singleton (getStartNode ()));
-        return dg;
-    }
     
-    
-    private static class Node {
+    private static class Node<N,E,K,V> {
 
-        private Map properties;
-        private Map idToProperties;
-        private Map edgeToNode;
-        private Map edges;
+        private Map<K,V>                properties;
+        private Map<E,Map<K,V>>         idToProperties;
+        private Map<E,Node<N,E,K,V>>    edgeToNode;
+        private Map<E,E>                edges;
 
 
-        Object getProperty (Object key) {
+        V getProperty (K key) {
             if (properties == null) return null;
             return properties.get (key);
         }
         
-        void setProperty (Object key, Object value) {
-            if (properties == null) properties = new HashMap ();
+        void setProperty (K key, V value) {
+            if (properties == null) properties = new HashMap<K,V> ();
             properties.put (key, value);
         }
         
-        Node getNode (Object edge) {
+        Node<N,E,K,V> getNode (E edge) {
             if (edgeToNode == null) return null;
-            return (Node) edgeToNode.get (edge);
+            return edgeToNode.get (edge);
         }
 
-        void addEdge (Object edge, Node node) {
-            if (edgeToNode == null) edgeToNode = new HashMap ();
-            if (edges == null) edges = new HashMap ();
+        void addEdge (E edge, Node<N,E,K,V> node) {
+            if (edgeToNode == null) edgeToNode = new HashMap<E,Node<N,E,K,V>> ();
+            if (edges == null) edges = new HashMap<E,E> ();
             edgeToNode.put (edge, node);
             edges.put (edge, edge);
         }
 
-        Object getEdge (Object edge) {
+        E getEdge (E edge) {
             if (edges == null) return null;
             return edges.get (edge);
         }
 
-        Set edges () {
-            if (edgeToNode == null) return Collections.EMPTY_SET;
+        Set<E> edges () {
+            if (edgeToNode == null) return Collections.<E>emptySet ();
             return edgeToNode.keySet ();
         }
         
-        Object getEdgeProperty (Object edge, Object key) {
+        V getEdgeProperty (E edge, K key) {
             if (idToProperties == null) return null;
             if (idToProperties.get (edge) == null) return null;
-            return ((Map) idToProperties.get (edge)).get (key);
+            return idToProperties.get (edge).get (key);
         }
 
-        void setEdgeProperty (Object edge, Object key, Object value) {
-            if (idToProperties == null) idToProperties = new HashMap ();
-            Map m = (Map) idToProperties.get (edge);
+        void setEdgeProperty (E edge, K key, V value) {
+            if (idToProperties == null) idToProperties = new HashMap<E,Map<K,V>> ();
+            Map<K,V> m = idToProperties.get (edge);
             if (m == null) {
-                m = new HashMap ();
+                m = new HashMap<K,V> ();
                 idToProperties.put (edge, m);
             }
             m.put (key, value);

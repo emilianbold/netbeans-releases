@@ -36,8 +36,8 @@ import java.util.Map;
  */
 public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 
-    private String[]	mimeTypes;
-    private Map         children = new HashMap(); //<mimetype, child Lookup.Result>
+    private String[]                    mimeTypes;
+    private Map<String[],Lookup.Result> children = new HashMap<String[],Lookup.Result> ();
     
     public MimeLookupInitializerImpl () {
         this (new String [0]);
@@ -81,13 +81,13 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
             String[] newMimeType = new String [mimeTypes.length + 1];
             System.arraycopy (mimeTypes, 0, newMimeType, 0, mimeTypes.length);
             newMimeType [mimeTypes.length] = mimeType;
-            Lookup.Result child = (Lookup.Result) children.get(newMimeType);
+            Lookup.Result child = children.get (newMimeType);
             if (child == null){
                 child = Lookups.fixed (
                     new Object[] {
                         new MimeLookupInitializerImpl (newMimeType)
-                    }).lookup (
-                        new Lookup.Template (MimeLookupInitializerImpl.class)
+                    }).<MimeLookupInitializerImpl>lookup (
+                        new Lookup.Template<MimeLookupInitializerImpl> (MimeLookupInitializerImpl.class)
                     );
                 children.put (newMimeType, child);
             }
@@ -112,9 +112,9 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 //                        new Integer (3), 
 //                        new Integer (4)
                     },
-                    new InstanceContent.Convertor () {
-                        public Object convert (Object obj) {
-                            switch (((Integer) obj).intValue ()) {
+                    new InstanceContent.Convertor<Integer,Object> () {
+                        public Object convert (Integer i) {
+                            switch (i.intValue ()) {
                                 case 1:
                                     //S ystem.out.println("get LanguagesEditorKit for " + mimeTypes [0]);
 //                                    MClassLoader mcl = new MClassLoader (getClass ().getClassLoader ());
@@ -141,8 +141,8 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                             }
                             return null;
                         }
-                        public Class type (Object obj) {
-                            switch (((Integer) obj).intValue ()) {
+                        public Class<? extends Object> type (Integer i) {
+                            switch (i.intValue ()) {
                                 case 1:
                                     return LanguagesEditorKit.class;
                                 case 2:
@@ -156,11 +156,11 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                             }
                             return null;
                         }
-                        public String id (Object obj) {
-                            return obj.toString ();
+                        public String id (Integer i) {
+                            return i.toString ();
                         }
-                        public String displayName (Object obj) {
-                            return obj.toString ();
+                        public String displayName (Integer i) {
+                            return i.toString ();
                         }
                     }
                 );

@@ -61,7 +61,7 @@ public class LanguagesDataNode extends DataNode {
 //        return s;
 //    }
 
-    private Map mimeTypeToActions = new HashMap ();
+    private Map<String,Action[]> mimeTypeToActions = new HashMap<String,Action[]> ();
     
     /** Get actions for this data object.
     * @see DataLoader#getActions
@@ -70,7 +70,7 @@ public class LanguagesDataNode extends DataNode {
     public Action[] getActions (boolean context) {
         String mimeType = getDataObject ().getPrimaryFile ().getMIMEType ();
         if (!mimeTypeToActions.containsKey (mimeType)) {
-            List actions = new ArrayList ();
+            List<Action> actions = new ArrayList<Action> ();
             try {
                 FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
                     findResource ("Loaders/" + mimeType + "/Actions");
@@ -85,7 +85,7 @@ public class LanguagesDataNode extends DataNode {
                         if (JSeparator.class.isAssignableFrom (clazz))
                             actions.add (null);
                         else
-                            actions.add (ic.instanceCreate ());
+                            actions.add ((Action) ic.instanceCreate ());
                     }
                 }
             } catch (ClassNotFoundException ex) {

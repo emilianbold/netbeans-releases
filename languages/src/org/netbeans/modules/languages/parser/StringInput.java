@@ -62,11 +62,15 @@ public class StringInput extends CharInput {
         return expression.substring (from, to);
     }
 
+    
+    public String getAsText () {
+        return expression.substring (
+            index,
+            expression.length ()
+        );
+    }
+    
     public String toString () {
-//            String s = expression.substring (
-//                index,
-//                Math.min (index + 100, expression.length ())
-//            );
         int lineNumber = 1;
         int i = expression.indexOf ('\n');
         int offset = 0;

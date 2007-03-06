@@ -19,27 +19,20 @@
 
 package org.netbeans.modules.languages;
 
-import java.util.ListIterator;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
-import org.netbeans.modules.languages.Language.Identifier;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.parser.*;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
+import org.openide.ErrorManager;
 
 
 /**
@@ -69,17 +62,14 @@ public class Language {
     public static final String TOKEN = "TOKEN";
     public static final String TOOLTIP = "TOOLTIP";
     
-    public static final String TOKEN_IMPORT = "TOKEN_IMPORT";
-    public static final String PREPROCESSOR_IMPORT = "PREPROCESSOR_IMPORT";
-    
     private Parser              parser;
-    private List<TokenType>     tokenTypes = new ArrayList ();
-    private Set<String>         skipTokenTypes = new HashSet ();
+    private List<TokenType>     tokenTypes = new ArrayList<TokenType> ();
+    private Set<String>         skipTokenTypes;
     private String              mimeType;
     private LLSyntaxAnalyser    analyser = null;
-    private List<ASTNode>       grammarASTNodes = new ArrayList ();
+    private List<ASTNode>       grammarASTNodes = new ArrayList<ASTNode> ();
     private List<Rule>          grammarRules;
-    private List<Language>      importedLangauges = new ArrayList ();
+    private List<Language>      importedLangauges = new ArrayList<Language> ();
 
     
     /** Creates a new instance of Language */
@@ -105,6 +95,15 @@ public class Language {
     }
     
     public Set<String> getSkipTokenTypes () {
+        if (skipTokenTypes == null) {
+            skipTokenTypes = new HashSet<String> ();
+            List<Feature> ss = getFeatures ("SKIP");
+            Iterator<Feature> it = ss.iterator ();
+            while (it.hasNext ()) {
+                Feature s = it.next ();
+                skipTokenTypes.add (s.getSelector ().getAsString ());
+            }
+        }
         return skipTokenTypes;
     }
     
@@ -125,39 +124,13 @@ public class Language {
         return importedLangauges;
     }
     
-    public Object getProperty (
-        String propertyName
-    ) {
-        return properties.get (propertyName);
-    }
-    
-    public static Identifier createIdentifier (List name) {
-        Identifier result = new Identifier ();
-        result.name = name;
-        return result;
-    }
-    
-    public static Identifier createIdentifier (String name) {
-        List l = new ArrayList ();
-        int s = 0, e = name.indexOf ('.');
-        while (e >= 0) {
-            l.add (name.substring (s, e));
-            s = e + 1;
-            e = name.indexOf ('.', s);
-        }
-        l.add (name.substring (s));
-        Identifier result = new Identifier ();
-        result.name = l;
-        return result;
-    }
-    
     public static TokenType createTokenType (
-        String      startState,
-        Pattern     pattern,
-        String      type,
-        String      endState,
-        int         priority,
-        Map         properties
+        String              startState,
+        Pattern<TokenType>  pattern,
+        String              type,
+        String              endState,
+        int                 priority,
+        Feature             properties
     ) {
         return new TokenType (
             startState,
@@ -177,7 +150,7 @@ public class Language {
         String      type,
         Pattern     pattern,
         String      endState,
-        Map         properties
+        Feature     properties
     ) {
         if (parser != null)
             throw new InternalError ();
@@ -191,10 +164,6 @@ public class Language {
         ));
     }
     
-    void addSkipTokenType (String tokenType) {
-        skipTokenTypes.add (tokenType);
-    }
-    
     void addRule (ASTNode rule) {
         if (analyser != null)
             throw new InternalError ();
@@ -202,277 +171,332 @@ public class Language {
     }
     
     public void addRule (Rule rule) {
-        if (grammarRules == null) grammarRules = new ArrayList ();
+        if (grammarRules == null) grammarRules = new ArrayList<Rule> ();
         grammarRules.add (rule);
     }
     
-    public List getRules () {
+    public List<Rule> getRules () {
         if (grammarRules == null)
             grammarRules = Petra.convert (grammarASTNodes, getMimeType ());
         return grammarRules;
     }
-
-    private Map properties = new HashMap ();
     
-    void addProperties (Map properties) {
-        this.properties.putAll (properties);
+    private Feature preprocessorImport;
+    
+    public Feature getPreprocessorImport () {
+        return preprocessorImport;
     }
     
-    void addProperty (String key, Object value) {
-        properties.put (key, value);
+    private Map<String,Feature> tokenImports = new HashMap<String,Feature> ();
+    
+    public Map<String,Feature> getTokenImports () {
+        return tokenImports;
     }
     
     void importLanguage (
-        String name,
-        Map properties
-    ) throws ParseException {
-        String mimeType = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
-        Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
-        if (properties.containsKey ("start")) {
-            properties.put ("token", "PE");
-            assert (getFeature (Language.IMPORT, Language.PREPROCESSOR_IMPORT) == null);
-            addFeature (
-                Language.IMPORT, 
-                Language.createIdentifier (Language.PREPROCESSOR_IMPORT), 
-                properties
-            );
-            importedLangauges.add (language);
-//            Iterator<Language> it = importedLangauges.iterator ();
-//            while (it.hasNext ()) {
-//                Language l = it.next ();
-//                l.addSkipTokenType (name);
-//                l.addToken (
-//                    null,
-//                    name,
-//                    null,
-//                    null,
-//                    null
-//                );
-//            }
-//            addSkipTokenType (name);
-//            addToken (
-//                null,
-//                name,
-//                null,
-//                null,
-//                null
-//            );
-            return;
-        }
-        if (!properties.containsKey ("state")) {
-            properties.put ("token", name);
-            Map m = (Map) getFeature (Language.IMPORT, Language.TOKEN_IMPORT);
-            if (m == null) {
-                m = new HashMap ();
-                addFeature (
-                    Language.IMPORT, 
-                    Language.createIdentifier (Language.TOKEN_IMPORT), 
-                    m
-                );
-            }
-            assert (!m.containsKey (name));
-            m.put (name, properties);
-            importedLangauges.add (language);
-            return;
-        }
-        Evaluator stateEvaluator = (Evaluator) properties.get ("state");
-        String state = stateEvaluator == null ? null : (String) stateEvaluator.evaluate ();
-        
-        // import tokenTypes
-        Iterator<TokenType> it = language.getTokenTypes ().iterator ();
-        while (it.hasNext ()) {
-            TokenType tt = it.next ();
-            String startState = tt.getStartState ();
-            Pattern pattern = tt.getPattern ().clonePattern ();
-            String endState = tt.getEndState ();
-            if (startState == null || Parser.DEFAULT_STATE.equals (startState)) 
-                startState = state;
-            else
-                startState = name + '-' + startState;
-            if (endState == null || Parser.DEFAULT_STATE.equals (endState)) 
-                endState = state;
-            else
-                endState = name + '-' + endState;
-            addToken (startState, tt.getType (), pattern, endState, tt.getProperties ());
-        }
-        
-        // import grammar rues
-        grammarASTNodes.addAll (language.grammarASTNodes);
-        // import colorings
-        importColorings (language);
-        // import other features
-        importFeature (ACTION, language);
-        importFeature (BRACE, language);
-        importFeature (COLOR, language);
-        //importFeature (COMPLETE, language);
-        importFeature (COMPLETION, language);
-        importFeature (FOLD, language);
-        importFeature (HYPERLINK, language);
-        importFeature (INDENT, language);
-        importFeature (MARK, language);
-        importFeature (NAVIGATOR, language);
-        importFeature (PARSE, language);
-        // import properties
-        this.properties.putAll (language.properties);
-        importFeature (REFORMAT, language);
-        // import skip tokenTypes
-        skipTokenTypes.addAll (language.skipTokenTypes);
-        importFeature (STORE, language);
-        importFeature (TOOLTIP, language);
-        importFeature (IMPORT, language);
-        importedLangauges.addAll (language.importedLangauges);
-    }
-    
-    private void importColorings (Language l) {
-        if (!l.features.containsKey (COLOR)) return;
-        Map m = (Map) features.get (COLOR);
-        if (m == null) {
-            m = new HashMap ();
-            features.put (COLOR, m);
-        }
-        importColorings (
-            (Map) l.features.get (COLOR),
-            m
-        );
-    }
-
-    private void importColorings (Map from, Map to) {
-        Iterator it = from.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String colorName = (String) it.next ();
-            Object value = from.get (colorName);
-            if (value instanceof List) {
-                to.put (colorName, value);
-            } else {
-                Map newTo = (Map) to.get (colorName);
-                if (newTo == null) {
-                    newTo = new HashMap ();
-                    to.put (colorName, newTo);
-                }
-                importColorings ((Map) value, newTo);
-            }
-        }
-    }
-    
-    private void importFeature (String feature, Language l) {
-        if (!l.features.containsKey (feature)) return;
-        Map m = (Map) features.get (feature);
-        if (m == null) {
-            m = new HashMap ();
-            features.put (feature, m);
-        }
-        m.putAll ((Map) l.features.get (feature));
-    }
-    
-    private Map hyperlinks = new HashMap ();
-    
-    void addHyperlink (
-        String      mimeType,
-        String      id, 
-        Evaluator   value
+        Feature feature
     ) {
-        Map m = (Map) hyperlinks.get (mimeType);
-        if (m == null) {
-            m = new HashMap ();
-            hyperlinks.put (mimeType, m);
+        try {
+            String mimeType = (String) feature.getValue ("mimeType");
+            Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+            if (feature.getPattern ("start") != null) {
+                //feature.put ("token", "PE");
+                assert (preprocessorImport == null);
+                preprocessorImport = feature;
+                importedLangauges.add (language);
+                return;
+            }
+            if (feature.getValue ("state") == null) {
+                String tokenName = feature.getSelector ().getAsString ();
+                assert (!tokenImports.containsKey (tokenName));
+                tokenImports.put (tokenName, feature);
+                importedLangauges.add (language);
+                return;
+            }
+
+            String state = (String) feature.getValue ("state"); 
+            String tokenName = feature.getSelector ().getAsString ();
+
+            // import tokenTypes
+            Iterator<TokenType> it = language.getTokenTypes ().iterator ();
+            while (it.hasNext ()) {
+                TokenType tt = it.next ();
+                String startState = tt.getStartState ();
+                Pattern pattern = tt.getPattern ().clonePattern ();
+                String endState = tt.getEndState ();
+                if (startState == null || Parser.DEFAULT_STATE.equals (startState)) 
+                    startState = state;
+                else
+                    startState = tokenName + '-' + startState;
+                if (endState == null || Parser.DEFAULT_STATE.equals (endState)) 
+                    endState = state;
+                else
+                    endState = tokenName + '-' + endState;
+                addToken (startState, tt.getType (), pattern, endState, tt.getProperties ());
+            }
+
+            // import grammar rues
+            grammarASTNodes.addAll (language.grammarASTNodes);
+            // import features
+            importAllFeatures (language);
+            importedLangauges.addAll (language.importedLangauges);
+            tokenImports.putAll (language.tokenImports);
+        } catch (ParseException ex) {
+            ErrorManager.getDefault ().notify (ex);
         }
-        m.put (id, value);
     }
 
     
     // private helper methods ..................................................
     
-    private Map features = new HashMap ();
+    private void importAllFeatures (Language l) {
+        Iterator<String> it = l.featureLists.keySet ().iterator ();
+        while (it.hasNext ()) {
+            String featureName = it.next ();
+            List<Feature> features = l.getFeatures (featureName);
+            Iterator<Feature> it2 = features.iterator ();
+            while (it2.hasNext ()) {
+                Feature f = it2.next ();
+                addFeature (f);
+            }
+        }
+    }
+
+    private Map<String,List<Feature>> featureLists = new HashMap<String,List<Feature>> ();
+    private Map<String,Object> featuresMap = new HashMap<String,Object> ();
+    private static final Object BLA = new Object ();
     
-    public Object getFeature (String featureName, ASTPath path) {
-        Map m = (Map) features.get (featureName);
-        if (m == null) return null;
-        ListIterator<ASTItem> it = path.listIterator (path.size ());
-        while (it.hasPrevious ()) {
-            ASTItem item = it.previous ();
-            Object value = (item instanceof ASTToken) ? 
-                m.get (((ASTToken) item).getType ()) :
-                m.get (((ASTNode) item).getNT ());
-            if (value == null) return m.get ("");
-            if (value instanceof MMap)
-                m = (Map) value;
+    public void addFeature (Feature feature) {
+        String featureName = feature.getFeatureName ();
+        if (featureName.equals ("IMPORT")) {
+            importLanguage (feature);
+            return;
+        }
+        
+        List<Feature> list = featureLists.get (featureName);
+        if (list == null) {
+            list = new ArrayList<Feature> ();
+            featureLists.put (featureName, list);
+        }
+        list.add (feature);
+
+        if (feature.getSelector () == null) {
+            Object o = featuresMap.get (featureName);
+            if (o == null)
+                featuresMap.put (featureName, feature);
             else
-                return value;
+            if (o instanceof List)
+                ((List) o).add (feature);
+            else {
+                List<Feature> l = new ArrayList<Feature> ();
+                l.add ((Feature) o);
+                l.add (feature);
+                featuresMap.put (featureName, l);
+            }
+            return;
         }
-        return null;
-    }
-    
-    public Object getFeature (String featureName, String id) {
-        Map m = (Map) features.get (featureName);
-        if (m == null) return null;
-        Object value = m.get (id);
-        if (value == null) return m.get ("");
-        if (value instanceof MMap) {
-            m = (Map) value;
-            return m.get ("");
+        Map m = (Map) featuresMap.get (featureName);
+        if (m == null) {
+            m = new HashMap ();
+            featuresMap.put (featureName, m);
         }
-        return value;
-    }
-
-    public Collection getFeatures (String featureName) {
-        Map m = (Map) features.get (featureName);
-        if (m == null) return null;
-        return m.values ();
-    }
-//    public Map getFeature (String featureName) {
-//        return (Map) features.get (featureName);
-//    }
-    
-//    private Object getFeature (String featureName, ASTItem item) {
-//        if (item instanceof ASTNode)
-//            return getFeature (featureName, (ASTNode) item);
-//        return getFeature (featureName, (ASTToken) item);
-//    }
-//    
-//    private Object getFeature (String featureName, ASTToken token) {
-//        Map m = (Map) features.get (featureName);
-//        if (m == null) return null;
-//        Object result = m.get (token.getType ());
-//        if (result instanceof MMap) return null;
-//        return result;
-//    }
-    
-    public boolean supportsFeature (String featureName) {
-        return features.get (featureName) != null;
-    }
-
-    void addFeature (String featureName, Identifier id, Object feature) {
-        Map m = getFolder (featureName);
-        for (int i = id.name.size () - 1; i > 0; i--) {
-            Object o = m.get (id.name.get (i));
-            if (o instanceof MMap)
+        List<String> path = feature.getSelector ().getPath ();
+        for (int i = path.size () - 1; i > 0; i--) {
+            String name = path.get (i);
+            Object o = m.get (name);
+            if (o instanceof Map)
                 m = (Map) o;
             else {
-                Map mm = new MMap ();
+                Map mm = new HashMap ();
                 if (o != null)
-                    mm.put ("", o);
-                m.put (id.name.get (i), mm);
+                    mm.put (BLA, o);
+                m.put (name, mm);
                 m = mm;
             }
         }
-        Object o = m.get (id.name.get (0));
-        if (o != null && o instanceof Map)
-            ((Map) o).put ("", feature);
+        String name = path.get (0);
+        Object o = m.get (name);
+        if (o instanceof List)
+            ((List<Feature>) o).add (feature);
         else
-            m.put (
-                id.name.get (0),
-                feature
-            );
+        if (o instanceof Map) {
+            m = (Map) o;
+            o = m.get (BLA);
+            if (o instanceof List)
+                ((List) o).add (feature);
+            else
+            if (o == null)
+                m.put (BLA, feature);
+            else {
+                List l = new ArrayList ();
+                l.add (o);
+                l.add (feature);
+                m.put (BLA, l);
+            }
+        } else
+        if (o == null) 
+            m.put (name, feature);
+        else {
+            List l = new ArrayList ();
+            l.add (o);
+            l.add (feature);
+            m.put (name, l);
+        }
+    }
+
+    public List<Feature> getFeatures (String featureName) {
+        List<Feature> r = featureLists.get (featureName);
+        if (r != null) return r;
+        return Collections.<Feature>emptyList ();
+    }
+
+    public Feature getFeature (String featureName) {
+        List<Feature> r = featureLists.get (featureName);
+        if (r == null) return null;
+        if (r.size () == 1) return r.get (0);
+        throw new IllegalArgumentException ();
     }
     
-    private Map getFolder (String featureName) {
-        Map m = (Map) features.get (featureName);
-        if (m == null) {
-            m = new HashMap ();
-            features.put (featureName, m);
-        }
-        return m;
+    public Feature getFeature (String featureName, ASTPath path) {
+        List<Feature> r = getFeatures (featureName, path);
+        if (r.isEmpty ()) return null;
+        if (r.size () == 1) return r.get (0);
+        throw new IllegalArgumentException ();
     }
+    
+    public Feature getFeature (String featureName, String id) {
+        Map m = (Map) featuresMap.get (featureName);
+        if (m == null) return null;
+        Object o = m.get (id);
+        if (o instanceof Map)
+            o = ((Map) o).get (BLA);
+        if (o == null) return null;
+        List<Feature> r = (List<Feature>) o;
+        if (r.isEmpty ()) return null;
+        if (r.size () == 1) return r.get (0);
+        throw new IllegalArgumentException ();
+    }
+
+    public List<Feature> getFeatures (String featureName, ASTPath path) {
+        Map m = (Map) featuresMap.get (featureName);
+        if (m == null) return Collections.<Feature>emptyList ();
+        Object last = null;
+        int i = path.size () - 1;
+        for (; i > 0; i--) {
+            ASTItem item = path.get (i);
+            String name = item instanceof ASTToken ?
+                ((ASTToken) item).getType () :
+                ((ASTNode) item).getNT ();
+            Object o = m.get (name);
+            if (m.containsKey (BLA))
+                last = m.get (BLA);
+            if (o instanceof Map) {
+                m = (Map) o;
+                continue;
+            }
+            if (o instanceof List)
+                return (List<Feature>) o;
+            if (o != null)
+                return Collections.<Feature>singletonList ((Feature) o);
+            if (last != null) {
+                if (last instanceof List)
+                    return (List<Feature>) last;
+                 return Collections.<Feature>singletonList ((Feature) o);
+            }
+            break;
+        }
+        return Collections.<Feature>emptyList ();
+    }
+    
+//    public Object getFeature (String featureName, ASTPath path) {
+//        Map m = (Map) features.get (featureName);
+//        if (m == null) return null;
+//        ListIterator<ASTItem> it = path.listIterator (path.size ());
+//        while (it.hasPrevious ()) {
+//            ASTItem item = it.previous ();
+//            Object value = (item instanceof ASTToken) ? 
+//                m.get (((ASTToken) item).getType ()) :
+//                m.get (((ASTNode) item).getNT ());
+//            if (value == null) return m.get ("");
+//            if (value instanceof MMap)
+//                m = (Map) value;
+//            else
+//                return value;
+//        }
+//        return null;
+//    }
+//    
+//    public Object getFeature (String featureName, String id) {
+//        Map m = (Map) features.get (featureName);
+//        if (m == null) return null;
+//        Object value = m.get (id);
+//        if (value == null) return m.get ("");
+//        if (value instanceof MMap) {
+//            m = (Map) value;
+//            return m.get ("");
+//        }
+//        return value;
+//    }
+//
+//    public Collection getFeatures (String featureName) {
+//        Map m = (Map) features.get (featureName);
+//        if (m == null) return null;
+//        return m.values ();
+//    }
+////    public Map getFeature (String featureName) {
+////        return (Map) features.get (featureName);
+////    }
+//    
+////    private Object getFeature (String featureName, ASTItem item) {
+////        if (item instanceof ASTNode)
+////            return getFeature (featureName, (ASTNode) item);
+////        return getFeature (featureName, (ASTToken) item);
+////    }
+////    
+////    private Object getFeature (String featureName, ASTToken token) {
+////        Map m = (Map) features.get (featureName);
+////        if (m == null) return null;
+////        Object result = m.get (token.getType ());
+////        if (result instanceof MMap) return null;
+////        return result;
+////    }
+    
+//    public boolean supportsFeature (String featureName) {
+//        return features.get (featureName) != null;
+//    }
+//
+//    void addFeature (String featureName, Identifier id, Object feature) {
+//        Map m = getFolder (featureName);
+//        for (int i = id.name.size () - 1; i > 0; i--) {
+//            Object o = m.get (id.name.get (i));
+//            if (o instanceof MMap)
+//                m = (Map) o;
+//            else {
+//                Map mm = new MMap ();
+//                if (o != null)
+//                    mm.put ("", o);
+//                m.put (id.name.get (i), mm);
+//                m = mm;
+//            }
+//        }
+//        Object o = m.get (id.name.get (0));
+//        if (o != null && o instanceof Map)
+//            ((Map) o).put ("", feature);
+//        else
+//            m.put (
+//                id.name.get (0),
+//                feature
+//            );
+//    }
+    
+//    private Map getFolder (String featureName) {
+//        Map m = (Map) features.get (featureName);
+//        if (m == null) {
+//            m = new HashMap ();
+//            features.put (featureName, m);
+//        }
+//        return m;
+//    }
     
     void print () {
         System.out.println("\nPrint " + mimeType);
@@ -490,189 +514,36 @@ public class Language {
         }
     }
     
-    
-    // colors ..................................................................
-    
-    private static Map getDefaultColors () {
-        Collection defaults = EditorSettings.getDefault ().
-            getDefaultFontColorDefaults ("NetBeans");
-        Map defaultsMap = new HashMap ();
-        Iterator it = defaults.iterator (); // check if IDE Defaults module is installed
-        while (it.hasNext ()) {
-            AttributeSet as = (AttributeSet) it.next ();
-            defaultsMap.put (
-                as.getAttribute (StyleConstants.NameAttribute),
-                as
-            );
-        }
-        return defaultsMap;
-    }
-    
-    private Map getCurrentColors () {
-        // current colors
-        FontColorSettingsFactory fcsf = EditorSettings.getDefault ().
-            getFontColorSettings (new String[] {getMimeType ()});
-        Collection colors = fcsf.getAllFontColors ("NetBeans");
-        Map colorsMap = new HashMap ();
-        Iterator it = colors.iterator ();
-        while (it.hasNext ()) {
-            AttributeSet as = (AttributeSet) it.next ();
-            colorsMap.put (
-                as.getAttribute (StyleConstants.NameAttribute),
-                as
-            );
-        }
-        return colorsMap;
-    }
-    
-    public Map getColorMap () {
-        Map defaultsMap = getDefaultColors ();
-        Map colorsMap = getCurrentColors ();
-        Iterator<TokenType> it = getTokenTypes ().iterator ();
-        while (it.hasNext ()) {
-            TokenType token = it.next ();
-            List<SimpleAttributeSet> colors = (List<SimpleAttributeSet>) getFeature 
-                (Language.COLOR, token.getType ());
-            if (colors != null)
-                for (Iterator<SimpleAttributeSet> it2 = colors.iterator (); it2.hasNext ();) {
-                    SimpleAttributeSet as = it2.next();
-                    String id = (String) as.getAttribute ("color_name"); // NOI18N
-                    if (id == null)
-                        id = token.getType ();
-                    addColor (id, as, colorsMap, defaultsMap);
-                }
-            else
-                addColor (token.getType (), null, colorsMap, defaultsMap);
-        }
-        Map m = (Map) features.get (Language.COLOR);
-        if (m == null)
-            return Collections.EMPTY_MAP;
-        Iterator<String> it2 = m.keySet ().iterator ();
-        while (it2.hasNext ()) {
-            String type = it2.next ();
-            if (colorsMap.containsKey (type))
-                continue;
-            Object obj = m.get (type);
-            if (obj != null) {
-                for (Iterator iter = ((List)obj).iterator(); iter.hasNext(); ) {
-                    SimpleAttributeSet as = (SimpleAttributeSet) iter.next();
-                    addColor (type, as, colorsMap, defaultsMap);
-                }
-            }
-        }
-        addColor ("error", null, colorsMap, defaultsMap);
-        return colorsMap;
-    }
-    
-    private void addColor (
-        String tokenType, 
-        SimpleAttributeSet sas,
-        Map colorsMap, 
-        Map defaultsMap
-    ) {
-        if (sas == null)
-            sas = new SimpleAttributeSet ();
-        else
-            sas = new SimpleAttributeSet (sas);
-        String colorName = (String) sas.getAttribute (StyleConstants.NameAttribute);
-        if (colorName == null)
-            colorName = tokenType;
-        sas.addAttribute (StyleConstants.NameAttribute, colorName);
-        sas.addAttribute (EditorStyleConstants.DisplayName, colorName);
-        if (!sas.isDefined (EditorStyleConstants.Default)) {
-            String def = colorName;
-            int i = def.lastIndexOf ('_');
-            if (i > 0) def = def.substring (i + 1);
-            if (defaultsMap.containsKey (def))
-                sas.addAttribute (EditorStyleConstants.Default, def);
-        }
-        colorsMap.put (colorName, sas);
+    public String toString () {
+        return "Language " + mimeType;
     }
     
     
     // innerclasses ............................................................
 
-    private class MMap extends HashMap {
-        
-    }
-    
-    public static class Identifier {
-        private List name;
-        
-        public String toString () {
-            StringBuilder sb = new StringBuilder ();
-            sb.append (name.get (0));
-            Iterator it = name.iterator ();
-            it.next ();
-            while (it.hasNext ())
-                sb.append ('.').append (it.next ());
-            return sb.toString ();
-        }
-    }
-    
-    public static class Navigator {
-        
-        private Evaluator   displayName;
-        private Evaluator   tooltip;
-        private Evaluator   icon;
-        private Evaluator   isLeaf;
-        
-        private Navigator () {}
-        
-        public static Navigator create (
-            Evaluator       displayName,
-            Evaluator       tooltip,
-            Evaluator       icon,
-            Evaluator       isLeaf
-        ) {
-            Navigator n = new Navigator ();
-            n.displayName = displayName;
-            n.tooltip = tooltip;
-            n.icon = icon;
-            n.isLeaf = isLeaf;
-            return n;
-        }
-        
-        public Evaluator getDisplayName () {
-            return displayName;
-        }
-        
-        public Evaluator getTooltip () {
-            return tooltip;
-        }
-        
-        public Evaluator getIcon () {
-            return icon;
-        }
-        
-        public Evaluator isLeaf () {
-            return isLeaf;
-        }
-    }
-    
     public static final class TokenType {
         
         private String  startState;
-        private Pattern pattern;
+        private Pattern<TokenType> pattern;
         private String  type;
         private String  endState;
         private int     priority;
-        private Map     properties;
+        private Feature properties;
         
         private TokenType (
             String      startState,
-            Pattern     pattern,
+            Pattern<TokenType>     pattern,
             String      type,
             String      endState,
             int         priority,
-            Map         properties
+            Feature     properties
         ) {
             this.startState = startState == null ? Parser.DEFAULT_STATE : startState;
             this.pattern = pattern;
             this.type = type;
             this.endState = endState == null ? Parser.DEFAULT_STATE : endState;
             this.priority = priority;
-            this.properties = properties == null ? Collections.EMPTY_MAP : properties;
+            this.properties = properties;
         }
         
         public String getType () {
@@ -687,7 +558,7 @@ public class Language {
             return endState;
         }
         
-        public Pattern getPattern () {
+        public Pattern<TokenType> getPattern () {
             return pattern;
         }
         
@@ -695,7 +566,7 @@ public class Language {
             return priority;
         }
         
-        public Map getProperties () {
+        public Feature getProperties () {
             return properties;
         }
         

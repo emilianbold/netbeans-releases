@@ -22,6 +22,7 @@ package org.netbeans.modules.languages.parser;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ASTToken;
 import java.util.*;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language.TokenType;
 
 
@@ -46,315 +47,71 @@ public class Parser {
         return p;
     }
     
-    public ASTToken read (Cookie cookie, CharInput input, String mimeType) {
-        if (input.eof ()) return null;
-        int originalState = cookie.getState ();
-        int originalIndex = input.getIndex ();
-        Pattern pattern = getPattern (originalState);
-        if (pattern == null) return null;
-        Object node = getNode (originalState);
-        
-        int     lastIndex = -1;
-        TokenType    lastTT = null;
-        
-        while (!input.eof ()) {
-            
-            // compute next 
-            Character edge = new Character (input.next ());
-            Object nnode = pattern.getDG ().getNode (node, edge);
-            if (nnode == null) {
-                edge = Pattern.STAR;
-                nnode = pattern.getDG ().getNode (node, edge);
-            }
-            
-            if (input.getIndex () > originalIndex) {
-                TokenType bestTT = getBestTT (pattern, node);
-                if (bestTT != null) {
-                    lastTT = bestTT;
-                    lastIndex = input.getIndex ();
-                }
-            }
-            
-            if (nnode == null ||
-                ( pattern.getDG ().getEdges (nnode).isEmpty () &&
-                  pattern.getDG ().getProperties (nnode).isEmpty ()
-                )
-            ) {
-                if (lastTT == null) {
-                    // error => reset position in CURRENT pattern (state)
-                    cookie.setState (
-                        getState (pattern.getDG ().getStartNode (), pattern)
-                    );
-                    return null;
-                }
-                Pattern newPattern = getPattern (lastTT.getEndState ());
-                cookie.setState (
-                    getState (newPattern.getDG ().getStartNode (), newPattern)
-                );
-                cookie.setProperties (lastTT.getProperties ());
-                input.setIndex (lastIndex);
-                return ASTToken.create (
-                    mimeType,
-                    lastTT.getType (),
-                    input.getString (originalIndex, lastIndex),
-                    originalIndex
-                );
-            }
-            
-            input.read ();
-            node = nnode;
-        }
-        
-        TokenType bestTT = getBestTT (pattern, node);
-        if (bestTT != null) {
-            lastTT = bestTT;
-            lastIndex = input.getIndex ();
-        }
-        
-        cookie.setState (getState (node, pattern));
-        if (lastTT == null) {
-            return null;
-        }
-        cookie.setProperties (lastTT.getProperties ());
-        return ASTToken.create (
-            mimeType,
-            lastTT.getType (),
-            input.getString (originalIndex, lastIndex),
-            originalIndex
-        );
+    private Map<Integer,Pattern<TokenType>> stateToPattern = new HashMap<Integer,Pattern<TokenType>> ();
+    private Map<String,Integer> nameToState = new HashMap<String,Integer> ();
+    private Map<Integer,String> stateToName = new HashMap<Integer,String> ();
+    private int counter = 1;
+    {
+        nameToState.put (DEFAULT_STATE, -1);
+        stateToName.put (-1, DEFAULT_STATE);
     }
     
-    private static TokenType getBestTT (Pattern pattern, Object node) {
-        Map tts = (Map) pattern.getDG ().getProperties (node);
-        TokenType best = null;
-        Iterator it = tts.keySet ().iterator ();
-        while (it.hasNext ()) {
-            Integer i = (Integer) it.next ();
-            TokenType tt = (TokenType) tts.get (i);
-            if (best == null || best.getPriority () > tt.getPriority ())
-                best = tt;
-        }
-        return best;
-    }
-    
-    /** Map (String (state) > Pattern) */
-    private Map patterns = new HashMap ();
-    
-    public String getState (int state) {
-        Pattern p = getPattern (state);
-        if (p == null) return null;
-        Iterator it = patterns.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String name = (String) it.next ();
-            if (patterns.get (name) == p) return name;
-        }
-        return null;
-    }
     
     private void add (TokenType tt) {
         if (tt.getPattern () == null) return;
         String startState = tt.getStartState ();
         if (startState == null) startState = DEFAULT_STATE;
-        String endState = tt.getStartState ();
-        if (endState == null) endState = DEFAULT_STATE;
-        Pattern p = getPattern (startState);
-        mark (tt);
-        patterns.put (startState, p.merge (tt.getPattern ()));
-    }
-    
-    private static void mark (TokenType r) {
-        Iterator it = r.getPattern ().getDG ().getEnds ().iterator ();
-        while (it.hasNext ()) {
-            Object s = it.next ();
-            r.getPattern ().getDG ().setProperty (
-                s, 
-                new Integer (r.getPriority ()), 
-                r
+        int state = 0;
+        if (nameToState.containsKey (startState))
+            state = nameToState.get (startState);
+        else {
+            state = counter++;
+            nameToState.put (startState, state);
+            stateToName.put (state, startState);
+        }
+        Pattern<TokenType> pattern = tt.getPattern (); 
+        pattern.mark (tt.getPriority (), tt);
+        if (stateToPattern.containsKey (state))
+            stateToPattern.put (
+                state,
+                stateToPattern.get (state).merge (pattern)
             );
-        }
+        else
+            stateToPattern.put (state, pattern);
     }
     
-    private Pattern getPattern (String state) {
-        Pattern p = (Pattern) patterns.get (state);
-        if (p == null) {
-            p = Pattern.create ();
-            patterns.put (state, p);
+    public ASTToken read (Cookie cookie, CharInput input, String mimeType) {
+        if (input.eof ()) return null;
+        int originalIndex = input.getIndex ();
+        Pattern pattern = stateToPattern.get (cookie.getState ());
+        if (pattern == null) return null;
+        TokenType tokenType = (TokenType) pattern.read (input);
+        if (tokenType == null) {
+            return null;
         }
-        return p;
+        cookie.setProperties (tokenType.getProperties ());
+        String endState = tokenType.getEndState ();
+        int state = -1;
+        if (endState != null) {
+            state = nameToState.get (endState);
+        }
+        cookie.setState (state);
+        return ASTToken.create (
+            mimeType,
+            tokenType.getType (),
+            input.getString (originalIndex, input.getIndex ()),
+            originalIndex
+        );
     }
     
-    private Pattern getPattern (int state) {
-        Integer id = new Integer (state);
-        Pattern pattern = (Pattern) stateToPattern.get (id);
-        if (pattern == null && state == -1) {
-            pattern = getPattern (DEFAULT_STATE);
-            Object node = pattern.getDG ().getStartNode ();
-            Map nodes = new HashMap ();
-            nodes.put (node, id);
-            patternToNodes.put (pattern, nodes);
-            stateToPattern.put (id, pattern);
-            stateToNode.put (id, node);
-        }
-        return pattern;
-    }
+    private Map<String,Pattern> patterns = new HashMap<String,Pattern> ();
     
-    private Object getNode (int state) {
-        Integer id = new Integer (state);
-        Object node = stateToNode.get (id);
-        if (node == null && state == -1) {
-            Pattern pattern = getPattern (DEFAULT_STATE);
-            node = pattern.getDG ().getStartNode ();
-            Map nodes = new HashMap ();
-            nodes.put (node, id);
-            patternToNodes.put (pattern, nodes);
-            stateToPattern.put (id, pattern);
-            stateToNode.put (id, node);
-        }
-        return node;
-    }
-    
-    private int stateCounter = 10;
-    private Map stateToPattern = new HashMap ();
-    private Map stateToNode = new HashMap ();
-    private Map patternToNodes = new HashMap ();
-    
-    private int getState (Object node, Pattern pattern) {
-        Map nodes = (Map) patternToNodes.get (pattern);
-        if (nodes == null) {
-            nodes = new HashMap ();
-            patternToNodes.put (pattern, nodes);
-        }
-        Integer id = (Integer) nodes.get (node);
-        if (id == null) {
-            id = new Integer (stateCounter ++);
-            nodes.put (node, id);
-            stateToPattern.put (id, pattern);
-            stateToNode.put (id, node);
-        }
-        return id.intValue ();
-    }
-    
-//    public String generateCode () {
-//        DG dg = pattern.getDG ();
-//        int indent = 4;
-//        int depth = 4;
-//        StringBuffer sb = new StringBuffer ();
-//        generate (sb, 0, "class Pattern {\n");
-//        sb.append ("\n");
-//        generate (sb, depth, "private int state;\n");
-//        generate (sb, depth, "private int offset;\n");
-//        generate (sb, depth, "private int stopOffset\n");
-//        generate (sb, depth, "private char buffer[]\n");
-//        sb.append ("\n");
-//        generate (sb, depth, "int parseToken () {\n");
-//        depth += indent;
-//        generate (sb, depth, "char ch;\n");
-//        generate (sb, depth, "while(offset < stopOffset) {\n");
-//        depth += indent;
-//        generate (sb, depth, "ch = buffer [offset];\n");
-//        generate (sb, depth, "switch (state) {\n");
-//        depth += indent;
-//        Set states = dg.getNodes ();
-//        Iterator it = states.iterator ();
-//        while (it.hasNext ()) {
-//            Object state = it.next ();
-//            generate (sb, depth, "case ").
-//                append (state).append (":\n");
-//            depth += indent;
-//            generate (sb, depth, "switch (ch) {\n");
-//            depth += indent;
-//            Object star = null;
-//            Iterator it2 = dg.getEdges (state).iterator ();
-//            while (it2.hasNext ()) {
-//                Object edge = it2.next ();
-//                Object end = dg.getNode (state, edge);
-//                if (((Character) edge).charValue () == 0) {
-//                    star = end;
-//                    continue;
-//                }
-//                generate (sb, depth, "case ").
-//                    append (convert (edge)).append (":\n");
-//                depth += indent;
-//                Object token = dg.getProperty (end, "token");
-//                if (token != null) {
-//                    generate (sb, depth, "state = ").
-//                        append (dg.getStartNode ()).append (";\n");
-//                    generate (sb, depth, "offset++;\n");
-//                    generate (sb, depth, "return ").
-//                        append (token).append (";\n");
-//                } else {
-//                    generate (sb, depth, "state = ").
-//                        append (end).append (";\n");
-//                    generate (sb, depth, "offset++;\n");
-//                    generate (sb, depth, "break;\n");
-//                }
-//                depth -= indent;
-//            }
-//            if (star != null) {
-//                generate (sb, depth, "default:\n");
-//                depth += indent;
-//                Object token = dg.getProperty (star, "token");
-//                if (token != null) {
-//                    generate (sb, depth, "state = ").
-//                        append (dg.getStartNode ()).append (";\n");
-//                    generate (sb, depth, "offset++;\n");
-//                    generate (sb, depth, "return ").
-//                        append (token).append (";\n");
-//                } else {
-//                    generate (sb, depth, "state = ").
-//                        append (star).append (";\n");
-//                    generate (sb, depth, "offset++;\n");
-//                    generate (sb, depth, "break;\n");
-//                }
-//                depth -= indent;
-//            } else {
-//                generate (sb, depth, "default:\n");
-//                depth += indent;
-//                generate (sb, depth, "state = ").
-//                    append (dg.getStartNode ()).append (";\n");
-//                generate (sb, depth, "offset++;\n");
-//                generate (sb, depth, "return ").
-//                    append ("ERROR").append (";\n");
-//                depth -= indent;
-//            }
-//            depth -= indent;
-//            generate (sb, depth, "}; // switch (ch)\n");
-//            generate (sb, depth, "break;\n");
-//            depth -= indent;
-//        }
-//        
-//        depth -= indent;
-//        generate (sb, depth, "} // switch (state)\n");
-//        depth -= indent;
-//        generate (sb, depth, "} // while\n");
-//        depth -= indent;
-//        generate (sb, depth, "} // parse token\n");
-//        depth -= indent;
-//        generate (sb, depth, "}\n");
-//        return sb.toString ();
-//    }
-    
-//    private static StringBuffer generate (StringBuffer sb, int indent, String text) {
-//        int i, k = indent;
-//        for (i = 0; i < k; i++) sb.append (' ');
-//        sb.append (text);
-//        return sb;
-//    }
-//    
-//    private static String convert (Object edge) {
-//        char ch = ((Character) edge).charValue ();
-//        switch (ch) {
-//            case '\n':return "\'\\n\'";
-//            case 0:return "0";
-//            default:return "\'" + ch + "\'";
-//        }
-//    }
     
     public String toString () {
         StringBuffer sb = new StringBuffer ();
-        Iterator it = patterns.keySet ().iterator ();
+        Iterator<String> it = patterns.keySet ().iterator ();
         while (it.hasNext ()) {
-            String state = (String) it.next ();
+            String state = it.next ();
             sb.append (state).append (":").append (patterns.get (state));
         }
         return sb.toString ();
@@ -366,24 +123,6 @@ public class Parser {
     public interface Cookie {
         public abstract int getState ();
         public abstract void setState (int state);
-        public abstract void setProperties (Map properties);
+        public abstract void setProperties (Feature tokenProperties);
     }
-//    
-//    private static class TT {
-//        private String      state;
-//        private int         priority;
-//        private String      mimeType;
-//        private String      type;
-//        
-//        TT (String state, int priority, String mimeType, String type) {
-//            this.state = state;
-//            this.priority = priority;
-//            this.mimeType = mimeType;
-//            this.type = type;
-//        }
-//        
-//        public String toString () {
-//            return "TT " + state + " : " + priority + " : " + mimeType + " : " + type;
-//        }
-//    }
 }

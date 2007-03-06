@@ -48,7 +48,7 @@ public abstract class LanguagesManager {
      * 
      * @return set of supported languages
      */
-    public abstract Set getSupportedMimeTypes ();
+    public abstract Set<String> getSupportedMimeTypes ();
 
 //    public abstract Language getLanguage (String mimeType) throws ParseException;
 //    public abstract void addLanguagesManagerListener (LanguagesManagerListener l);

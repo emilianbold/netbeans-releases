@@ -34,15 +34,14 @@ import java.util.StringTokenizer;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 
 
@@ -52,13 +51,13 @@ import org.netbeans.modules.languages.LanguagesManagerImpl;
  */
 public class LLSyntaxAnalyser {
 
-    private Language    language;
-    private List        rules;
+    private Language        language;
+    private List<Rule>      rules;
     private Map<String,Map> first;
-    private Set<String> skip;
-    private int         traceSteps = -1;
-    private boolean     cancel = false;
-    private boolean     printFirst = false;
+    private Set<String>     skip;
+    private int             traceSteps = -1;
+    private boolean         cancel = false;
+    private boolean         printFirst = false;
     
     
     private LLSyntaxAnalyser (Language language) {
@@ -76,7 +75,7 @@ public class LLSyntaxAnalyser {
         cancel = true;
     }
 
-    public List getRules () {
+    public List<Rule> getRules () {
         return rules;
     }
     
@@ -104,7 +103,7 @@ public class LLSyntaxAnalyser {
     // helper methods ..........................................................
     
     private ASTNode read2 (TokenInput input, boolean skipErrors) throws ParseException {
-        Stack stack = new Stack ();
+        Stack<Object> stack = new Stack<Object> ();
         Node root = null, node = null;
         Iterator it = Collections.singleton ("S").iterator ();
         do {
@@ -136,16 +135,12 @@ public class LLSyntaxAnalyser {
                     createErrorNode (node, input.getOffset ()).addItem (readEmbeddings (input.read (), skipErrors));
                 } else {
                     Rule rule = (Rule) rules.get (newRule);
-                    Evaluator.Method evaluator = null;
-                    evaluator = (Evaluator.Method) language.getFeature (
-                        language.PARSE, 
-                        rule.getNT ()
-                    );
-                    if (evaluator != null) {
+                    Feature parse = language.getFeature ("PARSE", rule.getNT ());
+                    if (parse != null) {
                         stack.push (it);
                         stack.push (node);
                         it = Collections.EMPTY_LIST.iterator ();
-                        ASTNode nast = (ASTNode) evaluator.evaluate (
+                        ASTNode nast = (ASTNode) parse.getValue (
                             new Object[] {input, stack}
                         );
                         node.addItem (nast);
@@ -333,50 +328,46 @@ public class LLSyntaxAnalyser {
     }
     
     private void initTracing () {
-        Evaluator e = (Evaluator) language.getProperty ("traceSteps");
-        if (e != null)
-            try {
-                traceSteps = Integer.parseInt ((String) e.evaluate ());
-            } catch (NumberFormatException ex) {
-                traceSteps = -2;
-            }
-        e = (Evaluator) language.getProperty ("printRules");
-        if (e != null && "true".equals (e.evaluate ()))
+        Feature properties = language.getFeature ("PROPERTIES");
+        if (properties == null) return;
+        try {
+            traceSteps = Integer.parseInt ((String) properties.getValue ("traceSteps"));
+        } catch (NumberFormatException ex) {
+            traceSteps = -2;
+        }
+        if (properties.getBoolean ("printRules", false))
             AnalyserAnalyser.printRules (rules, null);
-        e = (Evaluator) language.getProperty ("printFirst");
-        if (e != null && "true".equals (e.evaluate ()))
-            printFirst = true;
+        printFirst = properties.getBoolean ("printFirst", false);
     }
     
-    private Map optimiseProperty;
+    private Feature optimiseProperty;
     private boolean removeEmpty = false;
     private boolean removeSimple = false;
     private boolean removeEmptyN = true;
     private boolean removeSimpleN = true;
-    private Set empty = new HashSet ();
-    private Set simple = new HashSet ();
+    private Set<String> empty = new HashSet<String> ();
+    private Set<String> simple = new HashSet<String> ();
     
     private boolean removeNT (Node n) {
         if (optimiseProperty == null) {
-            optimiseProperty = (Map) language.getProperty (Language.AST);
+            Feature properties = language.getFeature ("PROPERTIES");
+            optimiseProperty = language.getFeature ("AST");
             if (optimiseProperty != null) {
-                Evaluator e = (Evaluator) optimiseProperty.get ("removeEmpty");
-                if (e != null) {
-                    String s = (String) e.evaluate ();
+                String s = (String) optimiseProperty.getValue ("removeEmpty");
+                if (s != null) {
                     if (s.startsWith ("!")) {
                         removeEmptyN = false;
                         s = s.substring (1);
                     }
                     removeEmpty = "true".equals (s);
-                    if (!"false".equals (e)) {
+                    if (!"false".equals (s)) {
                         StringTokenizer st = new StringTokenizer (s, ",");
                         while (st.hasMoreTokens ())
                             empty.add (st.nextToken ());
                     }
                 }
-                e = (Evaluator) optimiseProperty.get ("removeSimple");
-                if (e != null) {
-                    String s = (String) e.evaluate ();
+                s = (String) optimiseProperty.getValue ("removeSimple");
+                if (s != null) {
                     if (s.startsWith ("!")) {
                         removeSimpleN = false;
                         s = s.substring (1);
@@ -483,7 +474,7 @@ public class LLSyntaxAnalyser {
         String      nt;
         int         rule;
         int         offset;
-        List        children;
+        List<Object> children;
         
         Node (
             String nt,
@@ -507,14 +498,14 @@ public class LLSyntaxAnalyser {
         }
         
         void addNode (Node n) {
-            if (children == null) children = new ArrayList ();
+            if (children == null) children = new ArrayList<Object> ();
 //            if (((Node) n).offset != getEndOffset ())
 //                throw new IllegalStateException ();
             children.add (n);
         }
         
         void addItem (ASTItem item) {
-            if (children == null) children = new ArrayList ();
+            if (children == null) children = new ArrayList<Object> ();
 //            if (item.getOffset () != getEndOffset ())
 //                throw new IllegalStateException ();
             children.add (item);
@@ -545,7 +536,7 @@ public class LLSyntaxAnalyser {
         }
 
         ASTNode createASTNode () {
-            List l = new ArrayList ();
+            List<ASTItem> l = new ArrayList<ASTItem> ();
             if (children == null) {
                 if (removeNT (this)) return null;
             } else {
@@ -560,7 +551,7 @@ public class LLSyntaxAnalyser {
                         ASTNode nn = ((Node) o).createASTNode ();
                         if (nn != null) l.add (nn);
                     } else
-                        l.add (o);
+                        l.add ((ASTItem) o);
                 }
             }
             return ASTNode.create (

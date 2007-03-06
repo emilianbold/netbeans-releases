@@ -186,7 +186,7 @@ public abstract class ASTPath {
         }
         
         public ASTPath subPath (int index) {
-            return new Token2Path (path.subList (0, index));
+            return new Token2Path (path.subList (0, index + 1));
         }
         
         public String toString () {

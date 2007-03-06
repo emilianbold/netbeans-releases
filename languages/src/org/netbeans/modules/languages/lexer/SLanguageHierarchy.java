@@ -71,6 +71,7 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
                 "error"
             );
             tokenIds.add (errorTokenId);
+            tokensMap.put ("error", errorTokenId);
             STokenId embeddingTokenId = new STokenId (
                 "PE",
                 tokenIds.size (), 

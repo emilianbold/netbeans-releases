@@ -47,7 +47,6 @@ import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.LanguagesManagerImpl.LanguagesManagerListener;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.RequestProcessor;
@@ -175,9 +174,9 @@ public class ParserManagerImpl extends ParserManager {
         state = State.ERROR;
         ast = null;
         exception = ex;
-        Iterator it = new ArrayList (listeners).iterator ();
+        Iterator<ParserManagerListener> it = new ArrayList<ParserManagerListener> (listeners).iterator ();
         while (it.hasNext ()) {
-            ParserManagerListener l = (ParserManagerListener) it.next ();
+            ParserManagerListener l = it.next ();
             l.parsed (state, ast);
         }
         if (state == State.PARSING) return;
@@ -236,11 +235,12 @@ public class ParserManagerImpl extends ParserManager {
             String mimeType = (String) doc.getProperty ("mimeType");
             Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                 getLanguage (mimeType);
-            Map m = (Map) l.getProperty (Language.AST);
-            if (m != null && ast != null) {
-                Evaluator e = (Evaluator) m.get ("process");
-                if (e != null) 
-                    return (ASTNode) e.evaluate (SyntaxContext.create (doc, ASTPath.create (root)));
+            Feature astProperties = l.getFeature ("AST");
+            if (astProperties != null && ast != null) {
+                return (ASTNode) astProperties.getValue (
+                    "process", 
+                    SyntaxContext.create (doc, ASTPath.create (root))
+                );
             }
             return root;
         } catch (Exception ex) {
@@ -277,7 +277,6 @@ public class ParserManagerImpl extends ParserManager {
     }
     
     private static List<ASTToken> getTokens (TokenSequence ts) {
-        System.out.println("getTokens " + ts.language().mimeType());
         List<ASTToken> tokens = new ArrayList<ASTToken> ();
         while (ts.moveNext ()) {
             Token t = ts.token ();
