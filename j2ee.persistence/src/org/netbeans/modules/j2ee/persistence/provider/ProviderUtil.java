@@ -349,7 +349,7 @@ public class ProviderUtil {
      * 
      * @return array of properties, empty if the given unit's properties were null.
      */
-    private static Property[] getProperties(PersistenceUnit persistenceUnit){
+    static Property[] getProperties(PersistenceUnit persistenceUnit){
         if (persistenceUnit.getProperties() != null){
             return persistenceUnit.getProperties().getProperty2();
         }

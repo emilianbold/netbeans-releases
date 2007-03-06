@@ -21,7 +21,10 @@
 package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.io.File;
+import java.net.URL;
 import junit.framework.*;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
@@ -76,7 +79,7 @@ public class ProviderUtilTest extends NbTestCase {
     
     public void testSetProvider(){
         Provider provider = ProviderUtil.KODO_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, provider, null, Provider.TABLE_GENERATTION_UNKOWN);
+        ProviderUtil.setProvider(persistenceUnit, provider, getConnection(), Provider.TABLE_GENERATTION_UNKOWN);
         assertEquals(provider.getProviderClass(), persistenceUnit.getProvider());
         assertPropertyExists(provider.getJdbcDriver());
         assertPropertyExists(provider.getJdbcUrl());
@@ -85,11 +88,11 @@ public class ProviderUtilTest extends NbTestCase {
     
     public void testChangeProvider(){
         Provider originalProvider = ProviderUtil.HIBERNATE_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, originalProvider, null, Provider.TABLE_GENERATION_CREATE);
+        ProviderUtil.setProvider(persistenceUnit, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(originalProvider.getProviderClass(), persistenceUnit.getProvider());
         
         Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, newProvider, null, Provider.TABLE_GENERATION_DROPCREATE);
+        ProviderUtil.setProvider(persistenceUnit, newProvider, getConnection(), Provider.TABLE_GENERATION_DROPCREATE);
         // assert that old providers properties were removed
         assertNoSuchProperty(originalProvider.getTableGenerationPropertyName());
         assertNoSuchProperty(originalProvider.getJdbcDriver());
@@ -109,10 +112,10 @@ public class ProviderUtilTest extends NbTestCase {
      */
     public void testTableGenerationPropertyIsPreserved(){
         Provider originalProvider = ProviderUtil.KODO_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, originalProvider, null, Provider.TABLE_GENERATION_CREATE);
+        ProviderUtil.setProvider(persistenceUnit, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         
         Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, newProvider, null, Provider.TABLE_GENERATION_CREATE);
+        ProviderUtil.setProvider(persistenceUnit, newProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(newProvider.getTableGenerationPropertyName(),
                 ProviderUtil.getProperty(persistenceUnit, newProvider.getTableGenerationPropertyName()).getName());
         assertEquals(newProvider.getTableGenerationCreateValue(),
@@ -125,7 +128,7 @@ public class ProviderUtilTest extends NbTestCase {
     public void testRemoveProviderProperties(){
         Provider provider = ProviderUtil.KODO_PROVIDER;
         PersistenceUnit persistenceUnit = new PersistenceUnit();
-        ProviderUtil.setProvider(persistenceUnit, provider, null, Provider.TABLE_GENERATION_CREATE);
+        ProviderUtil.setProvider(persistenceUnit, provider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         //        ProviderUtil.setTableGeneration(persistenceUnit, Provider.TABLE_GENERATION_CREATE, provider);
         
         ProviderUtil.removeProviderProperties(persistenceUnit);
@@ -211,5 +214,9 @@ public class ProviderUtilTest extends NbTestCase {
         return false;
     }
     
+    private DatabaseConnection getConnection(){
+        JDBCDriver driver = JDBCDriver.create("driver", "driver", "foo.bar", new URL[]{});
+        return DatabaseConnection.create(driver, "foo", "bar", "schema", "password", false);
+    }
     
 }
