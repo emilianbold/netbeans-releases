@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-   - The contents of this file are subject to the terms of the Common Development
-   - and Distribution License (the License). You may not use this file except in
-   - compliance with the License.
-   -
-   - You can obtain a copy of the License at http://www.netbeans.org/cddl.html
-   - or http://www.netbeans.org/cddl.txt.
-
-   - When distributing Covered Code, include this CDDL Header Notice in each file
-   - and include the License file at http://www.netbeans.org/cddl.txt.
-   - If applicable, add the following below the CDDL Header, with the fields
-   - enclosed by brackets [] replaced by your own identifying information:
-   - "Portions Copyrighted [year] [name of copyright owner]"
-   -
-   - The Original Software is NetBeans. The Initial Developer of the Original
-   - Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-   - Microsystems, Inc. All Rights Reserved.
-  -->
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE component_type_group [
 
 <!ENTITY R    "read">
@@ -106,7 +106,7 @@ type CDATA #REQUIRED
             <property transient="true" category="IEP.Category.entity" name="categoryOrder" title="IEP.Model.Entity.categoryOrder.title" description="IEP.Model.Entity.categoryOrder.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="IEP.Category.main\IEP.Category.operator\IEP.Category.schema\IEP.Category.entity" renderer="string" access="" multiple="true"/>
         </property_group>
         <component_type name="Plan" icon="" title="IEP.Model.Plan.title" description="IEP.Model.Plan.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
-            <property transient="false" category="IEP.Category.model" required="false" name="version" title="IEP.Model.Plan.version.title" description="IEP.Model.Plan.version.description" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="5.0" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.model" required="false" name="version" title="IEP.Model.Plan.version.title" description="IEP.Model.Plan.version.description" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="1.0" renderer="string" access="&R;" multiple="false"/>
             <property transient="true" category="IEP.Category.model" required="false" name="doc" title="IEP.Model.Plan.doc.title" description="IEP.Model.Plan.doc.description" type="object" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="docObj" access="&R;" multiple="false"/>
             
             <component_type name="Metadata" icon="" title="IEP.Model.Plan.Metadata.title" description="IEP.Model.Plan.Metadata.description" allowsChildren="true" visible="false"  validator="org.netbeans.modules.iep.editor.tcg.model.OkValidator">
@@ -156,7 +156,7 @@ type CDATA #REQUIRED
     <!-- Input -->
     <component_type_group name="Input" icon="" title="IEP.Input.title" description="IEP.Input.description">
         <!-- stream input: creating table in db -->
-        <component_type name="StreamInput" icon="streamx16.gif" title="IEP.Input.StreamInput.title" description="IEP.Input.StreamInput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="StreamInput" icon="streamInputx16.png" title="IEP.Input.StreamInput.title" description="IEP.Input.StreamInput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -170,7 +170,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/input/streamInput.xml"/>
         </component_type>
         <!-- relation input: creating table in db-->
-        <component_type name="TableInput" icon="tablex16.gif" title="IEP.Input.TableInput.title" description="IEP.Input.TableInput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="TableInput" icon="tableInputx16.png" title="IEP.Input.TableInput.title" description="IEP.Input.TableInput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.StaticIOCustomEditor"/>
@@ -188,7 +188,7 @@ type CDATA #REQUIRED
     <!-- Output -->
     <component_type_group name="Output" icon="" title="IEP.Output.title" description="IEP.Output.description">
         <!-- stream output: do nothing -->
-        <component_type name="StreamOutput" icon="streamx16.gif" title="IEP.Output.StreamOutput.title" description="IEP.Output.StreamOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="StreamOutput" icon="streamOutputx16.png" title="IEP.Output.StreamOutput.title" description="IEP.Output.StreamOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DynamicOutputCustomEditor"/>
@@ -201,7 +201,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/output/streamOutput.xml"/>
         </component_type>
         <!-- relation output: do nothing -->
-        <component_type name="RelationOutput" icon="relationx16.gif" title="IEP.Output.RelationOutput.title" description="IEP.Output.RelationOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="RelationOutput" icon="relationOutputx16.png" title="IEP.Output.RelationOutput.title" description="IEP.Output.RelationOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DynamicOutputCustomEditor"/>
@@ -214,7 +214,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/output/relationOutput.xml"/>
         </component_type>
         <!-- relation output: use a table update info to maintain the table's state -->
-        <component_type name="TableOutput"  icon="operatorRTx16.gif" title="IEP.Output.TableOutput.title" description="IEP.Output.TableOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="TableOutput"  icon="tableOutputx16.png" title="IEP.Output.TableOutput.title" description="IEP.Output.TableOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.StaticIOCustomEditor"/>
@@ -230,7 +230,7 @@ type CDATA #REQUIRED
     <!-- Correlation and Filter -->
     <component_type_group name="Operator" icon="" title="IEP.Operator.title" description="IEP.Operator.description">
         <!-- stream project and filter -->
-        <component_type name="StreamProjectAndFilter" icon="operatorSTSx16.gif" title="IEP.Operator.StreamProjectAndFilter.title" description="IEP.Operator.StreamProjectAndFilter.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="StreamProjectAndFilter" icon="streamProjectAndFilterx16.png" title="IEP.Operator.StreamProjectAndFilter.title" description="IEP.Operator.StreamProjectAndFilter.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -248,7 +248,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/streamProjectAndFilter.xml"/>
         </component_type>
         <!-- tuple serial correlation -->
-        <component_type name="TupleSerialCorrelation" icon="operatorSSx16.gif" title="IEP.Operator.TupleSerialCorrelation.title" description="IEP.Operator.TupleSerialCorrelation.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="TupleSerialCorrelation" icon="tupleSerialCorrelationx16.png" title="IEP.Operator.TupleSerialCorrelation.title" description="IEP.Operator.TupleSerialCorrelation.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TupleSerialCorrelationCustomEditor"/>
@@ -264,7 +264,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/TupleSerialCorrelation.xml"/>
         </component_type>
         <!-- relation map-->
-        <component_type name="RelationMap" icon="operatorRTRx16.gif" title="IEP.Operator.RelationMap.title" description="IEP.Operator.RelationMap.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="RelationMap" icon="relationMapx16.png" title="IEP.Operator.RelationMap.title" description="IEP.Operator.RelationMap.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -283,7 +283,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/relationMap.xml"/>
         </component_type>
         <!-- tuple based aggregator -->
-        <component_type name="TupleBasedAggregator" icon="operatorSTSx16.gif" title="IEP.Operator.TupleBasedAggregator.title" description="IEP.Operator.TupleBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="TupleBasedAggregator" icon="tupleBasedAggregatorx16.png" title="IEP.Operator.TupleBasedAggregator.title" description="IEP.Operator.TupleBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TupleBasedAggregatorCustomEditor"/>
@@ -305,7 +305,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/tupleBasedAggregator.xml"/>
         </component_type>
         <!-- time based aggregator -->
-        <component_type name="TimeBasedAggregator" icon="operatorSTSx16.gif" title="IEP.Operator.TimeBasedAggregator.title" description="IEP.Operator.TimeBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="TimeBasedAggregator" icon="timeBasedAggregatorx16.png" title="IEP.Operator.TimeBasedAggregator.title" description="IEP.Operator.TimeBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TimeBasedAggregatorCustomEditor"/>
@@ -329,7 +329,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/timeBasedAggregator.xml"/>
         </component_type>
         <!-- relation aggregator-->
-        <component_type name="RelationAggregator" icon="operatorRRx16.gif" title="IEP.Operator.RelationAggregator.title" description="IEP.Operator.RelationAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="RelationAggregator" icon="relationAggregatorx16.png" title="IEP.Operator.RelationAggregator.title" description="IEP.Operator.RelationAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -348,7 +348,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/relationAggregator.xml"/>
         </component_type>
         <!-- tuple based window -->
-        <component_type name="TupleBasedWindow" icon="operatorSRx16.gif" title="IEP.Operator.TupleBasedWindow.title" description="IEP.Operator.TupleBasedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="TupleBasedWindow" icon="tupleBasedWindowx16.png" title="IEP.Operator.TupleBasedWindow.title" description="IEP.Operator.TupleBasedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TupleBasedWindowCustomEditor"/>
@@ -361,7 +361,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/tupleBasedWindow.xml"/>
         </component_type>
         <!-- partitioned window -->
-        <component_type name="PartitionedWindow" icon="operatorSRx16.gif" title="IEP.Operator.PartitionedWindow.title" description="IEP.Operator.PartitionedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="PartitionedWindow" icon="partitionedWindowx16.png" title="IEP.Operator.PartitionedWindow.title" description="IEP.Operator.PartitionedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.PartitionedWindowCustomEditor"/>
@@ -375,7 +375,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/partitionedWindow.xml"/>
         </component_type>
         <!-- attribute based window -->
-        <component_type name="AttributeBasedWindow" icon="operatorSRx16.gif" title="IEP.Operator.AttributeBasedWindow.title" description="IEP.Operator.AttributeBasedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="AttributeBasedWindow" icon="attributeBasedWindowx16.png" title="IEP.Operator.AttributeBasedWindow.title" description="IEP.Operator.AttributeBasedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.AttributeBasedWindowCustomEditor"/>
@@ -389,7 +389,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/attributeBasedWindow.xml"/>
         </component_type>
         <!-- time based window -->
-        <component_type name="TimeBasedWindow" icon="operatorSRx16.gif" title="IEP.Operator.TimeBasedWindow.title" description="IEP.Operator.TimeBasedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="TimeBasedWindow" icon="timeBasedWindowx16.png" title="IEP.Operator.TimeBasedWindow.title" description="IEP.Operator.TimeBasedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TimeBasedWindowCustomEditor"/>
@@ -403,7 +403,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/timeBasedWindow.xml"/>
         </component_type>
         <!-- insert stream-->
-        <component_type name="InsertStream" icon="operatorRSx16.gif" title="IEP.Operator.InsertStream.title" description="IEP.Operator.InsertStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="InsertStream" icon="insertStreamx16.png" title="IEP.Operator.InsertStream.title" description="IEP.Operator.InsertStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -415,7 +415,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/relationToStream/insertStream.xml"/>
         </component_type>
         <!-- delete stream-->
-        <component_type name="DeleteStream" icon="operatorRSx16.gif" title="IEP.Operator.DeleteStream.title" description="IEP.Operator.DeleteStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="DeleteStream" icon="deleteStreamx16.png" title="IEP.Operator.DeleteStream.title" description="IEP.Operator.DeleteStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -427,7 +427,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/relationToStream/deleteStream.xml"/>
         </component_type>
         <!-- relation stream-->
-        <component_type name="RelationStream" icon="operatorRSx16.gif" title="IEP.Operator.RelationStream.title" description="IEP.Operator.RelationStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="RelationStream" icon="relationStreamx16.png" title="IEP.Operator.RelationStream.title" description="IEP.Operator.RelationStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -439,7 +439,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/relationToStream/relationStream.xml"/>
         </component_type>
         <!-- relation output: use a table update info to maintain the table's state -->
-        <component_type name="Table" icon="operatorRTx16.gif" title="IEP.Operator.Table.title" description="IEP.Operator.Table.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="Table" icon="tablex16.png" title="IEP.Operator.Table.title" description="IEP.Operator.Table.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -451,7 +451,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/table.xml"/>
         </component_type>
         <!-- distinct-->
-        <component_type name="Distinct" icon="operatorRRx16.gif" title="IEP.Operator.Distinct.title" description="IEP.Operator.Distinct.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="Distinct" icon="distinctx16.png" title="IEP.Operator.Distinct.title" description="IEP.Operator.Distinct.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -466,7 +466,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/distinct.xml"/>
         </component_type>
         <!-- union all-->
-        <component_type name="UnionAll" icon="operatorRRx16.gif" title="IEP.Operator.UnionAll.title" description="IEP.Operator.UnionAll.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="UnionAll" icon="unionAllx16.png" title="IEP.Operator.UnionAll.title" description="IEP.Operator.UnionAll.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -481,7 +481,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/unionAll.xml"/>
         </component_type>
         <!-- union-->
-        <component_type name="Union" icon="operatorRRx16.gif" title="IEP.Operator.Union.title" description="IEP.Operator.Union.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="Union" icon="unionx16.png" title="IEP.Operator.Union.title" description="IEP.Operator.Union.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -496,7 +496,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/union.xml"/>
         </component_type>
         <!-- intersect-->
-        <component_type name="Intersect" icon="operatorRRx16.gif" title="IEP.Operator.Intersect.title" description="IEP.Operator.Intersect.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="Intersect" icon="intersectx16.png" title="IEP.Operator.Intersect.title" description="IEP.Operator.Intersect.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -511,10 +511,10 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/intersect.xml"/>
         </component_type>
         <!-- minus-->
-        <component_type name="Minus" icon="operatorRRx16.gif" title="IEP.Operator.Minus.title" description="IEP.Operator.Minus.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+        <component_type name="Minus" icon="minusx16.png" title="IEP.Operator.Minus.title" description="IEP.Operator.Minus.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
-                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.MinusCustomEditor"/>
                 <property name="type" default="i18n.IEP.Operator.Minus.title"/>
                 <property name="inputType" default="i18n.IEP.IOType.relation"/>
                 <property name="inputMaxCount" default="1000000"/>
@@ -523,6 +523,7 @@ type CDATA #REQUIRED
                 <property name="isSchemaOwner" default="false"/>
                 <property name="palette" default="relationOperator"/>
             </property_group>
+            <property transient="false" category="IEP.Category.operator" name="subtractFrom" title="IEP.Operator.Minus.subtractFrom.title" description="IEP.Operator.Minus.subtractFrom.description" required="true" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
             <code type="xml" file="vm/iep/operator/minus.xml"/>
         </component_type>
     </component_type_group>

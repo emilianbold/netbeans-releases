@@ -4,4 +4,20 @@
 
 <map version="1.0">
 	<mapID target="iep_credits" url="credits.html"/>
+	<mapID target="iep_aboutcql" url="aboutcql.html"/>
+	<mapID target="iep_aboutcust" url="aboutcust.html"/>
+	<mapID target="iep_aboutpalettecan" url="aboutpalettecan.html"/>
+	<mapID target="iep_aboutprojects" url="aboutprojects.html"/>
+	<mapID target="iep_deleteprocess" url="deleteprocess.html"/>
+	<mapID target="iep_deployiep" url="deployiep.html"/>
+	<mapID target="iep_dragdrop" url="dragdrop.html"/>
+	<mapID target="iep_receivesend" url="receivesend.html"/>
+	<mapID target="iep_saveiepprocess" url="saveiepprocess.html"/>
+	<mapID target="iep_testiep" url="testiep.html"/>
+	<mapID target="iep_usingcust" url="usingcust.html"/>
+	<mapID target="iep_usingprop" url="usingprop.html"/>
+	<mapID target="iep_wsdlcreate" url="wsdlcreate.html"/>
+	<mapID target="iep_aboutdatatypes" url="aboutdatatypes.html"/>
+	<mapID target="iep_iepprocess" url="iepprocess.html"/>
+	<mapID target="iep_understandprojects" url="understandprojects.html"/>
 </map>

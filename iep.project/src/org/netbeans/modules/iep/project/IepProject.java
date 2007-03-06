@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,7 @@ import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.iep.project.ui.IepProjectLogicalViewProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -30,7 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -137,7 +138,7 @@ public final class IepProject implements Project, AntProjectListener {
         sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
 
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/null, null);
-//        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", ProjectConstants.SOURCES_TYPE_XML, srcJavaLabel, /*XXX*/null, null);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -362,6 +363,9 @@ public final class IepProject implements Project, AntProjectListener {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(IepProject.ARTIFACT_TYPE_JBI_ASA + ":" +
                         helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX),
+                        IcanproProjectProperties.SE_DEPLOYMENT_JAR,
+                        helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(IcanproConstants.ARTIFACT_TYPE_JAR,
                         IcanproProjectProperties.SE_DEPLOYMENT_JAR,
                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
             };

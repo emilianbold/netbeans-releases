@@ -2,22 +2,22 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
+ 
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.JTextFieldFilter;
@@ -79,69 +79,42 @@ public class SelectPanel extends JPanel implements SharedConstants {
     private static final Logger mLog = Logger.getLogger(SelectPanel.class.getName());
     private static String[] SQL_TYPE_NAMES = new String[] {
         SQL_TYPE_BIT,
-        SQL_TYPE_TINYINT,
-        SQL_TYPE_SMALLINT,
+//        SQL_TYPE_TINYINT,
+//        SQL_TYPE_SMALLINT,
         SQL_TYPE_INTEGER,
         SQL_TYPE_BIGINT,
-        SQL_TYPE_REAL,
-        SQL_TYPE_FLOAT,
+//       SQL_TYPE_REAL,
+//        SQL_TYPE_FLOAT,
         SQL_TYPE_DOUBLE,
-        SQL_TYPE_DECIMAL,
-        SQL_TYPE_NUMERIC,
-        SQL_TYPE_CHAR,
+//        SQL_TYPE_DECIMAL,
+//        SQL_TYPE_NUMERIC,
+//        SQL_TYPE_CHAR,
         SQL_TYPE_VARCHAR,
-        SQL_TYPE_LONGVARCHAR,
+//        SQL_TYPE_LONGVARCHAR,
         SQL_TYPE_DATE,
         SQL_TYPE_TIME,
         SQL_TYPE_TIMESTAMP,
-        SQL_TYPE_BINARY,
-        SQL_TYPE_VARBINARY,
-        SQL_TYPE_LONGVARBINARY,
-        SQL_TYPE_BLOB,
-        SQL_TYPE_CLOB,
+//        SQL_TYPE_BINARY,
+//        SQL_TYPE_VARBINARY,
+//        SQL_TYPE_LONGVARBINARY,
+//        SQL_TYPE_BLOB,
+//        SQL_TYPE_CLOB,
 //        "ARRAY",
 //        "REF",
 //        "STRUCT",
     };
     
-    private static int[] SQL_TYPES = new int[] {
-        Types.BIT,
-        Types.TINYINT,
-        Types.SMALLINT,
-        Types.INTEGER,
-        Types.BIGINT,
-        Types.REAL,
-        Types.FLOAT,
-        Types.DOUBLE,
-        Types.DECIMAL,
-        Types.NUMERIC,
-        Types.CHAR,
-        Types.VARCHAR,
-        Types.LONGVARCHAR,
-        Types.DATE,
-        Types.TIME,
-        Types.TIMESTAMP,
-        Types.BINARY,
-        Types.VARBINARY,
-        Types.LONGVARBINARY,
-        Types.BLOB,
-        Types.CLOB,
-//        Types.ARRAY,
-//        Types.REF,
-//        Types.STRUCT,
-    };
-    
     private static Set QUANTITY_TYPES = new HashSet();
     static {
-        QUANTITY_TYPES.add(SQL_TYPE_TINYINT);
-        QUANTITY_TYPES.add(SQL_TYPE_SMALLINT);
+//        QUANTITY_TYPES.add(SQL_TYPE_TINYINT);
+//        QUANTITY_TYPES.add(SQL_TYPE_SMALLINT);
         QUANTITY_TYPES.add(SQL_TYPE_INTEGER);
         QUANTITY_TYPES.add(SQL_TYPE_BIGINT);
-        QUANTITY_TYPES.add(SQL_TYPE_REAL);
-        QUANTITY_TYPES.add(SQL_TYPE_FLOAT);
+//        QUANTITY_TYPES.add(SQL_TYPE_REAL);
+//        QUANTITY_TYPES.add(SQL_TYPE_FLOAT);
         QUANTITY_TYPES.add(SQL_TYPE_DOUBLE);
-        QUANTITY_TYPES.add(SQL_TYPE_DECIMAL);
-        QUANTITY_TYPES.add(SQL_TYPE_NUMERIC);
+        //QUANTITY_TYPES.add(SQL_TYPE_DECIMAL);
+//        QUANTITY_TYPES.add(SQL_TYPE_NUMERIC);
         QUANTITY_TYPES.add(SQL_TYPE_DATE);
         QUANTITY_TYPES.add(SQL_TYPE_TIMESTAMP);
         QUANTITY_TYPES.add(SQL_TYPE_TIME);
@@ -288,7 +261,21 @@ public class SelectPanel extends JPanel implements SharedConstants {
                 }
             };
         } else {
-            mTable = new MoveableRowTable(mTableModel);
+            mTable = new MoveableRowTable(mTableModel) {
+              public boolean isCellEditable(int row, int column) {
+                    if(column == 2 ) { // to ensure non editability of scale and size column in case of non varchar.
+                        if(mTableModel.getValueAt(row,1) != null && mTableModel.getValueAt(row,1).toString().equals(SQL_TYPE_VARCHAR)) {
+                            return true;
+                        } else {
+                            return false;
+                        } 
+                    }
+                     
+                    return true;
+                    }
+                     
+                   
+            };
         }
         mDropTarget = new DropTarget(mTable, new MyDropTargetAdapter());
         Vector data = new Vector();
@@ -401,6 +388,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
             }
             tcm.getColumn(mNameCol).setCellEditor(mCellEditorANU);
             tcm.getColumn(mNameCol + 1).setCellEditor(mCellEditorSqlType);
+            //mComboBoxSqlType.addActionListener(new SQLTypeComboBoxActionListener());
             tcm.getColumn(mNameCol + 2).setCellEditor(mCellEditorNumeric);
             tcm.getColumn(mNameCol + 3).setCellEditor(mCellEditorNumeric);
             tcm.getColumn(mNameCol + 4).setCellEditor(mCellEditorAny);
@@ -737,6 +725,23 @@ public class SelectPanel extends JPanel implements SharedConstants {
             return super.getTableCellEditorComponent(table, value, isSelected, row, column);
         }
     }
+    
+  /*  class SQLTypeComboBoxActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+        JComboBox cb = (JComboBox)e.getSource();
+        String selectedSQLType = (String)cb.getSelectedItem();
+        int r = SelectPanel.this.mTable.getSelectedRow();
+        int c = 3;
+        if(selectedSQLType.equalsIgnoreCase(SQL_TYPE_VARCHAR)) {
+            SelectPanel.this.mTableModel.setValueAt("16",r,2);
+        } else {
+            SelectPanel.this.mTableModel.setValueAt("",r,2);
+        }
+        
+    }
+
+    }
+   **/
     
     class ExpressionCellEditorListener implements CellEditorListener {
         // This tells the listeners the editor has canceled editing

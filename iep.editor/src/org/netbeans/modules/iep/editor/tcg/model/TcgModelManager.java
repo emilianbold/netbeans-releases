@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -266,7 +266,7 @@ public class TcgModelManager implements TcgModelConstants {
             String compType = attribs.getNamedItem("type").getNodeValue();
             componentType = TcgModelManager.getTcgComponentType(compType);
             if (componentType == null) {
-                mLog.warning("TcgComponentType : " + compType + " not found");
+                mLog.warning("TcgComponentType : " + compType + " not found.");
                 return null;
             }    
             component =
@@ -316,7 +316,7 @@ public class TcgModelManager implements TcgModelConstants {
                                 if (component.hasProperty(sName)) {
                                     component.getProperty(sName).setStringValue(sValue);
                                 } else {
-                                    mLog.warning("ComponentProperty : " + sName + " not found");
+                                    mLog.warning("ComponentProperty : " + sName + " not found.");
                                 }
                             }
                         } catch (Exception e) {
@@ -460,7 +460,7 @@ public class TcgModelManager implements TcgModelConstants {
             try {
                 ret = (String) comp.getRoot().getProperty("version").getValue();
             } catch (Exception e) {
-                mLog.warning("Exception: " + e);
+                mLog.warning("Exception: "  + e);
                 e.printStackTrace();
             }
         }
