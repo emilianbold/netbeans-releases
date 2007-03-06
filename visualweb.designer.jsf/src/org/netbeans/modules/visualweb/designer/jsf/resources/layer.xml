@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.designer.jsf.resources.Bundle"/>
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.instance"/>
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.instance"/>
         </folder>
     </folder>
     
@@ -59,6 +60,12 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
                     </file>
                     <attr name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow/DesignerSeparator2.instance" boolvalue="true"/>
+                    
+                    <attr name="DesignerSeparator2.instance/org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.shadow/Separator1.instance" boolvalue="true"/>
                     
                     <attr name="DesignerSeparator3.instance/org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow">

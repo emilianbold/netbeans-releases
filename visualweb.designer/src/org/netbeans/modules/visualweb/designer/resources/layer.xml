@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
             <!--<file name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.instance"/>-->
             <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
             <file name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.instance"/>
-            <file name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.instance"/>
+            <!--<file name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.instance"/>-->
             <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
             <file name="org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.instance"/>
         </folder>
@@ -136,11 +136,11 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="DesignerSeparator2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr name="DesignerSeparator2.instance/org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow" boolvalue="true"/>
+                    <!--<attr name="DesignerSeparator2.instance/org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-SelectParentAction.instance"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow/Separator1.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow/Separator1.instance" boolvalue="true"/>-->
                     
                     <attr name="org-netbeans-modules-visualweb-insync-action-VirtualFormsAction.shadow/DesignerSeparator3.instance" boolvalue="true"/>
                     <file name="DesignerSeparator3.instance">

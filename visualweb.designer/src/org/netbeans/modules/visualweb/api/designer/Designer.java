@@ -54,10 +54,9 @@ public interface Designer {
 
     public void startInlineEditing(Element componentRootElement, String propertyName);
 
+    public void selectComponent(Element componentRootElement);
     public int getSelectedCount();
 
-    public void snapToGrid();
-    
     public enum Alignment {
         SNAP_TO_GRID,
         TOP,
@@ -68,4 +67,7 @@ public interface Designer {
         RIGHT
     }
     public void align(Alignment alignment);
+    public void snapToGrid();
+
+
 }

@@ -2333,133 +2333,92 @@ public class SelectionManager {
     }
     
     
-    /** XXX Copied from DesignerActions. */
-    public static boolean canSelectParent(/*DesignBean designBean*/Element componentRootElement) {
-        if (componentRootElement == null) {
-            return false;
-        }
-        
-//        DesignBean designBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
-//        if (designBean == null) {
-//            return false;
-//        }
-//        
-//        DesignBean parent = designBean.getBeanParent();
-//
+//    /** XXX Copied from DesignerActions. */
+//    public static void selectParent(/*DesignBean designBean*/Element componentRootElement) {
+////        if (designBean == null) {
+////            return;
+////        }
 ////        WebForm webform = WebForm.findWebFormForDesignContext(designBean.getDesignContext());
 ////        if (webform == null) {
-////            return false;
+////            return;
 ////        }
-////        FacesModel model = webform.getModel();
-//        DesignContext designContext = designBean.getDesignContext();
-//        if (designContext == null) {
-//            return false;
-//        }
-        Element parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(componentRootElement);
-        
-//        while (parent != null) {
-        if (parentComponentRootElement != null) {
-//            if (parent == model.getRootBean()) {
-//            if (parent == designContext.getRootContainer()) {
-            if (WebForm.getHtmlDomProviderService().isRootContainerComponent(parentComponentRootElement)) {
-                return false;
-            }
-
-//            if (Util.isSpecialBean(/*webform, */parent)) {
-//            if (parent instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isSpecialComponent(
-//                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent))) {
-            if (WebForm.getHtmlDomProviderService().isSpecialComponent(parentComponentRootElement)) {
-                return false;
-            }
-
-            /* No longer necessary
-            if (unit.isVisualBean(parent)) {
-                return true;
-            } else {
-                parent = parent.getLiveParent();
-            }
-             */
-            return true;
-        }
-
-        return false;
-    }
-
-    /** XXX Copied from DesignerActions. */
-    public static void selectParent(/*DesignBean designBean*/Element componentRootElement) {
-//        if (designBean == null) {
+////        
+////        webform.getSelection().doSelectParent(designBean);
+//        if (componentRootElement == null) {
 //            return;
 //        }
-//        WebForm webform = WebForm.findWebFormForDesignContext(designBean.getDesignContext());
+//        WebForm webform = WebForm.findWebFormForElement(componentRootElement);
 //        if (webform == null) {
 //            return;
 //        }
 //        
-//        webform.getSelection().doSelectParent(designBean);
-        if (componentRootElement == null) {
-            return;
-        }
-        WebForm webform = WebForm.findWebFormForElement(componentRootElement);
-        if (webform == null) {
-            return;
-        }
-        
-        webform.getSelection().doSelectParent(componentRootElement);
-    }
-    
-    private void doSelectParent(/*DesignBean designBean*/Element componentRootElement) {
-        webform.getManager().finishInlineEditing(false);
-
-//        SelectionManager sm = webform.getSelection();
-
-//        DesignBean designBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
-//        if (designBean == null) {
+//        webform.getSelection().doSelectParent(componentRootElement);
+//    }
+//    
+//    private void doSelectParent(/*DesignBean designBean*/Element componentRootElement) {
+//        webform.getManager().finishInlineEditing(false);
+//
+////        SelectionManager sm = webform.getSelection();
+//
+////        DesignBean designBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+////        if (designBean == null) {
+////            return;
+////        }
+//        if (componentRootElement == null) {
 //            return;
 //        }
+//        
+////        if (!canSelectParent(designBean)) {
+//        if (!canSelectParent(componentRootElement)) {
+//            if (!webform.isGridMode()) {
+//                // in flow mode, allow you to escape your way to the top;
+//                // clear selection and show document properties
+//                clearSelection(true);
+//            }
+//
+//            return;
+//        }
+//
+//        // Find the closest selectable parent that is actually
+//        // selectable!
+////        DesignBean parent = designBean.getBeanParent();
+//        Element parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(componentRootElement);
+////        ModelViewMapper mapper = webform.getMapper();
+//
+////        while (parent != null) {
+//        while (parentComponentRootElement != null) {
+//            // Find the visual (non-form, non-root) parent and select it
+////            Element element = FacesSupport.getElement(parent);
+////            Element element = Util.getElement(parent);
+////            Element element = WebForm.getHtmlDomProviderService().getElement(parent);
+//            Element element = WebForm.getHtmlDomProviderService().getSourceElement(parentComponentRootElement);
+//
+//            if (element != null) {
+////                CssBox box = mapper.findBox(element);
+//                CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), element);
+//
+//                if (box != null) {
+////                    selectComponents(new DesignBean[] { parent }, true);
+////                    if (parent instanceof MarkupDesignBean) {
+//                        selectComponents(new Element[] { parentComponentRootElement }, true);
+//                        break;
+////                    }
+//                }
+//            }
+//
+////            parent = parent.getBeanParent();
+//            parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(parentComponentRootElement);
+//        }
+//    }
+    
+    void selectComponent(Element componentRootElement) {
         if (componentRootElement == null) {
             return;
         }
         
-//        if (!canSelectParent(designBean)) {
-        if (!canSelectParent(componentRootElement)) {
-            if (!webform.isGridMode()) {
-                // in flow mode, allow you to escape your way to the top;
-                // clear selection and show document properties
-                clearSelection(true);
-            }
-
-            return;
-        }
-
-        // Find the closest selectable parent that is actually
-        // selectable!
-//        DesignBean parent = designBean.getBeanParent();
-        Element parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(componentRootElement);
-//        ModelViewMapper mapper = webform.getMapper();
-
-//        while (parent != null) {
-        while (parentComponentRootElement != null) {
-            // Find the visual (non-form, non-root) parent and select it
-//            Element element = FacesSupport.getElement(parent);
-//            Element element = Util.getElement(parent);
-//            Element element = WebForm.getHtmlDomProviderService().getElement(parent);
-            Element element = WebForm.getHtmlDomProviderService().getSourceElement(parentComponentRootElement);
-
-            if (element != null) {
-//                CssBox box = mapper.findBox(element);
-                CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), element);
-
-                if (box != null) {
-//                    selectComponents(new DesignBean[] { parent }, true);
-//                    if (parent instanceof MarkupDesignBean) {
-                        selectComponents(new Element[] { parentComponentRootElement }, true);
-                        break;
-//                    }
-                }
-            }
-
-//            parent = parent.getBeanParent();
-            parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(parentComponentRootElement);
+        CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), componentRootElement);
+        if (box != null) {
+            selectComponents(new Element[] { componentRootElement }, true);
         }
     }
 

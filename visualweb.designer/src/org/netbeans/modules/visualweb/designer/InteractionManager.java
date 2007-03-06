@@ -1512,7 +1512,8 @@ public class InteractionManager {
 //                    parent = ancestor.getDesignBean().getBeanParent();
 //                if (SelectionManager.canSelectParent(ancestorMarkupDesignBean)) {
                 Element ancestorComponentRootElement = CssBox.getElementForComponentRootCssBox(ancestor);
-                if (SelectionManager.canSelectParent(ancestorComponentRootElement)) {
+//                if (SelectionManager.canSelectParent(ancestorComponentRootElement)) {
+                if (canSelectParent(ancestorComponentRootElement)) {
 //                    parent = ancestorMarkupDesignBean.getBeanParent();
                     parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(ancestorComponentRootElement);
                 }
@@ -2222,7 +2223,8 @@ public class InteractionManager {
 //                if (defaultSelectionBean instanceof MarkupDesignBean) {
 //                    SelectionManager.selectParent(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultSelectionBean));
 //                }
-                SelectionManager.selectParent(getDefaultSelectionComponentRootElement());
+//                SelectionManager.selectParent(getDefaultSelectionComponentRootElement());
+                webform.getSelection().selectComponent(getDefaultSelectionComponentRootElement());
             }
         }
 
@@ -2913,6 +2915,59 @@ public class InteractionManager {
         }
 
     } // End of MouseHandler.
+    
+
+    /** XXX Copied from DesignerActions and SelectionManager later. */
+    private static boolean canSelectParent(/*DesignBean designBean*/Element componentRootElement) {
+        if (componentRootElement == null) {
+            return false;
+        }
+
+//        DesignBean designBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//        if (designBean == null) {
+//            return false;
+//        }
+//        
+//        DesignBean parent = designBean.getBeanParent();
+//
+////        WebForm webform = WebForm.findWebFormForDesignContext(designBean.getDesignContext());
+////        if (webform == null) {
+////            return false;
+////        }
+////        FacesModel model = webform.getModel();
+//        DesignContext designContext = designBean.getDesignContext();
+//        if (designContext == null) {
+//            return false;
+//        }
+        Element parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(componentRootElement);
+
+//        while (parent != null) {
+        if (parentComponentRootElement != null) {
+//            if (parent == model.getRootBean()) {
+//            if (parent == designContext.getRootContainer()) {
+            if (WebForm.getHtmlDomProviderService().isRootContainerComponent(parentComponentRootElement)) {
+                return false;
+            }
+
+//            if (Util.isSpecialBean(/*webform, */parent)) {
+//            if (parent instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isSpecialComponent(
+//                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent))) {
+            if (WebForm.getHtmlDomProviderService().isSpecialComponent(parentComponentRootElement)) {
+                return false;
+            }
+
+            /* No longer necessary
+            if (unit.isVisualBean(parent)) {
+                return true;
+            } else {
+                parent = parent.getLiveParent();
+            }
+             */
+            return true;
+        }
+
+        return false;
+    }
     
     
 //    // XXX Moved from FacesSupport.
