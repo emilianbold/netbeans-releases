@@ -10,10 +10,8 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -23,56 +21,61 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
  *
  * @author joelle lam
  */
-public class PageFlowController { 
+public class PageFlowController {
     private PageFlowView view;
-    JSFConfigModel configModel;
-    Project project;
+    private JSFConfigModel configModel;
+    private Project project;
+    private Collection<FileObject> webFiles;
     
-    /** Creates a new instance of PageFlowController 
-     * @param context 
-     * @param view 
+    /** Creates a new instance of PageFlowController
+     * @param context
+     * @param view
      */
-    public PageFlowController(JSFConfigEditorContext context, PageFlowView view ) {        
+    public PageFlowController(JSFConfigEditorContext context, PageFlowView view ) {
         this.view = view;
         FileObject configFile = context.getFacesConfigFile();
         configModel = ConfigurationUtils.getConfigModel(configFile,true);
         project = FileOwnerQuery.getOwner(configFile);
-        
+        webFiles = getAllRelevantFiles();
         setupGraph();
         
-        getAllRelevantFiles();
         
     }
     
     
-    private void getAllRelevantFiles() {
+    private Collection<FileObject> getAllRelevantFiles() {
         FileObject parentFolder = project.getProjectDirectory();
         FileObject webFileObject = parentFolder.getFileObject("web");
         Collection<FileObject> webFiles = getAllJSPFiles(webFileObject);
-        System.out.println("Web Files: " + webFiles);      
-
+        System.out.println("Web Files: " + webFiles);
+        return webFiles;
         
         //Add a listener to the Filesystem that listens to fileDelete, fileCreated, etc.
         //DataObject.find
-//        DataObject.find(parentFolder)
+        //        DataObject.find(parentFolder)
         
     }
     
     
     
-    private Collection<FileObject> getAllJSPFiles(FileObject folder ) {        
+    private Collection<FileObject> getAllJSPFiles(FileObject folder ) {
         Collection<FileObject> webFiles = new HashSet<FileObject>();
         FileObject[] childrenFiles = folder.getChildren();
         for( FileObject file : childrenFiles ){
             if( !file.isFolder() ) {
                 if( file.getMIMEType().equals("text/x-jsp"))
                     webFiles.add(file);
-            } else { 
+            } else {
                 webFiles.addAll(getAllJSPFiles(file));
             }
         }
@@ -81,9 +84,9 @@ public class PageFlowController {
     }
     
      /*
-     * Setup The Graph
-     * Should only be called by init();
-     **/
+      * Setup The Graph
+      * Should only be called by init();
+      **/
     private void setupGraph(){
         assert configModel !=null;
         
@@ -93,8 +96,8 @@ public class PageFlowController {
         createAllPageNodes(rules);
         createAllEdges(rules);
         view.layoutGraph();
-
-    }    
+        
+    }
     
     private void createAllEdges( List<NavigationRule> rules ){
         for( NavigationRule rule : rules ) {
@@ -116,25 +119,35 @@ public class PageFlowController {
                 pages.add(toPage);
             }
         }
-        for( String page : pages ) {
-            view.createNode(page, null, null);
+        for( String pageName : pages ) {
+            boolean isFound = false;
+            for( FileObject webFile : webFiles ) {
+                String webFileName = webFile.getNameExt();
+//                String webFileName = webFile.getName() + "." + webFile.getExt();
+                if( webFileName.equals(pageName)) {
+                    DataNode node = null;
+                    try {
+                        node = (DataNode)(DataObject.find(webFile)).getNodeDelegate();
+                    } catch ( DataObjectNotFoundException ex ) {
+                        ex.printStackTrace();
+                    } catch( ClassCastException cce ){
+                        cce.printStackTrace();
+                    }
+                    view.createNode(node, null, null);
+                    isFound = true;
+                }
+            }
+            if( !isFound ) {
+                AbstractNode node = new AbstractNode(Children.LEAF);
+                node.setName(pageName);
+                view.createNode(node, null, null);
+            }
+            isFound = false;
         }
     }
     
-    
-//    /** Add a new page
-//     *  Simply creates a rule with the speciifed from ID
-//     * @param pageName
-//     * @return boolean 
-//     **/
-//    private boolean addPage(String pageName) {
-//        FacesConfig facesConfig = configModel.getRootComponent();
-//        NavigationRule navRule = facesConfig.getModel().getFactory().createNavigationRule();
-//        navRule.setFromViewId(pageName);
-//        facesConfig.addNavigationRule(navRule);        
-//        return true;
-//    }   
-    
 
+       
 
+            
 }

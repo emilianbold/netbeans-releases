@@ -38,16 +38,25 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  * This class represents a GraphPinScene for the Navigation Editor which is soon to be the Page Flow Editor.
@@ -62,8 +71,8 @@ import org.openide.util.Utilities;
  * @author Joelle Lam
  */
 // TODO - remove popup menu action
-public class PageFlowScene extends GraphPinScene<String, NavigationCase, String> {
-        
+public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, String> {
+    
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
     private LayerWidget connectionLayer = new LayerWidget(this);
@@ -72,19 +81,23 @@ public class PageFlowScene extends GraphPinScene<String, NavigationCase, String>
     private Router router;
     
     private WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction();
-//    private WidgetAction popupNodeAction = ActionFactory.createPopupMenuAction (new NodePopupMenuProvider(this));
+    //    private WidgetAction popupNodeAction = ActionFactory.createPopupMenuAction (new NodePopupMenuProvider(this));
     private WidgetAction popupGraphAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this));
     private WidgetAction moveAction = ActionFactory.createMoveAction();
     private WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
-//    private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
-//    private WidgetAction deleteAction = new DeleteAction(this);
+    //    private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
+    //    private WidgetAction deleteAction = new DeleteAction(this);
+    private WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     
     private SceneLayout sceneLayout;
+    private TopComponent tc;
     
     /**
      * Creates a VMD graph scene.
+     * @param view 
      */
-    public PageFlowScene() {
+    public PageFlowScene(TopComponent tc) {
+        this.tc = tc;
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
         
         addChild(backgroundLayer);
@@ -98,11 +111,12 @@ public class PageFlowScene extends GraphPinScene<String, NavigationCase, String>
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
+        
         actions.addAction(popupGraphAction);
         actions.addAction(dragNdropAction);
         //        getActions ().addAction (deleteAction);
         
-        sceneLayout = LayoutFactory.createSceneGraphLayout(this, new GridGraphLayout<String, NavigationCase> ().setChecker(true));
+        sceneLayout = LayoutFactory.createSceneGraphLayout(this, new GridGraphLayout<AbstractNode, NavigationCase> ().setChecker(true));
     }
     
     private static final Image POINT_SHAPE_IMAGE = Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"); // NOI18N
@@ -116,26 +130,28 @@ public class PageFlowScene extends GraphPinScene<String, NavigationCase, String>
      * @param node the node
      * @return the widget attached to the node, will return null if
      */
-    protected Widget attachNodeWidget(String node) {
+    protected Widget attachNodeWidget(AbstractNode node) {
         assert node != null;
-        VMDNodeWidget nodeWidget = new NavigationNodeWidget(this);        
+        VMDNodeWidget nodeWidget = new NavigationNodeWidget(this);
+        nodeWidget.setNodeName(node.getName());
         
-//        Widget widget = new Widget(this);
-//        ImageWidget imageWidget = new ImageWidget(this, POINT_SHAPE_IMAGE);
-//        widget.setLayout(new NodePinLayout(0) );
-//        
-//        widget.addChild(nodeWidget);
-//        widget.addChild(imageWidget);       
+        //        Widget widget = new Widget(this);
+        //        ImageWidget imageWidget = new ImageWidget(this, POINT_SHAPE_IMAGE);
+        //        widget.setLayout(new NodePinLayout(0) );
+        //
+        //        widget.addChild(nodeWidget);
+        //        widget.addChild(imageWidget);
         
         mainLayer.addChild(nodeWidget);
         
         
-//        nodeWidget.getActions().addAction(deleteAction);
+        //        nodeWidget.getActions().addAction(deleteAction);
         nodeWidget.getHeader  ().getActions().addAction(createObjectHoverAction());
-        nodeWidget.getActions().addAction(createSelectAction());
-//        nodeWidget.getActions ().addAction (popupGraphAction);
+        nodeWidget.getActions().addAction(selectAction);
+//        nodeWidget.getActions().addAction(createSelectAction());
+        //        nodeWidget.getActions ().addAction (popupGraphAction);
         nodeWidget.getActions().addAction(moveAction);
-//        imageWidget.getActions().addAction(connectAction);
+        //        imageWidget.getActions().addAction(connectAction);
         
         return nodeWidget;
     }
@@ -147,7 +163,7 @@ public class PageFlowScene extends GraphPinScene<String, NavigationCase, String>
      * @param pin the pin
      * @return the widget attached to the pin, null, if it is a default pin
      */
-    protected Widget attachPinWidget(String node, String pin) {
+    protected Widget attachPinWidget(AbstractNode node, String pin) {
         assert node != null;
         
         if( node.equals(pin)){
@@ -159,17 +175,17 @@ public class PageFlowScene extends GraphPinScene<String, NavigationCase, String>
         VMDNodeWidget nodeWidget = ((VMDNodeWidget) findWidget(node));
         nodeWidget.attachPinWidget(widget);
         
-//        widget.getActions().addAction(deleteAction);
-//        widget.getActions().addAction(createObjectHoverAction());
-//        widget.getActions().addAction(createSelectAction());
-//        widget.getActions().addAction(connectAction);
+        //        widget.getActions().addAction(deleteAction);
+        //        widget.getActions().addAction(createObjectHoverAction());
+        //        widget.getActions().addAction(createSelectAction());
+        //        widget.getActions().addAction(connectAction);
         
         return widget;
     }
     
     /**
      * Implements attaching a widget to an edge. the widget is ConnectionWidget and has object-hover, select and move-control-point actions.
-     * @param edge 
+     * @param edge
      * @return the widget attached to the edge
      */
     protected Widget attachEdgeWidget(NavigationCase edge) {
@@ -178,9 +194,9 @@ public class PageFlowScene extends GraphPinScene<String, NavigationCase, String>
         VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, router);
         connectionLayer.addChild(connectionWidget);
         
-//        String navCaseName = link.getFromOutcome();
+        //        String navCaseName = link.getFromOutcome();
         
-//        connectionWidget.getActions().addAction(deleteAction);
+        //        connectionWidget.getActions().addAction(deleteAction);
         connectionWidget.getActions().addAction(createObjectHoverAction());
         connectionWidget.getActions().addAction(createSelectAction());
         connectionWidget.getActions().addAction(moveControlPointAction);
@@ -292,6 +308,39 @@ public class PageFlowScene extends GraphPinScene<String, NavigationCase, String>
             
         }
     }
+    
+
+    
+    private final class PageFlowSelectProvider implements SelectProvider {
+
+        public boolean isAimingAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+            return false;
+        }
+
+        public boolean isSelectionAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+            Object object = findObject (widget);
+            return object != null  &&  (invertSelection  ||  ! getSelectedObjects ().contains (object));
+        }
+
+        public void select (Widget widget, Point localLocation, boolean invertSelection) {
+            Object object = findObject (widget);
+
+            setFocusedObject (object);
+            if (object != null) {
+                if (getSelectedObjects ().contains (object))
+                    return;
+                userSelectionSuggested (Collections.singleton (object), invertSelection);
+                if ( object instanceof DataNode ){
+                    tc.setActivatedNodes(new DataNode[] {(DataNode)object});
+                } else if (object instanceof AbstractNode ){
+                    tc.setActivatedNodes(new AbstractNode[] {(AbstractNode)object});
+                }
+            } else
+                userSelectionSuggested (Collections.emptySet (), invertSelection);
+        }
+    }
+    
+    
 }
 
 
