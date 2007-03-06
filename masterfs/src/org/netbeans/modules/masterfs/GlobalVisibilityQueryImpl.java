@@ -54,6 +54,7 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
     private static Method mIgnoredFiles;
     private Pattern ignoreFilesPattern = null;
 
+    /** Default instance for lookup. */
     public GlobalVisibilityQueryImpl() {
         INSTANCE = this;
     }
@@ -110,6 +111,7 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
     }
 
     protected String getIgnoredFiles() {
+        // XXX probably matching \.(cvsignore|svn|DS_Store) is pointless as would anyway match ^\..*$
         String retval =  getPreferences().get(PROP_IGNORED_FILES, "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$");//NOI18N;
         getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
             public void preferenceChange(PreferenceChangeEvent evt) {
