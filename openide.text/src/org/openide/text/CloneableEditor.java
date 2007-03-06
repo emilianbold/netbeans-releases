@@ -22,7 +22,6 @@ package org.openide.text;
 
 import java.awt.*;
 import java.io.*;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -606,7 +605,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             TopComponent activeTc = TopComponent.getRegistry().getActivated();
             if( null != activeTc ) {
                 ourMode = WindowManager.getDefault().findMode( activeTc );
-                if( !isEditorMode( ourMode ) )
+                if( !WindowManager.getDefault().isEditorMode( ourMode ) )
                     ourMode = null;
             }
             if( null == ourMode )
@@ -620,22 +619,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
     }
     
-    /**
-     * Use reflection to find out whether the given mode contains editor TopComponents (HACK).
-     */
-    private boolean isEditorMode( Mode mode ) {
-        boolean res = false;
-        try {
-            Method m = mode.getClass().getMethod( "getKind" );
-            Object kind = m.invoke( mode );
-            if( null != kind && kind instanceof Integer )
-                res = ((Integer)kind).intValue() == 1;
-        } catch( Throwable e ) {
-            //ignore
-        }
-        return res;
-    }
-
     //
     // Implements the CloneableEditorSupport.Pane interface
     //
