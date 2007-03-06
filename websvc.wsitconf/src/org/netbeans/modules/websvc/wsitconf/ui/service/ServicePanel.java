@@ -364,6 +364,9 @@ public class ServicePanel extends SectionInnerPanel {
         
         // everything is ok, disable security
         if (!amSec) {
+
+            boolean jsr109 = ((jaxwsmodel.getJsr109() == null) || (jaxwsmodel.getJsr109().equals(Boolean.TRUE)));
+
             securityChBox.setEnabled(true);
             profileInfoField.setForeground(REGULAR);
             
@@ -388,7 +391,7 @@ public class ServicePanel extends SectionInnerPanel {
                 }
             }
 
-            validatorsButton.setEnabled(someSecSelected);
+            validatorsButton.setEnabled(someSecSelected && !jsr109);
             keyButton.setEnabled(storeConfigRequired && someSecSelected);
             trustButton.setEnabled(storeConfigRequired && someSecSelected);
         } else { // no wsit fun, there's access manager security selected

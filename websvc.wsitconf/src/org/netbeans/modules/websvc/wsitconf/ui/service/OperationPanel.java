@@ -36,11 +36,13 @@ import javax.swing.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-//import org.netbeans.modules.websvc.wsitconf.am.J2eeProjectHelper;
+import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.TargetsPanel;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -258,11 +260,27 @@ public class OperationPanel extends SectionInnerPanel {
 
         txLbl = new javax.swing.JLabel();
         txCombo = new javax.swing.JComboBox();
+        inputTargetsButton = new javax.swing.JButton();
+        outputTargetsButton = new javax.swing.JButton();
 
         txLbl.setLabelFor(txCombo);
         org.openide.awt.Mnemonics.setLocalizedText(txLbl, org.openide.util.NbBundle.getMessage(OperationPanel.class, "LBL_Section_Operation_Tx")); // NOI18N
 
         txCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "None", "Not Supported", "Required", "Requires New", "Mandatory", "Supported" }));
+
+        org.openide.awt.Mnemonics.setLocalizedText(inputTargetsButton, org.openide.util.NbBundle.getMessage(OperationPanel.class, "LBL_SignEncrypt_Input")); // NOI18N
+        inputTargetsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                inputTargetsButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(outputTargetsButton, org.openide.util.NbBundle.getMessage(OperationPanel.class, "LBL_SignEncrypt_Output")); // NOI18N
+        outputTargetsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                outputTargetsButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -270,10 +288,16 @@ public class OperationPanel extends SectionInnerPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(txLbl)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(txCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(95, 95, 95))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(txLbl)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(txCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(inputTargetsButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(outputTargetsButton)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -282,11 +306,69 @@ public class OperationPanel extends SectionInnerPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(txLbl)
                     .add(txCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(19, 19, 19)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(inputTargetsButton)
+                    .add(outputTargetsButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void outputTargetsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputTargetsButtonActionPerformed
+        UndoCounter undoCounter = new UndoCounter();
+        model.addUndoableEditListener(undoCounter);
+        
+        BindingOutput bo = operation.getBindingOutput();
+        if (bo == null) return;
+
+        TargetsPanel targetsPanel = new TargetsPanel(bo); //NOI18N
+        DialogDescriptor dlgDesc = new DialogDescriptor(targetsPanel,
+                NbBundle.getMessage(InputPanel.class, "LBL_Targets_Panel_Title")); //NOI18N
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+
+        dlg.setVisible(true);
+        if (dlgDesc.getValue() == dlgDesc.CANCEL_OPTION) {
+            for (int i=0; i<undoCounter.getCounter();i++) {
+                if (undoManager.canUndo()) {
+                    undoManager.undo();
+                }
+            }
+        } else {
+            SecurityPolicyModelHelper.setTargets(bo, targetsPanel.getTargetsModel());
+        }
+
+        model.removeUndoableEditListener(undoCounter);
+}//GEN-LAST:event_outputTargetsButtonActionPerformed
+
+private void inputTargetsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputTargetsButtonActionPerformed
+    UndoCounter undoCounter = new UndoCounter();
+    model.addUndoableEditListener(undoCounter);
+    
+    BindingInput bi = operation.getBindingInput();
+    if (bi == null) return;
+
+    TargetsPanel targetsPanel = new TargetsPanel(bi); //NOI18N
+    DialogDescriptor dlgDesc = new DialogDescriptor(targetsPanel,
+            NbBundle.getMessage(InputPanel.class, "LBL_Targets_Panel_Title")); //NOI18N
+    Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+    
+    dlg.setVisible(true);
+    if (dlgDesc.getValue() == dlgDesc.CANCEL_OPTION) {
+        for (int i=0; i<undoCounter.getCounter();i++) {
+            if (undoManager.canUndo()) {
+                undoManager.undo();
+            }
+        }
+    } else {
+        SecurityPolicyModelHelper.setTargets(bi, targetsPanel.getTargetsModel());
+    }
+    
+    model.removeUndoableEditListener(undoCounter);
+}//GEN-LAST:event_inputTargetsButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton inputTargetsButton;
+    private javax.swing.JButton outputTargetsButton;
     private javax.swing.JComboBox txCombo;
     private javax.swing.JLabel txLbl;
     // End of variables declaration//GEN-END:variables

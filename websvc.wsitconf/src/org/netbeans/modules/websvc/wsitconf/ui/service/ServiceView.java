@@ -20,12 +20,10 @@ package org.netbeans.modules.websvc.wsitconf.ui.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-//import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingFaultNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode;
-import org.netbeans.modules.websvc.wsitconf.util.JMIUtils;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.multiview.SectionNode;
@@ -76,15 +74,7 @@ public class ServiceView extends SectionView {
         //add binding section
         Node[] bindingNodes = new Node[bindings.size()];
         Children rootChildren = new Children.Array();
-
-//        JavaClass jc = null;
-//        if (s != null) {
-//            String wsdlUrl = s.getWsdlUrl();
-//            if (wsdlUrl == null) { // WS from Java
-//                jc = (JavaClass)node.getLookup().lookup(JavaClass.class);
-//            }
-//        }
-        
+       
         // if there's only one binding, make the dialog simpler
         if (bindingNodes.length > 1) {
             Node root = new AbstractNode(rootChildren);
@@ -93,10 +83,6 @@ public class ServiceView extends SectionView {
 
             for (Binding binding : bindings) {
                 
-//                if (jc != null) {
-//                    JMIUtils.refreshOperations(binding, jc);
-//                }
-
                 // main node container for a specific binding
                 Children bindingChildren = new Children.Array();
                 Node bindingNodeContainer = new BindingContainerServiceNode(bindingChildren);
@@ -125,20 +111,20 @@ public class ServiceView extends SectionView {
                     SectionPanel opPanel = new SectionPanel(this, opNode, op, false);
                     opCont.addSection(opPanel, false);
 
-                    BindingInput bi = op.getBindingInput();
-                    if (bi != null) {
-                        Node biNode = new BindingInputNode(this, bi);
-                        subNodes.add(biNode);
-                        SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
-                        opCont.addSection(biPanel, false);
-                    }
-                    BindingOutput bo = op.getBindingOutput();
-                    if (bo != null) {
-                        Node boNode = new BindingOutputNode(this, bo);
-                        subNodes.add(boNode);
-                        SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
-                        opCont.addSection(boPanel, false);
-                    }
+//                    BindingInput bi = op.getBindingInput();
+//                    if (bi != null) {
+//                        Node biNode = new BindingInputNode(this, bi);
+//                        subNodes.add(biNode);
+//                        SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
+//                        opCont.addSection(biPanel, false);
+//                    }
+//                    BindingOutput bo = op.getBindingOutput();
+//                    if (bo != null) {
+//                        Node boNode = new BindingOutputNode(this, bo);
+//                        subNodes.add(boNode);
+//                        SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
+//                        opCont.addSection(boPanel, false);
+//                    }
                     Collection<BindingFault> bfs = op.getBindingFaults();
                     for (BindingFault bf : bfs) {
                         Node bfNode = new BindingFaultNode(this, bf);
@@ -185,20 +171,20 @@ public class ServiceView extends SectionView {
                 SectionPanel opPanel = new SectionPanel(this, opNode, op, false);
                 opCont.addSection(opPanel, false);
 
-                BindingInput bi = op.getBindingInput();
-                if (bi != null) {
-                    Node biNode = new BindingInputNode(this, bi);
-                    subNodes.add(biNode);
-                    SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
-                    opCont.addSection(biPanel, false);
-                }
-                BindingOutput bo = op.getBindingOutput();
-                if (bo != null) {
-                    Node boNode = new BindingOutputNode(this, bo);
-                    subNodes.add(boNode);
-                    SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
-                    opCont.addSection(boPanel, false);
-                }
+//                BindingInput bi = op.getBindingInput();
+//                if (bi != null) {
+//                    Node biNode = new BindingInputNode(this, bi);
+//                    subNodes.add(biNode);
+//                    SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
+//                    opCont.addSection(biPanel, false);
+//                }
+//                BindingOutput bo = op.getBindingOutput();
+//                if (bo != null) {
+//                    Node boNode = new BindingOutputNode(this, bo);
+//                    subNodes.add(boNode);
+//                    SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
+//                    opCont.addSection(boPanel, false);
+//                }
                 Collection<BindingFault> bfs = op.getBindingFaults();
                 for (BindingFault bf : bfs) {
                     Node bfNode = new BindingFaultNode(this, bf);

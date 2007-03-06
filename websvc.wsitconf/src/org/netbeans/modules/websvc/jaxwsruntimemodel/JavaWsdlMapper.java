@@ -20,15 +20,28 @@
 package org.netbeans.modules.websvc.jaxwsruntimemodel;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
-import org.netbeans.modules.websvc.wsitconf.util.JMIUtils;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -91,23 +104,53 @@ public class JavaWsdlMapper {
      * @return the <code>wsdl:serviceName</code> for the <code>implClass</code>
      */
     public static QName getServiceName(FileObject implClass) {
-        try {
-            if (implClass == null) return null;
-            final java.lang.String[] result = new java.lang.String[1];
-            
+
+        final java.lang.String[] serviceNameQNameARR = new String[2];
+        if (implClass == null) return null;
+        try {    
             JavaSource js = JavaSource.forFileObject(implClass);
             js.runUserActionTask(new AbstractTask<CompilationController>() {
                  public void run(CompilationController controller) throws java.io.IOException {
                      controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                      SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                     result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
-                 }
-             }, true);
-             
+                     TypeElement te = sourceUtils.getTypeElement();
+
+                     serviceNameQNameARR[0] = te.getSimpleName().toString() + SERVICE;
+                     String packageName = getPackageFromClass(te.getQualifiedName().toString());
+                     serviceNameQNameARR[1] = getNamespace(packageName);
+
+                     List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
+                     for (AnnotationMirror m : annotations) {
+                        Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
+                        if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                            String serviceNameAnnot = null;
+                            String targetNamespaceAnnot = null;
+
+                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = m.getElementValues();
+                            for(ExecutableElement ex:expressions.keySet()) {
+                                if (ex.getSimpleName().contentEquals("serviceName")) {         //NOI18N
+                                    serviceNameAnnot = (String)expressions.get(ex).getValue();
+                                    if (serviceNameAnnot!=null) serviceNameAnnot = URLEncoder.encode(serviceNameAnnot,"UTF-8"); //NOI18N
+                                } else if (ex.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
+                                    targetNamespaceAnnot = (String)expressions.get(ex).getValue();
+                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,"UTF-8"); //NOI18N
+                                }
+                                if (targetNamespaceAnnot!=null && serviceNameAnnot!=null) break;
+                            }
+                            if (serviceNameAnnot != null) {
+                                serviceNameQNameARR[0] = serviceNameAnnot;
+                            }
+                            if (targetNamespaceAnnot != null) {
+                                serviceNameQNameARR[1] = targetNamespaceAnnot;
+                            }
+                        }
+                    }
+                }
+            }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return null;
+        return new QName(serviceNameQNameARR[1], serviceNameQNameARR[0]);
     }
 
     /**
@@ -116,185 +159,258 @@ public class JavaWsdlMapper {
      * @param targetNamespace Namespace URI for service name
      * @return the <code>wsdl:portName</code> for the <code>implClass</code>
      */
-//    public static String getBindingName(JavaClass implClass, String targetNamespace) {
-//        QName portName = getPortName(implClass, targetNamespace);
-//        if (portName != null) {
-//            return (portName.getLocalPart() + BINDING);
-//        }
-//        return null;
-//    }
+    public static String getBindingName(FileObject implClass, String targetNamespace) {
+        QName portName = getPortName(implClass, targetNamespace);
+        if (portName != null) {
+            return (portName.getLocalPart() + BINDING);
+        }
+        return null;
+    }
 
     public static final int UNKNOWN = -1;
     public static final int OUTPUTINPUT = 0;
     public static final int OUTPUT = 1;
     public static final int INPUT = 2;
     
-//    public static int getParamDirections(JavaClass implClass, String operationName) {
-//        if ((implClass == null) || (operationName == null)) {
-//             return UNKNOWN;
-//        }
-//        
-//        Method[] methods = JMIUtils.getMethods(implClass);
-//        for (Method m : methods) {
-//            List<Annotation> annotations = m.getAnnotations();
-//            if (annotations != null) {
-//                for (Annotation a : annotations) {
-//                    if ("javax.jws.WebMethod".equals(a.getType().getName())) { //NOI18N
-//
-//                        String operationNameAnnot = m.getName();
-//
-//                        List<AttributeValue> attrs = a.getAttributeValues();
-//                        for (AttributeValue av : attrs) {
-//                            if ("operationName".equals(av.getName())) {         //NOI18N
-//                                operationNameAnnot = ((StringLiteral)av.getValue()).getValue();
-//                            }
-//                        }
-//                        
-//                        if (operationName.equals(operationNameAnnot)) {
-//                            boolean output = ((m.getType() != null) && (!"void".equals(m.getType().getName())));   //NOI18N
-//                            boolean input = ((m.getParameters() != null) && (!m.getParameters().isEmpty()));
-//                            if (output && input) return OUTPUTINPUT;
-//                            if (output) return OUTPUT;
-//                            if (input) return INPUT;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return UNKNOWN;
-//    }
-    
-//    public static List<String> getOperationFaults(JavaClass implClass, String operationName) {
-//        if ((implClass == null) || (operationName == null)) {
-//             return Collections.EMPTY_LIST;
-//        }
-//        
-//        Method[] methods = JMIUtils.getMethods(implClass);
-//        for (Method m : methods) {
-//            List<Annotation> annotations = m.getAnnotations();
-//            if (annotations != null) {
-//                for (Annotation a : annotations) {
-//                    if ("javax.jws.WebMethod".equals(a.getType().getName())) { //NOI18N
-//
-//                        String operationNameAnnot = m.getName();
-//
-//                        List<AttributeValue> attrs = a.getAttributeValues();
-//                        for (AttributeValue av : attrs) {
-//                            if ("operationName".equals(av.getName())) {         //NOI18N
-//                                operationNameAnnot = ((StringLiteral)av.getValue()).getValue();
-//                            }
-//                        }
-//                        
-//                        if (operationName.equals(operationNameAnnot)) {
-//                            List<JavaClass> exceptions = m.getExceptions();
-//                            List<String> exceptionNames = new ArrayList(1);
-//                            for (JavaClass exc : exceptions) {
-//                                exceptionNames.add(exc.getSimpleName());
-//                            }
-//                            return exceptionNames;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return Collections.EMPTY_LIST;
-//    }
+    public static List<String> getOperationFaults(FileObject implClass, final String operationName) {
+        if ((implClass == null) || (operationName == null)) {
+             return Collections.EMPTY_LIST;
+        }
+                
+        final List<String> faults = new ArrayList();
+        if (implClass == null) return null;
+        try {    
+            JavaSource js = JavaSource.forFileObject(implClass);
+            js.runUserActionTask(new AbstractTask<CompilationController>() {
+                 public void run(CompilationController controller) throws java.io.IOException {
+                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                     TypeElement te = sourceUtils.getTypeElement();
+                     List<? extends Element> members = te.getEnclosedElements();
+                     List<ExecutableElement> methods = ElementFilter.methodsIn(members);
+                     for (ExecutableElement method:methods) {
+                        Set<Modifier> modifiers = method.getModifiers();
+                        if (modifiers.contains(Modifier.PUBLIC)) {
+                            List<? extends AnnotationMirror> annotations = method.getAnnotationMirrors();
+                            boolean hasWebMethodAnnotation=false;
+                            String nameAnnot = null;
+                            for (AnnotationMirror an:annotations) {
+                                TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                                if (webMethodEl!=null && controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
+                                    hasWebMethodAnnotation=true;
+                                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = an.getElementValues();
+                                    for(ExecutableElement ex:expressions.keySet()) {
+                                        if (ex.getSimpleName().contentEquals("operationName")) {         //NOI18N
+                                            nameAnnot = (String)expressions.get(ex).getValue();
+                                            if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
+                                        }
+                                        if (nameAnnot!=null) break;
+                                    }
+                                    break;
+                                }
+                            }
+                            String opName = method.getSimpleName().toString();
+                            if ((hasWebMethodAnnotation) && (nameAnnot != null)) {
+                                opName = nameAnnot;
+                            }
+                            if (operationName.equals(opName)) {
+                                List<? extends TypeMirror> excs = method.getThrownTypes();
+                                for (TypeMirror ex:excs) {
+                                    String tName = getTypeName(controller, ex);
+                                    if (tName != null){
+                                        faults.add(tName);
+                                    }
+                                }
+                            }
+                        }
+                     }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return faults;
+    }
 
-//    public static List<String> getOperationNames(JavaClass implClass) {
-//        if (implClass == null) {
-//             return null;
-//        }
-//        
-//        List<String> opNames = new ArrayList();
-//        Method[] methods = JMIUtils.getMethods(implClass);
-//        for (Method m : methods) {
-//            List<Annotation> annotations = m.getAnnotations();
-//            if (annotations != null) {
-//                for (Annotation a : annotations) {
-//                    if ("javax.jws.WebMethod".equals(a.getType().getName())) {  //NOI18N
-//
-//                        String operationNameAnnot = m.getName();
-//
-//                        List<AttributeValue> attrs = a.getAttributeValues();
-//                        for (AttributeValue av : attrs) {
-//                            if ("operationName".equals(av.getName())) {         //NOI18N
-//                                operationNameAnnot = ((StringLiteral)av.getValue()).getValue();
-//                            }
-//                        }
-//                        
-//                        opNames.add(operationNameAnnot);
-//                    }
-//                }
-//            }
-//        }
-//        return opNames;
-//    }
+    static String getTypeName(CompilationController controller, TypeMirror typeMirror) {
+        TypeKind typeKind = typeMirror.getKind();
+        switch (typeKind) {
+            case BOOLEAN : return "boolean"; // NOI18N
+            case BYTE : return "byte"; // NOI18N
+            case CHAR : return "char"; // NOI18N
+            case DOUBLE : return "double"; // NOI18N
+            case FLOAT : return "float"; // NOI18N
+            case INT : return "int"; // NOI18N
+            case LONG : return "long"; // NOI18N
+            case SHORT : return "short"; // NOI18N
+            case VOID : return "void"; // NOI18N
+            case DECLARED : 
+                Element element = controller.getTypes().asElement(typeMirror);
+                return ((TypeElement) element).getSimpleName().toString();
+            case ARRAY : 
+                ArrayType arrayType = (ArrayType) typeMirror;
+                Element componentTypeElement = controller.getTypes().asElement(arrayType.getComponentType());
+                return ((TypeElement) componentTypeElement).getSimpleName().toString() + "[]";
+            case ERROR :
+            case EXECUTABLE :
+            case NONE :
+            case NULL :
+            case OTHER :
+            case PACKAGE :
+            case TYPEVAR :
+            case WILDCARD :
+            default:break;
+        }
+        return null;
+    }
     
-//    public static QName getPortTypeName(JavaClass implClass) {
-//        
-//        if (implClass == null) {
-//             return null;
-//        }
-//        
-//        String portTypeLocalName = implClass.getSimpleName();
-//        List<Annotation> annotations = implClass.getAnnotations();
-//        if (annotations != null) {
-//            for (Annotation a : annotations) {
-//                if ("javax.jws.WebService".equals(a.getType().getName())) { //NOI18N
-//
-//                    String nameAnnot = "";
-//                    String targetNamespaceAnnot = "";
-//
-//                    List<AttributeValue> attrs = a.getAttributeValues();
-//                    for (AttributeValue av : attrs) {
-//                        if ("name".equals(av.getName())) {                  //NOI18N
-//                            nameAnnot = ((StringLiteral)av.getValue()).getValue();
-//                        }
-//                        if ("targetNamespace".equals(av.getName())) {       //NOI18N
-//                            targetNamespaceAnnot = ((StringLiteral)av.getValue()).getValue();
-//                        }
-//                    }
-//                    if (nameAnnot.length() >0) {
-//                        portTypeLocalName = nameAnnot;
-//                    }
-//        
-//                    String pkg = getPackageFromClass(implClass);
-//
-//                    String targetNamespace = targetNamespaceAnnot;
-//                    if ((targetNamespace == null) || (targetNamespace.length() == 0)) {
-//                        targetNamespace = getNamespace(pkg);
-//                    }
-//                    QName portTypeName = new QName(targetNamespace, portTypeLocalName);
-//                    return portTypeName;
-//                }
-//            }
-//        }
-//        return null;
-//    }
-//    
-//    public static String getWsdlLocation(JavaClass implClass) {
-//        
-//        if (implClass == null) {
-//             return null;
-//        }
-//        
-//        List<Annotation> annotations = implClass.getAnnotations();
-//        if (annotations != null) {
-//            for (Annotation a : annotations) {
-//                if ("javax.jws.WebService".equals(a.getType().getName())) { //NOI18N
-//                    String location = null;
-//                    List<AttributeValue> attrs = a.getAttributeValues();
-//                    for (AttributeValue av : attrs) {
-//                        if ("wsdlLocation".equals(av.getName())) {                  //NOI18N
-//                            location = ((StringLiteral)av.getValue()).getValue();
-//                        }
-//                    }
-//                    return location;
-//                }
-//            }
-//        }
-//        return null;
-//    }
+    public static List<String> getOperationNames(FileObject implClass) {
+        final List<String> operations = new ArrayList();
+        if (implClass == null) return null;
+        try {    
+            JavaSource js = JavaSource.forFileObject(implClass);
+            js.runUserActionTask(new AbstractTask<CompilationController>() {
+                 public void run(CompilationController controller) throws java.io.IOException {
+                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                     TypeElement te = sourceUtils.getTypeElement();
+
+                     List<? extends Element> members = te.getEnclosedElements();
+                     List<ExecutableElement> methods = ElementFilter.methodsIn(members);
+                     boolean foundWebMethodAnnotation=false;
+                     for (ExecutableElement method:methods) {
+                        Set<Modifier> modifiers = method.getModifiers();
+                        if (modifiers.contains(Modifier.PUBLIC)) {
+                            List<? extends AnnotationMirror> annotations = method.getAnnotationMirrors();
+                            boolean hasWebMethodAnnotation=false;
+                            String nameAnnot = null;
+                            for (AnnotationMirror an:annotations) {
+                                TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                                if (webMethodEl!=null && controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
+                                    hasWebMethodAnnotation=true;
+                                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = an.getElementValues();
+                                    for(ExecutableElement ex:expressions.keySet()) {
+                                        if (ex.getSimpleName().contentEquals("operationName")) {         //NOI18N
+                                            nameAnnot = (String)expressions.get(ex).getValue();
+                                            if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
+                                        }
+                                        if (nameAnnot!=null) break;
+                                    }
+                                    break;
+                                }
+                            }
+                            if (hasWebMethodAnnotation) {
+                                if (!foundWebMethodAnnotation) {
+                                    foundWebMethodAnnotation=true;
+                                    // remove all methods added before because only annotated methods should be added
+                                    if (operations.size()>0) operations.clear();
+                                }
+                                if (nameAnnot != null) {
+                                    operations.add(nameAnnot);
+                                } else {
+                                    operations.add(method.getSimpleName().toString());
+                                }
+                            } else {
+                                // there are only non-annotated methods present until now
+                                operations.add(method.getSimpleName().toString());
+                            }
+                        }
+                     }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return operations;
+    }
+    
+    public static QName getPortTypeName(FileObject implClass) {
+        final java.lang.String[] portTypeQNameARR = new String[2];
+        if (implClass == null) return null;
+        try {    
+            JavaSource js = JavaSource.forFileObject(implClass);
+            js.runUserActionTask(new AbstractTask<CompilationController>() {
+                 public void run(CompilationController controller) throws java.io.IOException {
+                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                     TypeElement te = sourceUtils.getTypeElement();
+                     portTypeQNameARR[0] = te.getSimpleName().toString();
+
+                     List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
+                     for (AnnotationMirror m : annotations) {
+                        Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
+                        if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                            String nameAnnot = null;
+                            String targetNamespaceAnnot = null;
+
+                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = m.getElementValues();
+                            for(ExecutableElement ex:expressions.keySet()) {
+                                if (ex.getSimpleName().contentEquals("name")) {         //NOI18N
+                                    nameAnnot = (String)expressions.get(ex).getValue();
+                                    if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
+                                } else if (ex.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
+                                    targetNamespaceAnnot = (String)expressions.get(ex).getValue();
+                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,"UTF-8"); //NOI18N
+                                }
+                                if (targetNamespaceAnnot!=null && nameAnnot!=null) break;
+                            }
+
+                            if ((nameAnnot != null) && (nameAnnot.length() > 0)) {
+                                portTypeQNameARR[0] = nameAnnot;
+                            }
+
+                            String pkg = getPackageFromClass(te.getQualifiedName().toString());
+
+                            String targetNamespace = targetNamespaceAnnot;
+                            if ((targetNamespace == null) || (targetNamespace.length() == 0)) {
+                                targetNamespace = getNamespace(pkg);
+                            }
+                            
+                            portTypeQNameARR[1] = targetNamespace;
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new QName(portTypeQNameARR[1], portTypeQNameARR[0]);
+    }
+    
+    public static String getWsdlLocation(FileObject implClass) {        
+        final java.lang.String[] wsdlLocARR = new String[1];
+        try {
+            if (implClass == null) return null;
+            
+            JavaSource js = JavaSource.forFileObject(implClass);
+            js.runUserActionTask(new AbstractTask<CompilationController>() {
+                 public void run(CompilationController controller) throws java.io.IOException {
+                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                     TypeElement te = sourceUtils.getTypeElement();
+                     List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
+                     for (AnnotationMirror m : annotations) {
+                        Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
+                        if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                            String wsdlLoc = null;
+                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = m.getElementValues();
+                            for(ExecutableElement ex:expressions.keySet()) {
+                                if (ex.getSimpleName().contentEquals("wsdlLocation")) {     //NOI18N
+                                    wsdlLoc = (String)expressions.get(ex).getValue();
+                                    if (wsdlLoc!=null) wsdlLoc = URLEncoder.encode(wsdlLoc,"UTF-8"); //NOI18N
+                                }
+                                if (wsdlLoc != null) break;
+                            }
+                            wsdlLocARR[1] = wsdlLoc;
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return wsdlLocARR[0];
+    }
     
     /**
      * gets the <code>wsdl:portName</code> for a given implementation class
@@ -302,64 +418,69 @@ public class JavaWsdlMapper {
      * @param targetNamespace Namespace URI for service name
      * @return the <code>wsdl:portName</code> for the <code>implClass</code>
      */
-//    public static QName getPortName(JavaClass implClass, String targetNamespace) {
-//        
-//        if (implClass == null) {
-//            return null;
-//        }
-//        
-//        if (implClass != null) {
-//            List<Annotation> annotations = implClass.getAnnotations();
-//            if (annotations != null) {
-//                for (Annotation a : annotations) {
-//                    if ("javax.jws.WebService".equals(a.getType().getName())) { //NOI18N
-//                        
-//                        String portNameAnnot = "";                          //NOI18N
-//                        String nameAnnot = "";                              //NOI18N
-//                        String targetNamespaceAnnot = "";                   //NOI18N
-//
-//                        List<AttributeValue> attrs = a.getAttributeValues();
-//                        for (AttributeValue av : attrs) {
-//                            if ("portName".equals(av.getName())) {          //NOI18N
-//                                portNameAnnot = ((StringLiteral)av.getValue()).getValue();
-//                            } 
-//                            if ("name".equals(av.getName())) {              //NOI18N
-//                                nameAnnot = ((StringLiteral)av.getValue()).getValue();
-//                            }
-//                            if ("targetNamespace".equals(av.getName())) {   //NOI18N
-//                                targetNamespaceAnnot = ((StringLiteral)av.getValue()).getValue();
-//                            }
-//                        }
-//
-//                        String name;
-//                        if (portNameAnnot.length() > 0) {
-//                            name = portNameAnnot;
-//                        } else if (nameAnnot.length() > 0) {
-//                            name = nameAnnot + PORT;
-//                        } else {
-//                            name = implClass.getSimpleName() + PORT;
-//                        }
-//
-//                        if (targetNamespace == null) {
-//                            if (targetNamespaceAnnot.length() > 0) {
-//                                targetNamespace = targetNamespaceAnnot;
-//                            } else {
-//                                String packageName = getPackageFromClass(implClass);
-//                                targetNamespace = getNamespace(packageName);
-//                            }
-//                        }
-//                        return new QName(targetNamespace, name);
-//                    }
-//                }
-//            }
-//        }
-//        return null;
-//    }
+    public static QName getPortName(FileObject implClass, final String targetNamespace) {
+
+        final java.lang.String[] portNameQNameARR = new String[2];
+        if (implClass == null) return null;
+        try {    
+            JavaSource js = JavaSource.forFileObject(implClass);
+            js.runUserActionTask(new AbstractTask<CompilationController>() {
+                 public void run(CompilationController controller) throws java.io.IOException {
+                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                     TypeElement te = sourceUtils.getTypeElement();
+                     String className = te.getSimpleName().toString();
+                     List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
+                     for (AnnotationMirror m : annotations) {
+                        Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
+                        if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                            String portNameAnnot = null;
+                            String nameAnnot = null;
+                            String targetNamespaceAnnot = null;
+
+                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = m.getElementValues();
+                            for(ExecutableElement ex:expressions.keySet()) {
+                                if (ex.getSimpleName().contentEquals("name")) {         //NOI18N
+                                    nameAnnot = (String)expressions.get(ex).getValue();
+                                    if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
+                                } else if (ex.getSimpleName().contentEquals("portName")) {   //NOI18N
+                                    portNameAnnot = (String)expressions.get(ex).getValue();
+                                    if (portNameAnnot!=null) portNameAnnot = URLEncoder.encode(portNameAnnot,"UTF-8"); //NOI18N
+                                } else if (ex.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
+                                    targetNamespaceAnnot = (String)expressions.get(ex).getValue();
+                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,"UTF-8"); //NOI18N
+                                }
+                                if (targetNamespaceAnnot!=null && nameAnnot!=null && portNameAnnot != null) break;
+                            }
+
+                            if ((portNameAnnot != null) && (portNameAnnot.length() > 0)) {
+                                portNameQNameARR[0] = portNameAnnot;
+                            } else if ((nameAnnot != null) && (nameAnnot.length() > 0)) {
+                                portNameQNameARR[0] = nameAnnot + PORT;
+                            } else {
+                                portNameQNameARR[0] = className + PORT;
+                            }
+                            
+                            if (targetNamespace == null) {
+                                if ((targetNamespaceAnnot != null) && (targetNamespaceAnnot.length() > 0)) {
+                                    portNameQNameARR[1] = targetNamespaceAnnot;
+                                } else {
+                                    String packageName = getPackageFromClass(className);
+                                    portNameQNameARR[1] = getNamespace(packageName);
+                                }
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new QName(portNameQNameARR[1], portNameQNameARR[0]);
+    }
     
-//    private static String getPackageFromClass(JavaClass cl) {
-//        String fulName = cl.getName();
-//        String pkg = fulName.substring(0, fulName.lastIndexOf('.'));
-//        return pkg;
-//    }    
+    private static String getPackageFromClass(String fqClassName) {
+        return fqClassName.substring(0, fqClassName.lastIndexOf('.'));
+    }    
 
 }
