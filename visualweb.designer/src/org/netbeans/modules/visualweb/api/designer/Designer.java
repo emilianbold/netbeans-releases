@@ -53,4 +53,19 @@ public interface Designer {
     // XXX Temp after moved TopComponent impl out <<<
 
     public void startInlineEditing(Element componentRootElement, String propertyName);
+
+    public int getSelectedCount();
+
+    public void snapToGrid();
+    
+    public enum Alignment {
+        SNAP_TO_GRID,
+        TOP,
+        MIDDLE,
+        BOTTOM,
+        LEFT,
+        CENTER,
+        RIGHT
+    }
+    public void align(Alignment alignment);
 }

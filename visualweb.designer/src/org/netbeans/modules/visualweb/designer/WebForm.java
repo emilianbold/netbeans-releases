@@ -2057,6 +2057,18 @@ public class WebForm implements Designer {
     public void startInlineEditing(Element componentRootElement, String propertyName) {
         getManager().startInlineEditing(componentRootElement, propertyName);
     }
+
+    public int getSelectedCount() {
+        return getSelection().getNumSelected();
+    }
+
+    public void snapToGrid() {
+        getGridHandler().snapToGrid();
+    }
+
+    public void align(Designer.Alignment alignment) {
+        getGridHandler().align(alignment);
+    }
     
     
     private static class HtmlDomProviderListener implements HtmlDomProvider.HtmlDomProviderListener {
