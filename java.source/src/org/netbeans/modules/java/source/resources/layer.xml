@@ -23,11 +23,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Actions">
         <folder name="Edit">
             <!-- attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" / -->
-            <!--
-            <file name="org-netbeans-modules-java-actions-GoToFile.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.GoToFileAction"/>
-            </file>
-            -->
             <file name="org-netbeans-modules-java-actions-GoToType.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.GoToTypeAction"/>
             </file>
@@ -185,6 +180,17 @@ Microsystems, Inc. All Rights Reserved.
                 
      </folder>               
   </folder>  
+  
+  <folder name="OptionsDialog">
+     <folder name="Actions">
+         <folder name="GoTo">
+             <file name="GoToType.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-actions-GoToType.instance"/>
+             </file>
+         </folder>    
+     </folder>
+  </folder>
+  
   
   <folder name="Shortcuts">    
       <file name="OS-O.shadow">
