@@ -382,40 +382,40 @@ public class WebForm implements Designer {
 //        return webForm.getTopComponent();
 //    }
     
-    /** Finds <code>WebForm</code> for provided <code>DesignContext</code>.
-     * XXX Get rid of this method. */
-    public static WebForm findWebFormForDesignContext(DesignContext designContext) {
-//        Collection col;
-//        synchronized (LOCK_WEB_FORMS) {
-//            col = webFormsByFileObject.values();
-//        }
+//    /** Finds <code>WebForm</code> for provided <code>DesignContext</code>.
+//     * XXX Get rid of this method. */
+//    public static WebForm findWebFormForDesignContext(DesignContext designContext) {
+////        Collection col;
+////        synchronized (LOCK_WEB_FORMS) {
+////            col = webFormsByFileObject.values();
+////        }
+////        
+////        for (Iterator it = col.iterator(); it.hasNext(); ) {
+////            WebForm webform = (WebForm)it.next();
+////            // XXX LiveUnit is DesignContext.
+////            if ((DesignContext)webform.getModel().getLiveUnit() == designContext) {
+////                return webform;
+////            }
+////        }
+////        return null;
 //        
-//        for (Iterator it = col.iterator(); it.hasNext(); ) {
-//            WebForm webform = (WebForm)it.next();
-//            // XXX LiveUnit is DesignContext.
-//            if ((DesignContext)webform.getModel().getLiveUnit() == designContext) {
-//                return webform;
-//            }
-//        }
-//        return null;
-        
-//        return getWebFormForDesigner(getDesignerFinder().findDesignerForDesignContext(designContext));
-        
-//        HtmlDomProvider htmlDomProvider = getHtmlDomProviderFinder().findHtmlDomProvider(designContext);
-//        if (htmlDomProvider == null) {
+////        return getWebFormForDesigner(getDesignerFinder().findDesignerForDesignContext(designContext));
+//        
+////        HtmlDomProvider htmlDomProvider = getHtmlDomProviderFinder().findHtmlDomProvider(designContext);
+////        if (htmlDomProvider == null) {
+////            return null;
+////        }
+////        synchronized (htmlDomProvider2webForm) {
+////            return htmlDomProvider2webForm.get(htmlDomProvider);
+////        }
+//        
+//        Designer[] designers = getHtmlDomProviderService().findDesignersForDesignContext(designContext);
+//        if (designers.length > 0 && designers[0] instanceof WebForm) {
+//            return (WebForm)designers[0];
+//        } else {
 //            return null;
 //        }
-//        synchronized (htmlDomProvider2webForm) {
-//            return htmlDomProvider2webForm.get(htmlDomProvider);
-//        }
-        
-        Designer[] designers = getHtmlDomProviderService().findDesignersForDesignContext(designContext);
-        if (designers.length > 0 && designers[0] instanceof WebForm) {
-            return (WebForm)designers[0];
-        } else {
-            return null;
-        }
-    }
+//    }
     
     public static WebForm[] findAllWebFormsForElement(Element element) {
         Designer[] designers = getHtmlDomProviderService().findDesignersForElement(element);
