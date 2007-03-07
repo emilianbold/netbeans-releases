@@ -847,9 +847,11 @@ class JsfForm {
     }
 
     void fireSelect(DesignBean designBean) {
+        Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(designBean);
         HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
         for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.select(designBean);
+//            listener.select(designBean);
+            listener.select(componentRootElement);
         }
     }
 
@@ -861,9 +863,17 @@ class JsfForm {
 //    }
 
     void fireInlineEdit(DesignBean[] designBeans) {
+        List<Element> componentRootElements = new ArrayList<Element>();
+        for (DesignBean designBean : designBeans) {
+            Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(designBean);
+            if (componentRootElement != null) {
+                componentRootElements.add(componentRootElement);
+            }
+        }
         HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
         for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.inlineEdit(designBeans);
+//            listener.inlineEdit(designBeans);
+            listener.inlineEdit(componentRootElements.toArray(new Element[componentRootElements.size()]));
         }
     }
 

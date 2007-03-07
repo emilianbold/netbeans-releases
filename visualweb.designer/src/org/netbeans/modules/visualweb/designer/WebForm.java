@@ -1700,15 +1700,17 @@ public class WebForm implements Designer {
         getPane().getDndHandler().clearDropMatch();
     }
     
-    public void select(final DesignBean designBean) {
+    /*public*/private void select(final /*DesignBean designBean*/Element componentRootElement) {
 //        getSelection().selectBean(designBean);
-        if (designBean instanceof MarkupDesignBean) {
+//        if (designBean instanceof MarkupDesignBean) {
+        if (componentRootElement != null) {
             // XXX Bad arch. Events are fired too early, no rendered tree was created yet.
             // Scheduling later to by pass the issue (of retrieving the component root element).
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    getSelection().selectBean(
-                            WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean));
+//                    getSelection().selectBean(
+//                            WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean));
+                    getSelection().selectBean(componentRootElement);
                 }
             });
         }
@@ -1720,17 +1722,18 @@ public class WebForm implements Designer {
 //        refresh(deep);
 //    }
     
-    public void inlineEdit(DesignBean[] designBeans) {
-        List<Element> componentRootElements = new ArrayList<Element>();
-        for (DesignBean designBean : designBeans) {
-            if (designBean instanceof MarkupDesignBean) {
-                Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
-                if (componentRootElement != null) {
-                    componentRootElements.add(componentRootElement);
-                }
-            }
-        }
-        getManager().inlineEdit(componentRootElements.toArray(new Element[componentRootElements.size()]));
+    /*public*/private void inlineEdit(/*DesignBean[] designBeans*/Element[] componentRootElements) {
+//        List<Element> componentRootElements = new ArrayList<Element>();
+//        for (DesignBean designBean : designBeans) {
+//            if (designBean instanceof MarkupDesignBean) {
+//                Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
+//                if (componentRootElement != null) {
+//                    componentRootElements.add(componentRootElement);
+//                }
+//            }
+//        }
+//        getManager().inlineEdit(componentRootElements.toArray(new Element[componentRootElements.size()]));
+        getManager().inlineEdit(componentRootElements);
         // XXX #6484250 To activate the window after drop.
         getTopComponent().requestActive();
     }
@@ -2135,16 +2138,18 @@ public class WebForm implements Designer {
             webForm.clearDropMatch();
         }
 
-        public void select(DesignBean designBean) {
-            webForm.select(designBean);
+        public void select(/*DesignBean designBean*/ Element componentRootElement) {
+//            webForm.select(designBean);
+            webForm.select(componentRootElement);
         }
 
 //        public void refreshForm(boolean deep) {
 //            webForm.refreshForm(deep);
 //        }
 
-        public void inlineEdit(DesignBean[] designBeans) {
-            webForm.inlineEdit(designBeans);
+        public void inlineEdit(/*DesignBean[] designBeans*/ Element[] componentRootElements) {
+//            webForm.inlineEdit(designBeans);
+            webForm.inlineEdit(componentRootElements);
         }
 
 //        public void designContextActivated(DesignContext designContext) {
