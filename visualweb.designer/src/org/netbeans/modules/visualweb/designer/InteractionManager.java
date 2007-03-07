@@ -67,7 +67,6 @@ import org.netbeans.modules.visualweb.css2.LineBoxGroup;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
-import com.sun.rave.designtime.Constants;
 import org.netbeans.modules.visualweb.extension.openide.awt.MouseUtils_RAVE;
 import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;

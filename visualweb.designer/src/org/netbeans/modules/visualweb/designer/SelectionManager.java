@@ -61,7 +61,6 @@ import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
-import com.sun.rave.designtime.Constants;
 import com.sun.rave.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
