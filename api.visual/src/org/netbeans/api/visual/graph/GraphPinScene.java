@@ -469,7 +469,7 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
      * @param oldTargetPin the old target pin
      * @param targetPin the new target pin
      */
-    protected abstract void attachEdgeTargetAnchor (E edge, P oldTargetPin, P targetPin);
+     protected abstract void attachEdgeTargetAnchor (E edge, P oldTargetPin, P targetPin);
 
     /**
      * This class is a particular GraphPinScene where nodes, edges and pins are represented with String class.
