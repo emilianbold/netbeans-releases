@@ -56,8 +56,6 @@ import org.netbeans.modules.visualweb.designer.DesignerSettings;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.GridHandler;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.DesignProperty;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import com.sun.rave.designer.html.HtmlAttribute;
 import com.sun.rave.designer.html.HtmlTag;
