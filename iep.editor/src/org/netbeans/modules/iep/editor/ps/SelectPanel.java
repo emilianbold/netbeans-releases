@@ -263,14 +263,15 @@ public class SelectPanel extends JPanel implements SharedConstants {
         } else {
             mTable = new MoveableRowTable(mTableModel) {
               public boolean isCellEditable(int row, int column) {
-                    if(column == 2 ) { // to ensure non editability of scale and size column in case of non varchar.
+                  //Working on this code fragment.
+                   /* if(column == 2 ) { // to ensure non editability of scale and size column in case of non varchar.
                         if(mTableModel.getValueAt(row,1) != null && mTableModel.getValueAt(row,1).toString().equals(SQL_TYPE_VARCHAR)) {
                             return true;
                         } else {
                             return false;
                         } 
                     }
-                     
+                    */ 
                     return true;
                     }
                      
