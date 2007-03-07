@@ -40,6 +40,8 @@ import java.util.*;
 import java.util.logging.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.plaf.basic.BasicLookAndFeel;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.openide.*;
 import org.openide.awt.Mnemonics;
 import org.openide.util.*;
@@ -343,16 +345,20 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             null // value
             );
         }
-        optionPane.setUI(new javax.swing.plaf.basic.BasicOptionPaneUI() {
-            public Dimension getMinimumOptionPaneSize() {
-                if (minimumSize == null) {
-                    //minimumSize = UIManager.getDimension("OptionPane.minimumSize");
-                    // this is called before defaults initialized?!!!
-                    return new Dimension(MinimumWidth, 50);
+        
+        if (UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class ||
+            UIManager.getLookAndFeel().getClass() == BasicLookAndFeel.class) {
+            optionPane.setUI(new javax.swing.plaf.basic.BasicOptionPaneUI() {
+                public Dimension getMinimumOptionPaneSize() {
+                    if (minimumSize == null) {
+                        //minimumSize = UIManager.getDimension("OptionPane.minimumSize");
+                        // this is called before defaults initialized?!!!
+                        return new Dimension(MinimumWidth, 50);
+                    }
+                    return new Dimension(minimumSize.width, 50);
                 }
-                return new Dimension(minimumSize.width, 50);
-            }
-        });
+            });
+        }
         optionPane.setWantsInput(false);
         optionPane.getAccessibleContext().setAccessibleDescription(strMsg);
         
@@ -612,7 +618,9 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             
             // add final button panel to the dialog
             if ((currentButtonsPanel != null)&&(currentButtonsPanel.getComponentCount() != 0)) {
-                currentButtonsPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(11, 6, 5, 5)));
+                if (currentButtonsPanel.getBorder() == null) {
+                    currentButtonsPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(11, 6, 5, 5)));
+                }
                 getContentPane().add(currentButtonsPanel, BorderLayout.SOUTH);
             }
             
@@ -649,7 +657,9 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             
             // add final button panel to the dialog
             if (currentButtonsPanel != null) {
-                currentButtonsPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 7, 5, 5)));
+                if (currentButtonsPanel.getBorder() == null) {
+                    currentButtonsPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 7, 5, 5)));
+                }
                 getContentPane().add(currentButtonsPanel, BorderLayout.EAST);
             }
             

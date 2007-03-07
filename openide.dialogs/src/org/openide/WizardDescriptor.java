@@ -2347,12 +2347,15 @@ public class WizardDescriptor extends DialogDescriptor {
             fullRightPanel.add(rightPanel, BorderLayout.CENTER);
             fullRightPanel.add(errorPanel, BorderLayout.SOUTH);
 
-            JSeparator sep = new JSeparator();
-            sep.setForeground(Color.darkGray);
-
             // #65506: the wizard panel should fit into window w/o scrollbar
             add(fullRightPanel, BorderLayout.CENTER);
-            add(sep, BorderLayout.SOUTH);
+
+            if (getBorder() == null) {
+                // Look & Feel has not set the border already
+                JSeparator sep = new JSeparator();
+                sep.setForeground(Color.darkGray);
+                add(sep, BorderLayout.SOUTH);
+            }
         }
 
         public void setErrorMessage(String msg, Boolean canContinue) {
