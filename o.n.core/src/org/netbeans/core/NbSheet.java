@@ -123,6 +123,7 @@ public final class NbSheet extends TopComponent {
             NbBundle.getBundle(NbSheet.class).getString ("ACSN_PropertiesSheet"));
         getAccessibleContext ().setAccessibleDescription (
             NbBundle.getBundle(NbSheet.class).getString ("ACSD_PropertiesSheet"));
+        setActivatedNodes(null);
     }
     
     /* Singleton accessor. As NbSheet is persistent singleton this
@@ -283,7 +284,10 @@ public final class NbSheet extends TopComponent {
         // re-attach to listen to new nodes
         snListener.detach();
         snListener.attach(nodes);
-        setActivatedNodes( nodes );
+    }
+    
+    final Node[] getNodes() {
+        return nodes;
     }
 
     /** Helper method, called from SheetNodesListener inner class */

@@ -20,12 +20,10 @@
 package org.netbeans.core.projects;
 
 import org.netbeans.junit.*;
-import junit.textui.TestRunner;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.ModuleHistory;
 
-import org.netbeans.core.NbTopManager;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.filesystems.FileObject;
@@ -36,11 +34,13 @@ import java.io.File;
 import java.util.Collections;
 import java.awt.Toolkit;
 import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.beans.BeanInfo;
 import java.awt.image.PixelGrabber;
 import java.awt.image.ImageObserver;
+import org.netbeans.core.startup.MainLookup;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 
 /** Test operation of the SystemFileSystem.
  * For now, just display attributes.
@@ -93,6 +93,21 @@ public class SystemFileSystemTest extends NbTestCase {
         FileObject bar = Repository.getDefault().getDefaultFileSystem().findResource("foo/bar.txt");
         Node n = DataObject.find(bar).getNodeDelegate();
         assertEquals("correct localized data object name", "Localized Name", n.getDisplayName());
+    }
+    
+    public void testContentOfFileSystemIsInfluencedByLookup () throws Exception {
+        FileSystem mem = FileUtil.createMemoryFileSystem();
+        String dir = "/yarda/own/file";
+        org.openide.filesystems.FileUtil.createFolder (mem.getRoot (), dir);
+        
+        assertNull ("File is not there yet", Repository.getDefault ().getDefaultFileSystem ().findResource (dir));
+        MainLookup.register (mem);
+        try {
+            assertNotNull ("The file is there now", Repository.getDefault ().getDefaultFileSystem ().findResource (dir));
+        } finally {
+            MainLookup.unregister (mem);
+        }
+        assertNull ("File is no longer there", Repository.getDefault ().getDefaultFileSystem ().findResource (dir));
     }
     
     public void testIconFromURL() throws Exception {
