@@ -129,4 +129,22 @@ public class DesignMultiViewElement extends TopComponent
         return this;
     }
     
+    public void writeExternal(ObjectOutput out) throws IOException {
+        // The superclass persists things such as the caret position.
+        super.writeExternal(out);
+        Object obj = getLookup().lookup(MultiViewSupport.class);
+        if(obj!=null) {
+            out.writeObject(obj);
+        }
+    }
+    
+    public void readExternal(ObjectInput in)
+            throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+	Object firstObject = in.readObject();
+	if (firstObject instanceof MultiViewSupport ) {
+            initialize((MultiViewSupport)firstObject);
+	}
+    }
+    
 }

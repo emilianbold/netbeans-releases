@@ -22,6 +22,7 @@ package org.netbeans.modules.websvc.design.multiview;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Enumeration;
 import javax.swing.Action;
 import org.openide.text.DataEditorSupport;
@@ -74,6 +75,13 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
     }
 
     /**
+     * Constructor for deserialization
+     */
+    public MultiViewSupport() {
+        
+    }
+
+    /**
      * Constructor
      * @param displayName 
      * @param dataObject 
@@ -110,25 +118,20 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
      * Ensures that the Multiview is created and is active.
       */
     private TopComponent ensureMultiViewActive() {
-        TopComponent activeTC = TopComponent.getRegistry().getActivated();
-        MultiViewSupport support = (MultiViewSupport)activeTC.getLookup().
-                lookup(MultiViewSupport.class);
-        if(equals(support) && MultiViews.findMultiViewHandler(activeTC) != null) {
-            return activeTC;
-        } else {
-            for(TopComponent openedTC:TopComponent.getRegistry().getOpened()) {
-                if(equals(openedTC.getLookup().lookup(MultiViewSupport.class)) &&
-                        MultiViews.findMultiViewHandler(openedTC) != null) {
-                    openedTC.requestActive();
+        Mode editorMode = WindowManager.getDefault().findMode(
+                DataEditorSupport.EDITOR_MODE);
+        if (editorMode != null && editorMode.getSelectedTopComponent() != null) {
+            TopComponent activeTC = editorMode.getSelectedTopComponent();
+            if(equals(activeTC.getLookup().lookup(MultiViewSupport.class))) {
+                return activeTC;
+            }
+            for(TopComponent openedTC:editorMode.getTopComponents()) {
+                if(equals(openedTC.getLookup().lookup(MultiViewSupport.class))) {
                     return openedTC;
                 }
             }
         }
         CloneableTopComponent tc = createMultiView();
-//        if(mvtcRef== null|| (tc=mvtcRef.get())==null || !tc.isOpened()) {
-//            tc = createMultiView();
-//            mvtcRef = new WeakReference<CloneableTopComponent>(tc);
-//        }
         tc.requestActive();
         return tc;
     }
@@ -223,22 +226,14 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
      * set of cloneable windows.
      *
      * @param  tc  TopComponent.
-     * @return  false if tc is not cloneable, or there are one or more
-     *          clones; true if it is the last clone.
+     * @return  -1 if not a cloneabletopcomponent 
+     *          otherwise number of clones including self
      */
-    public static boolean isLastView(TopComponent tc) {
+    public static int getNumberOfClones(TopComponent tc) {
         if (!(tc instanceof CloneableTopComponent)) {
-            return false;
+            return -1;
         }
-        boolean oneOrLess = true;
-        Enumeration en = ((CloneableTopComponent) tc).getReference().getComponents();
-        if (en.hasMoreElements()) {
-            en.nextElement();
-            if (en.hasMoreElements()) {
-                oneOrLess = false;
-            }
-        }
-        return oneOrLess;
+        return Collections.list(((CloneableTopComponent)tc).getReference().getComponents()).size();
     }
     /**
      * Implementation of CloseOperationHandler for multiview. Ensures the

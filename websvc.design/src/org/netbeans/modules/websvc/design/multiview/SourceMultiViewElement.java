@@ -68,15 +68,15 @@ public class SourceMultiViewElement extends CloneableEditor
    }
     
     private void initialize(MultiViewSupport mvSupport) {
-        if(mvSupport==null) {
-            mvSupport = new MultiViewSupport(getDataObject().getNodeDelegate(),
-                    getDataObject());
+        if (mvSupport==null || mvSupport.getDataObject() != getEditorSupport().getDataObject()) {
+            throw new IllegalStateException(
+                    "The multiviewsupport object represents incorrect data object"); //NOI18N
         }
         associateLookup(Lookups.fixed(
                 mvSupport,
                 getActionMap(),
-                getDataObject(),
-                getDataObject().getNodeDelegate()
+                mvSupport.getDataObject(),
+                mvSupport.getDataObject().getNodeDelegate()
                 ));
     }
     
@@ -122,26 +122,20 @@ public class SourceMultiViewElement extends CloneableEditor
         return super.getUndoRedo();
     }
     
-    /**
-     * The close last method should be called only for the last clone.
-     * If there are still existing clones this method must return false. The
-     * implementation from the FormEditor always returns true but this is
-     * not the expected behavior. The intention is to close the editor support
-     * once the last editor has been closed, using the silent close to avoid
-     * displaying a new dialog which is already being displayed via the
-     * close handler.
-     */
     protected boolean closeLast() {
-        return super.closeLast();
+        if(MultiViewSupport.getNumberOfClones(multiViewCallback.getTopComponent()) == 0) {
+            // this is the last editor component so call super.closeLast
+            return super.closeLast();
+        }
+        return true;
     }
     
     public CloseOperationState canCloseElement() {
-        // if this is not the last cloned xml editor component, closing is OK
-        if (!getEditorSupport().isModified() || 
-                !MultiViewSupport.isLastView(multiViewCallback.getTopComponent())) {
+        // if this is not the last cloned editor component, closing is OK
+        if(MultiViewSupport.getNumberOfClones(multiViewCallback.getTopComponent()) > 1) {
             return CloseOperationState.STATE_OK;
         }
-        // return a placeholder state - to be sure our CloseHandler is called
+        // return a state which will save/discard changes and is called by close handler
         return MultiViewFactory.createUnsafeCloseState(
                 MultiViewSupport.SOURCE_UNSAFE_CLOSE,
                 new AbstractAction() {
@@ -200,18 +194,12 @@ public class SourceMultiViewElement extends CloneableEditor
             throws IOException, ClassNotFoundException {
         super.readExternal(in);
 	Object firstObject = in.readObject();
-        MultiViewSupport mvSupport = null;
 	if (firstObject instanceof MultiViewSupport ) {
-	    mvSupport = (MultiViewSupport) mvSupport;
+	    initialize((MultiViewSupport)firstObject);
 	}
-	initialize(mvSupport);
     }
     
     private DataEditorSupport getEditorSupport() {
         return (DataEditorSupport) cloneableEditorSupport();
-    }
-
-    private DataObject getDataObject() {
-        return getEditorSupport().getDataObject();
     }
 }
