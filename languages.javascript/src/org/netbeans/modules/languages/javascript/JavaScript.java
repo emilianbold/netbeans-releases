@@ -580,6 +580,7 @@ public class JavaScript {
         }
         ASTToken leaf = (ASTToken)obj;
         Semantic.Info info = Semantic.getInfo(scontext.getDocument());
+        if (info == null) return false;
         Declaration decl = info.getItem(leaf);
         return decl != null && decl.getKind() == kind;
     }
