@@ -28,6 +28,8 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 public final class MidpValueSupport {
 
     public static String getHumanReadableString (PropertyValue value) {
+        if (value == null)
+            return "<not-set>";
         switch (value.getKind ()) {
             case ENUM:
             case VALUE:

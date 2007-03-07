@@ -16,6 +16,7 @@ package org.netbeans.modules.vmd.api.screen.display;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +33,12 @@ import java.util.Collection;
  */
 public class ScreenDeviceInfo {
 
-    public enum Edge {TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT};    
+    private static final Border NORMAL_BORDER = BorderFactory.createEmptyBorder (3, 3, 3, 3);
+    private static final Border SELECTED_BORDER = BorderFactory.createLineBorder(Color.BLUE, 3);
+
+    public enum Edge {
+        TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT
+    }    
     
     protected DeviceBorder[] deviceBorders;
     
@@ -61,10 +67,10 @@ public class ScreenDeviceInfo {
     }
 
     /**
-     * Gets device view resources (e.g. colors, images, fonts  ...)
+     * Gets device view resource (e.g. colors, images, fonts  ...)
      * @return
      */
-    public DeviceTheme getDeviceViewResources() {
+    public DeviceTheme getDeviceTheme () {
         if (deviceTheme == null) {
             deviceTheme = new DeviceTheme ();
         }
@@ -131,7 +137,6 @@ public class ScreenDeviceInfo {
     /**
      * Helper class implementing for showing one piece of device border
      * @author breh
-     * @version
      */
     public static class DeviceBorder extends JComponent {
 
@@ -164,7 +169,6 @@ public class ScreenDeviceInfo {
 
         }
 
-
         public Dimension getPreferredSize() {
             return getBorderSize();
         }
@@ -178,7 +182,7 @@ public class ScreenDeviceInfo {
     }
     
     /**
-     * Describes basic device resources. This class should be redesigned
+     * Describes basic device resource. This class should be redesigned
      * to allow more independence on the actual implementation. Current
      * version is too MIDP2 specific. 
      *
@@ -188,9 +192,9 @@ public class ScreenDeviceInfo {
      */
     public static class DeviceTheme {
         
-        public enum FontFace {MONOSPACE, PROPORTIONAL, SYSTEM};
-        public enum FontSize {SMALL, MEDIUM, LARGE};
-        public enum FontType {DEFAULT, INPUT_TEXT, STATIC_TEXT};
+        public enum FontFace {MONOSPACE, PROPORTIONAL, SYSTEM}
+        public enum FontSize {SMALL, MEDIUM, LARGE}
+        public enum FontType {DEFAULT, INPUT_TEXT, STATIC_TEXT}
         
         // fonts declaration
         private static final Font FONT_MONOSPACE_PLAIN_SMALL  = new Font("Monospaced",Font.PLAIN,10);
@@ -260,6 +264,10 @@ public class ScreenDeviceInfo {
             }
         }
                 
+        public Border getBorder (boolean selected) {
+            return selected ? SELECTED_BORDER : NORMAL_BORDER;
+        }
+
     }
     
 }

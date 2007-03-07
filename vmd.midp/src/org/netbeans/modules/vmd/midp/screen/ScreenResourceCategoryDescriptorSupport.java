@@ -13,16 +13,26 @@
  */
 package org.netbeans.modules.vmd.midp.screen;
 
-import org.netbeans.modules.vmd.api.screen.resources.ScreenResourceCategoryDescriptor;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
+import org.openide.util.Utilities;
 
 /**
  * @author breh
- *
  */
 public class ScreenResourceCategoryDescriptorSupport {
 
-    public static ScreenResourceCategoryDescriptor OTHER_DESIGN_RESOURCES = new ScreenResourceCategoryDescriptor ("Resources:",null,null);
-    
-    public static ScreenResourceCategoryDescriptor ASSIGNED_COMMANDS = new ScreenResourceCategoryDescriptor ("Assigned Commands:",null,null);
+    public static ScreenResourceCategoryDescriptor ASSIGNED_COMMANDS = new ScreenResourceCategoryDescriptor (
+            "Assigned Commands",
+            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"),
+            "Commands assigned to the edited displayable",
+            -100
+    );
+
+    public static ScreenResourceCategoryDescriptor OTHER_DESIGN_RESOURCES = new ScreenResourceCategoryDescriptor (
+            "Resources",
+            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/resource_16.png"),
+            "Resources available in the design",
+            100
+        );
     
 }

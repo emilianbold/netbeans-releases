@@ -47,7 +47,7 @@ public class MidpNbPaletteProvider implements PaletteProvider {
                 if (catFO == null) {
                     DataFolder categoryFolder = DataFolder.create(rootFolder, CATEGORY_SVG);
                     categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midpnb.palette.Bundle"); // NOI18N
-                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", "nbres:/org/netbeans/modules/vmd/midpnb/resources/components/category_" + CATEGORY_SVG + "_16.png"); // NOI18N
+                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", "nbres:/org/netbeans/modules/vmd/midpnb/resource/components/category_" + CATEGORY_SVG + "_16.png"); // NOI18N
                     categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
                 }
             } catch (IOException e) {

@@ -19,24 +19,26 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorArrayInteger;
+import org.netbeans.modules.vmd.midp.screen.display.SpacerDisplayPresenter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorArrayInteger;
 
 /**
  *
@@ -82,16 +84,9 @@ public class SpacerCD extends ComponentDescriptor {
     }
     
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        for (Presenter presenter : presenters.toArray(new Presenter[presenters.size()])) {
-            if (presenter instanceof InspectorFolderPresenter) {
-                presenters.remove(presenter);
-            }
-            if(presenter instanceof ActionsPresenter) {
-                for (Action action : ((ActionsPresenter) presenter).getActions()) {
-                    presenters.remove(presenter);
-                }
-            }
-        }
+        DocumentSupport.removePresentersOfClass (presenters, InspectorFolderPresenter.class);
+        DocumentSupport.removePresentersOfClass (presenters, ActionsPresenter.class);
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         MidpActionsSupport.addCommonActionsPresenters(presenters, true, true, true, true, true);
         super.gatherPresenters(presenters);
     }
@@ -102,8 +97,9 @@ public class SpacerCD extends ComponentDescriptor {
                 createPropertiesPresenter(),
                 // code
                 createSetterPresenter(),
-                InspectorFolderPresenter.create(true)
-                
+                InspectorFolderPresenter.create(true),
+                // screen
+                new SpacerDisplayPresenter ()
         );
     }
 

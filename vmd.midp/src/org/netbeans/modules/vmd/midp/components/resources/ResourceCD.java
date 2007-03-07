@@ -18,18 +18,18 @@
  */
 package org.netbeans.modules.vmd.midp.components.resources;
 
-import java.util.Arrays;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-
-import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
-import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
-import org.netbeans.modules.vmd.midp.screen.OtherDesignResourcesScreenPresenter;
+import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author David Kaspar
@@ -62,7 +62,8 @@ public final class ResourceCD extends ComponentDescriptor {
             // inspector
             InspectorFolderPresenter.create(true),
             InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
-            new OtherDesignResourcesScreenPresenter()
+            // screen
+            new ResourceSRItemPresenter ()
         );
     }
     

@@ -43,7 +43,7 @@ public class MidpPaletteProvider implements PaletteProvider {
     public static final String CATEGORY_ELEMENTS = "elements"; // NOI18N
     public static final String CATEGORY_ITEMS = "items"; // NOI18N
     public static final String CATEGORY_PROCESS_FLOW = "flow"; // NOI18N
-    public static final String CATEGORY_RESOURCES = "resources"; // NOI18N
+    public static final String CATEGORY_RESOURCES = "resource"; // NOI18N
     public static final String CATEGORY_CUSTOM = "custom"; // NOI18N
 
     private String[] paletteCategories = {CATEGORY_DISPLAYABLES, CATEGORY_COMMANDS, CATEGORY_ELEMENTS,
@@ -79,7 +79,7 @@ public class MidpPaletteProvider implements PaletteProvider {
                     if (catFO == null) {
                         DataFolder categoryFolder = DataFolder.create(rootFolder, categoryName);
                         categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midp.palette.Bundle"); // NOI18N
-                        categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", "nbres:/org/netbeans/modules/vmd/midp/resources/components/category_" + categoryName + "_16.png"); // NOI18N
+                        categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", "nbres:/org/netbeans/modules/vmd/midp/resource/components/category_" + categoryName + "_16.png"); // NOI18N
                         categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
                     }
                 } catch (IOException e) {

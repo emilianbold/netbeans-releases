@@ -19,55 +19,71 @@
 
 package org.netbeans.modules.vmd.api.screen.display;
 
-import org.netbeans.modules.vmd.api.screen.ScreenInfoListener;
+import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 
-import java.util.*;
+import javax.swing.*;
 import java.awt.*;
+import java.util.Collection;
 
 /**
- * A base presenter for the device display component. This presenter
- * occupies the whole device display visible in the screen editor and
+ * A base presenter for the device display component. This presenter occupies the whole device display visible in the screen editor and
  * is also responsible for its painting.
  *
  * @author breh
  */
-public abstract class ScreenDisplayPresenter extends ScreenComponentPresenter implements ScreenInfoListener {
+public abstract class ScreenDisplayPresenter extends Presenter {
+
+    public final DesignComponent getRelatedComponent () {
+        return getComponent ();
+    }
+
+    public abstract boolean isTopLevelDisplay ();
 
     /**
-     * Get child ScreenComponentElements. Screen component elements
-     * are visible elements representing design components in this display.
-     * @return
+     * Get children DesignComponent. Component elements are visible elements representing design components in this display.
+     * @return the children component
      */
-    public abstract Collection<ScreenComponentPresenter> getScreenComponentElements();
-
+    public abstract Collection<DesignComponent> getChildren ();
 
     /**
-     * Gets hoover shape at given point (within this display coordinates)
-     * @param point
-     * @return
+     * Gets actual view of the component. The JComponent is supposed to 
+     * cooperate nicely with various LayoutManagers (in MIDP there
+     * are specific layout managers)
+     * @return the view
      */
-    public abstract Shape getHooverShape(Point point);
+    public abstract JComponent getView();
+
+    /**
+     * Called immediately before the view component is to be added to the view tree. This method call is done in AWT thread.
+     * @param deviceInfo the device info
+     */
+    public abstract void reload (ScreenDeviceInfo deviceInfo);
+
+//    /**
+//     * Gets selection shape at given point (within this display coordinates)
+//     * @param point
+//     * @return
+//     */
+//    public abstract Shape getHoverShape(Point point);
 
     /**
      * Gets selection shape at given point (within this display coordinates)
-     * @param point
-     * @return
+     * @return the shape
      */
-    public abstract Shape getSelectionShape(Point point);
+    public abstract Shape getSelectionShape();
+//    public abstract Shape getSelectionShape(Point point);
 
-
-    /**
-     * Gets available injectors with mouse at this display point. If the supplied
-     * point is null, this method shold return all display injectors available for
-     * this component.
-     * @param displayPoint if null, this method shold call return all injetors
-     * for this component.
-     * @return
-     * // TODO - move this outside of the ScreenDisplayPresenter e.g. ScreenInjectorPresenter, to allow composition of multiple injectors
-     */
-    public java.util.List<ScreenInjectorPresenter> getAvailableInjectors(Point displayPoint) {
-        return Collections.emptyList ();
-    }
+//    /**
+//     * Gets available injectors with mouse at this display point. If the supplied
+//     * point is null, this method shold return all display injectors available for
+//     * this component.
+//     * @param displayPoint if null, this method shold call return all injetors
+//     * for this component.
+//     * @return
+//     * // TODO - move this outside of the ScreenDisplayPresenter e.g. ScreenInjectorPresenter, to allow composition of multiple injectors
+//     */
+//    public abstract List<ScreenInjectorPresenter> getInjectors (Point displayPoint);
 
 //    /**
 //     * Is any injector available for this component
@@ -77,26 +93,18 @@ public abstract class ScreenDisplayPresenter extends ScreenComponentPresenter im
 //        return false;
 //    }
 
-    /**
-     * Called immediately before the view component is to be added to the view tree. This method call is done in AWT thread.
-     * @param screenSize TODO
-     * @param deviceTheme TODO
-     */
-    public void showNotify(Dimension screenSize, ScreenDeviceInfo.DeviceTheme deviceTheme) {
-    }
+//    /**
+//     * Called immediately after the view component has been removed from the view tree. This method call is done in AWT thread.
+//     */
+//    public void hideNotify() {
+//    }
 
-    /**
-     * Called immediately after the view component has been removed from the view tree. This method call is done in AWT thread.
-     */
-    public void hideNotify() {
-    }
-
-    /**
-     * Returns the actual display size used for viewing the component. Some components can "grow" the display components off the screen.
-     * Please note, this method is called always after the showNotify() methos call
-     * @return
-     */
-    public abstract Dimension getActualDisplaySize();
+//    /**
+//     * Returns the actual display size used for viewing the component. Some components can "grow" the display components off the screen.
+//     * Please note, this method is called always after the reload() methos call
+//     * @return
+//     */
+//    public abstract Dimension getActualDisplaySize();
 
     // TODO
     // drag & drop stuff needs to be added !!!

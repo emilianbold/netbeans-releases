@@ -92,7 +92,7 @@
             <public-packages>
                 <package>org.netbeans.modules.vmd.api.screen</package>
                 <package>org.netbeans.modules.vmd.api.screen.display</package>
-                <package>org.netbeans.modules.vmd.api.screen.resources</package>
+                <package>org.netbeans.modules.vmd.api.screen.resource</package>
             </public-packages>
         </data>
     </configuration>

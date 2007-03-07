@@ -39,7 +39,7 @@ public class TileCellRenderer extends JComponent implements TableCellRenderer, L
 
 	private static final int EMPTY_LIST_INDICATOR_WIDTH = 2;
 	
-	//TODO : replace those colors with the correct color resources from L&F
+	//TODO : replace those colors with the correct color resource from L&F
 	private final static Color MOST_COLOR = Color.RED;
 	private final static Color NO_COLOR = Color.LIGHT_GRAY;
 	private final static Color MEDIUM_COLOR = Color.ORANGE;

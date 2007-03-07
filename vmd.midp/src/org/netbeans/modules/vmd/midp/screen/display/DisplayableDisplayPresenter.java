@@ -13,15 +13,18 @@
  */
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.screen.display.*;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme;
-import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
+import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
+import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A presenter for Displayable MIDP class. ALl other presenters should
@@ -35,25 +38,26 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     private static final Image BATTERY = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/battery.png"); // NOI18N
     private static final Image SIGNAL = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/signal.png"); // NOI18N
 
+/*
     private ScreenDeviceInfo.DeviceTheme deviceTheme;
-    
-    private JComponent deviceDisplay;    
+
+    private JComponent deviceDisplay;
     private DisplayableBackground background;
     private DisplayableForeground foreground;
     
     private Dimension displaySize;
     
-    public DisplayableDisplayPresenter() {                
+    public DisplayableDisplayPresenter() {
     }
 
     @Override
-    public Collection<ScreenComponentPresenter> getScreenComponentElements() {
+    public Collection<DesignComponent> getChildren () {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public ScreenPropertyPresenter getPropertyPresenterAt (Point point) {
+    public ScreenPropertyPresenter getPropertyAt (Point point) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -85,7 +89,7 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     @Override
-    public void showNotify(Dimension screenSize, DeviceTheme deviceTheme) {
+    public void reload (Dimension screenSize, DeviceTheme deviceTheme) {
         this.deviceTheme = deviceTheme;
         initialize(screenSize);
         ListenerManager listenerManager = getComponent().getDocument().getListenerManager();
@@ -110,6 +114,10 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     @Override
     public Shape getSelectionShape(Point point) {
         return deviceDisplay != null ? deviceDisplay.getBounds () : null;
+    }
+
+    public void reload (ScreenDeviceInfo deviceInfo) {
+        // TODO
     }
 
     @Override
@@ -151,7 +159,7 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     }
 
     @Override
-    public Collection<ScreenPropertyPresenter> getPropertyPresenters () {
+    public Collection<ScreenPropertyPresenter> getProperties () {
         // TODO Auto-generated method stub
         return null;
     }
@@ -167,9 +175,9 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
         
     }
 
-    /**
+    / **
      * Gets height of the header of the display. Header
-     * usually contains things like battery/singal strength.
+    * usually contains things like battery/singal strength.
      * It might include also title, icon and other graphics
      * not contained in the "main" view.
      * 
@@ -177,25 +185,25 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
      *  actual values contained by this component
      * 
      * @return
-     */
+     * /
     protected final int getDisplayHeaderHeight() {
         // TODO need to add real implementation
         return 30;
     }
 
-    /**
+    / **
      * Gets height of the footer of the display. Footer
      * usually contains commands. Please note,
      * this value might change dynamically, based
      * on the components contained by this displayble
      * 
      * @return
-     */
+     * /
     protected final int getDisplayFooterHeight() {
         // TODO need to add real implementation
         return 20;
     }
-        
+
 //    // title property element
 //    private class TitlePropertyPresenter extends ScreenPropertyPresenter {
 //
@@ -329,6 +337,41 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
                 });
             }
         }                
+    }*/
+
+    private DisplayableDisplayPanel panel;
+
+    public DisplayableDisplayPresenter () {
+        panel = new DisplayableDisplayPanel (this);
+        panel.getBattery ().setIcon (new ImageIcon (BATTERY));
+        panel.getSignal ().setIcon (new ImageIcon (SIGNAL));
     }
+
+    public boolean isTopLevelDisplay () {
+        return true;
+    }
+
+    public Collection<DesignComponent> getChildren () {
+        return Collections.emptyList ();
+    }
+
+    public JComponent getView () {
+        return panel;
+    }
+
+    protected DisplayableDisplayPanel getPanel () {
+        return panel;
+    }
+
+    public Shape getSelectionShape () {
+        return new Rectangle (panel.getSize ());
+    }
+
+    public void reload (ScreenDeviceInfo deviceInfo) {
+        panel.setBorder (deviceInfo.getDeviceTheme ().getBorder (getComponent ().getDocument ().getSelectedComponents ().contains (getComponent ())));
+        DesignComponent ticker = getComponent ().readProperty (DisplayableCD.PROP_TICKER).getComponent ();
+        panel.getTicker ().setText (MidpValueSupport.getHumanReadableString (ticker != null ? ticker.readProperty (TickerCD.PROP_STRING) : null));
+        panel.getTitle ().setText (MidpValueSupport.getHumanReadableString (getComponent ().readProperty (DisplayableCD.PROP_TITLE)));
+    }
+
 }
- 

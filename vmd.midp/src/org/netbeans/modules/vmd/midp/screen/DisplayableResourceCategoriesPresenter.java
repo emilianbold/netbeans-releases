@@ -13,8 +13,8 @@
  */
 package org.netbeans.modules.vmd.midp.screen;
 
-import org.netbeans.modules.vmd.api.screen.resources.ScreenResourceCategoryDescriptor;
-import org.netbeans.modules.vmd.api.screen.resources.ScreenResourceCategoriesPresenter;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoriesPresenter;
 
 import java.util.ArrayList;
 import java.util.Collection;

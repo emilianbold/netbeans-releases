@@ -24,14 +24,12 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPre
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
-import org.netbeans.modules.vmd.api.screen.resources.ScreenResourcePresenter;
-import org.netbeans.modules.vmd.api.screen.resources.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.flow.FlowDisplayableCommandPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
-import org.netbeans.modules.vmd.midp.screen.ScreenResourceCategoryDescriptorSupport;
+import org.netbeans.modules.vmd.midp.screen.CommandEventSourceSRItemPresenter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,22 +90,7 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
                 }
             },
             // screen
-            new ScreenResourcePresenter () {
-                public boolean isActiveIn(DesignComponent component) {
-                    DesignComponent displayable = getComponent ().readProperty (PROP_DISPLAYABLE).getComponent ();
-                    return displayable != null  &&  displayable == component;
-                }
-                public ScreenResourceCategoryDescriptor getCategoryDescriptor () {
-                    return ScreenResourceCategoryDescriptorSupport.ASSIGNED_COMMANDS;
-                }
-                protected DesignEventFilter getEventFilter () {
-                    return new DesignEventFilter ().addComponentFilter (getComponent (), false).addHierarchyFilter (getComponent (), false);
-                }
-                protected void designChanged (DesignEvent event) {
-                    if (event.isComponentPropertyChanged (getComponent (), PROP_DISPLAYABLE))
-                        firePresenterChanged ();
-                }
-            }
+            new CommandEventSourceSRItemPresenter ()
         );
     }
 

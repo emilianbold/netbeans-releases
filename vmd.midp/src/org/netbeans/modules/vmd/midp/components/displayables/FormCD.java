@@ -24,8 +24,10 @@ import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
@@ -38,10 +40,12 @@ import org.netbeans.modules.vmd.midp.flow.FlowItemCommandPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
+import org.netbeans.modules.vmd.midp.screen.display.FormDisplayPresenter;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -85,7 +89,13 @@ public final class FormCD extends ComponentDescriptor {
                 .addSetters(MidpSetter.createSetter("insert", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX))
                 .addSetters(MidpSetter.createSetter("set", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX));
     }
-     
+
+
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // accept
@@ -105,7 +115,9 @@ public final class FormCD extends ComponentDescriptor {
             // flow
             new FlowItemCommandPinOrderPresenter (),
             // delete
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ITEM_STATE_LISTENER)
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ITEM_STATE_LISTENER),
+            // screen
+            new FormDisplayPresenter ()
         );
     }
     

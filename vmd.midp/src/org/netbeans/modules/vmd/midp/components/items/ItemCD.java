@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
+import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
 
@@ -181,7 +182,9 @@ public class ItemCD extends ComponentDescriptor {
                         DesignComponent form = component.getParentComponent ();
                         ArraySupport.remove (form, FormCD.PROP_ITEMS, component);
                     }
-                }
+                },
+                // screen
+                new ItemDisplayPresenter ()
         );
     }
 

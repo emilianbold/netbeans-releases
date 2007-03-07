@@ -56,7 +56,7 @@ public class ResourcesAnalyzerPanel extends javax.swing.JPanel {
     }
 
     void setUnusedResources(DesignDocument document,List<DesignComponent> resources) {
-        // do not change list if the resources are equal
+        // do not change list if the resource are equal
         if (resources.size() == resourcesID.size()) {
             for (int i = 0; i < resources.size(); i++) {
                 if (resources.get(i).getComponentID() == resourcesID.get(i)) {
