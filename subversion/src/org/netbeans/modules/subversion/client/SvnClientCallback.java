@@ -20,7 +20,6 @@ package org.netbeans.modules.subversion.client;
 
 import java.awt.Dialog;
 import javax.swing.JButton;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.DialogDescriptor;
@@ -41,10 +40,13 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     private String username = null;
     private String password = null;        
 
+    private final boolean prompt;
+    
     /** Creates a new instance of SvnClientCallback */
     public SvnClientCallback(SVNUrl url, int handledExceptions) {
         this.url = url;
         this.handledExceptions = handledExceptions;
+        this.prompt = (SvnClientExceptionHandler.EX_AUTHENTICATION & handledExceptions) == SvnClientExceptionHandler.EX_AUTHENTICATION;
     }
 
     public boolean askYesNo(String string, String string0, boolean b) {
@@ -106,7 +108,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }
 
     public boolean prompt(String string, String string0, boolean b) {        
-        return true;
+        return prompt;
     }
 
     public String askQuestion(String string, String string0, boolean b, boolean b0) {
