@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
 /**
@@ -45,8 +46,12 @@ public final class DesignerServiceHackProvider {
     }
 
     public static Image getCssPreviewImage(DataObject dataObject,
-    String cssStyle, String[] cssStyleClasses, MarkupDesignBean bean, int width, int height) {
-        return DesignerServiceHackProviderImpl.getCssPreviewImage(dataObject, cssStyle, cssStyleClasses, bean, width, height);
+    String cssStyle, String[] cssStyleClasses,
+    /*MarkupDesignBean bean,*/ Element componentRootElement, DocumentFragment df, Element element,
+    int width, int height) {
+        return DesignerServiceHackProviderImpl.getCssPreviewImage(dataObject, cssStyle, cssStyleClasses,
+                /*bean,*/ componentRootElement, df, element,
+                width, height);
     }
 
     public static Image getCssPreviewImage(Map properties, URL base, int width, int height) {

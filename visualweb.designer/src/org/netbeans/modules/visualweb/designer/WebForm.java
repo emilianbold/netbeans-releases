@@ -2376,9 +2376,9 @@ public class WebForm implements Designer {
             return new Element[0];
         }
 
-        public MarkupDesignBean adjustRenderBeanHack(MarkupDesignBean renderBean) {
-            return renderBean;
-        }
+//        public MarkupDesignBean adjustRenderBeanHack(MarkupDesignBean renderBean) {
+//            return renderBean;
+//        }
 
 //        public boolean isFacesComponentBean(DesignBean bean) {
 //            return false;

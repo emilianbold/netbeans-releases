@@ -59,6 +59,7 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
 
@@ -125,7 +126,8 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 //
 //        WebForm webform = DesignerUtils.getWebForm(dobj);
     public static Image getCssPreviewImage(DataObject dataObject, String cssStyle, String[] cssStyleClasses,
-    MarkupDesignBean bean, int width, int height) {
+    /*MarkupDesignBean bean,*/ Element componentRootElement, DocumentFragment df, Element element,
+    int width, int height) {
         WebForm webform = WebForm.getWebFormForDataObject(dataObject);
 
         if (webform == null) {
@@ -137,7 +139,9 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
         WindowManager wm = WindowManager.getDefault();
         Graphics2D g2d = (Graphics2D)wm.getMainWindow().getGraphics();
 
-        return pageBox.paintCssPreview(g2d, cssStyle, bean, width, height);
+        return pageBox.paintCssPreview(g2d, cssStyle,
+                /*bean,*/ componentRootElement, df, element,
+                width, height);
     }
 
     public static Image getCssPreviewImage(Map properties, URL base, int width, int height) {

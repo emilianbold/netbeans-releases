@@ -19,7 +19,17 @@
 package org.netbeans.modules.visualweb.designer.jsf;
 
 
+import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.DesignProperty;
+import com.sun.rave.designer.html.HtmlAttribute;
+import com.sun.rave.designer.html.HtmlTag;
+import java.lang.reflect.Method;
+import javax.faces.component.html.HtmlCommandLink;
+import javax.faces.component.html.HtmlOutputLink;
+import javax.faces.component.html.HtmlOutputText;
 import org.netbeans.modules.visualweb.api.designer.DesignerServiceHackProvider;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssEngineService;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
@@ -42,6 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
 
@@ -89,7 +100,6 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
         }
 
         FacesPageUnit fu = getFacesUnit(bean.getDesignContext());
-
         if (fu == null) {
             return null;
         }
@@ -116,7 +126,175 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //        Graphics2D g2d = (Graphics2D)wm.getMainWindow().getGraphics();
 //
 //        return pageBox.paintCssPreview(g2d, cssStyle, bean, width, height);
-        return DesignerServiceHackProvider.getCssPreviewImage(dobj, cssStyle, cssStyleClasses, bean, width, height);
+        
+// >>> Moved from designer/PageBox.paintCssPreview >>>
+//        if (initialWidth == 0) {
+        if (width == 0) {
+            // Ensure that we don't force wrapping on components like a composite
+            // breadcrumbs by giving it some space to work with.
+            width = 600;
+        }
+
+        // Distinguish between the bean we're going to -render- and the one we're
+        // going to apply the differente properties to
+        MarkupDesignBean renderBean = bean;
+
+//        // Handle hyperlinks. We really need to render its surrounding content
+//        // to see the CS stylerules for <a> apply
+//        if (renderBean.getInstance() instanceof HtmlOutputText) {
+//            DesignBean parent = renderBean.getBeanParent();
+//
+//            if ((parent != null) && (parent.getChildBeanCount() == 1) &&
+//                    (parent.getInstance() instanceof HtmlCommandLink ||
+//                    parent.getInstance() instanceof HtmlOutputLink)) {
+//                renderBean = (MarkupDesignBean)parent;
+//            }
+//        }
+//
+//        // Embedded table portions (rowgroups, columns) aren't happy being rendered
+//        // without their surrounding table.
+//        // It would be better to modify the preview code to actually go and -try- rendering
+//        // components and then progressively retry on parents until it succeeds.
+//        // But given that the code is freezing today I'm playing it safe
+//        if (renderBean.getInstance() instanceof com.sun.rave.web.ui.component.TableColumn
+//        || renderBean.getInstance() instanceof com.sun.webui.jsf.component.TableColumn) {
+//            if (renderBean.getBeanParent() instanceof MarkupDesignBean) {
+//                renderBean = (MarkupDesignBean)renderBean.getBeanParent();
+//            } else {
+//                return null;
+//            }
+//        } else if (renderBean.getBeanParent().getInstance() instanceof com.sun.rave.web.ui.component.TableColumn
+//        || renderBean.getBeanParent().getInstance() instanceof com.sun.webui.jsf.component.TableColumn) {
+//            // We also have to render components that are children of a TableColumn as part of the whole
+//            // table as well, because their value binding expressions can involve data providers set up
+//            // by the table. This is clearly not a clean solution. See comment above about trying arbitary
+//            // rendering instead. This breaks once you nest components in a column inside a container
+//            // component for example. Just doing a low risk, 90% fix now right before FCS.
+//            if (renderBean.getBeanParent().getBeanParent() instanceof MarkupDesignBean) {
+//                renderBean = (MarkupDesignBean)renderBean.getBeanParent().getBeanParent();
+//            } else {
+//                return null;
+//            }
+//        }
+//
+//        // Not else: a TableColumn can be inside a TableRowGroup so keep moving outwards if necessary:
+//        if (renderBean.getInstance() instanceof com.sun.rave.web.ui.component.TableRowGroup
+//        || renderBean.getInstance() instanceof com.sun.webui.jsf.component.TableRowGroup) {
+//            if (renderBean.getBeanParent() instanceof MarkupDesignBean) {
+//                renderBean = (MarkupDesignBean)renderBean.getBeanParent();
+//            } else {
+//                return null;
+//            }
+//        }
+        // XXX Hack, see the impl.
+//        renderBean = WebForm.getHtmlDomProviderService().adjustRenderBeanHack(renderBean);
+        renderBean = adjustRenderBeanHack(renderBean);
+
+        Element e = bean.getElement();
+        assert e != null;
+        
+        // XXX can I shut off errors in output window?
+        String oldStyleAttribute = null;
+        String oldStyleProperty = null;
+
+        if (e.hasAttribute(HtmlAttribute.STYLE)) {
+            oldStyleAttribute = e.getAttribute(HtmlAttribute.STYLE);
+        }
+
+//        XhtmlCssEngine engine = webform.getMarkup().getCssEngine();
+
+        try {
+//            engine.setErrorHandler(XhtmlCssEngine.SILENT_ERROR_HANDLER);
+//            CssProvider.getEngineService().setSilentErrorHandlerForDocument(webform.getMarkup().getSourceDom());
+//            CssProvider.getEngineService().setSilentErrorHandlerForDocument(webform.getMarkup().getRenderedDom());
+//            CssProvider.getEngineService().setSilentErrorHandlerForDocument(webform.getHtmlDom());
+            CssProvider.getEngineService().setSilentErrorHandlerForDocument(mu.getRenderedDom());
+            
+//            CssBox.noBoxPersistence = true;
+
+            e.setAttribute(HtmlAttribute.STYLE, cssStyle);
+
+            DesignProperty prop = bean.getProperty("style");
+
+            if (prop != null) {
+                oldStyleProperty = (String)prop.getValue();
+
+                try {
+                    Method m = prop.getPropertyDescriptor().getWriteMethod();
+                    m.invoke(bean.getInstance(), new Object[] { cssStyle });
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+
+//            engine.clearComputedStyles(e, "");
+            CssProvider.getEngineService().clearComputedStylesForElement(e);
+            
+            
+            // Try to render JSF so I can process the DF before proceeding
+            Element element = renderBean.getElement();
+            String tagName = element.getTagName();
+            HtmlTag tag = HtmlTag.getTag(tagName);
+
+            DocumentFragment df;
+            if (tag == null) {
+                // Possibly a Jsf component.
+                // Use getDocument() rather than doc directly since
+                // e.g. jsp includes may point to external documents here,
+                // not the document containing the jsp tag itself
+                
+                // XXX TODO There is not needed webform here.
+//                FileObject markupFile = webform.getModel().getMarkupFile();
+////                DocumentFragment df = FacesSupport.renderHtml(markupFile, renderBean, !CssBox.noBoxPersistence);
+//                DocumentFragment df = InSyncService.getProvider().renderHtml(markupFile, renderBean);
+//                df = webform.renderHtmlForMarkupDesignBean(renderBean);
+                df = FacesPageUnit.renderHtml((FacesModel)fu.getModel(), renderBean);
+            } else {
+                df = null;
+            }
+
+            Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(bean);
+// <<< Moved from designer/PageBox.paintCssPreview
+            return DesignerServiceHackProvider.getCssPreviewImage(dobj, cssStyle, cssStyleClasses,
+                    /*bean,*/ componentRootElement, df, element,
+                    width, height);
+// >>> Moved from designer/PageBox.paintCssPreview
+        } finally {
+//            CssBox.noBoxPersistence = false;
+
+            if (oldStyleAttribute != null) {
+                e.setAttribute(HtmlAttribute.STYLE, oldStyleAttribute);
+            } else {
+                e.removeAttribute(HtmlAttribute.STYLE);
+            }
+
+            DesignProperty prop = bean.getProperty("style");
+
+            if (prop != null) {
+                try {
+                    Method m = prop.getPropertyDescriptor().getWriteMethod();
+                    m.invoke(bean.getInstance(), new Object[] { oldStyleProperty });
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+
+//            engine.clearComputedStyles(e, null);
+            CssEngineService cssEngineService = CssProvider.getEngineService();
+            cssEngineService.clearComputedStylesForElement(e);
+
+            if (renderBean != bean) {
+//                engine.clearComputedStyles(renderBean.getElement(), null);
+                cssEngineService.clearComputedStylesForElement(renderBean.getElement());
+            }
+
+//            engine.setErrorHandler(null);
+//            cssEngineService.setNullErrorHandlerForDocument(webform.getMarkup().getSourceDom());
+//            cssEngineService.setNullErrorHandlerForDocument(webform.getMarkup().getRenderedDom());
+//            cssEngineService.setNullErrorHandlerForDocument(webform.getHtmlDom());
+            cssEngineService.setNullErrorHandlerForDocument(mu.getRenderedDom());
+        }
+// <<< Moved from designer/PageBox.paintCssPreview
     }
 
     public Image getCssPreviewImage(Map properties, URL base, int width, int height) {
@@ -1406,5 +1584,58 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //
 //        return image;
 //    }
+
     
+    // XXX Hack.
+    private static MarkupDesignBean adjustRenderBeanHack(MarkupDesignBean renderBean) {
+        // Handle hyperlinks. We really need to render its surrounding content
+        // to see the CS stylerules for <a> apply
+        if (renderBean.getInstance() instanceof HtmlOutputText) {
+            DesignBean parent = renderBean.getBeanParent();
+
+            if ((parent != null) && (parent.getChildBeanCount() == 1) &&
+                    (parent.getInstance() instanceof HtmlCommandLink ||
+                    parent.getInstance() instanceof HtmlOutputLink)) {
+                renderBean = (MarkupDesignBean)parent;
+            }
+        }
+        
+        // Embedded table portions (rowgroups, columns) aren't happy being rendered
+        // without their surrounding table.
+        // It would be better to modify the preview code to actually go and -try- rendering
+        // components and then progressively retry on parents until it succeeds.
+        // But given that the code is freezing today I'm playing it safe
+        if (renderBean.getInstance() instanceof com.sun.rave.web.ui.component.TableColumn
+        || renderBean.getInstance() instanceof com.sun.webui.jsf.component.TableColumn) {
+            if (renderBean.getBeanParent() instanceof MarkupDesignBean) {
+                renderBean = (MarkupDesignBean)renderBean.getBeanParent();
+            } else {
+                return null;
+            }
+        } else if (renderBean.getBeanParent().getInstance() instanceof com.sun.rave.web.ui.component.TableColumn
+        || renderBean.getBeanParent().getInstance() instanceof com.sun.webui.jsf.component.TableColumn) {
+            // We also have to render components that are children of a TableColumn as part of the whole
+            // table as well, because their value binding expressions can involve data providers set up
+            // by the table. This is clearly not a clean solution. See comment above about trying arbitary
+            // rendering instead. This breaks once you nest components in a column inside a container
+            // component for example. Just doing a low risk, 90% fix now right before FCS.
+            if (renderBean.getBeanParent().getBeanParent() instanceof MarkupDesignBean) {
+                renderBean = (MarkupDesignBean)renderBean.getBeanParent().getBeanParent();
+            } else {
+                return null;
+            }
+        }
+
+        // Not else: a TableColumn can be inside a TableRowGroup so keep moving outwards if necessary:
+        if (renderBean.getInstance() instanceof com.sun.rave.web.ui.component.TableRowGroup
+        || renderBean.getInstance() instanceof com.sun.webui.jsf.component.TableRowGroup) {
+            if (renderBean.getBeanParent() instanceof MarkupDesignBean) {
+                renderBean = (MarkupDesignBean)renderBean.getBeanParent();
+            } else {
+                return null;
+            }
+        }
+        return renderBean;
+    }
+
 }
