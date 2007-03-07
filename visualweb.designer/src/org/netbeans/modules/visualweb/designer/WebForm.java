@@ -1778,9 +1778,9 @@ public class WebForm implements Designer {
         return htmlDomProvider.resolveUrl(urlString);
     }
 
-    public DocumentFragment renderHtmlForMarkupDesignBean(MarkupDesignBean markupDesignBean) {
-        return htmlDomProvider.renderHtmlForMarkupDesignBean(markupDesignBean);
-    }
+//    public DocumentFragment renderHtmlForMarkupDesignBean(MarkupDesignBean markupDesignBean) {
+//        return htmlDomProvider.renderHtmlForMarkupDesignBean(markupDesignBean);
+//    }
     
     public PaletteController getPaletteController() {
         return htmlDomProvider.getPaletteController();
