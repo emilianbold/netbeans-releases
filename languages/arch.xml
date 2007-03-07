@@ -122,18 +122,58 @@ defining language structure and describing its features, <a href="http://saturn.
 
     The called methods have access to the context information related to
     the document they have been called on. The information is passed into
-    the method as <code>org.netbeans.api.languages.Cookie</code>
-    instance. <code>org.netbeans.api.languages.Cookie</code> can
+    the method as <code>org.netbeans.api.languages.Context</code>
+    instance. <code>org.netbeans.api.languages.Context</code> can
     be queried for related <code>javax.swing.text.Document</code>
     and <code>javax.swing.text.JTextComponent</code>, as
     well as for <code>org.netbeans.api.lexer.TokenSequence</code>.
-    <code>org.netbeans.api.languages.SyntaxCookie</code>
-    provides addional information - <code>org.netbeans.api.languages.PTPath</code>. It is available
-    for all caret position related calls and holds the path in the parset
+    <code>org.netbeans.api.languages.SyntaxContext</code>
+    provides addional information - <code>org.netbeans.api.languages.ASTPath</code>. It is available
+    for all caret position related calls and holds the path in the parsed
     ASTree from the root node to the leaf corresponding to the token the
     caret is placed on. In the ASTree, non-terminals are represented by 
     <code>org.netbeans.api.languages.ASTNode</code>, while tokens by
-    <code>SToken</code>.
+    <code>org.netbeans.api.languages.ASTToken</code>. Both classes extend 
+    <code>org.netbeans.api.languages.ASTItem</code>.
+    
+    <br/>
+    <br/>
+    
+    To make a language implementation visible for the Schliemann engine,
+    it is required to put the defining .nbs file into the layer file under 
+    "Editors\text\&lt;language name&gt;" folder. In addition, a proper mime type resolver should be 
+    be registered under "Services\MIMEResolver".
+    
+    <p><b>Example:</b></p>
+    
+    <pre>
+    &lt;folder name="Services"&gt;
+        &lt;folder name="MIMEResolver"&gt;
+            &lt;file name="sh.xml" url="sh.xml"/&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;
+    
+    &lt;folder name="Editors"&gt;
+        &lt;folder name="text"&gt;
+            &lt;folder name="sh"&gt;
+                &lt;file name="language.nbs" url="sh.nbs"&gt;
+                    &lt;attr name="icon" stringvalue="org/netbeans/modules/languages/html/sh.png"/&gt;
+                &lt;/file&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;
+    </pre>
+    
+    Referenced sh.xml file:
+    
+    <pre>
+    &lt;MIME-resolver&gt;
+        &lt;file&gt;
+            &lt;ext name="sh"/&gt;
+            &lt;resolver mime="text/sh"/&gt;
+        &lt;/file&gt;
+    &lt;/MIME-resolver&gt;
+    </pre>
 </answer>
 
 
