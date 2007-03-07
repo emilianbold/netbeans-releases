@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,10 +56,17 @@ public class LoggingTest extends NbTestCase {
         clearWorkDir();
     }
     
-    public void throwThrowable() throws Throwable {
+    /** Used in testIOExceptionIsWrappedWithLogMsg. */
+    public void throwIOThrowable() throws Throwable {
         Logger log = Logger.getLogger(getName());
         log.warning("Going to throw: " + toThrow);
         throw toThrow;
+    }
+    
+    /** Used in testMyExceptionIsWrappedWithLogMsg. It has to have different
+     *  name because it cannot delete log file on 64 bit machine. */
+    public void throwMyThrowable() throws Throwable {
+        throwIOThrowable();
     }
     
     public void testLogFileName() throws Exception {
@@ -166,7 +173,7 @@ public class LoggingTest extends NbTestCase {
     }
     public void testIOExceptionIsWrappedWithLogMsg() throws Exception {
         
-        LoggingTest inner = new LoggingTest("throwThrowable");
+        LoggingTest inner = new LoggingTest("throwIOThrowable");
         inner.toThrow = new IOException("Ahoj");
         
         TestResult res = inner.run();
@@ -180,8 +187,7 @@ public class LoggingTest extends NbTestCase {
         }
     }
     public void testMyExceptionIsWrappedWithLogMsg() throws Exception {
-        
-        LoggingTest inner = new LoggingTest("throwThrowable");
+        LoggingTest inner = new LoggingTest("throwMyThrowable");
         
         class MyEx extends Exception {
         }
