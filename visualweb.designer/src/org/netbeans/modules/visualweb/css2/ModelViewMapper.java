@@ -40,7 +40,6 @@ import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
@@ -2427,13 +2426,15 @@ public final class ModelViewMapper {
 //                    if (element.getDesignBean() != null) {
 //                        DesignBean bean = element.getDesignBean();
 //                    DesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-                    DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
-                    if (bean != null) {
+//                    DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                    if (bean != null) {
+                    Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForElement(element);
+                    if (componentRootElement != null) {
 //                        Element el = FacesSupport.getElement(bean);
 //                        Element el = Util.getElement(bean);
-                        Element el = WebForm.getHtmlDomProviderService().getElement(bean);
-                        
-                        return Position.create(el, pos.getOffset() > 0);
+//                        Element el = WebForm.getHtmlDomProviderService().getElement(bean);
+                        Element sourceElement = MarkupService.getSourceElementForElement(componentRootElement);
+                        return Position.create(sourceElement, pos.getOffset() > 0);
                     }
                 }
                 

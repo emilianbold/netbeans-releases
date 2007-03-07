@@ -2495,6 +2495,10 @@ public class WebForm implements Designer {
         public Designer[] findDesignersForNode(org.openide.nodes.Node node) {
             return new Designer[0];
         }
+
+        public Element getComponentRootElementForElement(Element element) {
+            return null;
+        }
     } // End of DummyHtmlDomProviderService.
     
     
