@@ -22,6 +22,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
 
 /**
@@ -31,7 +32,7 @@ import org.openide.util.HelpCtx;
  * @author Martin Krauskopf
  */
 abstract class NbPropertyPanel extends JPanel implements
-        BasicCustomizer.LazyStorage, PropertyChangeListener, HelpCtx.Provider {
+        ModuleProperties.LazyStorage, PropertyChangeListener, HelpCtx.Provider {
 
     private Class helpCtxClass;
 
@@ -43,16 +44,10 @@ abstract class NbPropertyPanel extends JPanel implements
     
     protected ModuleProperties props;
     
-    /** Whether this panel is valid or not. */
-    private boolean valid;
-    
-    /** Error message for this panel (may be null). */
-    private String errMessage;
-    
     /** Creates new NbPropertyPanel */
     NbPropertyPanel(final ModuleProperties props, final Class helpCtxClass) {
-        this.valid = true; // panel is valid by default
         this.props = props;
+        props.addLazyStorage(this);
         initComponents();
         props.addPropertyChangeListener(this);
         this.helpCtxClass = helpCtxClass;
@@ -79,16 +74,6 @@ abstract class NbPropertyPanel extends JPanel implements
         props.setBooleanProperty(key, property);
     }
     
-    /**
-     * Sets whether panel is valid and fire property change. See {@link
-     * #VALID_PROPERTY}
-     */
-    protected void setValid(boolean valid) {
-        if (this.valid != valid) {
-            this.valid = valid;
-            firePropertyChange(NbPropertyPanel.VALID_PROPERTY, !valid, valid);
-        }
-    }
     
     /**
      * Gives subclasses a chance to set a warning or an error message after a
@@ -97,36 +82,10 @@ abstract class NbPropertyPanel extends JPanel implements
      * #setWarning(String)} or {@link #setErrorMessage(String)}. Default
      * implementation does nothing.
      */
-    protected void checkForm() {}
-
-    /**
-     * Sets an error message which will be shown in the customizer. Pass
-     * <code>null</code> to clear current message (or warning). Also set this
-     * panel to be invalid for non-<code>null</code>, nonempty message. Invalid
-     * otherwise.
-     *
-     * @see #setWarning(String)
-     */
-    protected void setErrorMessage(String message) {
-        setWarning(message);
-        setValid(null == message || "".equals(message));
-    }
-
     
-    /**
-     * Sets a warning which will be shown in the customizer. Pass
-     * <code>null</code> to clear current warning (or message).
-     *
-     * @see #setErrorMessage(String)
-     */
-    protected void setWarning(String message) {
-        String newMessage = message == null ? "" : message;
-        if (!newMessage.equals(this.errMessage)) {
-            String oldMessage = this.errMessage;
-            this.errMessage = newMessage;
-            firePropertyChange(NbPropertyPanel.ERROR_MESSAGE_PROPERTY, oldMessage, newMessage);
-        }
-    }
+    //TODO remove!!
+    protected final void checkForm() {}
+
     
     public void store() { /* empty implementation */ }
     
@@ -138,6 +97,7 @@ abstract class NbPropertyPanel extends JPanel implements
     
     public void addNotify() {
         super.addNotify();
+        //TODO replace with something else..
         firePropertyChange(CustomizerProviderImpl.LAST_SELECTED_PANEL, null, this);
     }
     

@@ -28,9 +28,8 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Adding ability for a NetBeans modules to provide a GUI customizer.
@@ -40,14 +39,14 @@ import org.openide.util.NbBundle;
 public final class CustomizerProviderImpl extends BasicCustomizer {
     
     // Programmatic names of categories
-    private static final String CATEGORY_SOURCES = "Sources"; // NOI18N
-    private static final String CATEGORY_DISPLAY = "Display"; // NOI18N
-    private static final String CATEGORY_LIBRARIES = "Libraries"; // NOI18N
+    static final String CATEGORY_SOURCES = "Sources"; // NOI18N
+    static final String CATEGORY_DISPLAY = "Display"; // NOI18N
+    static final String CATEGORY_LIBRARIES = "Libraries"; // NOI18N
     public static final String CATEGORY_VERSIONING = "Versioning"; // NOI18N
     public static final String SUBCATEGORY_VERSIONING_PUBLIC_PACKAGES = "publicPackages"; // NOI18N
-    private static final String CATEGORY_BUILD = "Build"; // NOI18N
-    private static final String CATEGORY_COMPILING = "Compiling"; // NOI18N
-    private static final String CATEGORY_PACKAGING = "Packaging"; // NOI18N
+    static final String CATEGORY_BUILD = "Build"; // NOI18N
+    static final String CATEGORY_COMPILING = "Compiling"; // NOI18N
+    static final String CATEGORY_PACKAGING = "Packaging"; // NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -56,12 +55,13 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
     
     public CustomizerProviderImpl(final Project project, final AntProjectHelper helper,
             final PropertyEvaluator evaluator) {
-        super(project);
+        super(project, "Projects/org-netbeans-modules-apisupport-project/Customizer");
         this.helper = helper;
         this.evaluator = evaluator;
     }
     
     void storeProperties() throws IOException {
+        moduleProps.triggerLazyStorages();
         moduleProps.storeProperties();
     }
     
@@ -72,46 +72,16 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
         }
     }
     
-    protected void prepareData() {
+    void dialogCleanup() {
+        moduleProps = null;
+    }
+    
+    protected Lookup prepareData() {
         Lookup lookup = getProject().getLookup();
         SuiteProvider sp = (SuiteProvider) lookup.lookup(SuiteProvider.class);
         NbModuleProvider.NbModuleType type = Util.getModuleType((NbModuleProject) getProject());
-        if (moduleProps == null) { // first initialization
-            moduleProps = new SingleModuleProperties(helper, evaluator, sp, type,
+        moduleProps = new SingleModuleProperties(helper, evaluator, sp, type,
                     (LocalizedBundleInfo.Provider) lookup.lookup(LocalizedBundleInfo.Provider.class));
-            init();
-        } else {
-            moduleProps.refresh(type, sp);
-        }
+        return Lookups.fixed(moduleProps, getProject());
     }
-    
-    private void init() {
-        ProjectCustomizer.Category sources = createCategory(CATEGORY_SOURCES, "LBL_ConfigSources"); // NOI18N
-        ProjectCustomizer.Category libraries = createCategory(CATEGORY_LIBRARIES, "LBL_ConfigLibraries"); // NOI18N
-        ProjectCustomizer.Category display = createCategory(CATEGORY_DISPLAY, "LBL_ConfigDisplay"); // NOI18N
-        ProjectCustomizer.Category versioning = createCategory(CATEGORY_VERSIONING, "LBL_ConfigVersioning"); // NOI18N
-        ProjectCustomizer.Category compiling = createCategory(CATEGORY_COMPILING, "LBL_ConfigCompiling"); // NOI18N
-        ProjectCustomizer.Category packaging = createCategory(CATEGORY_PACKAGING, "LBL_ConfigPackaging"); // NOI18N
-        
-        ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
-                CATEGORY_BUILD,
-                NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_ConfigBuild"),
-                null,
-                new ProjectCustomizer.Category[] { compiling, packaging }
-        );
-        
-        setCategories(new ProjectCustomizer.Category[] {
-            sources, libraries, display, versioning, build
-        });
-
-        createPanel(sources, new CustomizerSources(moduleProps));
-        createPanel(libraries, new CustomizerLibraries(moduleProps));
-        createPanel(display, new CustomizerDisplay(moduleProps));
-        createPanel(versioning, new CustomizerVersioning(moduleProps));
-        createPanel(compiling, new CustomizerCompiling(moduleProps));
-        createPanel(packaging, new CustomizerPackaging(moduleProps));
-        
-        listenToPanels();
-    }
-    
 }

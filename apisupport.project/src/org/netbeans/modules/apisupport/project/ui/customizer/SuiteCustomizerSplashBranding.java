@@ -34,6 +34,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -54,12 +55,13 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     private SplashUISupport.ColorComboBox cornerColor;
     
     private URL splashSource;
-    
+    private ProjectCustomizer.Category cat;
     /**
      * Creates new form SuiteCustomizerLibraries
      */
-    public SuiteCustomizerSplashBranding(final SuiteProperties suiteProps) {
+    public SuiteCustomizerSplashBranding(final SuiteProperties suiteProps, final ProjectCustomizer.Category cat) {
         super(suiteProps, SuiteCustomizerSplashBranding.class);
+        this.cat = cat;
         BasicBrandingModel branding = getBrandingModel();
         branding.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -114,11 +116,13 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                     try {
                         fontSize.commitEdit();
                         ((Number) fontSize.getValue()).intValue();
-                        setErrorMessage(null);
+                        cat.setErrorMessage(null);
+                        cat.setValid(true);
                         resetSplashPreview();
                     } catch (ParseException ex) {
                         //user's invalide input
-                        setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidFontSize"));
+                        cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidFontSize"));
+                        cat.setValid(false);
                     }
                 }
             }
@@ -129,11 +133,13 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                 if (e != null || runningTextBounds.isFocusOwner()) {
                     try {
                         runningTextBounds.commitEdit();
-                        setErrorMessage(null);
+                        cat.setErrorMessage(null);
+                        cat.setValid(true);
                         resetSplashPreview();
                     } catch (ParseException ex) {
                         //user's invalide input
-                        setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidTextBounds"));
+                        cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidTextBounds"));
+                        cat.setValid(false);
                     }
                 }
             }
@@ -144,11 +150,13 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                 if (e != null || progressBarBounds.isFocusOwner()) {
                     try {
                         progressBarBounds.commitEdit();
-                        setErrorMessage(null);
+                        cat.setErrorMessage(null);
+                        cat.setValid(true);
                         resetSplashPreview();
                     } catch (ParseException ex) {
                         //user's invalide input
-                        setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidProgressBarBounds"));
+                        cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidProgressBarBounds"));
+                        cat.setValid(false);
                     }
                 }
             }

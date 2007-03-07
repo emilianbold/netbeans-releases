@@ -24,6 +24,7 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
 /**
@@ -32,17 +33,18 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 final class CustomizerPackaging extends NbPropertyPanel.Single {
-
+    private ProjectCustomizer.Category cat;
     /** Creates new form CustomizerPackaging */
-    CustomizerPackaging(final SingleModuleProperties props) {
+    CustomizerPackaging(final SingleModuleProperties props, ProjectCustomizer.Category cat) {
         super(props, CustomizerPackaging.class);
+        this.cat = cat;
         initComponents();
         initAccesibility();
         refresh();
         if (!getProperties().isNetBeansOrg()) {
             licenseValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
                 public void insertUpdate(DocumentEvent e) {
-                    checkForm();
+                    checkValidity();
                 }
             });
         } else {
@@ -50,15 +52,18 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
             licenseValue.setEnabled(false);
             browseLicense.setEnabled(false);
         }
+        checkValidity();
     }
     
     
-    protected void checkForm() {
+    private void checkValidity() {
         File currentLicenceF = getCurrentLicenceFile();
         if (currentLicenceF != null && !currentLicenceF.isFile()) {
-            setErrorMessage(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
+            cat.setErrorMessage(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
+            cat.setValid(false);
         } else {
-            setErrorMessage(null);
+            cat.setErrorMessage(null);
+            cat.setValid(true);
         }
     }
     

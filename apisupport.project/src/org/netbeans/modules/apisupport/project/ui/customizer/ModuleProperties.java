@@ -23,7 +23,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -325,5 +327,28 @@ public abstract class ModuleProperties {
         }
         return null;
     }
+    
+    
+    void addLazyStorage(LazyStorage st) {
+        storages.add(st);
+    }
+    
+    void triggerLazyStorages() {
+        for (LazyStorage stor : storages) {
+            stor.store();
+        }
+    }
+    
+    private List<LazyStorage> storages = new ArrayList<LazyStorage>();
+    /**
+     * Implement this interface when you want your panel to be told that the
+     * properties/customizer are going to be saved.
+     */
+    static interface LazyStorage {
+        
+        /** Called when user pressed <em>ok</em> before storing the model. */
+        void store();
+        
+    }    
     
 }

@@ -28,21 +28,18 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Convenient class to be used by {@link CustomizerProvider} implementations.
@@ -59,14 +56,14 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
     /** Keeps reference to a dialog representing <code>this</code> customizer. */
     private Dialog dialog;
     
-    private ProjectCustomizer.CategoryComponentProvider panelProvider;
-    private ProjectCustomizer.Category categories[];
     private Component lastSelectedPanel;
     
-    private final Map<ProjectCustomizer.Category, NbPropertyPanel> panels = new HashMap();
     
-    protected BasicCustomizer(final Project project) {
+    private String layerPath;
+    
+    protected BasicCustomizer(final Project project, String path) {
         this.project = project;
+        layerPath = path;
     }
     
     /**
@@ -87,11 +84,10 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
      * ModuleProperties}) needed by a customizer and its panels and that the
      * data is always up-to-date after this method was called.
      */
-    abstract void prepareData();
+    abstract Lookup prepareData();
     
-    protected void setCategories(ProjectCustomizer.Category[] categories) {
-        this.categories = categories;
-    }
+    abstract void dialogCleanup();
+    
     
     protected Project getProject() {
         return project;
@@ -112,83 +108,43 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
             dialog.setVisible(true);
             return;
         } else {
-            prepareData();
+            Lookup context = prepareData();
+//            if (preselectedCategory == null) {
+//                preselectedCategory = findLastSelectedCategory();
+//            }
+            context = new ProxyLookup(context, Lookups.fixed(new SubCategoryProvider(preselectedCategory, preselectedSubCategory)));
             OptionListener listener = new OptionListener();
-            if (preselectedCategory == null) {
-                preselectedCategory = findLastSelectedCategory();
-            }
-            if (categories == null) {
-                // Error interrupted some previous call to prepareData() -> init()?
-                return;
-            }
-            dialog = ProjectCustomizer.createCustomizerDialog(categories,
-                    getPanelProvider(), preselectedCategory, listener,
+            dialog = ProjectCustomizer.createCustomizerDialog(layerPath, context, 
+                    preselectedCategory, listener,
                     null);
             dialog.addWindowListener(listener);
             dialog.setTitle(NbBundle.getMessage(getClass(), "LBL_CustomizerTitle",
                     ProjectUtils.getInformation(getProject()).getDisplayName()));
             dialog.setVisible(true);
-            if (preselectedCategory != null && preselectedSubCategory != null) {
-                for (int i = 0; i < categories.length; i++) {
-                    if (preselectedCategory.equals(categories[i].getName())) {
-                        JComponent component = panelProvider.create(categories[i]);
-                        if (component instanceof SubCategoryProvider) {
-                            ((SubCategoryProvider)component).showSubCategory(
-                                    preselectedSubCategory);
-                        }
-                        break;
-                    }
-                }
-            }
         }
-        // check panels validity - gives them a chance to set an error message or a warning
-        for (Iterator it = panels.values().iterator(); it.hasNext();) {
-            NbPropertyPanel panel = (NbPropertyPanel) it.next();
-            panel.checkForm();
-        }
+        // this is thrash, replace either by checks at panel creation or category creation.
+//        // check panels validity - gives them a chance to set an error message or a warning
+//        for (Iterator it = panels.values().iterator(); it.hasNext();) {
+//            NbPropertyPanel panel = (NbPropertyPanel) it.next();
+//            panel.checkForm();
+//        }
     }
     
-    protected void createCategoryPanel(final String progName,
-            final String displayNameKey, final NbPropertyPanel panel) {
-        ProjectCustomizer.Category category = ProjectCustomizer.Category.create(
-                progName, NbBundle.getMessage(getClass(), displayNameKey), null);
-        createPanel(category, panel);
-    }
+ 
+//TODO this is for selecting last active panel only..    
+//    protected void listenToPanels() {
+//        for (Iterator it = panels.values().iterator(); it.hasNext(); ) {
+//            ((Component) it.next()).addPropertyChangeListener(this);
+//        }
+//    }
     
-    /** Creates a category without subcategories. */
-    protected ProjectCustomizer.Category createCategory(
-            final String progName, final String displayNameKey) {
-        return ProjectCustomizer.Category.create(
-                progName, NbBundle.getMessage(getClass(), displayNameKey), null);
-    }
     
-    protected void createPanel(final Category category, final NbPropertyPanel panel) {
-        panels.put(category, panel);
-    }
-    
-    protected void listenToPanels() {
-        for (Iterator it = panels.values().iterator(); it.hasNext(); ) {
-            ((Component) it.next()).addPropertyChangeListener(this);
-        }
-    }
-    
-    private ProjectCustomizer.Category findCategory(final Object panel) {
-        for (Iterator it = panels.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            if (panel.equals(entry.getValue())) {
-                return (ProjectCustomizer.Category) entry.getKey();
-            }
-        }
-        throw new IllegalArgumentException(panel + " panel is not known in this customizer"); // NOI18N
-    }
-    
-    public void save() {
+    public final void save() {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     storeProperties();
                     ProjectManager.getDefault().saveProject(project);
-                    postSave();
                     return null;
                 }
             });
@@ -200,51 +156,28 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
     /** Listens to the actions on the Customizer's option buttons */
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
-        if (propertyName == NbPropertyPanel.VALID_PROPERTY) {
-            findCategory(evt.getSource()).setValid(((Boolean) evt.getNewValue()).booleanValue());
-        } else if (propertyName == NbPropertyPanel.ERROR_MESSAGE_PROPERTY) {
-            findCategory(evt.getSource()).setErrorMessage((String) evt.getNewValue());
-        } else if (propertyName == BasicCustomizer.LAST_SELECTED_PANEL) {
+        if (propertyName == BasicCustomizer.LAST_SELECTED_PANEL) {
             lastSelectedPanel = (Component) evt.getSource();
         }
     }
     
-    private ProjectCustomizer.CategoryComponentProvider getPanelProvider() {
-        if (panelProvider == null) {
-            panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
-                public JComponent create(ProjectCustomizer.Category category) {
-                    JComponent panel = (JComponent) panels.get(category);
-                    return panel == null ? new JPanel() : panel;
-                }
-            };
-        }
-        return panelProvider;
-    }
-    
-    private String findLastSelectedCategory() {
-        String preselectedCategory = null;
-        for (Iterator it = panels.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            Component panel = (Component) entry.getValue();
-            if (panel == lastSelectedPanel) {
-                preselectedCategory = ((ProjectCustomizer.Category) entry.getKey()).getName();
-                break;
-            }
-        }
-        return preselectedCategory;
-    }
+//    private String findLastSelectedCategory() {
+//        String preselectedCategory = null;
+//        for (Iterator it = panels.entrySet().iterator(); it.hasNext(); ) {
+//            Map.Entry entry = (Map.Entry) it.next();
+//            Component panel = (Component) entry.getValue();
+//            if (panel == lastSelectedPanel) {
+//                preselectedCategory = ((ProjectCustomizer.Category) entry.getKey()).getName();
+//                break;
+//            }
+//        }
+//        return preselectedCategory;
+//    }
     
     protected class OptionListener extends WindowAdapter implements ActionListener {
         
         // Listening to OK button ----------------------------------------------
         public void actionPerformed(ActionEvent e) {
-            // Store the properties into project
-            for (Iterator it = panels.values().iterator(); it.hasNext(); ) {
-                Object panel = (Object) it.next();
-                if (panel instanceof LazyStorage) {
-                    ((LazyStorage) panel).store();
-                }
-            }
             save();
         }
         
@@ -264,25 +197,31 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
                 dialog.removeWindowListener(this);
                 dialog.setVisible(false);
                 dialog.dispose();
+                dialogCleanup();
             }
             dialog = null;
         }
         
     }
     
-    /**
-     * Implement this interface when you want your panel to be told that the
-     * properties/customizer are going to be saved.
-     */
-    static interface LazyStorage {
-        
-        /** Called when user pressed <em>ok</em>. */
-        void store();
-        
-    }
+
     
-    static interface SubCategoryProvider {
-        public void showSubCategory(String name);
+    static final class SubCategoryProvider {
+
+        private String subcategory;
+
+        private String category;
+
+        SubCategoryProvider(String category, String subcategory) {
+            this.category = category;
+            this.subcategory = subcategory;
+        }
+        public String getCategory() {
+            return category;
+        }
+        public String getSubcategory() {
+            return subcategory;
+        }
     }
     
 }

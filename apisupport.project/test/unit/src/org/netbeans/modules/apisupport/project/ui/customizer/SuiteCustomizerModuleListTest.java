@@ -24,6 +24,7 @@ import java.util.HashSet;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -53,7 +54,7 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         this.suite1Props = new SuiteProperties(suite1Prj, suite1Prj.getHelper(),
                 suite1Prj.getEvaluator(), SuiteUtils.getSubProjects(suite1Prj));
         
-        customizer = new SuiteCustomizerLibraries(this.suite1Props);
+        customizer = new SuiteCustomizerLibraries(this.suite1Props, ProjectCustomizer.Category.create("x", "xx", null));
     }
 
     public void testDisableCluster() throws Exception {

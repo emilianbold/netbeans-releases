@@ -1066,6 +1066,23 @@ Microsystems, Inc. All Rights Reserved.
        It's content is expected to be <code>NodeFactory</code> instances.
      </p>
     </api>
+    <api group="layer" name="ModuleProjectCustomizer" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-apisupport-project/Customizer" folder's content is used to construct the project's customizer.
+       It's content is expected to be <code>ProjectCustomizer.CompositeCategoryProvider</code> instances.
+       The lookup passed to the panels contains an instance of <code>Project</code> and <code>org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties</code>
+       Please note that the latter is not part of any public APIs and you need implementation dependency to make use of it.
+     </p>
+    </api>
+    <api group="layer" name="SuiteProjectCustomizer" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-apisupport-project-suite/Customizer" folder's content is used to construct the project's customizer.
+       It's content is expected to be <code>ProjectCustomizer.CompositeCategoryProvider</code> instances.
+       The lookup passed to the panels contains an instance of <code>Project</code> and <code>org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties</code>
+       Please note that the latter is not part of any public APIs and you need implementation dependency to make use of it.
+     </p>
+    </api>
+    
      
  </answer>
 

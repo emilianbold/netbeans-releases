@@ -53,6 +53,7 @@ import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFact
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
@@ -76,13 +77,15 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         implements Comparator, ExplorerManager.Provider, ChangeListener {
     private ExplorerManager manager;
     private ModuleEntry[] platformModules;
+    private ProjectCustomizer.Category cat;
     
     /**
      * Creates new form SuiteCustomizerLibraries
      */
-    public SuiteCustomizerLibraries(final SuiteProperties suiteProps) {
+    public SuiteCustomizerLibraries(final SuiteProperties suiteProps, ProjectCustomizer.Category cat) {
         super(suiteProps, SuiteCustomizerLibraries.class);
         initComponents();
+        this.cat = cat;
         initAccessibility();
         manager = new ExplorerManager();
         refresh();
@@ -107,7 +110,11 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
-        refreshModules();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                refreshModules();
+            }
+        });
         updateJavaPlatformEnabled();
     }
     
@@ -814,9 +821,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     String key = warning[0];
                     String[] args = new String[warning.length - 1];
                     System.arraycopy(warning, 1, args, 0, args.length);
-                    setWarning(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
+                    cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
                 } else {
-                    setWarning(null);
+                    cat.setErrorMessage(null);
                 }
             }
         });

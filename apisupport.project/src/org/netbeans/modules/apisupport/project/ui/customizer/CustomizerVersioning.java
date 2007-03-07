@@ -35,6 +35,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -45,23 +46,37 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-final class CustomizerVersioning extends NbPropertyPanel.Single
-        implements BasicCustomizer.SubCategoryProvider {
+final class CustomizerVersioning extends NbPropertyPanel.Single {
     
     private static final int CHECKBOX_WIDTH = new JCheckBox().getWidth();
     
     private boolean lastAppImplChecked;
     
     private Dimension lastSize;
+    private ProjectCustomizer.Category cat;
+    BasicCustomizer.SubCategoryProvider provider;
+    
     
     /** Creates new form CustomizerVersioning */
-    CustomizerVersioning(SingleModuleProperties props) {
+    CustomizerVersioning(SingleModuleProperties props, ProjectCustomizer.Category cat, BasicCustomizer.SubCategoryProvider prov) {
         super(props, CustomizerVersioning.class);
+        this.cat = cat;
         initComponents();
         initAccesibility();
         initPublicPackageTable();
         refresh();
         attachListeners();
+        checkValidity();
+        provider = prov;
+    }
+    
+    public void addNotify() {
+        super.addNotify();
+        if (provider != null) {
+            showSubCategory(provider);
+            //do preselection on first showing the panel only..
+            provider = null;
+        }
     }
     
     void refresh() {
@@ -99,13 +114,13 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         });
         majorRelVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                checkForm();
+                checkValidity();
             }
         });
         implVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 updateAppendImpl();
-                checkForm();
+                checkValidity();
             }
         });
     }
@@ -125,17 +140,21 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         return valid;
     }
     
-    protected void checkForm() {
+    protected void checkValidity() {
         exportOnlyToFriend.setSelected(getFriendModel().getSize() > 0);
         // check major release version
         if (!checkMajorReleaseVersion()) {
-            setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
+            cat.setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
+            cat.setValid(true);
         } else if (exportOnlyToFriend.isSelected() && getPublicPackagesModel().getSelectedPackages().length < 1) {
-            setErrorMessage(getMessage("MSG_PublicPackageMustBeSelected"));
+            cat.setErrorMessage(getMessage("MSG_PublicPackageMustBeSelected"));
+            cat.setValid(false);
         } else if (implVerValue.getText().matches(".*[^0-9].*")) { // NOI18N
-            setWarning(getMessage("MSG_integer_impl_version_recommended"));
+            cat.setErrorMessage(getMessage("MSG_integer_impl_version_recommended"));
+            cat.setValid(true);
         } else {
-            setErrorMessage(null);
+            cat.setErrorMessage(null);
+            cat.setValid(true);
         }
     }
     
@@ -559,8 +578,9 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         return NbBundle.getMessage(CustomizerVersioning.class, key);
     }
     
-    public void showSubCategory(String name) {
-        if (name.equals(CustomizerProviderImpl.SUBCATEGORY_VERSIONING_PUBLIC_PACKAGES)) {
+    public void showSubCategory(BasicCustomizer.SubCategoryProvider prov) {
+        if (CustomizerProviderImpl.CATEGORY_VERSIONING.equals(prov.getCategory()) &&
+            CustomizerProviderImpl.SUBCATEGORY_VERSIONING_PUBLIC_PACKAGES.equals(prov.getSubcategory())) {
             publicPkgsTable.requestFocus();
             /* XXX does not work quite right under Ocean; have to press TAB once; this does not help:
             if (publicPkgsTable.getModel().getRowCount() > 0) {
@@ -568,8 +588,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
                 publicPkgsTable.setEditingColumn(1);
             }
              */
-        } else {
-            throw new IllegalArgumentException(name);
         }
     }
     

@@ -184,6 +184,22 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance/org-netbeans-modules-apisupport-project-ui-LibrariesNodeFactory.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-apisupport-project-ui-LibrariesNodeFactory.instance"/>
             </folder>
+            <folder name="Customizer">
+                <file name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerSourcesFactory.instance"/>
+                <attr name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerSourcesFactory.instance/org-netbeans-modules-apisupport-project-ui-customizer-CustomizerLibrariesFactory.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerLibrariesFactory.instance"/>
+                <attr name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerLibrariesFactory.instance/org-netbeans-modules-apisupport-project-ui-customizer-CustomizerDisplayFactory.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerDisplayFactory.instance"/>
+                <attr name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerDisplayFactory.instance/org-netbeans-modules-apisupport-project-ui-customizer-CustomizerVersioningFactory.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerVersioningFactory.instance"/>
+                <attr name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerVersioningFactory.instance/Build" boolvalue="true"/>
+                <folder name="Build">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.customizer.Bundle"/>
+                    <file name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerCompilingFactory.instance"/>
+                    <attr name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerCompilingFactory.instance/org-netbeans-modules-apisupport-project-ui-customizer-CustomizerPackagingFactory.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerPackagingFactory.instance"/>
+                </folder>
+            </folder>
          </folder>
         <folder name="org-netbeans-modules-apisupport-project-suite">
             <folder name="Lookup"/>
@@ -192,6 +208,19 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="org-netbeans-modules-apisupport-project-ui-ModulesNodeFactory.instance/org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance"/>
             </folder>
+            <folder name="Customizer">
+                <file name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerSourcesFactory.instance"/>
+                <attr name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerSourcesFactory.instance/org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerLibrariesFactory.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerLibrariesFactory.instance"/>
+                <attr name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerLibrariesFactory.instance/Build" boolvalue="true"/>
+                <folder name="Build">
+                    <file name="Self.instance">
+                            <attr name="instanceCreate" newvalue="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBrandingFactory"/>
+                    </file>
+                    <file name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerSplashBrandingFactory.instance"/>
+                </folder>
+            </folder>
+
         </folder>
         <folder name="Actions" >
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-ProjectCvsMenuItem.instance/org-netbeans-modules-apisupport-project-ui-XTestProjectMenuItem.instance" boolvalue="true" />

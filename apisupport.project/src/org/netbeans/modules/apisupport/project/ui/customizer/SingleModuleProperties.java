@@ -816,5 +816,5 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return p;
     }
-
+    
 }

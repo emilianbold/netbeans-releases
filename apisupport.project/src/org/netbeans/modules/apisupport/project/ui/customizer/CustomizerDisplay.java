@@ -26,6 +26,7 @@ import java.util.SortedSet;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,13 +37,16 @@ import org.openide.util.NbBundle;
 final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     private boolean noBundle;
+    private ProjectCustomizer.Category cat;
     
     /** Creates new form CustomizerDisplay */
-    CustomizerDisplay(final SingleModuleProperties props) {
+    CustomizerDisplay(final SingleModuleProperties props, ProjectCustomizer.Category cat) {
         super(props, CustomizerDisplay.class);
         initComponents();
         initAccesibility();
         refresh();
+        this.cat = cat;
+        checkValidity();
     }
     
     void refresh() {
@@ -57,11 +61,11 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         }
     }
     
-    protected void checkForm() {
+    private void checkValidity() {
         if (this.noBundle) {
-            setWarning(getMessage("MSG_NoBundleForModule"));
+            cat.setErrorMessage(getMessage("MSG_NoBundleForModule"));
         } else {
-            setWarning(null);
+            cat.setErrorMessage(null);
         }
     }
     

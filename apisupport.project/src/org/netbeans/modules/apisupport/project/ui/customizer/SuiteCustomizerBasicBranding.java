@@ -31,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -39,48 +40,63 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implements BasicCustomizer.SubCategoryProvider {
+final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
     
     private URL iconSource;
-    
+    private ProjectCustomizer.Category cat;
+    private BasicCustomizer.SubCategoryProvider prov;
     /**
      * Creates new form SuiteCustomizerLibraries
      */
-    public SuiteCustomizerBasicBranding(final SuiteProperties suiteProps) {
+    public SuiteCustomizerBasicBranding(final SuiteProperties suiteProps, ProjectCustomizer.Category cat, 
+            BasicCustomizer.SubCategoryProvider prov) {
         super(suiteProps, SuiteCustomizerBasicBranding.class);
         initComponents();        
-        refresh();        
+        this.cat = cat;
+        this.prov = prov;
+        refresh(); 
+        checkValidity();
         DocumentListener textFieldChangeListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                checkForm();
+                checkValidity();
             }
         };
         nameValue.getDocument().addDocumentListener(textFieldChangeListener);
         titleValue.getDocument().addDocumentListener(textFieldChangeListener);                
     }
     
+    public void addNotify() {
+        super.addNotify();
+        if (prov != null) {
+            showSubCategory(prov);
+            // do preselect just once..
+            prov = null;
+        }
+    }
     
-    protected void checkForm() {
+    
+    protected void checkValidity() {
         boolean panelValid = true;
         
         if (panelValid && nameValue.getText().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyName"));//NOI18N
+            cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyName"));//NOI18N
             panelValid = false;
         }
 
         if (panelValid && !nameValue.getText().trim().matches("[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*")) {//NOI18N
-            setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_InvalidName"));//NOI18N
+            cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_InvalidName"));//NOI18N
             panelValid = false;
         }
         
         if (panelValid && titleValue.getText().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyTitle"));//NOI18N
+            cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyTitle"));//NOI18N
             panelValid = false;
         }        
         
         if (panelValid) {        
-            setErrorMessage(null);
+            cat.setErrorMessage(null);
         }
+        cat.setValid(panelValid);
     }
     
     void refresh() {
@@ -346,11 +362,10 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
         return getProperties().getBrandingModel();
     }
     
-    public void showSubCategory(String name) {
-        if (name.equals(SuiteCustomizer.APPLICATION_CREATE_STANDALONE_APPLICATION)) {
+    private void showSubCategory(BasicCustomizer.SubCategoryProvider prov) {
+        if (SuiteCustomizer.APPLICATION.equals(prov.getCategory()) &&
+            SuiteCustomizer.APPLICATION_CREATE_STANDALONE_APPLICATION.equals(prov.getSubcategory())) {
             standaloneApp.requestFocus();
-        } else {
-            throw new IllegalArgumentException(name);
         }
     }
     
