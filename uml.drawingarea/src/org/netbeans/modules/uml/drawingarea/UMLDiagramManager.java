@@ -313,7 +313,9 @@ public class UMLDiagramManager implements IProductDiagramManager
          {
             SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
+                    String preferredID = component.preferredID();
                     component.close();
+                    m_OpenDiagrams.remove(preferredID);
                 }
             });
          }
@@ -329,7 +331,9 @@ public class UMLDiagramManager implements IProductDiagramManager
          {
             SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
+                    String preferredID = component.preferredID();
                     component.close();
+                    m_OpenDiagrams.remove(preferredID);
                 }
             });
          }
