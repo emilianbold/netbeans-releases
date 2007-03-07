@@ -37,6 +37,7 @@ import java.net.URL;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -616,7 +617,13 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //        }
 //
 //        return null;
-        return DesignerServiceHackProvider.getTableInfo(bean);
+        Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(bean);
+        if (componentRootElement == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new NullPointerException("There is no element in markup design bean=" + bean)); // NOI18N
+            return null;
+        }
+        return DesignerServiceHackProvider.getTableInfo(componentRootElement);
     }
 
     public Element getCellElement(Object tableInfo, int row, int column) {
@@ -644,7 +651,8 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 //        }
 //
 //        return box.getDesignBean();
-        return DesignerServiceHackProvider.getCellBean(tableInfo, row, column);
+        Element componentRootElement = DesignerServiceHackProvider.getCellComponent(tableInfo, row, column);
+        return MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
     }
 
     public int getColSpan(Object tableInfo, int row, int column) {

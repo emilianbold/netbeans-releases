@@ -626,23 +626,24 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
     private static class FakeDocument extends DocumentImpl {
     } // End of FakeDocument.
 
-    public static Object getTableInfo(MarkupDesignBean bean) {
+//    public static Object getTableInfo(MarkupDesignBean bean) {
+    public static Object getTableInfo(Element componentRootElement) {
 //        assert bean.getElement() != null;
 
-        Element element = bean.getElement();
-        if (element == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new NullPointerException("There is no element in markup design bean=" + bean)); // NOI18N
-            return null;
-        }
+//        Element element = bean.getElement();
+//        if (element == null) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                    new NullPointerException("There is no element in markup design bean=" + bean)); // NOI18N
+//            return null;
+//        }
         
-        WebForm webForm = WebForm.findWebFormForElement(element);
+        WebForm webForm = WebForm.findWebFormForElement(componentRootElement);
         if (webForm == null) {
             return null;
         }
         
 //        CssBox box = CssBox.getBox(bean.getElement());
-        CssBox box = webForm.findCssBoxForElement(element);
+        CssBox box = webForm.findCssBoxForElement(componentRootElement);
 
         if (box instanceof TableBox) {
             return box;
@@ -664,7 +665,8 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
         return box.getElement();
     }
 
-    public static MarkupDesignBean getCellBean(Object tableInfo, int row, int column) {
+//    public static MarkupDesignBean getCellBean(Object tableInfo, int row, int column) {
+    public static Element getCellComponent(Object tableInfo, int row, int column) {
         assert tableInfo instanceof TableBox;
 
         TableBox table = (TableBox)tableInfo;
@@ -675,7 +677,8 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
         }
 
 //        return box.getDesignBean();
-        return CssBox.getMarkupDesignBeanForCssBox(box);
+//        return CssBox.getMarkupDesignBeanForCssBox(box);
+        return CssBox.getElementForComponentRootCssBox(box);
     }
 
     public static int getColSpan(Object tableInfo, int row, int column) {

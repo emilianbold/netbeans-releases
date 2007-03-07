@@ -73,16 +73,18 @@ public final class DesignerServiceHackProvider {
         return DesignerServiceHackProviderImpl.getCurrentFile();
     }
 
-    public static Object getTableInfo(MarkupDesignBean bean) {
-        return DesignerServiceHackProviderImpl.getTableInfo(bean);
+//    public static Object getTableInfo(MarkupDesignBean bean) {
+    public static Object getTableInfo(Element componentRootElement) {
+        return DesignerServiceHackProviderImpl.getTableInfo(componentRootElement);
     }
 
     public static Element getCellElement(Object tableInfo, int row, int column) {
         return DesignerServiceHackProviderImpl.getCellElement(tableInfo, row, column);
     }
 
-    public static MarkupDesignBean getCellBean(Object tableInfo, int row, int column) {
-        return DesignerServiceHackProviderImpl.getCellBean(tableInfo, row, column);
+//    public static MarkupDesignBean getCellBean(Object tableInfo, int row, int column) {
+    public static Element getCellComponent(Object tableInfo, int row, int column) {
+        return DesignerServiceHackProviderImpl.getCellComponent(tableInfo, row, column);
     }
 
     public static int getColSpan(Object tableInfo, int row, int column) {
