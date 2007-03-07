@@ -24,6 +24,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import org.openide.util.NbBundle;
 
 /**
  * Contains Diff actions toolbar: Goto Previous, Goto Next, Rollback, Diff.
@@ -32,10 +33,10 @@ import java.awt.event.ActionEvent;
  */
 class DiffTooltipActionsPanel extends JToolBar implements ActionListener {
     
-    private final Icon iconPrevious = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff-prev.png"));
-    private final Icon iconNext = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff-next.png"));
-    private final Icon iconDiff = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff.png"));
-    private final Icon iconRollback = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/rollback.png"));
+    private final Icon iconPrevious = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff-prev.png")); // NOI18N
+    private final Icon iconNext = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff-next.png")); // NOI18N
+    private final Icon iconDiff = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff.png")); // NOI18N
+    private final Icon iconRollback = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/rollback.png")); // NOI18N
 
     private final DiffActionTooltipWindow master;
     private final Difference              diff;
@@ -49,7 +50,7 @@ class DiffTooltipActionsPanel extends JToolBar implements ActionListener {
         this.master = master;
         this.diff = diff;
 
-        Color tooltipBackround = UIManager.getColor("ToolTip.background");
+        Color tooltipBackround = UIManager.getColor("ToolTip.background"); // NOI18N
         if (tooltipBackround == null) tooltipBackround = Color.WHITE;
         
         setRollover(true);
@@ -61,15 +62,15 @@ class DiffTooltipActionsPanel extends JToolBar implements ActionListener {
         rollButton = new JButton(iconRollback);
         diffButton = new JButton(iconDiff);
         
-        prevButton.setToolTipText("Go To Previous Difference");
-        nextButton.setToolTipText("Go To Next Difference");
-        diffButton.setToolTipText("Open Diff Window");
+        prevButton.setToolTipText(NbBundle.getMessage(DiffTooltipActionsPanel.class, "TT_GoToPreviousDifference"));
+        nextButton.setToolTipText(NbBundle.getMessage(DiffTooltipActionsPanel.class, "TT_GoToNextDifference"));
+        diffButton.setToolTipText(NbBundle.getMessage(DiffTooltipActionsPanel.class, "TT_Open_Diff_Window"));
         if (diff.getType() == Difference.ADD) {
-            rollButton.setToolTipText("Delete Added Text");
+            rollButton.setToolTipText(NbBundle.getMessage(DiffTooltipActionsPanel.class, "TT_Delete_Added_Text"));
         } else if (diff.getType() == Difference.CHANGE) {
-            rollButton.setToolTipText("Replace With Original Text");
+            rollButton.setToolTipText(NbBundle.getMessage(DiffTooltipActionsPanel.class, "TT_Replace_With_Original_Text"));
         } else {
-            rollButton.setToolTipText("Restore Original Text");
+            rollButton.setToolTipText(NbBundle.getMessage(DiffTooltipActionsPanel.class, "TT_Restore_Original_Text"));
         }
         
         prevButton.addActionListener(this);

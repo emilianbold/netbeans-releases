@@ -45,7 +45,7 @@ import java.util.prefs.PreferenceChangeEvent;
  */
 class DiffSidebarManager implements PreferenceChangeListener {
 
-    static final String SIDEBAR_ENABLED = "diff.sidebarEnabled";
+    static final String SIDEBAR_ENABLED = "diff.sidebarEnabled"; // NOI18N
 
     private static DiffSidebarManager instance;
 

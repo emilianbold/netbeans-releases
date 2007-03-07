@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.versioning.diff;
@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.*;
+import java.text.ChoiceFormat;
+import java.text.MessageFormat;
 
 /**
  * Left editor sidebar showing changes in the file against the base version.
@@ -92,7 +94,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.document = editorUI.getDocument();
         this.markProvider = new DiffMarkProvider();
-        setToolTipText("");
+        setToolTipText(""); // NOI18N
         refreshDiffTask = DiffSidebarManager.getInstance().createDiffSidebarTask(new RefreshDiffTask());
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
     }
@@ -112,15 +114,19 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
     static String getShortDescription(Difference diff) {
         if (diff == null) return null;
+        int n;
         switch (diff.getType()) {
             case Difference.ADD:
-                return diff.getSecondEnd() - diff.getSecondStart() + 1 + " lines added";
+                n = diff.getSecondEnd() - diff.getSecondStart() + 1;
+                return MessageFormat.format(new ChoiceFormat(NbBundle.getMessage(DiffSidebar.class, "TT_LinesAdded")).format(n), n);        
             case Difference.CHANGE:
-                return diff.getFirstEnd() - diff.getFirstStart() + 1 + " lines changed";
+                n = diff.getFirstEnd() - diff.getFirstStart() + 1;
+                return MessageFormat.format(new ChoiceFormat(NbBundle.getMessage(DiffSidebar.class, "TT_LinesChanged")).format(n), n);        
             case Difference.DELETE:
-                return diff.getFirstEnd() - diff.getFirstStart() + 1 + " lines deleted";
+                n = diff.getFirstEnd() - diff.getFirstStart() + 1;
+                return MessageFormat.format(new ChoiceFormat(NbBundle.getMessage(DiffSidebar.class, "TT_LinesDeleted")).format(n), n);        
             default:
-                throw new IllegalStateException("Unknown difference type: " + diff.getType());
+                throw new IllegalStateException("Unknown difference type: " + diff.getType()); // NOI18N
         }
     }
 
@@ -256,7 +262,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         if (textComponent instanceof JEditorPane) {
             return ((JEditorPane) textComponent).getContentType();
         }
-        return "text/plain";
+        return "text/plain"; // NOI18N
     }
 
     private static class DiffTopComponent extends TopComponent {
@@ -650,9 +656,9 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
         public String getTitle() {
             if (isFirst) {
-                return NbBundle.getMessage(DiffSidebar.class, "LBL_DiffPane_Original");
+                return NbBundle.getMessage(DiffSidebar.class, "LBL_DiffPane_Original"); // NOI18N
             } else {
-                return NbBundle.getMessage(DiffSidebar.class, "LBL_DiffPane_WorkingCopy");
+                return NbBundle.getMessage(DiffSidebar.class, "LBL_DiffPane_WorkingCopy"); // NOI18N
             }
         }
 

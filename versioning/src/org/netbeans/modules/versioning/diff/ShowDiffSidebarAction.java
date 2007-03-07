@@ -27,6 +27,7 @@ import org.netbeans.modules.versioning.VersioningConfig;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.prefs.Preferences;
+import org.openide.util.NbBundle;
 
 /**
  * View/Show Diff Sidebar toggle item in main menu.
@@ -57,12 +58,12 @@ public class ShowDiffSidebarAction extends SystemAction implements DynamicMenuCo
             menuItems = new JCheckBoxMenuItem[1];
             menuItems[0] = new JCheckBoxMenuItem(this);
             menuItems[0].setIcon(null);
-            Mnemonics.setLocalizedText(menuItems[0], "Show &Diff Sidebar");
+            Mnemonics.setLocalizedText(menuItems[0], NbBundle.getMessage(ShowDiffSidebarAction.class, "CTL_ShowDiffSidebar"));
         }
     }
 
     public String getName() {
-        return "Show &Diff Sidebar";
+        return NbBundle.getMessage(ShowDiffSidebarAction.class, "CTL_ShowDiffSidebar");
     }
 
     public boolean isEnabled() {
