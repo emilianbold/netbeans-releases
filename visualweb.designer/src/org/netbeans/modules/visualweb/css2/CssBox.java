@@ -69,7 +69,6 @@ import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.Interaction;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import com.sun.rave.designer.html.HtmlTag;
 
@@ -1351,27 +1350,27 @@ public class CssBox {
 //        return bean;
 //    }
     
-    /** XXX This is JSF specific. Move away from here.
-     * Gets associated markup design bean for the css box. It is associated only
-     * for the css box represents component top level elements except lines, texts and spaces. */
-    public static MarkupDesignBean getMarkupDesignBeanForCssBox(CssBox cssBox) {
-//        if (cssBox == null) {
-//            return null;
-//        }
-//        
-//        Element element = cssBox.getElement();
-//        BoxType boxType = cssBox.getBoxType();
-//        if (element == null
-//        || boxType == BoxType.LINEBOX
-//        || boxType == BoxType.TEXT
-//        || boxType == BoxType.SPACE) {
-//            // XXX As before no assigned MarkupDesignBean for the above cases.
-//            return null;
-//        }
-//        return getMarkupDesignBeanForComponentRootCssBox(cssBox);
-        return WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(
-                getElementForComponentRootCssBox(cssBox));
-    }
+//    /** XXX This is JSF specific. Move away from here.
+//     * Gets associated markup design bean for the css box. It is associated only
+//     * for the css box represents component top level elements except lines, texts and spaces. */
+//    public static MarkupDesignBean getMarkupDesignBeanForCssBox(CssBox cssBox) {
+////        if (cssBox == null) {
+////            return null;
+////        }
+////        
+////        Element element = cssBox.getElement();
+////        BoxType boxType = cssBox.getBoxType();
+////        if (element == null
+////        || boxType == BoxType.LINEBOX
+////        || boxType == BoxType.TEXT
+////        || boxType == BoxType.SPACE) {
+////            // XXX As before no assigned MarkupDesignBean for the above cases.
+////            return null;
+////        }
+////        return getMarkupDesignBeanForComponentRootCssBox(cssBox);
+//        return WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(
+//                getElementForComponentRootCssBox(cssBox));
+//    }
     
 //    private static MarkupDesignBean getMarkupDesignBeanForComponentRootCssBox(CssBox cssBox) {
 //        if (cssBox == null) {
