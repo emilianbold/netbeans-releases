@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import java.util.Arrays;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService.ResizeConstraint;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -530,7 +532,7 @@ public class Resizer extends Interaction implements KeyListener {
     }
 
     /** Look up the resize constraints for the given component */
-    public static int getResizeConstraints(WebForm webForm, /*MarkupDesignBean component*/ Element componentRootElement) {
+    public static /*int*/ResizeConstraint[] getResizeConstraints(WebForm webForm, /*MarkupDesignBean component*/ Element componentRootElement) {
 //        Element element = component.getElement();
         Element element = componentRootElement;
 
@@ -542,7 +544,8 @@ public class Resizer extends Interaction implements KeyListener {
             // See CSS2.1 spec, section 10.2
             if ((box != null) && box.isInlineBox() && !box.isReplacedBox() &&
                     box.getBoxType().isNormalFlow()) {
-                return Constants.ResizeConstraints.NONE;
+//                return Constants.ResizeConstraints.NONE;
+                return new ResizeConstraint[0];
             }
         }
 
@@ -570,4 +573,40 @@ public class Resizer extends Interaction implements KeyListener {
 //        return constraints;
         return WebForm.getHtmlDomProviderService().getResizeConstraintsForComponent(componentRootElement);
     }
+    
+    public static boolean hasMaintainAspectRatioResizeConstraint(ResizeConstraint[] resizeConstraints) {
+        if (resizeConstraints == null) {
+            return false;
+        }
+        return Arrays.asList(resizeConstraints).contains(ResizeConstraint.MAINTAIN_ASPECT_RATIO);
+    }
+    
+    public static boolean hasTopResizeConstraint(ResizeConstraint[] resizeConstraints) {
+        if (resizeConstraints == null) {
+            return false;
+        }
+        return Arrays.asList(resizeConstraints).contains(ResizeConstraint.TOP);
+    }
+    
+    public static boolean hasLeftResizeConstraint(ResizeConstraint[] resizeConstraints) {
+        if (resizeConstraints == null) {
+            return false;
+        }
+        return Arrays.asList(resizeConstraints).contains(ResizeConstraint.LEFT);
+    }
+    
+    public static boolean hasRightResizeConstraint(ResizeConstraint[] resizeConstraints) {
+        if (resizeConstraints == null) {
+            return false;
+        }
+        return Arrays.asList(resizeConstraints).contains(ResizeConstraint.RIGHT);
+    }
+    
+    public static boolean hasBottomResizeConstraint(ResizeConstraint[] resizeConstraints) {
+        if (resizeConstraints == null) {
+            return false;
+        }
+        return Arrays.asList(resizeConstraints).contains(ResizeConstraint.BOTTOM);
+    }
+    
 }

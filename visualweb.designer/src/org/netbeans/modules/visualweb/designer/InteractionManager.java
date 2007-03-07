@@ -1819,8 +1819,9 @@ public class InteractionManager {
 
                 boolean preserveAspect =
 //                    (Resizer.getResizeConstraints(webform, bean) &
-                        (Resizer.getResizeConstraints(webform, componentRootElement) &
-                    Constants.ResizeConstraints.MAINTAIN_ASPECT_RATIO) != 0;
+//                        (Resizer.getResizeConstraints(webform, componentRootElement) &
+//                    Constants.ResizeConstraints.MAINTAIN_ASPECT_RATIO) != 0;
+                        Resizer.hasMaintainAspectRatioResizeConstraint(Resizer.getResizeConstraints(webform, componentRootElement));
 //                interaction = new Resizer(webform, bean, box, resize, a, preserveAspect);
                 interaction = new Resizer(webform, componentRootElement, box, resize, a, preserveAspect);
                 interaction.mousePressed(e);

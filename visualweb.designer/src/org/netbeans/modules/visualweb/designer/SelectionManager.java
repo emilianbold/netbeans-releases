@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService.ResizeConstraint;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import java.awt.BasicStroke;
 import java.awt.Component;
@@ -1408,8 +1409,8 @@ public class SelectionManager {
      * @param rect The selection rectangle
      * @param constraints Which sides are resizable
      */
-    private void paintSelected(Graphics2D g2d, boolean isPrimary, Rectangle rect, int constraints,
-        int maxWidth, int maxHeight) {
+    private void paintSelected(Graphics2D g2d, boolean isPrimary, Rectangle rect, /*int constraints,*/
+    ResizeConstraint[] resizeConstraints, int maxWidth, int maxHeight) {
         int x = rect.x;
         int y = rect.y;
         int w = rect.width;
@@ -1449,19 +1450,23 @@ public class SelectionManager {
         g2d.drawRect(x - BARSIZE - 1, y + h, BARSIZE, BARSIZE);
 
         // Middles
-        if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+        if (Resizer.hasTopResizeConstraint(resizeConstraints)) {
             g2d.drawRect(x + w2, y - BARSIZE - 1, BARSIZE, BARSIZE); // top
         }
 
-        if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+        if (Resizer.hasLeftResizeConstraint(resizeConstraints)) {
             g2d.drawRect(x - BARSIZE - 1, y + h2, BARSIZE, BARSIZE); // left
         }
 
-        if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+        if (Resizer.hasBottomResizeConstraint(resizeConstraints)) {
             g2d.drawRect(x + w2, y + h, BARSIZE, BARSIZE); // bottom
         }
 
-        if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+        if (Resizer.hasRightResizeConstraint(resizeConstraints)) {
             g2d.drawRect(x + w, y + h2, BARSIZE, BARSIZE); // right
         }
 
@@ -1473,19 +1478,23 @@ public class SelectionManager {
         g2d.drawRect(x + w + 1, y + h + 1, BARSIZE - 2, BARSIZE - 2);
         g2d.drawRect(x - BARSIZE - 1 + 1, y + h + 1, BARSIZE - 2, BARSIZE - 2);
 
-        if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+        if (Resizer.hasTopResizeConstraint(resizeConstraints)) {
             g2d.drawRect(x + w2 + 1, y - BARSIZE - 1 + 1, BARSIZE - 2, BARSIZE - 2); // top
         }
 
-        if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+        if (Resizer.hasLeftResizeConstraint(resizeConstraints)) {
             g2d.drawRect(x - BARSIZE - 1 + 1, y + h2 + 1, BARSIZE - 2, BARSIZE - 2); // left
         }
 
-        if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+        if (Resizer.hasBottomResizeConstraint(resizeConstraints)) {
             g2d.drawRect(x + w2 + 1, y + h + 1, BARSIZE - 2, BARSIZE - 2); // bottom
         }
 
-        if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+        if (Resizer.hasRightResizeConstraint(resizeConstraints)) {
             g2d.drawRect(x + w + 1, y + h2 + 1, BARSIZE - 2, BARSIZE - 2); // right
         }
 
@@ -1500,19 +1509,23 @@ public class SelectionManager {
             g2d.fillRect(x + w + 1, y + h + 1, (BARSIZE + 1) - 2, (BARSIZE + 1) - 2);
             g2d.fillRect(x - BARSIZE - 1 + 1, y + h + 1, (BARSIZE + 1) - 2, (BARSIZE + 1) - 2);
 
-            if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+//            if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+            if (Resizer.hasTopResizeConstraint(resizeConstraints)) {
                 g2d.drawRect(x + w2 + 1, y - BARSIZE - 1 + 1, BARSIZE - 2, BARSIZE - 2); // top
             }
 
-            if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+//            if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+            if (Resizer.hasLeftResizeConstraint(resizeConstraints)) {
                 g2d.drawRect(x - BARSIZE - 1 + 1, y + h2 + 1, BARSIZE - 2, BARSIZE - 2); // left
             }
 
-            if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+//            if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+            if (Resizer.hasBottomResizeConstraint(resizeConstraints)) {
                 g2d.drawRect(x + w2 + 1, y + h + 1, BARSIZE - 2, BARSIZE - 2); // bottom
             }
 
-            if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+//            if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+            if (Resizer.hasRightResizeConstraint(resizeConstraints)) {
                 g2d.drawRect(x + w + 1, y + h2 + 1, BARSIZE - 2, BARSIZE - 2); // right
             }
         }
@@ -1603,8 +1616,8 @@ public class SelectionManager {
      *  specific return value can be used to for example pick an appropriate
      *  Cursor to draw.
      */
-    private int overSelection(int px, int py, Rectangle rect, int constraints, int maxWidth,
-        int maxHeight) {
+    private int overSelection(int px, int py, Rectangle rect, /*int constraints,*/
+    ResizeConstraint[] resizeConstraints, int maxWidth, int maxHeight) {
         if (py >= selectionViewPos) {
             return Cursor.DEFAULT_CURSOR;
         }
@@ -1653,49 +1666,61 @@ public class SelectionManager {
 
         // Okay, do some more fine tuned checking
         if (DesignerUtils.inside(px, py, x - BARSIZE - 1, y - BARSIZE - 1, BARSIZE, BARSIZE)) {
-            if ((constraints &
-                    (Constants.ResizeConstraints.TOP | Constants.ResizeConstraints.LEFT)) == (Constants.ResizeConstraints.TOP |
-                    Constants.ResizeConstraints.LEFT)) {
+//            if ((constraints &
+//                    (Constants.ResizeConstraints.TOP | Constants.ResizeConstraints.LEFT)) == (Constants.ResizeConstraints.TOP |
+//                    Constants.ResizeConstraints.LEFT)) {
+            if (Resizer.hasTopResizeConstraint(resizeConstraints) && Resizer.hasLeftResizeConstraint(resizeConstraints)) {
                 return Cursor.NW_RESIZE_CURSOR;
-            } else if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+//            } else if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+            } else if (Resizer.hasTopResizeConstraint(resizeConstraints)) { 
                 return Cursor.N_RESIZE_CURSOR;
-            } else if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+//            } else if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+            } else if (Resizer.hasLeftResizeConstraint(resizeConstraints)) {
                 return Cursor.W_RESIZE_CURSOR;
             }
         }
 
         if (DesignerUtils.inside(px, py, x + w, y - BARSIZE - 1, BARSIZE, BARSIZE)) {
-            if ((constraints &
-                    (Constants.ResizeConstraints.TOP | Constants.ResizeConstraints.RIGHT)) == (Constants.ResizeConstraints.TOP |
-                    Constants.ResizeConstraints.RIGHT)) {
+//            if ((constraints &
+//                    (Constants.ResizeConstraints.TOP | Constants.ResizeConstraints.RIGHT)) == (Constants.ResizeConstraints.TOP |
+//                    Constants.ResizeConstraints.RIGHT)) {
+            if (Resizer.hasTopResizeConstraint(resizeConstraints) && Resizer.hasRightResizeConstraint(resizeConstraints)) {
                 return Cursor.NE_RESIZE_CURSOR;
-            } else if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+//            } else if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+            } else if (Resizer.hasTopResizeConstraint(resizeConstraints)) {
                 return Cursor.N_RESIZE_CURSOR;
-            } else if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+//            } else if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+            } else if (Resizer.hasRightResizeConstraint(resizeConstraints)) {
                 return Cursor.E_RESIZE_CURSOR;
             }
         }
 
         if (DesignerUtils.inside(px, py, x + w, y + h, BARSIZE, BARSIZE)) {
-            if ((constraints &
-                    (Constants.ResizeConstraints.BOTTOM | Constants.ResizeConstraints.RIGHT)) == (Constants.ResizeConstraints.BOTTOM |
-                    Constants.ResizeConstraints.RIGHT)) {
+//            if ((constraints &
+//                    (Constants.ResizeConstraints.BOTTOM | Constants.ResizeConstraints.RIGHT)) == (Constants.ResizeConstraints.BOTTOM |
+//                    Constants.ResizeConstraints.RIGHT)) {
+            if (Resizer.hasBottomResizeConstraint(resizeConstraints) && Resizer.hasRightResizeConstraint(resizeConstraints)) {
                 return Cursor.SE_RESIZE_CURSOR;
-            } else if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+//            } else if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+            } else if (Resizer.hasBottomResizeConstraint(resizeConstraints)) {
                 return Cursor.S_RESIZE_CURSOR;
-            } else if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+//            } else if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+            } else if (Resizer.hasRightResizeConstraint(resizeConstraints)) {
                 return Cursor.E_RESIZE_CURSOR;
             }
         }
 
         if (DesignerUtils.inside(px, py, x - BARSIZE - 1, y + h, BARSIZE, BARSIZE)) {
-            if ((constraints &
-                    (Constants.ResizeConstraints.BOTTOM | Constants.ResizeConstraints.LEFT)) == (Constants.ResizeConstraints.BOTTOM |
-                    Constants.ResizeConstraints.LEFT)) {
+//            if ((constraints &
+//                    (Constants.ResizeConstraints.BOTTOM | Constants.ResizeConstraints.LEFT)) == (Constants.ResizeConstraints.BOTTOM |
+//                    Constants.ResizeConstraints.LEFT)) {
+            if (Resizer.hasBottomResizeConstraint(resizeConstraints) && Resizer.hasLeftResizeConstraint(resizeConstraints)) {
                 return Cursor.SW_RESIZE_CURSOR;
-            } else if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+//            } else if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+            } else if (Resizer.hasBottomResizeConstraint(resizeConstraints)) {
                 return Cursor.S_RESIZE_CURSOR;
-            } else if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+//            } else if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+            } else if (Resizer.hasLeftResizeConstraint(resizeConstraints)) {
                 return Cursor.W_RESIZE_CURSOR;
             }
         }
@@ -1712,27 +1737,31 @@ public class SelectionManager {
         int w2 = (w / 2) - (BARSIZE / 2);
         int h2 = (h / 2) - (BARSIZE / 2);
 
-        if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.TOP) != 0) {
+        if (Resizer.hasTopResizeConstraint(resizeConstraints)) {
             if (DesignerUtils.inside(px, py, (x + w2) - (BARSIZE / 2), y - BARSIZE - 1, BARSIZE,
                         BARSIZE)) {
                 return Cursor.N_RESIZE_CURSOR;
             }
         }
 
-        if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.LEFT) != 0) {
+        if (Resizer.hasLeftResizeConstraint(resizeConstraints)) {
             if (DesignerUtils.inside(px, py, x - BARSIZE - 1, (y + h2) - (BARSIZE / 2), BARSIZE,
                         BARSIZE)) {
                 return Cursor.W_RESIZE_CURSOR;
             }
         }
 
-        if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.BOTTOM) != 0) {
+        if (Resizer.hasBottomResizeConstraint(resizeConstraints)) {
             if (DesignerUtils.inside(px, py, (x + w2) - (BARSIZE / 2), y + h, BARSIZE, BARSIZE)) {
                 return Cursor.S_RESIZE_CURSOR;
             }
         }
 
-        if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+//        if ((constraints & Constants.ResizeConstraints.RIGHT) != 0) {
+        if (Resizer.hasRightResizeConstraint(resizeConstraints)) {
             if (DesignerUtils.inside(px, py, x + w, (y + h2) - (BARSIZE / 2), BARSIZE, BARSIZE)) {
                 return Cursor.E_RESIZE_CURSOR;
             }
@@ -2275,7 +2304,8 @@ public class SelectionManager {
         private Element componentRootElement;
         /** Resizability of this component. A bit mask representing state
          * according to Constants.ResizeConstraints. */
-        private int resizeConstraints;
+//        private int resizeConstraints;
+        private ResizeConstraint[] resizeConstraints;
     } // End of SelectedComponent.
 
     

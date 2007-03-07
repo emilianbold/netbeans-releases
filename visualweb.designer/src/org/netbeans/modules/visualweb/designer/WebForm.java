@@ -2452,8 +2452,11 @@ public class WebForm implements Designer {
             return new String[0];
         }
 
-        public int getResizeConstraintsForComponent(Element componentRootElement) {
-            return -1;
+//        public int getResizeConstraintsForComponent(Element componentRootElement) {
+//            return -1;
+//        }
+        public HtmlDomProviderService.ResizeConstraint[] getResizeConstraintsForComponent(Element componentRootElement) {
+            return new HtmlDomProviderService.ResizeConstraint[0];
         }
 
         public Element[] getChildComponents(Element componentRootElement) {
