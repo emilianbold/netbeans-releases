@@ -13,9 +13,10 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.web.project.classpath;
 
 import java.beans.PropertyChangeEvent;
@@ -146,7 +147,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return this.getCompileTimeClasspath(type);
     }
     
-    private ClassPath getCompileTimeClasspath(int type) {        
+    private synchronized ClassPath getCompileTimeClasspath(int type) {        
         if ((type < 0 || type > 2) && type != 5) {
             // Not a source file.
             return null;
@@ -174,7 +175,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         
     }
     
-    private ClassPath getRunTimeClasspath(FileObject file) {
+    private synchronized ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < 0 || type > 5) {
             // Unregistered file, or in a JAR.
@@ -212,7 +213,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return this.getSourcepath(type);
     }
     
-    private ClassPath getSourcepath(int type) {
+    private synchronized ClassPath getSourcepath(int type) {
         if ((type < 0 || type > 2) && type != 5) {
             // Unknown.
             return null;
@@ -239,7 +240,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return cp;
     }
     
-    private ClassPath getBootClassPath() {
+    private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if (cp == null ) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
@@ -248,7 +249,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return cp;
     }
     
-    public ClassPath getJ2eePlatformClassPath() {
+    public synchronized ClassPath getJ2eePlatformClassPath() {
         ClassPath cp = cache[9];
         if (cp == null) {
                 cp = ClassPathFactory.createClassPath(

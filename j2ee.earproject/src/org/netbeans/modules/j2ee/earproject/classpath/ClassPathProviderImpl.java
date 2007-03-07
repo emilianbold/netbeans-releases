@@ -13,9 +13,10 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.j2ee.earproject.classpath;
 
 import java.beans.PropertyChangeEvent;
@@ -116,7 +117,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return this.getCompileTimeClasspath(type);
     }
     
-    private ClassPath getCompileTimeClasspath(int type) {
+    private synchronized ClassPath getCompileTimeClasspath(int type) {
         if (type < TYPE_NORMAL || type > TYPE_BUILT_UNPACKED) {
             // Not a source file.
             return null;
@@ -133,7 +134,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return cp;
     }
     
-    private ClassPath getRunTimeClasspath(FileObject file) {
+    private synchronized ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < TYPE_NORMAL || type > 4) {
             // Unregistered file, or in a JAR.
@@ -165,28 +166,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return cp;
     }
     
-    private ClassPath getSourcepath(FileObject file) {
-        int type = getType(file);
-        return this.getSourcepath(type);
-    }
-    
-    private ClassPath getSourcepath(int type) {
-        if (type < TYPE_NORMAL || type > TYPE_BUILT_UNPACKED) {
-            // Unknown.
-            return null;
-        }
-        ClassPath cp = null;
-        if (cache[type] == null || (cp = cache[type].get()) == null) {
-            if (type == TYPE_BUILT_UNPACKED){
-                cp = ClassPathFactory.createClassPath(
-                        new ProjectClassPathImplementation(helper, DOC_BASE_DIR, evaluator));
-            }
-            cache[type] = new SoftReference<ClassPath>(cp);
-        }
-        return cp;
-    }
-    
-    private ClassPath getBootClassPath() {
+    private synchronized ClassPath getBootClassPath() {
         ClassPath cp = null;
         if (cache[7] == null || (cp = cache[7].get()) == null) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));

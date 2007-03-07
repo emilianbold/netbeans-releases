@@ -13,16 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.j2ee.ejbjarproject.classpath;
 
 import java.io.File;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -158,7 +155,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         return this.getCompileTimeClasspath(type);
     }
     
-    private ClassPath getCompileTimeClasspath(int type) {        
+    private synchronized ClassPath getCompileTimeClasspath(int type) {        
         if (type < 0 || type > 1) {
             // Not a source file.
             return null;
@@ -182,7 +179,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         return cp;
     }
     
-    private ClassPath getRunTimeClasspath(FileObject file) {
+    private synchronized ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < 0 || type > 4) {
             return null;
@@ -222,7 +219,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         return this.getSourcepath(type);
     }
     
-    private ClassPath getSourcepath(int type) {
+    private synchronized ClassPath getSourcepath(int type) {
         if (type < 0 || type > 1) {
             return null;
         }
@@ -241,7 +238,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         return cp;
     }
 
-    private ClassPath getBootClassPath() {
+    private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if (cp == null) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
@@ -250,7 +247,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         return cp;
     }
     
-    public ClassPath getJ2eePlatformClassPath() {
+    public synchronized ClassPath getJ2eePlatformClassPath() {
         ClassPath cp = cache[8];
         if (cp == null) {
                 cp = ClassPathFactory.createClassPath(
