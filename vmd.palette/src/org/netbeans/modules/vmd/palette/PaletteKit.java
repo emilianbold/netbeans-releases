@@ -20,7 +20,6 @@
 package org.netbeans.modules.vmd.palette;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;

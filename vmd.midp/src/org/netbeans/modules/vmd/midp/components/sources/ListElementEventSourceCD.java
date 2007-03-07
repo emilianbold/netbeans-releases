@@ -49,6 +49,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenterForwarder;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteAction;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
 
 /**
  * @author David Kaspar
@@ -152,7 +153,9 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
                     DesignComponent list = component.getParentComponent ();
                     ArraySupport.remove (list, ListCD.PROP_ELEMENTS, component);
                 }
-            }
+            },
+            // screen
+            new ListElementEventSourceDisplayPresenter()
         );
     }
 

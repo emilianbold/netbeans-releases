@@ -45,6 +45,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorListSelectCom
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.screen.display.ListDisplayPresenter;
 
 /**
  * @author Karol Harezlak
@@ -141,7 +142,9 @@ public final class ListCD extends ComponentDescriptor {
                 ListCode.createListActionCodeNamePresenter (),
                 ListCode.createListActionCodeClassLevelPresenter (),
                 // delete
-                DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SELECT_COMMAND)
+                DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SELECT_COMMAND),
+                // screen
+                new ListDisplayPresenter()
         );
 
     }
