@@ -51,6 +51,7 @@ import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import javax.lang.model.type.WildcardType;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
@@ -108,7 +109,6 @@ public class SourceUtils {
 
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
         Context c = ((JavacTaskImpl) info.getJavacTask()).getContext();
-        Check check = Check.instance(c);
         if (from.getKind() == TypeKind.DECLARED) {
             com.sun.tools.javac.util.List<Type> typeVars = com.sun.tools.javac.util.List.nil();
             for (TypeMirror tm : ((DeclaredType)from).getTypeArguments()) {
@@ -117,8 +117,13 @@ public class SourceUtils {
             }
             if (!typeVars.isEmpty())
                 from = new Type.ForAll(typeVars, (Type)from);
+        } else if (from.getKind() == TypeKind.WILDCARD) {
+            WildcardType wt = (WildcardType)from;
+            from = wt.getExtendsBound();
+            if (from == null)
+                from = Symtab.instance(c).objectType;
         }
-        return check.checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
+        return Check.instance(c).checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
     }
 
     /**
