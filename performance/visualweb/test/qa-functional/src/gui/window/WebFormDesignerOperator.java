@@ -23,6 +23,7 @@ import java.awt.Component;
 import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -42,13 +43,9 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     /**
      * Creates a new instance of WebFormDesignerOperator
      */
-    public WebFormDesignerOperator(String topComponentName)  throws Exception {
+    public WebFormDesignerOperator(String topComponentName) {
         this(topComponentName,0);
-        surface = this.findSubComponent(new DesignerPaneChooser());
-        if(surface == null) {
-            
-            throw new Exception("Cannot find DesignerPane surface");
-        }         
+        surface = this.findSubComponent(new DesignerPaneChooser());     
     }
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
@@ -112,6 +109,9 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     }
     
     public ComponentOperator getDesignerPaneComponentOperator() {
+        if(surface == null) {
+            throw new JemmyException("The design surface component is empty");
+        }
         return new ComponentOperator(surface);
     }
     
