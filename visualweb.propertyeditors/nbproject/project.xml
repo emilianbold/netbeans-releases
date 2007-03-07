@@ -147,7 +147,11 @@
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_1</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_2</friend>
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
+
+                <!-- Deprecated: expose this package for backward
+                     compatibility with BeanInfos that use Action -->
                 <package>com.sun.jsfcl.std</package>
+
                 <package>org.netbeans.modules.visualweb.propertyeditors</package>
                 <package>org.netbeans.modules.visualweb.propertyeditors.binding</package>
                 <package>org.netbeans.modules.visualweb.propertyeditors.binding.data</package>
