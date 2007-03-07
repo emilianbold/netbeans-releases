@@ -23,13 +23,15 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -41,8 +43,7 @@ import org.openide.windows.OutputListener;
  */
 public final class StandardLogger extends AntLogger {
     
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(StandardLogger.class.getName());
-    private static final boolean LOGGABLE = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger ERR = Logger.getLogger(StandardLogger.class.getName());
     
     /**
      * Regexp matching an output line that is a column marker from a compiler or similar.
@@ -53,6 +54,22 @@ public final class StandardLogger extends AntLogger {
      * @see "#37358"
      */
     private static final Pattern CARET_SHOWING_COLUMN = Pattern.compile("^( *)\\^$"); // NOI18N
+    /**
+     * Regexp matching an output line indicating a change into a current working directory, as e.g. from make.
+     * Captured groups:
+     * <ol>
+     * <li>new working dir
+     * </ol>
+     */
+    private static final Pattern CWD_ENTER = Pattern.compile(".*Entering directory [`'\"]?([^`'\"]+)(['\"]|$|\\.\\.\\.$)"); // NOI18N
+    /**
+     * Regexp matching an output line indicating a change out of a current working directory.
+     * Captured groups:
+     * <ol>
+     * <li>previous working dir
+     * </ol>
+     */
+    private static final Pattern CWD_LEAVE = Pattern.compile(".*Leaving directory [`'\"]?([^`'\"]+)(['\"]|$|\\.\\.\\.$)"); // NOI18N
     
     /**
      * Data stored in the session.
@@ -62,6 +79,8 @@ public final class StandardLogger extends AntLogger {
         public long startTime;
         /** Last-created hyperlink, in case we need to adjust the column number. */
         public Hyperlink lastHyperlink;
+        /** Current stack of working directories for which output is being displayed; top is current location. */
+        public Stack<File> currentDir = new Stack<File>();
         public SessionData() {}
     }
     
@@ -242,7 +261,7 @@ public final class StandardLogger extends AntLogger {
         event.consume();
         AntSession session = event.getSession();
         String line = event.getMessage();
-        if (LOGGABLE) ERR.log("Received message: " + line);
+        ERR.log(Level.FINE, "Received message: {0}", line);
         if (line.indexOf('\n') != -1) {
             // Multiline message. Should be split into blocks and redelivered,
             // to allow other loggers (e.g. JavaAntLogger) to process individual
@@ -255,7 +274,7 @@ public final class StandardLogger extends AntLogger {
         Matcher m = CARET_SHOWING_COLUMN.matcher(line);
         if (m.matches()) {
             // #37358: adjust the column number of the last hyperlink accordingly.
-            if (LOGGABLE) ERR.log("Looks like a special caret line");
+            ERR.fine("  Looks like a special caret line");
             SessionData data = getSessionData(session);
             if (data.lastHyperlink != null) {
                 // For "  ^", infer a column number of 3.
@@ -263,6 +282,30 @@ public final class StandardLogger extends AntLogger {
                 data.lastHyperlink = null;
                 // Don't print the actual caret line, just noise.
                 return;
+            }
+        }
+        m = CWD_ENTER.matcher(line);
+        if (m.matches()) {
+            ERR.fine("  Looks like a change of CWD");
+            File d = new File(m.group(1));
+            if (d.isDirectory()) {
+                Stack<File> stack = getSessionData(session).currentDir;
+                stack.push(d);
+                ERR.log(Level.FINE, "  ...is a change of CWD; stack now: {0}", stack);
+            }
+        }
+        m = CWD_LEAVE.matcher(line);
+        if (m.matches()) {
+            ERR.fine("  Looks like a change of CWD back out");
+            File d = new File(m.group(1));
+            Stack<File> stack = getSessionData(session).currentDir;
+            if (stack.empty()) {
+                ERR.log(Level.FINE, "  ...but there was nowhere to change out of");
+            } else {
+                File previous = stack.pop();
+                if (!previous.equals(d)) {
+                    ERR.log(Level.FINE, "  ...stack mismatch: {0} vs. {1}", new Object[] {previous, d});
+                }
             }
         }
         OutputListener hyperlink = findHyperlink(session, line);
@@ -282,57 +325,62 @@ public final class StandardLogger extends AntLogger {
     /**
      * Possibly hyperlink a message logged event.
      */
-    private static OutputListener findHyperlink(AntSession session, String line) {
+    private OutputListener findHyperlink(AntSession session, String line) {
         // #29246: handle new (Ant 1.5.1) URLifications:
         // [PENDING] Could use new File(URI)... if Ant uses URI too (Jakarta BZ #8031)
         // XXX so tweak that for Ant 1.6 support!
-        // XXX would be much easier to use a regexp here
+        // XXX might be easier to use a regexp here
+        Stack<File> cwd = getSessionData(session).currentDir;
         if (line.startsWith("file:///")) { // NOI18N
             line = line.substring(7);
-            if (LOGGABLE) ERR.log("removing file:///");
+            ERR.fine("removing file:///");
         } else if (line.startsWith("file:")) { // NOI18N
             line = line.substring(5);
-            if (LOGGABLE) ERR.log("removing file:");
+            ERR.fine("removing file:");
         } else if (line.length() > 0 && line.charAt(0) == '/') {
-            if (LOGGABLE) ERR.log("result: looks like Unix file");
+            ERR.fine("result: looks like Unix file");
         } else if (line.length() > 2 && line.charAt(1) == ':' && line.charAt(2) == '\\') {
-            if (LOGGABLE) ERR.log("result: looks like Windows file");
-        } else {
-            // not a file -> nothing to parse
-            if (LOGGABLE) ERR.log("result: not a file");
+            ERR.fine("result: looks like Windows file");
+        } else if (cwd.empty()) {
+            // not a file -> nothing to parse (don't waste time checking disk filenames)
+            ERR.fine("result: not a file");
             return null;
         }
         
-        int colon1 = line.indexOf(':');
-        if (colon1 == -1) {
-            if (LOGGABLE) ERR.log("result: no colon found");
+        int colon = line.indexOf(':');
+        if (colon == -1) {
+            ERR.fine("result: no colon found");
             return null;
         }
-        String fileName = line.substring (0, colon1); //.replace(File.separatorChar, '/');
-        File file = FileUtil.normalizeFile(new File(fileName));
-        if (!file.exists()) {
-            if (LOGGABLE) ERR.log("result: no FO for " + fileName);
-            // maybe we are on Windows and filename is "c:\temp\file.java:25"
-            // try to do the same for the second colon
-            colon1 = line.indexOf (':', colon1+1);
-            if (colon1 == -1) {
-                if (LOGGABLE) ERR.log("result: no second colon found");
+        if (colon == 1 && line.length() >= 4 && line.charAt(2) == '\\') {
+            ERR.fine("result: looks like a Windows filename");
+            colon = line.indexOf(':', 2);
+            if (colon == -1) {
+                ERR.fine("result: no colon found even still");
                 return null;
             }
-            fileName = line.substring (0, colon1);
-            file = FileUtil.normalizeFile(new File(fileName));
-            if (!file.exists()) {
-                if (LOGGABLE) ERR.log("result: no FO for " + fileName);
+        }
+        String path = line.substring(0, colon);
+        File file = new File(path);
+        if (!file.exists()) {
+            ERR.log(Level.FINE, "result: no absolute file {0}", path);
+            if (!cwd.empty()) {
+                file = new File(cwd.peek(), path);
+                if (!file.exists()) {
+                    ERR.log(Level.FINE, "result: no file even relative to {0}", cwd);
+                    return null;
+                }
+            } else {
                 return null;
             }
         }
 
         int line1 = -1, col1 = -1, line2 = -1, col2 = -1;
-        int start = colon1 + 1; // start of message
-        int colon2 = line.indexOf (':', colon1 + 1);
+        int start = colon + 1; // start of message
+        int colon2 = line.indexOf (':', colon + 1);
         if (colon2 != -1) {
             try {
-                line1 = Integer.parseInt (line.substring (colon1 + 1, colon2).trim ());
+                line1 = Integer.parseInt (line.substring (colon + 1, colon2).trim ());
                 start = colon2 + 1;
                 int colon3 = line.indexOf (':', colon2 + 1);
                 if (colon3 != -1) {
@@ -359,8 +407,9 @@ public final class StandardLogger extends AntLogger {
         if (message.length () == 0) {
             message = null;
         }
-        if (LOGGABLE) ERR.log("Hyperlink: [" + file + "," + line1 + "," + col1 + "," + line2 + "," + col2 + "," + message + "]");
-
+        
+        file = FileUtil.normalizeFile(file); // do this late, after File.exists
+        ERR.log(Level.FINE, "Hyperlink: {0} [{1}:{2}:{3}:{4}]: {5}", new Object[] {file, line1, col1, line2, col2, message});
         try {
             return session.createStandardHyperlink(file.toURI().toURL(), message, line1, col1, line2, col2);
         } catch (MalformedURLException e) {

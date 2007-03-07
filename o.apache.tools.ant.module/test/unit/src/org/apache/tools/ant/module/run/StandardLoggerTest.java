@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
@@ -36,6 +37,7 @@ import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
@@ -103,10 +105,58 @@ public class StandardLoggerTest extends NbTestCase {
         });
         assertEquals("correct text printed", expectedMessages, session.messages);
     }
+
+    public void testFileHyperlinks() throws Exception {
+        clearWorkDir();
+        File top = new File(getWorkDir(), "top");
+        FileUtil.createData(top);
+        File dir1 = new File(getWorkDir(), "dir1");
+        File middle = new File(dir1, "middle");
+        FileUtil.createData(middle);
+        File dir2 = new File(dir1, "dir2");
+        File bottom = new File(dir2, "bottom");
+        FileUtil.createData(bottom);
+        MockAntSession session = new MockAntSession(new AntLogger[] {new StandardLogger(1000L)}, AntEvent.LOG_INFO);
+        AntSession realSession = LoggerTrampoline.ANT_SESSION_CREATOR.makeAntSession(session);
+        session.sendBuildStarted(makeAntEvent(realSession, null, -1, null, null, null));
+        session.sendTargetStarted(makeAntEvent(realSession, null, -1, null, "some-target", null));
+        /* Can't test, since the file does not actually exist:
+        session.sendMessageLogged(makeAntEvent(realSession, "c:\\temp\\foo: malformed", AntEvent.LOG_WARN, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, "c:\\temp\\bar:27: really malformed", AntEvent.LOG_WARN, null, null, null));
+        */
+        session.sendMessageLogged(makeAntEvent(realSession, top + ":1: some problem", AntEvent.LOG_WARN, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, "make: Entering directory `" + dir1 + "'", AntEvent.LOG_INFO, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, "middle:2:3: some other problem", AntEvent.LOG_WARN, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, "../top: yet another problem", AntEvent.LOG_WARN, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, "make: Entering directory `" + dir2 + "'", AntEvent.LOG_INFO, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, "bottom: something new", AntEvent.LOG_WARN, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, "make: Leaving directory `" + dir2 + "'", AntEvent.LOG_INFO, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, "middle: back here", AntEvent.LOG_WARN, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, "make: Leaving directory `" + dir1 + "'", AntEvent.LOG_INFO, null, null, null));
+        session.sendTargetFinished(makeAntEvent(realSession, null, -1, null, "some-target", null));
+        session.sendBuildFinished(makeAntEvent(realSession, null, -1, null, null, null));
+        List<Message> expectedMessages = Arrays.asList(
+            new Message(NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", "some-target"), false, null),
+            /*
+            new Message("c:\\temp\\foo: malformed", true, new MockHyperlink("c:\\temp\\foo", "malformed", -1, -1, -1, -1)),
+            new Message("c:\\temp\\bar:27: really malformed", true, new MockHyperlink("c:\\temp\\bar", "really malformed", 27, -1, -1, -1)),
+             */
+            new Message(top + ":1: some problem", true, new MockHyperlink(top.toURI().toString(), "some problem", 1, -1, -1, -1)),
+            new Message("make: Entering directory `" + dir1 + "'", false, null),
+            new Message("middle:2:3: some other problem", true, new MockHyperlink(middle.toURI().toString(), "some other problem", 2, 3, -1, -1)),
+            new Message("../top: yet another problem", true, new MockHyperlink(top.toURI().toString(), "yet another problem", -1, -1, -1, -1)),
+            new Message("make: Entering directory `" + dir2 + "'", false, null),
+            new Message("bottom: something new", true, new MockHyperlink(bottom.toURI().toString(), "something new", -1, -1, -1, -1)),
+            new Message("make: Leaving directory `" + dir2 + "'", false, null),
+            new Message("middle: back here", true, new MockHyperlink(middle.toURI().toString(), "back here", -1, -1, -1, -1)),
+            new Message("make: Leaving directory `" + dir1 + "'", false, null),
+            new Message(NbBundle.getMessage(StandardLogger.class, "FMT_finished_target_printed", 0, 1), false, null));
+        assertEquals("correct text printed", expectedMessages, session.messages);
+        
+    }
     
     // XXX testVerbosityLevels
     // XXX testThrownErrors
-    // XXX testFileHyperlinks
     // XXX testCaretShowingColumn
     
     /**
@@ -482,4 +532,9 @@ public class StandardLoggerTest extends NbTestCase {
         
     }
     
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
 }
