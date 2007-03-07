@@ -16,21 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * RelocateAction.java
- *
- * Created on 03 March 2007, 11:21
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
-/**
- *
- * @author  Peter Pis
- */
-
 package org.netbeans.modules.subversion.ui.relocate;
 
 import java.awt.Dialog;
@@ -58,6 +43,10 @@ import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
+/**
+ *
+ * @author  Peter Pis
+ */
 public class RelocateAction extends AbstractAction {
     
     VCSContext ctx;
@@ -71,8 +60,11 @@ public class RelocateAction extends AbstractAction {
     
     public boolean isEnabled() {
         Set<File> roots = ctx.getRootFiles();
+        if(roots == null || roots.size() != 1) {
+            return false;
+        }
         File file = roots.iterator().next();
-        return (roots.size() == 1 & file.isDirectory());
+        return file != null && file.isDirectory();
     }
     
     public void actionPerformed(ActionEvent event) {
