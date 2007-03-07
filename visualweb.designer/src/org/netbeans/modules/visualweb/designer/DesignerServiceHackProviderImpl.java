@@ -31,7 +31,6 @@ import org.netbeans.modules.visualweb.designer.CssUtilities;
 import org.netbeans.modules.visualweb.css2.JspIncludeBox;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TableBox;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 
 import java.awt.Color;
 import java.awt.Container;

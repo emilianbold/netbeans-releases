@@ -20,7 +20,6 @@
 package org.netbeans.modules.visualweb.api.designer;
 
 import org.netbeans.modules.visualweb.designer.DesignerServiceHackProviderImpl;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
