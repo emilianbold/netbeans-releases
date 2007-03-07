@@ -21,14 +21,17 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Actions">
-        <folder name="Navigation">
+        <folder name="Edit">
             <!-- attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" / -->
+            <!--
             <file name="org-netbeans-modules-java-actions-GoToFile.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.GoToFileAction"/>
             </file>
+            -->
             <file name="org-netbeans-modules-java-actions-GoToType.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.GoToTypeAction"/>
             </file>
+            <!--
             <file name="org-netbeans-modules-java-actions-Navigator.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.NavigatorAction"/>
             </file>
@@ -38,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-java-actions-CallHierarchy.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.CallHierarchyAction"/>
             </file>
+            -->
         </folder>
     </folder>
     
@@ -116,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
               <folder name="Popup">
                   <folder name="goto">
                       <file name="org-netbeans-modules-java-actions-GoToType.shadow">
-                          <attr name="originalFile" stringvalue="Actions/Navigation/org-netbeans-modules-java-actions-GoToType.instance"/>
+                          <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-actions-GoToType.instance"/>
                       </file>
                       <attr name="goto/org-netbeans-modules-java-actions-GoToType.shadow" boolvalue="true" />
                   </folder>
@@ -135,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="core-windows-SeparatorAfterRecentList.instance/org-netbeans-modules-java-actions-GoToType.shadow" boolvalue="true"/>
                     
         <file name="org-netbeans-modules-java-actions-GoToType.shadow">
-            <attr name="originalFile" stringvalue="Actions/Navigation/org-netbeans-modules-java-actions-GoToType.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-actions-GoToType.instance"/>
         </file>
        
         <file name="SeparatorAfterCallGoToType.instance">
@@ -183,9 +187,9 @@ Microsystems, Inc. All Rights Reserved.
   </folder>  
   
   <folder name="Shortcuts">    
-        <file name="OS-O.shadow">
-            <attr name="originalFile" stringvalue="Actions/Navigation/org-netbeans-modules-java-actions-GoToType.instance"/>
-	</file>                
+      <file name="OS-O.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-actions-GoToType.instance"/>
+       </file>           
   </folder>  
   
   <folder name="Services">    
