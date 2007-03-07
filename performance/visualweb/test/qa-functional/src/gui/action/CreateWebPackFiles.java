@@ -28,6 +28,7 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Test create Web Pack projects
@@ -61,6 +62,14 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
+    
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSP Page"));
+        suite.addTest(new CreateWebPackFiles("testCreateJSPFragment","Create JSP fragment"));
+        suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS Table"));
+        return suite;
+    }  
     
     public void testCreateJSPPage(){
         docname = "JSFPage"; //NOI18N
@@ -153,6 +162,9 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         log("::shutdown");
         super.shutdown();
 
+    }
+    public static void main(String[] args) {
+       junit.textui.TestRunner.run(suite()); 
     }
 
 }
