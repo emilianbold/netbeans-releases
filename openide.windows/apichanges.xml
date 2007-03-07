@@ -36,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
         either in sdi or mdi mode, was deleted. Support for sdi was dropped and
         replaced by floating windows support. System will now always start in mdi mode.
     </description>
+    <issue number="81330"/>
     <issue number="50352"/>
 </change>    
 
@@ -51,6 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         the TopComponent will be/is docked to and the Mode is of 'editor' kind (i.e. holds editor windows).
     </description>
     <class package="org.openide.windows" name="WindowManager"/>
+    <issue number="96338"/>
 </change>
 
 <change id="generics">
