@@ -453,6 +453,12 @@ public class WebServiceDescriptor extends Base {
                             // Remove this endpoint from the saved endpoint list managed by
                             // the WebServices root DConfigBean.
                             ((WebServices) getParent()).removeEndpoint(hostName, portComponentName);
+                            
+                            // If the host data is still cached, remove this endpoint from the cache entry 
+                            // for the host so that it is not saved twice if modified.  See IZ 94865
+                            BaseRoot masterRoot = config.getMasterDCBRoot();
+                            masterRoot.removeCachedEndpoint(helper.getHostProperty(), helper.getHostNameProperty(), 
+                                    hostName, helper.getEndpointProperty(), portComponentName);
                         }
                     }
                 }
@@ -789,12 +795,19 @@ public class WebServiceDescriptor extends Base {
                 String linkName = getChildBeanText(portComponentDD, "service-impl-bean/" + helper.getLinkXpath());
                 WebserviceEndpoint savedEndpoint = wsParent.removeEndpoint(linkName, portComponentName);
                 
+                // Clone this data now, before possibly trimming it from the tree, below.
                 if(savedEndpoint != null) {
                     newWebserviceEndpoint = (WebserviceEndpoint) savedEndpoint.clone();
                 } else {
                     // set load to false so that we create a default endpoint uri, if required.
                     load = false;
                 }
+                
+                // If the host data is still cached, remove this endpoint from the cache entry 
+                // for the host so that it is not saved twice if modified.  See IZ 94865
+                BaseRoot masterRoot = getConfig().getMasterDCBRoot();
+                masterRoot.removeCachedEndpoint(helper.getHostProperty(), helper.getHostNameProperty(), 
+                        linkName, helper.getEndpointProperty(), portComponentName);
             }
         }
         
@@ -871,12 +884,14 @@ public class WebServiceDescriptor extends Base {
     private abstract class EndpointHelper {
 
         private final String linkXpath;
+        private final String hostProperty;
         private final String hostNameProperty;
         private final String endpointProperty;
         private final String blueprintsUriPrefix;
 
-        public EndpointHelper(String xpath, String hnp, String epp, String uriPrefix) {
+        public EndpointHelper(String xpath, String hp, String hnp, String epp, String uriPrefix) {
             linkXpath = xpath;
+            hostProperty = hp;
             hostNameProperty = hnp;
             endpointProperty = epp;
             blueprintsUriPrefix = uriPrefix;
@@ -884,6 +899,10 @@ public class WebServiceDescriptor extends Base {
 
         public String getLinkXpath() {
             return linkXpath;
+        }
+
+        private String getHostProperty() {
+            return hostProperty;
         }
 
         public String getHostNameProperty() {
@@ -913,7 +932,7 @@ public class WebServiceDescriptor extends Base {
 
     private class ServletHelper extends EndpointHelper {
         public ServletHelper() {
-            super("servlet-link", Servlet.SERVLET_NAME, Servlet.WEBSERVICE_ENDPOINT, WEB_URI_PREFIX);
+            super("servlet-link", SunWebApp.SERVLET, Servlet.SERVLET_NAME, Servlet.WEBSERVICE_ENDPOINT, WEB_URI_PREFIX);
         }
 
         public CommonDDBean [] getWebServiceDescriptions(CommonDDBean ddParent) {
@@ -945,7 +964,7 @@ public class WebServiceDescriptor extends Base {
 
     private class EjbHelper extends EndpointHelper {
         public EjbHelper() {
-            super("ejb-link", Ejb.EJB_NAME, Ejb.WEBSERVICE_ENDPOINT, EJB_URI_PREFIX);
+            super("ejb-link", EnterpriseBeans.EJB, Ejb.EJB_NAME, Ejb.WEBSERVICE_ENDPOINT, EJB_URI_PREFIX);
         }
 
         public CommonDDBean [] getWebServiceDescriptions(CommonDDBean ddParent) {

@@ -46,6 +46,7 @@ import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
@@ -244,6 +245,43 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
         }
         
         return result;
+    }
+    
+    protected CommonDDBean removeCachedEndpoint(String hostType, String hostNameType, 
+            String hostName, String endpointType, String portComponentName) {
+        // 1. get cache of host type
+        // 2. iterate cache for hostname
+        // 3. if found, remove endpoint(s) for portcomponentname from host entry
+        CommonDDBean removedEndpoint = null;
+        Map dataMap = getNamedBeanMap(hostType);
+        if(dataMap != null) {
+            try {
+                Iterator entryIter = dataMap.entrySet().iterator();
+                while(entryIter.hasNext()) {
+                    Map.Entry entry = (Map.Entry) entryIter.next();
+                    CommonDDBean host = (CommonDDBean) entry.getValue();
+                    Object n = host.getValue(hostNameType);
+                    if(n instanceof String && hostName.equals((String) n)) {
+                        Object [] objs = host.getValues(endpointType);
+                        if(objs != null) {
+                            for(int i = 0; i < objs.length; i++) {
+                                if(objs[i] instanceof WebserviceEndpoint) {
+                                    WebserviceEndpoint endpoint = (WebserviceEndpoint) objs[i];
+                                    if(portComponentName.equals(endpoint.getPortComponentName())) {
+                                        host.removeValue(endpointType, endpoint);
+                                        removedEndpoint = endpoint;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(IllegalArgumentException ex) {
+                // programmer bug if this happens.
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        return removedEndpoint;
     }
     
     protected Map getNamedBeanMap(String type) {
