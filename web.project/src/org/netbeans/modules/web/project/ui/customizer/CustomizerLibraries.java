@@ -32,7 +32,7 @@ import javax.swing.table.TableColumn;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
-import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
+import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -139,7 +139,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         else {
             jLabelErrorMessage.setText( " " ); // NOI18N
         }
-        WebPhysicalViewProvider viewProvider = (WebPhysicalViewProvider) uiProperties.getProject().getLookup().lookup(WebPhysicalViewProvider.class);
+        WebLogicalViewProvider viewProvider = (WebLogicalViewProvider) uiProperties.getProject().getLookup().lookup(WebLogicalViewProvider.class);
         //Update the state of project's node if needed
         viewProvider.testBroken();        
     }

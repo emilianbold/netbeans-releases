@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -76,7 +76,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.queries.*;
-import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
+import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
@@ -322,7 +322,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,
             new WebActionProvider( this, this.updateHelper ),
-            new WebPhysicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
+            new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
             new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
@@ -348,7 +348,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebJPAModuleInfo(this),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
-            LookupProviderSupport.createSourcesMerger()
+            LookupProviderSupport.createSourcesMerger(),
+            this, // never cast an externally obtained Project to J2SEProject - use lookup instead
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
@@ -763,9 +764,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 webModule.setContextPath (sysName);
             }
 
-            WebPhysicalViewProvider physicalViewProvider = (WebPhysicalViewProvider)
-                WebProject.this.getLookup().lookup (WebPhysicalViewProvider.class);
-            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
+            WebLogicalViewProvider logicalViewProvider = (WebLogicalViewProvider) WebProject.this.getLookup().lookup (WebLogicalViewProvider.class);
+            if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
             webPagesFileWatch.init();

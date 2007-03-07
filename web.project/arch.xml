@@ -1161,6 +1161,12 @@ Microsystems, Inc. All Rights Reserved.
        Please note that the latter is not part of any public APIs and you need implementation dependency to make use of it.
      </p>
     </api>
+    <api group="layer" name="WebLogicalViewProvider" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-web-project/Nodes" folder's content is used to construct the project's child nodes.
+       It's content is expected to be <code>NodeFactory</code> instances.
+     </p>
+    </api>
  </answer>
 
 

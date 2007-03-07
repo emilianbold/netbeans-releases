@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -152,8 +152,8 @@ final class LibrariesNode extends AbstractNode {
         return new AddProjectAction (p, classPathId, webModuleElementName);
     }
 
-    public static Action createAddLibraryAction (Project p, AntProjectHelper helper, String classPathId, String webModuleElementName) {
-        return new AddLibraryAction (p, helper, classPathId, webModuleElementName);
+    public static Action createAddLibraryAction (Project p, String classPathId, String webModuleElementName) {
+        return new AddLibraryAction (p, classPathId, webModuleElementName);
     }
 
     public static Action createAddFolderAction (Project p, String classPathId, String webModuleElementName) {
@@ -581,14 +581,12 @@ final class LibrariesNode extends AbstractNode {
     private static class AddLibraryAction extends AbstractAction {
 
         private final Project project;
-        private final AntProjectHelper helper;
         private final String classPathId;
         private final String webModuleElementName;
 
-        public AddLibraryAction (Project project, AntProjectHelper helper, String classPathId, String webModuleElementName) {
+        public AddLibraryAction (Project project, String classPathId, String webModuleElementName) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddLibrary_Action" ) );
             this.project = project;
-            this.helper = helper;
             this.classPathId = classPathId;
             this.webModuleElementName = webModuleElementName;
         }
