@@ -44,6 +44,13 @@ public class ValidateClassLinkageTest extends NbTestCase {
      * @see org.netbeans.core.modules.NbInstaller#preresolveClasses
      */
     public void testClassLinkage() throws Exception {
+        if (ValidateClassLinkageTest.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
+            // do not check anything as this probably means we are running
+            // plain Unit test and not inside the IDE mode
+            return;
+        }
+        
+        
         ClassLoader l = Thread.currentThread().getContextClassLoader();
         assertNotNull("Context CL has some autoloads in it", l.getResource("org/openide/windows/InputOutput.class"));
         Enumeration e = l.getResources("META-INF/MANIFEST.MF");
