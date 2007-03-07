@@ -24,11 +24,11 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
-<change id="netbeans.windows=sdi">
+<change id="netbeans.windows">
     <api name="winsys"/>
     <summary>Removal of netbeans.windows=sdi and netbeans.windows=mdi cmnd line option.</summary>
     <version major="6" minor="14"/>
-    <date day="06" month="03" year="2007"/>
+    <date day="6" month="3" year="2007"/>
     <author login="dsimonek"/>
     <compatibility addition="no" binary="compatible" source="compatible" semantic="incompatible" deprecation="no" deletion="yes" modification="no"/>
     <description>
@@ -38,19 +38,19 @@ Microsystems, Inc. All Rights Reserved.
     </description>
     <issue number="50352"/>
 </change>    
-    
+
 <change id="isEditorTopComponent">
     <api name="winsys"/>
     <summary>Added a method to check the type of a TopComponent - 'editor' or 'view'</summary>
     <version major="6" minor="13"/>
-    <date day="22" month="02" year="2007"/>
+    <date day="22" month="2" year="2007"/>
     <author login="saubrecht"/>
     <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
-    <class package="org.openide.windows" name="WindowManager"/>
     <description>
         Added method isEditorTopComponent( TopComponent tc) to WindowManager that returns true if there is a Mode that 
         the TopComponent will be/is docked to and the Mode is of 'editor' kind (i.e. holds editor windows).
     </description>
+    <class package="org.openide.windows" name="WindowManager"/>
 </change>
 
 <change id="generics">
