@@ -30,7 +30,6 @@
 package org.netbeans.modules.visualweb.css2;
 
 
-import com.sun.rave.designtime.DesignBean;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -75,7 +74,6 @@ import org.w3c.dom.Element;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.SelectionManager;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.css2.BoxType;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.LineBoxGroup;
@@ -419,14 +417,17 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 //                if (element.getDesignBean() != null && (box.getParent() == null ||
 //                        element.getDesignBean() != box.getParent().getDesignBean())) {
 //                MarkupDesignBean markupDesignBean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-                MarkupDesignBean markupDesignBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
-                if (markupDesignBean != null
+//                MarkupDesignBean markupDesignBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//                if (markupDesignBean != null
+                if (element != null
 //                && (box.getParent() == null || markupDesignBean != box.getParent().getDesignBean())) {
-                && (box.getParent() == null || markupDesignBean != CssBox.getMarkupDesignBeanForCssBox(box))) {
+//                && (box.getParent() == null || markupDesignBean != CssBox.getMarkupDesignBeanForCssBox(box))) {
+                && (box.getParent() == null || element != CssBox.getElementForComponentRootCssBox(box))) {
                     // TODO - filter out XHTML beans
                     sb.append("<i>"); // NOI18N
 //                    sb.append(element.getDesignBean().getInstanceName());
-                    sb.append(markupDesignBean.getInstanceName());
+//                    sb.append(markupDesignBean.getInstanceName());
+                    sb.append(WebForm.getHtmlDomProviderService().getInstanceName(element));
                     sb.append("</i>"); // NOI18N
                 }
             }
@@ -830,9 +831,11 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 	return new PropertySupport.ReadOnly("beanNameDebug", String.class, "beanNameDebug", getBundleString("LBL_BeanNameDebug")) {
 	    public Object getValue() {
 //		MarkupDesignBean bean = box.getDesignBean();
-                MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
+//                MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
+                Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
 //		String s = DesignerUtils.getBeanName(bean);
-                String s = getBeanName(bean);
+//                String s = getBeanName(bean);
+                String s = getComponentName(componentRootElement);
 
 		if (s == null) {
 		    return ""; // NOI18N
@@ -849,9 +852,12 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
      *
      * @return the name of the bean, or null if a bean can not be found for this view's element
      */
-    private static String getBeanName(DesignBean bean) {
-        if (bean != null) {
-            return "<" + bean.getInstanceName() + ">";
+//    private static String getBeanName(DesignBean bean) {
+    private static String getComponentName(Element componentRootElement) {
+//        if (bean != null) {
+        if (componentRootElement != null) {
+//            return "<" + bean.getInstanceName() + ">";
+            return "<" + WebForm.getHtmlDomProviderService().getInstanceName(componentRootElement) + ">";
         }
         
         return null;
@@ -862,8 +868,10 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 	return new PropertySupport.ReadOnly("renderStream", String.class, "renderStream", getBundleString("LBL_RenderStream")) {
 	    public Object getValue() {
 //		MarkupDesignBean bean = box.getDesignBean();
-                MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
-		if (bean == null) {
+//                MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
+                Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+//		if (bean == null) {
+                if (componentRootElement == null) {
 		    return ""; // NOI18N
 		}
 
@@ -874,9 +882,9 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 //		    return ""; // NOI18N
 //		}
 
-		if (bean == null) {
-		    return ""; // NOI18N
-		}
+//		if (bean == null) {
+//		    return ""; // NOI18N
+//		}
 
 //		FacesPageUnit facesunit = model.getFacesUnit();
 //		DocumentFragment df = facesunit.getFacesRenderTree(bean, model.getLiveUnit());
@@ -885,14 +893,12 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 //		if (df == null) {
 //		    return ""; // NOI18N
 //		}
-                Element element = bean.getElement();
-                if (element == null) {
-                    return ""; // NOI18N
-                }
+                
+//                Element element = bean.getElement();
 
 //		return InSyncService.getProvider().getHtmlStream(df);
 //                return WebForm.getHtmlDomProviderService().getHtmlStream(df);
-                return WebForm.getHtmlDomProviderService().getHtmlStream(element);
+                return WebForm.getHtmlDomProviderService().getHtmlStream(componentRootElement);
 	    }
 	};
     }
