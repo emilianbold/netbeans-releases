@@ -38,9 +38,6 @@ import org.w3c.dom.css.CSSPrimitiveValue;
 import org.netbeans.modules.visualweb.designer.Interaction;
 import org.netbeans.modules.visualweb.designer.TableResizer;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.DesignInfo;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupTableDesignInfo;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import com.sun.rave.designer.html.HtmlAttribute;
 
@@ -123,9 +120,9 @@ public class TableBox extends ContainerBox {
     /** Number of rows in the table */
     private int rows = -1;
 
-    /** Table Design Info. Can be null for table components that don't
-     *  implement this. */
-    private MarkupTableDesignInfo tableDesignInfo;
+//    /** Table Design Info. Can be null for table components that don't
+//     *  implement this. */
+//    private MarkupTableDesignInfo tableDesignInfo;
     private int cellPadding = 1; // What is mozilla's default?
     private int cellSpacing = 1; // What is mozilla's default?
     private int borderWidth = 0;
@@ -1166,14 +1163,14 @@ public class TableBox extends ContainerBox {
         }
 
 //        MarkupDesignBean bean = getDesignBean();
-        MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(this);
-        if (bean != null) {
-            DesignInfo info = bean.getDesignInfo();
-
-            if (info instanceof MarkupTableDesignInfo) {
-                tableDesignInfo = (MarkupTableDesignInfo)info;
-            }
-        }
+//        MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(this);
+//        if (bean != null) {
+//            DesignInfo info = bean.getDesignInfo();
+//
+//            if (info instanceof MarkupTableDesignInfo) {
+//                tableDesignInfo = (MarkupTableDesignInfo)info;
+//            }
+//        }
 
         // TODO - deal with the table header, if one is specified.
         // TODO Group the columns according to any column group specifications.
@@ -3366,7 +3363,11 @@ public class TableBox extends ContainerBox {
         }
 
         public int getInternalResizeDirection(int x, int y) {
-            if (tableBox.tableDesignInfo == null) {
+//            if (tableBox.tableDesignInfo == null) {
+//                return Cursor.DEFAULT_CURSOR;
+//            }
+            Element tableComponentRootElement = CssBox.getElementForComponentRootCssBox(tableBox);
+            if (!WebForm.getHtmlDomProviderService().hasTableResizeSupport(tableComponentRootElement)) {
                 return Cursor.DEFAULT_CURSOR;
             }
 
@@ -3379,14 +3380,15 @@ public class TableBox extends ContainerBox {
             // TODO - decide if borderwidth affects this computation
             int spacing = tableBox.cellSpacing / 2;
 
-            MarkupDesignBean tableMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(tableBox);
+//            MarkupDesignBean tableMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(tableBox);
             if ((col > 0) && (Math.abs(x - left) < (BORDER_RESIZE_DISTANCE + spacing))) {
                 // Does it matter what height we pass in here?
                 // I suppose I could pass in both higher and lower values
                 // than the current size to see if we effectively will be able
                 // to change the size, in case minimums and maximums constrain it
 //                if (tableBox.tableDesignInfo.testResizeColumn(tableBox.getDesignBean(), row, col - 1, 50) != -1) {
-                if (tableBox.tableDesignInfo.testResizeColumn(tableMarkupDesignBean, row, col - 1, 50) != -1) {
+//                if (tableBox.tableDesignInfo.testResizeColumn(tableMarkupDesignBean, row, col - 1, 50) != -1) {
+                if (WebForm.getHtmlDomProviderService().testResizeColumn(tableComponentRootElement, row, col - 1, 50) != -1) {
                     return Cursor.W_RESIZE_CURSOR;
                 }
             }
@@ -3394,14 +3396,16 @@ public class TableBox extends ContainerBox {
             if ((col < (tableBox.columns - 1)) &&
                     (Math.abs(x - (left + width)) < (BORDER_RESIZE_DISTANCE + spacing))) {
 //                if (tableBox.tableDesignInfo.testResizeColumn(tableBox.getDesignBean(), row, col, 50) != -1) {
-                if (tableBox.tableDesignInfo.testResizeColumn(tableMarkupDesignBean, row, col, 50) != -1) {
+//                if (tableBox.tableDesignInfo.testResizeColumn(tableMarkupDesignBean, row, col, 50) != -1) {
+                if (WebForm.getHtmlDomProviderService().testResizeColumn(tableComponentRootElement, row, col, 50) != -1) {
                     return Cursor.E_RESIZE_CURSOR;
                 }
             }
 
             if ((row > 0) && (Math.abs(y - top) < (BORDER_RESIZE_DISTANCE + spacing))) {
 //                if (tableBox.tableDesignInfo.testResizeRow(tableBox.getDesignBean(), row - 1, col, 50) != -1) {
-                if (tableBox.tableDesignInfo.testResizeRow(tableMarkupDesignBean, row - 1, col, 50) != -1) {
+//                if (tableBox.tableDesignInfo.testResizeRow(tableMarkupDesignBean, row - 1, col, 50) != -1) {
+                if (WebForm.getHtmlDomProviderService().testResizeRow(tableComponentRootElement, row - 1, col, 50) != -1) {
                     return Cursor.N_RESIZE_CURSOR;
                 }
             }
@@ -3409,7 +3413,8 @@ public class TableBox extends ContainerBox {
             if ((row < (tableBox.rows - 1)) &&
                     (Math.abs(y - (top + height)) < (BORDER_RESIZE_DISTANCE + spacing))) {
 //                if (tableBox.tableDesignInfo.testResizeRow(tableBox.getDesignBean(), row, col, 50) != -1) {
-                if (tableBox.tableDesignInfo.testResizeRow(tableMarkupDesignBean, row, col, 50) != -1) {
+//                if (tableBox.tableDesignInfo.testResizeRow(tableMarkupDesignBean, row, col, 50) != -1) {
+                if (WebForm.getHtmlDomProviderService().testResizeRow(tableComponentRootElement, row, col, 50) != -1) {
                     return Cursor.S_RESIZE_CURSOR;
                 }
             }
@@ -3418,7 +3423,11 @@ public class TableBox extends ContainerBox {
         }
 
         public Interaction getInternalResizer(int x, int y) {
-            if (tableBox.tableDesignInfo == null) {
+//            if (tableBox.tableDesignInfo == null) {
+//                return null;
+//            }
+            Element tableComponentRootElement = CssBox.getElementForComponentRootCssBox(tableBox);
+            if (!WebForm.getHtmlDomProviderService().hasTableResizeSupport(tableComponentRootElement)) {
                 return null;
             }
 
@@ -3434,17 +3443,18 @@ public class TableBox extends ContainerBox {
             int spacing = tableBox.cellSpacing / 2;
 
             Element element = getElement();
-            MarkupDesignBean tableMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(tableBox);
+//            MarkupDesignBean tableMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(tableBox);
             if (Math.abs(x - left) < (BORDER_RESIZE_DISTANCE + spacing)) {
                 // Does it matter what height we pass in here?
                 // I suppose I could pass in both higher and lower values
                 // than the current size to see if we effectively will be able
                 // to change the size, in case minimums and maximums constrain it
 //                if (tableBox.tableDesignInfo.testResizeColumn(tableBox.getDesignBean(), row, col - 1, 50) != -1) {
-                if (tableBox.tableDesignInfo.testResizeColumn(tableMarkupDesignBean, row, col - 1, 50) != -1) {
+//                if (tableBox.tableDesignInfo.testResizeColumn(tableMarkupDesignBean, row, col - 1, 50) != -1) {
+                if (WebForm.getHtmlDomProviderService().testResizeColumn(tableComponentRootElement, row, col - 1, 50) != -1) {
                     TableResizer tableResizer =
 //                        new TableResizer(webform, tableBox.getDesignBean(), tableBox.tableDesignInfo,
-                        new TableResizer(webform, tableMarkupDesignBean, tableBox.tableDesignInfo,
+                        new TableResizer(webform, /*tableMarkupDesignBean, tableBox.tableDesignInfo,*/ tableComponentRootElement,
                             CssBox.Y_AXIS, true, left, tableBox.getAbsoluteY(), getWidth(),
                             tableBox.getHeight(), minimum, maximum, row, col, element);
 
@@ -3454,10 +3464,11 @@ public class TableBox extends ContainerBox {
 
             if (Math.abs(x - (left + width)) < (BORDER_RESIZE_DISTANCE + spacing)) {
 //                if (tableBox.tableDesignInfo.testResizeColumn(tableBox.getDesignBean(), row, col, 50) != -1) {
-                if (tableBox.tableDesignInfo.testResizeColumn(tableMarkupDesignBean, row, col, 50) != -1) {
+//                if (tableBox.tableDesignInfo.testResizeColumn(tableMarkupDesignBean, row, col, 50) != -1) {
+                if (WebForm.getHtmlDomProviderService().testResizeColumn(tableComponentRootElement, row, col, 50) != -1) {
                     TableResizer tableResizer =
 //                        new TableResizer(webform, tableBox.getDesignBean(), tableBox.tableDesignInfo,
-                        new TableResizer(webform, tableMarkupDesignBean, tableBox.tableDesignInfo,
+                        new TableResizer(webform, /*tableMarkupDesignBean, tableBox.tableDesignInfo,*/ tableComponentRootElement,
                             CssBox.Y_AXIS, false, left, tableBox.getAbsoluteY(), getWidth(),
                             tableBox.getHeight(), minimum, maximum, row, col, element);
 
@@ -3467,12 +3478,13 @@ public class TableBox extends ContainerBox {
 
             if (Math.abs(y - top) < (BORDER_RESIZE_DISTANCE + spacing)) {
 //                if (tableBox.tableDesignInfo.testResizeRow(tableBox.getDesignBean(), row - 1, col, 50) != -1) {
-                if (tableBox.tableDesignInfo.testResizeRow(tableMarkupDesignBean, row - 1, col, 50) != -1) {
+//                if (tableBox.tableDesignInfo.testResizeRow(tableMarkupDesignBean, row - 1, col, 50) != -1) {
+                if (WebForm.getHtmlDomProviderService().testResizeRow(tableComponentRootElement, row - 1, col, 50) != -1) {
                     System.out.println("Probably should use row before here!");
 
                     TableResizer tableResizer =
 //                        new TableResizer(webform, tableBox.getDesignBean(), tableBox.tableDesignInfo,
-                        new TableResizer(webform, tableMarkupDesignBean, tableBox.tableDesignInfo,
+                        new TableResizer(webform, /*tableMarkupDesignBean, tableBox.tableDesignInfo,*/ tableComponentRootElement,
                             CssBox.X_AXIS, true, tableBox.getAbsoluteX(), top, getHeight(),
                             tableBox.getWidth(), minimum, maximum, row, col, element);
 
@@ -3482,10 +3494,11 @@ public class TableBox extends ContainerBox {
 
             if (Math.abs(y - (top + height)) < (BORDER_RESIZE_DISTANCE + spacing)) {
 //                if (tableBox.tableDesignInfo.testResizeRow(tableBox.getDesignBean(), row, col, 50) != -1) {
-                if (tableBox.tableDesignInfo.testResizeRow(tableMarkupDesignBean, row, col, 50) != -1) {
+//                if (tableBox.tableDesignInfo.testResizeRow(tableMarkupDesignBean, row, col, 50) != -1) {
+                if (WebForm.getHtmlDomProviderService().testResizeRow(tableComponentRootElement, row, col, 50) != -1) {
                     TableResizer tableResizer =
 //                        new TableResizer(webform, tableBox.getDesignBean(), tableBox.tableDesignInfo,
-                        new TableResizer(webform, tableMarkupDesignBean, tableBox.tableDesignInfo,
+                        new TableResizer(webform, /*tableMarkupDesignBean, tableBox.tableDesignInfo,*/ tableComponentRootElement,
                             CssBox.X_AXIS, false, tableBox.getAbsoluteX(), top, getHeight(),
                             tableBox.getWidth(), minimum, maximum, row, col, element);
 

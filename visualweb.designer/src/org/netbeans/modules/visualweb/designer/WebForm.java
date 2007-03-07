@@ -2499,6 +2499,24 @@ public class WebForm implements Designer {
         public Element getComponentRootElementForElement(Element element) {
             return null;
         }
+
+        public boolean hasTableResizeSupport(Element tableComponentRootElement) {
+            return false;
+        }
+
+        public int testResizeColumn(Element tableComponentRootElement, int row, int column, int width) {
+            return 0;
+        }
+
+        public int testResizeRow(Element tableComponentRootElement, int row, int column, int height) {
+            return 0;
+        }
+
+        public void resizeColumn(Element tableComponentRootElement, int column, int width) {
+        }
+
+        public void resizeRow(Element tableComponentRootElement, int row, int height) {
+        }
     } // End of DummyHtmlDomProviderService.
     
     

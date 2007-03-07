@@ -33,8 +33,6 @@ import javax.swing.ImageIcon;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupTableDesignInfo;
 import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
 
 
@@ -57,8 +55,10 @@ public class TableResizer extends Interaction implements KeyListener {
     private int prevY = -500;
     private int prevMouseX = -500;
     private int prevMouseY = -500;
-    private MarkupDesignBean bean;
-    private MarkupTableDesignInfo designInfo;
+//    private MarkupDesignBean bean;
+//    private MarkupTableDesignInfo designInfo;
+    private Element tableComponentRootElement;
+    
     private int direction;
     private boolean leftTopSide;
     private int spanLeft;
@@ -90,12 +90,14 @@ public class TableResizer extends Interaction implements KeyListener {
      * @param minimum The minimum size of the span. This value is not allowed to be negative.
      * @param maximum The maximum size of the span. Pass in Integer.MAX_VALUE for unconstrained size.
      */
-    public TableResizer(WebForm webform, MarkupDesignBean bean, MarkupTableDesignInfo designInfo,
+    public TableResizer(WebForm webform, /*MarkupDesignBean bean, MarkupTableDesignInfo designInfo,*/ Element tableComponentRootElement,
         int direction, boolean leftTopSide, int spanLeft, int spanTop, int spanSize, int otherSize,
         int minimum, int maximum, int row, int column, Element element) {
         this.webform = webform;
-        this.bean = bean;
-        this.designInfo = designInfo;
+//        this.bean = bean;
+//        this.designInfo = designInfo;
+        this.tableComponentRootElement = tableComponentRootElement;
+        
         this.direction = direction;
         this.leftTopSide = leftTopSide;
         this.spanLeft = spanLeft;
@@ -154,10 +156,12 @@ public class TableResizer extends Interaction implements KeyListener {
 
             // Set the column size
             if (direction == CssBox.Y_AXIS) {
-                designInfo.resizeColumn(bean, column, r.width);
+//                designInfo.resizeColumn(bean, column, r.width);
+                WebForm.getHtmlDomProviderService().resizeColumn(tableComponentRootElement, column, r.width);
             } else {
                 assert direction == CssBox.X_AXIS;
-                designInfo.resizeRow(bean, row, r.height);
+//                designInfo.resizeRow(bean, row, r.height);
+                WebForm.getHtmlDomProviderService().resizeRow(tableComponentRootElement, row, r.height);
             }
 
             cleanup(pane);
@@ -222,7 +226,8 @@ public class TableResizer extends Interaction implements KeyListener {
         switch (direction) {
         case CssBox.X_AXIS:
             r.width = otherSize;
-            size = designInfo.testResizeRow(bean, row, column, size);
+//            size = designInfo.testResizeRow(bean, row, column, size);
+            size = WebForm.getHtmlDomProviderService().testResizeRow(tableComponentRootElement, row, column, size);
 
             if (size == -1) { // VERY surprising behavior by the table design info
                 size = 0;
@@ -233,7 +238,8 @@ public class TableResizer extends Interaction implements KeyListener {
             break;
 
         case CssBox.Y_AXIS:
-            size = designInfo.testResizeColumn(bean, row, column, size);
+//            size = designInfo.testResizeColumn(bean, row, column, size);
+            size = WebForm.getHtmlDomProviderService().testResizeColumn(tableComponentRootElement, row, column, size);
 
             if (size == -1) { // VERY surprising behavior by the table design info
                 size = 0;
