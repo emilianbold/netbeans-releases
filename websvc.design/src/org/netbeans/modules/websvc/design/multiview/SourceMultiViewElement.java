@@ -31,7 +31,6 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.awt.UndoRedo;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
@@ -132,7 +131,8 @@ public class SourceMultiViewElement extends CloneableEditor
     
     public CloseOperationState canCloseElement() {
         // if this is not the last cloned editor component, closing is OK
-        if(MultiViewSupport.getNumberOfClones(multiViewCallback.getTopComponent()) > 1) {
+        if(!getEditorSupport().isModified() ||
+                MultiViewSupport.getNumberOfClones(multiViewCallback.getTopComponent()) > 1) {
             return CloseOperationState.STATE_OK;
         }
         // return a state which will save/discard changes and is called by close handler
