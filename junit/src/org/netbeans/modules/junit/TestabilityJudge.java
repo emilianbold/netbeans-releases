@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.junit;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 
@@ -30,5 +31,7 @@ interface TestabilityJudge {
     
     TestabilityResult isClassTestable(CompilationInfo compInfo,
                                       TypeElement classElem);
+    
+    boolean isMethodTestable(ExecutableElement method);
     
 }

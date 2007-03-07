@@ -22,15 +22,21 @@ package org.netbeans.modules.junit;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 
 /**
  * Data structure that holds overview of class' members and their positions
  * within the class.
  * <p>To get an instance for a class, use static method
- * {@link #forClass(ClassTree)}.</p>
+ * {@link #forClass}.</p>
  *
  * @author  Marian Petras
  */
@@ -41,6 +47,12 @@ final class ClassMap {
     private static final int FIRST_METHOD_POS_INDEX = 2;
     private static final int LAST_INIT_POS_INDEX = 3;
     private static final int FIRST_NESTED_POS_INDEX = 4;
+    private static final int BEFORE_POS_INDEX = 5;
+    private static final int AFTER_POS_INDEX = 6;
+    private static final int BEFORE_CLASS_POS_INDEX = 7;
+    private static final int AFTER_CLASS_POS_INDEX = 8;
+    
+    private static final String JUNIT4_PKG_PREFIX = "org.junit.";       //NOI18N
     
     /**
      */
@@ -54,7 +66,7 @@ final class ClassMap {
     }
     
     {
-        positions = new int[5];
+        positions = new int[9];
         for (int i = 0; i < positions.length; i++) {
             positions[i] = -1;
         }
@@ -63,9 +75,23 @@ final class ClassMap {
     /**
      * 
      * @exception  java.lang.IllegalArgumentException
-     *             if the {@code classTree} argument is {@code null}
+     *             if any of the arguments is {@code null}
+     *             or if the specified {@code ClassTree} is not a leaf
+     *             of the specified {@code TreePath}
      */
-    static ClassMap forClass(ClassTree cls) {
+    static ClassMap forClass(ClassTree cls, TreePath clsTreePath,
+                             Trees trees) {
+        if (cls == null) {
+            throw new IllegalArgumentException("ClassTree: null");      //NOI18N
+        }
+        if (clsTreePath == null) {
+            throw new IllegalArgumentException("TreePath: null");       //NOI18N
+        }
+        if (clsTreePath.getLeaf() != cls) {
+            throw new IllegalArgumentException(
+                  "given ClassTree is not leaf of the given TreePath"); //NOI18N
+        }
+        
         List<? extends Tree> members = cls.getMembers();
         if (members.isEmpty()) {
             return new ClassMap(new ArrayList<String>());
@@ -114,6 +140,38 @@ final class ClassMap {
                         if (map.getFirstMethodIndex() == -1) {
                             map.setFirstMethodIndex(index);
                         }
+                        
+                        /* annotations: */
+                        if (!method.getModifiers().getAnnotations().isEmpty()) {
+                            TreePath methodTreePath = new TreePath(clsTreePath,
+                                                                   method);
+                            Element methodElement = trees.getElement(methodTreePath);
+                            for (AnnotationMirror annMirror : methodElement.getAnnotationMirrors()) {
+                                Element annElem = annMirror.getAnnotationType().asElement();
+                                assert annElem.getKind() == ElementKind.ANNOTATION_TYPE;
+                                assert annElem instanceof TypeElement;
+                                String fullName = ((TypeElement) annElem).getQualifiedName().toString();
+                                if (fullName.startsWith(JUNIT4_PKG_PREFIX)) {
+                                    String shortName = fullName.substring(JUNIT4_PKG_PREFIX.length());
+                                    int posIndex;
+                                    if (shortName.equals("Before")) {               //NOI18N
+                                        posIndex = BEFORE_POS_INDEX;
+                                    } else if (shortName.equals("After")) {         //NOI18N
+                                        posIndex = AFTER_POS_INDEX;
+                                    } else if (shortName.equals("BeforeClass")) {   //NOI18N
+                                        posIndex = BEFORE_CLASS_POS_INDEX;
+                                    } else if (shortName.equals("AfterClass")) {    //NOI18N
+                                        posIndex = AFTER_CLASS_POS_INDEX;
+                                    } else {
+                                        continue;       //next annotation
+                                    }
+                                    
+                                    if (map.positions[posIndex] == -1) {
+                                        map.positions[posIndex] = index;
+                                    }
+                                }
+                            }
+                        }
                     }
                     break;
                 default:
@@ -148,6 +206,78 @@ final class ClassMap {
      */
     private void setTearDownIndex(int tearDownIndex) {
         positions[TEARDOWN_POS_INDEX] = tearDownIndex;
+    }
+    
+    /**
+     * Returns an index of a method annotated with annotation
+     * {@code org.junit.Before}. If there are more such methods
+     * index of any of these methods may be returned.
+     * 
+     * @return  index of a {@code @Before}-annotated method,
+     *          or {@code -1} if there is no such method
+     */
+    int getBeforeIndex() {
+        return positions[BEFORE_POS_INDEX];
+    }
+    
+    /**
+     */
+    private void setBeforeIndex(int index) {
+        positions[BEFORE_POS_INDEX] = index;
+    }
+    
+    /**
+     * Returns an index of a method annotated with annotation
+     * {@code org.junit.After}. If there are more such methods
+     * index of any of these methods may be returned.
+     * 
+     * @return  index of a {@code @After}-annotated method,
+     *          or {@code -1} if there is no such method
+     */
+    int getAfterIndex() {
+        return positions[AFTER_POS_INDEX];
+    }
+    
+    /**
+     */
+    private void setAfterIndex(int index) {
+        positions[AFTER_POS_INDEX] = index;
+    }
+    
+    /**
+     * Returns an index of a method annotated with annotation
+     * {@code org.junit.BeforeClass}. If there are more such methods
+     * index of any of these methods may be returned.
+     * 
+     * @return  index of a {@code @BeforeClass}-annotated method,
+     *          or {@code -1} if there is no such method
+     */
+    int getBeforeClassIndex() {
+        return positions[BEFORE_CLASS_POS_INDEX];
+    }
+    
+    /**
+     */
+    private void setBeforeClassIndex(int index) {
+        positions[BEFORE_CLASS_POS_INDEX] = index;
+    }
+    
+    /**
+     * Returns an index of a method annotated with annotation
+     * {@code org.junit.AfterClass}. If there are more such methods
+     * index of any of these methods may be returned.
+     * 
+     * @return  index of a {@code @AfterClass}-annotated method,
+     *          or {@code -1} if there is no such method
+     */
+    int getAfterClassIndex() {
+        return positions[AFTER_CLASS_POS_INDEX];
+    }
+    
+    /**
+     */
+    private void setAfterClassIndex(int index) {
+        positions[AFTER_CLASS_POS_INDEX] = index;
     }
     
     /**
@@ -200,6 +330,30 @@ final class ClassMap {
     
     /**
      */
+    boolean containsBefore() {
+        return getBeforeIndex() != -1;
+    }
+    
+    /**
+     */
+    boolean containsAfter() {
+        return getAfterIndex() != -1;
+    }
+    
+    /**
+     */
+    boolean containsBeforeClass() {
+        return getBeforeClassIndex() != -1;
+    }
+    
+    /**
+     */
+    boolean containsAfterClass() {
+        return getAfterClassIndex() != -1;
+    }
+    
+    /**
+     */
     boolean containsNoArgMethod(String name) {
         return findNoArgMethod(name) != -1;
     }
@@ -241,12 +395,12 @@ final class ClassMap {
     /**
      */
     void addNoArgMethod(String name) {
-        addNoArgMethod(size(), name);
+        addNoArgMethod(name, size());
     }
     
     /**
      */
-    void addNoArgMethod(int index, String name) {
+    void addNoArgMethod(String name, int index) {
         int currSize = size();
         
         if (index > currSize) {
@@ -270,6 +424,28 @@ final class ClassMap {
         if (getFirstMethodIndex() == -1) {
             setFirstMethodIndex(index);
         }
+    }
+    
+    /**
+     */
+    void addNoArgMethod(String name, String annotationName) {
+        addNoArgMethod(name, annotationName, size());
+    }
+    
+    /**
+     */
+    void addNoArgMethod(String name, String annotationName, int index) {
+        addNoArgMethod(name, index);
+        
+        if (annotationName.equals(JUnit4TestGenerator.ANN_BEFORE)) {
+            setBeforeIndex(index);
+        } else if (annotationName.equals(JUnit4TestGenerator.ANN_AFTER)) {
+            setAfterIndex(index);
+        } else if (annotationName.equals(JUnit4TestGenerator.ANN_BEFORE_CLASS)) {
+            setBeforeClassIndex(index);
+        } else if (annotationName.equals(JUnit4TestGenerator.ANN_AFTER_CLASS)) {
+            setAfterClassIndex(index);
+        } 
     }
     
     /**
