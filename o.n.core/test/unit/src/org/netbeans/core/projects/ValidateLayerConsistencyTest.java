@@ -72,7 +72,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         return new NbTestSuite(ValidateLayerConsistencyTest.class);
     }
 
-    public void setUp() {
+    public void setUp() throws Exception {
+        clearWorkDir();
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
             public Void run() {
                 contextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -180,6 +181,13 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         if (!errors.isEmpty()) {
             fail ("Some shadow files in NetBeans profile are broken:" + errors);
         }
+        
+        if (ValidateLayerConsistencyTest.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
+            // do not check the count as this probably means we are running
+            // plain Unit test and not inside the IDE mode
+            return;
+        }
+        
         
         if (cnt == 0) {
             fail("No file objects on system file system!");
@@ -426,6 +434,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         int i = 0;
         do {
             cacheDir = new File(workDir, "layercache"+i);
+            i++;
         } while (!cacheDir.mkdir());
 
         BinaryCacheManager bcm = new BinaryCacheManager(cacheDir);
