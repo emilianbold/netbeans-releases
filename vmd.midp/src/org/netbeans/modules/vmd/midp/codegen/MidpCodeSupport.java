@@ -86,6 +86,16 @@ public class MidpCodeSupport {
             writer.write (value.getPrimitiveValue ().toString ());
         else if (MidpTypes.TYPEID_LONG.equals (type))
             writer.write (value.getPrimitiveValue ().toString () + "l"); // NOI18N
+        else if (MidpTypes.TYPEID_CHAR.equals (type))
+            writer.write (Integer.toString ((Character) value.getPrimitiveValue ()));
+        else if (MidpTypes.TYPEID_BYTE.equals (type))
+            writer.write (value.getPrimitiveValue ().toString ());
+        else if (MidpTypes.TYPEID_SHORT.equals (type))
+            writer.write (value.getPrimitiveValue ().toString ());
+        else if (MidpTypes.TYPEID_FLOAT.equals (type))
+            writer.write (value.getPrimitiveValue ().toString () + "f"); // NOI18N
+        else if (MidpTypes.TYPEID_DOUBLE.equals (type))
+            writer.write (value.getPrimitiveValue ().toString ());
         else if (MidpTypes.TYPEID_BOOLEAN.equals (type))
             writer.write ((Boolean) value.getPrimitiveValue () ? "true" : "false"); // NOI18N
         else if (MidpTypes.TYPEID_JAVA_LANG_STRING.equals (type))
