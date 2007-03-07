@@ -36,7 +36,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  */
 public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.PerformanceTestCase {
    
-    private String doccategory, doctype, docname, docfolder, suffix;
+    private String doccategory, doctype, docname, docfolder, suffix, projectfolder;
     private NewFileNameLocationStepOperator location;
     
     private int index;
@@ -69,6 +69,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
 	docfolder = "web";
 	suffix = "";
         index = 1;
+        projectfolder = "Web Pages";
 	doMeasurement();
     }
     
@@ -79,6 +80,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
 	docfolder = "web";
 	suffix = "";
         index = 1;
+        projectfolder = "Web Pages";
 	doMeasurement();
     }
     
@@ -89,6 +91,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
 	docfolder = "web" + java.io.File.separatorChar + "resources";
 	suffix = ".css";
         index = 1;
+        projectfolder = "Web Pages"+"|"+"resources";
 	doMeasurement();
     }
     
@@ -134,18 +137,20 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     private void cleanupTest() {
         log(":: do cleanup.....");
         Node projectRoot = new ProjectsTabOperator().getProjectRootNode(project_name);        
-        Node objNode = new Node(projectRoot.tree(),docname+"_"+(index)+suffix);
+        Node objNode = new Node(projectRoot.tree(),projectfolder+"|"+ docname+"_"+(index)+suffix);
         objNode.select();
         log(":: Document: "+docname+"_"+(index)+suffix);
         log(":: Selected: "+objNode.getTreePath().toString());
         
         objNode.performPopupAction("Delete");
-        new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("com.sun.rave.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle")).ok();
+        String dialogName = org.netbeans.jellytools.Bundle.getString("com.sun.rave.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle");
+        
+        new NbDialogOperator(dialogName).ok();
         log(":: cleanup passed");
         
     }
     protected void shutdown() {
-        log("::shutdwown");
+        log("::shutdown");
         super.shutdown();
 
     }
