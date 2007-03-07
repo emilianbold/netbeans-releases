@@ -141,7 +141,7 @@ defining language structure and describing its features, <a href="http://saturn.
     
     To make a language implementation visible for the Schliemann engine,
     it is required to put the defining .nbs file into the layer file under 
-    <api name="Editors-text" group="lookup" category="devel" type="import"/> folder. 
+    <api name="Editors-mimetype" group="lookup" category="devel" type="import"/> folder. 
     In addition, a proper mime type resolver should be 
     be registered under "Services\MIMEResolver".
     
