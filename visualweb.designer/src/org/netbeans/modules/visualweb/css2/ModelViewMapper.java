@@ -41,7 +41,6 @@ import org.w3c.dom.NodeList;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
@@ -2535,29 +2534,29 @@ public final class ModelViewMapper {
         return null;
     }
 
-    /** Locate a component in the visible view given the x,y coordinates
-     * XXX Get rid of it, replace with #findComponentRootElement. */
-    public static MarkupDesignBean findMarkupDesignBean(CssBox box) {
-        for (; box != null; box = box.getParent()) {
-            MarkupDesignBean boxMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(box);
-//            if (box.getDesignBean() != null) {
-//                DesignBean lb = box.getDesignBean();
-            if (boxMarkupDesignBean != null) {
-                DesignBean lb = boxMarkupDesignBean;
-
-//                if (FacesSupport.isSpecialBean(/*webform, */lb)) {
-//                if (Util.isSpecialBean(lb)) {
-                if (lb instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isSpecialComponent(
-                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)lb))) {
-                    continue;
-                }
-
-                return boxMarkupDesignBean;
-            }
-        }
-
-        return null;
-    }
+//    /** Locate a component in the visible view given the x,y coordinates
+//     * XXX Get rid of it, replace with #findComponentRootElement. */
+//    public static MarkupDesignBean findMarkupDesignBean(CssBox box) {
+//        for (; box != null; box = box.getParent()) {
+//            MarkupDesignBean boxMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(box);
+////            if (box.getDesignBean() != null) {
+////                DesignBean lb = box.getDesignBean();
+//            if (boxMarkupDesignBean != null) {
+//                DesignBean lb = boxMarkupDesignBean;
+//
+////                if (FacesSupport.isSpecialBean(/*webform, */lb)) {
+////                if (Util.isSpecialBean(lb)) {
+//                if (lb instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isSpecialComponent(
+//                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)lb))) {
+//                    continue;
+//                }
+//
+//                return boxMarkupDesignBean;
+//            }
+//        }
+//
+//        return null;
+//    }
 
     /** Locates a component root element in the visible view given the box.
      * @return <code>Element</code> or <code>null</code> if there is not such */
@@ -2583,13 +2582,13 @@ public final class ModelViewMapper {
         return pageBox.findCssBox(x, y);
     }
 
-    /** XXX Get rid of it, replace with #findComponentRootElement. */
-    public static MarkupDesignBean findMarkupDesignBean(PageBox pageBox, int x, int y) {
-//        CssBox box = findBox(x, y);
-        CssBox box = findBox(pageBox, x, y);
-
-        return findMarkupDesignBean(box);
-    }
+//    /** XXX Get rid of it, replace with #findComponentRootElement. */
+//    public static MarkupDesignBean findMarkupDesignBean(PageBox pageBox, int x, int y) {
+////        CssBox box = findBox(x, y);
+//        CssBox box = findBox(pageBox, x, y);
+//
+//        return findMarkupDesignBean(box);
+//    }
     
     public static Element findComponentRootElement(PageBox pageBox, int x, int y) {
 //        CssBox box = findBox(x, y);
