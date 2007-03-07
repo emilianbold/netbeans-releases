@@ -23,6 +23,7 @@ package gui;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyException;
 
 /**
  * Utilities for Performance tests, workarrounds, often used methods, ...
@@ -41,7 +42,11 @@ public class VWPUtilities extends gui.Utilities{
     public static gui.window.WebFormDesignerOperator openedWebDesignerForJspFile(String projectName, String jspFileName){
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(projectName),WEB_PAGES + "|" +jspFileName + ".jsp");
         new OpenAction().performAPI(openFile);
-        return new gui.window.WebFormDesignerOperator(jspFileName);
+        try {
+            return new gui.window.WebFormDesignerOperator(jspFileName);
+        } catch(Exception ex) {
+            throw new JemmyException("Exception in WebFormDesignerOperator creation ",ex);
+        }
     }
     
 }
