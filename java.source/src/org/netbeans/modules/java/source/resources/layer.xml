@@ -25,22 +25,10 @@ Microsystems, Inc. All Rights Reserved.
             <!-- attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" / -->
             <file name="org-netbeans-modules-java-actions-GoToType.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.GoToTypeAction"/>
-            </file>
-            <!--
-            <file name="org-netbeans-modules-java-actions-Navigator.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.NavigatorAction"/>
-            </file>
-            <file name="org-netbeans-modules-java-actions-TypeHierarchy.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.TypeHierarchyAction"/>
-            </file>
-            <file name="org-netbeans-modules-java-actions-CallHierarchy.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.actions.CallHierarchyAction"/>
-            </file>
-            -->
+            </file>            
         </folder>
     </folder>
     
-
   <folder name="Loaders">
     <folder name="text">
         <folder name="x-java">
@@ -139,46 +127,10 @@ Microsystems, Inc. All Rights Reserved.
        
         <file name="SeparatorAfterCallGoToType.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-        </file>
-        
-        <attr name="org-netbeans-modules-java-actions-GoToType.shadow/SeparatorAfterCallGoToType.instance" boolvalue="true"/>
-        
-        
-        <!--
-        <attr boolvalue="true" name="org-netbeans-modules-java-actions-GoToType.shadow/org-netbeans-modules-java-actions-GoToFile.shadow" />
-       
-        <file name="org-netbeans-modules-java-actions-GoToFile.shadow">
-            <attr name="originalFile" stringvalue="Actions/Navigation/org-netbeans-modules-java-actions-GoToFile.instance"/>
-        </file>
-        
-        <attr boolvalue="true" name="org-netbeans-modules-java-actions-GoToFile.shadow/SeparatorAfterGoToFile.instance" />
-            
-        <file name="SeparatorAfterGoToFile.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-        </file>                          
-        
-        <attr boolvalue="true" name="SeparatorAfterGoToFile.instance/org-netbeans-modules-java-actions-TypeHierarchy.shadow" />
-        
-        <file name="org-netbeans-modules-java-actions-TypeHierarchy.shadow">
-            <attr name="originalFile" stringvalue="Actions/Navigation/org-netbeans-modules-java-actions-TypeHierarchy.instance"/>
-        </file>
-        
-        <attr boolvalue="true" name="org-netbeans-modules-java-actions-TypeHierarchy.shadow/org-netbeans-modules-java-actions-CallHierarchy.shadow" />
-        
-        <file name="org-netbeans-modules-java-actions-CallHierarchy.shadow">
-            <attr name="originalFile" stringvalue="Actions/Navigation/org-netbeans-modules-java-actions-CallHierarchy.instance"/>
-        </file>
-        
-        <attr boolvalue="true" name="org-netbeans-modules-java-actions-CallHierarchy.shadow/SeparatorAfterCallHierarchy.instance" />
-                
-        <file name="SeparatorAfterCallHierarchy.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-        </file>
-        
-        <attr name="SeparatorAfterCallHierarchy.instance/org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance" boolvalue="true"/>
-        !-->
-                
-     </folder>               
+        </file>        
+        <attr name="org-netbeans-modules-java-actions-GoToType.shadow/SeparatorAfterCallGoToType.instance" boolvalue="true"/>                
+     
+    </folder>               
   </folder>  
   
   <folder name="OptionsDialog">
@@ -190,8 +142,7 @@ Microsystems, Inc. All Rights Reserved.
          </folder>    
      </folder>
   </folder>
-  
-  
+    
   <folder name="Shortcuts">    
       <file name="OS-O.shadow">
            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-actions-GoToType.instance"/>
@@ -205,17 +156,4 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
-  <!-- Switching off in favor of java/navigation
-    <folder name="Navigator" >
-      <folder name="Panels" >
-        <folder name="text" >
-          <folder name="x-java" >
-            <file name="org-netbeans-modules-java-navigation-ClassMemberPanel.instance" />
-          </folder>
-        </folder>
-      </folder>
-    </folder>
-  --> 
-
-  
 </filesystem>
