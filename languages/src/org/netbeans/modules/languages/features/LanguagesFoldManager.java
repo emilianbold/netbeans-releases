@@ -19,8 +19,7 @@
 
 package org.netbeans.modules.languages.features;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
@@ -34,6 +33,8 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
@@ -51,6 +52,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.lexer.TokenHierarchy;
 
 
 /**
@@ -73,11 +75,9 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
      * @param operation fold hierarchy operation dedicated to the fold manager.
      */
     public void init (FoldOperation operation) {
-        this.operation = operation;
-        //S ystem.out.println("init " + mimeType + " : " + operation + " : " + this);
         Document d = operation.getHierarchy ().getComponent ().getDocument ();
-        //S ystem.out.println("LanguagesFoldManager.init " + d);
         if (d instanceof NbEditorDocument) {
+            this.operation = operation;
             doc = (NbEditorDocument) d;
             ParserManagerImpl.get (doc).addASTEvaluator (this);
         }
@@ -236,10 +236,30 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             int sln = NbDocument.findLineNumber (doc, s),
                 eln = NbDocument.findLineNumber (doc, e);
             if (sln == eln) return;
+            String mimeType = item.getMimeType ();
             Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-                getLanguage (item.getMimeType ());
+                getLanguage (mimeType);
             Feature fold = language.getFeature (Language.FOLD, path);
             if (fold == null) return;
+            
+            TokenHierarchy th = TokenHierarchy.get (doc);
+            TokenSequence ts = th.tokenSequence ();
+            ts.move (e - 1);
+            ts.moveNext ();
+            while (!ts.language ().mimeType ().equals (mimeType)) {
+                ts = ts.embedded ();
+                ts.move (e - 1);
+                ts.moveNext ();
+            }
+            Token t = ts.token ();
+            Set<String> skip = language.getSkipTokenTypes ();
+            while (skip.contains (t.id ().name ())) {
+                if (!ts.movePrevious ()) break;
+                t = ts.token ();
+            }
+            ts.moveNext ();
+            e = ts.offset ();
+                
             if (fold.hasSingleValue ()) {
                 String foldName = (String) fold.getValue (SyntaxContext.create (doc, path));
                 if (foldName == null) return;            

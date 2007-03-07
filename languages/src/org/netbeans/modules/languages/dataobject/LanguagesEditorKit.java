@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages.dataobject;
 
+import java.util.Map;
 import org.netbeans.modules.languages.*;
 import javax.swing.Action;
 import org.netbeans.api.languages.LanguagesManager;
@@ -73,9 +74,20 @@ public class LanguagesEditorKit extends NbEditorKit {
     /** 
      * Creates a new instance of LanguagesEditorKit 
      */
-    public LanguagesEditorKit (String mimeType) { 
+    public LanguagesEditorKit (final String mimeType) { 
         this.mimeType = mimeType;
-        Settings.setValue (LanguagesEditorKit.class, SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
+        //Settings.setValue (LanguagesEditorKit.class, SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
+        Settings.addInitializer (new Settings.Initializer () {
+            public String getName() {
+                return mimeType;
+            }
+
+            public void updateSettingsMap (Class kitClass, Map settingsMap) {
+                if (kitClass != null && kitClass.equals (LanguagesEditorKit.class)) {
+                    settingsMap.put (SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
+                }
+            }
+        });
     }
     
     private JLabel label;
