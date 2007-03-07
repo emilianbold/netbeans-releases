@@ -264,7 +264,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public ProgressObject stopDeploymentManager() {
         
         SunDeploymentManager sunDm = (SunDeploymentManager)this.dm;
-        debugInfoMap.remove(sunDm.getHost()+sunDm.getPort());
         ct = CommandType.STOP;
         pes.clearProgressListener();
         cmd = CMD_STOP;
@@ -372,6 +371,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 return; //we failed to stop the server.
                 
             }else {
+                debugInfoMap.remove(sunDm.getHost()+sunDm.getPort());
                 LogViewerSupport.removeLogViewerSupport(dmProps.getUrl());
             }
         }
