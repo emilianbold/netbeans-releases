@@ -503,7 +503,8 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 	    }
 
 //            if (box.getDesignBean() != null) {
-            if (CssBox.getMarkupDesignBeanForCssBox(box) != null) {
+//            if (CssBox.getMarkupDesignBeanForCssBox(box) != null) {
+            if (CssBox.getElementForComponentRootCssBox(box) != null) {
                 ss = s.get("jsf"); // NOI18N
 
                 if (ss == null) {
