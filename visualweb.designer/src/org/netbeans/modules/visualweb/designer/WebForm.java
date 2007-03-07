@@ -32,7 +32,6 @@ import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
-import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.markup.MarkupPosition;
 import org.netbeans.modules.visualweb.designer.DocumentCache;
 import org.netbeans.modules.visualweb.designer.ImageCache;
@@ -1661,9 +1660,9 @@ public class WebForm implements Designer {
 //        return htmlDomProvider.findHtmlContainer(parent);
 //    }
 
-    String[] getClassNames(DisplayItem[] displayItems) {
-        return htmlDomProvider.getClassNames(displayItems);
-    }
+//    String[] getClassNames(DisplayItem[] displayItems) {
+//        return htmlDomProvider.getClassNames(displayItems);
+//    }
 
 //    boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos, String facet, List createdBeans, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator)
 //    throws IOException {
