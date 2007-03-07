@@ -1903,7 +1903,6 @@ public class CasualDiff {
         }
         JCTree lastdel = null; // last deleted element
         ResultItem<JCTree>[] result = matcher.getResult();
-        int posHint = localPointer;
 
         // if there hasn't been import but at least one is added
         if (oldList.isEmpty() && !newList.isEmpty()) {
@@ -1931,9 +1930,9 @@ public class CasualDiff {
             copyTo(localPointer, removalBounds[0]);
             return removalBounds;
         }
-        // copy to start position
-        copyTo(localPointer, posHint = getOldPos(oldList.get(0)));
         int i = 0;
+        // copy to start position
+        copyTo(localPointer, estimator.getInsertPos(0), printer);
         // go on, match it!
         for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
@@ -1951,12 +1950,11 @@ public class CasualDiff {
                             tail = aTail.toString();
                         }
                         head = aHead.toString();
-                        posHint = pos;
-                        if (ret[0] < 0) ret[0] = posHint;
-                        if (ret[1] < 0) ret[1] = posHint;
+                        if (ret[0] < 0) ret[0] = pos;
+                        if (ret[1] < 0) ret[1] = pos;
                     } else {
-                        if (ret[0] < 0) ret[0] = posHint;
-                        if (ret[1] < 0) ret[1] = posHint;
+                        if (ret[0] < 0) ret[0] = pos;
+                        if (ret[1] < 0) ret[1] = pos;
                     }
                     int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
                     boolean found = false;
@@ -2014,7 +2012,7 @@ public class CasualDiff {
                     }
                     ++i;
                     ret[1] = pos[1];
-                    posHint = pos[1];
+                    localPointer = pos[1];
                     break;
                 }
                 case NOCHANGE: {
@@ -2022,18 +2020,16 @@ public class CasualDiff {
                     if (ret[0] < 0) {
                         ret[0] = pos[0];
                     }
+                    if (pos[0] > localPointer && i != 0) {
+                        // print fill-in
+                        copyTo(localPointer, pos[0], printer);
+                    }
                     copyTo(pos[0], pos[1], printer);
-                    ret[1] = pos[1];
+                    localPointer = ret[1] = pos[1];
                     ++i;
                     break;
                 }
             }
-        }
-        if (!oldList.isEmpty()) {
-            Iterator<? extends JCTree> it = oldList.iterator();
-            for (i = 0; it.hasNext(); i++, it.next()) ;
-            int[] pos = estimator.getPositions(i);
-            ret[1] = pos[1];
         }
         return ret;
     }

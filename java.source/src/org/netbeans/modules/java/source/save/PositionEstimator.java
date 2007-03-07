@@ -31,6 +31,7 @@ import java.util.Map;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType;
 
@@ -157,18 +158,21 @@ abstract class PositionEstimator {
      */
     static class ImportsEstimator extends PositionEstimator {
         
-        public ImportsEstimator(final List<? extends ImportTree> oldL, final List<? extends ImportTree> newL, final WorkingCopy copy) {
+        public ImportsEstimator(final List<? extends ImportTree> oldL, 
+                                final List<? extends ImportTree> newL, 
+                                final WorkingCopy copy) 
+        {
             super(oldL, newL, copy);
         }
 
+        List<int[]> data;
+        
         @Override()
         public void initialize() {
             int size = oldL.size();
-            matrix = new int[size+1][3];
-            matrix[size] = new int[] { -1, -1, -1 };
+            data = new ArrayList(size);
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
-            int i = 0;
             
             for (Tree item : oldL) {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
@@ -176,36 +180,65 @@ abstract class PositionEstimator {
                 
                 seq.move(treeStart);
                 seq.moveNext();
-                int startIndex = seq.index();
-                
-                // go back to opening/closing curly, semicolon or other
-                // token java-compiler important token.
-                moveToSrcRelevant(seq, Direction.BACKWARD);
+                int wideStart = goAfterLastNewLine(seq);
+                seq.move(treeStart);
                 seq.moveNext();
-                int start = seq.index();
-                seq.move(treeEnd);
-                // seq.index() set (no seq.moveNext() necessary)
-                matrix[i++] = new int[] { start, startIndex, seq.index() };
-                if (i == size) {
-                    seq.move(treeEnd);
-                    // seq.index() set (no seq.moveNext() necessary)
-                    matrix[i][0] = seq.index();
+                if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
+                    seq.moveNext();
                 }
+                int previousEnd = seq.offset();
+                Token<JavaTokenId> token;
+                while (nonRelevant.contains((token = seq.token()).id())) {
+                    int localResult = -1;
+                    switch (token.id()) {
+                        case WHITESPACE:
+                            int indexOf = token.text().toString().indexOf('\n');
+                            if (indexOf > 0) {
+                                localResult = seq.offset() + indexOf + 1;
+                            }
+                            break;
+                        case LINE_COMMENT:
+                            previousEnd = seq.offset() + token.text().length();
+                            break;
+                    }
+                    if (localResult > 0) {
+                        previousEnd = localResult;
+                        break;
+                    }
+                    if (!seq.moveNext()) break;
+                }
+                seq.move(treeEnd);
+                int wideEnd = treeEnd;
+                while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
+                    if (JavaTokenId.WHITESPACE == token.id()) {
+                        int indexOf = token.text().toString().indexOf('\n');
+                        if (indexOf > -1) {
+                            wideEnd = seq.offset() + indexOf + 1;
+                        } else {
+                            wideEnd = seq.offset();
+                        }
+                    } else if (JavaTokenId.LINE_COMMENT == token.id()) {
+                        wideEnd = seq.offset() + token.text().length();
+                        break;
+                    } else if (JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                        break;
+                    }
+                }
+                if (wideEnd < treeEnd) wideEnd = treeEnd;
+                data.add(new int[] { wideStart, wideEnd, previousEnd });
             }
+            System.err.println(toString());
             initialized = true;
         }
 
         @Override()
         public int getInsertPos(int index) {
             if (!initialized) initialize();
-            int tokenIndex = matrix[index][0];
-            // cannot do any decision about the position - probably first
-            // element is inserted, no information is available. Call has
-            // to decide.
-            if (tokenIndex == -1) return -1;
-            seq.moveIndex(tokenIndex);
-            seq.moveNext();
-            return index == 0 ? goAfterLastNewLine(seq) : goAfterFirstNewLine(seq);
+            if (data.isEmpty()) {
+                return -1;
+            } else {
+                return index == data.size() ? data.get(index-1)[2] : data.get(index)[0];
+            }
         }
 
         // when first element is inserted, analyse the spacing and
@@ -260,18 +293,7 @@ abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            int tokenIndex = matrix[index][0];
-            if (tokenIndex != -1) {
-                seq.moveIndex(tokenIndex);
-                seq.moveNext();
-            }
-            int begin = index == 0 ? goAfterLastNewLine(seq) : goAfterFirstNewLine(seq);
-            if (matrix[index][2] != -1) {
-                seq.moveIndex(matrix[index][2]);
-                seq.moveNext();
-            }
-            int end = goAfterFirstNewLine(seq);
-            return new int [] { begin, end };
+            return data.get(index);
         }
         
         public LineInsertionType lineInsertType() {
@@ -296,10 +318,10 @@ abstract class PositionEstimator {
         @Override
         public String toString() {
             String result = "";
-            for (int i = 0; i < oldL.size(); i++) {
-                int[] pos = getPositions(i);
+            for (int i = 0; i < data.size(); i++) {
+                int[] pos = data.get(i);
                 String s = copy.getText().substring(pos[0], pos[1]);
-                result += "\"" + s + "\"";
+                result += "\"" + s + "\"\n";
             }
             return result;
         }
@@ -689,15 +711,16 @@ abstract class PositionEstimator {
         Direction dir,
         EnumSet<JavaTokenId> set)
     {
+        boolean notBound = false;
         switch (dir) {
             case BACKWARD:
-                while (seq.movePrevious() && set.contains(seq.token().id())) ;
+                while ((notBound = seq.movePrevious()) && set.contains(seq.token().id())) ;
                 break;
             case FORWARD:
-                while (seq.moveNext() && set.contains(seq.token().id())) ;
+                while ((notBound = seq.moveNext()) && set.contains(seq.token().id())) ;
                 break;
         }
-        return seq.token() != null ? seq.token().id() : null;
+        return notBound ? seq.token().id() : null;
     }
     
     private static int goAfterFirstNewLine(final TokenSequence<JavaTokenId> seq) {
@@ -749,6 +772,9 @@ abstract class PositionEstimator {
                         }
                     }
             }
+        }
+        if ((seq.index() == 0 || seq.moveNext()) && nonRelevant.contains(seq.token().id())) {
+            return seq.offset();
         }
         return base;
     }
