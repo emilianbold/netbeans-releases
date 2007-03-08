@@ -392,7 +392,7 @@ class DiffViewManager implements ChangeListener {
             } else {
                 value = diff.getFirstEnd() * editorUI.getLineHeight();        // kde zacina prva, 180
                 if (diff.getType() == Difference.DELETE) value += editorUI.getLineHeight();
-                valueSecond = diff.getSecondStart() * editorUI.getLineHeight(); // kde by zacinala druha, napr. 230
+                valueSecond = diff.getSecondEnd() * editorUI.getLineHeight(); // kde by zacinala druha, napr. 230
             }
         }
 
@@ -432,11 +432,12 @@ class DiffViewManager implements ChangeListener {
             }
         }
         if (candidate == null) return null;
-        if (candidate.getDiff().getType() == Difference.DELETE && (candidate.getTopRight() < rightClip.y + rightClip.height * 2 / 3) || 
-                candidate == diffs[diffs.length - 1] && candidate.getDiff().getType() != Difference.ADD) {
-            return new DifferencePosition(candidate.getDiff(), false);
-        }
-        return new DifferencePosition(candidate.getDiff(), true);
+        boolean isHigh = (candidate.getTopRight() < rightClip.y + rightClip.height / 3);
+        boolean isLow = (candidate.getTopRight() < rightClip.y + rightClip.height * 2 / 3);
+        boolean matchEnd = candidate.getDiff().getType() == Difference.DELETE && isLow || 
+                           candidate.getDiff().getType() == Difference.ADD && isHigh ||
+                           candidate.getDiff().getType() != Difference.ADD && candidate == diffs[diffs.length - 1];
+        return new DifferencePosition(candidate.getDiff(), !matchEnd);
     }
 
     private double getScrollFactor() {
