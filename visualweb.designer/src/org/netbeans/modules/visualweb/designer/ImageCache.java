@@ -95,6 +95,7 @@ public class ImageCache {
         }
     }
 
+    @Override
     public String toString() {
         return super.toString() + "[images=" + images + "]"; // NOI18N
     }
