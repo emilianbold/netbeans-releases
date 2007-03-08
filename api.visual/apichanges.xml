@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<?xml-stylesheet type="text/xml" href="../../nbbuild/javadoctools/apichanges.xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+
+    <apidefs>
+        <apidef name="general">Visual Library API</apidef>
+    </apidefs>
+
+    <changes>
+
+        <change>
+            <api name="general"/>
+            <summary>The library API becomes stable</summary>
+            <version major="2" minor="0"/>
+            <date day="8" month="3" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                The library API becomes stable.
+            </description>
+            <package name="org.netbeans.api.visual" link="yes"/>
+            <issue number="95110"/>
+        </change>
+
+    </changes>
+
+    <htmlcontents>
+    <head>
+      <title>Change History for the Visual Library API</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
+
+<p class="overviewlink"><a href="@TOP@/overview-summary.html">Overview</a></p>
+
+<h1>Introduction</h1>
+
+<p>This document lists changes made to the <a href="@TOP@/overview-summary.html">Visual Library API</a>.
+Please, ask on the users@graph.netbeans.org mailing list if you have any question about the details of a change,
+or are wondering how to convert existing code to be compatible.</p>
+
+      <hr/>
+      <standard-changelists module-code-name="org.netbeans.api.visual"/>
+
+      <hr/><p>@FOOTER@</p>
+
+    </body>
+  </htmlcontents>
+
+</apichanges>
