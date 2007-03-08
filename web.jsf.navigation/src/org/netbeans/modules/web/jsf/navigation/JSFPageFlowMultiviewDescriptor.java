@@ -15,7 +15,8 @@ import java.io.Serializable;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -26,9 +27,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -82,26 +80,26 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
     
     
     static class PageFlowElement implements MultiViewElement, Serializable {
-//        private transient JScrollPane panel;
-        private transient TopComponent tc;
+        //        private transient JScrollPane panel;
+        private transient PageFlowView tc;
         private transient JComponent toolbar;
         private static final long serialVersionUID = -6305897237371751567L;
         private JSFConfigEditorContext context;
         
         
-//        public PageFlowElement() {
-//        }
+        //        public PageFlowElement() {
+        //        }
         
         public PageFlowElement(JSFConfigEditorContext context) {
             this.context = context;
             init();
         }
-                
+        
         private void init() {
-            tc = new PageFlowView(context);
-            tc.setName(context.getFacesConfigFile().getName());
-//            panel = new JScrollPane(tc);
-//            panel.setName(context.getFacesConfigFile().getName());
+            
+            getTopComponent().setName(context.getFacesConfigFile().getName());
+            //            panel = new JScrollPane(tc);
+            //            panel.setName(context.getFacesConfigFile().getName());
             //            this.setName(context.getFacesConfigFile().getName());
             //            add(panel, BorderLayout.CENTER);
             
@@ -112,7 +110,17 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
         
         public JComponent getToolbarRepresentation() {
-            return new JLabel("");
+            if (toolbar == null) {
+                toolbar = getTopComponent().getToolbarRepresentation();
+            }
+            return toolbar;
+        }
+        
+        private PageFlowView getTopComponent() {
+            if( tc == null ) {
+                tc = new PageFlowView(context);
+            }
+            return tc;
         }
         
         public Action[] getActions() {
@@ -132,18 +140,18 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         
         public Lookup getLookup() {
             return tc.getLookup();
-//            try {
-//                
-//                /* I needed to add the top component's lookup to the multiview elements lookup inorder to have an associated palette.*/
-//                DataObject dataObject = org.openide.loaders.DataObject.find(context.getFacesConfigFile());
-//                return new ProxyLookup(new Lookup[] {dataObject.getLookup(), tc.getLookup()});
-//                
-//            } catch (DataObjectNotFoundException ex) {
-//                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-//                        ex.getMessage(),
-//                        ex);
-//            }
-//            return null;
+            //            try {
+            //
+            //                /* I needed to add the top component's lookup to the multiview elements lookup inorder to have an associated palette.*/
+            //                DataObject dataObject = org.openide.loaders.DataObject.find(context.getFacesConfigFile());
+            //                return new ProxyLookup(new Lookup[] {dataObject.getLookup(), tc.getLookup()});
+            //
+            //            } catch (DataObjectNotFoundException ex) {
+            //                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+            //                        ex.getMessage(),
+            //                        ex);
+            //            }
+            //            return null;
         }
         
         public void componentOpened() {

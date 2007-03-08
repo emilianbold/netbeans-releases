@@ -330,11 +330,12 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
                 if (getSelectedObjects ().contains (object))
                     return;
                 userSelectionSuggested (Collections.singleton (object), invertSelection);
-                if ( object instanceof DataNode ){
-                    tc.setActivatedNodes(new DataNode[] {(DataNode)object});
-                } else if (object instanceof AbstractNode ){
-                    tc.setActivatedNodes(new AbstractNode[] {(AbstractNode)object});
-                }
+                tc.setActivatedNodes(new Node[]{(Node)object});
+//                if ( object instanceof DataNode ){
+//                    tc.setActivatedNodes(new DataNode[] {(DataNode)object});
+//                } else if (object instanceof AbstractNode ){
+//                    tc.setActivatedNodes(new AbstractNode[] {(AbstractNode)object});
+//                }
             } else
                 userSelectionSuggested (Collections.emptySet (), invertSelection);
         }
