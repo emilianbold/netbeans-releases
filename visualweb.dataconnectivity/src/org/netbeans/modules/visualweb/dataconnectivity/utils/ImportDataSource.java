@@ -29,9 +29,9 @@ import org.netbeans.modules.visualweb.dataconnectivity.DataconnectivityModuleIns
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfoManager;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.ImportDataSourcesDialog;
-import org.netbeans.modules.visualweb.naming.DesignTimeInitialContextFactory;
-import org.netbeans.modules.visualweb.sql.DataSourceImport;
-import org.netbeans.modules.visualweb.sql.DesignTimeDataSourceHelper;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.DesignTimeInitialContextFactory;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DataSourceImport;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

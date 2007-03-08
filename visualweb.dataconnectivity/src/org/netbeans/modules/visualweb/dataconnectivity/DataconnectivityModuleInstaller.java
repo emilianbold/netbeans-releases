@@ -32,7 +32,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.utils.DbPortUtilities;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.SampleDatabaseCreator;
 
 
-import org.netbeans.modules.visualweb.naming.DesignTimeInitialContextFactory;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.DesignTimeInitialContextFactory;
 
 import java.beans.Introspector;
 import java.io.BufferedReader;

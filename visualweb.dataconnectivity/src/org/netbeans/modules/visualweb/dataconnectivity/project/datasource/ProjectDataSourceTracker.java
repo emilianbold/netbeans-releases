@@ -38,8 +38,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.naming.NamingException;
 
-import org.netbeans.modules.visualweb.sql.DesignTimeDataSource;
-import org.netbeans.modules.visualweb.sql.DesignTimeDataSourceHelper;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 

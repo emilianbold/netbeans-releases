@@ -25,7 +25,7 @@ import java.awt.Image;
 import java.sql.SQLException;
 import javax.swing.SwingUtilities;
 import org.openide.ErrorManager;
-import org.netbeans.modules.visualweb.sql.DesignTimeDataSource;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import com.sun.rave.designtime.BeanCreateInfoSet;
 import com.sun.rave.designtime.Constants;

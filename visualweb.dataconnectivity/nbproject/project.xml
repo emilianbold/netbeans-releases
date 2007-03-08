@@ -17,7 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
@@ -262,7 +261,16 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.rave.propertyeditors</friend>
+                <friend>org.netbeans.modules.db.sql.visualeditor</friend>
+                <friend>org.netbeans.modules.visualweb.dataconnectivity.naming</friend>
+                <friend>org.netbeans.modules.visualweb.dataprovider</friend>
+                <friend>org.netbeans.modules.visualweb.dataprovider.designtime</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
+                <friend>org.netbeans.modules.visualweb.sql</friend>
                 <package>org.netbeans.modules.visualweb.dataconnectivity</package>
                 <package>org.netbeans.modules.visualweb.dataconnectivity.datasource</package>
                 <package>org.netbeans.modules.visualweb.dataconnectivity.utils</package>

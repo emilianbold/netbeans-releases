@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.model;
 
-import org.netbeans.modules.visualweb.sql.DatabaseMetaDataHelper;
-import org.netbeans.modules.visualweb.sql.DesignTimeDataSource;
-import org.netbeans.modules.visualweb.sql.DesignTimeDataSourceAlias;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DatabaseMetaDataHelper;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceAlias;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Arrays;
