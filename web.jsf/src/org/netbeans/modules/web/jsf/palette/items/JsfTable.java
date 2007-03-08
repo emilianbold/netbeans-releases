@@ -48,7 +48,7 @@ import org.openide.text.ActiveEditorDrop;
  *
  * @author Pavel Buzek
  */
-public class JsfTable implements ActiveEditorDrop {
+public final class JsfTable implements ActiveEditorDrop {
     
     private static String [] BEGIN = {
         "<h:form>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"item\">\n",
@@ -211,7 +211,7 @@ public class JsfTable implements ActiveEditorDrop {
         this.formType = formType;
     }
     
-    private static FileObject getFileObject(JTextComponent jTextComponent) {
+    protected static FileObject getFileObject(JTextComponent jTextComponent) {
         Document doc = jTextComponent.getDocument();
         if (doc != null) {
             return NbEditorUtilities.getFileObject(doc);

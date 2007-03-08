@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.web.jsf.palette.items;
 
+import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -45,7 +46,9 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
@@ -56,12 +59,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.ActiveEditorDrop;
 
-
 /**
  *
  * @author Pavel Buzek
  */
-public class JsfForm implements ActiveEditorDrop {
+public final class JsfForm implements ActiveEditorDrop {
         
 //                    columnClasses="list-column-left, list-column-left,
 //                    list-column-right, list-column-center"
@@ -118,6 +120,8 @@ public class JsfForm implements ActiveEditorDrop {
                     && targetComponent.getText(position1, len).contains("</f:view>");
                 String body = createBody(targetComponent, !containsFView);
                 JSFPaletteUtilities.insert(body, targetComponent);
+            } catch (IOException ioe) {
+                accept = false;
             } catch (BadLocationException ble) {
                 accept = false;
             }
@@ -126,18 +130,23 @@ public class JsfForm implements ActiveEditorDrop {
         return accept;
     }
     
-    private String createBody(JTextComponent target, boolean surroundWithFView) {
-        StringBuffer stringBuffer = new StringBuffer();
+    private String createBody(JTextComponent target, boolean surroundWithFView) throws IOException {
+        final StringBuffer stringBuffer = new StringBuffer();
         if (surroundWithFView) {
             stringBuffer.append("<f:view>\n");
         }
         stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable}));
-        //TODO: RETOUCHE
-       /* JavaClass jc = resolveJavaClass(target, bean);
-        if (jc != null) {
-            createForm(jc, formType, variable, sb, false);
-        }
-        */
+
+        FileObject fileObject = JsfTable.getFileObject(target);
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement(bean);
+                createForm(controller, typeElement, formType, variable, stringBuffer, false);
+            }
+        }, true);
+
         stringBuffer.append(END [formType]);
         if (surroundWithFView) {
             stringBuffer.append("</f:view>\n");
