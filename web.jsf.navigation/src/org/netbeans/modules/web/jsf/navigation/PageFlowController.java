@@ -46,17 +46,16 @@ public class PageFlowController {
         FileObject configFile = context.getFacesConfigFile();
         configModel = ConfigurationUtils.getConfigModel(configFile,true);
         project = FileOwnerQuery.getOwner(configFile);
-        webFiles = getAllRelevantFiles();
+        webFiles = getAllProjectRelevantFilesObjects();
         setupGraph();
-        
         
     }
     
     
-    private Collection<FileObject> getAllRelevantFiles() {
+    private Collection<FileObject> getAllProjectRelevantFilesObjects() {
         FileObject parentFolder = project.getProjectDirectory();
         FileObject webFileObject = parentFolder.getFileObject("web");
-        Collection<FileObject> webFiles = getAllJSPFiles(webFileObject);
+        Collection<FileObject> webFiles = getProjectJSPFileOjbects(webFileObject);
         System.out.println("Web Files: " + webFiles);
         return webFiles;
         
@@ -67,8 +66,7 @@ public class PageFlowController {
     }
     
     
-    
-    private Collection<FileObject> getAllJSPFiles(FileObject folder ) {
+    private Collection<FileObject> getProjectJSPFileOjbects(FileObject folder ) {
         Collection<FileObject> webFiles = new HashSet<FileObject>();
         FileObject[] childrenFiles = folder.getChildren();
         for( FileObject file : childrenFiles ){
@@ -76,26 +74,39 @@ public class PageFlowController {
                 if( file.getMIMEType().equals("text/x-jsp"))
                     webFiles.add(file);
             } else {
-                webFiles.addAll(getAllJSPFiles(file));
+                webFiles.addAll(getProjectJSPFileOjbects(file));
             }
         }
         
         return webFiles;
     }
     
-     /*
-      * Setup The Graph
-      * Should only be called by init();
-      **/
-    private void setupGraph(){
+    /**
+     * Setup The Graph
+     * Should only be called by init();
+     * 
+     **/
+    public void setupGraph(){
         assert configModel !=null;
+        assert project != null;
+        assert webFiles != null;
+        
+        view.clearGraph();
         
         FacesConfig facesConfig = configModel.getRootComponent();
         
         List<NavigationRule> rules = facesConfig.getNavigationRules();
-        createAllPageNodes(rules);
+        String currentScope = PageFlowUtilities.getInstance().getCurrentScope();
+        Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
+        if (currentScope.equals(PageFlowUtilities.LBL_SCOPE_FACESCONFIG)){
+            createFacesConfigPageNodes(pagesInConfig);
+        } else if (currentScope.equals(PageFlowUtilities.LBL_SCOPE_PROJECT)) {
+            createAllProjectPageNodes(pagesInConfig); 
+        }
         createAllEdges(rules);
-        view.layoutGraph();
+//        view.layoutGraph();
+        
+        view.validateGraph();
         
     }
     
@@ -108,7 +119,9 @@ public class PageFlowController {
         }
     }
     
-    private void createAllPageNodes(List<NavigationRule> rules) {
+    
+    private Collection<String> getFacesConfigPageNames(List<NavigationRule>rules) {
+        // Get all the pages in the faces config.
         Collection<String> pages = new HashSet<String>();
         for( NavigationRule rule : rules ){
             String pageName = rule.getFromViewId();
@@ -119,11 +132,44 @@ public class PageFlowController {
                 pages.add(toPage);
             }
         }
+        return pages;
+    }
+    
+    private void createAllProjectPageNodes(Collection<String> pagesInConfig) {
+        
+        
+        Collection<String> pages = pagesInConfig;
+        
+        //Create all pages in the project...
+        for( FileObject webFile : webFiles ) {
+            String webFileName = webFile.getNameExt();
+            pages.remove(webFileName);
+            DataNode node = null;
+            try {
+                node = (DataNode)(DataObject.find(webFile)).getNodeDelegate();
+            } catch ( DataObjectNotFoundException ex ) {
+                ex.printStackTrace();
+            } catch( ClassCastException cce ){
+                cce.printStackTrace();
+            }
+            view.createNode(node, null, null);
+        }
+        
+        //Create any pages that don't actually exist but are defined specified by the config file.
+        for( String pageName : pages ){
+            AbstractNode node = new AbstractNode(Children.LEAF);
+            node.setName(pageName);
+            view.createNode(node, null, null);
+        }
+    }
+    
+    private void createFacesConfigPageNodes(Collection<String> pagesInConfig) {
+        Collection<String> pages = pagesInConfig;
+        
         for( String pageName : pages ) {
             boolean isFound = false;
             for( FileObject webFile : webFiles ) {
                 String webFileName = webFile.getNameExt();
-//                String webFileName = webFile.getName() + "." + webFile.getExt();
                 if( webFileName.equals(pageName)) {
                     DataNode node = null;
                     try {
@@ -146,8 +192,8 @@ public class PageFlowController {
         }
     }
     
-
-       
-
-            
+    
+    
+    
+    
 }

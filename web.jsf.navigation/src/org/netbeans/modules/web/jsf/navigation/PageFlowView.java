@@ -10,15 +10,14 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComboBox;
@@ -35,20 +34,14 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
-import org.netbeans.modules.web.jsf.navigation.graph.actions.SystemFileSystemSupport;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
-import org.openide.awt.Actions;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -66,7 +59,6 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
     PageFlowView(JSFConfigEditorContext context){
         init();
         pfc = new PageFlowController( context,  this );
-        layoutGraph();
         //        this(context, new InstanceContent());
     }
     
@@ -126,21 +118,34 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         
     }
     
-    /**
-     * Layout or Relayout the Graph Nodes.
-     */
-    protected void layoutGraph(){
-        if(  scene instanceof PageFlowScene ) {
-            ((PageFlowScene)scene).layoutScene();
-        }
-    }
+
     
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
     private static final Image IMAGE_LIST = null; // NOI18N
     
-    private void clearGraph() {
-        scene.removeChildren();
+    /**
+     * 
+     */
+    public void clearGraph() {
+//        scene.removeChildren();
+        
+        //Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
+        Collection<AbstractNode> nodes = new HashSet<AbstractNode>(scene.getNodes());
+        for( AbstractNode node : nodes ){
+            scene.removeNodeWithEdges(node);
+        }
+        scene.validate();
     }
+    
+    /**
+     * 
+     */
+    public void validateGraph() {
+        scene.validate();
+        scene.layoutScene();
+    }
+    
+ 
     
     /**
      * Creates a PageFlowScene node from a pageNode.  The PageNode will generally be some type of DataObject unless
@@ -234,6 +239,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         
     }
     
+
     private static final String PATH_TOOLBAR_FOLDER = "PageFlowEditor/Toolbars"; // NOI18N
     
     
@@ -271,7 +277,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
                 PageFlowUtilities pfu = PageFlowUtilities.getInstance();
                 if ( event.getStateChange() == ItemEvent.SELECTED ) {
                     pfu.setCurrentScope((String)event.getItem());
-                    System.out.println("Item Change Listener State: " + pfu.getCurrentScope());
+                    pfc.setupGraph();
                 }
             }
         });
