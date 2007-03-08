@@ -32,6 +32,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.visual.action</package>
                 <package>org.netbeans.api.visual.anchor</package>
