@@ -1091,15 +1091,23 @@ public class WebForm implements Designer {
         return htmlDomProvider.hasRenderingErrors();
     }
 
-    // XXX Very suspicious, revise it.
-    /** Sets render failed values about a failure in rendering it to HTML.
-     * @param component The component which failed to render
-     * @param exception The exception thrown by the component
-     */
-    private void setRenderFailedValues(MarkupDesignBean renderFailureComponent, Exception renderFailureException) {
-//        renderFailure = exception;
-//        renderFailureComponent = component;
-        htmlDomProvider.setRenderFailedValues(renderFailureComponent, renderFailureException);
+//    // XXX Very suspicious, revise it.
+//    /** Sets render failed values about a failure in rendering it to HTML.
+//     * @param component The component which failed to render
+//     * @param exception The exception thrown by the component
+//     */
+//    private void setRenderFailedValues(MarkupDesignBean renderFailureComponent, Exception renderFailureException) {
+////        renderFailure = exception;
+////        renderFailureComponent = component;
+//        htmlDomProvider.setRenderFailedValues(renderFailureComponent, renderFailureException);
+//    }
+    
+    private void setRenderFailureValues() {
+        htmlDomProvider.setRenderFailureValues();
+    }
+    
+    private boolean hasRenderFailure() {
+        return htmlDomProvider.hasRenderFailure();
     }
 
 //    /** Return the exception associated with the current render failure for this page */
@@ -1138,15 +1146,18 @@ public class WebForm implements Designer {
 ////            (MarkupDesignBean)facesunit.getRenderFailureComponent();
 //// ====
 //        Exception renderFailure = InSyncService.getProvider().getRenderFailure(markupFile);
-        Exception renderFailure = htmlDomProvider.getRenderFailure();
-//        MarkupDesignBean renderFailureComponent = (MarkupDesignBean)InSyncService.getProvider().getRenderFailureComponent(markupFile);
-        MarkupDesignBean renderFailureComponent = htmlDomProvider.getRenderFailureMarkupDesignBean();
         
-// </missing designtime api>
+//        Exception renderFailure = htmlDomProvider.getRenderFailure();
+////        MarkupDesignBean renderFailureComponent = (MarkupDesignBean)InSyncService.getProvider().getRenderFailureComponent(markupFile);
+//        MarkupDesignBean renderFailureComponent = htmlDomProvider.getRenderFailureMarkupDesignBean();
+//        
+//// </missing designtime api>
+//
+//        setRenderFailedValues(renderFailureComponent, renderFailure);
+        setRenderFailureValues();
 
-        setRenderFailedValues(renderFailureComponent, renderFailure);
-
-        if (renderFailure == null) {
+//        if (renderFailure == null) {
+        if (!hasRenderFailure()) {
             // Since we had a successful render now, we should remember this such
             // that if a rendering error happens again, we will show the errorpanel
             setRenderFailureShown(false);
