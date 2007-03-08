@@ -155,6 +155,7 @@ public class VWPFootprintUtilities extends gui.VWPUtilities{
     
     static void deployProject(String project) {
         actionOnProject(project, "Deploy Project");
+        waitForPendingBackgroundTasks();
         MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (run-deploy)");
     }
     
