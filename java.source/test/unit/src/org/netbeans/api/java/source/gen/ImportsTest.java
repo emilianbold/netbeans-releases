@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -63,6 +63,8 @@ public class ImportsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ImportsTest("testIndentedImport2"));
 //        suite.addTest(new ImportsTest("testUnformatted"));
 //        suite.addTest(new ImportsTest("testMissingNewLine"));
+//        suite.addTest(new ImportsTest("testRemoveAllInDefault"));
+//        suite.addTest(new ImportsTest("testRemoveAllInDefault2"));
         return suite;
     }
 
@@ -854,6 +856,86 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.removeCompUnitImport(cut, 1);
+                workingCopy.rewrite(cut, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveAllInDefault() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "import java.util.List;\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Collections;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.removeCompUnitImport(cut, 0);
+                copy = make.removeCompUnitImport(copy, 0);
+                copy = make.removeCompUnitImport(copy, 0);
+                workingCopy.rewrite(cut, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveAllInDefault2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "import java.util.List;\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Collections; // test\n" +
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.removeCompUnitImport(cut, 0);
+                copy = make.removeCompUnitImport(copy, 0);
+                copy = make.removeCompUnitImport(copy, 0);
                 workingCopy.rewrite(cut, copy);
             }
 

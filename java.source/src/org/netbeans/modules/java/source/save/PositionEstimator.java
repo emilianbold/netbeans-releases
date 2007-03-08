@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.source.save;
@@ -339,10 +339,47 @@ abstract class PositionEstimator {
             // end of generalization part
             
             seq.move(sectionStart);
-            moveToSrcRelevant(seq, Direction.BACKWARD);
-            sectionStart = goAfterFirstNewLine(seq);
+            seq.moveNext();
+            Token<JavaTokenId> token;
+            while (seq.movePrevious() && nonRelevant.contains((token = seq.token()).id())) {
+                if (JavaTokenId.LINE_COMMENT == token.id()) {
+                    seq.moveNext();
+                    sectionStart = seq.offset();
+                    break;
+                } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                    break;
+                } else if (JavaTokenId.WHITESPACE == token.id()) {
+                    int indexOf = token.text().toString().indexOf('\n');
+                    if (indexOf > -1) {
+                        sectionStart = seq.offset() + indexOf + 1;
+                    } else {
+                        sectionStart = seq.offset();
+                    }
+                }
+            }
             seq.move(sectionEnd);
-            sectionEnd = goAfterFirstNewLine(seq);
+            seq.movePrevious();
+            while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
+                if (JavaTokenId.LINE_COMMENT == token.id()) {
+                    sectionEnd = seq.offset();
+                    if (seq.moveNext()) {
+                        sectionEnd = seq.offset();
+                    }
+                    break;
+                } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                    break;
+                } else if (JavaTokenId.WHITESPACE == token.id()) {
+                    int indexOf = token.text().toString().lastIndexOf('\n');
+                    if (indexOf > -1) {
+                        sectionEnd = seq.offset() + indexOf + 1;
+                    } else {
+                        sectionEnd += seq.offset() + token.text().length();
+                    }
+                }
+            }
+            System.err.print("SectionToRemove: '");
+            System.err.print(copy.getText().substring(sectionStart, sectionEnd));
+            System.err.println("'");
             return new int[] { sectionStart, sectionEnd };
         }
     }
@@ -784,7 +821,7 @@ abstract class PositionEstimator {
      * important for javac, i.e. line and block comments, empty lines and
      * whitespaces.)
      */
-    static final EnumSet<JavaTokenId> nonRelevant = EnumSet.of(
+    static final EnumSet<JavaTokenId> nonRelevant = EnumSet.<JavaTokenId>of(
             LINE_COMMENT, 
             BLOCK_COMMENT,
             JAVADOC_COMMENT,

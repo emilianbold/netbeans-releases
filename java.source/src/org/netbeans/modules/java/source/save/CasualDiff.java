@@ -166,8 +166,7 @@ public class CasualDiff {
         try {
             posHint = diffPackageStatement(oldT, newT, pointer);
             PositionEstimator est = EstimatorFactory.imports(((CompilationUnitTree) oldT).getImports(), ((CompilationUnitTree) newT).getImports(), workingCopy);
-            int[] pos = diffListImports(oldT.getImports(), newT.getImports(), posHint, est, Measure.DEFAULT, printer);
-            pointer = pos[1];
+            pointer = diffListImports(oldT.getImports(), newT.getImports(), posHint, est, Measure.DEFAULT, printer);
             if (oldT.getTypeDecls().nonEmpty()) {
                 posHint = getOldPos(oldT.getTypeDecls().head);
             } else {
@@ -176,7 +175,7 @@ public class CasualDiff {
             output.writeTo(printer.toString());
             printer.reset(0);
             est = EstimatorFactory.toplevel(((CompilationUnitTree) oldT).getTypeDecls(), ((CompilationUnitTree) newT).getTypeDecls(), workingCopy);
-            pos = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), posHint, est, Measure.DEFAULT, printer);
+            int[] pos = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), posHint, est, Measure.DEFAULT, printer);
             if (pointer < pos[0])
                 output.writeTo(origText.substring(pointer, pos[0]));
             if (pos[1] > pointer) {
@@ -1876,10 +1875,10 @@ public class CasualDiff {
     
     
     /**
-     * Used for diffing lists which does not contain any separator.
-     * (Currently for imports and members diffing.)
+     * Used for diffing lists which does not contain any separator, currently
+     * just for imports.
      */
-    private int[] diffListImports(
+    private int diffListImports(
             List<? extends JCTree> oldList, 
             List<? extends JCTree> newList,
             int localPointer, 
@@ -1887,9 +1886,8 @@ public class CasualDiff {
             Measure measure, 
             VeryPretty printer)
     {
-        int[] ret = new int[] { localPointer, localPointer };
         if (oldList == newList) {
-            return ret;
+            return localPointer;
         }
         assert oldList != null && newList != null;
         
@@ -1899,7 +1897,7 @@ public class CasualDiff {
                 measure
         );
         if (!matcher.match()) {
-            return ret;
+            return localPointer;
         }
         JCTree lastdel = null; // last deleted element
         ResultItem<JCTree>[] result = matcher.getResult();
@@ -1921,14 +1919,14 @@ public class CasualDiff {
             // first import is added and there is only one empty line between
             // package statement and type decl 0.
             // printer.print(aTail.toString());
-            return new int[] { pos, pos };
+            return pos;
         }
 
         // if there has been imports which is removed now
         if (newList.isEmpty() && !oldList.isEmpty()) {
             int[] removalBounds = estimator.sectionRemovalBounds(null);
             copyTo(localPointer, removalBounds[0]);
-            return removalBounds;
+            return removalBounds[1];
         }
         int i = 0;
         // copy to start position
@@ -1950,11 +1948,6 @@ public class CasualDiff {
                             tail = aTail.toString();
                         }
                         head = aHead.toString();
-                        if (ret[0] < 0) ret[0] = pos;
-                        if (ret[1] < 0) ret[1] = pos;
-                    } else {
-                        if (ret[0] < 0) ret[0] = pos;
-                        if (ret[1] < 0) ret[1] = pos;
                     }
                     int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
                     boolean found = false;
@@ -2007,31 +2000,23 @@ public class CasualDiff {
                 case DELETE: {
                     int[] pos = estimator.getPositions(i);
                     lastdel = oldList.get(i);
-                    if (ret[0] < 0) {
-                        ret[0] = pos[0];
-                    }
                     ++i;
-                    ret[1] = pos[1];
                     localPointer = pos[1];
                     break;
                 }
                 case NOCHANGE: {
                     int[] pos = estimator.getPositions(i);
-                    if (ret[0] < 0) {
-                        ret[0] = pos[0];
-                    }
                     if (pos[0] > localPointer && i != 0) {
                         // print fill-in
                         copyTo(localPointer, pos[0], printer);
                     }
-                    copyTo(pos[0], pos[1], printer);
-                    localPointer = ret[1] = pos[1];
+                    copyTo(pos[0], localPointer = pos[1], printer);
                     ++i;
                     break;
                 }
             }
         }
-        return ret;
+        return localPointer;
     }
     
     private boolean isHidden(JCTree t, JCTree parent) {
