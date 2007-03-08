@@ -321,12 +321,12 @@ public final class CssEngineServiceImpl implements CssEngineService {
             return null;
         }
         
-        List<StyleSetting> styleSettings = new ArrayList<StyleSetting>();
+        List styleSettings = new ArrayList();
         for (int i = 0; i < stylesData.length; i++) {
             StyleData sd = stylesData[i];
             styleSettings.add(new StyleSetting(sd.getIndex(), sd.getValue()));
         }
-        return styleSettings.toArray(new StyleSetting[styleSettings.size()]);
+        return (StyleSetting[])styleSettings.toArray(new StyleSetting[styleSettings.size()]);
     }
     
     public void setStyleAttributeForElement(Element element, String value) {
