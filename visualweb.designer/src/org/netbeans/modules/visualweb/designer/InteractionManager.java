@@ -1828,7 +1828,7 @@ public class InteractionManager {
                 if (isLinkingEvent(e)) {
                     int size = 0;
                     ArrayList selections = new ArrayList(size);
-                    ArrayList boxes = new ArrayList(size);
+                    List<CssBox> boxes = new ArrayList<CssBox>(size);
 //                    ArrayList beans = new ArrayList(size);
                     Element[] componentRootElements = new Element[0];
 
