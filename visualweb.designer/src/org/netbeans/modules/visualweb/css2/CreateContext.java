@@ -20,6 +20,7 @@ package org.netbeans.modules.visualweb.css2;
 
 import java.awt.FontMetrics;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
 
@@ -40,13 +41,14 @@ public class CreateContext {
     public BoxList fixedBoxes;
     public ContainerBox prevChangedBox; // used during updates when we modify boxes around target
     public ContainerBox nextChangedBox;
-    private ArrayList visitedForms;
+//    private ArrayList visitedForms;
+    private List<WebForm> visitedForms;
 
     /** Construct a box-creation context for the given webform. */
     public CreateContext() {
         // There will almost never be many page fragments in a page so don't need
         // to use heavy datastructures here -- just a simple list will do
-        visitedForms = new ArrayList(4);
+        visitedForms = new ArrayList<WebForm>(4);
     }
 
     /** Construct a nested box-creation context */
@@ -88,6 +90,6 @@ public class CreateContext {
 
     /** Pop a page from the page visit stack */
     public WebForm popPage() {
-        return (WebForm)visitedForms.remove(visitedForms.size() - 1);
+        return visitedForms.remove(visitedForms.size() - 1);
     }
 }
