@@ -40,6 +40,8 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.fold.FoldHierarchyListener;
+import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.modules.diff.NestableDiffView;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer;
@@ -511,12 +513,19 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
     }
 
     // Code for dispatching events from components to event handlers.
+    private void expandFolds(JEditorPane pane) {
+        final FoldHierarchy fh = FoldHierarchy.get(pane);
+        FoldUtilities.expandAll(fh);
+        fh.addFoldHierarchyListener(new FoldHierarchyListener() {
+            public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+                FoldUtilities.expandAll(fh);
+            }
+        });
+    }
 
     private void expandFolds() {
-        FoldHierarchy fh = FoldHierarchy.get(jEditorPane1.getEditorPane());
-        FoldUtilities.expandAll(fh);
-        fh = FoldHierarchy.get(jEditorPane2.getEditorPane());
-        FoldUtilities.expandAll(fh);
+        expandFolds(jEditorPane1.getEditorPane());
+        expandFolds(jEditorPane2.getEditorPane());
     }
 
     private void initGlobalSizes() {
