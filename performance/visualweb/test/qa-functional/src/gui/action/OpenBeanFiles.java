@@ -38,7 +38,7 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     /** Node to be opened/edited */
     public static Node openNode ;
     
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Open");
+    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     
     /** Creates a new instance of OpenBeanFiles */
     public OpenBeanFiles(String testName) {

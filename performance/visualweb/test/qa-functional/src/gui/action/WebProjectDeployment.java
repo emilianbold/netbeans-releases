@@ -20,7 +20,7 @@
 package gui.action;
 
 import gui.VWPUtilities;
-import ;
+
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -32,7 +32,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class WebProjectDeployment extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     private String targetProject;
