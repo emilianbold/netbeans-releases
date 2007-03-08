@@ -24,7 +24,4 @@ Microsystems, Inc. All Rights Reserved.
          runidetest executor -->
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
 
-    <!-- Opens project at specified location -->
-    <property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/>
-    
 </project>
