@@ -107,9 +107,9 @@ public class CommentsTest extends GeneratorTestMDRCompat {
                         "    int c; // trail\n" +
                         "}";
                 BlockTree block = make.createMethodBody(method, bodyText);
-                CommentHandler comments = workingCopy.getCommentHandler();
-                mapComments(block, bodyText, workingCopy, comments);
-                workingCopy.rewrite(method.getBody(), block);
+//                CommentHandler comments = workingCopy.getCommentHandler();
+//                mapComments(block, bodyText, workingCopy, comments);
+//                workingCopy.rewrite(method.getBody(), block);
             }
 
             public void cancel() {
@@ -143,9 +143,9 @@ public class CommentsTest extends GeneratorTestMDRCompat {
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
-                CommentHandler comments = workingCopy.getCommentHandler();
-                CommentSet s = comments.getComments(method.getBody().getStatements().get(0));
-                System.err.println(s);
+//                CommentHandler comments = workingCopy.getCommentHandler();
+//                CommentSet s = comments.getComments(method.getBody().getStatements().get(0));
+//                System.err.println(s);
             }
 
             public void cancel() {
