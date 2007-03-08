@@ -1827,7 +1827,7 @@ public class InteractionManager {
             } else {
                 if (isLinkingEvent(e)) {
                     int size = 0;
-                    ArrayList selections = new ArrayList(size);
+                    List<Rectangle> selections = new ArrayList<Rectangle>(size);
                     List<CssBox> boxes = new ArrayList<CssBox>(size);
 //                    ArrayList beans = new ArrayList(size);
                     Element[] componentRootElements = new Element[0];
