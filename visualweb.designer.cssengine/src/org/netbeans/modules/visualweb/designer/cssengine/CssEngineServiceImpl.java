@@ -952,7 +952,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
         Document fakeDocument = new FakeDocument();
         createCssEngineForDocument(fakeDocument, null);
         
-        List parseErrors = new ArrayList();
+        List<CssSyntaxErrorInfo> parseErrors = new ArrayList<CssSyntaxErrorInfo>();
         ErrorHandler handler = new DefaultErrorHandler(parseErrors);
         setErrorHandlerForDocument(fakeDocument, handler);
 
@@ -963,7 +963,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
         } catch (javax.swing.text.BadLocationException e) {
             ErrorManager.getDefault().notify(e);
 
-            return (CssSyntaxErrorInfo[])parseErrors.toArray(new CssSyntaxErrorInfo[parseErrors.size()]);
+            return parseErrors.toArray(new CssSyntaxErrorInfo[parseErrors.size()]);
         }
 
 //        engine.parseStyleSheet(rules, null, "all", null);
@@ -971,7 +971,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        engine.setErrorHandler(null);
         setErrorHandlerForDocument(fakeDocument, null);
         
-        return (CssSyntaxErrorInfo[])parseErrors.toArray(new CssSyntaxErrorInfo[parseErrors.size()]);
+        return parseErrors.toArray(new CssSyntaxErrorInfo[parseErrors.size()]);
     }
 
     public URL getBackgroundImageUrlForElement(Element element, URL baseUrl) {
@@ -1027,8 +1027,8 @@ public final class CssEngineServiceImpl implements CssEngineService {
     
     // XXX  Add the error type and error code also.
     private static class DefaultErrorHandler implements ErrorHandler {
-        private final List parseErrors;
-        public DefaultErrorHandler(List parseErrors){
+        private final List<CssSyntaxErrorInfo> parseErrors;
+        public DefaultErrorHandler(List<CssSyntaxErrorInfo> parseErrors){
             this.parseErrors = parseErrors;
         }
         public void warning(CSSParseException cpe) {
