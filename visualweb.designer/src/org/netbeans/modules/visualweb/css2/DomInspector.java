@@ -866,8 +866,8 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 
     
     private static Node.Property getRenderStreamProperty(final CssBox box) {
-	return new PropertySupport.ReadOnly("renderStream", String.class, "renderStream", getBundleString("LBL_RenderStream")) {
-	    public Object getValue() {
+	return new PropertySupport.ReadOnly<String>("renderStream", String.class, "renderStream", getBundleString("LBL_RenderStream")) {
+	    public String getValue() {
 //		MarkupDesignBean bean = box.getDesignBean();
 //                MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
                 Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
@@ -905,8 +905,8 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
     }
     
     private static Node.Property getLocalStylesProperty(final CssBox box) {
-	return new PropertySupport.ReadOnly("localStyles", String.class, "localStyles", getBundleString("LBL_LocalStyles")) {
-	    public Object getValue() {
+	return new PropertySupport.ReadOnly<String>("localStyles", String.class, "localStyles", getBundleString("LBL_LocalStyles")) {
+	    public String getValue() {
 		Element element = box.getElement();
 		if (element != null) {
 		    String style = element.getAttribute(HtmlAttribute.STYLE);
