@@ -321,12 +321,12 @@ public final class CssEngineServiceImpl implements CssEngineService {
             return null;
         }
         
-        List styleSettings = new ArrayList();
+        List<StyleSetting> styleSettings = new ArrayList<StyleSetting>();
         for (int i = 0; i < stylesData.length; i++) {
             StyleData sd = stylesData[i];
             styleSettings.add(new StyleSetting(sd.getIndex(), sd.getValue()));
         }
-        return (StyleSetting[])styleSettings.toArray(new StyleSetting[styleSettings.size()]);
+        return styleSettings.toArray(new StyleSetting[styleSettings.size()]);
     }
     
     public void setStyleAttributeForElement(Element element, String value) {
@@ -720,18 +720,18 @@ public final class CssEngineServiceImpl implements CssEngineService {
         }
 
         int count = map.size();
-        ArrayList keys = new ArrayList(count);
-        Iterator it = map.keys();
+        List<String> keys = new ArrayList<String>(count);
+        Iterator<String> it = map.keys();
 
         while (it.hasNext()) {
-            Object o = it.next();
-            keys.add(o);
+            String string = it.next();
+            keys.add(string);
         }
 
         keys.add("inherit"); // NOI18N
         Collections.sort(keys);
 
-        return (String[])keys.toArray(new String[keys.size()]);
+        return keys.toArray(new String[keys.size()]);
     }
 
     private StringMap getIdentifiers(String property) {
