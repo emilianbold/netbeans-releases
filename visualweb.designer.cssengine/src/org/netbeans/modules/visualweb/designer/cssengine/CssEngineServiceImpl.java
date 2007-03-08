@@ -764,7 +764,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
         if (properties == null) {
 //            ValueManager[] vms = XhtmlCssEngine.XHTML_VALUE_MANAGERS;
             ValueManager[] vms = getXhtmlValueManagers();
-            ArrayList list = new ArrayList(vms.length);
+            List<String> list = new ArrayList<String>(vms.length);
 
             for (int i = 0, n = vms.length; i < n; i++) {
                 String property = vms[i].getPropertyName();
@@ -775,7 +775,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
             }
 
             Collections.sort(list);
-            properties = (String[])list.toArray(new String[list.size()]);
+            properties = list.toArray(new String[list.size()]);
         }
 
         return properties;
