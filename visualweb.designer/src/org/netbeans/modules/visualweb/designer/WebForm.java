@@ -30,7 +30,6 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.PageBox;
-import com.sun.rave.designtime.DesignBean;
 import org.netbeans.modules.visualweb.designer.DocumentCache;
 import org.netbeans.modules.visualweb.designer.ImageCache;
 import java.awt.Dimension;
@@ -2319,25 +2318,25 @@ public class WebForm implements Designer {
             return null;
         }
 
-        public boolean editEventHandlerForDesignBean(DesignBean component) {
-            return false;
-        }
+//        public boolean editEventHandlerForDesignBean(DesignBean component) {
+//            return false;
+//        }
 
 //        public boolean isSpecialBean(DesignBean designBean) {
 //            return false;
 //        }
         
-        public Element getElement(DesignBean designBean) {
-            return null;
-        }
+//        public Element getElement(DesignBean designBean) {
+//            return null;
+//        }
         
         public Element getSourceElement(Element componentRootElement) {
             return null;
         }
 
-        public Element getMarkupBeanElement(DesignBean designBean) {
-            return null;
-        }
+//        public Element getMarkupBeanElement(DesignBean designBean) {
+//            return null;
+//        }
 
 //        public boolean isFacesBean(MarkupDesignBean bean) {
 //            return false;
@@ -2410,9 +2409,9 @@ public class WebForm implements Designer {
             return false;
         }
 
-        public Element getRenderedElement(DesignBean designBean) {
-            return null;
-        }
+//        public Element getRenderedElement(DesignBean designBean) {
+//            return null;
+//        }
 
         public String getRegionDisplayName(Element regionElement) {
             return regionElement == null ? null : regionElement.getLocalName();
