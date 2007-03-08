@@ -55,29 +55,36 @@ public class Utilities {
 
     private static boolean caseSensitive = true;
     private static SettingsChangeListener settingsListener = new SettingsListener();
-
-    static {
-        Settings.addSettingsChangeListener(settingsListener);
-        setCaseSensitive(SettingsUtil.getBoolean(JavaKit.class,
-                ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-                ExtSettingsDefaults.defaultCompletionCaseSensitive));
-    }
+    private static boolean inited;
     
+
     public static boolean startsWith(String theString, String prefix) {
         if (theString == null || theString.length() == 0 || ERROR.equals(theString))
             return false;
         if (prefix == null || prefix.length() == 0)
             return true;
-        return caseSensitive ? theString.startsWith(prefix) :
+        return isCaseSensitive() ? theString.startsWith(prefix) :
             theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
     
     public static boolean isCaseSensitive() {
+        lazyInit();
         return caseSensitive;
     }
 
     public static void setCaseSensitive(boolean b) {
+        lazyInit();
         caseSensitive = b;
+    }
+    
+    private static void lazyInit() {
+        if (!inited) {
+            inited = true;
+            Settings.addSettingsChangeListener(settingsListener);
+            setCaseSensitive(SettingsUtil.getBoolean(JavaKit.class,
+                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
+                    ExtSettingsDefaults.defaultCompletionCaseSensitive));
+        }
     }
 
     public static TreePath getPathElementOfKind(Tree.Kind kind, TreePath path) {
