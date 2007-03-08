@@ -136,7 +136,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     public static void closeUIGesturesToolbar(){
         closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
                 Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-                "UIGestures");
+                Bundle.getStringTrimmed("org.netbeans.modules.uihandler.Bundle","Toolbars/UIGestures"));
         
     }
     
