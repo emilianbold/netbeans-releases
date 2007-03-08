@@ -37,6 +37,7 @@ import java.math.BigInteger;
 import java.util.Set;
 import java.util.HashSet;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.libraries.Library;
@@ -337,11 +338,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
                     // The JSP Configuration
                     if (!J2eeModule.J2EE_13.equals(j2eeLevel)) {
-                        JspConfig jspConfig = (JspConfig)ddRoot.addBean("JspConfig"); // NOI18N
+                        JspConfig jspConfig = (JspConfig)ddRoot.createBean("JspConfig"); // NOI18N
                         JspPropertyGroup jspGroup = (JspPropertyGroup)jspConfig.createBean("JspPropertyGroup"); // NOI18N
                         jspGroup.addUrlPattern("*.jspf");
                         jspGroup.setIsXml(true);
                         jspConfig.addJspPropertyGroup(jspGroup);
+                        try {
+                            ddRoot.addJspConfig(jspConfig);
+                        } catch (VersionNotSupportedException e) {
+                            // already exclude J2EE 1.3 project here
+                        }
                     }
                     
                     if (isMyFaces) {
