@@ -202,7 +202,7 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
     private void jButtonClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClassActionPerformed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-//TODO: RETOUCHE                
+//TODO: RETOUCHE FQN search
 //                FQNSearch.showFastOpen(jTextFieldClass);
             }
         });
