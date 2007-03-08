@@ -504,7 +504,6 @@ public class ADDrawingAreaControl extends ApplicationView
    private List m_selectedNodesGroup = new ArrayList();
    private List tempList = new ArrayList(); //temp list for use in fireSelectEvent
    private String mSelectedPaletteBttn;
-   private boolean handleKeyTyped = true;
    
    public static String DIRTYSTATE = "dirty"; // NOI18N;
 
@@ -11309,8 +11308,15 @@ public class ADDrawingAreaControl extends ApplicationView
            }
            else
            {
-	       if (handleKeyTyped) {		   
-		   handleCharTyped(e.getKeyChar());
+	       if ( ! (e.isAltDown() || e.isMetaDown())) 
+	       {
+		   char ch = e.getKeyChar();		   
+		   if ((int)ch != 8       // don't need backspace key_typed 
+		       && (int)ch != 127  // don't need delete key_typed, see 4904441 for example
+		       && (int)ch != 10)  // don't need enter key_typed either
+		   {
+		       handleCharTyped(e.getKeyChar());
+		   }
 	       }
                setIsDirty(true);
            }
@@ -11320,7 +11326,6 @@ public class ADDrawingAreaControl extends ApplicationView
    public void keyPressed(KeyEvent e)
    {
       boolean handled = false;
-      handleKeyTyped = false;
       if (getReadOnly() == false)
       {
          //if the key was typed while one of the presentation elements was selected,
@@ -11370,7 +11375,6 @@ public class ADDrawingAreaControl extends ApplicationView
              getGraphWindow().selectGroup(m_selectedNodesGroup, true);
 	     handled = true;
          }
-	 handleKeyTyped = (! handled) && (! foundAccelKey);
       }
    }
    

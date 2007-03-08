@@ -149,7 +149,14 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
    private JProjectTree m_ProjectTree = null;
    // transient private ISwingProjectTreeModel m_Model = null;
    private int caretPosBefore = -1;
-   private boolean processInKeyTyped = true;
+
+   // state maintenance variables for in-between InputMethodTextChanged calls
+   private int ime_SelectionStartPos = 0;
+   private int ime_SelectionEndPos = 0;
+   private int ime_InitialLoc = 0;
+   private boolean ime_Cached = false; 
+   private StringBuffer ime_CachedChars = null;
+
    /**
     *
     */
@@ -287,10 +294,8 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
 
          public void keyTyped(KeyEvent e)
          {
-	    if (processInKeyTyped) {
-		handleTypedKey(e);
-		e.consume();
-	    }
+	    handleTypedKey(e);
+	    e.consume();
          }
 
          public void keyPressed(KeyEvent e)
@@ -357,13 +362,22 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
 
    private void handleTypedKey(KeyEvent e)
    {
-      char ch = e.getKeyChar();
-      handleTypedChar(ch);
+       if ( ! (e.isAltDown() || e.isControlDown() || e.isMetaDown())) 
+       {
+	   char ch = e.getKeyChar();
+	   if ((int)ch != 8       // don't need backspace key_typed 
+	       && (int)ch != 127  // don't need delete key_typed, see 4904441
+	       && (int)ch != 10)  // don't need enter key_typed either
+	   {
+	       handleTypedChar(ch);
+	   }
+       }
    }
 
    public void handleTypedChar(char ch) {
       //something is typed
       int currPos = getCurrentPosition();
+      m_InitialLoc = getCurrentPosition();
       //System.out.println("handleTypedChar:currPos1="+currPos);
       
       IEditControlField field = getCurrentField();
@@ -378,6 +392,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
       //         toIns = String.valueOf(Character.toLowerCase(ch));
       //      }
       boolean selectedText = false;
+      setSel(m_Field.getSelectionStart(), m_Field.getSelectionEnd());
       if (m_SelectionEndPos != m_SelectionStartPos)
       {
          selectedText = true;
@@ -417,7 +432,6 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
                      {
                         m_Field.setCaretPosition(text.length());
                      }
-		     m_InitialLoc = getCurrentPosition();
                   }
                }
             }
@@ -563,7 +577,6 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
 
    public void handleKeyDown(KeyEvent e)
    {
-	   processInKeyTyped = false; 
 	   int keyCode = e.getKeyCode();	   
 	   m_InitialLoc = getCurrentPosition();
 	   IEditControlField initField = getCurrentField();
@@ -775,7 +788,6 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
 			   else
 			   {
 			           //handleTypedKey(e);
-			           processInKeyTyped = true;
 				   consumeEvent = false;
 				   resetSel = false;
 			   }
@@ -2251,44 +2263,66 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
     */
    public void inputMethodTextChanged(InputMethodEvent event)
    {
-      //int changedCount = event.getCommittedCharacterCount();
+       if (!ime_Cached) 
+       {
+	   ime_SelectionStartPos = m_Field.getSelectionStart();
+	   ime_SelectionEndPos = m_Field.getSelectionEnd();
+	   if (ime_SelectionStartPos != ime_SelectionEndPos) 
+           {
+	       ime_InitialLoc = Math.min(ime_SelectionStartPos, ime_SelectionEndPos);
+	   } 
+	   else 
+	   {
+	       ime_InitialLoc = m_Field.getCaretPosition();
+	   }
+	   ime_Cached = true;
+	   ime_CachedChars = new StringBuffer();
+       }
+
       int committedCharacterCount = event.getCommittedCharacterCount();
-      //Log.out("committedCharacterCount="+committedCharacterCount);
-      if (committedCharacterCount == 0) 
+      CharacterIterator iter = event.getText();
+      if (iter != null && ( (iter.getEndIndex() - iter.getBeginIndex()) > committedCharacterCount)) 
       {
-          java.awt.font.TextHitInfo curCaret = event.getCaret();
-          if (curCaret != null) 
-          {
-              int hitCharIndex =  curCaret.getCharIndex();
-              if (hitCharIndex == 1) 
-              {
-                  caretPosBefore =  m_Field.getCaretPosition();
-              }
-              //Log.out("inputMethodTextChanged: caretPosBefore="+caretPosBefore + " currCaretPos="+ m_Field.getCaretPosition());
-          }
-          Log.out(event.paramString());   
-      }
-      
-      if (committedCharacterCount > 0)
-      {             
-	  //we might have something selected on the field, so reset our selection start and end.
-	 setSel(m_Field.getSelectionStart(), m_Field.getSelectionEnd());
+	  if (ime_CachedChars != null) 
+	  { 
+	      char ch = iter.first();
+	      for (int i = 0; i < committedCharacterCount; i++)
+	      {	      
+		  ime_CachedChars.append(ch);
+		  ch = iter.next();
+	      }
+	  }
+      } 
+      else 
+      {
 
 	 // Push the caret back as part of faking the text input.
-	 int pos = m_Field.getCaretPosition();
-	 if (caretPosBefore > -1) {
-	     pos = caretPosBefore - 1;      
-	     setCurrentPosition(pos);
-	     // until it will be set again in the block above
-	     caretPosBefore = -1;
-	 }
+	 int pos = ime_InitialLoc;
+	 setCurrentPosition(pos);
 	 // Fake the key input since handleTypedChar() does the right things.
-	 CharacterIterator iter = event.getText();
-	 for (char ch = iter.first(); ch != CharacterIterator.DONE; ch = iter.next())
-         {
-	     handleTypedChar(ch);
-	     setCurrentPosition(++pos);
+	   
+	 if (ime_CachedChars != null) 
+	 { 
+	     for (int i = 0; i < ime_CachedChars.length() ; i++) 
+	     {
+		 handleTypedChar(ime_CachedChars.charAt(i));
+		 setCurrentPosition(++pos);	       
+	     }
 	 }
+
+	 if (iter != null) 
+	 {
+	     for (char ch = iter.first(); ch != CharacterIterator.DONE; ch = iter.next())
+	     {
+		 handleTypedChar(ch);
+		 setCurrentPosition(++pos);
+	     }
+	 }	 
+	 for(int i = ime_SelectionStartPos; i < ime_SelectionEndPos; i++) {
+	     m_Translator.handleKeyDown(127);
+	 }	   
+	 ime_Cached = false;
+	 ime_CachedChars = null;
         
 	 event.consume();
        
