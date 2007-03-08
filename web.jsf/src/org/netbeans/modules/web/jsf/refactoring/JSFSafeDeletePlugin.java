@@ -19,20 +19,7 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
-import java.util.List;
-//TODO: RETOUCHE
-//import org.netbeans.jmi.javamodel.Element;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.modules.javacore.internalapi.ExternalChange;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-//import org.netbeans.modules.refactoring.api.Problem;
-//import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
-//import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-//import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-//import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.text.PositionBounds;
+//TODO: RETOUCHE refactoring
 
 /**
  *

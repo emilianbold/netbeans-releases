@@ -21,29 +21,31 @@ package org.netbeans.modules.web.jsf.palette.items;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.DefaultComboBoxModel;
+import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.classpath.ClassPath;
-//TODO: RETOUCHE
-//import org.netbeans.modules.j2ee.common.FQNSearch;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
  * @author  Pavel Buzek
  */
-public class JsfFormCustomizer extends javax.swing.JPanel implements DocumentListener {
+public final class JsfFormCustomizer extends javax.swing.JPanel implements DocumentListener {
     
     private Dialog dialog = null;
     private DialogDescriptor descriptor = null;
     private boolean dialogOK = false;
 
-    private boolean hasModuleJsf;
+    private final boolean hasModuleJsf;
     JsfForm jsfTable;
     JTextComponent target;
             
@@ -61,17 +63,13 @@ public class JsfFormCustomizer extends javax.swing.JPanel implements DocumentLis
         
         dialogOK = false;
         
-        String displayName = "";
-        try {
-            displayName = NbBundle.getBundle("org.netbeans.modules.web.jsf.palette.items.resources.Bundle").getString("NAME_jsp-JsfForm"); // NOI18N
-        }
-        catch (Exception e) {}
+        String displayName = NbBundle.getMessage(JsfFormCustomizer.class, "NAME_jsp-JsfForm");
         
         descriptor = new DialogDescriptor
                 (this, NbBundle.getMessage(JsfFormCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
-                     public void actionPerformed(ActionEvent e) {
+                     public void actionPerformed(ActionEvent actionEvent) {
                         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
                             evaluateInput();
                             dialogOK = true;
@@ -80,7 +78,6 @@ public class JsfFormCustomizer extends javax.swing.JPanel implements DocumentLis
 		     }
 		 } 
                 );
-        
         checkStatus();
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
@@ -239,7 +236,7 @@ public class JsfFormCustomizer extends javax.swing.JPanel implements DocumentLis
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        //TODO: RETOUCHE
+        //TODO: RETOUCHE FQN search
 //        FQNSearch.showFastOpen(classTextField);
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -260,23 +257,27 @@ public class JsfFormCustomizer extends javax.swing.JPanel implements DocumentLis
             detail.setEnabled(true);
             edit.setEnabled(true);
         }
-        //TODO: RETOUCHE
-//        boolean validClassName = empty.isSelected() || null != JMIUtils.findClass(classTextField.getText());
-//        descriptor.setValid(hasModuleJsf && validClassName);
-//        errorField.setText(hasModuleJsf ? 
-//                (validClassName ? "" : java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_InvalidClassName")) :
-//                java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_NoJSF"));
+        boolean validClassName = false;
+        try {
+            validClassName = empty.isSelected() || classExists(classTextField);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        descriptor.setValid(hasModuleJsf && validClassName);
+        errorField.setText(hasModuleJsf ? 
+                (validClassName ? "" : java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_InvalidClassName")) :
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_NoJSF"));
     }
 
-    public void insertUpdate(DocumentEvent e) {
+    public void insertUpdate(DocumentEvent documentEvent) {
         checkStatus();
     }
 
-    public void removeUpdate(DocumentEvent e) {
+    public void removeUpdate(DocumentEvent documentEvent) {
         checkStatus();
     }
 
-    public void changedUpdate(DocumentEvent e) {
+    public void changedUpdate(DocumentEvent documentEvent) {
         checkStatus();
     }
     
@@ -295,5 +296,19 @@ public class JsfFormCustomizer extends javax.swing.JPanel implements DocumentLis
     private javax.swing.ButtonGroup populate;
     private javax.swing.ButtonGroup viewType;
     // End of variables declaration//GEN-END:variables
+    
+    protected static boolean classExists(final JTextComponent jTextComponent) throws IOException {
+        final boolean[] result = new boolean[] { false };
+        FileObject fileObject = JsfForm.getFO(jTextComponent);
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement(jTextComponent.getText());
+                result[0] = typeElement != null;
+            }
+        }, true);
+        return result[0];
+    }
     
 }

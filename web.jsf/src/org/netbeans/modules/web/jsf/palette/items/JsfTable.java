@@ -29,11 +29,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -103,7 +101,7 @@ public final class JsfTable implements ActiveEditorDrop {
         }
         stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable}));
         
-        FileObject fileObject = getFileObject(target);
+        FileObject fileObject = JsfForm.getFO(target);
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
@@ -173,7 +171,7 @@ public final class JsfTable implements ActiveEditorDrop {
     
     public String[] getMethodsForBean(final ManagedBean bean, JTextComponent target) throws IOException {
         final List<String> result = new ArrayList<String>();
-        FileObject fileObject = getFileObject(target);
+        FileObject fileObject = JsfForm.getFO(target);
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
@@ -209,14 +207,6 @@ public final class JsfTable implements ActiveEditorDrop {
     
     public void setFormType(int formType) {
         this.formType = formType;
-    }
-    
-    protected static FileObject getFileObject(JTextComponent jTextComponent) {
-        Document doc = jTextComponent.getDocument();
-        if (doc != null) {
-            return NbEditorUtilities.getFileObject(doc);
-        }
-        return null;
     }
     
 }

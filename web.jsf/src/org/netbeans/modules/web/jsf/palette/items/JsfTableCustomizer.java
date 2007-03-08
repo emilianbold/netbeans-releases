@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -33,6 +34,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -44,7 +46,7 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
     private DialogDescriptor descriptor = null;
     private boolean dialogOK = false;
 
-    private boolean hasModuleJsf;
+    private final boolean hasModuleJsf;
     JsfTable jsfTable;
     JTextComponent target;
             
@@ -62,15 +64,10 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
         
         dialogOK = false;
         
-        String displayName = "";
-        try {
-            displayName = NbBundle.getBundle("org.netbeans.modules.web.jsf.palette.items.resources.Bundle").getString("NAME_jsp-JsfTable"); // NOI18N
-        }
-        catch (Exception e) {}
-        
+        String displayName = NbBundle.getMessage(JsfTableCustomizer.class, "NAME_jsp-JsfTable"); // NOI18N
         
         descriptor = new DialogDescriptor
-                (this, NbBundle.getMessage(JsfFormCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
+                (this, NbBundle.getMessage(JsfTableCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent event) {
@@ -191,7 +188,7 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         
-//TODO: RETOUCHE
+//TODO: RETOUCHE FQN search
 //FQNSearch.showFastOpen(classTextField);
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -207,12 +204,16 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
             classTextField.setEnabled(true);
             jButton1.setEnabled(true);
         }
-//TODO: RETOUCHE
-//        boolean validClassName = empty.isSelected() || null != JMIUtils.findClass(classTextField.getText());
-//        descriptor.setValid(hasModuleJsf && validClassName);
-//        errorField.setText(hasModuleJsf ? 
-//                (validClassName ? "" : java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_InvalidClassName")) :
-//                java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_NoJSF"));
+        boolean validClassName = false;
+        try {
+            validClassName = empty.isSelected() || JsfFormCustomizer.classExists(classTextField);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        descriptor.setValid(hasModuleJsf && validClassName);
+        errorField.setText(hasModuleJsf ? 
+                (validClassName ? "" : java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_InvalidClassName")) :
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_NoJSF"));
     }
 
     public void insertUpdate(DocumentEvent event) {

@@ -19,17 +19,9 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
-import java.util.Collection;
-import java.util.List;
-//TODO: RETOUCHE
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Resource;
-//import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
-//import org.netbeans.modules.refactoring.api.Problem;
-//import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-//import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
 
+//TODO: RETOUCHE refactoring
 /**
  *
  * @author Petr Pisl

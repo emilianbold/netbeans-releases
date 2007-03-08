@@ -21,14 +21,13 @@ package org.netbeans.modules.web.jsf.refactoring;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-//TODO: RETOUCHE
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-//import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-//import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+
+//TODO: RETOUCHE refactoring
 
 /**
  *
@@ -59,7 +58,6 @@ public class JSFRefactoringFactory implements RefactoringPluginFactory {
             LOGGER.fine("Where used refactoring");
             return new JSFWhereUsedPlugin((WhereUsedQuery)refactoring);
         }
-        //TODO: RETOUCHE
 //        if (refactoring instanceof MoveClassRefactoring) {
 //            err.log("Move class refactoring (also rename package is move class refactoring)");
 //            return new JSFMoveClassPlugin((MoveClassRefactoring)refactoring);
