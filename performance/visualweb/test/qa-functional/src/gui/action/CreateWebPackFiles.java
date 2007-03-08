@@ -19,11 +19,14 @@
 
 package gui.action;
 
+import gui.VWPUtilities;
+
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -42,14 +45,13 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     
     private int index;
     private static final String project_name = "VisualWebProject";
+    
     /**
      * Creates a new instance of CreateWebPackFiles
      * @param testName the name of the test
      */
     public CreateWebPackFiles(String testName) {
         super(testName);
-        expectedTime = 18000;
-        WAIT_AFTER_OPEN=20000;
     }
     
     /**
@@ -59,8 +61,6 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
      */
     public CreateWebPackFiles(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
     }
     
     public static NbTestSuite suite() {
@@ -72,35 +72,41 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     }  
     
     public void testCreateJSPPage(){
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=15000;
         docname = "JSFPage"; //NOI18N
         doccategory = "Visual Web"; //NOI18N
         doctype ="Page"; //NOI18N
 	docfolder = "web";
 	suffix = "";
         index = 1;
-        projectfolder = "Web Pages";
+        projectfolder = VWPUtilities.WEB_PAGES;
 	doMeasurement();
     }
     
     public void testCreateJSPFragment(){
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=15000;
         docname = "JSFFragment"; //NOI18N
         doccategory = "Visual Web"; //NOI18N
         doctype = "Page Fragment"; //NOI18N
 	docfolder = "web";
 	suffix = "";
         index = 1;
-        projectfolder = "Web Pages";
+        projectfolder = VWPUtilities.WEB_PAGES;
 	doMeasurement();
     }
     
     public void testCreateCSSTable(){
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=5000;
 	docname = "CSSTable"; //NOI18N
         doccategory = "Other"; //NOI18N
         doctype = "Cascading Style Sheet"; //NOI18N
-	docfolder = "web" + java.io.File.separatorChar + "resources";
+	docfolder = "web" + java.io.File.separatorChar + "resources"; // NOI18N
 	suffix = ".css";
         index = 1;
-        projectfolder = "Web Pages"+"|"+"resources";
+        projectfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N
 	doMeasurement();
     }
     
@@ -145,24 +151,22 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     
     private void cleanupTest() {
         log(":: do cleanup.....");
-        Node projectRoot = new ProjectsTabOperator().getProjectRootNode(project_name);        
-        Node objNode = new Node(projectRoot.tree(),projectfolder+"|"+ docname+"_"+(index)+suffix);
+        Node projectRootNode = new ProjectsTabOperator().getProjectRootNode(project_name);        
+        Node objNode = new Node(projectRootNode,projectfolder+"|"+ docname+"_"+(index)+suffix);
         objNode.select();
         log(":: Document: "+docname+"_"+(index)+suffix);
         log(":: Selected: "+objNode.getTreePath().toString());
         
-        objNode.performPopupAction("Delete");
-        String dialogName = org.netbeans.jellytools.Bundle.getString("com.sun.rave.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle");
-        
-        new NbDialogOperator(dialogName).ok();
+        new DeleteAction().performAPI(objNode);
+        new NbDialogOperator("Confirm Object Deletion").yes(); //NOI18N
         log(":: cleanup passed");
-        
     }
+    
     protected void shutdown() {
         log("::shutdown");
         super.shutdown();
-
     }
+    
     public static void main(String[] args) {
        junit.textui.TestRunner.run(suite()); 
     }

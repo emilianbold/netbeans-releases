@@ -23,7 +23,6 @@ package gui;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyException;
 
 /**
  * Utilities for Performance tests, workarrounds, often used methods, ...
