@@ -1986,13 +1986,10 @@ public class CasualDiff {
                         }
                         printer.print(head);
                         int old = printer.indent();
-                        VeryPretty inPrint = new VeryPretty(context, JavaFormatOptions.getDefault());
-                        inPrint.reset(old);
-                        inPrint.enclClassName = printer.enclClassName;
-                        if (LineInsertionType.BEFORE == estimator.lineInsertType()) inPrint.newline();
-                        inPrint.print(item.element);
-                        if (LineInsertionType.AFTER == estimator.lineInsertType()) inPrint.newline();
-                        printer.print(inPrint.toString());
+                        printer.enclClassName = printer.enclClassName;
+                        if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
+                        printer.print(item.element);
+                        if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
                         printer.undent(old);
                     }
                     break;
