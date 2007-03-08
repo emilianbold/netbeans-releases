@@ -38,7 +38,7 @@ import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
-import org.netbeans.modules.web.jsf.wizards.JSFClinetGenerator;
+import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
 
@@ -133,7 +133,7 @@ public final class JsfTable implements ActiveEditorDrop {
                 String name = methodName.substring(3);
                 String propName = name.substring(0,1).toLowerCase() + name.substring(1);
                 if (setupDetail != null && JsfForm.isId(controller, method, fieldAccess)) {
-                    String managedBeanName = JSFClinetGenerator.getManagedBeanName(bean.getSimpleName().toString());
+                    String managedBeanName = JSFClientGenerator.getManagedBeanName(bean.getSimpleName().toString());
                     stringBuffer.append(MessageFormat.format(ITEM [3], new Object [] {name, variable, propName, propName, managedBeanName + "." + setupDetail}));
                 } else if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
                     //param 3 - temporal, param 4 - date/time format
@@ -147,8 +147,8 @@ public final class JsfTable implements ActiveEditorDrop {
                     stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
                     //links to related objects -- does not work correctly for composite IDs
                     //                } else if (isRelationship == JsfForm.REL_TO_ONE) {
-                    //                    String managedBeanName = JSFClinetGenerator.getManagedBeanName(JSFClinetGenerator.simpleClassName(methods[i].getType().getName()));
-                    //                    String relatedIdProp = JSFClinetGenerator.getPropNameFromMethod(JsfForm.getIdGetter(fieldAccess, (JavaClass) methods[i].getType()).getName());
+                    //                    String managedBeanName = JSFClientGenerator.getManagedBeanName(JSFClientGenerator.simpleClassName(methods[i].getType().getName()));
+                    //                    String relatedIdProp = JSFClientGenerator.getPropNameFromMethod(JsfForm.getIdGetter(fieldAccess, (JavaClass) methods[i].getType()).getName());
                     //                    sb.append(MessageFormat.format(ITEM [3], new Object [] {name, variable, propName + "." + relatedIdProp , relatedIdProp, managedBeanName + "." + setupDetail}));
                 }
             }

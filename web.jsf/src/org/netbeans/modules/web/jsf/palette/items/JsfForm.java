@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
-import org.netbeans.modules.web.jsf.wizards.JSFClinetGenerator;
+import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -366,7 +366,7 @@ public final class JsfForm implements ActiveEditorDrop {
             if (methodName.startsWith("get")) {
                 int isRelationship = isRelationship(controller, method, fieldAccess);
                 String name = methodName.substring(3);
-                String propName = JSFClinetGenerator.getPropNameFromMethod(methodName);
+                String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
                 if (formType == FORM_TYPE_NEW && 
                         ((isId(controller, method, fieldAccess) && isGenerated(controller, method, fieldAccess)) || 
                         isReadOnly(controller.getTypes(), method))) {
@@ -397,7 +397,7 @@ public final class JsfForm implements ActiveEditorDrop {
             String idProperty, boolean isInjection, StringBuffer stringBuffer) {
         ExecutableElement methods [] = getEntityMethods(bean);
         String simpleClass = bean.getSimpleName().toString();
-        String managedBean = JSFClinetGenerator.getManagedBeanName(simpleClass);
+        String managedBean = JSFClientGenerator.getManagedBeanName(simpleClass);
         boolean fieldAccess = isFieldAccess(bean);
         //generate tables of objects with ToMany relationships
         if (formType == FORM_TYPE_DETAIL) {
@@ -406,7 +406,7 @@ public final class JsfForm implements ActiveEditorDrop {
                 if (methodName.startsWith("get")) {
                     int isRelationship = isRelationship(controller, method, fieldAccess);
                     String name = methodName.substring(3);
-                    String propName = JSFClinetGenerator.getPropNameFromMethod(methodName);
+                    String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
                     if (isRelationship == REL_TO_MANY) {
                         ExecutableElement otherSide = getOtherSideOfRelation(controller.getTypes(), method, fieldAccess);
                         int otherSideMultiplicity = REL_TO_ONE;
@@ -422,9 +422,9 @@ public final class JsfForm implements ActiveEditorDrop {
                         if (typeElement != null) {
                             boolean relatedIsFieldAccess = isFieldAccess(typeElement);
                             String getterName = getIdGetter(controller, relatedIsFieldAccess, typeElement).getSimpleName().toString();
-                            String relatedIdProperty = JSFClinetGenerator.getPropNameFromMethod(getterName);
+                            String relatedIdProperty = JSFClientGenerator.getPropNameFromMethod(getterName);
                             String relatedClass = typeElement.getSimpleName().toString();
-                            String relatedManagedBean = JSFClinetGenerator.getManagedBeanName(relatedClass);
+                            String relatedManagedBean = JSFClientGenerator.getManagedBeanName(relatedClass);
                             String detailManagedBean = bean.getSimpleName().toString();
                             stringBuffer.append("<h2>List of " + name + "</h2>\n");
                             stringBuffer.append("<h:outputText rendered=\"#{not " + relatedManagedBean + ".detail" + relatedClass + "s.rowAvailable}\" value=\"No " + name + "\"/><br>\n");
@@ -445,10 +445,10 @@ public final class JsfForm implements ActiveEditorDrop {
                             stringBuffer.append("</h:dataTable>\n");
                             if (otherSideMultiplicity == REL_TO_MANY) {
                                 stringBuffer.append("<br>\n Add " + relatedClass + "s:\n <br>\n");
-                                String itemsToAdd = JSFClinetGenerator.getPropNameFromMethod(methodName + "ToAdd");
+                                String itemsToAdd = JSFClientGenerator.getPropNameFromMethod(methodName + "ToAdd");
                                 stringBuffer.append("<h:selectManyListbox id=\"add" + relatedClass + "s\" value=\"#{" 
                                         + managedBean + "." + itemsToAdd + "}\" title=\"Add " + name + ":\">\n");
-                                String availableItems = JSFClinetGenerator.getPropNameFromMethod(methodName + "Available");
+                                String availableItems = JSFClientGenerator.getPropNameFromMethod(methodName + "Available");
                                 stringBuffer.append("<f:selectItems value=\"#{" + managedBean + "." + availableItems + "}\"/>\n");
                                 stringBuffer.append("</h:selectManyListbox>\n");
                                 String addItems = "add" + methodName.substring(3);

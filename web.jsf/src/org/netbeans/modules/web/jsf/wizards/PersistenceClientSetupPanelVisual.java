@@ -228,7 +228,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 //        String troubleMaker = "";
 //        for (Entity entity : entities) {
 //            String entityClass = entity.getClass2();
-//            String simpleClassName = JSFClinetGenerator.simpleClassName(entityClass);
+//            String simpleClassName = JSFClientGenerator.simpleClassName(entityClass);
 //            String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
 //            String folder = jsfFolder.getText().endsWith("/") ? jsfFolder.getText() : jsfFolder.getText() + "/";
 //            folder = folder + firstLower;

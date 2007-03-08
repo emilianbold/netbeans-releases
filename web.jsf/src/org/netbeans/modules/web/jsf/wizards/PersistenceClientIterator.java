@@ -73,12 +73,12 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 //        
 //        for (Entity entity : entities) {
 //            String entityClass = entity.getClass2();
-//            String simpleClassName = JSFClinetGenerator.simpleClassName(entityClass);
+//            String simpleClassName = JSFClientGenerator.simpleClassName(entityClass);
 //            String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
 //            String folder = jsfFolder.endsWith("/") ? jsfFolder : jsfFolder + "/";
 //            folder = folder + firstLower;
 //            String controller = controllerPkg + "." + simpleClassName + "Controller";
-//            JSFClinetGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder);
+//            JSFClientGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder);
 //        }
 //        
 //        return Collections.singleton(DataFolder.findFolder(targetFolder));
