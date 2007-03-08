@@ -49,6 +49,7 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, Erro
 //    private WebForm webform;
     private final FacesModel facesModel;
     private final ErrorPanelCallback errorPanelCallback;
+    private final RenderFailureProvider renderFailureProvider;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton continueButton;
@@ -61,10 +62,11 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, Erro
     // End of variables declaration//GEN-END:variables
 
     /** Creates new form ErrorPanel */
-    public RenderErrorPanelImpl(/*WebForm webform*/FacesModel facesModel, ErrorPanelCallback errorPanelCallback) {
+    public RenderErrorPanelImpl(/*WebForm webform*/FacesModel facesModel, ErrorPanelCallback errorPanelCallback, RenderFailureProvider renderFailureProvider) {
 //        this.webform = webform;
         this.facesModel = facesModel;
         this.errorPanelCallback = errorPanelCallback;
+        this.renderFailureProvider = renderFailureProvider;
 
         initComponents();
         updateErrors();
@@ -94,8 +96,10 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, Erro
 
 //            Exception e = webform.getRenderFailure();
 //            MarkupDesignBean bean = webform.getRenderFailureComponent();
-            Exception e = errorPanelCallback.getRenderFailure();
-            MarkupDesignBean bean = errorPanelCallback.getRenderFailureComponent();
+//            Exception e = errorPanelCallback.getRenderFailure();
+//            MarkupDesignBean bean = errorPanelCallback.getRenderFailureComponent();
+            Exception e = renderFailureProvider.getRenderFailureException();
+            MarkupDesignBean bean = renderFailureProvider.getRenderFailureComponent();
 
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
@@ -200,5 +204,12 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, Erro
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+
+    // XXX
+    public interface RenderFailureProvider {
+        public Exception getRenderFailureException();
+        public MarkupDesignBean getRenderFailureComponent();
+    } // End of RenderFailureProvider
 
 }

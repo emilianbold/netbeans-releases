@@ -2546,13 +2546,13 @@ public class WebForm implements Designer {
             webForm.setRenderFailureShown(shown);
         }
 
-        public Exception getRenderFailure() {
-            return webForm.getRenderFailure();
-        }
-
-        public MarkupDesignBean getRenderFailureComponent() {
-            return webForm.getRenderFailureComponent();
-        }
+//        public Exception getRenderFailure() {
+//            return webForm.getRenderFailure();
+//        }
+//
+//        public MarkupDesignBean getRenderFailureComponent() {
+//            return webForm.getRenderFailureComponent();
+//        }
 
         public void handleRefresh(boolean showErrors) {
             // Continue from the error panel to the designview
