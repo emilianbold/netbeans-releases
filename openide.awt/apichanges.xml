@@ -23,6 +23,22 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="CloseableTabbedPane-added">
+        <api name="awt"/>
+        <summary>Added TabbedPane with closeable tabs</summary>
+        <version major="6" minor="10"/>
+        <date day="28" month="2" year="2007"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+        Added a factory class for special <code>JTabbedPane</code> that displays a small 'close' button in each tab.
+        When user clicks the close button a <code>PropertyChangeEvent</code> is fired from the
+        tabbed pane.
+        </description>
+        <class package="org.openide.awt" name="TabbedPaneFactory"/>
+        <issue number="55845"/>
+    </change>
+
     <change id="Actions.ButtonActionConnector-added">
       <api name="awt"/>
       <summary>Actions.ButtonActionConnector interface added</summary>

@@ -28,6 +28,7 @@ import javax.swing.border.Border;
 import org.netbeans.core.output2.Controller;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.awt.TabbedPaneFactory;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -46,14 +47,14 @@ import javax.swing.plaf.TabbedPaneUI;
  * @author  Tim Boudreau
  */
 public abstract class AbstractOutputWindow extends TopComponent implements ChangeListener, PropertyChangeListener {
-    protected JTabbedPane pane = new CloseButtonTabbedPane();
+    protected JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
     private static final String ICON_PROP = "tabIcon"; //NOI18N
     private JToolBar toolbar = null;
     
     /** Creates a new instance of AbstractOutputWindow */
     public AbstractOutputWindow() {
         pane.addChangeListener(this);
-        pane.addPropertyChangeListener(CloseButtonTabbedPane.PROP_CLOSE, this);
+        pane.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, this);
         setFocusable(true);
         setBackground(UIManager.getColor("text")); //NOI18N
         toolbar = new JToolBar();
@@ -88,7 +89,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     }
     
     public void propertyChange(PropertyChangeEvent pce) {
-        if (CloseButtonTabbedPane.PROP_CLOSE.equals(pce.getPropertyName())) {
+        if (TabbedPaneFactory.PROP_CLOSE.equals(pce.getPropertyName())) {
             AbstractOutputTab tab = (AbstractOutputTab) pce.getNewValue();
             closeRequest(tab);
         }
@@ -322,6 +323,9 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     }
     
     public void stateChanged(ChangeEvent e) {
+        if (pane.getSelectedComponent() instanceof AbstractOutputPane) {
+            ((AbstractOutputPane) pane.getSelectedComponent()).ensureCaretPosition();
+        }
         fire(lastKnownSelection);
     }
     
