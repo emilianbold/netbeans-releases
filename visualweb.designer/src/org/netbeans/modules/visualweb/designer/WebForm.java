@@ -1917,9 +1917,9 @@ public class WebForm implements Designer {
 //        return htmlDomProvider.setPrerenderedBean(markupDesignBean, documentFragment);
 //    }
 
-    MarkupDesignBean getMarkupDesignBeanEquivalentTo(MarkupDesignBean oldBean) {
-        return htmlDomProvider.getMarkupDesignBeanEquivalentTo(oldBean);
-    }
+//    MarkupDesignBean getMarkupDesignBeanEquivalentTo(MarkupDesignBean oldBean) {
+//        return htmlDomProvider.getMarkupDesignBeanEquivalentTo(oldBean);
+//    }
 
     org.openide.nodes.Node getRootBeanNode() {
         return htmlDomProvider.getRootBeanNode();
