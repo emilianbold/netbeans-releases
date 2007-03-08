@@ -2083,7 +2083,7 @@ public class SelectionManager {
 //                DesignBean component = fo.component;
         if (!selectedComponents.isEmpty()) {
             //Node[] nodes = new Node[selected.size()];
-            List<Node> nodes = new ArrayList<Node>(selectedComponents.size());
+            List<Node> nodes = new ArrayList(selectedComponents.size());
             for (SelectedComponent sc : selectedComponents) {
 //                DesignBean component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
 //                Node n = DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(component);
