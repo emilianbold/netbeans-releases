@@ -179,7 +179,8 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (funDef == null || !CsmContextUtilities.isInFunctionBody(context, offset)) {
                 funDef = null;
             }            
-            CsmClass clazz = CsmContextUtilities.getClass(context, false);
+            CsmClass clazz = funDef == null ? null : CsmBaseUtilities.getFunctionClass(funDef);
+            clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
             if (clazz != null) {
                 boolean staticContext = false;
                 // get class methods visible in this method

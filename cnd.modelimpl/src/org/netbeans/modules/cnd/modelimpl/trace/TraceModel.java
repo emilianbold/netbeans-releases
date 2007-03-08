@@ -1201,7 +1201,7 @@ public class TraceModel {
                 int lastLine = -1;
 		for(Token t = ts.nextToken() ; !APTUtils.isEOF(t); t = ts.nextToken() ) {
 			if( printTokens) {
-				print(" " + t.getText(), t.getLine() != lastLine);
+				print(" " + t.getText(), t.getLine() != lastLine); // NOI18N
 			}
                         lastLine = t.getLine();
 		}

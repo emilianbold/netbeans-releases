@@ -21,8 +21,8 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
@@ -38,10 +38,16 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class AnalyzeExecutable extends BaseDwarfProvider {
-    private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
+    private Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String EXECUTABLE_KEY = "executable"; // NOI18N
+    public static final String LIBRARIES_KEY = "libraries"; // NOI18N
     
     public AnalyzeExecutable() {
+        clean();
+    }
+    
+    public void clean() {
+        myProperties.clear();
         myProperties.put(EXECUTABLE_KEY, new ProviderProperty(){
             private String myPath;
             public String getName() {
@@ -62,12 +68,32 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 return ProviderProperty.PropertyKind.BinaryFile;
             }
         });
+        myProperties.put(LIBRARIES_KEY, new ProviderProperty(){
+            private String myPath[];
+            public String getName() {
+                return i18n("Libraries_Files_Name"); // NOI18N
+            }
+            public String getDescription() {
+                return i18n("Libraries_Files_Description"); // NOI18N
+            }
+            public Object getValue() {
+                return myPath;
+            }
+            public void setValue(Object value) {
+                if (value instanceof String[]){
+                    myPath = (String[])value;
+                }
+            }
+            public ProviderProperty.PropertyKind getKind() {
+                return ProviderProperty.PropertyKind.BinaryFiles;
+            }
+        });
     }
-
+    
     public String getID() {
         return "dwarf-executable"; // NOI18N
     }
-
+    
     public String getName() {
         return i18n("Executable_Provider_Name"); // NOI18N
     }
@@ -82,6 +108,14 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     
     public ProviderProperty getProperty(String key) {
         return myProperties.get(key);
+    }
+    
+    public boolean canAnalyze(ProjectProxy project) {
+        String set = (String)getProperty(EXECUTABLE_KEY).getValue();
+        if (set == null || set.length() == 0) {
+            return false;
+        }
+        return sizeComilationUnit(set) > 0;
     }
     
     public List<Configuration> analyze(ProjectProxy project) {
@@ -100,7 +134,17 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 if (myFileProperties == null){
                     String set = (String)getProperty(EXECUTABLE_KEY).getValue();
                     if (set != null && set.length() > 0) {
-                        myFileProperties = getSourceFileProperties(new String[]{set});
+                        String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
+                        if (add == null || add.length==0) {
+                            myFileProperties = getSourceFileProperties(new String[]{set});
+                        } else {
+                            String[] all = new String[add.length+1];
+                            all[0] = set;
+                            for(int i = 0; i < add.length; i++){
+                                all[i+1]=add[i];
+                            }
+                            myFileProperties = getSourceFileProperties(all);
+                        }
                     }
                 }
                 return myFileProperties;

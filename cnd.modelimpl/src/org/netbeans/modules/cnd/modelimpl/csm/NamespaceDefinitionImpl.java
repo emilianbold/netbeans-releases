@@ -89,6 +89,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             CsmUID<CsmDeclaration> uid = RepositoryUtils.put(decl);
             assert uid != null;
             declarations.add(uid);
+            // update repository
+            RepositoryUtils.put(this);
         } else {
             declarationsOLD.add(decl);
         }
@@ -100,7 +102,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             assert uid != null;
             boolean res = declarations.remove(uid);
             assert res;
-            if (true) RepositoryUtils.remove(uid);
+            RepositoryUtils.remove(uid);
+            // update repository
+            RepositoryUtils.put(this);
         } else {
             declarationsOLD.remove(declaration);
         }
@@ -160,7 +164,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public void write(DataOutput output) throws IOException {
         super.write(output);  
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.writeUIDCollection(this.declarations, output);
+        factory.writeUIDCollection(this.declarations, output, true);
         factory.writeUID(this.namespaceUID, output);
         assert this.name != null;
         output.writeUTF(this.name);
@@ -169,7 +173,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.declarations = (List<CsmUID<CsmDeclaration>>) factory.readUIDCollection(Collections.synchronizedList(new ArrayList<CsmUID<CsmDeclaration>>()), input);
+        this.declarations = factory.readUIDCollection(Collections.synchronizedList(new ArrayList<CsmUID<CsmDeclaration>>()), input);
         this.namespaceUID = factory.readUID(input);
         this.name = TextCache.getString(input.readUTF());
         assert this.name != null;

@@ -20,21 +20,20 @@
 #if !defined CUSTOMER_H
 #define CUSTOMER_H
 
-class Customer
-{
-private:
-	char* customerName;
-	int discountCode;
-public:
-	Customer();
-	Customer(char* name);
-	Customer(char*name, int discount);
-	Customer(const Customer& obj); //copy constructor
-	Customer& operator=(Customer& obj); //overload assignment ("=") operator
-	virtual ~Customer();	
-	char* GetCustomerName();
-	int GetDiscountCode();
-	void DisplayCustomer();
+class Customer {
+    private:
+        char* customerName;
+        int discountCode;
+        public:
+            Customer();
+            Customer(char* name);
+            Customer(char*name, int discount);
+            Customer(const Customer& obj); //copy constructor
+            Customer& operator=(Customer& obj); //overload assignment ("=") operator
+            virtual ~Customer();
+            char* GetCustomerName();
+            int GetDiscountCode();
+            void DisplayCustomer();
 }
 ;//note that ";" is required at end of class definition header file
 #endif //CUSTOMER.H

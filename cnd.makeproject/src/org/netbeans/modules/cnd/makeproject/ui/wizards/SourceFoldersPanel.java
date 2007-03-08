@@ -51,13 +51,6 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.weighty = 1.0;
         headerFoldersOuterPanel.add(sourceFilesPanel, gridBagConstraints);
         instructionsTextArea.setBackground(instructionPanel.getBackground());
-        
-        // Accessibility
-        getAccessibleContext().setAccessibleDescription(getString("INCLUDE_LABEL_AD"));
-        includeTextField.getAccessibleContext().setAccessibleDescription(getString("INCLUDE_LABEL_AD"));
-        includeEditButton.getAccessibleContext().setAccessibleDescription(getString("INCLUDE_BROWSE_BUTTON_AD"));
-        macroTextField.getAccessibleContext().setAccessibleDescription(getString("MACRO_LABEL_AD"));
-        macroEditButton.getAccessibleContext().setAccessibleDescription(getString("MACRO_EDIT_BUTTON_AD"));
     }
 
     public HelpCtx getHelpCtx() {
@@ -76,8 +69,6 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
     void store(WizardDescriptor wizardDescriptor) {
 	wizardDescriptor.putProperty("sourceFolders", sourceFilesPanel.getListData().iterator()); // NOI18N
-	wizardDescriptor.putProperty("includeTextField", includeTextField.getText()); // NOI18N
-	wizardDescriptor.putProperty("macroTextField", macroTextField.getText()); // NOI18N
     }
     
     boolean valid(WizardDescriptor settings) {
@@ -95,14 +86,6 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         java.awt.GridBagConstraints gridBagConstraints;
 
         headerFoldersOuterPanel = new javax.swing.JPanel();
-        codeModelPanel = new javax.swing.JPanel();
-        includeLabel = new javax.swing.JLabel();
-        includeTextField = new javax.swing.JTextField();
-        includeEditButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        macroTextField = new javax.swing.JTextField();
-        codeModelLabel = new javax.swing.JLabel();
-        macroEditButton = new javax.swing.JButton();
         instructionPanel = new javax.swing.JPanel();
         instructionsTextArea = new javax.swing.JTextArea();
 
@@ -121,94 +104,11 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.weighty = 1.0;
         add(headerFoldersOuterPanel, gridBagConstraints);
 
-        codeModelPanel.setLayout(new java.awt.GridBagLayout());
-
-        includeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("INCLUDE_LABEL_MN").charAt(0));
-        includeLabel.setLabelFor(includeTextField);
-        includeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("INCLUDE_LABEL_TXT"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        codeModelPanel.add(includeLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        codeModelPanel.add(includeTextField, gridBagConstraints);
-
-        includeEditButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("INCLUDE_BROWSE_BUTTON_MN").charAt(0));
-        includeEditButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("INCLUDE_BROWSE_BUTTON_TXT"));
-        includeEditButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                includeEditButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        codeModelPanel.add(includeEditButton, gridBagConstraints);
-
-        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MACRO_LABEL_MN").charAt(0));
-        jLabel2.setLabelFor(macroTextField);
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MACRO_LABEL_TXT"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        codeModelPanel.add(jLabel2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
-        codeModelPanel.add(macroTextField, gridBagConstraints);
-
-        codeModelLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("CODEMODEL_LABEL"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        codeModelPanel.add(codeModelLabel, gridBagConstraints);
-
-        macroEditButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MACRO_EDIT_BUTTON_MN").charAt(0));
-        macroEditButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MACRO_EDIT_BUTTON_TXT"));
-        macroEditButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                macroEditButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
-        codeModelPanel.add(macroEditButton, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(16, 0, 0, 0);
-        add(codeModelPanel, gridBagConstraints);
-
         instructionPanel.setLayout(new java.awt.GridBagLayout());
 
         instructionsTextArea.setEditable(false);
         instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFoldersInstructions"));
+        instructionsTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFilesInstructions"));
         instructionsTextArea.setWrapStyleWord(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -227,203 +127,13 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         add(instructionPanel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+            
     
-    private void macroEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_macroEditButtonActionPerformed
-        StringTokenizer tokenizer = new StringTokenizer(macroTextField.getText(), "; "); // NOI18N
-        Vector list = new Vector();
-        while (tokenizer.hasMoreTokens()) {
-            list.add((String)tokenizer.nextToken().trim());
-        }
-        MacrosListPanel panel = new MacrosListPanel(list.toArray());
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), "Macro Definitions"); // NOI18N
-        DialogDisplayer.getDefault().notify(dialogDescriptor);
-        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            Vector newList = panel.getListData();
-            String macros = ""; // NOI18N
-            for (int i = 0; i < newList.size(); i++) {
-                if (i > 0)
-                    macros += ";"; // NOI18N
-                macros += newList.elementAt(i);
-            }
-            macroTextField.setText(macros);
-        }
-    }//GEN-LAST:event_macroEditButtonActionPerformed
-    
-    private void includeEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeEditButtonActionPerformed
-        StringTokenizer tokenizer = new StringTokenizer(includeTextField.getText(), ";"); // NOI18N
-        Vector list = new Vector();
-        while (tokenizer.hasMoreTokens()) {
-            list.add((String)tokenizer.nextToken());
-        }
-        IncludesListPanel panel = new IncludesListPanel(list.toArray());
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), getString("INCLUDE_DIRIRECTORIES_TXT"));
-        DialogDisplayer.getDefault().notify(dialogDescriptor);
-        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            Vector newList = panel.getListData();
-            String includes = ""; // NOI18N
-            for (int i = 0; i < newList.size(); i++) {
-                if (i > 0)
-                    includes += ";"; // NOI18N
-                includes += newList.elementAt(i);
-            }
-            includeTextField.setText(includes);
-        }
-    }//GEN-LAST:event_includeEditButtonActionPerformed
-    
-    private JPanel addOuterPanel(JPanel innerPanel) {
-        JPanel outerPanel = new JPanel();
-        outerPanel.getAccessibleContext().setAccessibleDescription(getString("DIALOG_AD"));
-        outerPanel.setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        outerPanel.add(innerPanel, gridBagConstraints);
-        outerPanel.setPreferredSize(new Dimension(500, 250));
-        return outerPanel;
-    }
-    
-    private class IncludesListPanel extends ListEditorPanel {
-	public IncludesListPanel(Object[] objects) {
-	    super(objects);
-	    getDefaultButton().setVisible(false);
-	}
-
-	public Object addAction() {
-	    String seed = null;
-            if (FileChooser.getCurrectChooserFile() != null)
-                seed = FileChooser.getCurrectChooserFile().getPath();
-            if (seed == null)
-                seed = System.getProperty("user.home"); // NOI18N
-	    FileChooser fileChooser = new FileChooser(getString("INCLUDE_DIR_DIALOG_TITLE_TXT"), getString("INCLUDE_DIR_DIALOG_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-	    int ret = fileChooser.showOpenDialog(this);
-	    if (ret == JFileChooser.CANCEL_OPTION)
-		return null;
-	    String itemPath = fileChooser.getSelectedFile().getPath();
-	    itemPath = FilePathAdaptor.normalize(itemPath);
-	    return itemPath;
-	}
-
-	public String getListLabelText() {
-	    return getString("DIR_LIST_TXT");
-	}
-	public char getListLabelMnemonic() {
-	    return getString("DIR_LIST_MN").charAt(0);
-	}
-    
-	public String getAddButtonText() {
-	    return getString("ADD_BUTTON_TXT");
-	}
-	public char getAddButtonMnemonics() {
-	    return getString("ADD_BUTTON_MN").charAt(0);
-	}
-    
-	public String getRenameButtonText() {
-	    return getString("EDIT_BUTTON_TXT");
-	}
-	public char getRenameButtonMnemonics() {
-	    return getString("EDIT_BUTTON_MN").charAt(0);
-	}
-
-	public Object copyAction(Object o) {
-	    return new String((String)o);
-	}
-
-	public void editAction(Object o) {
-	    String s = (String)o;
-
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
-	    notifyDescriptor.setInputText(s);
-	    DialogDisplayer.getDefault().notify(notifyDescriptor);
-	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
-		return;
-	    String newS = notifyDescriptor.getInputText();
-	    Vector vector = getListData();
-	    Object[] arr = getListData().toArray();
-	    for (int i = 0; i < arr.length; i++) {
-		if (arr[i] == o) {
-		    vector.remove(i);
-		    vector.add(i, newS);
-		    break;
-		}
-	    }
-	}
-    }
-    
-    private class MacrosListPanel extends ListEditorPanel {
-	public MacrosListPanel(Object[] objects) {
-	    super(objects);
-	    getDefaultButton().setVisible(false);
-	}
-
-	public Object addAction() {
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("ADD_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
-	    DialogDisplayer.getDefault().notify(notifyDescriptor);
-	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
-		return null;
-	    String newS = notifyDescriptor.getInputText();
-            return newS;
-	}
-
-	public String getListLabelText() {
-	    return getString("MACROS_LIST_TXT");
-	}
-	public char getListLabelMnemonic() {
-	    return getString("MACROS_LIST_MN").charAt(0);
-	}
-    
-	public String getAddButtonText() {
-	    return getString("ADD_BUTTON_TXT");
-	}
-	public char getAddButtonMnemonics() {
-	    return getString("ADD_BUTTON_MN").charAt(0);
-	}
-    
-	public String getRenameButtonText() {
-	    return getString("EDIT_BUTTON_TXT");
-	}
-	public char getRenameButtonMnemonics() {
-	    return getString("EDIT_BUTTON_MN").charAt(0);
-	}
-
-	public Object copyAction(Object o) {
-	    return new String((String)o);
-	}
-
-	public void editAction(Object o) {
-	    String s = (String)o;
-
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
-	    notifyDescriptor.setInputText(s);
-	    DialogDisplayer.getDefault().notify(notifyDescriptor);
-	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
-		return;
-	    String newS = notifyDescriptor.getInputText();
-	    Vector vector = getListData();
-	    Object[] arr = getListData().toArray();
-	    for (int i = 0; i < arr.length; i++) {
-		if (arr[i] == o) {
-		    vector.remove(i);
-		    vector.add(i, newS);
-		    break;
-		}
-	    }
-	}
-    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel codeModelLabel;
-    private javax.swing.JPanel codeModelPanel;
     private javax.swing.JPanel headerFoldersOuterPanel;
-    private javax.swing.JButton includeEditButton;
-    private javax.swing.JLabel includeLabel;
-    private javax.swing.JTextField includeTextField;
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JButton macroEditButton;
-    private javax.swing.JTextField macroTextField;
     // End of variables declaration//GEN-END:variables
     
     private static String getString(String s) {

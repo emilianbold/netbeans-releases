@@ -129,18 +129,18 @@ public class ModelComparator {
     }
     
     private void printFileInfo() {
-	modelStream.printf("Parse options:\n");
-	modelStream.printf("\tDefines\n");
+	modelStream.printf("Parse options:\n"); // NOI18N
+	modelStream.printf("\tDefines\n"); // NOI18N
 	for( String define : fileInfo.getDefines() ) {
-	    modelStream.printf("\t\t%s\n", define);
+	    modelStream.printf("\t\t%s\n", define); // NOI18N
 	}
-	modelStream.printf("\t<> include path\n");
+	modelStream.printf("\t<> include path\n"); // NOI18N
 	for( String incPath : fileInfo.getSysIncludes() ) {
-	    modelStream.printf("\t\t%s\n", incPath);
+	    modelStream.printf("\t\t%s\n", incPath); // NOI18N
 	}
-	modelStream.printf("\t\"\" include path\n");
+	modelStream.printf("\t\"\" include path\n"); // NOI18N
 	for( String incPath : fileInfo.getQuoteIncludes() ) {
-	    modelStream.printf("\t\t%s\n", incPath);
+	    modelStream.printf("\t\t%s\n", incPath); // NOI18N
 	}
     }
     
@@ -149,13 +149,13 @@ public class ModelComparator {
 	setupStreams();
 	
 	diffStream.println("Differences for " + csmFile.getAbsolutePath()); //NOI18N
-	diffStream.println("Object file: " + dwarf.getFileName());
-	dwarfStream.println("Object file: " + dwarf.getFileName());
+	diffStream.println("Object file: " + dwarf.getFileName()); // NOI18N
+	dwarfStream.println("Object file: " + dwarf.getFileName()); // NOI18N
 	dwarfData.dump(dwarfStream);
 	
-	modelStream.printf("===== Dumping model %s\n", csmFile.getAbsolutePath());
+	modelStream.printf("===== Dumping model %s\n", csmFile.getAbsolutePath()); // NOI18N
 	printFileInfo();
-	(new CsmTracer(modelStream)).dumpModel(csmFile, "\n");
+	(new CsmTracer(modelStream)).dumpModel(csmFile, "\n"); // NOI18N
 	
 	modelStream.println();
 	
@@ -219,7 +219,7 @@ public class ModelComparator {
 	Iterable<CsmDeclaration> declarations = modelList.getDeclarations(qualifiedName);
 	if( ! declarations.iterator().hasNext() ) {
 	    String qname2 = dwarfList.qualifiedNameFromMangled(entry);
-	    if( qname2 != null && qname2.indexOf("::") >= 0 ) {
+	    if( qname2 != null && qname2.indexOf("::") >= 0 ) { // NOI18N
 		qualifiedName = qname2;
 		declarations = modelList.getDeclarations(qualifiedName);
 	    }

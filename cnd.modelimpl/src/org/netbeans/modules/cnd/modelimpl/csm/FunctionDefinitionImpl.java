@@ -37,15 +37,12 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 /**
  * @author Vladimir Kvasihn
  */
-public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> implements CsmFunctionDefinition {
+public class FunctionDefinitionImpl extends FunctionImplEx<CsmFunctionDefinition> implements CsmFunctionDefinition {
 
     private CsmFunction declarationOLD;
     private CsmUID<CsmFunction> declarationUID;
     
-    private String qualifiedName;
     private final CsmCompoundStatement body;
-    private boolean qualifiedNameIsFake = false;
-    private final String[] classOrNspNames;
     
     public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
         this(ast, file, scope, true);
@@ -53,8 +50,8 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
     
     protected  FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
         super(ast, file, scope, false);
-        classOrNspNames = initClassOrNspNames(ast);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile());
+        assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
         if (register) {
             registerInProject();
         }
@@ -119,128 +116,20 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
 	return null;
     }
     
-    /** @return either class or namespace */
-    private CsmObject findOwner() {
-	String[] cnn = classOrNspNames;
-	if( cnn != null ) {
-	    CsmObject obj = ResolverFactory.createResolver(this).resolve(cnn);
-	    if( obj instanceof CsmClass ) {
-		if( !( obj instanceof Unresolved.UnresolvedClass) ) {
-		    return (CsmClass) obj;
-		}
-	    }
-	    else if( obj instanceof CsmNamespace ) {
-		return (CsmNamespace) obj;
-	    }
-	}
-	return null;
-    }    
-    
-    private static String[] initClassOrNspNames(AST node) {
-        //qualified id
-        AST qid = AstUtil.findMethodName(node);
-        if( qid == null ) {
-            return null;
-        }
-        int cnt = qid.getNumberOfChildren();
-        if( cnt >= 1 ) {
-            List/*<String>*/ l = new ArrayList/*<String>*/();
-            for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
-                if( token.getType() == CPPTokenTypes.ID ) {
-                    if( token.getNextSibling() != null ) {
-                        l.add(token.getText());
-                    }
-                }
-            }
-            return (String[]) l.toArray(new String[l.size()]);
-        }
-        return null;
-    }
-    
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
 
-    public String getQualifiedName() {
-	if( qualifiedName == null ) {
-	    qualifiedName = findQualifiedName();
-	}
-	return qualifiedName;
-    }
-    
-    private String findQualifiedName() {
+    protected String findQualifiedName() {
         CsmFunction declaration= _getDeclaration();
 	if( declaration != null ) {
 	    return declaration.getQualifiedName();
 	}
-	CsmObject owner = findOwner();
-	if( owner instanceof CsmQualifiedNamedElement  ) {
-	    qualifiedNameIsFake = false;
-	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N
-	}
 	else {
-	    qualifiedNameIsFake = true;
-	    String[] cnn = classOrNspNames;
-	    CsmNamespaceDefinition nsd = findNamespaceDefinition();
-	    StringBuffer sb = new StringBuffer();
-	    if( nsd != null ) {
-		sb.append(nsd.getQualifiedName());
-	    }
-	    if( cnn != null ) {
-		for (int i = 0; i < cnn.length; i++) {
-		    if( sb.length() > 0 ) {
-			sb.append("::"); // NOI18N
-		    }
-		    sb.append(cnn[i]);
-		}
-	    }
-	    if( sb.length() == 0 ) {
-		sb.append("unknown>"); // NOI18N
-	    }
-	    sb.append("::"); // NOI18N
-	    sb.append(getQualifiedNamePostfix());
-	    return sb.toString();
+	    return super.findQualifiedName();
 	}
     }
     
-    protected void registerInProject() {
-	super.registerInProject();
-	if( qualifiedNameIsFake ) {
-	    ((FileImpl) getContainingFile()).onFakeRegisration(this);
-	}
-    }
-    
-    public void fixFakeRegistration() {
-	String newQname = findQualifiedName();
-	if( ! newQname.equals(qualifiedName) ) {
-	    ((FileImpl) getContainingFile()).getProjectImpl().unregisterDeclaration(this);
-            this.cleanUID();
-	    qualifiedName = newQname;
-	    ((FileImpl) getContainingFile()).getProjectImpl().registerDeclaration(this);
-	}
-    }
-    
-    private CsmNamespaceDefinition findNamespaceDefinition() {
-	return findNamespaceDefinition(getContainingFile().getDeclarations());
-    }
-    
-    private CsmNamespaceDefinition findNamespaceDefinition(Collection/*<CsmOffsetableDeclaration>*/ declarations) {
-	for (Iterator it = declarations.iterator(); it.hasNext();) {
-	    CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) it.next();
-	    if( decl.getStartOffset() > this.getStartOffset() ) {
-		break;
-	    }
-	    if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
-		if( this.getEndOffset() < decl.getEndOffset() ) {
-		    CsmNamespaceDefinition nsdef = (CsmNamespaceDefinition) decl;
-		    CsmNamespaceDefinition inner = findNamespaceDefinition(nsdef.getDeclarations());
-		    return (inner == null) ? nsdef : inner;
-		}
-	    }
-	}
-	return null;
-    }
-
     public CsmScope getScope() {
         return getContainingFile();
     }
@@ -261,10 +150,6 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
     
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName);
-        output.writeBoolean(this.qualifiedNameIsFake);
-        PersistentUtils.writeStrings(this.classOrNspNames, output);
         PersistentUtils.writeCompoundStatement(this.body, output);
         
         // save cached declaration
@@ -273,10 +158,6 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
     
     public FunctionDefinitionImpl(DataInput input) throws IOException {
         super(input);
-        this.qualifiedName = input.readUTF();
-        assert this.qualifiedName != null;
-        this.qualifiedNameIsFake = input.readBoolean();
-        this.classOrNspNames = PersistentUtils.readStrings(input, TextCache.getManager());
         this.body = PersistentUtils.readCompoundStatement(input);
         
         // read cached declaration

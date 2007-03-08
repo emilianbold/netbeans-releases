@@ -79,45 +79,9 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
                 new TokenContext[] { CCTokenContext.context });
 
 	    // key bindings in CCSettingsDefaults.java 
-	    SettingsUtil.updateListSetting(settingsMap,
-					   SettingsNames.KEY_BINDING_LIST, 
+	    SettingsUtil.updateListSetting(settingsMap, SettingsNames.KEY_BINDING_LIST, 
 					   CCSettingsDefaults.getCCKeyBindings());
 
-	    SettingsUtil.updateListSetting(settingsMap,
-                         ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
-		         new String [] { BaseKit.formatAction,
-					 null,
-					 TopComponent.class.getName(),
-					 null,
-					 //CompileAction.class.getName(),
-					 //null,
-                                         //org.openide.actions.ToggleBreakpointAction.class.getName(),
-                                         //org.openide.actions.AddWatchAction.class.getName(),
-					 //null,
-					 CutAction.class.getName(),
-					 CopyAction.class.getName(),
-					 PasteAction.class.getName(),
-					 null,
-					 DeleteAction.class.getName(),
-					 null,
-					 NewAction.class.getName(),
-					 null,
-					 CCKit.gotoHelpAction,
-					 null,
-					 ToolsAction.class.getName(),
-					 BaseKit.generateGutterPopupAction,
-					 PropertiesAction.class.getName() }
-				  );
-
-            SettingsUtil.updateListSetting(settingsMap, SettingsNames.KEY_BINDING_LIST,
-                                           new MultiKeyBinding[] {
-                                               new MultiKeyBinding(
-                                                   KeyStroke.getKeyStroke(KeyEvent.VK_F1, InputEvent.ALT_MASK),
-                                                   CCKit.gotoHelpAction
-                                               )
-                                           }
-                                          );
-	    
             settingsMap.put(SettingsNames.ABBREV_MAP, CCSettingsDefaults.getCCAbbrevMap(kitClass));
 
             settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
@@ -139,27 +103,30 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
                             CCSettingsDefaults.defaultWordMatchStaticWords);
 
             // Formatting settings
-            settingsMap.put(CCSettingsNames.FORMAT_SPACE_BEFORE_PARENTHESIS,
-                            CCSettingsDefaults.defaultFormatSpaceBeforeParenthesis);
+            settingsMap.put(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS,
+                            CCSettingsDefaults.defaultCCFormatSpaceBeforeParenthesis);
 
-            settingsMap.put(CCSettingsNames.FORMAT_SPACE_AFTER_COMMA,
-                            CCSettingsDefaults.defaultFormatSpaceAfterComma);
+            settingsMap.put(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA,
+                            CCSettingsDefaults.defaultCCFormatSpaceAfterComma);
 
-            settingsMap.put(CCSettingsNames.FORMAT_NEWLINE_BEFORE_BRACE,
-                            CCSettingsDefaults.defaultFormatNewlineBeforeBrace);
+            settingsMap.put(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE,
+                            CCSettingsDefaults.defaultCCFormatNewlineBeforeBrace);
+
+            settingsMap.put(CCSettingsNames.CC_FORMAT_LEADING_SPACE_IN_COMMENT,
+                            CCSettingsDefaults.defaultCCFormatLeadingSpaceInComment);
+
+            settingsMap.put(CCSettingsNames.CC_FORMAT_LEADING_STAR_IN_COMMENT,
+                            CCSettingsDefaults.defaultCCFormatLeadingStarInComment);
 
             settingsMap.put(CCSettingsNames.INDENT_HOT_CHARS_ACCEPTOR,
                             CCSettingsDefaults.defaultIndentHotCharsAcceptor);
 
-	    // URL settings
-            settingsMap.put(CCSettingsNames.DOCUMENTATION_URLBASE,
-                            CCSettingsDefaults.defaultDocURLbase);
-
 	    // Code folding settings
 	    settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, CCSettingsDefaults.defaultCodeFoldingEnable);
             
-	    settingsMap.put(CCSettingsNames.PAIR_CHARACTERS_COMPLETION,
-			    CCSettingsDefaults.defaultPairCharactersCompletion);    
+	    settingsMap.put(SettingsNames.PAIR_CHARACTERS_COMPLETION,
+			    CCSettingsDefaults.defaultPairCharactersCompletion);
+            
             settingsMap.put(ExtSettingsNames.JAVADOC_AUTO_POPUP,
                             CCSettingsDefaults.defaultJavaDocAutoPopup);
         }

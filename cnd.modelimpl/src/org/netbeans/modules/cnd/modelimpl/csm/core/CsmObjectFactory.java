@@ -23,16 +23,19 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl;
@@ -41,6 +44,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableDefinitionImpl;
@@ -85,6 +89,20 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = PROJECT_IMPL;
         } else if (object instanceof FileImpl) {
             aHandler = FILE_IMPL;
+        } else if (object instanceof Unresolved.UnresolvedFile) {
+            aHandler = UNRESOLVED_FILE;
+        } else if (object instanceof Unresolved.UnresolvedClass) {
+            aHandler = UNRESOLVED_CLASS;
+        } else if (object instanceof EnumImpl) {
+            aHandler = ENUM_IMPL;
+        } else if (object instanceof ClassImpl) {
+            aHandler = CLASS_IMPL;
+        } else if (object instanceof TypedefImpl) {
+            if (object instanceof ClassImpl.MemberTypedef) {
+                aHandler = MEMBER_TYPEDEF;
+            } else {
+                aHandler = TYPEDEF_IMPL;
+            }
         } else if (object instanceof NamespaceImpl) {
             aHandler = NAMESPACE_IMPL;
         } else if (object instanceof NamespaceDefinitionImpl) {
@@ -99,14 +117,18 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = CLASS_FORWARD_DECLARATION_IMPL;
         } else if (object instanceof FunctionImpl) {
             // we have several FunctionImpl subclasses
-            if (object instanceof FunctionDefinitionImpl) {
-                // we have several FunctionDefinitionImpl subclasses
-                if (object instanceof DestructorDefinitionImpl) {
-                    aHandler = DESTRUCTOR_DEF_IMPL;
-                } else if (object instanceof ConstructorDefinitionImpl) {
-                    aHandler = CONSTRUCTOR_DEF_IMPL;
+            if (object instanceof FunctionImplEx) {
+                if (object instanceof FunctionDefinitionImpl) {
+                    // we have several FunctionDefinitionImpl subclasses
+                    if (object instanceof DestructorDefinitionImpl) {
+                        aHandler = DESTRUCTOR_DEF_IMPL;
+                    } else if (object instanceof ConstructorDefinitionImpl) {
+                        aHandler = CONSTRUCTOR_DEF_IMPL;
+                    } else {
+                        aHandler = FUNCTION_DEF_IMPL;
+                    }
                 } else {
-                    aHandler = FUNCTION_DEF_IMPL;
+                    aHandler = FUNCTION_IMPL_EX;
                 }
             } else if (object instanceof MethodImpl) {
                 // we have several MethodImpl subclusses
@@ -168,6 +190,30 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FileImpl(stream);
                 break;
                 
+            case UNRESOLVED_FILE:
+                obj = new Unresolved.UnresolvedFile(stream);
+                break;
+                
+            case UNRESOLVED_CLASS:
+                obj = new Unresolved.UnresolvedClass(stream);
+                break;
+                
+            case ENUM_IMPL:
+                obj = new EnumImpl(stream);
+                break;
+                
+            case CLASS_IMPL:
+                obj = new ClassImpl(stream);
+                break;
+                
+            case TYPEDEF_IMPL:
+                obj = new TypedefImpl(stream);
+                break;
+                
+            case MEMBER_TYPEDEF:
+                obj = new ClassImpl.MemberTypedef(stream);
+                break;
+                
             case NAMESPACE_IMPL:
                 obj = new NamespaceImpl(stream);
                 break;
@@ -194,6 +240,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 
             case FUNCTION_IMPL:
                 obj = new FunctionImpl(stream);
+                break;
+                
+            case FUNCTION_IMPL_EX:
+                obj = new FunctionImplEx(stream);
                 break;
                 
             case DESTRUCTOR_DEF_IMPL:
@@ -286,18 +336,25 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int PROJECT_IMPL                   = FIRST_INDEX;
     private static final int LIB_PROJECT_IMPL               = PROJECT_IMPL + 1;    
     private static final int FILE_IMPL                      = LIB_PROJECT_IMPL + 1;
-    private static final int NAMESPACE_IMPL                 = FILE_IMPL + 1;
+    private static final int ENUM_IMPL                      = FILE_IMPL + 1;
+    private static final int CLASS_IMPL                     = ENUM_IMPL + 1;
+    private static final int UNRESOLVED_FILE                = CLASS_IMPL + 1;
+    private static final int UNRESOLVED_CLASS               = UNRESOLVED_FILE + 1;
+    private static final int TYPEDEF_IMPL                   = UNRESOLVED_CLASS + 1;
+    private static final int MEMBER_TYPEDEF                 = TYPEDEF_IMPL + 1;
+    private static final int NAMESPACE_IMPL                 = MEMBER_TYPEDEF + 1;
     private static final int NAMESPACE_DEF_IMPL             = NAMESPACE_IMPL + 1;
     private static final int NAMESPACE_ALIAS_IMPL           = NAMESPACE_DEF_IMPL + 1;
     private static final int USING_DECLARATION_IMPL         = NAMESPACE_ALIAS_IMPL + 1;
     private static final int USING_DIRECTIVE_IMPL           = USING_DECLARATION_IMPL + 1;
-    private static final int CLASS_FORWARD_DECLARATION_IMPL = USING_DIRECTIVE_IMPL + 1;
-    
+    private static final int CLASS_FORWARD_DECLARATION_IMPL = USING_DIRECTIVE_IMPL + 1;   
+                
     // functions
     private static final int FUNCTION_IMPL                  = CLASS_FORWARD_DECLARATION_IMPL + 1;
+    private static final int FUNCTION_IMPL_EX               = FUNCTION_IMPL + 1;
     
     //// function definitons 
-    private static final int DESTRUCTOR_DEF_IMPL            = FUNCTION_IMPL + 1;
+    private static final int DESTRUCTOR_DEF_IMPL            = FUNCTION_IMPL_EX + 1;
     private static final int CONSTRUCTOR_DEF_IMPL           = DESTRUCTOR_DEF_IMPL + 1;
     private static final int FUNCTION_DEF_IMPL              = CONSTRUCTOR_DEF_IMPL + 1;
     

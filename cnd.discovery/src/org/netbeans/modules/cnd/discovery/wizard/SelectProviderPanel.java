@@ -211,6 +211,7 @@ public final class SelectProviderPanel extends JPanel {
         };
         for(Object p : providers.allInstances()){
             DiscoveryProvider provider = (DiscoveryProvider)p;
+            provider.clean();
             if (provider.isApplicable(proxy)) {
                 model.addElement(new ProviderItem(provider));
             }

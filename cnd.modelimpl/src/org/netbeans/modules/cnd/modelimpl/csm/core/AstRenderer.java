@@ -108,13 +108,15 @@ public class AstRenderer {
                         addTypedefs(renderTypedef(token, spec, currentNamespace), currentNamespace, container);
                     }
                     else {
-                        if( isMemberDefinition(token) ) {
-                            container.addDeclaration(new FunctionDefinitionImpl(token, file, null));
-                        } else {
-                            FunctionDDImpl fddit = new FunctionDDImpl(token, file, currentNamespace);
-                            container.addDeclaration(fddit);
-                            currentNamespace.addDeclaration(fddit);
-                        }
+			if( isMemberDefinition(token) ) {
+			    // this is a template method specialization declaration (without a definition)
+			    container.addDeclaration(new FunctionImplEx(token, file, null));
+			}
+			else {
+			    FunctionImpl funct = new FunctionImpl(token, file, currentNamespace);
+			    container.addDeclaration(funct);
+			    currentNamespace.addDeclaration(funct);
+			}
                     }
                     break; 
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:

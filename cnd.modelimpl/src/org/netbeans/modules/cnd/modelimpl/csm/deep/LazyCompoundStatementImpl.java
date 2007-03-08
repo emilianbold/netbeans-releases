@@ -39,10 +39,10 @@ import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
- * Common ancestor for all ... statements
+ * Lazy statements
  * @author Vladimir Kvashin
  */
-public class LazyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
+public final class LazyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
     
     private SoftReference<List/*<CsmStatement>*/> statements = null;
     private final int firstTokenOffset;
@@ -87,21 +87,13 @@ public class LazyCompoundStatementImpl extends StatementBase implements CsmCompo
 	}
     }
     
-    protected boolean renderStatements(List list) {
-        AST curAst = getAst();
-        if (curAst != null && curAst.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY) {
-            TokenStream tokenStream = getTokenStream();
-            if( tokenStream == null ) {
-		return false;
-	    }
-	    AST resolvedAst = resolveLazyCompoundStatement(curAst, tokenStream);
-	    // change AST kind from lazy to normal and change the lazy subtree 
-	    // with new resolved tree
-	    curAst.setType(CPPTokenTypes.CSM_COMPOUND_STATEMENT);
-	    curAst.setText("CSM_COMPOUND_STATEMENT_LAZY (RESOLVED)"); // NOI18N
-	    curAst.setFirstChild(resolvedAst == null ? null : resolvedAst.getFirstChild());
+    private boolean renderStatements(List list) {
+        TokenStream tokenStream = getTokenStream();
+        if( tokenStream == null ) {
+            return false;
         }
-        renderStatements(curAst, list);
+        AST resolvedAst = resolveLazyCompoundStatement(tokenStream);
+        renderStatements(resolvedAst, list);
 	return true;
     }
     
@@ -124,7 +116,7 @@ public class LazyCompoundStatementImpl extends StatementBase implements CsmCompo
 	}
     };
     
-    protected TokenStream getTokenStream() {
+    private TokenStream getTokenStream() {
         FileImpl file = (FileImpl) getContainingFile();
         TokenStream  stream = file.getTokenStream();
         if( stream == null ) {
@@ -148,9 +140,9 @@ public class LazyCompoundStatementImpl extends StatementBase implements CsmCompo
         return null;
     }
     
-    protected void renderStatements(AST ast, List list) {
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            CsmStatement stmt = AstRenderer.renderStatement(token, getContainingFile());
+    private void renderStatements(AST ast, List list) {
+        for(ast = (ast == null ? null : ast.getFirstChild()); ast != null; ast = ast.getNextSibling() ) {
+            CsmStatement stmt = AstRenderer.renderStatement(ast, getContainingFile());
             if( stmt != null ) {
                 list.add(stmt);
             }
@@ -161,18 +153,15 @@ public class LazyCompoundStatementImpl extends StatementBase implements CsmCompo
         return getStatements();
     }
 
-    private AST resolveLazyCompoundStatement(AST curAst, TokenStream tokenStream) {
-        AST out = curAst;
-        if (curAst != null) {
-            int flags = CPPParserEx.CPP_CPLUSPLUS;
-            if( ! TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG ) {
-                flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-            }            
-            CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName(), tokenStream, flags);
-            parser.setLazyCompound(false);
-            parser.compound_statement();
-            out = parser.getAST();
-        }
+    private AST resolveLazyCompoundStatement(TokenStream tokenStream) {
+        int flags = CPPParserEx.CPP_CPLUSPLUS;
+        if( ! TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG ) {
+            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+        }            
+        CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName(), tokenStream, flags);
+        parser.setLazyCompound(false);
+        parser.compound_statement();
+        AST out = parser.getAST();
         return out;
     }
     

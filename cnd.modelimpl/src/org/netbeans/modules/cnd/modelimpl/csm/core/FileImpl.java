@@ -102,7 +102,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private Object stateLock = new Object();
     
     private Collection/*<FunctionDefinitionImpl>*/ fakeRegistrationsOLD = new ArrayList();
-    private Collection<CsmUID<FunctionDefinitionImpl>> fakeRegistrationUIDs = new ArrayList();
+    private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new ArrayList();
     
     private final Object fakeLock;
 
@@ -280,6 +280,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	}
 	finally {
 	    //Notificator.instance().endTransaction();
+            // update this file and it's project     
+            if (TraceFlags.USE_REPOSITORY) {
+                RepositoryUtils.put(this);
+            }
             Notificator.instance().registerChangedFile(this);
             Notificator.instance().flush();
 	}
@@ -686,7 +690,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private void _removeDeclaration(CsmOffsetableDeclaration declaration) {
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmOffsetableDeclaration> uid = declarations.remove(getSortKey(declaration));
-            if (true) RepositoryUtils.remove(uid);
+            RepositoryUtils.remove(uid);
+            // update repository
+            RepositoryUtils.put(this);
         } else {
             declarationsOLD.remove(getSortKey(declaration));
         }
@@ -784,9 +790,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("< File " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
     }    
     
-    public void onFakeRegisration(FunctionDefinitionImpl decl) {
+    public void onFakeRegisration(FunctionImplEx decl) {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<FunctionDefinitionImpl> uid = UIDCsmConverter.declarationToUID(decl);
+            CsmUID<FunctionImplEx> uid = UIDCsmConverter.declarationToUID(decl);
             synchronized( fakeLock ) {
                 fakeRegistrationUIDs.add(uid);
             }
@@ -800,7 +806,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void fixFakeRegistrations() {
         Collection fakes;
         if (TraceFlags.USE_REPOSITORY) {
-            Collection<CsmUID<FunctionDefinitionImpl>> fakeUIDs;
+            Collection<CsmUID<FunctionImplEx>> fakeUIDs;
             synchronized ( fakeLock ) {
                 fakeUIDs = fakeRegistrationUIDs;
                 fakeRegistrationUIDs = new ArrayList();
@@ -839,10 +845,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         PersistentUtils.writeBuffer(this.fileBuffer, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUID(this.projectUID, output);
-        factory.writeStringToUIDMap(declarations, output);
-        factory.writeUIDCollection(this.includes, output);
-        factory.writeUIDCollection(this.macros, output);
-        factory.writeUIDCollection(this.fakeRegistrationUIDs, output);
+        factory.writeStringToUIDMap(this.declarations, output, true);
+        factory.writeUIDCollection(this.includes, output, true);
+        factory.writeUIDCollection(this.macros, output, true);
+        factory.writeUIDCollection(this.fakeRegistrationUIDs, output, false);
     }
     
     public FileImpl(DataInput input) throws IOException {

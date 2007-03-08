@@ -32,7 +32,14 @@ public class Stats {
     public static int debugReadFromFile = 0;
     public static int debugNotFound = 0;
     public static int debugGotFromHardCache = 0;
-    public static final boolean isDebug = getBoolean("cnd.repository.use.dev", false); //NO I18N
+    public static final boolean isDebug = getBoolean("cnd.repository.use.dev", false); //NOI18N
+    public static final boolean verbosePut = getBoolean("cnd.repository.verbose.put", false); //NOI18N
+    
+    public static final boolean queueTiming = getBoolean("cnd.repository.queue.timing", false); //NOI18N
+    public static final boolean queueTrace = getBoolean("cnd.repository.queue.trace", false); //NOI18N
+    public static final boolean useThreading = getBoolean("cnd.repository.threading", false); //NOI18N
+    
+    public static final boolean writeToASingleFile = getBoolean("cnd.repository.1file", false); //NOI18N
             
     public static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
@@ -53,6 +60,6 @@ public class Stats {
     }
    public static void log (String st)
    {
-       if (isDebug) System.out.println("DEBUG [Repository] " + st);
+       if (isDebug) System.err.println("DEBUG [Repository] " + st); //NOI18N
    }
 }

@@ -272,7 +272,7 @@ public class ComparisonUtils {
 	    }
 	    name = sb.toString();
 	}
-	name = name.replaceAll(" ", "");
+	name = name.replaceAll(" ", ""); // NOI18N
 	return name;
     }
 }

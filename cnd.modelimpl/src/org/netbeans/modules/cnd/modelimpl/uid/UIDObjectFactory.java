@@ -22,7 +22,9 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.utils.APTStringManager;
@@ -72,11 +74,12 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         return (CsmUID)out;
     }
     
-    public <T> void writeUIDCollection(Collection<CsmUID<T>> aCollection, DataOutput aStream ) throws IOException {
+    public <T> void writeUIDCollection(Collection<CsmUID<T>> aCollection, DataOutput aStream , boolean sync) throws IOException {
         assert aStream != null;
         if (aCollection == null) {
             aStream.writeInt(NULL_POINTER);
         } else {
+            aCollection = sync ? copySyncCollection(aCollection) : aCollection;
             int collSize = aCollection.size();
             aStream.writeInt(collSize);
 
@@ -87,7 +90,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
     
-    public  <T> Collection readUIDCollection(Collection<CsmUID<T>> aCollection, DataInput aStream) throws IOException {
+    public  <T extends Collection> T readUIDCollection(T aCollection, DataInput aStream) throws IOException {
         assert aCollection != null;
         assert aStream != null;
         int collSize = aStream.readInt();
@@ -103,10 +106,10 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
     
-    public <T> void writeStringToUIDMap(Map <String, CsmUID<T>> aMap, DataOutput aStream) throws IOException {
+    public <T> void writeStringToUIDMap(Map <String, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
         assert aStream != null;
-        
+        aMap = sync ? copySyncMap(aMap) : aMap;
         int collSize = aMap.size();
         aStream.writeInt(collSize);
         
@@ -119,6 +122,22 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             writeUID(anUID, aStream);
         }
         
+    }    
+    
+    private static Collection copySyncCollection(Collection col) {
+        Collection out;
+        synchronized (col) {
+            out = new ArrayList(col);
+        }
+        return out;
+    }
+    
+    private static Map copySyncMap(Map map) {
+        Map out;
+        synchronized (map) {
+            out = new HashMap(map);
+        }
+        return out;
     }
     
     public <T> void readStringToUIDMap(Map <String, CsmUID<T>> aMap, DataInput aStream, APTStringManager manager) throws IOException {

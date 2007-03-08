@@ -113,18 +113,21 @@ public class CsmCompletionExpression {
     /** '#include' keyword */
     public static final int CPPINCLUDE = 22;
 
+    /** '#include_next' keyword (a Sun Studio supported GNU extension) */
+    public static final int CPPINCLUDE_NEXT = 23;
+
     /** 'case' keyword */
-    public static final int CASE = 23;
+    public static final int CASE = 24;
 
     /** Arrow between method calls 'a()->b()' or 'a().b.c->d(e, f)' */
-    public static final int ARROW = 24;
+    public static final int ARROW = 25;
     /** Arrow between method calls and dot at the end 'a().b()->' or 'a().b.c.d(e, f)->' */
-    public static final int ARROW_OPEN = 25;
+    public static final int ARROW_OPEN = 26;
 
     /** Arrow between method calls 'NS::b()' or 'NS::CLASS::member' */
-    public static final int SCOPE = 26;
+    public static final int SCOPE = 27;
     /** Arrow between method calls and dot at the end 'NS::' or 'NS::CLASS::' */
-    public static final int SCOPE_OPEN = 27;
+    public static final int SCOPE_OPEN = 28;
     
     /** Last used id of the expression ids. */
     private static final int LAST_ID = SCOPE_OPEN;

@@ -1156,7 +1156,10 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         
         public Object addAction() {
             String newName = ConfigurationSupport.getUniqueNewName(getConfs());
-            Configuration newconf = projectDescriptor.defaultConf(newName, 0); // FIXUP: should macth current type
+            int type = MakeConfiguration.TYPE_MAKEFILE;
+            if (getActive() != null)
+                type = ((MakeConfiguration)getActive()).getConfigurationType().getValue();
+            Configuration newconf = projectDescriptor.defaultConf(newName, type);
             return newconf;
         }
         
@@ -1214,6 +1217,18 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         
         public Configuration[] getConfs() {
             return (Configuration[]) getListData().toArray(new Configuration[getListData().size()]);
+        }
+        
+        public Configuration getActive() {
+            Configuration[] confs = getConfs();
+            Configuration active = null;
+            for (int i = 0; i < confs.length; i++) {
+                if (confs[i].isDefault()) {
+                    active = confs[i];
+                    break;
+                }
+            }
+            return active;
         }
     }
     

@@ -54,6 +54,11 @@ public class AnalyzeModel implements DiscoveryProvider {
     public static final String MODEL_FOLDER_KEY = "folder"; // NOI18N
     
     public AnalyzeModel() {
+        clean();
+    }
+
+    public void clean() {
+        myProperties.clear();
         myProperties.put(MODEL_FOLDER_KEY, new ProviderProperty(){
             private String myPath;
             public String getName() {

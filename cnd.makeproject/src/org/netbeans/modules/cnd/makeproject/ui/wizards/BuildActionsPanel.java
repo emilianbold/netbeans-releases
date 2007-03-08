@@ -32,9 +32,12 @@ import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.MakefileFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.ui.utils.PeDynamicLibraryFileFilter;
+import org.netbeans.modules.cnd.makeproject.ui.utils.PeExecutableFileFilter;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Provider{
     
@@ -434,11 +437,21 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
+        FileFilter[] filters;
+        if (Utilities.isWindows()){
+            filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
+                ElfStaticLibraryFileFilter.getInstance(),
+                PeDynamicLibraryFileFilter.getInstance()};
+        } else {
+            filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
+                ElfStaticLibraryFileFilter.getInstance(),
+                ElfDynamicLibraryFileFilter.getInstance()};
+        }
         JFileChooser fileChooser = new FileChooser(
                 getString("OUTPUT_CHOOSER_TITLE_TXT"),
                 getString("OUTPUT_CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
-                new FileFilter[] {ElfExecutableFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance(), ElfDynamicLibraryFileFilter.getInstance()},
+                filters,
                 seed,
                 false
                 );

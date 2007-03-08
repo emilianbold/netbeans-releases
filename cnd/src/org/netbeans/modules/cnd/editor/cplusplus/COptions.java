@@ -29,4 +29,9 @@ public class COptions extends CCOptions {
     public COptions() {
         super(CKit.class, CC);
     }
+  
+    /** Return the C Indent Engine class */
+    protected Class getDefaultIndentEngineClass() {
+        return CIndentEngine.class;
+    }
 }

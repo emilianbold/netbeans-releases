@@ -53,6 +53,11 @@ public interface DiscoveryProvider {
     ProviderProperty getProperty(String key);
     
     /**
+     * Clean provader state
+     */
+   void clean();
+
+    /**
      * Is analyzer applicable to project
      */
     boolean isApplicable(ProjectProxy project);

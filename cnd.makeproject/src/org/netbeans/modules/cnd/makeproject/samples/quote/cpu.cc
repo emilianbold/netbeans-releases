@@ -22,49 +22,45 @@
 #include "cpu.h"
 //Error logic needs to be added for SetDescription() and SetVendor() since these can return non-zero
 
-Cpu::Cpu()
-{
-	SetDescription((char*)"CPU");
-	SetVendor((char*)"generic"); //Placeholder for future functionality
-	SetType(tmid);
-	SetCategory (tOpteron); //Default architecture type in example
-	SetUnits(1); //Default CPU board has single processor
-	ComputeSupportMetric();
+Cpu::Cpu() {
+    SetDescription((char*)"CPU");
+    SetVendor((char*)"generic"); //Placeholder for future functionality
+    SetType(tmid);
+    SetCategory(tOpteron); //Default architecture type in example
+    SetUnits(1); //Default CPU board has single processor
+    ComputeSupportMetric();
 }
 
-Cpu::Cpu(int type, int cat)
-{
-	SetDescription((char*)"CPU");
-	SetVendor((char*)"generic"); //Placeholder for future functionality
-	SetType(type);
-	SetCategory (cat);
-	SetUnits(1); //Default CPU board has single processor
-	ComputeSupportMetric();
+Cpu::Cpu(int ty, int cat) {
+    SetDescription((char*)"CPU");
+    SetVendor((char*)"generic"); //Placeholder for future functionality
+    SetType(ty);
+    SetCategory(cat);
+    SetUnits(1); //Default CPU board has single processor
+    ComputeSupportMetric();
 }
 
-Cpu::Cpu(int type, int cat, int units)
-{
-	SetDescription((char*)"CPU");
-	SetVendor((char*)"generic"); //Placeholder for future functionality
-	SetType(type);
-	SetCategory (cat);
-	SetUnits(units);
-	ComputeSupportMetric();
+Cpu::Cpu(int ty, int cat, int un) {
+    SetDescription((char*)"CPU");
+    SetVendor((char*)"generic"); //Placeholder for future functionality
+    SetType(ty);
+    SetCategory(cat);
+    SetUnits(un);
+    ComputeSupportMetric();
 }
 
 void Cpu::ComputeSupportMetric() //base class defines this function as "pure virtual"
 {
 //heuristic for CPU module complexity is based on number of CPU processors and target use ("category")
 //CPU architecture ("type") is not considered in heuristic
-	int metric;
-	metric=100*GetUnits();
-	switch (GetType())
-	{
-		case tmid: metric += 100; break;
-		case thigh: metric += 400; break;
-		default: break;
-	}
-	SetSupportMetric(metric);
+    int metric;
+    metric=100*GetUnits();
+    switch (GetType()) {
+        case tmid: metric += 100; break;
+        case thigh: metric += 400; break;
+        default: break;
+    }
+    SetSupportMetric(metric);
 }
 
 // end cpu.cc

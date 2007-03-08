@@ -47,10 +47,6 @@ public interface DiscoveryDescriptor {
     List<String> getIncludedFiles();
     void setIncludedFiles(List<String> includedFiles);
 
-    List<String> getAdditionalFiles();
-    void setAdditionalFiles(List<String> additionalFiles);
-
-    
     boolean isInvokeProvider();
     void setInvokeProvider(boolean invoke);
     

@@ -179,6 +179,7 @@ public class SunCCCompiler extends CCCCompiler {
             systemIncludeDirectoriesList.add("/usr/include"); // NOI18N
             saveOK = true;
         } catch (IOException ioe) {
+            System.err.println("IOException " + ioe);
             String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
@@ -254,11 +255,16 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
+        if (getFolder() == null)
+            return null;
         return (MakeConfigurationDescriptor)getFolder().getConfigurationDescriptor();
     }
     
     private MakeConfiguration getMakeConfiguration() {
-        return (MakeConfiguration)getMakeConfigurationDescriptor().getConfs().getActive();
+        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
+        if (makeConfigurationDescriptor == null)
+            return null;
+        return (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
     }
     
     public NativeProject getNativeProject() {
@@ -373,8 +379,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public Language getLanguage() {
         int tool;
         Language language;
+        ItemConfiguration itemConfiguration = null;
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        if (makeConfiguration != null)
+            itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
             
         if (itemConfiguration != null)
             tool = itemConfiguration.getTool();

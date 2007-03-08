@@ -40,7 +40,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
  * 
  * It also defines an innerclass, CndFormat, whose derived classes are
  * used to format template files (e.g. substitute values for parameters such as
- * __FILENAME__, __NAME__, __DATE__, __TIME__, __USER__, etc.).
+ * __FILENAME__, __NAME__, __DATE__, __TIME__, __USER__, __GUARD_NAME etc.).
  */
 public abstract class CndAbstractDataLoader extends UniFileLoader {
 
@@ -148,7 +148,8 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
 	    map.put("PACKAGE_AND_NAME", packageName+name);  // NOI18N
 	    map.put("NAME", name);	// NOI18N
 	    map.put("EXTENSION", ext); // NOI18N
-
+            String guardName = name.replace('-', '_').replace('.', '_'); // NOI18N
+            map.put("GUARD_NAME", guardName.toUpperCase()); // NOI18N
 	    /*
 	      This is a ugly hack but I don't have a choice. That's because
 	      NetBeans will not pass me the name the user typed in as the

@@ -5,8 +5,8 @@
  * Created on %<%DATE%>%, %<%TIME%>%
  */
 
-#ifndef _%<%NAME%>%_H
-#define	_%<%NAME%>%_H
+#ifndef _%<%GUARD_NAME%>%_H
+#define	_%<%GUARD_NAME%>%_H
 
 #ifdef	__cplusplus
 extern "C" {
@@ -56,4 +56,4 @@ extern void delete_uiShell (uiShell_p);
 }
 #endif
 
-#endif	/* _%<%NAME%>%_H */
+#endif	/* _%<%GUARD_NAME%>%_H */

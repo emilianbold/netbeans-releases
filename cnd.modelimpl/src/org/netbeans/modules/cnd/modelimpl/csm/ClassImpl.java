@@ -23,11 +23,16 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Implements CsmClass
@@ -37,10 +42,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
     private final CsmDeclaration.Kind kind;
     
-    private List/*<CsmMember>*/ membersOLD = new ArrayList/*<CsmMember>*/();
-    private List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
+    private final List/*<CsmMember>*/ membersOLD = new ArrayList/*<CsmMember>*/();
+    private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
     
-    private List/*<CsmInheritance>*/ inheritances = new ArrayList/*<CsmInheritance>*/();
+    private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
     private boolean template;
     
     private final int leftBracketPos;
@@ -164,8 +169,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
     }
     
-    private static class MemberTypedef extends TypedefImpl implements CsmMember<CsmTypedef> {
-        CsmVisibility visibility;
+    public static class MemberTypedef extends TypedefImpl implements CsmMember<CsmTypedef> {
+        private CsmVisibility visibility;
 
         public MemberTypedef(CsmClass containingClass, AST ast, CsmType type, String name, CsmVisibility curentVisibility) {
             super(ast, containingClass.getContainingFile(), containingClass, type, name);
@@ -183,6 +188,21 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         public CsmClass getContainingClass() {
             return  (CsmClass)getScope();
         }
+        
+        ////////////////////////////////////////////////////////////////////////////
+        // impl of SelfPersistent
+
+        public void write(DataOutput output) throws IOException {
+            super.write(output);
+            assert this.visibility != null;
+            PersistentUtils.writeVisibility(this.visibility, output);
+        }  
+
+        public MemberTypedef(DataInput input) throws IOException {
+            super(input);
+            this.visibility = PersistentUtils.readVisibility(input);
+            assert this.visibility != null;
+        }           
     }    
 
     public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file) {
@@ -204,7 +224,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         super(AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
         leftBracketPos = initLeftBracketPos(ast);
         this.kind = findKind(ast);
-        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        }
         new ClassAstRenderer().render(ast);
         register();
     }
@@ -279,6 +301,75 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             }
         }
         return CsmDeclaration.Kind.CLASS;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+//    private final CsmDeclaration.Kind kind;
+//    
+//    private final List/*<CsmMember>*/ membersOLD = new ArrayList/*<CsmMember>*/();
+//    private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
+//    
+//    private final List/*<CsmInheritance>*/ inheritances = new ArrayList/*<CsmInheritance>*/();
+//    private boolean template;
+//    
+//    private final int leftBracketPos;        
+        assert this.kind != null;
+        writeKind(this.kind, output);
+        output.writeBoolean(this.template);
+        output.writeInt(this.leftBracketPos);
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        factory.writeUIDCollection(this.members, output, false);
+        PersistentUtils.writeInheritances(this.inheritances, output);
+    }
+    
+    public ClassImpl(DataInput input) throws IOException {
+        super(input);
+        this.kind = readKind(input);
+        this.template = input.readBoolean();
+        this.leftBracketPos = input.readInt();
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        factory.readUIDCollection(this.members, input);
+        PersistentUtils.readInheritances(this.inheritances, input);        
+    }    
+    
+    private static final int CLASS_KIND = 1;
+    private static final int UNION_KIND = 2;
+    private static final int STRUCT_KIND = 3;
+    
+    private static void writeKind(CsmDeclaration.Kind kind, DataOutput output) throws IOException {
+        int kindHandler;
+        if (kind == CsmDeclaration.Kind.CLASS) {
+            kindHandler = CLASS_KIND;
+        } else if (kind == CsmDeclaration.Kind.UNION) {
+            kindHandler = UNION_KIND;
+        } else {
+            assert kind == CsmDeclaration.Kind.STRUCT;
+            kindHandler = STRUCT_KIND;
+        }
+        output.writeByte(kindHandler);
+    }
+    
+    private static CsmDeclaration.Kind readKind(DataInput input) throws IOException {
+        int kindHandler = input.readByte();
+        CsmDeclaration.Kind kind;
+        switch (kindHandler) {
+            case CLASS_KIND:
+                kind = CsmDeclaration.Kind.CLASS;
+                break;
+            case UNION_KIND:
+                kind = CsmDeclaration.Kind.UNION;
+                break;
+            case STRUCT_KIND:
+                kind = CsmDeclaration.Kind.STRUCT;
+                break;
+            default:
+                throw new IllegalArgumentException("illegal handler " + kindHandler); // NOI18N
+        }       
+        return kind;
     }
 }
 

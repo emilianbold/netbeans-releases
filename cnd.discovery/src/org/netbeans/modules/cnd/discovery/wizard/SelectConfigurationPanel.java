@@ -53,8 +53,6 @@ import org.openide.util.NbBundle;
  */
 public final class SelectConfigurationPanel extends JPanel {
     private SelectConfigurationWizard wizard;
-    private List<ProjectConfiguration> projectConfigurations;
-    private List<String> includedFiles;
     private String oldConsolidation;
     private boolean showResulting;
     
@@ -284,33 +282,34 @@ public final class SelectConfigurationPanel extends JPanel {
             oldConsolidation = consolidation;
             changedConsolidation = true;
         }
-        String root = wizardDescriptor.getRootFolder();
         if (wizardDescriptor.isInvokeProvider()) {
-            buildModel(root, wizardDescriptor.getProvider(), wizardDescriptor);
-            wizardDescriptor.setInvokeProvider(false);
-            // clear result for next step
-            wizardDescriptor.setAdditionalFiles(null);
+            buildModel(wizardDescriptor);
+            creteTreeModel(wizardDescriptor);
         } else if (changedConsolidation){
+            List<ProjectConfiguration> projectConfigurations = wizardDescriptor.getConfigurations();
             if (projectConfigurations != null) {
                 for(ProjectConfiguration project : projectConfigurations){
-                    consolidateModel(project);
+                    consolidateModel(project, consolidation);
                 }
             }
             updateListModels();
         }
     }
     
-    private void consolidateModel(ProjectConfiguration project){
-        if (ConsolidationStrategyPanel.PROJECT_LEVEL.equals(oldConsolidation)){
+    private static void consolidateModel(ProjectConfiguration project, String level){
+        if (ConsolidationStrategyPanel.PROJECT_LEVEL.equals(level)){
             ConfigurationFactory.consolidateProject((ProjectConfigurationImpl)project);
-        } else if (ConsolidationStrategyPanel.FOLDER_LEVEL.equals(oldConsolidation)){
+        } else if (ConsolidationStrategyPanel.FOLDER_LEVEL.equals(level)){
             ConfigurationFactory.consolidateFolder((ProjectConfigurationImpl)project);
-        } else if (ConsolidationStrategyPanel.FILE_LEVEL.equals(oldConsolidation)){
+        } else if (ConsolidationStrategyPanel.FILE_LEVEL.equals(level)){
             ConfigurationFactory.consolidateFile((ProjectConfigurationImpl)project);
         }
     }
     
-    private void buildModel(String rootFolder, DiscoveryProvider provider, final DiscoveryDescriptor wizardDescriptor){
+    public static void buildModel(final DiscoveryDescriptor wizardDescriptor){
+        String rootFolder = wizardDescriptor.getRootFolder();
+        DiscoveryProvider provider = wizardDescriptor.getProvider();
+        String consolidation = wizardDescriptor.getLevel();
         List<Configuration> configs = provider.analyze(new ProjectProxy() {
             public boolean createSubProjects() {
                 return false;
@@ -319,31 +318,40 @@ public final class SelectConfigurationPanel extends JPanel {
                 return wizardDescriptor.getProject();
             }
         });
-        ConfigurationTreeModel model = new ConfigurationTreeModel();
-        projectConfigurations = new ArrayList<ProjectConfiguration>();
-        includedFiles = new ArrayList<String>();
-
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
+        List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
+        wizardDescriptor.setConfigurations(projectConfigurations);
+        List<String> includedFiles = new ArrayList<String>();
+        wizardDescriptor.setIncludedFiles(includedFiles);
         for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
             Configuration conf = it.next();
             includedFiles.addAll(conf.getIncludedFiles());
             List<ProjectProperties> langList = conf.getProjectConfiguration();
             for (Iterator<ProjectProperties> it2 = langList.iterator(); it2.hasNext();) {
                 ProjectConfigurationImpl project = ConfigurationFactory.makeRoot(it2.next(), rootFolder);
-                consolidateModel(project);
+                consolidateModel(project, consolidation);
                 projectConfigurations.add(project);
-                root.add(new ProjectConfigurationNode(project));
+            }
+        }
+        wizardDescriptor.setInvokeProvider(false);
+    }
+    
+    private void creteTreeModel(DiscoveryDescriptor wizardDescriptor){
+        ConfigurationTreeModel model = new ConfigurationTreeModel();
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
+        List<ProjectConfiguration> projectConfigurations = wizardDescriptor.getConfigurations();
+        if (projectConfigurations != null) {
+            for(ProjectConfiguration project : projectConfigurations){
+                root.add(new ProjectConfigurationNode((ProjectConfigurationImpl)project));
             }
         }
         configurationTree.setModel(model);
     }
     
     void store(DiscoveryDescriptor wizardDescriptor) {
-        wizardDescriptor.setConfigurations(projectConfigurations);
-        wizardDescriptor.setIncludedFiles(includedFiles);
     }
 
     boolean isValid(DiscoveryDescriptor settings) {
+        List<ProjectConfiguration> projectConfigurations = settings.getConfigurations();
         if (projectConfigurations == null || projectConfigurations.isEmpty()) {
             return false;
         }

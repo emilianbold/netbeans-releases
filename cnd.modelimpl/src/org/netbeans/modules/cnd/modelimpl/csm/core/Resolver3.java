@@ -91,6 +91,15 @@ public class Resolver3 implements Resolver {
         this.project = (ProjectBase) context.getContainingFile().getProject();
     }
 
+    private CsmClassifier findClassifier(CsmNamespace ns, String qulifiedNamePart) {
+        CsmClassifier result = null;
+        while ( ns != null  && result == null) {
+            String fqn = ns.getQualifiedName() + "::" + qulifiedNamePart; // NOI18N
+            result = findClassifier(fqn);
+            ns = ns.getParent();
+        }        
+        return result;
+    }
     private CsmClassifier findClassifier(String qualifiedName) {
         CsmClassifier result = project.findClassifier(qualifiedName);
         if( result == null ) {
@@ -302,10 +311,7 @@ public class Resolver3 implements Resolver {
     
     
     public CsmObject resolve(String qualified) {
-        Vector v = new Vector();
-        for (StringTokenizer t = new StringTokenizer(qualified, ": \t\n\r\f", false); t.hasMoreTokens(); ) // NOI18N
-            v.add(t.nextToken());
-        return resolve((String[])v.toArray(new String[v.size()]));
+        return resolve(Utils.splitQualifiedName(qualified));
     }
     
     /**
@@ -328,6 +334,7 @@ public class Resolver3 implements Resolver {
         
         names = nameTokens;
         currNamIdx = 0;
+        CsmNamespace containingNS = null;
         
         if( nameTokens.length == 1 ) {
             result = findClassifier(nameTokens[0]);
@@ -335,19 +342,16 @@ public class Resolver3 implements Resolver {
                 result = findNamespace(nameTokens[0]);
             }
 	    if( result == null ) {
+                containingNS = getContainingNamespace();
+                result = findClassifier(containingNS, nameTokens[0]);
+	    }
+            if( result == null ) {
                 CsmClass cls = getContainingClass();
 		result = resolveInClass(cls, nameTokens[0]);
 		if( result == null ) {
 		    result = resolveInBaseClasses(cls, nameTokens[0]);
 		}
             }
-	    if( result == null ) {
-                CsmNamespace ns = getContainingNamespace();
-                if( ns != null ) {
-                    String fqn = ns.getQualifiedName() + "::" + nameTokens[0]; // NOI18N
-                    result = findClassifier(fqn);
-                }
-	    }
             if( result == null ) {
                 currTypedef = null;
                 visitedFiles.clear();
@@ -372,6 +376,9 @@ public class Resolver3 implements Resolver {
                         String nsp = (String) iter.next();
 			String fqn = nsp + "::" + nameTokens[0]; // NOI18N
                         result = findClassifier(fqn);
+                        if (result == null) {
+                            result = findClassifier(containingNS, fqn);
+                        }
                         if( result != null ) {
                             break;
                         }
@@ -394,6 +401,10 @@ public class Resolver3 implements Resolver {
             }
             result = findClassifier(sb.toString());
             if( result == null ) {
+//                containingNS = getContainingNamespace();
+//                result = findClassifier(containingNS, sb.toString());
+//            }
+//            if( result == null ) {
                 result = findNamespace(sb.toString());
             }
             if( result == null ) {
@@ -403,17 +414,7 @@ public class Resolver3 implements Resolver {
                     if( type != null ) {
 			boolean overflow = Thread.currentThread().getStackTrace().length > 200;
 			if( overflow ) {
-			    CsmOffsetable.Position pos = type.getStartPosition();
-			    System.err.println("\n\n'nINFINITE LOOP. FILE: " + type.getContainingFile().getAbsolutePath() + " POS " + new CsmTracer().getOffsetString(type));
-			    int ln = 1;
-			    String text = file.getText(0, offset);
-			    for( int i = 0; i < text.length(); i++ ) {
-				if( text.charAt(i) == '\n') {
-				    ln++;
-				}
-			    }
-			    System.err.println("while resolving " + sb + " in " + file.getAbsolutePath() + " at " + ln);
-			    Thread.currentThread().dumpStack();
+                                traceOverflow(type, sb.toString());
 			}
 			if( ! overflow ) {
 			    result = type.getClassifier();
@@ -458,27 +459,52 @@ public class Resolver3 implements Resolver {
 //        }
         return result;
     }
+
+    private void traceOverflow(final CsmOffsetable type, final String sb) {
+        CsmOffsetable.Position pos = type.getStartPosition();
+        System.err.println("\n\n'nINFINITE LOOP. FILE: " + type.getContainingFile().getAbsolutePath() + " POS " + new CsmTracer().getOffsetString(type));
+        int ln = 1;
+        String text = file.getText(0, offset);
+        for( int i = 0; i < text.length(); i++ ) {
+				if( text.charAt(i) == '\n') {
+				    ln++;
+				}
+        }
+        System.err.println("while resolving " + sb + " in " + file.getAbsolutePath() + " at " + ln + (type instanceof CsmOffsetableDeclaration ? " using declaration " + ((CsmOffsetableDeclaration)type).getUniqueName() : ""));
+        
+        Thread.currentThread().dumpStack();
+    }
     
 
     private CsmObject resolveInBaseClasses(CsmClass cls, String name) {
-	if( cls != null ) {
+	if( cls != null && cls.isValid()) {
 	    for( CsmInheritance inh : (List<CsmInheritance>) cls.getBaseClasses() ) {
-		CsmClass base = inh.getCsmClass();
-		CsmObject result = resolveInClass(base, name);
-		if( result != null ) {
-		    return result;
-		}
-		result = resolveInBaseClasses(base, name);
-		if( result != null ) {
-		    return result;
-		}
+                if (inh.getContainingFile() != this.file || inh.getStartOffset() < this.offset) {
+                    boolean overflow = Thread.currentThread().getStackTrace().length > 200;
+                    if( overflow ) {
+                        traceOverflow(cls, name);
+                        return null;
+                    } else {
+                        CsmClass base = inh.getCsmClass();
+                        CsmObject result = resolveInClass(base, name);
+                        if( result != null ) {
+                            return result;
+                        }
+                        result = resolveInBaseClasses(base, name);
+                        if( result != null ) {
+                            return result;
+                        }
+                    }
+                } else {
+                    break;
+                }
 	    }
 	}
 	return null;
     }
     
     private CsmObject resolveInClass(CsmClass cls, String name) {
-	if( cls != null ) {
+	if( cls != null && cls.isValid()) {
 	    String fqn = cls.getQualifiedName() + "::" + name; // NOI18N
 	    return findClassifier(fqn);
 	}

@@ -607,7 +607,7 @@ public abstract class CsmResultItem
                         Formatter f = doc.getFormatter();
                         if (f instanceof ExtFormatter) {
                             // XXX CPP settings
-                            Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.FORMAT_SPACE_AFTER_COMMA);
+                            Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
                             if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                                 addSpace = true;
                             }
@@ -656,7 +656,7 @@ public abstract class CsmResultItem
                     boolean addClosingParen = false;
                     Formatter f = doc.getFormatter();
                     if (f instanceof ExtFormatter) {
-                        Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.FORMAT_SPACE_BEFORE_PARENTHESIS);
+                        Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
                         if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                             addSpace = true;
                         }

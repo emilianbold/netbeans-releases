@@ -45,11 +45,16 @@ Microsystems, Inc. All Rights Reserved.
 
 	<folder name="text">
 	    <folder name="x-c++">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+
 		<file name="Settings.settings" url="CCOptions.settings"/>
+		<file name="EditorKit.instance">
+		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+		</file>
+
                 <folder name="Defaults">
                     <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
                 </folder>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                   
                 <folder name="NetBeans">
                     <folder name="Defaults">
@@ -58,10 +63,6 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                     </folder>
                 </folder>
-
-		<file name="EditorKit.instance">
-		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
-		</file>
 
 		<folder name="SideBar">
 		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance"/>
@@ -103,6 +104,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 
 		<file name="Settings.settings" url="COptions.settings"/>
+                <file name="EditorKit.instance">
+		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
+		</file>
+                
 		<folder name="Defaults">
                     <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
                 </folder>
@@ -114,10 +119,6 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                     </folder>
                 </folder>
-                
-                <file name="EditorKit.instance">
-		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
-		</file>
 
 		<folder name="SideBar">
 		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance"/>
@@ -244,6 +245,10 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="IndentEngine">
             <file name="org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine.settings" url="CCIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
+            </file>
+
+            <file name="org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine.settings" url="CIndentEngine.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
             </file>
 

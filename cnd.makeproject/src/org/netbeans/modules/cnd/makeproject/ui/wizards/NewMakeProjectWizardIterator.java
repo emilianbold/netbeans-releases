@@ -110,20 +110,9 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
 		    new BuildActionsDescriptorPanel(),
 		    new SourceFoldersDescriptorPanel(),
+		    new ParserConfigurationDescriptorPanel(),
 		    new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false),
 		};
-            IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
-            if (extension != null) {
-                WizardDescriptor.Panel[] additional = extension.getPanels();
-                WizardDescriptor.Panel[] res = new WizardDescriptor.Panel[panels.length+additional.length];
-                for(int i = 0; i < panels.length; i++){
-                    res[i] = panels[i];
-                }
-                for(int i = 0; i < additional.length; i++){
-                    res[i+panels.length] = additional[i];
-                }
-                return res;
-            }
             return panels;
 	}
 	else {
@@ -212,7 +201,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
                 Project p = ProjectManager.getDefault().findProject(dir);
-                if (extension.canApply(wiz, p)){
+                if (extension.canApply(wiz)){
                     extension.apply(wiz, p);
                 }
                 extension.uninitialize(wiz);

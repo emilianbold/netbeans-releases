@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,20 +26,16 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.NbBundle;
 
 /**
-* Beaninfo for CCIndentEngine.
-*
-* duped from editor/src/org/netbeans/modules/editor/java/JavaIndentEngineBeanInfo.java
-*/
-
+ * Beaninfo for CCIndentEngine.
+ *
+ * duped from editor/src/org/netbeans/modules/editor/java/JavaIndentEngineBeanInfo.java
+ */
 public class CCIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
 
-    public CCIndentEngineBeanInfo() {
-    }
-
-    public BeanDescriptor getBeanDescriptor () {
+    public BeanDescriptor getBeanDescriptor() {
 	BeanDescriptor beanDescriptor = new BeanDescriptor(getBeanClass());
-	beanDescriptor.setDisplayName(ABundle.getText("LAB_CCIndentEngine")); // NOI18N
-	beanDescriptor.setShortDescription(ABundle.getText("HINT_CCIndentEngine"));// NOI18N
+	beanDescriptor.setDisplayName(getString("LAB_CCIndentEngine")); // NOI18N
+	beanDescriptor.setShortDescription(getString("HINT_CCIndentEngine"));// NOI18N
 	beanDescriptor.setValue("global", Boolean.TRUE); // NOI18N
         return beanDescriptor;
     }
@@ -51,13 +47,22 @@ public class CCIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
     protected String[] createPropertyNames() {
         return NbEditorUtilities.mergeStringArrays(super.createPropertyNames(),
             new String[] {
-                CCIndentEngine.FORMAT_NEWLINE_BEFORE_BRACE_PROP,
-                CCIndentEngine.FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
-                CCIndentEngine.FORMAT_SPACE_AFTER_COMMA_PROP,
-                CCIndentEngine.FORMAT_PREPROCESSOR_AT_LINE_START_PROP
+                CCIndentEngine.CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
+                CCIndentEngine.CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
+                CCIndentEngine.CC_FORMAT_SPACE_AFTER_COMMA_PROP,
+                CCIndentEngine.CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP,
+                CCIndentEngine.CC_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
+                CCIndentEngine.CC_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP
             }
         );
     }
 
+    protected String getString(String key) {
+        try {
+            return NbBundle.getBundle(CCIndentEngineBeanInfo.class).getString(key);
+        } catch (MissingResourceException e) {
+            return super.getString(key);
+        }
+    }
 }
 

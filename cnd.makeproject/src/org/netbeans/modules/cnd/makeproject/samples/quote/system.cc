@@ -22,59 +22,51 @@
 #include <iostream>
 using namespace std;
 
-System::System()
-{
-	supportMetric=0;	
+System::System() {
+    supportMetric=0;
 }
 
-System::System(const System& obj)
-{
+System::System(const System& obj) {
 }
 
-System& System::operator=(System& obj)
-{
+System& System::operator=(System& obj) {
     return *this;
 }
 
-System::~System()
-{
-	moduleList.clear();
+System::~System() {
+    moduleList.clear();
 }
 
-void System::AddModule(Module* m)
-{
-	moduleList.push_back(m);
-	supportMetric +=(*m).GetSupportMetric();	
+void System::AddModule(Module* m) {
+    moduleList.push_back(m);
+    supportMetric +=(*m).GetSupportMetric();
 }
 
-Module* System::GetModule(int i)
-{
-	if (i>=0 && i<moduleList.size())
-		return moduleList[i];
+Module* System::GetModule(int i) {
+    if (i >= 0 && i < (int)moduleList.size())
+        return moduleList[i];
+    else
+        return (Module*)0;
 }
 
-int System::GetModuleCount()
-{
-	return moduleList.size();
+int System::GetModuleCount() {
+    return moduleList.size();
 }
 
-int System::GetSupportMetric()
-{
-	return supportMetric;
+int System::GetSupportMetric() {
+    return supportMetric;
 };
 
-void System::DisplayList()
-{
-	Module* m;
-	int sz=moduleList.size();
-	cout<<"System consists of "<<sz<<" module(s)"<<endl;
-
-	for (int i=0; i<sz; i++)
-	{
-		m=moduleList[i];
-		(*m).DisplayModule();
-	}
-		
-}	
+void System::DisplayList() {
+    Module* m;
+    int sz=moduleList.size();
+    cout<<"System consists of "<<sz<<" module(s)"<<endl;
+    
+    for (int i=0; i<sz; i++) {
+        m=moduleList[i];
+        (*m).DisplayModule();
+    }
+    
+}
 
 // end system.cc

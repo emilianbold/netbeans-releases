@@ -25,17 +25,12 @@ import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
  * Represent one template parameter
  * @author Vladimir Kvashin
  */
-public interface CsmTemplateParameter extends CsmObject {
+public interface CsmTemplateParameter extends CsmNamedElement {
 
-    class Kind extends TypeSafeEnum {
-
-        private Kind(String id) {
-            super(id);
-        }
-
-        public static final Kind DECLARATION = new Kind("DECLARATION"); // NOI18N
-        public static final Kind CLASS = new Kind("CLASS"); // NOI18N
-        public static final Kind TEMPLATE = new Kind("TEMPLATE"); // NOI18N
+    enum Kind {
+        DECLARATION,
+        TYPENAME,
+        TEMPLATE
     }
     
     /** Gets this template parameter kin */

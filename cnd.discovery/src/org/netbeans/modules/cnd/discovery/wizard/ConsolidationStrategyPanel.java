@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -27,7 +28,8 @@ public class ConsolidationStrategyPanel extends JPanel {
         this.wizard = wizard;
         initComponents();
         addListeners();
-        
+        fileConsolidation.setSelected(true);
+        update(FILE_LEVEL);
     }
 
     private void addListeners(){
@@ -63,6 +65,10 @@ public class ConsolidationStrategyPanel extends JPanel {
     private void update(String level) {
         this.level = level;
         wizard.stateChanged(null);
+      	String description = NbBundle.getMessage(ConsolidationStrategyPanel.class,
+                "ConsolidationDescription_"+level); // NOI18N
+        instructionsTextArea.setText(description);
+        
     }
     
     /** This method is called from within the constructor to
@@ -90,7 +96,6 @@ public class ConsolidationStrategyPanel extends JPanel {
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         instructionsTextArea.setEditable(false);
         instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("ConsolidationDescription"));
         instructionsTextArea.setWrapStyleWord(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -134,7 +139,6 @@ public class ConsolidationStrategyPanel extends JPanel {
         add(folderConsolidation, gridBagConstraints);
 
         consolidationGroup.add(fileConsolidation);
-        fileConsolidation.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(fileConsolidation, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("FileConsolidateLabel"));
         fileConsolidation.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         fileConsolidation.setMargin(new java.awt.Insets(0, 0, 0, 0));

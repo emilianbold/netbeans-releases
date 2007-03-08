@@ -197,7 +197,8 @@ public class CCTokenContext extends TokenContext {
     public static final int CPPIFDEF_ID = CPPIF_ID + 1;
     public static final int CPPIFNDEF_ID = CPPIFDEF_ID + 1;
     public static final int CPPINCLUDE_ID = CPPIFNDEF_ID + 1;
-    public static final int CPPLINE_ID = CPPINCLUDE_ID + 1;
+    public static final int CPPINCLUDE_NEXT_ID = CPPINCLUDE_ID + 1;
+    public static final int CPPLINE_ID = CPPINCLUDE_NEXT_ID + 1;
     public static final int CPPPRAGMA_ID = CPPLINE_ID + 1;
     public static final int CPPUNDEF_ID = CPPPRAGMA_ID + 1;
     public static final int CPPWARNING_ID = CPPUNDEF_ID + 1;
@@ -689,6 +690,9 @@ public class CCTokenContext extends TokenContext {
 
     public static final BaseImageTokenID CPPINCLUDE
     = new BaseImageTokenID("#include", CPPINCLUDE_ID, CPP);  // NOI18N
+
+    public static final BaseImageTokenID CPPINCLUDE_NEXT
+    = new BaseImageTokenID("#include_next", CPPINCLUDE_NEXT_ID, CPP);  // NOI18N
 
     public static final BaseImageTokenID CPPLINE
     = new BaseImageTokenID("#line", CPPLINE_ID, CPP);  // NOI18N

@@ -31,7 +31,7 @@ public class CCSettingsNames extends ExtSettingsNames {
      *           becomes (when set to true)
      *         function (a)
      */
-    public static final String FORMAT_SPACE_BEFORE_PARENTHESIS  = 
+    public static final String CC_FORMAT_SPACE_BEFORE_PARENTHESIS  = 
             "cc-add-space-before-parenthesis"; //NOI18N
 
     /**
@@ -41,7 +41,7 @@ public class CCSettingsNames extends ExtSettingsNames {
      *           becomes (when set to true)
      *         function(a, b)
      */
-    public static final String FORMAT_SPACE_AFTER_COMMA =
+    public static final String CC_FORMAT_SPACE_AFTER_COMMA =
             "cc-add-space-after-comma"; //NOI18N
 
     /**
@@ -56,7 +56,7 @@ public class CCSettingsNames extends ExtSettingsNames {
      *           function();
      *         }
      */
-    public static final String FORMAT_NEWLINE_BEFORE_BRACE =
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE =
             "cc-add-newline-before-brace"; //NOI18N
     
     /**
@@ -66,22 +66,45 @@ public class CCSettingsNames extends ExtSettingsNames {
      * require the processors to have '#' in column 0.
      * <B>Note:</B>This will not convert formatted preprocessors back to column 0.
      */
-    public static final String FORMAT_PREPROCESSOR_AT_LINE_START =
-            "cc-keep-preprocessor-at-line-start"; //NOI18N    
+    public static final String CC_FORMAT_PREPROCESSOR_AT_LINE_START =
+            "cc-keep-preprocessor-at-line-start"; //NOI18N
 
-    /** String to use to construct a URL to fetch documentation pages from */
-    public static final String DOCUMENTATION_URLBASE =
-            "cc-doc-urlbase"; //NOI18N
+    /**
+     * Add one more space to the begining of each line
+     * in the multi-line comment if it's not already there.
+     * Values: java.lang.Boolean
+     * Effect: For example in java:
+     *
+     *        /* this is
+     *        *  multiline comment
+     *        *\/
+     *
+     *            becomes (when set to true)
+     *
+     *         /* this is
+     *          * multiline comment
+     *          *\/
+     */
+    public static final String CC_FORMAT_LEADING_SPACE_IN_COMMENT
+            = "cc-format-leading-space-in-comment"; // NOI18N
+
+    /** Whether the '*' should be added at the new line * in comment */
+    public static final String CC_FORMAT_LEADING_STAR_IN_COMMENT
+            = "cc-format-leading-star-in-comment"; // NOI18N
     
+    /**
+     * How many spaces should be added to the statement that continues
+     * on the next line.
+     */
+    public static final String CC_FORMAT_STATEMENT_CONTINUATION_INDENT
+            = "cc-format-statement-continuation-indent"; // NOI18N 
+
     /**
      * Whether the code completion window should be lower case
      *  Values: java.lang.Boolean
      */
-    public static final String COMPLETION_LOWER_CASE = "completion-lower-case"; // NOI18N
+    public static final String COMPLETION_LOWER_CASE = "cc-completion-lower-case"; // NOI18N
     
-    public static final String CODE_FOLDING_UPDATE_TIMEOUT = "code-folding-update-interval"; //NOI18N
-    
-    /** Completion of { } [ ] " " ' '  */
-    public static final String PAIR_CHARACTERS_COMPLETION = "pair-characters-completion"; // NOI18N
+    public static final String CODE_FOLDING_UPDATE_TIMEOUT = "cc-code-folding-update-interval"; //NOI18N
     
 }

@@ -22,6 +22,7 @@ import org.netbeans.modules.cnd.classview.resources.I18n;
 import java.awt.*;
 
 import org.openide.ErrorManager;
+import org.openide.util.Utilities;
 
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -123,6 +124,7 @@ public class ClassViewTopComponent extends TopComponent  {
         super.componentHidden();
     }
     
+    public static final String ICON_PATH = "org/netbeans/modules/cnd/classview/resources/class_view.png"; // NOI18N
     protected void componentOpened() {
         if( view == null ) {
             view = new ClassView();
@@ -130,6 +132,7 @@ public class ClassViewTopComponent extends TopComponent  {
             add(view);
             setToolTipText(I18n.getMessage("ClassViewTitle"));	// NOI18N
             setName(I18n.getMessage("ClassViewTooltip"));	// NOI18N
+            setIcon(Utilities.loadImage(ICON_PATH)); 
         }
         view.startup();
     }
@@ -144,5 +147,4 @@ public class ClassViewTopComponent extends TopComponent  {
 	super.componentActivated();
 	view.requestFocus();
     }
-    
 }

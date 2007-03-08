@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.*;
@@ -70,4 +73,12 @@ public class Utils {
 	sb.append(']');
 	return sb.toString();
     }
+    
+    public static String[] splitQualifiedName(String qualified) {
+        List v = new ArrayList();
+        for (StringTokenizer t = new StringTokenizer(qualified, ": \t\n\r\f", false); t.hasMoreTokens(); ) {// NOI18N 
+            v.add(t.nextToken());
+        }
+        return (String[]) v.toArray(new String[v.size()]);
+    }    
 }

@@ -316,7 +316,9 @@ public class CCSyntax extends Syntax {
                     TokenID tid = matchKeyword(buffer, tokenOffset, offset - tokenOffset);
                     if (tid == null) {
                         tid = matchCPPKeyword(buffer, tokenOffset,  offset - tokenOffset);
-                        if (tid != null && tid.getNumericID() == CCTokenContext.CPPINCLUDE_ID) {
+                        if (tid != null &&
+			    ((tid.getNumericID() == CCTokenContext.CPPINCLUDE_ID) ||
+			    (tid.getNumericID() == CCTokenContext.CPPINCLUDE_NEXT_ID))) {
                             state = ISA_INCLUDE;
                         }                        
                     }
@@ -1352,11 +1354,6 @@ public class CCSyntax extends Syntax {
                 return (lang == IS_CPLUSPLUS && len == 3
                         && buffer[offset++] == 'w')
                        ? CCTokenContext.NEW : null;
-            case 'u': // keyword "null" (C++ only)
-                return (lang == IS_CPLUSPLUS && len == 4
-                        && buffer[offset++] == 'l'
-                        && buffer[offset++] == 'l')
-                       ? CCTokenContext.NULL : null;
             default:
                 return null;
             }
@@ -1734,13 +1731,13 @@ public class CCSyntax extends Syntax {
 
     // define, elif, else, endif, if, ifdef, ifndef, include, line, undef
     public static TokenID matchCPPKeyword(char[] buffer, int offset, int len) {
-	/* System.out.print("In matchCPPKeyword: ");
-	int x;
-	for (x = offset; x <offset+len; x++) {
-	    System.out.print(buffer[x]);
-	}
-	System.out.println("");
-	*/
+//	System.err.print("In matchCPPKeyword: ");
+//	int x;
+//	for (x = offset; x <offset+len; x++) {
+//	    System.err.print(buffer[x]);
+//	}
+//	System.err.println("");
+        
 	if (buffer[offset] != '#') {
 	    return null;
 	}
@@ -1753,7 +1750,7 @@ public class CCSyntax extends Syntax {
             len--;
         }
 	
-        if (len > 7)
+        if (len > 15)
             return null;
         if (len <= 1)
             return null;
@@ -1820,13 +1817,48 @@ public class CCSyntax extends Syntax {
                     return null;
                 }
             case 'n': // include
-                return (len == 7
+                if (len >= 7 
+                            && buffer[offset++] == 'c'
+                            && buffer[offset++] == 'l'
+                            && buffer[offset++] == 'u'
+                            && buffer[offset++] == 'd'
+                            && buffer[offset++] == 'e') {
+                    if (len == 7) {
+                        return CCTokenContext.CPPINCLUDE;
+                    } else if (len == 12
+                            && buffer[offset++] == '_'
+                            && buffer[offset++] == 'n'
+                            && buffer[offset++] == 'e'
+                            && buffer[offset++] == 'x'
+                            && buffer[offset++] == 't') {
+                        return CCTokenContext.CPPINCLUDE_NEXT;
+                    } else {
+                        return null;
+                    }
+                }
+                if (len == 7 
                         && buffer[offset++] == 'c'
                         && buffer[offset++] == 'l'
                         && buffer[offset++] == 'u'
                         && buffer[offset++] == 'd'
-                        && buffer[offset++] == 'e')
-                       ? CCTokenContext.CPPINCLUDE : null;
+                        && buffer[offset++] == 'e') {
+                    return CCTokenContext.CPPINCLUDE;
+                } else if (len == 12 
+                        && buffer[offset++] == 'c'
+                        && buffer[offset++] == 'l'
+                        && buffer[offset++] == 'u'
+                        && buffer[offset++] == 'd'
+                        && buffer[offset++] == 'c'
+                        && buffer[offset++] == 'e'
+                        && buffer[offset++] == '_'
+                        && buffer[offset++] == 'n'
+                        && buffer[offset++] == 'e'
+                        && buffer[offset++] == 'x'
+                        && buffer[offset++] == 't') {
+                    return CCTokenContext.CPPINCLUDE_NEXT;
+                } else {
+                    return null;
+                }
             default:
                 return null;
             }

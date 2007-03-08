@@ -1099,9 +1099,19 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 pushExp(opExp);
                                 break;
 
+                            case DOT:
+                                addTokenTo(top);
+                                top.setExpID(DOT_OPEN);
+                                break;
+
                             case ARROW:
                                 addTokenTo(top);
                                 top.setExpID(ARROW_OPEN);
+                                break;
+
+                            case SCOPE:
+                                addTokenTo(top);
+                                top.setExpID(SCOPE_OPEN);
                                 break;
 
                             default:
@@ -1123,6 +1133,16 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 CsmCompletionExpression opExp = createTokenExp(SCOPE_OPEN);
                                 opExp.addParameter(top);
                                 pushExp(opExp);
+                                break;
+
+                            case DOT:
+                                addTokenTo(top);
+                                top.setExpID(DOT_OPEN);
+                                break;
+
+                            case ARROW:
+                                addTokenTo(top);
+                                top.setExpID(ARROW_OPEN);
                                 break;
 
                             case SCOPE:
@@ -1222,29 +1242,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                         top2.addParameter(top);
                                         break;
                                     case DOT_OPEN:
-                                    {
-                                        CsmCompletionExpression top3 = peekExp2();
-                                        if (getValidExpID(top3) == ANNOTATION) {
-                                            top2.setExpID(DOT);
-                                            top2.addParameter(top);
-                                            top3.setExpID(ANNOTATION_OPEN);
-                                            top3.addParameter(top2);
-                                            popExp();
-                                            break;
-                                        }
-                                    }
                                     case ARROW_OPEN:
-                                    {
-                                        CsmCompletionExpression top3 = peekExp2();
-                                        if (getValidExpID(top3) == ANNOTATION) {
-                                            top2.setExpID(ARROW);
-                                            top2.addParameter(top);
-                                            top3.setExpID(ANNOTATION_OPEN);
-                                            top3.addParameter(top2);
-                                            popExp();
-                                            break;
-                                        }
-                                    }
                                     case SCOPE_OPEN:
                                     {
                                         CsmCompletionExpression top3 = peekExp2();
@@ -1726,74 +1724,8 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 
                 case DOT:
                 case DOT_OPEN:
-                    switch (top2ID) {
-                    case NEW:
-                        popExp();
-                        top2.addParameter(top);
-                        top2.setExpID(CONSTRUCTOR);
-                        reScan = true;
-                        break;
-                    case CPPINCLUDE:
-                        popExp();
-                        top2.addParameter(top);
-                        break;
-                    case ANNOTATION:
-                    case ANNOTATION_OPEN:
-                    case GENERIC_TYPE_OPEN:
-                        popExp();
-                        top2.addParameter(top);
-                        reScan = false; // by default do not nest more - can be changed if necessary
-                        break;
-                    case OPERATOR:
-                        CsmCompletionExpression top4 = peekExp(4);
-                        if (getValidExpID(top4) == ANNOTATION_OPEN) {
-                            top2.addParameter(peekExp(3));
-                            top2.addParameter(top);
-                            top4.addParameter(top2);
-                            popExp();
-                            popExp();
-                            popExp();
-                            reScan = false;
-                        }
-                        break;
-                    }
-                    break;
-
                 case ARROW:
                 case ARROW_OPEN:
-                    switch (top2ID) {
-                    case NEW:
-                        popExp();
-                        top2.addParameter(top);
-                        top2.setExpID(CONSTRUCTOR);
-                        reScan = true;
-                        break;
-                    case CPPINCLUDE:
-                        popExp();
-                        top2.addParameter(top);
-                        break;
-                    case ANNOTATION:
-                    case ANNOTATION_OPEN:
-                    case GENERIC_TYPE_OPEN:
-                        popExp();
-                        top2.addParameter(top);
-                        reScan = false; // by default do not nest more - can be changed if necessary
-                        break;
-                    case OPERATOR:
-                        CsmCompletionExpression top4 = peekExp(4);
-                        if (getValidExpID(top4) == ANNOTATION_OPEN) {
-                            top2.addParameter(peekExp(3));
-                            top2.addParameter(top);
-                            top4.addParameter(top2);
-                            popExp();
-                            popExp();
-                            popExp();
-                            reScan = false;
-                        }
-                        break;
-                    }
-                    break;
-
                 case SCOPE:
                 case SCOPE_OPEN:
                     switch (top2ID) {

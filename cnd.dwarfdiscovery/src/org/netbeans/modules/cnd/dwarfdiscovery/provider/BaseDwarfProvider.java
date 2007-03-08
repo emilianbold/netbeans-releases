@@ -110,6 +110,46 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
     }
     
+    protected int sizeComilationUnit(String objFileName){
+        int res = 0;
+        Dwarf dump = null;
+        try{
+            dump = new Dwarf(objFileName);
+            List <CompilationUnit> units = dump.getCompilationUnits();
+            if (units != null && units.size() > 0) {
+                for (CompilationUnit cu : units) {
+                    if (cu.getRoot() == null || cu.getSourceFileName() == null) {
+                        continue;
+                    }
+                    String lang = PathCache.getString(cu.getSourceLanguage());
+                    if (lang == null) {
+                        continue;
+                    }
+                    if (LANG.DW_LANG_C.toString().equals(lang) ||
+                            LANG.DW_LANG_C89.toString().equals(lang) ||
+                            LANG.DW_LANG_C99.toString().equals(lang)) {
+                        res++;
+                    } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
+                        res++;
+                    }
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            // Skip Exception
+        } catch (WrongFileFormatException ex) {
+            // Skip Exception
+        } catch (IOException ex) {
+            // Skip Exception
+        } catch (Exception ex) {
+            // Skip Exception
+        } finally {
+            if (dump != null) {
+                dump.dispose();
+            }
+        }
+        return res;
+    }
+    
     private List<SourceFileProperties> getSourceFileProperties(String objFileName){
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;

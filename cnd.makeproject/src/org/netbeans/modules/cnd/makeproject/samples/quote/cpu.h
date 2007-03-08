@@ -24,16 +24,15 @@
 enum tCpu{tmid=1, thigh}; //type
 enum tArch{tOpteron=1, tIntel, tSparc}; //category
 
-class Cpu:public Module
-{
-public:
-	Cpu();
-	Cpu(int type, int architecture);
-	Cpu(int type, int architecture, int units);
-	
+class Cpu:public Module {
+    public:
+        Cpu();
+        Cpu(int type, int architecture);
+        Cpu(int type, int architecture, int units);
+        
 // Copy constructor derived unchanged from base class
 // Destructor derived unchanged from base class
-	void ComputeSupportMetric();
+        void ComputeSupportMetric();
 }
-; // note that ";" is required at end of class definition header file 
+; // note that ";" is required at end of class definition header file
 #endif // CPU_H

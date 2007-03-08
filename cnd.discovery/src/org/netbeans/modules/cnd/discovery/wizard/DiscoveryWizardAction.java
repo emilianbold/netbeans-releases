@@ -194,11 +194,10 @@ public final class DiscoveryWizardAction extends NodeAction {
      */
     private InstantiatingIterator getPanels() {
         WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
-            new SelectProviderWizard(false),
-            new SelectObjectFilesWizard(false),
-            new ConsolidationStrategyWizard(false),
-            new SelectConfigurationWizard(false),
-            new RemoveUnusedWizard()
+            new SelectProviderWizard(false)
+            ,new SelectObjectFilesWizard(false)
+            ,new ConsolidationStrategyWizard(false)
+            ,new SelectConfigurationWizard(false)
         };
         String[] steps = new String[panels.length];
         for (int i = 0; i < panels.length; i++) {

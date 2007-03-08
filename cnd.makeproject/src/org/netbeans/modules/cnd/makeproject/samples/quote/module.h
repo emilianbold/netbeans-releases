@@ -22,45 +22,44 @@
 
 // Base class
 
-class Module
-{
-private:
-	char* description;
-	char* vendor; //this anticipates future functionality
-	int type;
-	int category;
-	int units;
-	int supportMetric; //default value
-
-public:
-	Module();
-	virtual ~ Module(); //destructor is virtual since derived classes may have distinct destructor
-
-	Module(const Module& obj); //copy constructor
-	 
-	Module& operator=(Module& obj); //overload of assignment operator "="
-
-	int SetDescription(char* d); //returns errorcode
-	char* GetDescription();
-
-	int SetVendor(char* v); // returns errorcode
-	char* GetVendor();
-
-	void SetType(int t);
-	int GetType();
-
-	void SetCategory(int c);
-	int GetCategory();
-
-	void SetUnits(int u);
-	int GetUnits();
-
-	virtual void ComputeSupportMetric()=0; //metric is defined in derived classes
-	
-	int GetSupportMetric();
-	void SetSupportMetric(int m);
-
-	void DisplayModule();
+class Module {
+    private:
+        char* description;
+        char* vendor; //this anticipates future functionality
+        int type;
+        int category;
+        int units;
+        int supportMetric; //default value
+        
+        public:
+            Module();
+            virtual ~ Module(); //destructor is virtual since derived classes may have distinct destructor
+            
+            Module(const Module& obj); //copy constructor
+            
+            Module& operator=(Module& obj); //overload of assignment operator "="
+            
+            int SetDescription(char* d); //returns errorcode
+            char* GetDescription();
+            
+            int SetVendor(char* v); // returns errorcode
+            char* GetVendor();
+            
+            void SetType(int t);
+            int GetType();
+            
+            void SetCategory(int c);
+            int GetCategory();
+            
+            void SetUnits(int u);
+            int GetUnits();
+            
+            virtual void ComputeSupportMetric()=0; //metric is defined in derived classes
+            
+            int GetSupportMetric();
+            void SetSupportMetric(int m);
+            
+            void DisplayModule();
 }
 ; //note that ";" is required at end of class definition header file
 #endif // MODULE_H

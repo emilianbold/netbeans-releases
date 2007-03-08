@@ -236,6 +236,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 //        if( "Cursor".equals(declaration.getName()) ) {
 //            System.err.println("Cursor");
 //        }
+        // update repository
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.put(this);
+        }
+        
         if( oldDecl != null ) { //&& oldDecl.getKind() == declaration.getKind() ) {
             Notificator.instance().registerChangedDeclaration(declaration);
         }
@@ -260,7 +265,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmOffsetableDeclaration> uid = declarations.remove(declaration.getUniqueName());
             // clean repository
-            if (true) RepositoryUtils.remove(uid);
+            RepositoryUtils.remove(uid);
+            // update repository
+            RepositoryUtils.put(this);
         } else {
             declarationsOLD.remove(declaration.getUniqueName());
         }
@@ -364,9 +371,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         output.writeUTF(this.name);
         assert this.qualifiedName != null;
         output.writeUTF(this.qualifiedName);
-        theFactory.writeStringToUIDMap(this.nestedMap, output);
-        theFactory.writeStringToUIDMap(this.declarations, output);
-        theFactory.writeStringToUIDMap(this.nsDefinitions, output);
+        theFactory.writeStringToUIDMap(this.nestedMap, output, true);
+        theFactory.writeStringToUIDMap(this.declarations, output, true);
+        theFactory.writeStringToUIDMap(this.nsDefinitions, output, true);
         output.writeBoolean(this.global);
     }
 

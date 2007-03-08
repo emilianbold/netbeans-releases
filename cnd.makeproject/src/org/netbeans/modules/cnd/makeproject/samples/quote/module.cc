@@ -28,131 +28,113 @@ using namespace std;
 const int sz = 80; //built-in assumption that strings are 79 characters (+1 for ending null)
 
 
-Module::Module()
-{
-	description = new char[sz];
-	vendor = new char[sz]; //this anticipates future functionality
-	strcpy(description, "undefined");
-	strcpy(vendor, "undefined"); //this anticipates future functionality
+Module::Module() {
+    description = new char[sz];
+    vendor = new char[sz]; //this anticipates future functionality
+    strcpy(description, "undefined");
+    strcpy(vendor, "undefined"); //this anticipates future functionality
 }
 
 Module::Module(const Module& obj) //copy constructor
 {
-	description = new char[sz];
-	vendor = new char[sz];	
-	
-	strcpy(description, obj.description);
-	strcpy(vendor, obj.vendor);
-	type = obj.type;
-	category = obj.category;
-	units = obj.units;
-	supportMetric = obj.supportMetric;
+    description = new char[sz];
+    vendor = new char[sz];
+    
+    strcpy(description, obj.description);
+    strcpy(vendor, obj.vendor);
+    type = obj.type;
+    category = obj.category;
+    units = obj.units;
+    supportMetric = obj.supportMetric;
 }
 
-Module& Module::operator=(Module& obj)
-{
-	description = new char[sz];
-	vendor = new char[sz];
-
-	strcpy(description, obj.description);
-	strcpy(vendor, obj.vendor);
-	type = obj.type;
-	category = obj.category;
-	units = obj.units;
-	supportMetric = obj.supportMetric;
-
-	return *this;
-}
-	
-
-Module::~Module()
-{
-	delete [] description;
-	delete [] vendor; //anticipates future functionality
+Module& Module::operator=(Module& obj) {
+    description = new char[sz];
+    vendor = new char[sz];
+    
+    strcpy(description, obj.description);
+    strcpy(vendor, obj.vendor);
+    type = obj.type;
+    category = obj.category;
+    units = obj.units;
+    supportMetric = obj.supportMetric;
+    
+    return *this;
 }
 
-int Module::SetDescription(char* d)
-{
-	description = new char[sz];
-	if ((strlen(d) + 1) > sz)
-	{
-		strcpy (description, "error");
-		return 1; //error code ... description string too long
-	}
-	strcpy (description, d);
-	return 0; //normal exit
+
+Module::~Module() {
+    delete [] description;
+    delete [] vendor; //anticipates future functionality
 }
 
-char* Module::GetDescription()
-{
-	return description;
+int Module::SetDescription(char* d) {
+    description = new char[sz];
+    if ((int)(strlen(d) + 1) > sz) {
+        strcpy(description, "error");
+        return 1; //error code ... description string too long
+    }
+    strcpy(description, d);
+    return 0; //normal exit
 }
 
-int Module::SetVendor(char* v)
-{
-	vendor = new char[sz];
-	if ((strlen(v) + 1) > sz)
-	{
-		strcpy (vendor, "error");
-		return 1; //error code ... vendor field too long
-	}
-	strcpy (vendor, v);
-	return 0; //normal exit
+char* Module::GetDescription() {
+    return description;
 }
 
-char* Module::GetVendor()
-{
-	return vendor;
+int Module::SetVendor(char* v) {
+    vendor = new char[sz];
+    if ((int)(strlen(v) + 1) > sz) {
+        strcpy(vendor, "error");
+        return 1; //error code ... vendor field too long
+    }
+    strcpy(vendor, v);
+    return 0; //normal exit
 }
 
-void Module::SetType(int t)
-{
-	type=t;
+char* Module::GetVendor() {
+    return vendor;
 }
 
-int Module::GetType()
-{
-	return type;
+void Module::SetType(int t) {
+    type=t;
 }
 
-void Module::SetCategory(int c)
-{
-	category=c;
+int Module::GetType() {
+    return type;
 }
 
-int Module::GetCategory()
-{
-	return category;
+void Module::SetCategory(int c) {
+    category=c;
 }
 
-void Module::SetUnits(int u)
-{
-	units=u;
+int Module::GetCategory() {
+    return category;
 }
 
-int Module::GetUnits()
-{
-	return units;
+void Module::SetUnits(int u) {
+    units=u;
 }
 
-int Module::GetSupportMetric()
-{
-	return supportMetric;
+int Module::GetUnits() {
+    return units;
 }
 
-void Module::SetSupportMetric(int m)
-{
-	supportMetric=m;
+int Module::GetSupportMetric() {
+    return supportMetric;
 }
 
-void Module::DisplayModule()
-{
-	cout<<"** "<<description<<" module data **"<<endl;
-	cout<<"Module type: "<<type<<endl;
-	cout<<"Module category: "<<category<<endl;
-	cout<<"Number of sub-modules: "<<units<<endl;
-	cout<<"Module support metric: "<<supportMetric<<endl;
-	cout<<endl;
+void Module::SetSupportMetric(int m) {
+    supportMetric=m;
+}
+
+void Module::DisplayModule() {
+    cout<<"** "<<description<<" module data **"<<endl;
+    cout<<"Module type: "<<type<<endl;
+    cout<<"Module category: "<<category<<endl;
+    cout<<"Number of sub-modules: "<<units<<endl;
+    cout<<"Module support metric: "<<supportMetric<<endl;
+    cout<<endl;
 }
 
 

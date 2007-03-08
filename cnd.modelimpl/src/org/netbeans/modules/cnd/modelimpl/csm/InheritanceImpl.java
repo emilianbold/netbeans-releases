@@ -20,16 +20,17 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
@@ -65,7 +66,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         CsmClass ancestorCache = _getAncestorCache();
         if (ancestorCache == null || !ancestorCache.isValid())
         {
-            ancestorCache = (CsmClass)getContainingFile().getProject().findClassifier(ancestorName);
+            ancestorCache = renderClass(ancestorName);
             _setAncestorCache(ancestorCache);
         }
         return ancestorCache;
@@ -88,35 +89,44 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
                     virtual = true;
                     break;
                 case CPPTokenTypes.ID:
-                    List l = new ArrayList();
+                    StringBuffer ancNameBuffer = new StringBuffer();
+                    int counter = 0;
                     for( ; token != null; token = token.getNextSibling() ) {
                         switch( token.getType() ) {
                             case CPPTokenTypes.ID:
-                                l.add(token.getText());
+                                ancNameBuffer.append(token.getText());
                                 break;
                             case CPPTokenTypes.SCOPE:
+                                ancNameBuffer.append("::"); // NOI18N
+                                counter++;
                                 break;
                             default:
                                 // here can be "<", ">" and other template stuff
                         }
                     }
                     //CsmObject o = ResolverFactory.createResolver(this).resolve(new String[] { token.getText() } );
-                    CsmObject o = ResolverFactory.createResolver(this).resolve((String[]) l.toArray(new String[l.size()]));
-                    if( o instanceof CsmClass ) {
-                        _setAncestorCache((CsmClass)o);
-                        ancestorName = ((CsmClass)o).getQualifiedName();
-                    }
-                    else 
-                    {
-                        if (TraceFlags.DEBUG && !(o instanceof CsmNamespace))
-                            System.err.println( "Unknown token instead of Namespace/Class: " + token.getText()); // NOI18N
-                    }
+                    this.ancestorName = ancNameBuffer.toString();
+                    this.ancestorName = counter == 0 ? TextCache.getString(this.ancestorName) : QualifiedNameCache.getString(this.ancestorName);
                     return; // it's definitely the last!; besides otherwise we get NPE in for 
                     //break;
             }
         }
     }
 
+    private CsmClass renderClass(String ancName) {
+        CsmClass result = null;
+        CsmObject o = ResolverFactory.createResolver(this).resolve(ancName);
+        if( CsmKindUtilities.isClass(o) ) {
+            result = (CsmClass) o;
+        } else if (o != null) {
+            while (CsmKindUtilities.isTypedef(o)) {
+                o = ((CsmTypedef)o).getType().getClassifier();
+            }
+            result = (CsmClass)o;
+        }
+        return result;
+    }
+    
     public CsmClass _getAncestorCache() {
         if (TraceFlags.USE_REPOSITORY) {
             CsmClass ancestorCache = UIDCsmConverter.UIDtoDeclaration(ancestorCacheUID);
@@ -154,10 +164,12 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         super(input);
         this.visibility = PersistentUtils.readVisibility(input);
         this.virtual = input.readBoolean();
-        this.ancestorName = TextCache.getString(input.readUTF());
+        this.ancestorName = input.readUTF();
+        this.ancestorName = ancestorName.indexOf("::") == -1 ? TextCache.getString(ancestorName) : QualifiedNameCache.getString(ancestorName); // NOI18N
         assert this.ancestorName != null;
 
         // restore cached value
         this.ancestorCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
     }    
+    
 }

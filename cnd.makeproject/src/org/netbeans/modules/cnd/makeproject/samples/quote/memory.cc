@@ -22,34 +22,31 @@
 #include "memory.h"
 //Error logic needs to be added for SetDescription() and SetVendor() since these can return non-zero
 
-Memory::Memory()
-{
-	SetDescription((char*)"Memory");
-	SetVendor((char*)"generic"); //Placeholder for future functionality
-	SetType(tstandard); //default memory speed is "standard"
-	SetCategory (t1); //default is 1GB sub-module
-	SetUnits(1); //default is "1" memory sub-module
-	ComputeSupportMetric();
+Memory::Memory() {
+    SetDescription((char*)"Memory");
+    SetVendor((char*)"generic"); //Placeholder for future functionality
+    SetType(tstandard); //default memory speed is "standard"
+    SetCategory(t1); //default is 1GB sub-module
+    SetUnits(1); //default is "1" memory sub-module
+    ComputeSupportMetric();
 }
 
-Memory::Memory(int type, int cat)
-{
-	SetDescription((char*)"Memory");
-	SetVendor((char*)"generic"); //Placeholder for future functionality
-	SetType(type);
-	SetCategory (cat);
-	SetUnits(1); //default is "1" memory sub-module
-	ComputeSupportMetric();
+Memory::Memory(int ty, int cat) {
+    SetDescription((char*)"Memory");
+    SetVendor((char*)"generic"); //Placeholder for future functionality
+    SetType(ty);
+    SetCategory(cat);
+    SetUnits(1); //default is "1" memory sub-module
+    ComputeSupportMetric();
 }
 
-Memory::Memory(int type, int cat, int units)
-{
-	SetDescription((char*)"Memory");
-	SetVendor((char*)"generic"); //Placeholder for future functionality
-	SetType(type);
-	SetCategory (cat);
-	SetUnits(units);
-	ComputeSupportMetric();
+Memory::Memory(int ty, int cat, int un) {
+    SetDescription((char*)"Memory");
+    SetVendor((char*)"generic"); //Placeholder for future functionality
+    SetType(ty);
+    SetCategory(cat);
+    SetUnits(un);
+    ComputeSupportMetric();
 }
 //
 
@@ -57,17 +54,16 @@ void Memory::ComputeSupportMetric() //base class defines this function as "pure 
 {
 //heuristic for memory module complexity is based on number of memory sub-modules and memory speed
 //size of sub-module is not considered in heuristic
-	int metric;
-	metric=200*GetUnits();
-	switch (GetType())
-	{
-		case tstandard: break;
-		case tfast: metric += 100; break;
-		case tultra: metric += 200; break;
-		default: break;
-	}
-	SetSupportMetric(metric);
-	
+    int metric;
+    metric=200*GetUnits();
+    switch (GetType()) {
+        case tstandard: break;
+        case tfast: metric += 100; break;
+        case tultra: metric += 200; break;
+        default: break;
+    }
+    SetSupportMetric(metric);
+    
 }
 
 // end memory.cc

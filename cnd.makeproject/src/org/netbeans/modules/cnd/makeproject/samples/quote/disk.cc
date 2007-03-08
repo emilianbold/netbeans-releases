@@ -22,34 +22,31 @@
 #include "disk.h"
 //Error logic needs to be added for SetDescription() and SetVendor() since these can return non-zero
 
-Disk::Disk()
-{
-	SetDescription((char*)"Disk storage");
-	SetVendor((char*)"generic"); //Placeholder for future functionality
-	SetType(tsingle); //default architecture is "no redundantcy"
-	SetCategory (t100); //default disk sub-module size is 100GB
-	SetUnits(1); //default number of disk sub-modules is 1
-	ComputeSupportMetric();
+Disk::Disk() {
+    SetDescription((char*)"Disk storage");
+    SetVendor((char*)"generic"); //Placeholder for future functionality
+    SetType(tsingle); //default architecture is "no redundantcy"
+    SetCategory(t100); //default disk sub-module size is 100GB
+    SetUnits(1); //default number of disk sub-modules is 1
+    ComputeSupportMetric();
 }
 
-Disk::Disk(int type, int cat)
-{
-	SetDescription((char*)"Disk storage");
-	SetVendor((char*)"generic"); //Placeholder for future functionality
-	SetType(type);
-	SetCategory (cat);
-	SetUnits(1); //default number of disk sub-modules is 1
-	ComputeSupportMetric();
+Disk::Disk(int ty, int cat) {
+    SetDescription((char*)"Disk storage");
+    SetVendor((char*)"generic"); //Placeholder for future functionality
+    SetType(ty);
+    SetCategory(cat);
+    SetUnits(1); //default number of disk sub-modules is 1
+    ComputeSupportMetric();
 }
 
-Disk::Disk(int type, int cat, int units)
-{
-	SetDescription((char*)"Disk storage");
-	SetVendor((char*)"generic"); //Placeholder for future functionality
-	SetType(type);
-	SetCategory (cat);
-	SetUnits(units);
-	ComputeSupportMetric();
+Disk::Disk(int ty, int cat, int un) {
+    SetDescription((char*)"Disk storage");
+    SetVendor((char*)"generic"); //Placeholder for future functionality
+    SetType(ty);
+    SetCategory(cat);
+    SetUnits(un);
+    ComputeSupportMetric();
 }
 //
 
@@ -57,15 +54,14 @@ void Disk::ComputeSupportMetric() //base class defines this function as "pure vi
 {
 //heuristic for disk module complexity is based on number of disk sub-modules and architecture
 //size of individual disks is not considered in heuristic
-	int metric;
-	metric=200*GetUnits();
-	switch (GetType())
-	{
-		case tsingle: break;
-		case traid: metric += 500; break;
-		default: break;
-	}
-	SetSupportMetric(metric);	
+    int metric;
+    metric=200*GetUnits();
+    switch (GetType()) {
+        case tsingle: break;
+        case traid: metric += 500; break;
+        default: break;
+    }
+    SetSupportMetric(metric);
 }
 
 // end disk.cc

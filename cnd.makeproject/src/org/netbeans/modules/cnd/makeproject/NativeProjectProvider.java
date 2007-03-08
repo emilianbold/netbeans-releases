@@ -105,7 +105,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         ExtensionList hlist = HDataLoader.getInstance().getExtensions();
         
         for (int i = 0; i < items.length; i++) {
-            if (hlist.isRegistered(items[i].getPath())) {
+            ItemConfiguration itemConfiguration = (ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+            if (itemConfiguration != null){
+                if (!itemConfiguration.getExcluded().getValue()){
+                    list.add(items[i]);
+                }
+            } else if (hlist.isRegistered(items[i].getPath())) {
                 list.add(items[i]);
             }
         }
@@ -125,10 +130,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     public void fireFileAdded(NativeFileItem nativeFileIetm) {
+        ExtensionList hlist = HDataLoader.getInstance().getExtensions();
         if (listeners.size() == 0)
             return;
         int tool = ((Item)nativeFileIetm).getDefaultTool();
-        if (tool != Tool.CCompiler && tool != Tool.CCCompiler)
+        if (tool == Tool.CustomTool && !hlist.isRegistered(((Item)nativeFileIetm).getPath()))
             return; // IZ 87407
         for (int i = 0; i < listeners.size(); i++) {
             NativeProjectItemsListener listener = (NativeProjectItemsListener)listeners.get(i);
@@ -137,10 +143,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     public void fireFileRemoved(NativeFileItem nativeFileIetm) {
+        ExtensionList hlist = HDataLoader.getInstance().getExtensions();
         if (listeners.size() == 0)
             return;
         ItemConfiguration itemConfiguration = (ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(((Item)nativeFileIetm).getPath()));
-        if (!itemConfiguration.isCompilerToolConfiguration() || itemConfiguration.getExcluded().getValue())
+        if ((!itemConfiguration.isCompilerToolConfiguration() && !hlist.isRegistered(((Item)nativeFileIetm).getPath())) || itemConfiguration.getExcluded().getValue())
             return; // IZ 87407
         for (int i = 0; i < listeners.size(); i++) {
             NativeProjectItemsListener listener = (NativeProjectItemsListener)listeners.get(i);

@@ -92,10 +92,6 @@ public class DiscoveryProjectGenerator {
                 used.add(name);
             }
         }
-        list = wizard.getAdditionalFiles();
-        for (String name : list){
-            used.add(name);
-        }
         AbstractRoot additional = UnusedFactory.createRoot(used);
         if (used.size()>0) {
             addFolder(folder, additional, true);
@@ -122,61 +118,11 @@ public class DiscoveryProjectGenerator {
             if (!relatives.contains(path)) {
                 // remove item;
                 Folder parent = item.getFolder();
-                if (DEBUG) System.out.println("Remove Item "+path); // NOI18N
-                parent.removeItem(item);
-                unused.put(path,item);
-                while (parent.getElements().size() == 0) {
-                    Folder parentFolder = parent.getParent();
-                    if (DEBUG) System.out.println("Remove Empty Folder "+parent.getName()); // NOI18N
-                    parentFolder.removeFolder(parent);
-                    parent = parentFolder;
-                    if (parent == folder) {
-                        break;
-                    }
-                }
-            }
-        }
-        if (KEEP_UNUSED) {
-            createUnusedFilder(unused);
-        }
-    }
-    
-    private void createUnusedFilder(Map<String,Item> unused){
-        if (unused.size()==0){
-            return;
-        }
-        Folder sourceRoot = projectBridge.getRoot();
-        String name = "unused_files"; // NOI18N
-        Folder added = sourceRoot.findFolderByName("unused_files"); // NOI18N
-        if (added == null) {
-            added = projectBridge.createFolder(sourceRoot, name);
-            sourceRoot.addFolder(added);
-        }
-        AbstractRoot additional = UnusedFactory.createRoot(unused.keySet());
-        addFolder(added, additional, unused);
-    }
-    
-    private void addFolder(Folder folder, AbstractRoot used, Map<String,Item> unused){
-        String name = used.getName();
-        Folder added = folder.findFolderByName(name);
-        if (added == null) {
-            added = projectBridge.createFolder(folder, name);
-            folder.addFolder(added);
-        }
-        for(AbstractRoot sub : used.getChildren()){
-            addFolder(added, sub, unused);
-        }
-        List<String> files = used.getFiles();
-        if (files != null) {
-            for(String file : files){
-                Item item = unused.get(file);
-                if (item != null) {
-                    added.addItem(item);
-                }
+                if (DEBUG) System.out.println("Exclude Item "+path); // NOI18N
+                projectBridge.setExclude(item,true);
             }
         }
     }
-    
     
     private void addFolder(Folder folder, AbstractRoot used, boolean first){
         String name = used.getName();
@@ -213,6 +159,7 @@ public class DiscoveryProjectGenerator {
                     if (old != null) {
                         projectBridge.setAuxObject(item, old);
                     }
+                    projectBridge.setExclude(item,false);
                 }
             }
         }

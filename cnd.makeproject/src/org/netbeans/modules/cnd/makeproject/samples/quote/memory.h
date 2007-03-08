@@ -24,19 +24,18 @@
 enum tMemory{tstandard=1, tfast, tultra}; //type
 enum tMB{t1=1, t2, t4}; //category ... represents number of gegabytes on memory board
 
-class Memory:public Module
-{
-public:
-	Memory();
-	Memory(int type, int size);
-	Memory(int type, int size , int units);
-
+class Memory:public Module {
+    public:
+        Memory();
+        Memory(int type, int size);
+        Memory(int type, int size , int units);
+        
 //copy constructor derived unchanged from base class
 //destructor derived unchanged from base class
-
-	void ComputeSupportMetric();
-	
+        
+        void ComputeSupportMetric();
+        
 }
-; //note that ";" is required at end of class definition header file 
+; //note that ";" is required at end of class definition header file
 
 #endif // MEMORY_H

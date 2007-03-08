@@ -34,7 +34,11 @@ import java.util.List;
  */
 public interface CsmTemplate {
 
-    List/*<CsmTemplateParameter>*/ getTemplateParameters();
+    List<CsmTemplateParameter> getTemplateParameters();
 
-
+    /**
+     * Gets a string that acts like a signature for function:
+     * a name followed by comma-separater list of parameter types
+     */
+    String getTemplateSignature(); 
 }

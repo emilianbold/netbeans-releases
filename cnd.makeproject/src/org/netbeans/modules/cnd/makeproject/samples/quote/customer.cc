@@ -24,68 +24,61 @@
 #include <iostream>
 using namespace std;
 
-Customer::Customer()
-{
-	int sz=80;
-	customerName = new char[sz];
-	strcpy(customerName, "unknown");
-	discountCode=0; //default discount code is "0"
+Customer::Customer() {
+    int sz=80;
+    customerName = new char[sz];
+    strcpy(customerName, "unknown");
+    discountCode=0; //default discount code is "0"
 }
 
-Customer::Customer(char* name)
-{
-	int sz=strlen(name) + 1;
-	customerName = new char[sz];
-	strcpy(customerName, name);
-	discountCode=0; //default discount code is "0"
+Customer::Customer(char* name) {
+    int sz=strlen(name) + 1;
+    customerName = new char[sz];
+    strcpy(customerName, name);
+    discountCode=0; //default discount code is "0"
 }
 
-Customer::Customer(char* name, int discount)
-{
-	int sz=strlen(name) + 1;
-	customerName = new char[sz];
-	strcpy(customerName, name);
-	discountCode=discount;
+Customer::Customer(char* name, int discount) {
+    int sz=strlen(name) + 1;
+    customerName = new char[sz];
+    strcpy(customerName, name);
+    discountCode=discount;
 }
 
 Customer::Customer(const Customer& obj) //copy constructor
 {
-	int sz=strlen(obj.customerName) + 1;
-	customerName= new char[sz];
-	strcpy(customerName, obj.customerName);
-	discountCode = obj.discountCode;
+    int sz=strlen(obj.customerName) + 1;
+    customerName= new char[sz];
+    strcpy(customerName, obj.customerName);
+    discountCode = obj.discountCode;
 }
 
 Customer& Customer::operator=(Customer &obj) //overload assignment ("=") operator
 {
-	int sz=strlen(obj.customerName) + 1;
-	customerName= new char[sz];
-	strcpy(customerName, obj.customerName);
-	discountCode = obj.discountCode;
-	return *this;
+    int sz=strlen(obj.customerName) + 1;
+    customerName= new char[sz];
+    strcpy(customerName, obj.customerName);
+    discountCode = obj.discountCode;
+    return *this;
 }
 
-Customer::~Customer()
-{
-	delete [] customerName;
-
+Customer::~Customer() {
+    delete [] customerName;
+    
 }
 
-char* Customer::GetCustomerName()
-{
-	return customerName;
+char* Customer::GetCustomerName() {
+    return customerName;
 }
 
-int Customer::GetDiscountCode()
-{
-	return discountCode;
+int Customer::GetDiscountCode() {
+    return discountCode;
 }
 
-void Customer::DisplayCustomer()
-{
-	cout<<"** Customer details **"<<endl;
-	cout<<"Customer name: "<<customerName<<endl;
-	cout<<"Customer discount code: "<<discountCode<<endl<<endl;
+void Customer::DisplayCustomer() {
+    cout<<"** Customer details **"<<endl;
+    cout<<"Customer name: "<<customerName<<endl;
+    cout<<"Customer discount code: "<<discountCode<<endl<<endl;
 }
 
 // end of customer.cc

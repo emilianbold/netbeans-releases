@@ -45,6 +45,11 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     public static final String FOLDER_KEY = "folder"; // NOI18N
     
     public AnalyzeFolder() {
+        clean();
+    }
+
+    public void clean() {
+        myProperties.clear();
         myProperties.put(FOLDER_KEY, new ProviderProperty(){
             private String myPath;
             public String getName() {

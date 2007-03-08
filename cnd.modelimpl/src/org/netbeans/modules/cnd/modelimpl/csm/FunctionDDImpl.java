@@ -42,6 +42,7 @@ public final class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> im
     public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope, false);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile());
+        assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
         registerInProject();
     }
 
@@ -76,12 +77,14 @@ public final class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> im
     
     public void write(DataOutput output) throws IOException {
         super.write(output);
+        assert this.body != null: "null body in " + this.getQualifiedName();
         PersistentUtils.writeCompoundStatement(body, output);
     }
     
     public FunctionDDImpl(DataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
+        assert this.body != null: "read null body for " + this.getName();
     }       
 }
 

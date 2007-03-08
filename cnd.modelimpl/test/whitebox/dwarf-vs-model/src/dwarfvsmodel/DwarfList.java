@@ -255,12 +255,12 @@ public class DwarfList {
     public String qualifiedNameFromMangled(DwarfEntry entry) {
 	String ln = (String) entry.getAttributeValue(ATTR.DW_AT_MIPS_linkage_name);
 	if( ln != null ) {
-	    if( ln.startsWith("_ZN") ) {
+	    if( ln.startsWith("_ZN") ) { // NOI18N
 		int pos = 3;
 		StringBuilder qn = new StringBuilder();
-		if( ln.startsWith("_ZNSt") ) {
+		if( ln.startsWith("_ZNSt") ) { // NOI18N
 		    pos += 2;
-		    qn.append("std::");
+		    qn.append("std::"); // NOI18N
 		}		
 		while( pos < ln.length() && Character.isDigit(ln.charAt(pos)) ) {
 		    int len = 0;
@@ -276,15 +276,15 @@ public class DwarfList {
 			return null;
 		    }
 		    if( qn.length() > 0 ) {
-			qn.append("::");
+			qn.append("::"); // NOI18N
 		    }
 		    qn.append(ln.substring(pos, pos+len));
 		    pos += len;
 		}
 		if( qn.length() > 0 ) {
 		    String name = entry.getName();
-		    if( name.startsWith("operator") && ! Character.isJavaIdentifierPart(name.charAt(8)) ) {
-			qn.append("::");
+		    if( name.startsWith("operator") && ! Character.isJavaIdentifierPart(name.charAt(8)) ) { // NOI18N
+			qn.append("::"); // NOI18N
 			qn.append(name);
 		    }
 		    return qn.toString();

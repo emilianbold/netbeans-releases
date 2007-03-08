@@ -20,11 +20,19 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.ObjectBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Common ancestor for ClassImpl and EnumImpl
@@ -34,25 +42,39 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     private final String name;
     
-    private String qualifiedName;
+    private final String qualifiedName;
     
     // only one of namespaceOLD/namespaceUID must be used (based on USE_REPOSITORY)    
-    private NamespaceImpl namespaceOLD;
-    private CsmUID<CsmNamespace> namespaceUID;
+    private final NamespaceImpl namespaceOLD;
+    private final CsmUID<CsmNamespace> namespaceUID;
     
     private boolean isValid = true;
 
     private boolean _static = false;
     private CsmVisibility visibility = CsmVisibility.PRIVATE;
     // only one of containingClassOLD/containingClassUID must be used (based on USE_REPOSITORY)  
-    private CsmClass containingClassOLD = null;
-    private CsmUID<CsmClass> containingClassUID = null;
+    private final CsmClass containingClassOLD;
+    private final CsmUID<CsmClass> containingClassUID;
     
     public ClassEnumBase(String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass, AST ast) {
         super(ast, file);
-        this._setNamespaceImpl(namespace);
+        if (TraceFlags.USE_REPOSITORY) {
+            namespaceUID = UIDCsmConverter.namespaceToUID(namespace);
+            assert (namespaceUID != null || namespace == null);
+            this.namespaceOLD = null;
+        } else {
+            this.namespaceOLD = namespace;
+            this.namespaceUID = null;
+        }        
         this.name = (name == null) ? "" : name;
-        this._setContainingClass(containingClass);
+        if (TraceFlags.USE_REPOSITORY) {
+            containingClassUID = UIDCsmConverter.declarationToUID(containingClass);
+            assert (containingClassUID != null || containingClass == null);
+            this.containingClassOLD = null;
+        } else {
+            this.containingClassOLD = containingClass;
+            this.containingClassUID = null;
+        }         
         if( containingClass == null ) {
             qualifiedName = Utils.getQualifiedName(getQualifiedNamePostfix(), namespace);
         }
@@ -158,15 +180,6 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         }
     }
 
-    private void _setNamespaceImpl(NamespaceImpl ns) {
-        if (TraceFlags.USE_REPOSITORY) {
-            namespaceUID = UIDCsmConverter.namespaceToUID(ns);
-            assert (namespaceUID != null || ns == null);
-        } else {
-            this.namespaceOLD = ns;
-        }
-    }
-
     private CsmClass _getContainingClass() {
         if (TraceFlags.USE_REPOSITORY) {
             CsmClass containingClass = UIDCsmConverter.UIDtoDeclaration(containingClassUID);
@@ -177,13 +190,42 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         }
     }
 
-    private void _setContainingClass(CsmClass containingClass) {
-        if (TraceFlags.USE_REPOSITORY) {
-            containingClassUID = UIDCsmConverter.declarationToUID(containingClass);
-            assert (containingClassUID != null || containingClass == null);
-        } else {
-            this.containingClassOLD = containingClass;
-        }     
-    }
-
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output); 
+        output.writeBoolean(this.isValid);
+        assert this.name != null;
+        output.writeUTF(this.name);
+        assert this.qualifiedName != null;
+        output.writeUTF(this.qualifiedName);
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        assert this.namespaceUID != null;
+        factory.writeUID(this.namespaceUID, output);
+        factory.writeUID(this.containingClassUID, output); // could be null
+        output.writeBoolean(this._static);
+        assert this.visibility != null;
+        PersistentUtils.writeVisibility(this.visibility, output);
+    }  
+    
+    protected ClassEnumBase(DataInput input) throws IOException {
+        super(input);
+        this.isValid = input.readBoolean();
+        this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
+        this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
+        assert this.qualifiedName != null;
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        this.namespaceUID = factory.readUID(input);
+        assert this.namespaceUID != null;
+        this.containingClassUID = factory.readUID(input); // could be null
+        this._static = input.readBoolean();
+        this.visibility = PersistentUtils.readVisibility(input);
+        assert this.visibility != null;
+                
+        assert TraceFlags.USE_REPOSITORY;
+        this.containingClassOLD = null;
+        this.namespaceOLD = null;
+    }     
 }

@@ -36,6 +36,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
+import org.openide.nodes.Node.Cookie;
 
 /**
  *  Abstract superclass of a C/C++/Fortran DataObject.
@@ -61,7 +62,6 @@ public abstract class CndDataObject extends MultiDataObject {
 	}
 	cq.add(System.currentTimeMillis());
     }
-  
 
     /**
      *  Initialize cookies for this DataObject. This method may get overridden
@@ -97,6 +97,14 @@ public abstract class CndDataObject extends MultiDataObject {
         getCookieSet().remove(save);
     }
 
+    public void addCookie(Cookie nc) {
+        getCookieSet().add(nc);
+    }
+    
+    public void removeCookie(Cookie nc) {
+        getCookieSet().remove(nc);
+    }
+    
     protected abstract Node createNodeDelegate();
 
     /**

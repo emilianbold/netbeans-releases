@@ -75,7 +75,7 @@ for PROJECT in ${dirs}; do
 	echo "======================================== ${PROJECT} ========================================";
 	RES="${RES_ROOT}/${PROJECT}"; 
 	mkdir -p ${RES} > /dev/null; 
-	time ant -f build_cli.xml run -Dargs="-c ${INITDATA}/${PROJECT}/all.gcc -t ${RES}" -Djvmargs="-Xmx1536M ${DEFS}" 2>&1 | tee ${RES}/_all.log; 
+	time ant -f build_cli.xml run -Dargs="-c ${INITDATA}/${PROJECT}/all.gcc -t ${RES}" -Djvmargs="-Xmx1536M ${DEFS} ${DEBUG_PROFILE}" 2>&1 | tee ${RES}/_all.log; 
 done
 }
 

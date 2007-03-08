@@ -90,7 +90,7 @@ public class UIDUtilities {
             new CsmTracer().dumpModel(decl);
         }
         if (decl instanceof CsmClassifier) {
-            return new UnnamedClassifierUID((CsmClassifier)decl);
+            return new UnnamedClassifierUID(decl);
         } else {
             return new UnnamedOffsetableDeclarationUID(decl);
         }
@@ -254,7 +254,7 @@ public class UIDUtilities {
     /**
      * UID for CsmClassifier with empty getName()
      */    
-    /* package */ static final class UnnamedClassifierUID<T extends CsmClassifier> extends ObjectBasedUID<T> {
+    /* package */ static final class UnnamedClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
         public UnnamedClassifierUID(T classifier) {
             super(classifier);
         }
@@ -263,16 +263,15 @@ public class UIDUtilities {
             super(aStream);
         }
         
-        public String toString() {
-            String retValue = "<UNNAMED CLASSIFIER UID> " + super.toString(); // NOI18N
-            return retValue;
-        } 
+        protected String getToStringPrefix() {
+            return "<UNNAMED CLASSIFIER UID>"; // NOI18N
+        }        
     }
     
     /**
      * UID for CsmDeclaration with empty getName()
      */    
-    /* package */ static final class UnnamedOffsetableDeclarationUID<T extends CsmOffsetableDeclaration> extends ObjectBasedUID<T> {
+    /* package */ static final class UnnamedOffsetableDeclarationUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
         public UnnamedOffsetableDeclarationUID(T decl) {
             super(decl);
         }
@@ -281,9 +280,8 @@ public class UIDUtilities {
             super(aStream);
         }
         
-        public String toString() {
-            String retValue = "<UNNAMED OFFS-DECL UID> " + super.toString(); // NOI18N
-            return retValue;
-        } 
+        protected String getToStringPrefix() {
+            return "<UNNAMED OFFS-DECL UID>"; // NOI18N
+        }        
     }    
 }

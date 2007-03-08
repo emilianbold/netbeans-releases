@@ -22,11 +22,15 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.util.* ;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Implements CsmEnum
@@ -35,7 +39,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMember<CsmEnum> {
     
     private List/*CsmEnumerator*/ enumeratorsOLD = Collections.EMPTY_LIST;
-    private List<CsmUID<CsmEnumerator>> enumerators = Collections.EMPTY_LIST;
+    private final List<CsmUID<CsmEnumerator>> enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     
     public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file) {
         this(ast, namespace, file, null);
@@ -43,7 +47,9 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
     
     public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
         super(AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
-        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        }
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
                 for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
@@ -67,9 +73,6 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
     
     public void addEnumerator(CsmEnumerator enumerator) {
         if (TraceFlags.USE_REPOSITORY) {
-            if(enumerators == Collections.EMPTY_LIST) {
-               enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
-            }
             CsmUID<CsmEnumerator> uid = RepositoryUtils.put(enumerator);
             enumerators.add(uid);
         } else {
@@ -100,4 +103,17 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
             enumeratorsOLD.clear();
         }        
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        UIDObjectFactory.getDefaultFactory().writeUIDCollection(this.enumerators, output, false);
+    }
+
+    public EnumImpl(DataInput input) throws IOException {
+        super(input);
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(this.enumerators, input);
+    }    
 }

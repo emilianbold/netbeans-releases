@@ -28,6 +28,8 @@ import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -160,6 +162,20 @@ public class Folder {
         // Add it to the folder
         item.setFolder(this);
         addElement(item);
+        
+        // Add item to the dataObject's lookup
+        if (isProjectFiles()) {
+            if (item.getDataObject() instanceof CndDataObject) {
+                CndDataObject dataObject = (CndDataObject)item.getDataObject();
+                MyNativeFileItemSet myNativeFileItemSet = (MyNativeFileItemSet)dataObject.getCookie(MyNativeFileItemSet.class);
+                if (myNativeFileItemSet == null) {
+                    myNativeFileItemSet = new MyNativeFileItemSet();
+                    dataObject.addCookie(myNativeFileItemSet);
+                }
+                myNativeFileItemSet.add(item);
+            }
+        }
+        
         // Add it to project Items
         if (isProjectFiles()) {
             ((MakeConfigurationDescriptor)configurationDescriptor).addProjectItem(item);
@@ -172,6 +188,7 @@ public class Folder {
                 configurations[i].addAuxObject(new ItemConfiguration(configurations[i], item));
             }
         }
+        
         return item;
     }
     
@@ -246,6 +263,20 @@ public class Folder {
         ret = items.removeElement(item);
         if (!ret)
             return ret;
+        
+        // Remove item from the dataObject's lookup
+        if (isProjectFiles()) {
+            if (item.getDataObject() instanceof CndDataObject) {
+                CndDataObject dataObject = (CndDataObject)item.getDataObject();
+                MyNativeFileItemSet myNativeFileItemSet = (MyNativeFileItemSet)dataObject.getCookie(MyNativeFileItemSet.class);
+                if (myNativeFileItemSet != null) {
+                    myNativeFileItemSet.remove(item);
+                    if (myNativeFileItemSet.isEmpty())
+                        dataObject.removeCookie(myNativeFileItemSet);
+                }
+            }
+        }
+        
 //	item.setFolder(null);
         if (isProjectFiles()) {
             // Remove it from project Items
@@ -525,6 +556,9 @@ public class Folder {
             ((ChangeListener)it.next()).stateChanged(ev);
         }
         configurationDescriptor.setModified();
+    }
+    
+    class MyNativeFileItemSet extends HashSet implements NativeFileItemSet {
     }
     
     /** Look up i18n strings here */

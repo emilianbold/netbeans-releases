@@ -20,10 +20,12 @@
 package org.netbeans.modules.cnd.api.model.util;
 
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 
 /**
  *
@@ -92,5 +94,14 @@ public class CsmBaseUtilities {
             fun = (CsmFunction)contextDeclaration;
         }
         return fun;
+    }    
+    
+    public static CsmClassifier getTypedefBaseClassifier(CsmTypedef orig) {
+        CsmClassifier out = orig;
+        do {
+            out = ((CsmTypedef)out).getType().getClassifier();
+        } while (CsmKindUtilities.isTypedef(out));
+        assert orig != null;
+        return out;
     }    
 }

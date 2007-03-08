@@ -61,4 +61,9 @@ public class HashMapRepository implements Repository {
     public void flush() {
         // do nothing
     }
+    
+    public void shutdown() {
+        // do nothing
+    }
+    
 }

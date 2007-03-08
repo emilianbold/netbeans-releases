@@ -30,6 +30,7 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 
 
@@ -56,32 +57,30 @@ public class BracketCompletion {
    * @param ch the character that was inserted
    * @throws BadLocationException if dotPos is not correct
    */
-  static void charInserted(BaseDocument doc,  
+    static void charInserted(BaseDocument doc,  
 			   int dotPos, 
 			   Caret caret,
 			   char ch) throws BadLocationException 
-  {
-    if (doc.getSyntaxSupport() instanceof ExtSyntaxSupport && completionSettingEnabled()) {
+    {
+        SyntaxSupport syntaxSupport = doc.getSyntaxSupport();
+        if (!(syntaxSupport instanceof ExtSyntaxSupport) || !completionSettingEnabled()) {
+            return;
+        }
       
-      if (ch == ')'|| ch == ']'|| ch =='('|| ch =='[') {
-	TokenID tokenAtDot = 
-	  ((ExtSyntaxSupport)doc.getSyntaxSupport()).getTokenID(dotPos);
-
-	if (tokenAtDot == CCTokenContext.RBRACKET || tokenAtDot == CCTokenContext.RPAREN) {
-	  skipClosingBracket(doc, caret, ch);
-	} 
-	else if (tokenAtDot == CCTokenContext.LBRACKET || tokenAtDot == CCTokenContext.LPAREN) {
-	  completeOpeningBracket(doc, dotPos, caret, ch);
-	}
-      }
-      else if (ch == '\"' || ch == '\'') {
-	completeQuote(doc, dotPos, caret, ch);
-      } 
-      else if (ch == ';') {
-          moveSemicolon(doc, dotPos, caret);
-      }
+        ExtSyntaxSupport support = (ExtSyntaxSupport)syntaxSupport;
+        if (ch == ')'|| ch == ']'|| ch =='('|| ch =='[') {
+	    TokenID tokenAtDot = support.getTokenID(dotPos);
+	    if (tokenAtDot == CCTokenContext.RBRACKET || tokenAtDot == CCTokenContext.RPAREN) {
+	        skipClosingBracket(doc, caret, ch);
+	    } else if (tokenAtDot == CCTokenContext.LBRACKET || tokenAtDot == CCTokenContext.LPAREN) {
+	        completeOpeningBracket(doc, dotPos, caret, ch);
+	    }
+        } else if (ch == '\"' || ch == '\'') {
+	    completeQuote(doc, dotPos, caret, ch);
+        } else if (ch == ';') {
+              moveSemicolon(doc, dotPos, caret);
+        }
     }
-  }
 
     private static void moveSemicolon(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
         int eolPos = Utilities.getRowEnd(doc, dotPos);
@@ -96,7 +95,7 @@ public class BracketCompletion {
                 return;
             }
         }
-        if (isForLoopSemicolon(token)) {
+        if (isForLoopSemicolon(token) || posWithinAnyQuote(doc,dotPos)) {
             return;
         }
         doc.remove(dotPos, 1);
@@ -116,7 +115,10 @@ public class BracketCompletion {
             if (token.getTokenID() == CCTokenContext.LPAREN) {
                 if (parDepth == 0) { // could be a 'for ('
                     token = token.getPrevious();
-                    while(token !=null && (token.getTokenID() == CCTokenContext.WHITESPACE || token.getTokenID() == CCTokenContext.BLOCK_COMMENT || token.getTokenID() == CCTokenContext.LINE_COMMENT)) {
+                    while(token !=null &&
+                            (token.getTokenID() == CCTokenContext.WHITESPACE ||
+                             token.getTokenID() == CCTokenContext.BLOCK_COMMENT ||
+                             token.getTokenID() == CCTokenContext.LINE_COMMENT)) {
                         token = token.getPrevious();
                     }
                     if (token.getTokenID() == CCTokenContext.FOR) {
@@ -135,7 +137,6 @@ public class BracketCompletion {
                 braceDepth--;
             } else if (token.getTokenID() == CCTokenContext.RBRACE) {
                 braceDepth++;
-
             } else if (token.getTokenID() == CCTokenContext.SEMICOLON) {
                 if (semicolonFound) { // one semicolon already found
                     return false;
@@ -163,8 +164,7 @@ public class BracketCompletion {
   {
     if (completionSettingEnabled()) {
       if (ch == '(' || ch == '[') {
-	TokenID tokenAtDot = ((ExtSyntaxSupport)doc.
-			      getSyntaxSupport()).getTokenID(dotPos);
+	TokenID tokenAtDot = ((ExtSyntaxSupport)doc.getSyntaxSupport()).getTokenID(dotPos);
 	if ((tokenAtDot == CCTokenContext.RBRACKET && tokenBalance(doc, CCTokenContext.LBRACKET, CCTokenContext.RBRACKET) != 0) ||
 	    (tokenAtDot == CCTokenContext.RPAREN && tokenBalance(doc, CCTokenContext.LPAREN, CCTokenContext.RPAREN) != 0) ) {
 	  doc.remove(dotPos, 1);
@@ -201,8 +201,7 @@ public class BracketCompletion {
      * @return true if a right brace '}' should be added
      *  or false if not.
      */
-    static boolean isAddRightBrace(BaseDocument doc, int caretOffset)
-    throws BadLocationException {
+    static boolean isAddRightBrace(BaseDocument doc, int caretOffset) throws BadLocationException {
         boolean addRightBrace = false;
         if (completionSettingEnabled()) {
             if (caretOffset > 0) {
@@ -210,7 +209,7 @@ public class BracketCompletion {
                 // or comments
                 int tokenOffset = caretOffset;
                 TokenItem token = ((ExtSyntaxSupport)doc.getSyntaxSupport()).
-                getTokenChain(tokenOffset -1, tokenOffset);
+                getTokenChain(tokenOffset - 1, tokenOffset);
                 
                 addRightBrace = true; // suppose that right brace should be added
                 
@@ -278,7 +277,7 @@ public class BracketCompletion {
      */
     static int getRowOrBlockEnd(BaseDocument doc, int caretOffset) throws BadLocationException {
         int rowEnd = Utilities.getRowLastNonWhite(doc, caretOffset);
-        if (rowEnd == -1){
+        if (rowEnd == -1 || caretOffset >= rowEnd) {
             return caretOffset;
         }
         rowEnd += 1;
@@ -332,7 +331,7 @@ public class BracketCompletion {
    * @param close the token that decreses the count
    */
   private static int tokenBalance(BaseDocument doc, TokenID open, TokenID close) 
-  throws BadLocationException {
+              throws BadLocationException {
       
       ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
       BalanceTokenProcessor balanceTP = new BalanceTokenProcessor(open, close);
@@ -374,7 +373,7 @@ public class BracketCompletion {
    * @param caretOffset
    */
   static boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, TokenID bracketId)
-  throws BadLocationException {
+              throws BadLocationException {
 
       // First check whether the caret is not after the last char in the document
       // because no bracket would follow then so it could not be skipped.
@@ -392,8 +391,8 @@ public class BracketCompletion {
       if (token != null && token.getTokenID() == bracketId) {
           int bracketIntId = bracketId.getNumericID();
           int leftBracketIntId = (bracketIntId == CCTokenContext.RPAREN_ID)
-          ? CCTokenContext.LPAREN_ID
-          : CCTokenContext.LBRACKET_ID;
+                      ? CCTokenContext.LPAREN_ID
+                      : CCTokenContext.LBRACKET_ID;
           
         // Skip all the brackets of the same type that follow the last one
           TokenItem nextToken = token.getNext();
@@ -616,7 +615,7 @@ public class BracketCompletion {
    * Returns true if bracket completion is enabled in options.
    */
   private static boolean completionSettingEnabled() {
-    return ((Boolean)Settings.getValue(CCKit.class, CCSettingsNames.PAIR_CHARACTERS_COMPLETION)).booleanValue();
+    return ((Boolean)Settings.getValue(CCKit.class, SettingsNames.PAIR_CHARACTERS_COMPLETION)).booleanValue();
   }
 
   /**
@@ -665,6 +664,23 @@ public class BracketCompletion {
     } catch (BadLocationException ex) {
       return false;
     }
+  }
+
+  static boolean posWithinAnyQuote(BaseDocument doc, int dotPos) {
+      try {
+          MyTokenProcessor proc = new MyTokenProcessor();
+          doc.getSyntaxSupport().tokenizeText( proc,
+                  dotPos-1,
+                  doc.getLength(), true);
+          if(proc.tokenID == CCTokenContext.STRING_LITERAL ||
+                  proc.tokenID == CCTokenContext.CHAR_LITERAL) {
+              char[] ch = doc.getChars(dotPos-1,1);
+              return dotPos - proc.tokenStart == 1 || (ch[0]!='\"' && ch[0]!='\'');
+          }
+          return false;
+      } catch (BadLocationException ex) {
+          return false;
+      }
   }
 
 

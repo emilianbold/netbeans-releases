@@ -29,9 +29,9 @@ import org.openide.WizardDescriptor;
  */
 public interface IteratorExtension {
     
-    WizardDescriptor.Panel[] getPanels();
-    
-    boolean canApply(WizardDescriptor wizard, Project project);
+    boolean isApplicable(WizardDescriptor wizard);
+
+    boolean canApply(WizardDescriptor wizard);
     
     void apply(WizardDescriptor wizard, Project project) throws IOException;
     

@@ -25,6 +25,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -35,25 +36,52 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
  */
 public class RepositoryUtils {
     
+    private static final boolean TRACE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // repository access wrappers
-    
+    private static volatile int counter = 0;
     public static <T extends CsmIdentifiable> T get(CsmUID<T> uid) {
         Key key = UIDtoKey(uid);
         assert key != null;
+        long time = 0;
+        int index = 0;
+        if (TRACE_REPOSITORY_ACCESS) {
+            index = nextIndex();
+            time = System.currentTimeMillis();
+            System.err.println(index + ":getting key " + key);
+        }
         Persistent out = RepositoryAccessor.getRepository().get(key);
+        if (TRACE_REPOSITORY_ACCESS) {
+            time = System.currentTimeMillis() - time;
+            System.err.println(index + ":got in " + time + "ms the key " + key);
+        }
         assert out == null || (out instanceof CsmIdentifiable);
         return (T)out;
     }
-
+    
+    private static synchronized int nextIndex() {
+        return counter++;
+    }
+    
     public static void remove(CsmUID uid) {
         Key key = UIDtoKey(uid);
         if (key != null) {
+            long time = 0;
+            int index = 0;
+            if (TRACE_REPOSITORY_ACCESS) {
+                index = nextIndex();
+                time = System.currentTimeMillis();
+                System.err.println(index + ":removing key " + key);
+            }            
             RepositoryAccessor.getRepository().remove(key);
+            if (TRACE_REPOSITORY_ACCESS) {
+                time = System.currentTimeMillis() - time;
+                System.err.println(index + ":removed in " + time + "ms the key " + key);
+            }            
         }
     }
 
@@ -73,7 +101,18 @@ public class RepositoryUtils {
             assert uid != null;
             Key key = UIDtoKey(uid);
             if (key != null) {
+                long time = 0;
+                int index = 0;
+                if (TRACE_REPOSITORY_ACCESS) {
+                    index = nextIndex();
+                    time = System.currentTimeMillis();
+                    System.err.println(index + ":putting key " + key);
+                }                  
                 RepositoryAccessor.getRepository().put(key, (Persistent)csmObj);
+                if (TRACE_REPOSITORY_ACCESS) {
+                    time = System.currentTimeMillis() - time;
+                    System.err.println(index + ":put in " + time + "ms the key " + key);
+                }                  
             }
         }
         return uid;
@@ -86,7 +125,18 @@ public class RepositoryUtils {
             assert uid != null;
             Key key = UIDtoKey(uid);
             if (key != null) {
+                long time = 0;
+                int index = 0;
+                if (TRACE_REPOSITORY_ACCESS) {
+                    index = nextIndex();
+                    time = System.currentTimeMillis();
+                    System.err.println(index + ":hanging key " + key);
+                }                  
                 RepositoryAccessor.getRepository().hang(key, (Persistent)csmObj);
+                if (TRACE_REPOSITORY_ACCESS) {
+                    time = System.currentTimeMillis() - time;
+                    System.err.println(index + ":hung in " + time + "ms the key " + key);
+                }                 
             }
         }
     }
@@ -110,4 +160,9 @@ public class RepositoryUtils {
             return null;
         }
     }
+    
+    public static void shutdown() {
+	RepositoryAccessor.getRepository().shutdown();
+    }
+    
 }

@@ -25,17 +25,16 @@ enum tDisk{tsingle=1 , traid}; //type
 enum tGB{t100=1, t200, t500}; //category represents disk sub-module size in GB
 
 
-class Disk:public Module
-{
-public:
-	Disk();
-	Disk(int type, int size);
-	Disk(int type, int size, int units);
-
+class Disk:public Module {
+    public:
+        Disk();
+        Disk(int type, int size);
+        Disk(int type, int size, int units);
+        
 //copy constructor derived unchanged from base class
 //destructor derived unchanged from base class
-	void ComputeSupportMetric();
+        void ComputeSupportMetric();
 }
-; // note that ";" is required at end of class definition header file 
+; // note that ";" is required at end of class definition header file
 
 #endif // DISK_H

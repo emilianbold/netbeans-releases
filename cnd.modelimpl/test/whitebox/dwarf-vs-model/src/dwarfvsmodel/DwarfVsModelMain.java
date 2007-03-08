@@ -178,7 +178,7 @@ public class DwarfVsModelMain {
             
             //resultLog.println("Final statistics:"); // NOI18N
             result.dump(resultLog);
-	    resultLog.printf("Total parser error count: %5d", calculateTotalErrorCount());
+	    resultLog.printf("Total parser error count: %5d", calculateTotalErrorCount()); // NOI18N
 	    
 	    if( DMFlags.COMPILE_ALL_FIRST ) {
 		printTime("\nTotal comparison time:", time, resultLog); // NOI18N
@@ -266,11 +266,11 @@ public class DwarfVsModelMain {
     }
 
     private void initErrorStatistics() {
-	errorStatisticsFile = new File(tempDir, "_errorStat");
+	errorStatisticsFile = new File(tempDir, "_errorStat"); // NOI18N
 //	if( errorStatisticsFile.exists() ) {
 //	    errorStatisticsFile.delete();
 //	}
-	Diagnostic.setStatisticsLevel(Integer.getInteger("cnd.modelimpl.stat.level", 1).intValue());
+	Diagnostic.setStatisticsLevel(Integer.getInteger("cnd.modelimpl.stat.level", 1).intValue()); // NOI18N
 	Diagnostic.initFileStatistics(errorStatisticsFile.getAbsolutePath());
     }
     

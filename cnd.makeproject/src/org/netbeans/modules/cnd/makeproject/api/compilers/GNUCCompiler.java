@@ -127,15 +127,15 @@ public class GNUCCompiler extends CCCCompiler {
         try {
             systemIncludeDirectoriesList = new PersistentList();
             systemPreprocessorSymbolsList = new PersistentList();
-        getSystemIncludesAndDefines(platform, compilerStderrCommand, false);
-        getSystemIncludesAndDefines(platform, compilerStdoutCommand, true);
-	    // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
-	    if (!containsMacro(systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
-		systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
-	    }
+            getSystemIncludesAndDefines(platform, compilerStderrCommand, false);
+            getSystemIncludesAndDefines(platform, compilerStdoutCommand, true);
+            // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
+            if (!containsMacro(systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
+                systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
+            }
             saveOK = true;
-    }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
+            System.err.println("IOException " + ioe);
             String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;

@@ -13,13 +13,16 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamField;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.FormatterIndentEngine;
@@ -27,123 +30,153 @@ import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.cnd.MIMENames;
 
-/**
-* Java indentation engine that delegates to java formatter
-*
-* duped from editor/src/org/netbeans/modules/editor/java/JavaIndentEngine.java
-*/
-
+/** C++ indentation engine that delegates to C++ formatter */
 public class CCIndentEngine extends FormatterIndentEngine {
 
-    public static final String FORMAT_NEWLINE_BEFORE_BRACE_PROP
-        = "FormatNewlineBeforeBrace"; // NOI18N
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP
+        = "CCFormatNewlineBeforeBrace"; // NOI18N
 
-    public static final String FORMAT_SPACE_BEFORE_PARENTHESIS_PROP
-        = "FormatSpaceBeforeParenthesis"; // NOI18N
+    public static final String CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP
+        = "CCFormatSpaceBeforeParenthesis"; // NOI18N
 
-    public static final String FORMAT_SPACE_AFTER_COMMA_PROP
-        = "FormatSpaceAfterComma"; // NOI18N
+    public static final String CC_FORMAT_SPACE_AFTER_COMMA_PROP
+        = "CCFormatSpaceAfterComma"; // NOI18N
     
-    public static final String FORMAT_PREPROCESSOR_AT_LINE_START_PROP
-        = "FormatPreprocessorAtLineStart"; // NOI18N    
+    public static final String CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP
+        = "CCFormatPreprocessorAtLineStart"; // NOI18N   
+    
+    public static final String CC_FORMAT_LEADING_STAR_IN_COMMENT_PROP
+        = "CCFormatLeadingStarInComment"; // NOI18N  
+    
+    public static final String CC_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP
+        = "CCFormatStatementContinuationIndent"; // NOI18N
 
     public CCIndentEngine() {
-        setAcceptedMimeTypes(new String[] { MIMENames.CPLUSPLUS_MIME_TYPE
-	                                  });
+        setAcceptedMimeTypes(new String[] { MIMENames.CPLUSPLUS_MIME_TYPE });
     }
 
     protected ExtFormatter createFormatter() {
-	return (CCFormatter)Formatter.getFormatter(CCKit.class);
+	return (CCFormatter) Formatter.getFormatter(CCKit.class);
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx("Welcome_opt_indent_cpp"); // NOI18N
     }
 
-    public boolean getFormatSpaceBeforeParenthesis() {
-        Boolean b = (Boolean)getValue(CCSettingsNames.FORMAT_SPACE_BEFORE_PARENTHESIS);
+    public boolean getCCFormatSpaceBeforeParenthesis() {
+        Boolean b = (Boolean)getValue(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
         if (b == null) {
-            b = CCSettingsDefaults.defaultFormatSpaceBeforeParenthesis;
+            b = CCSettingsDefaults.defaultCCFormatSpaceBeforeParenthesis;
         }
         return b.booleanValue();
     }
 
-    public void setFormatSpaceBeforeParenthesis(boolean b) {
-        setValue(CCSettingsNames.FORMAT_SPACE_BEFORE_PARENTHESIS,
-		b ? Boolean.TRUE : Boolean.FALSE, null);
+    public void setCCFormatSpaceBeforeParenthesis(boolean b) {
+        setValue(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS,
+		b ? Boolean.TRUE : Boolean.FALSE, CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP);
     }
 
-    public boolean getFormatNewlineBeforeBrace() {
-        Boolean b = (Boolean)getValue(CCSettingsNames.FORMAT_NEWLINE_BEFORE_BRACE);
+    public boolean getCCFormatNewlineBeforeBrace() {
+        Boolean b = (Boolean)getValue(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE);
         if (b == null) {
-            b = CCSettingsDefaults.defaultFormatNewlineBeforeBrace;
+            b = CCSettingsDefaults.defaultCCFormatNewlineBeforeBrace;
         }
         return b.booleanValue();
     }
 
-    public void setFormatNewlineBeforeBrace(boolean b) {
-        setValue(CCSettingsNames.FORMAT_NEWLINE_BEFORE_BRACE,
-		b ? Boolean.TRUE : Boolean.FALSE, null);
+    public void setCCFormatNewlineBeforeBrace(boolean b) {
+        setValue(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE,
+		b ? Boolean.TRUE : Boolean.FALSE, CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP);
     }
     
-    public boolean getFormatSpaceAfterComma() {
-        Boolean b = (Boolean)getValue(CCSettingsNames.FORMAT_SPACE_AFTER_COMMA);
+    public boolean getCCFormatSpaceAfterComma() {
+        Boolean b = (Boolean)getValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
         if (b == null) {
-            b = CCSettingsDefaults.defaultFormatSpaceAfterComma;
+            b = CCSettingsDefaults.defaultCCFormatSpaceAfterComma;
         }
         return b.booleanValue();
     }
 
-    public void setFormatSpaceAfterComma(boolean b) {
-        setValue(CCSettingsNames.FORMAT_SPACE_AFTER_COMMA,
-		b ? Boolean.TRUE : Boolean.FALSE, null);
+    public void setCCFormatSpaceAfterComma(boolean b) {
+        setValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA,
+		b ? Boolean.TRUE : Boolean.FALSE, CC_FORMAT_SPACE_AFTER_COMMA_PROP);
     }
     
-    public boolean getFormatPreprocessorAtLineStart() {
-        Boolean b = (Boolean)getValue(CCSettingsNames.FORMAT_PREPROCESSOR_AT_LINE_START);
+    public boolean getCCFormatPreprocessorAtLineStart() {
+        Boolean b = (Boolean)getValue(CCSettingsNames.CC_FORMAT_PREPROCESSOR_AT_LINE_START);
         if (b == null) {
-            b = CCSettingsDefaults.defaultFormatPreprocessorAtLineStart;
+            b = CCSettingsDefaults.defaulCCtFormatPreprocessorAtLineStart;
         }
         return b.booleanValue();
     }
 
-    public void setFormatPreprocessorAtLineStart(boolean b) {
-        setValue(CCSettingsNames.FORMAT_PREPROCESSOR_AT_LINE_START,
-		b ? Boolean.TRUE : Boolean.FALSE, null);
-    }    
+    public void setCCFormatPreprocessorAtLineStart(boolean b) {
+        setValue(CCSettingsNames.CC_FORMAT_PREPROCESSOR_AT_LINE_START,
+		b ? Boolean.TRUE : Boolean.FALSE, CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP);
+    }
+    
+    public boolean getCCFormatLeadingStarInComment() {
+        Boolean b = (Boolean) getValue(CCSettingsNames.CC_FORMAT_LEADING_STAR_IN_COMMENT);
+        if (b == null) {
+            b = CCSettingsDefaults.defaultCCFormatLeadingStarInComment;
+        }
+        return b.booleanValue();
+    }        
+    public void setCCFormatLeadingStarInComment(boolean b) {
+        setValue(CCSettingsNames.CC_FORMAT_LEADING_STAR_IN_COMMENT,
+                b ? Boolean.TRUE : Boolean.FALSE, CC_FORMAT_LEADING_STAR_IN_COMMENT_PROP);
+    }
+    
+    public int getCCFormatStatementContinuationIndent() {
+        Integer i = (Integer) getValue(CCSettingsNames.CC_FORMAT_STATEMENT_CONTINUATION_INDENT);
+	if (i == null) {
+	    i = CCSettingsDefaults.defaultCCFormatStatementContinuationIndent;
+	}
+	return i.intValue();
+    }
+    
+    public void setCCFormatStatementContinuationIndent(Integer continuationIndent) {
+	setValue(CCSettingsNames.CC_FORMAT_STATEMENT_CONTINUATION_INDENT,
+            new Integer(continuationIndent), CC_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP);
+    }
 
     // Serialization ------------------------------------------------------------
     private static final ObjectStreamField[] serialPersistentFields = {
-        new ObjectStreamField(FORMAT_NEWLINE_BEFORE_BRACE_PROP, Boolean.TYPE),
-        new ObjectStreamField(FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, Boolean.TYPE),
-        new ObjectStreamField(FORMAT_SPACE_AFTER_COMMA_PROP, Boolean.TYPE),
-        new ObjectStreamField(FORMAT_PREPROCESSOR_AT_LINE_START_PROP, Boolean.TYPE)
+        new ObjectStreamField(CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP, Boolean.TYPE),
+        new ObjectStreamField(CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, Boolean.TYPE),
+        new ObjectStreamField(CC_FORMAT_SPACE_AFTER_COMMA_PROP, Boolean.TYPE),
+        new ObjectStreamField(CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP, Boolean.TYPE),
+        new ObjectStreamField(CC_FORMAT_LEADING_STAR_IN_COMMENT_PROP, Boolean.TYPE),
+        new ObjectStreamField(CC_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP, Integer.TYPE),
     };
     
     static final long serialVersionUID = -794367501912140446L;
     
-    private void readObject(java.io.ObjectInputStream ois)
-    throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ObjectInputStream.GetField fields = ois.readFields();
-        setFormatNewlineBeforeBrace(fields.get(FORMAT_NEWLINE_BEFORE_BRACE_PROP,
-            getFormatNewlineBeforeBrace()));
-	setFormatSpaceBeforeParenthesis(fields.get(FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
-            getFormatSpaceBeforeParenthesis()));
-        setFormatSpaceAfterComma(fields.get(FORMAT_SPACE_AFTER_COMMA_PROP,
-            getFormatSpaceAfterComma()));
-        setFormatPreprocessorAtLineStart(fields.get(FORMAT_PREPROCESSOR_AT_LINE_START_PROP,
-            getFormatPreprocessorAtLineStart()));        
+        setCCFormatNewlineBeforeBrace(fields.get(CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
+            getCCFormatNewlineBeforeBrace()));
+	setCCFormatSpaceBeforeParenthesis(fields.get(CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
+            getCCFormatSpaceBeforeParenthesis()));
+        setCCFormatSpaceAfterComma(fields.get(CC_FORMAT_SPACE_AFTER_COMMA_PROP,
+            getCCFormatSpaceAfterComma()));
+        setCCFormatPreprocessorAtLineStart(fields.get(CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP,
+            getCCFormatPreprocessorAtLineStart()));
+        setCCFormatLeadingStarInComment(fields.get(CC_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
+            getCCFormatLeadingStarInComment()));
+        setCCFormatStatementContinuationIndent(fields.get(CC_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP,
+            getCCFormatStatementContinuationIndent()));
     }
 
-    private void writeObject(java.io.ObjectOutputStream oos)
-    throws IOException, ClassNotFoundException {
+    private void writeObject(ObjectOutputStream oos) throws IOException, ClassNotFoundException {
         ObjectOutputStream.PutField fields = oos.putFields();
-        fields.put(FORMAT_NEWLINE_BEFORE_BRACE_PROP, getFormatNewlineBeforeBrace());
-        fields.put(FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, getFormatSpaceBeforeParenthesis());
-        fields.put(FORMAT_SPACE_AFTER_COMMA_PROP, getFormatSpaceAfterComma());
-        fields.put(FORMAT_PREPROCESSOR_AT_LINE_START_PROP, getFormatPreprocessorAtLineStart());
+        fields.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP, getCCFormatNewlineBeforeBrace());
+        fields.put(CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, getCCFormatSpaceBeforeParenthesis());
+        fields.put(CC_FORMAT_SPACE_AFTER_COMMA_PROP, getCCFormatSpaceAfterComma());
+        fields.put(CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP, getCCFormatPreprocessorAtLineStart());
+        fields.put(CC_FORMAT_LEADING_STAR_IN_COMMENT_PROP, getCCFormatLeadingStarInComment());
+        fields.put(CC_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP, getCCFormatStatementContinuationIndent());
         oos.writeFields();
     }
-
 }
 

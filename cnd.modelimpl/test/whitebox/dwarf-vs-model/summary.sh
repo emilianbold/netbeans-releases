@@ -21,7 +21,7 @@ run() {
 		(cd $D; 
 			for F in `ls *.diff`; do tail -1 $F; done > ${all_results} 
 			printf "\t%s" $D
-			awk '{ matched+=$4; total+=$6; delta+=$8; err+=$10} END {printf "\t%6d  of %6d  %2.2f%%      delta: %6d    parser errors: %5d\n", matched, total, (matched/total), delta, err}' ${all_results}
+			awk '{ matched+=$4; total+=$6; delta+=$8; err+=$10} END {printf "\t%6d  of %6d  %2.2f%%      delta: %6d    parser errors: %5d\n", matched, total, (100*matched/total), delta, err}' ${all_results}
 		); 
 	done
 	

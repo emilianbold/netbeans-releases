@@ -194,13 +194,15 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         } else {
             _setClassifier(null);
             if (qname != null) {
-                _setClassifier(renderClassifier());
+                _setClassifier(renderClassifier(qname));
+            } else if (classifierText.length() > 0) {
+                _setClassifier(renderClassifier(new String[] { classifierText } ));
             }
         }
         return _getClassifier();
     }
     
-    private CsmClassifier renderClassifier() {
+    private CsmClassifier renderClassifier(String[] qname) {
         CsmClassifier result = null;
         Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset);
         CsmObject o = resolver.resolve(qname);

@@ -22,31 +22,31 @@
 
 enum tDiscount {tnone, tretail, trepeat};
 
-class NameList // “database” of names. Singleton class.
+class NameList // ?database? of names. Singleton class.
 {
-private:
-	static NameList* pList; //used to implement singleton design pattern
-	
-	int nameCount;
-	int maxIndex;
-	
-	char** Name; //2D character array ... name strings ... dynamically allocated in constructor
-	char** ID; //2D character array ... ID strings ... dynamically allocated in constructor
-	int* Index;
-	int* Discount;
-
-protected:
-	NameList(); //constructor ... called indirectly through singleton pattern (static ListInstance)
-	NameList(const NameList& obj); //copy constructor ... not called directly
-	NameList& operator=(NameList& obj); //overload of assignment operator ... not called directly
-	~NameList(); //destructor ... not called directly
-public:
-	static NameList* ListInstance(); //used to implement singleton design pattern (check plist)
-	int FindCustomer(char* name); //returns customer index within namelist data structure
-	char* GetName(int index);
-	char* GetID(int index);
-	int GetDiscount(int index);
-	void DisplayList();
+    private:
+        static NameList* pList; //used to implement singleton design pattern
+        
+        int nameCount;
+        int maxIndex;
+        
+        char** Name; //2D character array ... name strings ... dynamically allocated in constructor
+        char** ID; //2D character array ... ID strings ... dynamically allocated in constructor
+        int* Index;
+        int* Discount;
+        
+        protected:
+            NameList(); //constructor ... called indirectly through singleton pattern (static ListInstance)
+            NameList(const NameList& obj); //copy constructor ... not called directly
+            NameList& operator=(NameList& obj); //overload of assignment operator ... not called directly
+            ~NameList(); //destructor ... not called directly
+            public:
+                static NameList* ListInstance(); //used to implement singleton design pattern (check plist)
+                int FindCustomer(char* name); //returns customer index within namelist data structure
+                char* GetName(int index);
+                char* GetID(int index);
+                int GetDiscount(int index);
+                void DisplayList();
 }
 ;//note that ";" is required at end of class definition header file
 

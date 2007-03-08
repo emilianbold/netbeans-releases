@@ -37,8 +37,6 @@ public class CCOptions extends BaseOptions {
     
     public static final String CC = "CPLUSPLUS"; //NOI18N
 
-    public static final String DOCUMENTATION_URLBASE_PROP = "documentationURLBase"; // NOI18N
-
     public static final String COMPLETION_AUTO_POPUP_PROP = "completionAutoPopup"; // NOI18N
 
     public static final String COMPLETION_AUTO_POPUP_DELAY_PROP = "completionAutoPopupDelay"; // NOI18N
@@ -59,27 +57,24 @@ public class CCOptions extends BaseOptions {
     
     public static final String JAVADOC_PREFERRED_SIZE_PROP = "javaDocPreferredSize"; //NOI18N
     
+    public static final String FORMAT_SPACE_BEFORE_PARENTHESIS_PROP = "formatSpaceBeforeParenthesis"; // NOI18N
+    
     //code folding properties
     public static final String CODE_FOLDING_UPDATE_TIMEOUT_PROP = "codeFoldingUpdateInterval"; //NOI18N
     
     public static final String CODE_FOLDING_ENABLE_PROP = "codeFoldingEnable"; //NOI18N
     
-    public static final String PAIR_CHARACTERS_COMPLETION = "pairCharactersCompletion"; // NOI18N
-    
     static final String[] CC_PROP_NAMES = OptionSupport.mergeStringArrays(BaseOptions.BASE_PROP_NAMES, new String[] {
-                                                DOCUMENTATION_URLBASE_PROP,
                                                 COMPLETION_AUTO_POPUP_PROP,
                                                 COMPLETION_AUTO_POPUP_DELAY_PROP,
                                                 COMPLETION_CASE_SENSITIVE_PROP,
                                                 COMPLETION_INSTANT_SUBSTITUTION_PROP,
-//                                                COMPLETION_LOWER_CASE_PROP,
                                                 JAVADOC_AUTO_POPUP_PROP,
                                                 JAVADOC_AUTO_POPUP_DELAY_PROP,
                                                 JAVADOC_PREFERRED_SIZE_PROP,
                                                 JAVADOC_BGCOLOR,
                                                 CODE_FOLDING_UPDATE_TIMEOUT_PROP,
-                                                CODE_FOLDING_ENABLE_PROP,
-                                                PAIR_CHARACTERS_COMPLETION
+                                                CODE_FOLDING_ENABLE_PROP
                                             });
 
     public CCOptions() {
@@ -90,22 +85,9 @@ public class CCOptions extends BaseOptions {
         super(kitClass, typeName);
     }
   
-    /** Return the CC Indent Engine class */
+    /** Return the C++ Indent Engine class */
     protected Class getDefaultIndentEngineClass() {
         return CCIndentEngine.class;
-    }
-                                            
-    public String getDocumentationURLBase() {
-        String s = (String)getSettingValue(CCSettingsNames.DOCUMENTATION_URLBASE);
-	if (s == null) {
-	    s = CCSettingsDefaults.defaultDocURLbase;
-	}
-	return s;
-    }
-    
-    public void setDocumentationURLBase(String v) {
-        setSettingValue(CCSettingsNames.DOCUMENTATION_URLBASE, v,
-			DOCUMENTATION_URLBASE_PROP);
     }
 
     public boolean getCompletionAutoPopup() {
@@ -191,15 +173,6 @@ public class CCOptions extends BaseOptions {
         setSettingValue(ExtSettingsNames.JAVADOC_PREFERRED_SIZE, d,
             JAVADOC_PREFERRED_SIZE_PROP);
     }
-
-    public boolean getPairCharactersCompletion() {
-      return getSettingBoolean(CCSettingsNames.PAIR_CHARACTERS_COMPLETION);
-    }
-
-    public void setPairCharactersCompletion(boolean v) {
-        setSettingBoolean(CCSettingsNames.PAIR_CHARACTERS_COMPLETION, v,
-            PAIR_CHARACTERS_COMPLETION);
-    }    
     
     public int getCodeFoldingUpdateInterval() {
         return getSettingInteger(CCSettingsNames.CODE_FOLDING_UPDATE_TIMEOUT);
@@ -219,6 +192,11 @@ public class CCOptions extends BaseOptions {
     
     public void setCodeFoldingEnable(boolean state) {
         setSettingBoolean(SettingsNames.CODE_FOLDING_ENABLE, state, CODE_FOLDING_ENABLE_PROP);
+    }
+
+    public void setFormatSpaceBeforeParenthesis(boolean b) {
+        setSettingBoolean(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, b,
+		FORMAT_SPACE_BEFORE_PARENTHESIS_PROP);
     }
     
     public HelpCtx getHelpCtx() {

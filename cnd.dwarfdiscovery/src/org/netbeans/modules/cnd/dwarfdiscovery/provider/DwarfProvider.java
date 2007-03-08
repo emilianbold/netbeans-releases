@@ -42,6 +42,11 @@ public class DwarfProvider extends BaseDwarfProvider {
     public static final String EXECUTABLES_KEY = "binaries"; // NOI18N
     
     public DwarfProvider() {
+        clean();
+    }
+
+    public void clean() {
+        myProperties.clear();
         myProperties.put(EXECUTABLES_KEY, new ProviderProperty(){
             private String[] myPath;
             public String getName() {
@@ -63,7 +68,7 @@ public class DwarfProvider extends BaseDwarfProvider {
             }
         });
     }
-        
+
     public String getID() {
         return "dwarf-binaries"; // NOI18N
     }

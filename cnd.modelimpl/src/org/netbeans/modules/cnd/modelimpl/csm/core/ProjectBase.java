@@ -1089,10 +1089,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         assert this.name != null;
         aStream.writeUTF(this.name);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
-        aFactory.writeStringToUIDMap(this.namespaces, aStream);
-        aFactory.writeStringToUIDMap(this.files, aStream);
-        aFactory.writeStringToUIDMap(this.classifiers, aStream);
-        aFactory.writeStringToUIDMap(this.declarations, aStream);
+        aFactory.writeStringToUIDMap(this.namespaces, aStream, true);
+        aFactory.writeStringToUIDMap(this.files, aStream, true);
+        aFactory.writeStringToUIDMap(this.classifiers, aStream, true);
+        aFactory.writeStringToUIDMap(this.declarations, aStream, true);
         PersistentUtils.writeStringToStateMap(this.filesHandlers, aStream);
     }
 

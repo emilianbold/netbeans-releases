@@ -25,20 +25,20 @@ using namespace std;
 
 class System // collection of modules
 {
-private:
-	vector <Module*> moduleList;
-	int supportMetric;
-
-public:
-	System ();
-	System(const System& obj); //copy constructor
-	System& operator=(System& obj); //overload of assignment ("=") operator
-	~System ();
-	void AddModule(Module* m);
-	Module* GetModule(int i);
-	int GetModuleCount();
-	int GetSupportMetric();
-	void DisplayList();
+    private:
+        vector <Module*> moduleList;
+        int supportMetric;
+        
+        public:
+            System();
+            System(const System& obj); //copy constructor
+            System& operator=(System& obj); //overload of assignment ("=") operator
+            ~System();
+            void AddModule(Module* m);
+            Module* GetModule(int i);
+            int GetModuleCount();
+            int GetSupportMetric();
+            void DisplayList();
 }
-;// note that ";" is required at end of class definition header file 
+;// note that ";" is required at end of class definition header file
 #endif //SYSTEM_H

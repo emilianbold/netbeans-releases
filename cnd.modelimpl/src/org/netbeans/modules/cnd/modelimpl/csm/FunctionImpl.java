@@ -429,7 +429,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         output.writeUTF(this.name);
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.writeUIDCollection(this.parameters, output);
+        factory.writeUIDCollection(this.parameters, output, false);
         factory.writeUID(this.scopeUID, output);
         PersistentUtils.writeStrings(this.rawName, output);
         output.writeBoolean(this._const);
@@ -443,7 +443,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.parameters = (List<CsmUID<CsmParameter>>) factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
+        this.parameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
         this.scopeUID =factory.readUID(input);
         this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
         this._const = input.readBoolean();

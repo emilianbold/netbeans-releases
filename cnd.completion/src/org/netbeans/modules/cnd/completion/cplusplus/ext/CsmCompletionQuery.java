@@ -372,6 +372,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                      boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses) {
         // Find inner classes
         List ret = new ArrayList();
+        classifier = CsmKindUtilities.isTypedef(classifier) ? CsmBaseUtilities.getTypedefBaseClassifier((CsmTypedef) classifier) : classifier;
         if (!CsmKindUtilities.isClass(classifier)) {
             return ret;
         }
@@ -1557,7 +1558,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             boolean addSpace = false;
                             Formatter f = doc.getFormatter();
                             if (f instanceof ExtFormatter) {
-                                Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.FORMAT_SPACE_AFTER_COMMA);
+                                Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
                                 if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                                     addSpace = true;
                                 }
@@ -1586,7 +1587,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         boolean addSpace = false;
                         Formatter f = doc.getFormatter();
                         if (f instanceof ExtFormatter) {
-                            Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.FORMAT_SPACE_BEFORE_PARENTHESIS);
+                            Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
                             if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                                 addSpace = true;
                             }

@@ -20,6 +20,9 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -32,11 +35,15 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Implements CsmTypedef
@@ -48,12 +55,19 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     private final CsmType type;
     
     // only one of containerOLD/containerUID must be used (based on USE_REPOSITORY)
-    private CsmObject containerOLD;
-    private CsmUID<CsmIdentifiable> containerUID;
+    private final CsmObject containerOLD;
+    private final CsmUID<CsmIdentifiable> containerUID;
             
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
         super(ast, file);
-	this._setContainer(container);
+        if (TraceFlags.USE_REPOSITORY) {
+            this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable)container);
+            assert (containerUID != null || container == null);
+            this.containerOLD = null;
+        } else {
+            this.containerOLD = container;
+            this.containerUID = null;
+        }        
         if (type == null) {
             this.type = createType(ast);
         } else {
@@ -87,6 +101,8 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         if( scope instanceof MutableDeclarationsContainer ) {
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);
         }
+        FileImpl file = (FileImpl) getContainingFile();
+        file.getProjectImpl().unregisterDeclaration(this);
     }
 
     public String getQualifiedName() {
@@ -176,14 +192,30 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
             return containerOLD;
         }
     }
-
-    private void _setContainer(CsmObject container) {
-        if (TraceFlags.USE_REPOSITORY) {
-            this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable)container);
-            assert (containerUID != null || container == null);
-        } else {
-            this.containerOLD = container;
-        }
-    }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        assert this.name != null;
+        output.writeUTF(this.name);
+        assert this.type != null;
+        PersistentUtils.writeType(this.type, output);
+        assert this.containerUID != null;
+        UIDObjectFactory.getDefaultFactory().writeUID(this.containerUID, output);
+    }  
+    
+    public TypedefImpl(DataInput input) throws IOException {
+        super(input);
+        this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
+        this.type = PersistentUtils.readType(input);
+        assert this.type != null;
+        this.containerUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        assert this.containerUID != null;
+        
+        assert TraceFlags.USE_REPOSITORY;
+        this.containerOLD = null;
+    }       
 }

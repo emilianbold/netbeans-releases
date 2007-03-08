@@ -13,37 +13,35 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.util.MissingResourceException;
-
-import org.openide.util.NbBundle;
-import org.netbeans.modules.editor.options.BaseOptionsBeanInfo;
-
 /** BeanInfo for CC editor options */
-public class COptionsBeanInfo extends BaseOptionsBeanInfo {
+public class COptionsBeanInfo extends CCOptionsBeanInfo {
 
     private static final String[] EXPERT_PROP_NAMES = new String[] {
         CCOptions.COMPLETION_CASE_SENSITIVE_PROP,
         CCOptions.COMPLETION_INSTANT_SUBSTITUTION_PROP,
-//        CCOptions.COMPLETION_LOWER_CASE_PROP,
         CCOptions.JAVADOC_AUTO_POPUP_PROP,
         CCOptions.JAVADOC_AUTO_POPUP_DELAY_PROP,
         CCOptions.JAVADOC_PREFERRED_SIZE_PROP,
         CCOptions.JAVADOC_BGCOLOR,
-        CCOptions.CODE_FOLDING_UPDATE_TIMEOUT_PROP,
-        CCOptions.PAIR_CHARACTERS_COMPLETION
+        CCOptions.CODE_FOLDING_UPDATE_TIMEOUT_PROP
     };
     
-    public COptionsBeanInfo () {
-	super ("/org/netbeans/modules/cnd/editor/cplusplus/CCIcon"); //NOI18N
+    public COptionsBeanInfo() {
+	super();
+    }   
+    
+    protected Class getBeanClass() {
+	return COptions.class;
     }
     
     protected String[] getPropNames() {
+        // already merged on initialization
         return CCOptions.CC_PROP_NAMES;
     }
 
@@ -51,16 +49,4 @@ public class COptionsBeanInfo extends BaseOptionsBeanInfo {
         super.updatePropertyDescriptors();
         setExpert(EXPERT_PROP_NAMES);
     }    
-    
-    protected Class getBeanClass() {
-	return COptions.class;
-    }
-
-    protected String getString(String key) {
-        try {
-            return NbBundle.getBundle(COptionsBeanInfo.class).getString(key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
-        }
-    }
 }

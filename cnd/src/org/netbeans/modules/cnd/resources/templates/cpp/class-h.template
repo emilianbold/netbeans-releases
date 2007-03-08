@@ -5,8 +5,8 @@
 // Created on %<%DATE%>%, %<%TIME%>%
 //
 
-#ifndef _%<%NAME%>%_H
-#define	_%<%NAME%>%_H
+#ifndef _%<%GUARD_NAME%>%_H
+#define	_%<%GUARD_NAME%>%_H
 
 class %<%NAME%>% {
 public:
@@ -19,5 +19,5 @@ private:
 
 };
 
-#endif	/* _%<%NAME%>%_H */
+#endif	/* _%<%GUARD_NAME%>%_H */
 

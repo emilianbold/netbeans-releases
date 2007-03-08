@@ -160,7 +160,7 @@ public class PersistentUtils {
         }
     }
     
-    public static <T extends Collection> T readExpressions(T collection, DataInput input) throws IOException {
+    public static <T extends Collection<CsmExpression>> T readExpressions(T collection, DataInput input) throws IOException {
         int collSize = input.readInt();
         if (collSize == AbstractObjectFactory.NULL_POINTER) {
             collection = null;
@@ -198,9 +198,13 @@ public class PersistentUtils {
     // support types
     
     public static CsmType readType(DataInput stream) throws IOException {
-        CsmType obj = null;
+        CsmType obj;
         int handler = stream.readInt();
         switch (handler) {
+        case AbstractObjectFactory.NULL_POINTER:
+            obj = null;
+            break;
+            
         case NO_TYPE:
             obj = NoType.instance();
             break;
@@ -208,13 +212,17 @@ public class PersistentUtils {
         case TYPE_IMPL:
             obj = new TypeImpl(stream);
             break;        
+            
+        default:
+            throw new IllegalArgumentException("unknown type handler" + handler);  //NOI18N
         }
         return obj;
     }
     
     public static void writeType(CsmType type, DataOutput stream) throws IOException {
-        assert type != null;
-        if (type instanceof NoType) {
+        if (type == null) {
+            stream.writeInt(AbstractObjectFactory.NULL_POINTER);
+        } else if (type instanceof NoType) {
             stream.writeInt(NO_TYPE);
         } else if (type instanceof TypeImpl) {
             stream.writeInt(TYPE_IMPL);
@@ -227,7 +235,7 @@ public class PersistentUtils {
     ////////////////////////////////////////////////////////////////////////////
     // support inheritance 
     
-    public static void writeInheritance(CsmInheritance inheritance, DataOutput output) throws IOException {
+    private static void writeInheritance(CsmInheritance inheritance, DataOutput output) throws IOException {
         assert inheritance != null;
         if (inheritance instanceof InheritanceImpl) {
             ((InheritanceImpl)inheritance).write(output);            
@@ -236,10 +244,32 @@ public class PersistentUtils {
         }
     }
     
-    public static CsmInheritance readInheritance(DataInput input) throws IOException {
+    private static CsmInheritance readInheritance(DataInput input) throws IOException {
         CsmInheritance inheritance = new InheritanceImpl(input);
         return inheritance;
     }
+        
+    public static <T extends Collection<CsmInheritance>> void readInheritances(T collection, DataInput input) throws IOException {
+        int collSize = input.readInt();
+        assert collSize >= 0;
+        for (int i = 0; i < collSize; ++i) {
+            CsmInheritance inheritance = readInheritance(input);
+            assert inheritance != null;
+            collection.add(inheritance);
+        }
+    }
+    
+    public static void writeInheritances(Collection<? extends CsmInheritance> inhs, DataOutput output) throws IOException {
+        assert inhs != null;
+        int collSize = inhs.size();
+        output.writeInt(collSize);
+
+        for (CsmInheritance elem: inhs) {
+            assert elem != null;
+            writeInheritance(elem, output);
+        }            
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // support visibility
     

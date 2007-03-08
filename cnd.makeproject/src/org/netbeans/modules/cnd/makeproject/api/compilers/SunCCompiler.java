@@ -165,6 +165,7 @@ public class SunCCompiler extends CCCCompiler {
             saveOK = true;
     }
         catch (IOException ioe) {
+            System.err.println("IOException " + ioe);
             String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;

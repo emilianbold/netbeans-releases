@@ -19,12 +19,19 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.WizardDescriptor;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -36,33 +43,99 @@ public class DiscoveryExtension implements IteratorExtension {
     public DiscoveryExtension() {
     }
     
-    public WizardDescriptor.Panel[] getPanels() {
-        return new WizardDescriptor.Panel[] {
-            new SelectProviderWizard(),
-            new SelectObjectFilesWizard(),
-            new ConsolidationStrategyWizard(),
-            new SelectConfigurationWizard(),
-            new RemoveUnusedWizard()
-        };
-    }
-    
     public void apply(WizardDescriptor wizard, Project project) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.setProject(project);
         DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(descriptor);
         generator.makeProject();
     }
-
+    
     public void uninitialize(WizardDescriptor wizard) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.clean();
     }
-
-    public boolean canApply(WizardDescriptor wizard, Project project) {
+    
+    public boolean isApplicable(WizardDescriptor wizard) {
+        String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
+        if (selectedExecutable == null) {
+            return false;
+        }
+        File file = new File(selectedExecutable);
+        if (!file.exists()) {
+            return false;
+        }
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        return !descriptor.isInvokeProvider() &&
-               descriptor.getConfigurations() != null &&
-               descriptor.getIncludedFiles() != null &&
-               descriptor.getAdditionalFiles() != null;
+        DiscoveryProvider provider = descriptor.getProvider();
+        if (provider== null){
+            provider = findProvider();
+        }
+        if (provider == null){
+            return false;
+        }
+        provider.getProperty("executable").setValue(selectedExecutable);// NOI18N
+        provider.getProperty("libraries").setValue(new String[0]);// NOI18N
+        descriptor.setProvider(provider);
+        return provider.canAnalyze(new ProjectProxy(){
+            public boolean createSubProjects() {
+                return false;
+            }
+
+            public Object getProject() {
+                return null;
+            }
+        });
+    }
+    
+    public boolean canApply(WizardDescriptor wizard) {
+        String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
+        if (selectedExecutable == null) {
+            return false;
+        }
+        File file = new File(selectedExecutable);
+        if (!file.exists()) {
+            return false;
+        }
+        String additional = (String)wizard.getProperty("additionalLibraries"); // NOI18N
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
+        String level = descriptor.getLevel();
+        if (level == null || level.length() == 0){
+            return false;
+        }
+        
+        DiscoveryProvider provider = descriptor.getProvider();
+        if (provider== null){
+            provider = findProvider();
+        }
+        if (provider == null){
+            return false;
+        }
+        provider.getProperty("executable").setValue(selectedExecutable);// NOI18N
+        if (additional != null && additional.length()>0){
+            List<String> list = new ArrayList<String>();
+            StringTokenizer st = new StringTokenizer(additional,";"); // NOI18N
+            while(st.hasMoreTokens()){
+                list.add(st.nextToken());
+            }
+            provider.getProperty("libraries").setValue(list.toArray(new String[list.size()]));// NOI18N
+        } else {
+            provider.getProperty("libraries").setValue(new String[0]);// NOI18N
+        }
+        descriptor.setProvider(provider);
+        SelectConfigurationPanel.buildModel(descriptor);
+        return !descriptor.isInvokeProvider()
+        && descriptor.getConfigurations() != null
+                && descriptor.getIncludedFiles() != null;
+    }
+    
+    private DiscoveryProvider findProvider(){
+        Lookup.Result providers = Lookup.getDefault().lookup(new Lookup.Template(DiscoveryProvider.class));
+        for(Object p : providers.allInstances()){
+            DiscoveryProvider provider = (DiscoveryProvider)p;
+            if ("dwarf-executable".equals(provider.getID())) {// NOI18N
+                provider.clean();
+                return provider;
+            }
+        }
+        return null;
     }
 }

@@ -45,20 +45,28 @@ public class CCSettingsDefaults extends ExtSettingsDefaults {
 
     public static final Boolean defaultCaretSimpleBracketMatching = Boolean.FALSE;
     public static final Boolean defaultHighlightMatchingBracket = Boolean.TRUE;
-
-    public static final Boolean defaultWordMatchMatchCase = Boolean.FALSE;
     public static final Boolean defaultJavaDocAutoPopup = Boolean.FALSE;
-
     public static final Boolean defaultPairCharactersCompletion = Boolean.TRUE;
-    
     public static final Acceptor defaultIdentifierAcceptor = AcceptorFactory.JAVA_IDENTIFIER;
-    public static final Acceptor defaultAbbrevResetAcceptor = AcceptorFactory.NON_JAVA_IDENTIFIER;
     
     // Formatting
-    public static final Boolean defaultFormatSpaceBeforeParenthesis = Boolean.FALSE;
-    public static final Boolean defaultFormatSpaceAfterComma = Boolean.TRUE;
-    public static final Boolean defaultFormatNewlineBeforeBrace = Boolean.FALSE;
-    public static final Boolean defaultFormatPreprocessorAtLineStart = Boolean.FALSE;
+    public static final Boolean defaultCCFormatSpaceBeforeParenthesis = Boolean.FALSE;
+    public static final Boolean defaultCCFormatSpaceAfterComma = Boolean.TRUE;
+    public static final Boolean defaultCCFormatNewlineBeforeBrace = Boolean.FALSE;
+    public static final Boolean defaultCCFormatLeadingSpaceInComment = Boolean.FALSE;
+    public static final Boolean defaultCCFormatLeadingStarInComment = Boolean.TRUE;
+    public static final Integer defaultCCFormatStatementContinuationIndent = new Integer(8);
+    public static final Boolean defaulCCtFormatPreprocessorAtLineStart = Boolean.FALSE;
+    
+    /** @deprecated */
+    public static final Boolean defaultFormatSpaceBeforeParenthesis = defaultCCFormatSpaceBeforeParenthesis;
+    /** @deprecated */
+    public static final Boolean defaultFormatSpaceAfterComma = defaultCCFormatSpaceAfterComma;
+    /** @deprecated */
+    public static final Boolean defaultFormatNewlineBeforeBrace = defaultCCFormatNewlineBeforeBrace;
+    /** @deprecated */
+    public static final Boolean defaultFormatLeadingSpaceInComment = defaultCCFormatLeadingSpaceInComment;
+
 
     // Code Folding
     public static final Boolean defaultCodeFoldingEnable = Boolean.TRUE;
@@ -133,18 +141,15 @@ public class CCSettingsDefaults extends ExtSettingsDefaults {
         
         return new MultiKeyBinding[] {
             new MultiKeyBinding(
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK ),
-                    BaseKit.formatAction
-                    ),
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK),
+                    BaseKit.formatAction),
             new MultiKeyBinding(
                     KeyStroke.getKeyStroke(KeyEvent.VK_T, MENU_MASK | InputEvent.SHIFT_MASK),
-                    ExtKit.commentAction
-                    ),
+                    ExtKit.commentAction),
             new MultiKeyBinding(
                     KeyStroke.getKeyStroke(KeyEvent.VK_D, MENU_MASK | InputEvent.SHIFT_MASK),
-                    ExtKit.uncommentAction
-                    )
-               };
+                    ExtKit.uncommentAction)
+        };
     }
               
     static class CCTokenColoringInitializer extends SettingsUtil.TokenColoringInitializer {
@@ -221,7 +226,4 @@ public class CCSettingsDefaults extends ExtSettingsDefaults {
         }
 
     } // end class CCTokenColoringInitializer
-
-
-    public static final String defaultDocURLbase = ""; // NOI18N
 }

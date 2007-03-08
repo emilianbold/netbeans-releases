@@ -379,7 +379,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     
     public void shutdown() {
 
-    if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.shutdown");
+	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.shutdown");
         
         ParserThreadManager.instance().shutdown();
 
@@ -421,6 +421,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         }
         
         setState(CsmModelState.OFF);
+	
+	RepositoryUtils.shutdown();
     }
     
     public void unload() {

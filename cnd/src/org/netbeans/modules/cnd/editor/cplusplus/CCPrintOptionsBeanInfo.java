@@ -13,20 +13,15 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.beans.*;
-import java.awt.Image;
-import java.util.ResourceBundle;
-import org.netbeans.modules.editor.options.*;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.editor.options.BasePrintOptionsBeanInfo;
 
-/** BeanInfo for plain options
-*/
+/** BeanInfo for plain options */
 public class CCPrintOptionsBeanInfo extends BasePrintOptionsBeanInfo {
 
     public CCPrintOptionsBeanInfo() {
