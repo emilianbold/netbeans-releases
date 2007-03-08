@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.text;
 
+import java.util.HashMap;
 import org.netbeans.modules.visualweb.text.actions.SelectLineAction;
 import java.awt.AWTEvent;
 import java.awt.Color;
@@ -663,7 +664,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      *            the set of actions
      */
     public static void loadKeymap(Keymap map, KeyBinding[] bindings, Action[] actions) {
-        Hashtable h = new Hashtable();
+        Map<String, Action> h = new HashMap<String, Action>();
 
         for (int i = 0; i < actions.length; i++) {
             Action a = actions[i];
@@ -672,7 +673,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
         }
 
         for (int i = 0; i < bindings.length; i++) {
-            Action a = (Action)h.get(bindings[i].actionName);
+            Action a = h.get(bindings[i].actionName);
 
             if (a != null) {
                 map.addActionForKeyStroke(bindings[i].key, a);
@@ -1147,13 +1148,13 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
     static class DefaultKeymap implements Keymap {
         String nm;
         javax.swing.text.Keymap parent;
-        Hashtable bindings;
+        Hashtable<KeyStroke, Action>  bindings;
         Action defaultAction;
 
         DefaultKeymap(String nm, Keymap parent) {
             this.nm = nm;
             this.parent = parent;
-            bindings = new Hashtable();
+            bindings = new Hashtable<KeyStroke, Action>();
         }
 
         /**
@@ -1181,7 +1182,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
         }
 
         public Action getAction(KeyStroke key) {
-            Action a = (Action)bindings.get(key);
+            Action a = bindings.get(key);
 
             if ((a == null) && (parent != null)) {
                 a = parent.getAction(key);
@@ -1194,8 +1195,8 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
             KeyStroke[] keys = new KeyStroke[bindings.size()];
             int i = 0;
 
-            for (Enumeration e = bindings.keys(); e.hasMoreElements();) {
-                keys[i++] = (KeyStroke)e.nextElement();
+            for (Enumeration<KeyStroke> e = bindings.keys(); e.hasMoreElements();) {
+                keys[i++] = e.nextElement();
             }
 
             return keys;
@@ -1205,8 +1206,8 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
             Action[] actions = new Action[bindings.size()];
             int i = 0;
 
-            for (Enumeration e = bindings.elements(); e.hasMoreElements();) {
-                actions[i++] = (Action)e.nextElement();
+            for (Enumeration<Action> e = bindings.elements(); e.hasMoreElements();) {
+                actions[i++] = e.nextElement();
             }
 
             return actions;
@@ -1220,14 +1221,14 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
             KeyStroke[] retValue = null;
 
             // Determine local bindings first.
-            Vector keyStrokes = null;
+            Vector<KeyStroke> keyStrokes = null;
 
-            for (Enumeration enum_ = bindings.keys(); enum_.hasMoreElements();) {
-                Object key = enum_.nextElement();
+            for (Enumeration<KeyStroke> enum_ = bindings.keys(); enum_.hasMoreElements();) {
+                KeyStroke key = enum_.nextElement();
 
                 if (bindings.get(key) == a) {
                     if (keyStrokes == null) {
-                        keyStrokes = new Vector();
+                        keyStrokes = new Vector<KeyStroke>();
                     }
 
                     keyStrokes.addElement(key);
@@ -1252,7 +1253,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
 
                     if ((rCount > 0) && (rCount < pStrokes.length)) {
                         if (keyStrokes == null) {
-                            keyStrokes = new Vector();
+                            keyStrokes = new Vector<KeyStroke>();
                         }
 
                         for (int counter = pStrokes.length - 1; counter >= 0; counter--) {
@@ -1309,8 +1310,9 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
         /**
          * String representation of the keymap... potentially a very long string.
          */
+        @Override
         public String toString() {
-            return "Keymap[" + nm + "]" + bindings;
+            return super.toString() + "[name=" + nm + ", bindings=" + bindings + "]"; // NOI18N
         }
     }
 
