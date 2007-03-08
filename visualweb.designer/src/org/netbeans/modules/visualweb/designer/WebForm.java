@@ -31,7 +31,6 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.markup.MarkupPosition;
 import org.netbeans.modules.visualweb.designer.DocumentCache;
 import org.netbeans.modules.visualweb.designer.ImageCache;
@@ -2259,10 +2258,10 @@ public class WebForm implements Designer {
             return html;
         }
         
-        public ClassLoader getContextClassLoaderForDesignContext(DesignContext designContext) {
-            // XXX
-            return Thread.currentThread().getContextClassLoader();
-        }
+//        public ClassLoader getContextClassLoaderForDesignContext(DesignContext designContext) {
+//            // XXX
+//            return Thread.currentThread().getContextClassLoader();
+//        }
         
         public String getHtmlStream(Node node) {
             return node == null ? "" : node.toString(); // NOI18N
@@ -2282,9 +2281,9 @@ public class WebForm implements Designer {
             return new Designer[0];
         }
 
-        public Designer[] findDesignersForDesignContext(DesignContext designContext) {
-            return new Designer[0];
-        }
+//        public Designer[] findDesignersForDesignContext(DesignContext designContext) {
+//            return new Designer[0];
+//        }
 
         public Designer[] findDesignersForElement(Element element) {
             return new Designer[0];
@@ -2368,9 +2367,9 @@ public class WebForm implements Designer {
 //            return false;
 //        }
 
-        public long getContextGenearation(com.sun.rave.designtime.DesignContext context) {
-            return 0L;
-        }
+//        public long getContextGenearation(com.sun.rave.designtime.DesignContext context) {
+//            return 0L;
+//        }
 
         public boolean isWebFormFileObject(FileObject fileObject) {
             return false;
