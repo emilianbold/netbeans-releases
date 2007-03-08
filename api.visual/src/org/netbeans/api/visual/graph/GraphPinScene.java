@@ -73,7 +73,8 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
      * @return the widget that is created by attachNodeWidget; null if the node is non-visual
      */
     public final Widget addNode (N node) {
-        assert node != null  &&  ! nodes.contains (node);
+        assert node != null : "Null parameter";
+        assert ! nodes.contains (node) : "Node (" + node + ") already added";
         Widget widget = attachNodeWidget (node);
         addObject (node, widget);
         nodes.add (node);
