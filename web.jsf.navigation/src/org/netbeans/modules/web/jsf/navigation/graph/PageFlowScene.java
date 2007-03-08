@@ -41,8 +41,10 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
+import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
@@ -94,7 +96,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
     
     /**
      * Creates a VMD graph scene.
-     * @param view 
+     * @param view
      */
     public PageFlowScene(TopComponent tc) {
         this.tc = tc;
@@ -117,6 +119,12 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         //        getActions ().addAction (deleteAction);
         
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, new GridGraphLayout<AbstractNode, NavigationCase> ().setChecker(true));
+
+        getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
+            public void edit(Widget widget) {
+                sceneLayout.invokeLayout();
+            }
+        }));
     }
     
     private static final Image POINT_SHAPE_IMAGE = Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"); // NOI18N
@@ -148,7 +156,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         //        nodeWidget.getActions().addAction(deleteAction);
         nodeWidget.getHeader  ().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
-//        nodeWidget.getActions().addAction(createSelectAction());
+        //        nodeWidget.getActions().addAction(createSelectAction());
         //        nodeWidget.getActions ().addAction (popupGraphAction);
         nodeWidget.getActions().addAction(moveAction);
         //        imageWidget.getActions().addAction(connectAction);
@@ -310,34 +318,33 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
     }
     
 
-    
     private final class PageFlowSelectProvider implements SelectProvider {
-
-        public boolean isAimingAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+        
+        public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
             return false;
         }
-
-        public boolean isSelectionAllowed (Widget widget, Point localLocation, boolean invertSelection) {
-            Object object = findObject (widget);
-            return object != null  &&  (invertSelection  ||  ! getSelectedObjects ().contains (object));
+        
+        public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+            Object object = findObject(widget);
+            return object != null  &&  (invertSelection  ||  ! getSelectedObjects().contains(object));
         }
-
-        public void select (Widget widget, Point localLocation, boolean invertSelection) {
-            Object object = findObject (widget);
-
-            setFocusedObject (object);
+        
+        public void select(Widget widget, Point localLocation, boolean invertSelection) {
+            Object object = findObject(widget);
+            
+            setFocusedObject(object);
             if (object != null) {
-                if (getSelectedObjects ().contains (object))
+                if (getSelectedObjects().contains(object))
                     return;
-                userSelectionSuggested (Collections.singleton (object), invertSelection);
+                userSelectionSuggested(Collections.singleton(object), invertSelection);
                 tc.setActivatedNodes(new Node[]{(Node)object});
-//                if ( object instanceof DataNode ){
-//                    tc.setActivatedNodes(new DataNode[] {(DataNode)object});
-//                } else if (object instanceof AbstractNode ){
-//                    tc.setActivatedNodes(new AbstractNode[] {(AbstractNode)object});
-//                }
+                //                if ( object instanceof DataNode ){
+                //                    tc.setActivatedNodes(new DataNode[] {(DataNode)object});
+                //                } else if (object instanceof AbstractNode ){
+                //                    tc.setActivatedNodes(new AbstractNode[] {(AbstractNode)object});
+                //                }
             } else
-                userSelectionSuggested (Collections.emptySet (), invertSelection);
+                userSelectionSuggested(Collections.emptySet(), invertSelection);
         }
     }
     
