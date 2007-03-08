@@ -19,6 +19,7 @@
 
 package gui;
 
+import gui.window.WebFormDesignerOperator;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -31,17 +32,33 @@ import org.netbeans.jellytools.nodes.Node;
  */
 public class VWPUtilities extends gui.Utilities{
 
-    /** Creates a new instance of Utilities */
-    public VWPUtilities() {
-    }
-
-    /*
+    /**
      * open jsp file from project and return WebFormDesigner
+     * @param projectName name of the project
+     * @param jspFileName name of the file
+     * @return Visual Web Designer
      */
-    public static gui.window.WebFormDesignerOperator openedWebDesignerForJspFile(String projectName, String jspFileName){
+    public static WebFormDesignerOperator openedWebDesignerForJspFile(String projectName, String jspFileName){
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(projectName),WEB_PAGES + "|" +jspFileName + ".jsp");
         new OpenAction().performAPI(openFile);
-        return new gui.window.WebFormDesignerOperator(jspFileName);
+        
+        WebFormDesignerOperator surface = new WebFormDesignerOperator(jspFileName);
+        surface.switchToDesignView();
+
+        return surface;
+    }
+
+    public static void waitForPendingBackgroundTasks() {
+        // wait maximum 5 minutes
+        for (int i=0; i<5*60; i++) {
+            if (org.netbeans.progress.module.Controller.getDefault().getModel().getSize()==0)
+                return;
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
     }
     
 }

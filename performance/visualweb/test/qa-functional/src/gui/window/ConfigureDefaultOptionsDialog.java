@@ -19,9 +19,10 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+
 /**
  *
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
@@ -31,8 +32,8 @@ public class ConfigureDefaultOptionsDialog extends JSFComponentOptionsDialog {
     /** Creates a new instance of ConfigureDefaultOptionsDialog */
     public ConfigureDefaultOptionsDialog(String testName) {
         super(testName);
-        expectedTime = 3000;
-        WAIT_AFTER_OPEN=5000;
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=3000;
         categoryName = "Basic"; // NOI18N
         componentName = "Listbox"; // NOI18N
         addPoint = new java.awt.Point(50,50);
@@ -40,7 +41,7 @@ public class ConfigureDefaultOptionsDialog extends JSFComponentOptionsDialog {
     
     public ConfigureDefaultOptionsDialog(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 3000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=3000;
         categoryName = "Basic"; // NOI18N
         componentName = "Listbox"; // NOI18N
@@ -51,12 +52,9 @@ public class ConfigureDefaultOptionsDialog extends JSFComponentOptionsDialog {
         log("::open");
 
         //Invoking popup menu on component
-        JPopupMenuOperator popup = surface.clickPopup(60,60);
-	if(popup == null) { log("popup operator is null");}
-
-        popup.pushMenu("Configure Default Options..."); // NOI18N
+        surface.pushPopupMenu("Configure Default Options...",  60, 60); // NOI18N
         
-        return new DialogOperator("Options Customizer - "+"listbox1");  // NOI18N
+        return new NbDialogOperator("Options Customizer - listbox1");  // NOI18N
     }
     
 }

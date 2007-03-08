@@ -20,11 +20,8 @@
 package gui.window;
 
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.Action;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
 
 /**
  *
@@ -34,20 +31,19 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     private PaletteComponentOperator palette;
     private WebFormDesignerOperator surface;
     
-    private static final String dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle");
+    private static final String dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle"); //Select Page Fragment
     
     /** Creates a new instance of PageFragmentBoxDialog */
     public PageFragmentBoxDialog(String testName) {
         super(testName);
-        expectedTime = 2000;
-        WAIT_AFTER_OPEN=2000;          
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=5000;          
     }
     
     public PageFragmentBoxDialog(String testName,String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = 2000;
-        WAIT_AFTER_OPEN=2000;          
-        
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=5000;          
     }
     
     public void prepare() {
@@ -56,19 +52,16 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     }
     
     public ComponentOperator open() {
-        JPopupMenuOperator popup = surface.clickPopup(60,60);
-        if(popup == null) { log("popup operator is null");}
-        
-        String menuCmd = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse");
+        String menuCmd = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse"); // Select Page Fragment...
         log("::menu cmd = "+menuCmd);
-        popup.pushMenu(menuCmd);
+        surface.pushPopupMenu(menuCmd, 60, 60);
                 
-        return new DialogOperator(dlgName);
+        return new NbDialogOperator(dlgName);
     }
     
     protected void initialize() {
         log("::initialize");
-        new Action("Window|Palette",null).perform(); //  NOI18N
+        PaletteComponentOperator.invoke();
         addPFBComponent();
         prepareCloseBoxDialog();        
     }
@@ -76,30 +69,17 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     private void prepareCloseBoxDialog() {
         NbDialogOperator boxDialog = new NbDialogOperator(dlgName);
         waitNoEvent(1000);
-        boxDialog.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        
-//        ButtonOperator CloseBtn = null;
-//        try {
-//            CloseBtn = new ButtonOperator(BoxDialog,"Close");
-//        } catch (TimeoutExpiredException ex) {
-//           fail("Cannot find Close button");
-//        }
-//        CloseBtn.pushNoBlock();        
+        boxDialog.close();
     }
     
     private void addPFBComponent() throws Error {
         surface = gui.VWPUtilities.openedWebDesignerForJspFile("VisualWebProject", "Page1");
-        palette = new PaletteComponentOperator();
         
+        palette = new PaletteComponentOperator();
         palette.getCategoryListOperator("Layout").selectItem("Page Fragment Box"); //  NOI18N
+        
         surface.clickOnSurface(50,50);
         waitNoEvent(5000);
-    }
-    
-    protected void finalize() throws Throwable {
-        super.finalize();
-        log(":: finalize");
-        surface.closeDiscard();        
     }
     
     protected void shutdown() {
@@ -110,4 +90,9 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
     public void close() {
         super.close();        
     }
+    
+    public static void main(String[] args) {
+       junit.textui.TestRunner.run(new PageFragmentBoxDialog("measureTime","Add Page Fragment Box Dialog open time")); 
+    }
+    
 }

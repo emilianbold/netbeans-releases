@@ -214,20 +214,6 @@ public class VWPFootprintUtilities extends gui.VWPUtilities{
         if (save) editorOperator.save();
     }
     
-    static void waitForPendingBackgroundTasks() {
-        // wait maximum 5 minutes
-        for (int i=0; i<5*60; i++) {
-            if (org.netbeans.progress.module.Controller.getDefault().getModel().getSize()==0)
-                return;
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                return;
-            }
-            
-        }
-    }
-    
     /*
     void addappserverinstance() {
      

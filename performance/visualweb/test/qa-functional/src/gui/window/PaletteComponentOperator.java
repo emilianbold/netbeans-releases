@@ -21,8 +21,10 @@ package gui.window;
 
 import java.awt.Component;
 import java.awt.Container;
-import javax.swing.JList;
+
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.Action;
+
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -30,7 +32,7 @@ import org.netbeans.jemmy.operators.JListOperator;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class PaletteComponentOperator extends TopComponentOperator {
     /** Creates a new instance of PaletteComponentOperator */
@@ -38,6 +40,13 @@ public class PaletteComponentOperator extends TopComponentOperator {
         super(waitTopComponent(null,null,0,new PaletteTopComponentChooser()));
     }
     
+    /** invokes default palette
+     * @return PaletteComponentOperator for invoked palette */    
+    public static PaletteComponentOperator invoke() {
+         new Action("Window|Palette",null).perform(); // NOI18N
+        return new PaletteComponentOperator();
+    }
+            
     public void expandCategory(String categoryName) throws Exception {
         JCheckBoxOperator cat = new JCheckBoxOperator(this,categoryName);
         cat.pushNoBlock();
@@ -57,7 +66,7 @@ public class PaletteComponentOperator extends TopComponentOperator {
         ContainerOperator cto = new ContainerOperator(cbp);
         Component expected = cto.findSubComponent(new CategoryListChooser());
         
-        return new JListOperator((JList) expected);
+        return new JListOperator((javax.swing.JList) expected);
     }
     
     private static class CategoryListChooser implements ComponentChooser {

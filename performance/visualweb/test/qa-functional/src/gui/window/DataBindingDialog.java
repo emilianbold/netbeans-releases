@@ -19,9 +19,9 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 /**
  *
  * @author mkhramov@netbeans.org
@@ -31,7 +31,7 @@ public class DataBindingDialog extends JSFComponentOptionsDialog {
     /** Creates a new instance of DataBindingDialog */
     public DataBindingDialog(String testName) {
         super(testName);
-        expectedTime = 3000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=5000;
         categoryName = "Basic";  // NOI18N
         componentName = "Table"; // NOI18N
@@ -40,7 +40,7 @@ public class DataBindingDialog extends JSFComponentOptionsDialog {
     
     public DataBindingDialog(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 3000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=5000;
         categoryName = "Basic";  // NOI18N
         componentName = "Table"; // NOI18N
@@ -51,11 +51,8 @@ public class DataBindingDialog extends JSFComponentOptionsDialog {
         log("::open");
         
         //Invoking popup menu on component
-        JPopupMenuOperator popup = surface.clickPopup(70,70);
-        if(popup == null) { log("popup operator is null");}
+        surface.pushPopupMenu("Bind to Data...", 70, 70);  // NOI18N
         
-        popup.pushMenu("Bind to Data...");  // NOI18N
-        
-        return new DialogOperator("Bind to Data - "+"table");  // NOI18N
+        return new NbDialogOperator("Bind to Data - table");  // NOI18N
     }
 }

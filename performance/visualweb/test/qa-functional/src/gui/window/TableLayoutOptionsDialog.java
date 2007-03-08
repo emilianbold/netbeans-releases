@@ -19,9 +19,9 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  *
@@ -32,7 +32,7 @@ public class TableLayoutOptionsDialog extends JSFComponentOptionsDialog {
     /** Creates a new instance of TableLayoutOptionsDialog */
     public TableLayoutOptionsDialog(String testName) {
         super(testName);
-        expectedTime = 3000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=5000;
         categoryName = "Basic"; // NOI18N
         componentName = "Table"; // NOI18N
@@ -46,7 +46,7 @@ public class TableLayoutOptionsDialog extends JSFComponentOptionsDialog {
      */
     public TableLayoutOptionsDialog(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 3000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=5000;
         categoryName = "Basic"; // NOI18N
         componentName = "Table"; // NOI18N
@@ -57,11 +57,13 @@ public class TableLayoutOptionsDialog extends JSFComponentOptionsDialog {
         log("::open");
         
         //Invoking popup menu on component
-        JPopupMenuOperator popup = surface.clickPopup(70,70);
-        if(popup == null) { log("popup operator is null");}
+        surface.pushPopupMenu("Table Layout...", 70, 70); // NOI18N
         
-        popup.pushMenu("Table Layout..."); // NOI18N
-        
-        return new DialogOperator("Table Layout - table"); // NOI18N
+        return new NbDialogOperator("Table Layout - table"); // NOI18N
     }
+    
+    public static void main(String[] args) {
+       junit.textui.TestRunner.run(new TableLayoutOptionsDialog("measureTime","Table Layout Options Dialog open")); 
+    }
+    
 }

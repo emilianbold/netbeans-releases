@@ -19,9 +19,6 @@
 
 package gui.window;
 
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.Action;
-
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -37,7 +34,7 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
     protected String componentName;
     protected java.awt.Point addPoint;
     
-    /** Creates a new instance of TableLayoutOptionsDialog */
+    /** Creates a new instance of JSFComponentOptionsDialog */
     public JSFComponentOptionsDialog(String testName) {
         super(testName);
     }
@@ -54,7 +51,7 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
     public void initialize() {
         log("::initialize");
         
-        new Action("Window|Palette",null).perform(); // NOI18N
+        PaletteComponentOperator.invoke();
         openPageAndAddComponent();
     }
     
@@ -78,7 +75,6 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
         log(":: click on surface");
         log(":: Delta = " +(click2-click1));
         waitNoEvent(5000);
-        
     }
     
     public void prepare() {
@@ -92,9 +88,7 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
     
     protected void shutdown() {
         log(":: shutdown");
-        cleanupTest();
-    }
-    private void cleanupTest() {
         surface.closeDiscard();
     }
+    
 }

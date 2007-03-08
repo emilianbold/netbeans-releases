@@ -19,9 +19,9 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  *
@@ -35,12 +35,11 @@ public class VirtualFormsDialog extends org.netbeans.performance.test.utilities.
     public VirtualFormsDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=5000;
     }
+    
     public VirtualFormsDialog(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 3000;
-        WAIT_AFTER_OPEN=5000;
+        expectedTime = WINDOW_OPEN;
     }
     
     public void initialize() {
@@ -56,16 +55,18 @@ public class VirtualFormsDialog extends org.netbeans.performance.test.utilities.
         log("::open");
         
         //Invoking popup menu on component
-        JPopupMenuOperator popup = surface.clickPopup(70,70);
-        if(popup == null) { log("popup operator is null");}
+        surface.pushPopupMenu("Virtual Forms...", 70, 70); // NO I18N
         
-        popup.pushMenu("Virtual Forms..."); // NO I18N
-        
-        return new DialogOperator("Virtual Forms"); // NO I18N
+        return new NbDialogOperator("Virtual Forms"); // NO I18N
     }
 
     protected void shutdown() {
         log(":: shutdown");
-        surface.close();
+        surface.closeDiscard();
     }
+    
+    public static void main(String[] args) {
+       junit.textui.TestRunner.run(new VirtualFormsDialog("measureTime","Virtual Forms Dialog open")); 
+    }
+    
 }

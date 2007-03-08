@@ -19,9 +19,9 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  *
@@ -31,8 +31,8 @@ public class PropertyBindingDialog extends JSFComponentOptionsDialog {
     /** Creates a new instance of PropertyBindingDialog */
     public PropertyBindingDialog(String testName) {
         super(testName);
-        expectedTime = 3000;
-        WAIT_AFTER_OPEN=5000;
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=3000;
         categoryName = "Basic"; // NOI18N
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
@@ -40,7 +40,7 @@ public class PropertyBindingDialog extends JSFComponentOptionsDialog {
     
     public PropertyBindingDialog(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 3000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=3000;
         categoryName = "Basic"; // NOI18N
         componentName = "Table"; // NOI18N
@@ -51,12 +51,9 @@ public class PropertyBindingDialog extends JSFComponentOptionsDialog {
         log("::open");
 
         //Invoking popup menu on component
-        JPopupMenuOperator popup = surface.clickPopup(70,70);
-	if(popup == null) { log("popup operator is null");}
-
-        popup.pushMenu("Property Bindings..."); //NOI18N
+        surface.pushPopupMenu("Property Bindings...", 70, 70); //NOI18N
         
-        return new DialogOperator("Property Bindings for table"); //NOI18N
+        return new NbDialogOperator("Property Bindings for table"); //NOI18N
     }
     
 }

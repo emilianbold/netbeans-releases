@@ -19,11 +19,11 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
 
 /**
  *
@@ -36,14 +36,17 @@ public class AddComponentLibraryDialog extends org.netbeans.performance.test.uti
     /** Creates a new instance of AddComponentLibraryDialog */
     public AddComponentLibraryDialog(String testName) {
         super(testName);
-        expectedTime = 3000;
-        WAIT_AFTER_OPEN=5000;        
+        expectedTime = WINDOW_OPEN;
     }
     
     public AddComponentLibraryDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = 3000;
-        WAIT_AFTER_OPEN=5000;
+        expectedTime = WINDOW_OPEN;
+    }
+    
+    protected void initialize() {
+        log("::initialize");
+        openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"),org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.displayName"));
     }
     
     public void prepare() {
@@ -53,15 +56,10 @@ public class AddComponentLibraryDialog extends org.netbeans.performance.test.uti
     public ComponentOperator open() {
         log(":: open");
         openNode.callPopup().pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibAction"));
-        return new DialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplib"));
+        return new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplib"));
     }
 
     public void close() {
         super.close();
-    }
-    
-    protected void initialize() {
-        log("::initialize");
-        openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"),org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.displayName"));
     }
 }
