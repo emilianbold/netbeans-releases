@@ -18,8 +18,8 @@
  */
 
 package org.netbeans.spi.palette;
+import java.io.IOException;
 import junit.framework.*;
-import org.netbeans.modules.palette.DefaultSettings;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -29,7 +29,6 @@ import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.NbPreferences;
 
 
 /**
@@ -64,21 +63,8 @@ public abstract class AbstractPaletteTestHid extends TestCase {
         if( null == myDummyLoader )
             myDummyLoader = new DummyItemLoader();
         
-        categoryNames = new String[10];
-        itemNames = new String[categoryNames.length][10];
-        for( int i=0; i<categoryNames.length; i++ ) {
-            categoryNames[i] = "Category_" + i;
-            
-            FileObject catFolder = paletteRootFolder.createFolder( categoryNames[i] );
-            
-            for( int j=0; j<itemNames[i].length; j++ ) {
-                itemNames[i][j] = categoryNames[i] + "_Item_" + j;
-                
-                FileObject itemFile = catFolder.createData( itemNames[i][j], DummyItemLoader.ITEM_EXT );
-                DataLoaderPool.setPreferredLoader( itemFile, myDummyLoader );
+        createDefaultPaletteContentInFolder( paletteRootFolder );
             }
-        }
-    }
 
     protected void tearDown() throws Exception {
         if( null != paletteRootFolder ) {
@@ -91,6 +77,23 @@ public abstract class AbstractPaletteTestHid extends TestCase {
             } finally {
                 if( null != lock )
                     lock.releaseLock();
+            }
+        }
+    }
+    
+    protected void createDefaultPaletteContentInFolder( FileObject rootFolder ) throws IOException {
+        categoryNames = new String[10];
+        itemNames = new String[categoryNames.length][10];
+        for( int i=0; i<categoryNames.length; i++ ) {
+            categoryNames[i] = "Category_" + i;
+            
+            FileObject catFolder = rootFolder.createFolder( categoryNames[i] );
+            
+            for( int j=0; j<itemNames[i].length; j++ ) {
+                itemNames[i][j] = categoryNames[i] + "_Item_" + j;
+                
+                FileObject itemFile = catFolder.createData( itemNames[i][j], DummyItemLoader.ITEM_EXT );
+                DataLoaderPool.setPreferredLoader( itemFile, myDummyLoader );
             }
         }
     }

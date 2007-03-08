@@ -26,7 +26,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.palette.ui.PalettePanel;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -44,7 +49,7 @@ import org.openide.windows.WindowManager;
  */
 final class PaletteSwitch implements Runnable, LookupListener {
     
-    public static final String PROP_PALETTE_CONTENTS = "component_palette_contents";
+    static final String PROP_PALETTE_CONTENTS = "component_palette_contents"; //NOI18N
     
     private static PaletteSwitch theInstance;
     
@@ -166,11 +171,44 @@ final class PaletteSwitch implements Runnable, LookupListener {
         return isMaximized && currentPaletteStillAvailable;
     }
     
-    private PaletteController getPaletteFromTopComponent( TopComponent tc, boolean mustBeShowing ) {
+    PaletteController getPaletteFromTopComponent( TopComponent tc, boolean mustBeShowing ) {
         if( null == tc || (!tc.isShowing() && mustBeShowing) )
             return null;
         
-        return (PaletteController)tc.getLookup().lookup( PaletteController.class );
+        PaletteController pc = (PaletteController)tc.getLookup().lookup( PaletteController.class );
+        if( null == pc && WindowManager.getDefault().isEditorTopComponent( tc ) ) {
+            //check if there's any palette assigned to TopComponent's mime type
+            Node[] activeNodes = tc.getActivatedNodes();
+            if( null != activeNodes && activeNodes.length > 0 ) {
+                DataObject dob = activeNodes[0].getLookup().lookup( DataObject.class );
+                if( null != dob ) {
+                    while( dob instanceof DataShadow ) {
+                        dob = ((DataShadow)dob).getOriginal();
+                    }
+                    FileObject fo = dob.getPrimaryFile();
+                    if( !fo.isVirtual() ) {
+                        String mimeType = fo.getMIMEType();
+                        pc = getPaletteFromMimeType( mimeType );
+                    }
+                }
+            }
+        }
+        return pc;
+    }
+    
+    /** 
+     * Finds appropriate PaletteController for given mime type.
+     *
+     * @param mimeType Mime type to check for associated palette content.
+     * 
+     * @return PaletteController that is associated with the given mime type and that should
+     * be displayed in the Common Palette when an editor window with the given mime type is activated.
+     * @since 1.10
+     */
+    PaletteController getPaletteFromMimeType( String mimeType ) {
+        MimePath path = MimePath.get( mimeType );
+        Lookup lkp = MimeLookup.getLookup( path );
+        return lkp.lookup( PaletteController.class );
     }
     
     private void showHidePaletteTopComponent( PaletteController prevPalette, PaletteController newPalette ) {
