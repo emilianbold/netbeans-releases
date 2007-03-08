@@ -122,13 +122,13 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
         // Also set nodes locally such that if this top component
         // retains focus the node selection reflects the selected box
         SelectionManager sm = webform.getSelection();
-        ArrayList nodes = new ArrayList(sm.getNumSelected());
+        List<Node> nodes = new ArrayList<Node>(sm.getNumSelected());
         DataObject dobj = webform.getDataObject();
         Node n = new BoxNode(box, dobj);
 
         //n.setDataObject(dobj);
         nodes.add(n);
-        Node[] nds = (Node[])nodes.toArray(new Node[nodes.size()]);
+        Node[] nds = nodes.toArray(new Node[nodes.size()]);
 
         DesignerUtils.setActivatedNodes(btc, nds);
     }
@@ -204,7 +204,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
     }
 
     private TreePath getPath(CssBox box) {
-        LinkedList pathList = new LinkedList();
+        LinkedList<Object> pathList = new LinkedList<Object>();
         BoxTreeNode root = (BoxTreeNode)treeModel.getRoot();
         boolean found = findBox(box, root, pathList);
 
@@ -219,7 +219,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
     }
 
     // SUPER INEFFICIENT!
-    private boolean findBox(CssBox box, BoxTreeNode node, LinkedList path) {
+    private boolean findBox(CssBox box, BoxTreeNode node, LinkedList<Object> path) {
         boolean containsBox = false;
 
         for (int k = 0; k < node.getChildCount(); k++) {
@@ -302,14 +302,14 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
                     CssBox box = btn.getBox();
 
                     SelectionManager sm = webform.getSelection();
-                    ArrayList nodes = new ArrayList(sm.getNumSelected());
+                    List<Node> nodes = new ArrayList<Node>(sm.getNumSelected());
                     DataObject dobj = webform.getDataObject();
                     Node n = new BoxNode(box, dobj);
 
                     //n.setDataObject(dobj);
                     nodes.add(n);
 
-                    Node[] nds = (Node[])nodes.toArray(new Node[nodes.size()]);
+                    Node[] nds = nodes.toArray(new Node[nodes.size()]);
                     requestActive();
                     DesignerUtils.setActivatedNodes(this, nds);
                     webform.getPane().getPageBox().setSelected(box);
@@ -329,7 +329,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
     private static class BoxTreeNode implements TreeNode {
         private CssBox box;
         private BoxTreeNode parent;
-        private ArrayList children;
+        private List<TreeNode> children;
 
         private BoxTreeNode(CssBox box, BoxTreeNode parent) {
             this.box = box;
@@ -339,7 +339,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
         public TreeNode getChildAt(int i) {
             initializeChildren();
 
-            return (TreeNode)children.get(i);
+            return children.get(i);
         }
 
         public int getIndex(TreeNode treeNode) {
@@ -372,7 +372,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
             return isLeaf();
         }
 
-        public java.util.Enumeration children() {
+        public java.util.Enumeration<TreeNode> children() {
             initializeChildren();
 
             return Collections.enumeration(children);
@@ -384,7 +384,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
             }
 
             int n = box.getBoxCount();
-            children = new ArrayList(n);
+            children = new ArrayList<TreeNode>(n);
 
             for (int i = 0; i < n; i++) {
                 children.add(new BoxTreeNode(box.getBox(i), this));
