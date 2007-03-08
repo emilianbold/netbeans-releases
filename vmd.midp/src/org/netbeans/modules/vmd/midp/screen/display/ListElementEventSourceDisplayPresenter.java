@@ -31,8 +31,12 @@ import javax.swing.JPopupMenu;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontFace;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontSize;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
+import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 import org.openide.util.Utilities;
 
@@ -86,6 +90,27 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     public void reload(ScreenDeviceInfo deviceInfo) {
         panel.setBorder(deviceInfo.getDeviceTheme().getBorder(getComponent().getDocument().getSelectedComponents().contains(getComponent())));
         label.setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING)));
+        
+        DesignComponent font = getComponent().readProperty(ListElementEventSourceCD.PROP_FONT).getComponent();
+        if (font != null) {
+            int faceCode = MidpTypes.getInteger(font.readProperty(FontCD.PROP_FACE));
+            FontFace face = FontFace.SYSTEM;
+            if (faceCode == FontCD.VALUE_FACE_MONOSPACE) {
+                face = FontFace.MONOSPACE;
+            } else if (faceCode == FontCD.VALUE_FACE_PROPORTIONAL) {
+                face = FontFace.PROPORTIONAL;
+            }
+            
+            int sizeCode = MidpTypes.getInteger(font.readProperty(FontCD.PROP_SIZE));
+            FontSize size = FontSize.MEDIUM;
+            if (sizeCode == FontCD.VALUE_SIZE_SMALL) {
+                size = FontSize.SMALL;
+            } else if (sizeCode == FontCD.VALUE_SIZE_LARGE) {
+                size = FontSize.LARGE;
+            }
+
+            label.setFont(deviceInfo.getDeviceTheme().getFont(face, size));
+        }
     }
     
     public Shape getSelectionShape() {
