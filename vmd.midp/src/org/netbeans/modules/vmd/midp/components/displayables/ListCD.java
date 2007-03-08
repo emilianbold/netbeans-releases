@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.displayables;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
@@ -45,6 +46,8 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorListSelectCom
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ListDisplayPresenter;
 
 /**
@@ -83,6 +86,11 @@ public final class ListCD extends ComponentDescriptor {
                 new PropertyDescriptor(PROP_SELECT_COMMAND, CommandEventSourceCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_INDEX_BASED_SWITCH, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue (false), false, false, Versionable.FOREVER)
         );
+    }
+
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters(presenters);
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
