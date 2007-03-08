@@ -690,11 +690,11 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
         /** Get a cookie. Call super first, but if null, also check the
          * associated data object.
          */
-        public Node.Cookie getCookie(Class cl) {
-            Node.Cookie c = super.getCookie(cl);
+        public <T extends Node.Cookie> T getCookie(Class<T> cl) {
+            T cookie = super.getCookie(cl);
 
-            if (c != null) {
-                return c;
+            if (cookie != null) {
+                return cookie;
             }
 
             if (dobj != null) {
