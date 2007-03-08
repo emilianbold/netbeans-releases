@@ -48,9 +48,9 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     /** Menu item name that opens the editor */
     public static String menuItem;
     
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Open");
+    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     
-    protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Edit");
+    protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
     
     /**
      * Creates a new instance of OpenFiles
