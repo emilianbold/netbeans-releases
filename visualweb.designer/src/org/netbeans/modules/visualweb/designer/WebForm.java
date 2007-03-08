@@ -1886,9 +1886,9 @@ public class WebForm implements Designer {
         return htmlDomProvider.isNormalAndHasFacesComponent(componentRootElement);
     }
 
-    boolean canHighlightMarkupDesignBean(MarkupDesignBean markupDesignBean) {
-        return htmlDomProvider.canHighlightMarkupDesignBean(markupDesignBean);
-    }
+//    boolean canHighlightMarkupDesignBean(MarkupDesignBean markupDesignBean) {
+//        return htmlDomProvider.canHighlightMarkupDesignBean(markupDesignBean);
+//    }
 
 //    public DesignBean createBean(String className, Node parent, Node before) {
 //        return htmlDomProvider.createBean(className, parent, before);
