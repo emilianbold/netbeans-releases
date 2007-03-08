@@ -271,8 +271,6 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
-                <friend>org.netbeans.modules.visualweb.dataconnectivity.model</friend>
-                <friend>org.netbeans.modules.visualweb.dataconnectivity.sql</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
