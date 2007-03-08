@@ -357,6 +357,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             
             FileObject documentBase = webModule.getDocumentBase();
             Project project = FileOwnerQuery.getOwner(documentBase);
+            template.setBeanPackage(project.getProjectDirectory().getName());
+            JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, template.getBeanPackage());
+            JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "index.jsp"); // NOI18N
+
             template.create(project, webModule.getJ2eePlatformVersion());
 
             /* Replace index.jsp and index.java with Page1.jsp and Page.java.
@@ -370,7 +374,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (indexjsp != null && pagejsp != null) {
                 String content = readResource(pagejsp.getInputStream(), "UTF-8"); //NOI18N
                 createFile(indexjsp, content.replaceAll("\\bPage1\\b", "index"), "UTF-8"); //NOI18N
-                JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "index.jsp"); // NOI18N
                 pagejsp.delete();
             }
 
