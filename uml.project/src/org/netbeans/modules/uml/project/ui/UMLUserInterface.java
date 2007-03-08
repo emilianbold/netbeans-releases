@@ -19,37 +19,35 @@
 
 package org.netbeans.modules.uml.project.ui;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.text.MessageFormat;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.net.URL;
 import javax.swing.SwingUtilities;
+import org.openide.util.Utilities;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddElementWizardIterator;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageWizardIterator;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.Utilities;
 
 import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.ui.controls.newdialog.INewDialog;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogElementDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogPackageDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogResultProcessor;
-import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogTabDetails;
-import org.netbeans.modules.uml.ui.controls.newdialog.NewDialog;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogElementDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogPackageDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogResultProcessor;
-import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogTabKind;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
 
 /**
@@ -73,21 +71,28 @@ public class UMLUserInterface implements IProxyUserInterface
 	*/
 	public Frame getWindowHandle()
 	{
-		//return WindowManager.getDefault().getMainWindow();
-		
-		// Since the WindowsManager.getMainWindow() can only be called from
-		// AWT event dispatch thread use the MainWindowRetriever class
-		// can be used to display the group.  However, the only time we need to
-		// execute the invokeAndWait is when we are currently not in the
-		// AWT event dispatch thread.
-		//
-		MainWindowRetriever retriever = new MainWindowRetriever();
-		if(SwingUtilities.isEventDispatchThread() == true)
-		{
-			retriever.retrieveWindow();
-		}
-		else
-		{
+            // 86994, in sdi mode, use the current activated TC instead of IDE 
+            // main window as the parent for the dialog
+            Component comp = WindowManager.getDefault().getRegistry().getActivated();
+            Window window = SwingUtilities.getWindowAncestor(comp);
+            if (window instanceof Frame)
+                return (Frame)window;
+            else
+            {
+                // Since the WindowsManager.getMainWindow() can only be called from
+                // AWT event dispatch thread use the MainWindowRetriever class
+                // can be used to display the group.  However, the only time we need to
+                // execute the invokeAndWait is when we are currently not in the
+                // AWT event dispatch thread.
+                //
+                
+                MainWindowRetriever retriever = new MainWindowRetriever();
+                if(SwingUtilities.isEventDispatchThread() == true)
+                {
+                    retriever.retrieveWindow();
+                }
+                else
+                {
 			try
 			{
 				SwingUtilities.invokeAndWait(retriever);
@@ -101,6 +106,7 @@ public class UMLUserInterface implements IProxyUserInterface
 		}
 		
 		return retriever.getMainWindow();
+            }
 	}
 	
 	public class MainWindowRetriever implements Runnable
