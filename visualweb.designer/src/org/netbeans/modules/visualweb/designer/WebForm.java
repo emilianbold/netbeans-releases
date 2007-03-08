@@ -68,7 +68,6 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.text.Document;
 
 
@@ -2232,10 +2231,10 @@ public class WebForm implements Designer {
 //            return this;
 //        }
 
-        // HtmlDomProviderService >>
-        public MarkupDesignBean getMarkupDesignBeanForElement(Element element) {
-            return null;
-        }
+//        // HtmlDomProviderService >>
+//        public MarkupDesignBean getMarkupDesignBeanForElement(Element element) {
+//            return null;
+//        }
 
 //        public MarkupMouseRegion getMarkupMouseRegionForElement(Element element) {
 //            return null;
@@ -2287,9 +2286,9 @@ public class WebForm implements Designer {
             return new Designer[0];
         }
 
-        public MarkupDesignBean getMarkupDesignBeanForComponentRootElement(Element element, Element parentBoxElement) {
-            return null;
-        }
+//        public MarkupDesignBean getMarkupDesignBeanForComponentRootElement(Element element, Element parentBoxElement) {
+//            return null;
+//        }
         
 //        public boolean isValueBindingExpression(String value, boolean containsOK) {
 //            return false;
@@ -2421,9 +2420,9 @@ public class WebForm implements Designer {
             return regionElement == element;
         }
 
-        public Element getComponentRootElementForMarkupDesignBean(MarkupDesignBean markupDesignBean) {
-            return null;
-        }
+//        public Element getComponentRootElementForMarkupDesignBean(MarkupDesignBean markupDesignBean) {
+//            return null;
+//        }
 
         public String getInstanceName(Element componentRootElement) {
             return null;
