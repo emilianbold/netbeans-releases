@@ -20,33 +20,23 @@
 package org.netbeans.modules.websvc.design.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Point;
+import java.awt.Color;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
-import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.websvc.design.view.widget.OperationWidget;
 
 /**
- * Contains the scrollable view that displays the widgets which represent
- * the partner link types view (e.g. collaborations and messages).
+ * WebService Designer
  *
- * @DesignViewdval
- * @author Nathan Fiedler
+ * @author Ajit Bhate
  */
 public class DesignView extends JPanel  {
     /** Manages the state of the widgets and corresponding objects. */
     private Scene scene;
-    /** Layer containing the visible widgets. */
-    private Widget mMainLayer;
-    /** That which contains the collaborations and messages widgets. */
-    private Widget contentWidget;
     /**
      * Creates a new instance of GraphView.
      */
@@ -54,25 +44,13 @@ public class DesignView extends JPanel  {
         super(new BorderLayout());
 
         scene = new Scene();
-        JComponent sceneView = scene.createView();
         scene.setBackground(new Color(255, 255, 191));
-        contentWidget = new Widget(scene);
-        contentWidget.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
-        contentWidget.setLayout(LayoutFactory.createVerticalLayout(
-                SerialAlignment.JUSTIFY, 16));
 
-        mMainLayer = new LayerWidget(scene);
-        mMainLayer.addChild(contentWidget);
-        mMainLayer.setPreferredLocation(new Point(0, 0));
-        mMainLayer.setBackground(Color.WHITE);
+        Widget opWidget = new OperationWidget(scene,"operation");
+        scene.addChild(opWidget);
+        opWidget.setPreferredLocation(new Point(30,30));
 
-        scene.addChild(mMainLayer);
-
-        JScrollPane panel = new JScrollPane(sceneView);
-        panel.getVerticalScrollBar().setUnitIncrement(16);
-        panel.getHorizontalScrollBar().setUnitIncrement(16);
-        panel.setBorder(null);
-        add(panel, BorderLayout.CENTER);
+        add(scene.createView(), BorderLayout.CENTER);
     }
 
     /**
