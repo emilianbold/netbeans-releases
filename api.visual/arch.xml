@@ -46,13 +46,16 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-  <p>
+   <api group="graph" name="VisualLibraryAPI" type="export" category="official">
+     <p>
       The API provides a set of reusable pieces - widgets. By composing them you are creating a visualization.
       Each widget has various properties including layout, border, assigned actions, ... The library contains a set of pre-defined widgets that can be extended.
       All pluggable pieces are declared as interfaces or abstract classes - WidgetAction, Anchor, AnchorShape, PointShape, Animator, Border,
       GraphLayout, LookFeel, Layout, SceneLayout, Router, CollisionsCollector.
       Also they all have their built-in implementation.
-  </p>
+     </p>
+   </api>
+
  </answer>
 
 
