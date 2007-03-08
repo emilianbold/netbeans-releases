@@ -758,8 +758,8 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
     // Properties 
     
     private static Node.Property getElementNameProperty(final CssBox box) {
-	return new PropertySupport.ReadOnly("elementName", String.class, "elementName", getBundleString("LBL_NameElement")) {
-	    public Object getValue() {
+	return new PropertySupport.ReadOnly<String>("elementName", String.class, "elementName", getBundleString("LBL_NameElement")) {
+	    public String getValue() {
 		Element element = box.getElement();
 		if (element != null) {
 		    return element.getTagName();
@@ -775,8 +775,8 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
     }
     
     private static Node.Property getElementIdProperty(final CssBox box) {
-	return new PropertySupport.ReadOnly("elementId", String.class, "elementId", getBundleString("LBL_IdElement")) {
-	    public Object getValue() {
+	return new PropertySupport.ReadOnly<String>("elementId", String.class, "elementId", getBundleString("LBL_IdElement")) {
+	    public String getValue() {
 		Element element = box.getElement();
 		if (element != null) {
 		    String id = element.getAttribute("id"); // NOI18N
@@ -798,8 +798,8 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
     }
     
     private static Node.Property getAttributesProperty(final CssBox box) {
-	return new PropertySupport.ReadOnly("attributes", String.class, "attributes", getBundleString("LBL_AttributesElement")) {
-	    public Object getValue() {
+	return new PropertySupport.ReadOnly<String>("attributes", String.class, "attributes", getBundleString("LBL_AttributesElement")) {
+	    public String getValue() {
 		Element element = box.getElement();
 	        if (element != null) {
 	            //return element.getAttributes().toString();
@@ -829,8 +829,8 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
     }
     
     private static Node.Property getBeanNameDebugProperty(final CssBox box) {
-	return new PropertySupport.ReadOnly("beanNameDebug", String.class, "beanNameDebug", getBundleString("LBL_BeanNameDebug")) {
-	    public Object getValue() {
+	return new PropertySupport.ReadOnly<String>("beanNameDebug", String.class, "beanNameDebug", getBundleString("LBL_BeanNameDebug")) {
+	    public String getValue() {
 //		MarkupDesignBean bean = box.getDesignBean();
 //                MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
                 Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
