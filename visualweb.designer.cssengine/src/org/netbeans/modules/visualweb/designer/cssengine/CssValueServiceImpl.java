@@ -59,7 +59,7 @@ public class CssValueServiceImpl implements CssValueService {
 
 
     private static final Object LOCK_FONT_MAPPING = new Object();
-    private static Map fontMapping;
+    private static Map<String, String> fontMapping;
 
     // XXX Moving to CssBoxUtilities.
 //    private static FontKey fontSearch = new FontKey(null, 0, 0);
@@ -273,7 +273,7 @@ public class CssValueServiceImpl implements CssValueService {
         return fontFamilyNames.toArray(new String[fontFamilyNames.size()]);
     }
 
-    private Map getValidFontNameMapping() {
+    private Map<String, String> getValidFontNameMapping() {
         // This can get called from multiple threads, lock before setting
         synchronized (LOCK_FONT_MAPPING) {
             if (fontMapping == null) {
@@ -289,7 +289,7 @@ public class CssValueServiceImpl implements CssValueService {
                 }
 
                 if (names != null) {
-                    fontMapping = new HashMap(names.length * 2);
+                    fontMapping = new HashMap<String, String>(names.length * 2);
 
                     for (int counter = names.length - 1; counter >= 0; counter--) {
                         // Put both lowercase and case value in table.
@@ -297,7 +297,7 @@ public class CssValueServiceImpl implements CssValueService {
                         fontMapping.put(names[counter], names[counter]);
                     }
                 } else {
-                    fontMapping = new HashMap();
+                    fontMapping = new HashMap<String, String>();
                 }
             }
         }

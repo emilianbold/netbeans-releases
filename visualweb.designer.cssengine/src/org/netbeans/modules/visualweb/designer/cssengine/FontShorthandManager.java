@@ -19,6 +19,7 @@
 package org.netbeans.modules.visualweb.designer.cssengine;
 
 import java.util.HashMap;
+import java.util.Map;
 import org.apache.batik.css.engine.CSSEngine;
 import org.apache.batik.css.engine.value.AbstractValueFactory;
 import org.apache.batik.css.engine.value.ShorthandManager;
@@ -48,7 +49,8 @@ public class FontShorthandManager
         return CssConstants.CSS_FONT_PROPERTY;
     }
 
-    private static HashMap systemFonts = new HashMap(15);
+//    private static HashMap systemFonts = new HashMap(15);
+    private static Map<String, String> systemFonts = new HashMap<String, String>(15);
     static {
         systemFonts.put("caption", "caption"); // NOI18N
         systemFonts.put("icon", "icon"); // NOI18N

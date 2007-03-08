@@ -189,21 +189,21 @@ public final class CssEngineServiceImpl implements CssEngineService {
         }
     }
 
-    public Collection getCssStyleClassesForDocument(Document document) {
+    public Collection<String> getCssStyleClassesForDocument(Document document) {
         XhtmlCssEngine engine = getCssEngine(document);
         
         if (engine == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         } else {
             return engine.getStyleClasses();
         }
     }
 
-    public Map getStyleMapFromStringForDocument(Document document, String style) {
+    public Map<String, String> getStyleMapFromStringForDocument(Document document, String style) {
         XhtmlCssEngine engine = getCssEngine(document);
         
         if (engine == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         } else {
             return engine.styleToMap(style);
         }

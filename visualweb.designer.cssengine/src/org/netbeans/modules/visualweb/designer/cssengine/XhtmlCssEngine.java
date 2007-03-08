@@ -1371,7 +1371,7 @@ class XhtmlCssEngine extends CSSEngine {
      * property names, and String values which correspond to CSS
      * raw text for the values.
      */
-    public Map styleToMap(String style) {
+    public Map<String, String> styleToMap(String style) {
         CSSStylableElement old = element;
         StyleDeclaration sd = null;
         int size = 0;
@@ -1382,19 +1382,20 @@ class XhtmlCssEngine extends CSSEngine {
             // The URL won't be right, but that's okay for now since
             // we won't try to access it.
             element = (CSSStylableElement)document.getDocumentElement();
-            unknownPropertyNames = new ArrayList();
-            unknownPropertyValues = new ArrayList();
+            unknownPropertyNames = new ArrayList<String>();
+            unknownPropertyValues = new ArrayList<String>();
             sd = parseStyleDeclaration(element, style);
             size = sd.size();
 
             if (size == 0) {
-                return new HashMap(0);
+                return new HashMap<String, String>(0);
             }
 
             // XXX Pick a better data structure that preserves order?
             // Yeah, we don't really need to Hash aspect here; we're mostly
             // iterating!
-            LinkedHashMap map = new LinkedHashMap(2 * size);
+//            LinkedHashMap map = new LinkedHashMap(2 * size);
+            Map<String, String> map = new LinkedHashMap<String, String>(2 * size);
 
             for (int j = 0, m = size; j < m; j++) {
                 int idx = sd.getIndex(j);
@@ -1408,7 +1409,7 @@ class XhtmlCssEngine extends CSSEngine {
 
             // Add unknown properties
             for (int i = 0, n = unknownPropertyNames.size(); i < n; i++) {
-                map.put(unknownPropertyNames.get(i), unknownPropertyValues.get(i));
+                map.put((String)unknownPropertyNames.get(i), (String)unknownPropertyValues.get(i));
             }
 
             return map;
