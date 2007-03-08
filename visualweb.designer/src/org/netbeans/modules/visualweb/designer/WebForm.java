@@ -1087,7 +1087,8 @@ public class WebForm implements Designer {
     /** Return true iff the webform has rendering problems associated with it */
     public boolean hasRenderingErrors() {
 //        return renderFailureComponent != null;
-        return getRenderFailureComponent() != null;
+//        return getRenderFailureComponent() != null;
+        return htmlDomProvider.hasRenderingErrors();
     }
 
     // XXX Very suspicious, revise it.
@@ -1107,11 +1108,11 @@ public class WebForm implements Designer {
 //        return htmlDomProvider.getRenderFailureException();
 //    }
 
-    /** Return the component associated with the current render failure for this page */
-    public MarkupDesignBean getRenderFailureComponent() {
-//        return renderFailureComponent;
-        return htmlDomProvider.getRenderFailureComponent();
-    }
+//    /** Return the component associated with the current render failure for this page */
+//    public MarkupDesignBean getRenderFailureComponent() {
+////        return renderFailureComponent;
+//        return htmlDomProvider.getRenderFailureComponent();
+//    }
 
     /** Return true iff the current render failure (returned by
      * {@link #getRenderFailure} has been shown to the user yet
