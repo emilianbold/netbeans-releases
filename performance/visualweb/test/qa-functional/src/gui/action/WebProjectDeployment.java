@@ -19,7 +19,8 @@
 
 package gui.action;
 
-import java.io.File;
+import gui.VWPUtilities;
+import ;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -44,13 +45,13 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
     public WebProjectDeployment(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=2000;            
+        WAIT_AFTER_OPEN=60000;            
     }
     
     public WebProjectDeployment(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=2000;            
+        WAIT_AFTER_OPEN=60000;            
     }
     
     public void testDeploySmallProject() {
@@ -72,7 +73,7 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
 
     public ComponentOperator open() {
         projectMenu.pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.project.jsfproject.ui.Bundle", "LBL_RedeployAction_Name"));
-        MainWindowOperator.getDefault().waitStatusText("Finished building "+targetProject+" (run-deploy)");        
+        MainWindowOperator.getDefault().waitStatusText("Finished building "+targetProject+" (run-deploy)");  // NOI18N
         return null;
     }
     
@@ -82,28 +83,12 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
     
     public void initialize() {
         log(":: initialize");
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+ File.separator +targetProject);
-        waitForPendingBackgroundTasks();
+        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +targetProject);
+        VWPUtilities.waitForPendingBackgroundTasks();
     }
     
     protected void shutdown() {
         log(":: shutdown");
         ProjectSupport.closeProject(targetProject);
-        
     }
-    
-    //Copyed from footprint module FootprintUtilities.java class
-    static void waitForPendingBackgroundTasks() {
-        // wait maximum 5 minutes
-        for (int i=0; i<5*60; i++) {
-            if (org.netbeans.progress.module.Controller.getDefault().getModel().getSize()==0)
-                return;
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                return;
-            }
-            
-        } 
-    }    
 }
