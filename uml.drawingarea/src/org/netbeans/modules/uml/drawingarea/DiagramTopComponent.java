@@ -254,10 +254,29 @@ public class DiagramTopComponent extends TopComponent
     
     public void loadDrawingArea(INamespace namespace, String name, int kind)
     {
-        mControl = createNewDiagram(namespace, name, kind);
-        setDiagramProperties(mControl);
+        ADDrawingAreaControl retVal = null;
+        // Fixed issue 96474. 
+        // Modified to call addControl() before calling mControl.initializeNewDiagram(namespace, name, kind). 
+        // This is because mControl needs to be set to this DiagramTopComponent object
+        // before it is referred in a later code to avoid NPE.
         
-        addControl();
+//        mControl = createNewDiagram(namespace, name, kind);
+//        setDiagramProperties(mControl);
+//        addControl();
+        try
+        {
+            mControl = new ADDrawingAreaControl();
+            addControl();
+            mControl.addPropertyChangeListener(listener);
+            mControl.initializeNewDiagram(namespace, name, kind);
+            setDiagramProperties(mControl);
+        }
+        
+        catch(Throwable t)
+        {
+            t.printStackTrace();
+        }
+
     }
     
     /**
@@ -332,8 +351,12 @@ public class DiagramTopComponent extends TopComponent
     private void addSaveCookie()
     {
         Node[] nodes = getActivatedNodes();
-        if (nodes.length > 0 && nodes[0] instanceof LocalUMLModelElementNode)
+        if (nodes != null && 
+            nodes.length > 0 && 
+            nodes[0] instanceof LocalUMLModelElementNode) 
+        {
             ((LocalUMLModelElementNode)nodes[0]).addSaveCookie();
+        }
         if (node != null)
             node.addSaveCookie();
         
@@ -414,6 +437,7 @@ public class DiagramTopComponent extends TopComponent
         
         return retVal;
     }
+    
     
     /**
      * @param filename
@@ -1166,8 +1190,8 @@ public class DiagramTopComponent extends TopComponent
     {
         if ( paletteContrl == null)
             paletteContrl = this.getAssociatedPalette();
-        
-        return Lookups.fixed(new Object[] {mControl, paletteContrl, diagramDO});
+        //return Lookups.fixed(new Object[] {mControl, paletteContrl, diagramDO});
+        return Lookups.fixed(new Object[] {mControl, paletteContrl, getDiagramDO() } );
     }
     
     ///////////////////////////////////////////////////////////////////////////
@@ -1298,6 +1322,16 @@ public class DiagramTopComponent extends TopComponent
         return null;
     }
     
+    private void setDiagramDisplayName(final String name)
+    {
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                setDisplayName(name);
+            }
+        });
+    }
     
     private class DiagramChangeListener implements PropertyChangeListener
     {
@@ -1310,7 +1344,7 @@ public class DiagramTopComponent extends TopComponent
                 if (modified)
                 {
                     dobj.addSaveCookie();
-                    setDisplayName(mControl.getNameWithAlias() + SPACE_STAR);
+                    setDiagramDisplayName(mControl.getNameWithAlias() + SPACE_STAR);
                     addSaveCookie();
                     dobj.setModified(modified);
                 }
@@ -1318,7 +1352,7 @@ public class DiagramTopComponent extends TopComponent
                 {
                     dobj.removeSaveCookie();
                     dobj.setModified(modified);
-                    setDisplayName(mControl.getNameWithAlias());
+                    setDiagramDisplayName(mControl.getNameWithAlias());
                     removeSaveCookie();
                 }
             }
@@ -1326,7 +1360,7 @@ public class DiagramTopComponent extends TopComponent
             {
                 if (evt.getNewValue() == Boolean.FALSE)
                 {
-                    setDisplayName(mControl.getNameWithAlias());
+                    setDiagramDisplayName(mControl.getNameWithAlias());
                     removeSaveCookie();
                 }
             }
