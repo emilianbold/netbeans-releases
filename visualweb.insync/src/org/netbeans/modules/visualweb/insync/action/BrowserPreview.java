@@ -54,8 +54,8 @@ import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.insync.Util;
-import com.sun.rave.designer.html.HtmlAttribute;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.insync.markup.JspxSerializer;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 

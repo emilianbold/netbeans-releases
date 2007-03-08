@@ -70,8 +70,8 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.sun.rave.designer.html.HtmlAttribute;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.w3c.dom.css.CSSPrimitiveValue;
 
 

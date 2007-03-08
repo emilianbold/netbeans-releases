@@ -21,7 +21,7 @@ package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
-import com.sun.rave.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Toolkit;

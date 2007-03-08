@@ -19,7 +19,7 @@
 package org.netbeans.modules.visualweb.designer.markup;
 
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.apache.xerces.dom.CoreDocumentImpl;
 

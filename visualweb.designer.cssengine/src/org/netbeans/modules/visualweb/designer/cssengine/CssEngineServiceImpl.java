@@ -28,7 +28,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.ResourceData;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
-import com.sun.rave.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.spi.designer.cssengine.CssUserAgentInfo;
 import java.io.StringReader;
 import java.net.MalformedURLException;

@@ -79,7 +79,7 @@ import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.LineBoxGroup;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
-import com.sun.rave.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 
 // Originally in org/netbeans/modules/visualweb/designer package, but moved here to have better access to package private data.
 /**

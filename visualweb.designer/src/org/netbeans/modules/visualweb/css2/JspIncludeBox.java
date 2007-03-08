@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.w3c.dom.Node;
 
 

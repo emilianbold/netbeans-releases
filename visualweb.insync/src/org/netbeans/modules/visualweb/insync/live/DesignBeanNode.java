@@ -20,8 +20,8 @@ package org.netbeans.modules.visualweb.insync.live;
 
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
-import com.sun.rave.designer.html.HtmlAttribute;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupPosition;
 import org.netbeans.modules.visualweb.extension.openide.loaders.SystemFileSystemSupport;

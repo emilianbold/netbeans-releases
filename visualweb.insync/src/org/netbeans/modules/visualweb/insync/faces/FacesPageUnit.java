@@ -65,8 +65,8 @@ import org.netbeans.modules.visualweb.insync.beans.Property;
 import org.netbeans.modules.visualweb.insync.live.BeansDesignBean;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
-import com.sun.rave.designer.html.HtmlAttribute;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
 import org.w3c.dom.Text;
 

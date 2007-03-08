@@ -36,8 +36,8 @@ import com.sun.rave.designtime.impl.BasicDisplayAction;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupTableDesignInfo;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
-import com.sun.rave.designer.html.HtmlAttribute;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 
 /**
  * DesignInfo for the Table component

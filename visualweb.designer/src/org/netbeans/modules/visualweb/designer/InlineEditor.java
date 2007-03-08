@@ -37,7 +37,7 @@ import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.extension.openide.awt.MouseUtils_RAVE;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.Position;
 
 

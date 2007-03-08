@@ -21,7 +21,7 @@ package org.netbeans.modules.visualweb.css2;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.openide.ErrorManager;
 
 /**

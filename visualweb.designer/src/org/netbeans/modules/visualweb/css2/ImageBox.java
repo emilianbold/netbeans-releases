@@ -46,7 +46,7 @@ import org.w3c.dom.css.CSSPrimitiveValue;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
-import com.sun.rave.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.ImageCache;
 
 

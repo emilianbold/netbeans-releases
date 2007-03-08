@@ -100,7 +100,7 @@
 //package org.apache.xml.serialize;
 package org.netbeans.modules.visualweb.insync.markup;
 
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.apache.xml.serialize.*;
 // END RAVE MODIFICATIONS
 

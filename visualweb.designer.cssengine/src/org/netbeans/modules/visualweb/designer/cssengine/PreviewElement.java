@@ -26,7 +26,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.rave.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.TypeInfo;

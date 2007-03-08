@@ -78,7 +78,7 @@ import org.apache.batik.css.engine.StyleSheet;
 import org.apache.xerces.dom.CoreDocumentImpl;
 import org.w3c.dom.DOMException;
 
-import com.sun.rave.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.w3c.dom.Document;
 
 /**

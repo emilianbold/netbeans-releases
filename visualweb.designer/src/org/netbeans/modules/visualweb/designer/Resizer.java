@@ -41,8 +41,8 @@ import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
-import com.sun.rave.designer.html.HtmlAttribute;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 
 
 /**

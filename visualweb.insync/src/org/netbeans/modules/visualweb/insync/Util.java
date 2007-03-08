@@ -19,7 +19,7 @@
 package org.netbeans.modules.visualweb.insync;
 
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
-import com.sun.rave.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.insync.faces.FacesBean;
 import org.netbeans.modules.visualweb.insync.live.SourceLiveRoot;
 import org.netbeans.modules.visualweb.insync.markup.JspxSerializer;

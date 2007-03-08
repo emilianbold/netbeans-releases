@@ -26,8 +26,8 @@ import java.awt.geom.AffineTransform;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designer.html.HtmlAttribute;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 
 
 /**

@@ -21,8 +21,8 @@ package org.netbeans.modules.visualweb.designer.jsf;
 
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
-import com.sun.rave.designer.html.HtmlAttribute;
-import com.sun.rave.designer.html.HtmlTag;
+import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import java.lang.reflect.Method;
 import javax.faces.component.html.HtmlCommandLink;
 import javax.faces.component.html.HtmlOutputLink;
