@@ -67,8 +67,12 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
   }
   public void generatorStarted(final ProcessInstance provider, final String logPath) {
     try {
-      prgrsHandles.get(provider).finish();
-      prgrsHandles.remove(provider);
+      if (prgrsHandles == null || provider == null) return;
+      ProgressHandle phandle = prgrsHandles.get(provider);
+      if (phandle != null) {
+        phandle.finish();
+        prgrsHandles.remove(provider);
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -146,9 +150,14 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
     
     ProgressHandle phandle = ProgressHandleFactory.createHandle("Starting load generator", new Cancellable() {
       public boolean cancel() {
-        prgrsHandles.get(instance).finish();
-        stopProcess(instance, true);
-        return true;
+        if (prgrsHandles == null || instance == null) return true;
+        ProgressHandle phandle = prgrsHandles.get(instance);
+        if (phandle != null) {
+          phandle.finish();
+          stopProcess(instance, true);
+          return true;
+        }
+        return false;
       }
     });
     

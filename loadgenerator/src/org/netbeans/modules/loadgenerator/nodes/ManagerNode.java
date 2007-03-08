@@ -45,8 +45,6 @@ import org.openide.util.Utilities;
  * @author Jaroslav Bachorik
  */
 public class ManagerNode extends AbstractNode implements LookupListener {
-  private static final Image icon = Utilities.loadImage("org/netbeans/modules/loadgenerator/images/hammer.png");
-  
   private Lookup.Result lookup;
   
   private static ManagerNode instance = null;
@@ -96,12 +94,12 @@ public class ManagerNode extends AbstractNode implements LookupListener {
   
   @Override
   public Image getOpenedIcon(int i) {
-    return icon;
+    return getIcon(i);
   }
   
   @Override
-  public Image getIcon(int i) {
-    return icon;
+  public synchronized Image getIcon(int i) {
+    return Utilities.loadImage(NbBundle.getMessage(this.getClass(), "ManagerNode_Icon")); // NOI18N
   }
   
   public void setEngineLookup(Lookup.Result<Engine> lookup) {
