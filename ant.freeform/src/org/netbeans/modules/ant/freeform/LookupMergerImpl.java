@@ -19,9 +19,11 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,28 +65,45 @@ public class LookupMergerImpl implements LookupMerger<ActionProvider> {
         }
         
         private Collection<? extends ActionProvider> delegates() {
-            Collection<? extends ActionProvider> all = lkp.lookupAll(ActionProvider.class);
-            assert !all.contains(this) : all;
-            return all;
-        }
-        
-        // XXX delegate directly to single impl if only one
-
-        public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-            for (ActionProvider ap : delegates()) {
-                if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
-                    boolean enabled = ap.isActionEnabled(command, context);
-                    LOG.log(Level.FINE, "delegate {0} says enabled={1} for {2} in {3}", new Object[] {ap, enabled, command, context});
-                    return enabled;
+            ActionProvider master = null;
+            List<ActionProvider> aps = new ArrayList<ActionProvider>();
+            for (ActionProvider ap : lkp.lookupAll(ActionProvider.class)) {
+                if (ap instanceof Actions) {
+                    assert master == null;
+                    master = ap;
+                } else {
+                    assert ap != this;
+                    aps.add(ap);
                 }
             }
-            // Not supported by anyone.
-            throw new IllegalArgumentException(command);
+            assert master != null;
+            aps.add(0, master); // #97436: plain Actions takes precedence.
+            return aps;
+        }
+
+        public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+            boolean supported = false;
+            for (ActionProvider ap : delegates()) {
+                if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
+                    supported = true;
+                    boolean enabled = ap.isActionEnabled(command, context);
+                    LOG.log(Level.FINE, "delegate {0} says enabled={1} for {2} in {3}", new Object[] {ap, enabled, command, context});
+                    if (enabled) {
+                        return true;
+                    }
+                }
+            }
+            if (supported) {
+                return false;
+            } else {
+                // Not supported by anyone.
+                throw new IllegalArgumentException(command);
+            }
         }
 
         public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
             for (ActionProvider ap : delegates()) {
-                if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
+                if (Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, context)) {
                     LOG.log(Level.FINE, "delegating {0} on {1} to {2}", new Object[] {command, context, ap});
                     ap.invokeAction(command, context);
                     return;

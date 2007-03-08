@@ -75,8 +75,14 @@ public class LookupMergerImplTest extends NbTestCase {
     public void testActionBindingFromNatures() throws Exception {
         File base = getWorkDir();
         File src = new File(base, "src");
-        File x = new File(src, "x");
-        FileObject xfo = FileUtil.createData(x);
+        File x1 = new File(src, "x1");
+        FileObject x1fo = FileUtil.createData(x1);
+        File x2 = new File(src, "x2");
+        FileObject x2fo = FileUtil.createData(x2);
+        File y1 = new File(src, "y1");
+        FileObject y1fo = FileUtil.createData(y1);
+        File y2 = new File(src, "y2");
+        FileObject y2fo = FileUtil.createData(y2);
         File buildXml = new File(base, "build.xml");
         FileUtil.createData(buildXml);
         AntProjectHelper helper = FreeformProjectGenerator.createProject(base, base, getName(), buildXml);
@@ -90,6 +96,7 @@ public class LookupMergerImplTest extends NbTestCase {
         context.folder = "src";
         context.format = "relative-path";
         context.property = "file";
+        context.pattern = "^x";
         context.separator = null;
         FreeformProjectGenerator.putTargetMappings(helper, Arrays.asList(tm));
         final boolean[] ranMockAction = {false};
@@ -101,16 +108,31 @@ public class LookupMergerImplTest extends NbTestCase {
                 ranMockAction[0] = true;
             }
             public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-                return true;
+                FileObject f = context.lookup(FileObject.class);
+                return f != null && !f.getNameExt().contains("2");
             }
         }
-        ActionProvider proxy = new LookupMergerImpl().merge(Lookups.fixed(new Actions(p), new MockActionProvider()));
+        ActionProvider proxy = new LookupMergerImpl().merge(Lookups.fixed(new MockActionProvider(), new Actions(p)));
         assertTrue(Arrays.asList(proxy.getSupportedActions()).contains(cmd));
-        Lookup selection = Lookups.singleton(xfo);
+        Lookup selection = Lookups.singleton(x1fo);
         assertTrue(proxy.isActionEnabled(cmd, selection));
         proxy.invokeAction(cmd, selection);
-        assertEquals("[build.xml:[twiddle]:{file=x}]", targetsRun.toString());
+        assertEquals("[build.xml:[twiddle]:{file=x1}]", targetsRun.toString());
         assertFalse(ranMockAction[0]);
+        targetsRun.clear();
+        selection = Lookups.singleton(x2fo);
+        assertTrue(proxy.isActionEnabled(cmd, selection));
+        proxy.invokeAction(cmd, selection);
+        assertEquals("[build.xml:[twiddle]:{file=x2}]", targetsRun.toString());
+        assertFalse(ranMockAction[0]);
+        targetsRun.clear();
+        selection = Lookups.singleton(y1fo);
+        assertTrue(proxy.isActionEnabled(cmd, selection));
+        proxy.invokeAction(cmd, selection);
+        assertEquals("[]", targetsRun.toString());
+        assertTrue(ranMockAction[0]);
+        selection = Lookups.singleton(y2fo);
+        assertFalse(proxy.isActionEnabled(cmd, selection));
     }
 
 }

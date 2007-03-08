@@ -19,9 +19,10 @@
 
 package org.netbeans.modules.ant.freeform;
 
-import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
@@ -62,6 +63,7 @@ public final class FreeformProject implements Project {
         this.helper = helper;
         eval = new FreeformEvaluator(this);
         lookup = initLookup();
+        Logger.getLogger(FreeformProject.class.getName()).log(Level.FINER, "Initializing project in {0} with {1}", new Object[] {helper, lookup});
         new ProjectXmlValidator(helper.resolveFileObject(AntProjectHelper.PROJECT_XML_PATH));
     }
     
