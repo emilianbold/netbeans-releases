@@ -604,7 +604,7 @@ public class CssBox {
      * the given live bean. Inline spans are added as a single bounding
      * rectangle, not as individual rectangles for each inline text, image,
      * form or iframe box. */
-    protected void computeRectangles(Element componentRootElement, List list) {
+    protected void computeRectangles(Element componentRootElement, List<Rectangle> list) {
 //        if (getDesignBean() == component) {
         if (getElementForComponentRootCssBox(this) == componentRootElement) {
             // allocations get mutated by later

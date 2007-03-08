@@ -209,14 +209,14 @@ public class ContainerBox extends CssBox {
             return new CssBox[0];
         }
 
-        List boxList = new ArrayList();
+        List<CssBox> boxList = new ArrayList<CssBox>();
         int count = boxes.size();
         for(int i = 0; i < count; i++) {
             CssBox box = boxes.get(i);
             boxList.add(box);
         }
         
-        return (CssBox[])boxList.toArray(new CssBox[boxList.size()]);
+        return boxList.toArray(new CssBox[boxList.size()]);
     }
     
     /**

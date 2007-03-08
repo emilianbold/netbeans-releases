@@ -962,7 +962,7 @@ public class LineBoxGroup extends ContainerBox {
 //    }
     
     // XXX TODO This will replace the above.
-    public void computeRectangles(Element componentRootElement, List list) {
+    public void computeRectangles(Element componentRootElement, List<Rectangle> list) {
         // Look through my line boxes, and for each item, walk back up the parent chain
         // looking for the given live bean. When found, the leaf is added to the bounds.
         Rectangle bounds = null;
