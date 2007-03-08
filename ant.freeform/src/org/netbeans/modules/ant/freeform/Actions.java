@@ -35,11 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.ui.ProjectNodeWrapper;
@@ -55,13 +56,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -72,6 +68,8 @@ import org.w3c.dom.Element;
  * @author Jesse Glick
  */
 public final class Actions implements ActionProvider {
+
+    private static final Logger LOG = Logger.getLogger(Actions.class.getName());
 
     /**
      * Some routine global actions for which we can supply a display name.
@@ -103,6 +101,10 @@ public final class Actions implements ActionProvider {
     
     private final FreeformProject project;
     
+    /**
+     * Create a new action provider.
+     * @param project the associated project
+     */
     public Actions(FreeformProject project) {
         this.project = project;
     }
@@ -156,6 +158,7 @@ public final class Actions implements ActionProvider {
                     // Check whether the context contains files all in this folder,
                     // matching the pattern if any, and matching the arity (single/multiple).
                     Map<String,FileObject> selection = findSelection(contextEl, context, project);
+                    LOG.log(Level.FINE, "detected selection {0} for command {1} in {2}", new Object[] {selection, command, project});
                     if (selection.size() == 1) {
                         // Definitely enabled.
                         return true;
@@ -418,6 +421,11 @@ public final class Actions implements ActionProvider {
         TARGET_RUNNER.runTarget(scriptFile, targetNameArray, props);
     }
     
+    /**
+     * Build the context menu for a project.
+     * @param p a freeform project
+     * @return a list of actions (or null for separators)
+     */
     public static Action[] createContextMenu(FreeformProject p) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(CommonProjectActions.newFileAction());

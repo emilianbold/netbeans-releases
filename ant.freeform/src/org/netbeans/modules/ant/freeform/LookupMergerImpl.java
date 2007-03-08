@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.util.Lookup;
@@ -33,6 +35,8 @@ import org.openide.util.Lookup;
  * @author David Konecny, Milos Kleint
  */
 public class LookupMergerImpl implements LookupMerger<ActionProvider> {
+
+    private static final Logger LOG = Logger.getLogger(LookupMergerImpl.class.getName());
 
     public LookupMergerImpl() {
     }
@@ -69,7 +73,9 @@ public class LookupMergerImpl implements LookupMerger<ActionProvider> {
         public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
             for (ActionProvider ap : delegates()) {
                 if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
-                    return ap.isActionEnabled(command, context);
+                    boolean enabled = ap.isActionEnabled(command, context);
+                    LOG.log(Level.FINE, "delegate {0} says enabled={1} for {2} in {3}", new Object[] {ap, enabled, command, context});
+                    return enabled;
                 }
             }
             // Not supported by anyone.
@@ -79,6 +85,7 @@ public class LookupMergerImpl implements LookupMerger<ActionProvider> {
         public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
             for (ActionProvider ap : delegates()) {
                 if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
+                    LOG.log(Level.FINE, "delegating {0} on {1} to {2}", new Object[] {command, context, ap});
                     ap.invokeAction(command, context);
                     return;
                 }
@@ -88,9 +95,11 @@ public class LookupMergerImpl implements LookupMerger<ActionProvider> {
 
         public String[] getSupportedActions() {
             Set<String> actions = new HashSet<String>();
-            for (ActionProvider ap : delegates()) {
+            Collection<? extends ActionProvider> aps = delegates();
+            for (ActionProvider ap : aps) {
                 actions.addAll(Arrays.asList(ap.getSupportedActions()));
             }
+            LOG.log(Level.FINE, "delegates {0} report supported actions {1}", new Object[] {aps, actions});
             return actions.toArray(new String[actions.size()]);
         }
         
