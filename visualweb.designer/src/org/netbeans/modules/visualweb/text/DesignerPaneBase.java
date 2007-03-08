@@ -303,7 +303,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
          */
         };
 
-    private static Hashtable keymapTable = null;
+    private static Map<String, Keymap> keymapTable = null;
 
     /**
      * The default keymap that will be shared by all <code>JTextComponent</code> instances unless
@@ -313,7 +313,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
 
     static {
         try {
-            keymapTable = new Hashtable(17);
+            keymapTable = new Hashtable<String, Keymap>(17);
 
             Keymap binding = addKeymap(DEFAULT_KEYMAP, null);
             binding.setDefaultAction(new DefaultKeyTypedAction());
@@ -618,7 +618,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      * @return the keymap that was removed
      */
     public static Keymap removeKeymap(String nm) {
-        return (Keymap)keymapTable.remove(nm);
+        return keymapTable.remove(nm);
     }
 
     /**
@@ -630,7 +630,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      * @return the keymap
      */
     public static Keymap getKeymap(String nm) {
-        return (Keymap)keymapTable.get(nm);
+        return keymapTable.get(nm);
     }
 
     /**
