@@ -20,15 +20,16 @@
 package gui.window;
 
 import java.awt.Component;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
@@ -45,11 +46,11 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
      */
     public WebFormDesignerOperator(String topComponentName) {
         this(topComponentName,0);
-        surface = this.findSubComponent(new DesignerPaneChooser());     
+        surface = this.findSubComponent(new DesignerPaneChooser());
     }
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
-        super(topComponentName,Index); 
+        super(topComponentName,Index);
     }
     
     public void switchToDesignView() {
@@ -65,14 +66,22 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     }
     
     public void closeDiscard() {
-       close();
-       try {
-            JDialogOperator dop = new JDialogOperator("Question");
-            JButtonOperator but = new JButtonOperator(dop,"Discard");
-            but.pushNoBlock();           
-       } catch(TimeoutExpiredException e) {
-            //do nothing
-       }
+        
+        new Thread(new Runnable() {
+            public void run() {
+                pushMenuOnTab(Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","LBL_CloseWindowAction"));
+            };
+        }, "thread to close TopComponent").start();
+        
+        try {
+            Thread.currentThread().sleep(1000);
+        } catch (InterruptedException ex) {
+            // do nothing
+        }
+        
+        NbDialogOperator dop = new NbDialogOperator("Question"); // NOI18N
+        JButtonOperator but = new JButtonOperator(dop,"Discard"); // NOI18N
+        but.push();
     }
     
     public void cancelSelection() {
@@ -83,29 +92,34 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     }
     
     public void clickOnSurface() {
-        System.out.println("Click on surface...");
         getDesignerPaneComponentOperator().clickMouse();
         new QueueTool().waitEmpty();
     }
     
     public void clickOnSurface(int x, int y) {
-        System.out.println("Click on surface at: "+x+","+y);
-        
         getDesignerPaneComponentOperator().clickMouse(x,y,1);
         new QueueTool().waitEmpty();
-
+        
     }
     
     public JPopupMenuOperator clickPopup() {
-        
         getDesignerPaneComponentOperator().clickForPopup();
         return new JPopupMenuOperator();
     }
     
     public JPopupMenuOperator clickPopup(int x, int y) {
-        
         getDesignerPaneComponentOperator().clickForPopup(x,y);
         return new JPopupMenuOperator();
+    }
+    
+    public void pushPopupMenu(String menuPath){
+        JPopupMenuOperator popup = clickPopup();
+        popup.pushMenu(menuPath);
+    }
+    
+    public void pushPopupMenu(String menuPath, int x, int y){
+        JPopupMenuOperator popup = clickPopup(x,y);
+        popup.pushMenu(menuPath);
     }
     
     public ComponentOperator getDesignerPaneComponentOperator() {
@@ -156,7 +170,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
         }
         
         public String getDescription() {
-            return " Web Designer Component";
+            return "Web Designer Component";
         }
     }
 }
