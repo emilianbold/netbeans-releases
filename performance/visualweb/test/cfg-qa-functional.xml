@@ -110,197 +110,6 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <!-- Memory usage -->
-    <testbag testattribs="memory_usage or memory_dialog" prio="2"
-             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_dialog_1.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_dialog" prio="3"
-             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_dialog_2.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_dialog" prio="4"
-             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_dialog_3.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_dialog" prio="5"
-             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_dialog_4.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_dialog" prio="6"
-             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_dialog_5.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_dialog" prio="7"
-             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_dialog_6.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_dialog" prio="8"
-             executor="ide_performance_memory_usage" name="Memory Usage - Dialogs" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_dialog_7.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_action" prio="9"
-             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_action_1.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_action" prio="10"
-             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_action_2.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_action" prio="11"
-             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_action_3.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_action" prio="12"
-             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_action_4.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_action" prio="13"
-             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_action_5.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_action" prio="14"
-             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_action_6.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_action" prio="15"
-             executor="ide_performance_memory_usage" name="Memory Usage - Actions" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_action_7.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_menu" prio="16"
-             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_menu_1.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_menu" prio="17"
-             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_menu_2.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_menu" prio="18"
-             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_menu_3.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_menu" prio="19"
-             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_menu_4.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_menu" prio="20"
-             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_menu_5.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_menu" prio="21"
-             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_menu_6.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="memory_usage or memory_menu" prio="22"
-             executor="ide_performance_memory_usage" name="Memory Usage - Menus" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsage_menu_7.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    
     <!-- Scan Classpath test bag -->    
     <testbag testattribs="all or classpath_scan" prio="100"
              executor="ide_performance_scan" name="Classpath Scan" >
@@ -331,15 +140,6 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="apisupport_related" prio="110"
-             executor="ide_performance" name="UI responsiveness of actions, dialogs or menus related to apisupport" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/MeasureAPIsupport.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
     <!-- Temp -->    
     <testbag testattribs="temp" prio="1000"
              executor="ide_performance" name="Temp" >
@@ -349,19 +149,10 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="memory_temp" prio="1001"
-             executor="ide_performance_memory_usage" name="Memory Usage Temp" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/memory_usage/MeasureMemoryUsageTemp.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
     
 <!-- Memory Footprint Testbags -->
     <!-- Out Of The Box -->
-    <testbag testattribs="footprint_all or out_of_the_box_startup or footprint_temp" prio="300"
+    <testbag testattribs="footprint_all or out_of_the_box_startup" prio="300"
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -445,7 +236,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Visual Web Project workflow -->
-    <testbag testattribs="footprint_all or visualweb_project" prio="320"
+    <testbag testattribs="footprint_all or visualweb_project" prio="330"
              executor="ide_footprint" name="Footprint - Visual Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -454,7 +245,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(footprint_all or visualweb_project) and NOT once" prio="321"
+    <testbag testattribs="(footprint_all or visualweb_project) and NOT once" prio="331"
              executor="ide_footprint" name="Footprint - Visual Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -463,7 +254,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(footprint_all or visualweb_project) and NOT once" prio="322"
+    <testbag testattribs="(footprint_all or visualweb_project) and NOT once" prio="332"
              executor="ide_footprint" name="Footprint - Visual Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -475,7 +266,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- executors & compilers -->
     <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
     <executor name="ide_performance" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
-    <executor name="ide_performance_memory_usage" antfile="build-qa-functional.xml" target="runidetest_memory_usage"/>
     <executor name="ide_performance_scan" antfile="build-qa-functional.xml" target="runidetest_scan" />
     <executor name="ide_footprint" antfile="build-qa-functional.xml" target="runidetest_footprint"/>
     

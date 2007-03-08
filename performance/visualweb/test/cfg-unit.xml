@@ -21,58 +21,62 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <mconfig name="Performance unit tests config">
-
-
+    
+    
     <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="IDE startup time">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="all or startup or complex_startup" prio="10" executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="prepare/PrepareIDEForComplexMeasurements.class"/>
-	    </patternset>
-	</testset>
+        <testset dir="unit/src">
+            <patternset>
+                <include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>
+            </patternset>
+        </testset>
     </testbag>
     
-    <testbag testattribs="all or startup or complex_startup" prio="11" executor="execute_complex_startup" name="IDE complex startup time">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
-	    </patternset>
-	</testset>
+    <testbag testattribs="all or startup or complex_startup" prio="10" 
+             executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="prepare/PrepareIDEForComplexMeasurements.class"/>
+            </patternset>
+        </testset>
     </testbag>
-
-    <testbag testattribs="all or startup or complex_startup or complex_startup_web_project" prio="30" executor="prepare_ide_web_project" name="Prepare IDE for complex startup time measurement - Web Pack project">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="prepare/PrepareIDEForWebPackComplexMeasurements.class"/>
-	    </patternset>
-	</testset>
+    
+    <testbag testattribs="all or startup or complex_startup" prio="11" 
+             executor="execute_complex_startup" name="IDE complex startup time">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
+            </patternset>
+        </testset>
     </testbag>
-
-    <testbag testattribs="all or startup or complex_startup or complex_startup_web_project" prio="31" executor="execute_complex_startup_web_project" name="IDE complex startup time - Web Pack project">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesWebProject"/>
-	    </patternset>                                          
-	</testset>
+    
+    <testbag testattribs="all or startup or complex_startup or complex_startup_web_project" prio="30" 
+             executor="prepare_ide_web_project" name="Prepare IDE for complex startup time measurement - Web Pack project">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="prepare/PrepareIDEForWebPackComplexMeasurements.class"/>
+            </patternset>
+        </testset>
     </testbag>
-
+    
+    <testbag testattribs="all or startup or complex_startup or complex_startup_web_project" prio="31" 
+             executor="execute_complex_startup_web_project" name="IDE complex startup time - Web Pack project">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesWebProject"/>
+            </patternset>                                          
+        </testset>
+    </testbag>
+    
     
     <testbag testattribs="all or warmup" prio="40" executor="execute_warmup" name="Warm Up">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="startup/MeasureWarmUp.class/testWarmUp"/>		
-	    </patternset>
-	</testset>
+        <testset dir="unit/src">
+            <patternset>
+                <include name="startup/MeasureWarmUp.class/testWarmUp"/>		
+            </patternset>
+        </testset>
     </testbag>
-
-<!-- Executors for Startup and Warmup testing -->
+    
+    <!-- Executors for Startup and Warmup testing -->
     
     <executor name="prepare_ide" antfile="build-unit.xml" target="prepare_ide_for_complex_measurements"/>
     
