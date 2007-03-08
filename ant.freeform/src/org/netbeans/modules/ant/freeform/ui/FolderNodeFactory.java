@@ -17,18 +17,30 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.ant.freeform.ui;
 
+import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
@@ -39,18 +51,25 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PathMatcher;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
-
 
 /**
  *
@@ -191,8 +210,21 @@ public class FolderNodeFactory implements NodeFactory {
                         return nature.createSourceFolderView(p, file, includes, excludes, style, location, label);
                     }
                 }
-                // fall back to tree display
-                // assert style.equals(STYLE_TREE);
+                if (style.equals("subproject")) { // NOI18N
+                    try {
+                        Project subproject = ProjectManager.getDefault().findProject(file);
+                        if (subproject != null) {
+                            return new SubprojectNode(subproject, label);
+                        }
+                    } catch (IOException x) {
+                        Exceptions.printStackTrace(x);
+                    }
+                    return null;
+                }
+                if (!style.equals("tree")) { // NOI18N
+                    Logger.getLogger(FolderNodeFactory.class.getName()).log(Level.WARNING, "Unrecognized <source-folder> style '{0}' on {1}", new Object[] {style, file});
+                    // ... but show it as a tree anyway (at least ViewTest cares)
+                }
                 DataObject fileDO;
                 try {
                     fileDO = DataObject.find(file);
@@ -306,4 +338,63 @@ public class FolderNodeFactory implements NodeFactory {
         }
         
     }    
+
+     private static final class SubprojectNode extends AbstractNode { // #97442
+
+         private final Project p;
+         private final String label;
+         private final ProjectInformation info;
+
+         public SubprojectNode(Project p, String label) {
+             super(Children.LEAF, Lookups.singleton(p));
+             this.p = p;
+             this.label = label;
+             info = ProjectUtils.getInformation(p);
+         }
+
+         @Override
+         public String getName() {
+             return info.getName();
+         }
+
+         @Override
+         public String getDisplayName() {
+             return label != null ? label : info.getDisplayName();
+         }
+
+         @Override
+         public Image getIcon(int type) {
+             return Utilities.icon2Image(info.getIcon());
+         }
+
+         @Override
+         public Image getOpenedIcon(int type) {
+             return getIcon(type);
+         }
+
+         private static final class OpenProjectAction extends AbstractAction implements ContextAwareAction {
+             public void actionPerformed(ActionEvent ev) {
+                 assert false;
+             }
+             public Action createContextAwareInstance(Lookup selection) {
+                 final Project[] projects = selection.lookupAll(Project.class).toArray(new Project[0]);
+                 return new AbstractAction(SystemAction.get(OpenAction.class).getName()) {
+                     public void actionPerformed(ActionEvent ev) {
+                         OpenProjects.getDefault().open(projects, false);
+                     }
+                     @Override
+                     public boolean isEnabled() {
+                         return !Arrays.asList(OpenProjects.getDefault().getOpenProjects()).containsAll(Arrays.asList(projects));
+                     }
+                 };
+             }
+         }
+         private static final Action OPEN = new OpenProjectAction();
+         @Override
+         public Action[] getActions(boolean context) {
+             return new Action[] {OPEN};
+         }
+
+     }
+
 }

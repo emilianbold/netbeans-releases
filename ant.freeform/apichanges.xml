@@ -82,6 +82,21 @@ is the proper place.
 
     <changes>
 
+        <change id="view-source-folder-subproject-style">
+            <summary>New view style for subprojects</summary>
+            <version major="1" minor="15"/>
+            <date day="7" month="3" year="2007"/>
+            <author login="jglick"/>
+            <compatibility semantic="compatible"/>
+            <description>
+                <p>
+                    Added a new view style for folders in the <b>Projects</b> tab:
+                    <code>subproject</code>. Displays a project node which can be opened.
+                </p>
+            </description>
+            <issue number="97442"/>
+        </change>
+
         <change id="includes-excludes">
             <summary>Include/exclude support in views</summary>
             <version major="1" minor="15"/>
