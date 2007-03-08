@@ -176,6 +176,8 @@ public class LanguagesEditorKit extends NbEditorKit {
     }
     
     public Action getActionByName(String name) {
+        if (name == null)
+            return super.getActionByName (name);
         if (name.startsWith("Expand"))
             return new ExpandFoldTypeAction (name);
         if (name.startsWith("Collapse"))
