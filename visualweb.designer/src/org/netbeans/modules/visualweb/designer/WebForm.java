@@ -31,7 +31,6 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.markup.MarkupPosition;
 import org.netbeans.modules.visualweb.designer.DocumentCache;
 import org.netbeans.modules.visualweb.designer.ImageCache;
 import java.awt.Dimension;
@@ -2506,9 +2505,9 @@ public class WebForm implements Designer {
             return null;
         }
 
-        public MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
-            return null;
-        }
+//        public MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
+//            return null;
+//        }
 
 //        public HtmlDomProvider.Location computeLocationForPositions(String facet, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid, Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement) {
 //            return null;
