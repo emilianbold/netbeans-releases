@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -501,12 +502,12 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
          * Fix for 4514331 Non-editable JTextArea and similar
          * should allow Tab to keyboard - accessibility
          */
-        Set storedForwardTraversalKeys =
+        Set<? extends AWTKeyStroke> storedForwardTraversalKeys =
                 editor.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-        Set storedBackwardTraversalKeys =
+        Set<? extends AWTKeyStroke> storedBackwardTraversalKeys =
                 editor.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
-        Set forwardTraversalKeys = new HashSet(storedForwardTraversalKeys);
-        Set backwardTraversalKeys = new HashSet(storedBackwardTraversalKeys);
+        Set<? extends AWTKeyStroke> forwardTraversalKeys = new HashSet<AWTKeyStroke>(storedForwardTraversalKeys);
+        Set<? extends AWTKeyStroke> backwardTraversalKeys = new HashSet<AWTKeyStroke>(storedBackwardTraversalKeys);
         
         forwardTraversalKeys.remove(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
         backwardTraversalKeys.remove(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_MASK));
