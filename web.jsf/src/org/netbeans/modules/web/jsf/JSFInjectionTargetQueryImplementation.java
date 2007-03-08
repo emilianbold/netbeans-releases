@@ -18,12 +18,7 @@
  */
 
 package org.netbeans.modules.web.jsf;
-//TODO: RETOUCHE
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-//TODO: RETOUCHE
-//import org.netbeans.modules.javacore.api.JavaModel;
-import java.util.Iterator;
+
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
@@ -32,104 +27,53 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.filesystems.FileObject;
-
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Petr Pisl
  */
 
-
 public class JSFInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
     
-    /** Creates a new instance of JSFInjectionTargetQueryImplementation */
     public JSFInjectionTargetQueryImplementation() {
     }
     
-    public boolean isInjectionTarget(CompilationController controller,
-            TypeElement typeElement) {
-        boolean is = false;
-        if (controller == null || typeElement==null) {
-            throw new NullPointerException("Passed null to JSFInjectionTargetQueryImplementation.isInjectionTarget(CompilationController,TypeElement)"); // NOI18N
-        }
-        
-        // Find the web module, where the class is
-        WebModule wm  = WebModule.getWebModule(controller.getFileObject());
-        // Is the web modile 2.5 servlet spec or higher?
-        if (wm != null && !wm.getJ2eePlatformVersion().equals(WebModule.J2EE_13_LEVEL)
-                && !wm.getJ2eePlatformVersion().equals(WebModule.J2EE_14_LEVEL)){
-            // Get deployment desctriptor from the web module
-            FileObject dd = wm.getDeploymentDescriptor();
-            if (dd != null){
-                // Get all jsf configurations files
-                FileObject[] jsfConfigs = ConfigurationUtils.getFacesConfigFiles(wm);
-                for (int i = 0; i < jsfConfigs.length && !is ; i++) {
-                    
-                    // Get manage beans from the configuration file
-                    List<ManagedBean> beans = ConfigurationUtils.getConfigModel(jsfConfigs[i], true).getRootComponent().getManagedBeans();
-                    for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
-                        ManagedBean managedBean = it.next();
-                        //TODO: RETOUCHE - need to be tested, when the functionality will be accessible.
-                        //if (typeElement.getQualifiedName().toString().equals(beans[j].getManagedBeanClass()))
-                        //    is = true;
-                    }
-                }
-            }
-        }
-        return is;
-    }
-    
-    public boolean isStaticReferenceRequired(CompilationController controller,
-            TypeElement typeElement) {
-        return false;
-    }
-    
-    /** For method return true if:
+    /** 
+     * For method return true if:
      *      1) The web module follows 2.5 servlet specification or higher
      *      2) The jc is defined as manage bean in a jsp configuration file.
      */
-    /*public boolean isInjectionTarget(JavaClass jc) {
-        boolean is = false;
-        if (jc == null) {
-            throw new NullPointerException("Passed null to JSFInjectionTargetQueryImplementation.isInjectionTarget(JavaClass)"); // NOI18N
-        }
-        FileObject classFile = JavaModel.getFileObject(jc.getResource());
+    public boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
+        Parameters.notNull("controller", controller);
+        Parameters.notNull("typeElement", typeElement);
+        
         // Find the web module, where the class is
-        WebModule wm = WebModule.getWebModule(classFile);
+        WebModule webModule  = WebModule.getWebModule(controller.getFileObject());
         // Is the web modile 2.5 servlet spec or higher?
-        if (wm != null && !wm.getJ2eePlatformVersion().equals(WebModule.J2EE_13_LEVEL)
-        && !wm.getJ2eePlatformVersion().equals(WebModule.J2EE_14_LEVEL)){
+        if (webModule != null && !webModule.getJ2eePlatformVersion().equals(WebModule.J2EE_13_LEVEL)
+                && !webModule.getJ2eePlatformVersion().equals(WebModule.J2EE_14_LEVEL)){
             // Get deployment desctriptor from the web module
-            FileObject dd = wm.getDeploymentDescriptor();
-            if (dd != null){
+            FileObject ddFileObject = webModule.getDeploymentDescriptor();
+            if (ddFileObject != null){
                 // Get all jsf configurations files
-                FileObject[] jsfConfigs = JSFConfigUtilities.getConfiFilesFO(dd);
-                try {
-                    for (int i = 0; i < jsfConfigs.length && !is ; i++) {
-                        DataObject dObject;
-                        dObject = DataObject.find(jsfConfigs[i]);
-                        if (dObject instanceof JSFConfigDataObject){
-                            // Get manage beans from the configuration file
-                            ManagedBean [] beans = ((JSFConfigDataObject)dObject).getFacesConfig().getManagedBean();
-                            for (int j = 0; j < beans.length && !is; j++) {
-                                System.out.println("name: " +jc.getName());
-                                if (jc.getName().equals(beans[j].getManagedBeanClass()))
-                                    is = true;
-                            }
+                FileObject[] jsfConfigs = ConfigurationUtils.getFacesConfigFiles(webModule);
+                for (FileObject jsfConfigFO : ConfigurationUtils.getFacesConfigFiles(webModule)) {
+                    // Get manage beans from the configuration file
+                    List<ManagedBean> beans = ConfigurationUtils.getConfigModel(jsfConfigFO, true).getRootComponent().getManagedBeans();
+                    for (ManagedBean managedBean : beans) {
+                        if (typeElement.getQualifiedName().contentEquals(managedBean.getManagedBeanClass())) {
+                            return true;
                         }
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
-                } catch (java.io.IOException ioe) {
-                    ioe.printStackTrace();
                 }
             }
         }
-        return is;
-    }
-     
-    public boolean isStaticReferenceRequired(JavaClass jc) {
         return false;
     }
-     */
+    
+    public boolean isStaticReferenceRequired(CompilationController controller, TypeElement typeElement) {
+        return false;
+    }
+    
 }
