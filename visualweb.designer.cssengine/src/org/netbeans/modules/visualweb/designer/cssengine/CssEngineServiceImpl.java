@@ -877,7 +877,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
      */
     private ResourceData[] getStyleResourcesFromStyleSheet(Document doc, StyleSheet ss, int[] indexesToMatch) {
 //        Map rewrite = new HashMap();
-        List resourceData = new ArrayList();
+        List<ResourceData> resourceData = new ArrayList<ResourceData>();
         
         int len = ss.getSize();
 
@@ -941,7 +941,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
             }
         }
         
-        return (ResourceData[])resourceData.toArray(new ResourceData[resourceData.size()]);
+        return resourceData.toArray(new ResourceData[resourceData.size()]);
     }
     
     public CssSyntaxErrorInfo[] parseCss(javax.swing.text.Document document) {
