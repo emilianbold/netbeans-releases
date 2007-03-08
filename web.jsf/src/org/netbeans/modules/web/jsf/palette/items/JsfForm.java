@@ -238,7 +238,7 @@ public final class JsfForm implements ActiveEditorDrop {
                 if (attributes.iterator().hasNext()) {
                     AnnotationValue annotationValue = attributes.iterator().next();
                     if (annotationValue != null) {
-                        //TODO: RETOUCHE
+                        //TODO: RETOUCHE annotation attribute value
                         return null;//annotationValue.getValue();
                     }
                 }
@@ -525,7 +525,7 @@ public final class JsfForm implements ActiveEditorDrop {
 
     private static List<TypeElement> getTypeParameters(TypeMirror typeMirrror) {
         List<TypeElement> result = new ArrayList<TypeElement>();
-        //TODO: RETOUCHE
+        //TODO: RETOUCHE type parameters
         return result;
     }
     
