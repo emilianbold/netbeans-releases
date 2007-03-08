@@ -1101,11 +1101,11 @@ public class WebForm implements Designer {
         htmlDomProvider.setRenderFailedValues(renderFailureComponent, renderFailureException);
     }
 
-    /** Return the exception associated with the current render failure for this page */
-    public Exception getRenderFailure() {
-//        return renderFailure;
-        return htmlDomProvider.getRenderFailureException();
-    }
+//    /** Return the exception associated with the current render failure for this page */
+//    public Exception getRenderFailure() {
+////        return renderFailure;
+//        return htmlDomProvider.getRenderFailureException();
+//    }
 
     /** Return the component associated with the current render failure for this page */
     public MarkupDesignBean getRenderFailureComponent() {
