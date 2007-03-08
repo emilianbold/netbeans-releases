@@ -2633,8 +2633,8 @@ public final class ModelViewMapper {
         return pageBox.findCssBoxForComponentRootElement(componentRootElement);
     }
     
-    public static List getComponentRectangles(PageBox pageBox, /*DesignBean lb*/Element componentRootElement) {
-        List result = new ArrayList();
+    public static List<Rectangle> getComponentRectangles(PageBox pageBox, /*DesignBean lb*/Element componentRootElement) {
+        List<Rectangle> result = new ArrayList<Rectangle>();
 //        PageBox pageBox = webform.getPane().getPageBox();
 //        pageBox.computeRectangles(lb, result);
         pageBox.computeRectangles(componentRootElement, result);

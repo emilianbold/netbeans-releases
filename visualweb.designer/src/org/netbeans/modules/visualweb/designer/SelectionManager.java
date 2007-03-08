@@ -2083,7 +2083,7 @@ public class SelectionManager {
 //                DesignBean component = fo.component;
         if (!selectedComponents.isEmpty()) {
             //Node[] nodes = new Node[selected.size()];
-            List nodes = new ArrayList(selectedComponents.size());
+            List<Node> nodes = new ArrayList<Node>(selectedComponents.size());
             for (SelectedComponent sc : selectedComponents) {
 //                DesignBean component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
 //                Node n = DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(component);
@@ -2092,7 +2092,7 @@ public class SelectionManager {
                 nodes.add(n);
             }
 
-            Node[] nds = (Node[])nodes.toArray(new Node[nodes.size()]);
+            Node[] nds = nodes.toArray(new Node[nodes.size()]);
 
 //            if (topcomp.isShowing()) {
 //                topcomp.requestActive();

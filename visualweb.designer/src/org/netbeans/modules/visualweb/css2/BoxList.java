@@ -328,14 +328,8 @@ public class BoxList {
         return sb.toString();
     }
     
-    private static class CssBoxComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            assert o1 instanceof CssBox;
-            assert o2 instanceof CssBox;
-
-            CssBox b1 = (CssBox)o1;
-            CssBox b2 = (CssBox)o2;
-
+    private static class CssBoxComparator implements Comparator<CssBox> {
+        public int compare(CssBox b1, CssBox b2) {
             if (b1.z == b2.z) {
                 return 0;
             }

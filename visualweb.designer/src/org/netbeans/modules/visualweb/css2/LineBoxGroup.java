@@ -57,7 +57,8 @@ public class LineBoxGroup extends ContainerBox {
     private final FontMetrics metrics;
     private LineBox lineBox = null;
     private int targetY;
-    private ArrayList floats = null;
+//    private ArrayList floats = null;
+    List<CssBox> floats = null;
     private BoxList allBoxes;
 
     public LineBoxGroup(WebForm webform, Element element, FontMetrics metrics) {
@@ -306,7 +307,7 @@ public class LineBoxGroup extends ContainerBox {
                     } else {
                         assert box.getBoxType() == BoxType.FLOAT;
                         if (floats == null) {
-                            floats = new ArrayList();
+                            floats = new ArrayList<CssBox>();
                         }
 
                         super.addBox(box, null, null);
@@ -448,7 +449,7 @@ public class LineBoxGroup extends ContainerBox {
 
         if ((lineBox != null) && lineBox.isFloated) {
             if (floats == null) {
-                floats = new ArrayList();
+                floats = new ArrayList<CssBox>();
             }
 
             floats.add(lineBox);
@@ -522,7 +523,7 @@ public class LineBoxGroup extends ContainerBox {
     private void finishFloats(FormatContext context) {
         if (floats != null) {
             for (int i = 0, n = floats.size(); i < n; i++) {
-                CssBox box = (CssBox)floats.get(i);
+                CssBox box = floats.get(i);
 
                 if (box.getBoxType() != BoxType.LINEBOX) {
                     // XXX true here - what if we're doing this layout as part
