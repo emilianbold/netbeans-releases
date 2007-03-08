@@ -13,6 +13,10 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -238,6 +242,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
      * @return
      */
     public JComponent getToolbarRepresentation() {
+        
+        PageFlowUtilities pfu = PageFlowUtilities.getInstance();
         // TODO -- Look at NbEditorToolBar in the editor - it does stuff
         // with the UI to get better Aqua and Linux toolbar
         JToolBar toolbar = new JToolBar();
@@ -258,12 +264,25 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         comboBox.setMinimumSize(prefSize);
         comboBox.setMaximumSize(prefSize);
         
-        comboBox.setSelectedItem(PageFlowUtilities.getInstance().getCurrentScope());
+        comboBox.setSelectedItem(pfu.getCurrentScope());
+        
+        comboBox.addItemListener( new ItemListener() {
+            public void itemStateChanged(ItemEvent event)  {
+                PageFlowUtilities pfu = PageFlowUtilities.getInstance();
+                if ( event.getStateChange() == ItemEvent.SELECTED ) {
+                    pfu.setCurrentScope((String)event.getItem());
+                    System.out.println("Item Change Listener State: " + pfu.getCurrentScope());
+                }
+            }
+        });
         
         toolbar.add(comboBox);
         
         return toolbar;
+        
     }
+    
+    
     
     private static final String PATH_PALETTE_FOLDER = "PageFlowEditor/Palette"; // NOI18N
     
