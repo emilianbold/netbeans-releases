@@ -8572,7 +8572,8 @@ public class ADDrawingAreaControl extends ApplicationView
             
             if (fireEvents)
             {
-               setIsDirty(true);
+               //No need to set dirty state for nameSpace change. The change apply right away.
+               //setIsDirty(true);
                
                // Let folks know that the namespace has changed.
                fireDrawingAreaPropertyChange(DiagramAreaEnumerations.DAPK_NAMESPACE);

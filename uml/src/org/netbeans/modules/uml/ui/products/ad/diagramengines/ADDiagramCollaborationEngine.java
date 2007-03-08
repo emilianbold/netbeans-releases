@@ -150,13 +150,16 @@ public class ADDiagramCollaborationEngine extends ADCoreEngine implements IADCol
 	}
 
 	public void initializeNewDiagram()
-	{
-		if (getDrawingArea() != null)
-		{
-			getCollaborationDiagramInteraction();
-			getDrawingArea().setIsDirty(true);
-		}
-	}
+        {
+           if (getDrawingArea() != null)
+           {
+              getCollaborationDiagramInteraction();
+              // Fixed 96474 - NPE
+              // No need to set dirty state at this point.
+              // The diagram will be saved after it is generated.
+              // getDrawingArea().setIsDirty(true);
+           }
+        }
 	
 	protected IInteraction getCollaborationDiagramInteraction()
 	{

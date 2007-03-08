@@ -201,12 +201,14 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
      */
     public void initializeNewDiagram()
     {
-        if (getDrawingArea() != null)
-        {
-            getSequenceDiagramInteraction();
-            getDrawingArea().setIsDirty(true);
-        }
-        
+       if (getDrawingArea() != null)
+       {
+          getSequenceDiagramInteraction();
+          // Fixed 96474 - NPE
+          // No need to set dirty state at this point.
+          // The diagram will be saved after it is generated.
+          // getDrawingArea().setIsDirty(true);
+       }
     }
     
    /* (non-Javadoc)
