@@ -109,11 +109,6 @@ public class JsfJspDataLoader extends UniFileLoader {
 
     protected MultiDataObject createMultiObject(final FileObject primaryFile)
     throws DataObjectExistsException, IOException {
-        // Run garbage collection to avoid an issue with the DataObject
-        // constructor not accepting the new JsfJspDataObject when a
-        // different weakly referenced DO is associated with primaryFile
-        System.gc();
-        
         return new JsfJspDataObject(primaryFile, this);
     }
 
