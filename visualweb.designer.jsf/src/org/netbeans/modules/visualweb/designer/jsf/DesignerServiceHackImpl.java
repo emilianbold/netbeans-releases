@@ -297,7 +297,7 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
 // <<< Moved from designer/PageBox.paintCssPreview
     }
 
-    public Image getCssPreviewImage(Map properties, URL base, int width, int height) {
+    public Image getCssPreviewImage(Map<String, String> properties, URL base, int width, int height) {
 //        WindowManager wm = WindowManager.getDefault();
 //        Graphics2D g2d = (Graphics2D)wm.getMainWindow().getGraphics();
 //

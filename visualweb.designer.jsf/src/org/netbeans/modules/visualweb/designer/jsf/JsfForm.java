@@ -199,7 +199,7 @@ class JsfForm {
         synchronized (jsfForm2designerSet) {
             Set<Designer> designerSet = jsfForm2designerSet.get(jsfForm);
             if (designerSet == null) {
-                designerSet = new WeakSet/*<Designer>*/();
+                designerSet = new WeakSet<Designer>();
             }
             
             designer = DesignerFactory.createDesigner(jsfForm.getHtmlDomProvider());

@@ -145,7 +145,7 @@ public abstract class DesignerServiceHack {
      * @param height The requested height of the preview image
      * @todo Transfer the convertCssStyleToMap method into DesignerService instead!
      */
-    public abstract Image getCssPreviewImage(Map properties, URL base, int width, int height);
+    public abstract Image getCssPreviewImage(Map<String, String> properties, URL base, int width, int height);
 
     /** Computes a preview image of the specified size for given <code>DataObject</code>.
      * @return the image or <code>null</code> if the specified DataObject is not a webform one. */
