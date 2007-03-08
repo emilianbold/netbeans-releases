@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import org.openide.ErrorManager;
@@ -37,7 +38,8 @@ import org.openide.filesystems.URLMapper;
  * @author Tor Norbye
  */
 public class ImageCache {
-    HashMap images;
+//    HashMap images;
+    private Map<URL, ImageIcon> images;
 
     /** Construct a new image cache */
     public ImageCache() {
@@ -49,13 +51,13 @@ public class ImageCache {
             return null;
         }
 
-        return (ImageIcon)images.get(url);
+        return images.get(url);
     }
 
     /** Put an image into the cache */
     public void put(URL url, ImageIcon image) {
         if (images == null) {
-            images = new HashMap(); // TODO - initial size?
+            images = new HashMap<URL, ImageIcon>(); // TODO - initial size?
         }
 
         images.put(url, image);
@@ -67,10 +69,10 @@ public class ImageCache {
             // Ensure that the files actually get reloaded from disk;
             // NetBeans may be hanging on to old bits in its filesystem
             // layer
-            Iterator it = images.keySet().iterator();
+            Iterator<URL> it = images.keySet().iterator();
 
             while (it.hasNext()) {
-                URL url = (URL)it.next();
+                URL url = it.next();
 
                 // XXX Lame validity check, missing nice NB API.
                 try {
@@ -94,6 +96,6 @@ public class ImageCache {
     }
 
     public String toString() {
-        return "ImageCache: " + images.toString();
+        return super.toString() + "[images=" + images + "]"; // NOI18N
     }
 }
