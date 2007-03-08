@@ -53,7 +53,7 @@ public final class DesignerServiceHackProvider {
                 width, height);
     }
 
-    public static Image getCssPreviewImage(Map properties, URL base, int width, int height) {
+    public static Image getCssPreviewImage(Map<String, String> properties, URL base, int width, int height) {
         return DesignerServiceHackProviderImpl.getCssPreviewImage(properties, base, width, height);
     }
 

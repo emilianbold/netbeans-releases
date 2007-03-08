@@ -67,7 +67,7 @@ public interface CssEngineService {
      * properties into shorthands, when possible. See styleToMap.
      * <p/>
      * If there is no css engine created, it returns an empty map. */
-    public String getStringFromStyleMapForDocument(Document document, Map styleMap);
+    public String getStringFromStyleMapForDocument(Document document, Map<String, String> styleMap);
     /** Adding a node which represents style sheet node for specified <code>Document</code>,
      * into the corresponding css engine, if there is one. */
     public void addTransientStyleSheetNodeForDocument(Document document, Node styleSheetNode);

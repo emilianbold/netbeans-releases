@@ -1325,14 +1325,14 @@ class XhtmlCssEngine extends CSSEngine {
      * Given a Map of style properties, serialize the set and compress
      * properties into shorthands, when possible. See styleToMap.
      */
-    public String mapToStyle(Map map) {
+    public String mapToStyle(Map<String, String> map) {
         StyleMap styleMap = new StyleMap(getNumberOfProperties());
         StringBuffer unknown = null;
-        Iterator it = map.keySet().iterator();
+        Iterator<String> it = map.keySet().iterator();
 
         while (it.hasNext()) {
-            String key = (String)it.next();
-            String value = (String)map.get(key);
+            String key = it.next();
+            String value = map.get(key);
 
             int index = getXhtmlPropertyIndex(key);
 

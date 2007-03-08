@@ -209,7 +209,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
         }
     }
 
-    public String getStringFromStyleMapForDocument(Document document, Map styleMap) {
+    public String getStringFromStyleMapForDocument(Document document, Map<String, String> styleMap) {
         XhtmlCssEngine engine = getCssEngine(document);
         
         if (engine == null) {

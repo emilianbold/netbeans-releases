@@ -143,7 +143,7 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
                 width, height);
     }
 
-    public static Image getCssPreviewImage(Map properties, URL base, int width, int height) {
+    public static Image getCssPreviewImage(Map<String, String> properties, URL base, int width, int height) {
         WindowManager wm = WindowManager.getDefault();
         Graphics2D g2d = (Graphics2D)wm.getMainWindow().getGraphics();
 
@@ -1094,7 +1094,7 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
      * applied, and return it as an image. Use the preferred initial
      * width, unless the component is larger.
      */
-    private static BufferedImage paintCssPreview(Graphics2D g2d, URL base, Map properties, int width, int height) {
+    private static BufferedImage paintCssPreview(Graphics2D g2d, URL base, Map<String, String> properties, int width, int height) {
         // Restore?
         BufferedImage image = null;
 
@@ -1178,10 +1178,10 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
             boolean hasText = false;
             boolean hasBorder = false;
             boolean hasPosition = false;
-            Iterator it = properties.keySet().iterator();
+            Iterator<String> it = properties.keySet().iterator();
 
             while (it.hasNext()) {
-                String property = (String)it.next();
+                String property = it.next();
 
 //                if (isPositionProperty(property)) {
                 if (CssProvider.getValueService().isPositionProperty(property)) {
