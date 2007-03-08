@@ -2364,7 +2364,7 @@ public class WebForm implements Designer {
 //            return false;
 //        }
 
-//        public long getContextGenearation(com.sun.rave.designtime.DesignContext context) {
+//        public long getContextGenearation(DesignContext context) {
 //            return 0L;
 //        }
 
