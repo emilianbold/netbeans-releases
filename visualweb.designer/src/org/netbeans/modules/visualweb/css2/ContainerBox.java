@@ -1182,7 +1182,7 @@ public class ContainerBox extends CssBox {
         }
 
         boolean abs = box.getBoxType().isAbsolutelyPositioned();
-        ArrayList oldFloats = null;
+        List<FloatingBoxInfo> oldFloats = null;
         boolean oldFloating = false;
 
         if (abs) {

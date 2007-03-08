@@ -8,6 +8,7 @@
 package org.netbeans.modules.visualweb.css2;
 
 
+import java.util.List;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValueService;
@@ -35,7 +36,7 @@ public class FormatContext {
 
     //public Element element;
     public boolean floating; // whether or not the currently formatted box is a floating box
-    public ArrayList floats;
+    public List<FloatingBoxInfo> floats;
 
     /*
     public String toString() {
@@ -46,7 +47,7 @@ public class FormatContext {
     */
     public void addFloat(int x, int y, CssBox box, boolean leftSide) {
         if (floats == null) {
-            floats = new ArrayList(4);
+            floats = new ArrayList<FloatingBoxInfo>(4);
         }
 
         FloatingBoxInfo info = new FloatingBoxInfo(x, y, box, leftSide);
@@ -84,7 +85,7 @@ public class FormatContext {
         int leftEdge = 0;
 
         for (int i = 0, n = floats.size(); i < n; i++) {
-            FloatingBoxInfo info = (FloatingBoxInfo)floats.get(i);
+            FloatingBoxInfo info = floats.get(i);
             CssBox box = info.box;
             if(canAdjustY(parent, box.getParent())) {
                 int yp = adjustY(y, parent, box.getParent());
@@ -141,7 +142,7 @@ public class FormatContext {
         int n = (floats != null) ? floats.size() : 0;
 
         for (int i = 0; i < n; i++) {
-            FloatingBoxInfo info = (FloatingBoxInfo)floats.get(i);
+            FloatingBoxInfo info = floats.get(i);
 
             if (!info.leftSide) {
                 continue;
@@ -249,7 +250,7 @@ public class FormatContext {
         int n = (floats != null) ? floats.size() : 0;
 
         for (int i = 0; i < n; i++) {
-            FloatingBoxInfo info = (FloatingBoxInfo)floats.get(i);
+            FloatingBoxInfo info = floats.get(i);
 
             if (info.leftSide) {
                 continue;
@@ -290,7 +291,7 @@ public class FormatContext {
         int cleared = Integer.MIN_VALUE;
 
         for (int i = 0; i < n; i++) {
-            FloatingBoxInfo info = (FloatingBoxInfo)floats.get(i);
+            FloatingBoxInfo info = floats.get(i);
 
             if (ignoreChildren != null) {
                 CssBox curr = info.box;
@@ -335,7 +336,7 @@ public class FormatContext {
 //        if (side != CssValueConstants.BOTH_VALUE) {
         if (CssProvider.getValueService().isBothValue(cssSide)) {
             for (int i = 0; i < n; i++) {
-                FloatingBoxInfo info = (FloatingBoxInfo)floats.get(i);
+                FloatingBoxInfo info = floats.get(i);
 
 //                if (((side == CssValueConstants.LEFT_VALUE) && !info.leftSide) ||
 //                        ((side == CssValueConstants.RIGHT_VALUE) && info.leftSide)) {
@@ -351,7 +352,7 @@ public class FormatContext {
         if (skip) {
             // Gotta remove just some from the float list, not all
             for (int i = 0; i < n; i++) {
-                FloatingBoxInfo info = (FloatingBoxInfo)floats.get(i);
+                FloatingBoxInfo info = floats.get(i);
 
 //                if (((side == CssValueConstants.LEFT_VALUE) && !info.leftSide) ||
 //                        ((side == CssValueConstants.RIGHT_VALUE) && info.leftSide)) {
@@ -425,7 +426,7 @@ public class FormatContext {
         int maxNextPosition=Integer.MIN_VALUE; int yAdj;
         CssBox yBox, result = null;
         for (int i = 0; i < n; i++) {
-            FloatingBoxInfo info = (FloatingBoxInfo)floats.get(i);
+            FloatingBoxInfo info = floats.get(i);
             if(info.box == box || parentOf(box, info.box)) {
                 return(result);
             }
@@ -452,7 +453,7 @@ public class FormatContext {
         int maxNextPosition=Integer.MIN_VALUE; int yAdj;
         CssBox result = null;
         for (int i = 0; i < n; i++) {
-            FloatingBoxInfo info = (FloatingBoxInfo)floats.get(i);
+            FloatingBoxInfo info = floats.get(i);
             if(info.box == box) {
                 return(result);
             }

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
+import java.util.List;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssComputedValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
@@ -1510,7 +1511,7 @@ public class TableBox extends ContainerBox {
     /** Format all the cells in the table */
     private void formatCells(int[] columnWidths, FormatContext context) {
         // The table cells should not be affected by floats in effect
-        ArrayList oldFloats = context.floats;
+        List<FloatingBoxInfo> oldFloats = context.floats;
         context.floats = null;
 
         boolean oldFloating = context.floating;
