@@ -41,6 +41,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.ExcludeFrom
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.ChangeCVSRootAction;
+import org.netbeans.modules.versioning.system.cvss.ui.history.ViewRevisionAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -424,6 +425,7 @@ public class Annotator {
             actions.add(new BranchesMenu());
             actions.add(null);
             actions.add(SystemAction.get(AnnotationsAction.class));            
+            actions.add(new ViewRevisionAction(ctx));
             actions.add(SystemAction.get(SearchHistoryAction.class));
             actions.add(null);
             actions.add(SystemAction.get(GetCleanAction.class));
@@ -454,6 +456,7 @@ public class Annotator {
                                                                         loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
                                                                         loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context));            
                 }
+                actions.add(new ViewRevisionAction(loc.getString("CTL_PopupMenuItem_ViewRevision"), ctx)); // NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context));

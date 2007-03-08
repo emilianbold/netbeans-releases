@@ -25,6 +25,7 @@ import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.subversion.util.Context;
@@ -354,10 +355,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision.Event) {
             RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-            ViewCookie view = (ViewCookie) new RevisionNode(drev, master).getCookie(ViewCookie.class);
-            if (view != null) {
-                view.view();
-            }
+            FileObject fo = FileUtil.toFileObject(drev.getFile());
+            org.netbeans.modules.versioning.util.Utils.openFile(fo, drev.getLogInfoHeader().getLog().getRevision().toString());
         }
     }
     private void diffPrevious(int idx) {

@@ -36,6 +36,8 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.cookies.ViewCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -448,10 +450,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
-            ViewCookie view = new RevisionNode(drev).getCookie(ViewCookie.class);
-            if (view != null) {
-                view.view();
-            }
+            FileObject fo = FileUtil.toFileObject(drev.getRevision().getLogInfoHeader().getFile());
+            org.netbeans.modules.versioning.util.Utils.openFile(fo, drev.getRevision().getNumber());
         }
     }    
     private void diffPrevious(int idx) {

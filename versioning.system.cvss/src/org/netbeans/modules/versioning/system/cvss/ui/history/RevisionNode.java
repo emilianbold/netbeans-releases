@@ -20,11 +20,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.openide.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.cookies.*;
 import org.openide.nodes.*;
-import org.openide.text.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
@@ -124,23 +120,6 @@ class RevisionNode extends AbstractNode {
         }
     }
     
-    public ViewCookie getCookie(Class<ViewCookie> clazz) {
-        
-        if (ViewCookie.class.equals(clazz)) {
-            File file = revision.getRevision().getLogInfoHeader().getFile();
-
-            String mime = null;
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
-                mime = fo.getMIMEType();
-            }
-            ViewEnv env = new ViewEnv(file, revision.getRevision().getNumber().trim(), mime);
-            return new ViewCookieImpl(env);
-        } else {
-            return super.getCookie(clazz);
-        }
-    }
-    
     private void initProperties() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
@@ -155,63 +134,6 @@ class RevisionNode extends AbstractNode {
         setSheet(sheet);        
     }
 
-    /**
-     * OpenSupport that is able to open an input stream.
-     * Encoding, coloring, ..., let editor kit takes care
-     */
-    private class ViewCookieImpl extends CloneableEditorSupport implements ViewCookie {
-
-        ViewCookieImpl(Env env) {
-            super(env);
-        }
-                                
-        protected String messageName() {
-            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();  // NOI18N
-        }
-        
-        protected String messageSave() {
-            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();  // NOI18N
-        }
-        
-        protected java.lang.String messageToolTip() {
-            return revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName();  // NOI18N
-        }
-
-        protected java.lang.String messageOpening() {
-            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", revision.getRevision().getLogInfoHeader().getFile().getName() + " " + getName());  // NOI18N
-        }
-        
-        protected java.lang.String messageOpened() {
-            return "";  // NOI18N
-        }
-
-        //#20646 associate the entry node with editor top component
-        protected CloneableEditor createCloneableEditor() {
-            CloneableEditor editor = super.createCloneableEditor();
-            editor.setActivatedNodes(new Node[] {RevisionNode.this});
-            return editor;
-        }
-
-        private Object writeReplace() {
-            return null;
-        }
-                
-    }    
-        
-    private class ViewEnv extends FileEnvironment {
-
-        /** Serial Version UID */
-        private static final long serialVersionUID = 1L;
-        
-        ViewEnv (File file, String revision, String mime) {
-            super(file, revision, mime);
-        }
-
-        public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport() {
-            return (ViewCookieImpl) RevisionNode.this.getCookie(ViewCookie.class);
-        }
-    }
-    
     private abstract class CommitNodeProperty extends PropertySupport.ReadOnly {
 
         protected CommitNodeProperty(String name, Class type, String displayName, String shortDescription) {
