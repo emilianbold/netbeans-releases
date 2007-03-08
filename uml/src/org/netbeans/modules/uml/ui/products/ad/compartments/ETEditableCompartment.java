@@ -350,7 +350,7 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
       {
          if (Character.isJavaIdentifierStart(ch))
          {
-            editCompartment(false, ch, 0, -1);
+            editCompartment(false, ch, 0, -1, true);
             handled = true;
          }
       }
@@ -368,6 +368,11 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
     * the cursor (some translators may select a field by default).
     */
    public long editCompartment(boolean bNew, int nKeyCode, int nShift, int nPos)
+   {
+      return editCompartment(bNew, nKeyCode, nShift, nPos, false);
+   }
+
+   public long editCompartment(boolean bNew, int nKeyCode, int nShift, int nPos, boolean isCharTyped)
    {
       super.editCompartment(bNew, nKeyCode, nShift, nPos);
       m_bNew = (bNew == true);
@@ -406,7 +411,7 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
          }
          //if a key is pressed, we do not want to lose that, so select the content of edit control and
          //put the pressed key name - we can come in edit mode when pressing enter too.
-         if (nKeyCode != 0 && nKeyCode != KeyEvent.VK_ENTER && nKeyCode != KeyEvent.VK_F2)
+         if (isCharTyped || (nKeyCode != 0 && nKeyCode != KeyEvent.VK_ENTER && nKeyCode != KeyEvent.VK_F2))
          {
             m_EditControl.setCharacter(nKeyCode, nShift);
          }
