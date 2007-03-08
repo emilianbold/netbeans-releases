@@ -535,22 +535,22 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 	    p.setDisplayName(getBundleString("LBL_LocalStyles"));
 	    ss.put(p);
 
-	    p = new Reflection(box, String.class, "getStyles", null); // NOI18N
+	    p = new Reflection<String>(box, String.class, "getStyles", null); // NOI18N
 	    p.setName("styles"); // NOI18N
 	    p.setDisplayName(getBundleString("LBL_Styles"));
 	    ss.put(p);
 
-	    p = new Reflection(box, String.class, "getComputedStyles", null); // NOI18N
+	    p = new Reflection<String>(box, String.class, "getComputedStyles", null); // NOI18N
 	    p.setName("compstyles"); // NOI18N
 	    p.setDisplayName(getBundleString("LBL_ComputedStyles"));
 	    ss.put(p);
 
-	    p = new Reflection(box, String.class, "getRules", null); // NOI18N
+	    p = new Reflection<String>(box, String.class, "getRules", null); // NOI18N
 	    p.setName("rules"); // NOI18N
 	    p.setDisplayName(getBundleString("LBL_Rules"));
 	    ss.put(p);
 
-	    p = new Reflection(box, Color.class, "getBg", null); // NOI18N
+	    p = new Reflection<Color>(box, Color.class, "getBg", null); // NOI18N
 	    p.setName("bg"); // NOI18N
 	    p.setDisplayName(getBundleString("LBL_Background"));
 	    ss.put(p);
@@ -571,72 +571,72 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 
             try {
                 //containing block, extents
-                p = new Reflection(box, Point.class, "getPosition", null); // NOI18N
+                p = new Reflection<Point>(box, Point.class, "getPosition", null); // NOI18N
                 p.setName("position"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_Position"));
                 ss.put(p);
 
-                p = new Reflection(box, Point.class, "getRelPosition", null); // NOI18N
+                p = new Reflection<Point>(box, Point.class, "getRelPosition", null); // NOI18N
                 p.setName("relposition"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_RelPosition"));
                 ss.put(p);
 
-                p = new Reflection(box, Dimension.class, "getSize", null); // NOI18N
+                p = new Reflection<Dimension>(box, Dimension.class, "getSize", null); // NOI18N
                 p.setName("size"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_Size"));
                 ss.put(p);
 
-                p = new Reflection(box, Dimension.class, "getContentSize", null); // NOI18N
+                p = new Reflection<Dimension>(box, Dimension.class, "getContentSize", null); // NOI18N
                 p.setName("contentsize"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_ContentSize"));
                 ss.put(p);
 
-                p = new Reflection(box, String.class, "getBoxTypeName", null); // NOI18N
+                p = new Reflection<String>(box, String.class, "getBoxTypeName", null); // NOI18N
                 p.setName("boxtype"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_Positioning"));
                 ss.put(p);
 
-                p = new Reflection(box, Rectangle.class, "getPositionRect", null); // NOI18N
+                p = new Reflection<Rectangle>(box, Rectangle.class, "getPositionRect", null); // NOI18N
                 p.setName("positionrect"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_PosConstraints"));
                 ss.put(p);
 
-                p = new Reflection(box, Rectangle.class, "getMarginRectangle", null); // NOI18N
+                p = new Reflection<Rectangle>(box, Rectangle.class, "getMarginRectangle", null); // NOI18N
                 p.setName("marginrectangle"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_Margins"));
                 ss.put(p);
 
-                p = new Reflection(box, Rectangle.class, "getCBRectangle", null); // NOI18N
+                p = new Reflection<Rectangle>(box, Rectangle.class, "getCBRectangle", null); // NOI18N
                 p.setName("cbrectangle"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_ContainingBlock"));
                 ss.put(p);
 
-                p = new Reflection(box, Rectangle.class, "getExtentsRectangle", null); // NOI18N
+                p = new Reflection<Rectangle>(box, Rectangle.class, "getExtentsRectangle", null); // NOI18N
                 p.setName("extentsrectangle"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_Extents"));
                 ss.put(p);
 
-                p = new Reflection(box, Rectangle.class, "getPaddingRectangle", null); // NOI18N
+                p = new Reflection<Rectangle>(box, Rectangle.class, "getPaddingRectangle", null); // NOI18N
                 p.setName("paddingrectangle"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_Padding"));
                 ss.put(p);
 
-                p = new Reflection(box, Rectangle.class, "getBorderWidthRectangle", null); // NOI18N
+                p = new Reflection<Rectangle>(box, Rectangle.class, "getBorderWidthRectangle", null); // NOI18N
                 p.setName("borderWidthrectangle"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_BorderWidths"));
                 ss.put(p);
 
-                p = new Reflection(box, Boolean.TYPE, "isInlineBox", null); // NOI18N
+                p = new Reflection<Boolean>(box, Boolean.TYPE, "isInlineBox", null); // NOI18N
                 p.setName("inline"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_Inline"));
                 ss.put(p);
 
-                p = new Reflection(box, Boolean.TYPE, "isReplacedBox", null); // NOI18N
+                p = new Reflection<Boolean>(box, Boolean.TYPE, "isReplacedBox", null); // NOI18N
                 p.setName("replaced"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_Replaced"));
                 ss.put(p);
 
-                p = new Reflection(box, Integer.TYPE, "getBoxCount", null); // NOI18N
+                p = new Reflection<Integer>(box, Integer.TYPE, "getBoxCount", null); // NOI18N
                 p.setName("boxcount"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_Children"));
                 ss.put(p);
@@ -654,17 +654,17 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
             }
 
             try {
-                p = new Reflection(box, Boolean.TYPE, "getPaintPositions", "setPaintPositions"); // NOI18N
+                p = new Reflection<Boolean>(box, Boolean.TYPE, "getPaintPositions", "setPaintPositions"); // NOI18N
                 p.setName("paintpos"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_PaintPositioning"));
                 ss.put(p);
 
-                p = new Reflection(box, Boolean.TYPE, "getPaintText", "setPaintText"); // NOI18N
+                p = new Reflection<Boolean>(box, Boolean.TYPE, "getPaintText", "setPaintText"); // NOI18N
                 p.setName("painttext"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_PaintText"));
                 ss.put(p);
 
-                p = new Reflection(box, Boolean.TYPE, "getPaintSpaces", "setPaintSpaces"); // NOI18N
+                p = new Reflection<Boolean>(box, Boolean.TYPE, "getPaintSpaces", "setPaintSpaces"); // NOI18N
                 p.setName("paintspaces"); // NOI18N
                 p.setDisplayName(getBundleString("LBL_PaintSpaces"));
                 ss.put(p);
