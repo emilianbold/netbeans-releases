@@ -51,6 +51,7 @@ import org.openide.filesystems.FileLock;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -355,35 +356,44 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
             
-            FileObject documentBase = webModule.getDocumentBase();
-            Project project = FileOwnerQuery.getOwner(documentBase);
+            final FileObject documentBase = webModule.getDocumentBase();
+            final Project project = FileOwnerQuery.getOwner(documentBase);
             template.setBeanPackage(project.getProjectDirectory().getName());
             JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, template.getBeanPackage());
             JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "index.jsp"); // NOI18N
 
-            template.create(project, webModule.getJ2eePlatformVersion());
+            ProjectManager.mutex().postReadRequest(new Runnable() {
+                public void run() {
+                    try{ 
+                        template.create(project, webModule.getJ2eePlatformVersion());
 
-            /* Replace index.jsp and index.java with Page1.jsp and Page.java.
-             * The reason to do this is web project always produces a welcome file index.jsp and open it as default.
-             * Creator cannot just delete it and use jsp/java template to create the pair because the 'FileObject'
-             * is 'baked' from the web project. Creator needs to replace the contents of index.jsp and also creates
-             * its paired index.java.
-             */
-            FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
-            FileObject pagejsp = documentBase.getFileObject("Page1.jsp"); //NOI18N
-            if (indexjsp != null && pagejsp != null) {
-                String content = readResource(pagejsp.getInputStream(), "UTF-8"); //NOI18N
-                createFile(indexjsp, content.replaceAll("\\bPage1\\b", "index"), "UTF-8"); //NOI18N
-                pagejsp.delete();
-            }
+                        /* Replace index.jsp and index.java with Page1.jsp and Page.java.
+                         * The reason to do this is web project always produces a welcome file index.jsp and open it as default.
+                         * Creator cannot just delete it and use jsp/java template to create the pair because the 'FileObject'
+                         * is 'baked' from the web project. Creator needs to replace the contents of index.jsp and also creates
+                         * its paired index.java.
+                         */
+                        FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
+                        FileObject pagejsp = documentBase.getFileObject("Page1.jsp"); //NOI18N
+                        if (indexjsp != null && pagejsp != null) {
+                            String content = readResource(pagejsp.getInputStream(), "UTF-8"); //NOI18N
+                            createFile(indexjsp, content.replaceAll("\\bPage1\\b", "index"), "UTF-8"); //NOI18N
+                            pagejsp.delete();
+                        }
 
-            FileObject beanBase = JsfProjectUtils.getPageBeanRoot(project);
-            FileObject pagejava = beanBase.getFileObject("Page1.java"); //NOI18N
-            if (pagejava != null) {
-                FileObject indexjava = FileUtil.moveFile(pagejava, beanBase, "index"); //NOI18N
-                String content = readResource(indexjava.getInputStream(), "UTF-8"); //NOI18N
-                createFile(indexjava, content.replaceAll("\\bPage1\\b", "index"), "UTF-8"); //NOI18N
-            }
+                        FileObject beanBase = JsfProjectUtils.getPageBeanRoot(project);
+                        FileObject pagejava = beanBase.getFileObject("Page1.java"); //NOI18N
+                        if (pagejava != null) {
+                            FileObject indexjava = FileUtil.moveFile(pagejava, beanBase, "index"); //NOI18N
+                            String content = readResource(indexjava.getInputStream(), "UTF-8"); //NOI18N
+                            createFile(indexjava, content.replaceAll("\\bPage1\\b", "index"), "UTF-8"); //NOI18N
+                        }
+                   }
+                   catch (IOException ioe){
+                       ErrorManager.getDefault().notify(ioe);
+                   }
+               }
+           }); 
         }
     }
 }
