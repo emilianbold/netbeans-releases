@@ -83,8 +83,8 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
     private static final CssEngineServiceImpl instance = new CssEngineServiceImpl();
 
-    /** Maps <code>Document</code> to CSS engine. */
-    private final Map document2engine = new WeakHashMap();
+    /** Maps <code>Document</code> to XHTML CSS engine. */
+    private final Map<Document, XhtmlCssEngine> document2engine = new WeakHashMap<Document, XhtmlCssEngine>();
 
 
     /** Creates a new instance of CssServiceImpl */
@@ -102,7 +102,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
     private XhtmlCssEngine getCssEngine(Document document) {
         synchronized (document2engine) {
-            return (XhtmlCssEngine)document2engine.get(document);
+            return document2engine.get(document);
         }
     }
 
@@ -174,7 +174,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
     public void removeCssEngineForDocument(Document document) {
         XhtmlCssEngine engine;
         synchronized (document2engine) {
-            engine = (XhtmlCssEngine)document2engine.remove(document);
+            engine = document2engine.remove(document);
         }
         
         if (engine != null) {
@@ -184,7 +184,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
     
     public void reuseCssEngineForDocument(Document document, Document originalDocument) {
         synchronized (document2engine) {
-            XhtmlCssEngine engine = (XhtmlCssEngine)document2engine.get(originalDocument);
+            XhtmlCssEngine engine = document2engine.get(originalDocument);
             document2engine.put(document, engine);
         }
     }
@@ -321,12 +321,12 @@ public final class CssEngineServiceImpl implements CssEngineService {
             return null;
         }
         
-        List styleSettings = new ArrayList();
+        List<StyleSetting> styleSettings = new ArrayList<StyleSetting>();
         for (int i = 0; i < stylesData.length; i++) {
             StyleData sd = stylesData[i];
             styleSettings.add(new StyleSetting(sd.getIndex(), sd.getValue()));
         }
-        return (StyleSetting[])styleSettings.toArray(new StyleSetting[styleSettings.size()]);
+        return styleSettings.toArray(new StyleSetting[styleSettings.size()]);
     }
     
     public void setStyleAttributeForElement(Element element, String value) {

@@ -20,6 +20,7 @@ package org.netbeans.modules.visualweb.designer.cssengine;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.batik.css.engine.CSSEngine;
 import org.apache.batik.css.engine.value.AbstractValueFactory;
@@ -48,7 +49,8 @@ public class BackgroundShorthandManager extends AbstractValueFactory implements 
         boolean imp) throws DOMException {
         // I cannot handle background-position lexical units immediately because there
         // may be multiple, and these should be sent in as a group.
-        ArrayList positions = new ArrayList(2);
+//        ArrayList positions = new ArrayList(2);
+        List<CSSLexicalUnit> positions = new ArrayList<CSSLexicalUnit>(2);
 
         for (; lu != null; lu = lu.getNextLexicalUnit()) {
             switch (lu.getLexicalUnitType()) {
@@ -126,14 +128,14 @@ public class BackgroundShorthandManager extends AbstractValueFactory implements 
 
         // Process positions.
         if (positions.size() == 1) {
-            ph.property(CssConstants.CSS_BACKGROUND_POSITION_PROPERTY,
-                (LexicalUnit)positions.get(0), imp);
+            ph.property(CssConstants.CSS_BACKGROUND_POSITION_PROPERTY, positions.get(0), imp);
         } else if (positions.size() > 1) {
             CSSLexicalUnit prev = null;
-            Iterator it = positions.iterator();
+//            Iterator it = positions.iterator();
+            Iterator<CSSLexicalUnit> it = positions.iterator();
 
             while (it.hasNext()) {
-                CSSLexicalUnit lu2 = (CSSLexicalUnit)it.next();
+                CSSLexicalUnit lu2 = it.next();
 
                 if (prev != null) {
                     prev.setNextLexicalUnit(lu2);
@@ -143,8 +145,7 @@ public class BackgroundShorthandManager extends AbstractValueFactory implements 
                 prev = lu2;
             }
 
-            ph.property(CssConstants.CSS_BACKGROUND_POSITION_PROPERTY,
-                (LexicalUnit)positions.get(0), imp);
+            ph.property(CssConstants.CSS_BACKGROUND_POSITION_PROPERTY, positions.get(0), imp);
         }
     }
 }
