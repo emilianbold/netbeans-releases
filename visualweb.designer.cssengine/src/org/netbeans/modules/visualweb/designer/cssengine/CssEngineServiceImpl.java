@@ -829,7 +829,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
      * declaration to the list
      */
     private static String[] getStyleResourcesFromStyleDeclaration(StyleDeclaration sd, int[] indexesToMatch) {
-        List urlStrings = new ArrayList();
+        List<String> urlStrings = new ArrayList<String>();
         for (int i = 0, m = sd.size(); i < m; i++) {
             int idx = sd.getIndex(i);
 
@@ -868,7 +868,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
                 }
             }
         }
-        return (String[])urlStrings.toArray(new String[urlStrings.size()]);
+        return urlStrings.toArray(new String[urlStrings.size()]);
     }
     
     /** Gets map of urlString to relPath.
