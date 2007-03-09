@@ -54,7 +54,7 @@ public class ConfigureDefaultOptionsDialog extends JSFComponentOptionsDialog {
         //Invoking popup menu on component
         surface.pushPopupMenu("Configure Default Options...",  60, 60); // NOI18N
         
-        return new NbDialogOperator("Options Customizer - listbox1");  // NOI18N
+        return new NbDialogOperator("Options Customizer - listbox");  // NOI18N
     }
     
 }
