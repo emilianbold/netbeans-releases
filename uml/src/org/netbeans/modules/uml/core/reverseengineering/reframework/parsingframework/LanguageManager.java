@@ -873,6 +873,7 @@ public class LanguageManager implements ILanguageManager
 		getFormatDefinitions(pLanguageNode, retLang);
 		getDefaults(pLanguageNode, retLang );
 		getSupportedFeatures(pLanguageNode, retLang );
+                getCollectionTypes(pLanguageNode, retLang);
 		
 		return retLang;
 	}
@@ -1375,6 +1376,59 @@ public class LanguageManager implements ILanguageManager
 		pLang.setName(name);
 	}
 
+        
+        private void getCollectionTypes(Node pLanguageNode, ILanguage pLang)
+        {
+            String xpath = "Collections/Collection";
+		
+            ETList<CollectionType> types = new ETArrayList<CollectionType>();
+            List pNodeList = pLanguageNode.selectNodes(xpath);
+            if (pNodeList != null)
+            {
+                    int count = pNodeList.size();
+                    for (int i=0; i<count; i++)
+                    {
+                            Node node = (Node)pNodeList.get(i);
+                            CollectionType type = getCollectionType(node);
+                            if (type != null)
+                            {
+                                    types.add(type);
+                            }
+                    }
+            }
+
+            // I have to make sure that I acutally add the collection to the 
+            // language defintion.
+            pLang.setCollectionTypes(types); 
+        }
+            
+        /**
+	 * Retrieves a collection type information from a XML file and initializes 
+	 * the ILanguage object
+	 *
+	 * @param pNode The XML node for the collection type data
+	 */
+	private CollectionType getCollectionType(Node pNode)
+	{
+		CollectionType retVal = new CollectionType();
+		String name = XMLManip.getAttributeValue(pNode, "name");
+		retVal.setName(name);
+		
+		String packName = XMLManip.getAttributeValue(pNode, "package");
+                retVal.setPackageName(packName);
+		
+		boolean userdefined = XMLManip.getAttributeBooleanValue(pNode, 
+                                                                        "userdefined");
+		retVal.setUserDefined(userdefined);;
+		
+		boolean defaultValue = XMLManip.getAttributeBooleanValue(pNode, 
+                                                                         "default", 
+                                                                         false);
+		retVal.setDefaultType(defaultValue);
+		
+		return retVal;
+	}
+        
 	/**
 	 * Retrieves the data types from a XML file and initializes the ILanguage
 	 * object

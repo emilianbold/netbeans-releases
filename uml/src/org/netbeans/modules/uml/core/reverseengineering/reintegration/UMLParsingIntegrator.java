@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.reintegration;
 
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,28 +29,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
-
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
-
-import org.netbeans.modules.uml.common.ETSystem;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.common.ui.SaveNotifier;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.IQueryManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.EventBlocker;
-import org.netbeans.modules.uml.core.eventframework.IEventDispatchController;
-import org.netbeans.modules.uml.core.metamodel.core.constructs.Enumeration;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IAliasedType;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
@@ -65,7 +57,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
@@ -91,7 +82,6 @@ import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLParser;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLParserEventDispatcher;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLParserEventsSink;
-import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.SymbolTable;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.ClassEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IClassEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IDependencyEvent;
@@ -104,13 +94,9 @@ import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframe
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.IFacility;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.IFacilityManager;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageMacro;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParserSettings;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.LanguageMacro;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.LanguageParserSettings;
 import org.netbeans.modules.uml.core.scm.ISCMElementItem;
-import org.netbeans.modules.uml.core.scm.ISCMEventDispatcher;
 import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import org.netbeans.modules.uml.core.scm.ISCMItemFactory;
 import org.netbeans.modules.uml.core.scm.ISCMItemGroup;
@@ -135,13 +121,9 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
-import org.netbeans.modules.uml.ui.controls.drawingarea.AutoRoutingAction;
 import org.netbeans.modules.uml.ui.controls.drawingarea.DiagramAreaEnumerations;
 import org.netbeans.modules.uml.ui.controls.drawingarea.ElementBroadcastAction;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IAutoRoutingAction;
 import org.netbeans.modules.uml.ui.controls.drawingarea.IElementBroadcastAction;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IEventSinkAction;
-import org.netbeans.modules.uml.ui.controls.drawingarea.ISimpleAction;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogProjectDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogProjectDetails;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
@@ -150,27 +132,17 @@ import org.netbeans.modules.uml.ui.support.ISCMEnums;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogKind;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
-import org.netbeans.modules.uml.ui.support.SwingPreferenceQuestionDialog;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
-import org.netbeans.modules.uml.ui.support.commondialogs.IPreferenceQuestionDialog;
 import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
-import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogDisplayEnum;
-import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogKindEnum;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
-import org.netbeans.modules.uml.ui.support.messaging.IProgressDialog;
-import org.netbeans.modules.uml.ui.support.wizard.ETModalWizardThread;
-import org.netbeans.modules.uml.util.AbstractNBTask;
 import org.netbeans.modules.uml.util.ITaskSupervisor;
 import org.netbeans.modules.uml.util.ITaskWorker;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-
-import org.w3c.dom.NodeList;
 
 /**
  * @author sumitabhk
@@ -701,6 +673,13 @@ public class UMLParsingIntegrator
     
     int numOfClasses = 0;
     
+    /**
+     * The event method used by the UMLParser to notify listeners that a class
+     * was found while parsing a file.
+     * 
+     * @param data The class information.
+     * @param cell The result.
+     */
     public void onClassFound(IClassEvent data, IResultCell cell)
     {
         Node dataNode = null;
@@ -3101,24 +3080,6 @@ public class UMLParsingIntegrator
     {
         try
         {
-//            List interfaces = clazz.selectNodes("./TokenDescriptors/TRealization/Interface");
-//            if (interfaces != null)
-//            {
-//                int num = interfaces.size();
-//                String classID = clazzObj.getXMIID();
-//                for (int x = 0; x < num; x++)
-//                {
-//                    Node inter = (Node) interfaces.get(x);
-//                    if (inter != null)
-//                    {
-//                        String typeName = XMLManip.getAttributeValue(inter, "value");
-//                        if (typeName.length() > 0)
-//                        {
-//                            establishDependency(clazz, clazzObj, classSpace, typeName, true, "Implementation");
-//                        }
-//                    }
-//                }
-//            }
             // Get all of this Classes attributes and resolve their types...
             Node genTDesc = clazz.selectSingleNode("./TokenDescriptors/TRealization");
             if (genTDesc != null)
@@ -3126,7 +3087,6 @@ public class UMLParsingIntegrator
                 Node spElement = this.isDerivationPresent(genTDesc, false);
                 if (spElement != null)
                 {
-                    //List spDerivationElements = genTDesc.selectNodes(".//TokenDescriptors/TDerivation");
                     List spDerivationElements = genTDesc.selectNodes("./TokenDescriptors/TDerivation");
                     
                     for (int i = 0; i < spDerivationElements.size(); i++)
@@ -3137,8 +3097,6 @@ public class UMLParsingIntegrator
                             IClassifier supplier = this.ensureDerivation(spDerivationElement, clazz, clazzObj, classSpace);
                             if (supplier != null)
                             {
-//                                establishGeneralization(clazzObj, spDerivationClassifier);
-//                                establishDependency(clazz, clazzObj, classSpace, typeName, true, "Implementation");
                                 String typeName = supplier.getName();
                                 establishDependency(clazzObj, supplier, 
                                                     classSpace, "Implementation", 
@@ -3454,6 +3412,12 @@ public class UMLParsingIntegrator
         }
     }
     
+    /**
+     * Adds a source file artifact node that can be added to a class.
+     * 
+     * @param fileName The name of the source file that contains a class.
+     * @return The XML node taht represents a  source file artifact.
+     */
     protected Node createSourceFileArtifact(String fileName)
     {
         Node artifact = null;
@@ -3748,6 +3712,8 @@ public class UMLParsingIntegrator
                         if (parm != null)
                         {
                             establishXMIID(parm);
+                            analyzeParameterForCollections(parm, clazzObj);
+                            
                             Node spDerivationElement = this.isDerivationPresent(parm, true);
                             if (spDerivationElement != null)
                             {
@@ -3758,6 +3724,9 @@ public class UMLParsingIntegrator
                                     //establishAssociation(parm, clazzObj, spDerivationClassifier);
                                     XMLManip.setAttributeValue(parm, "type", spDerivationClassifier.getXMIID());
                                 }
+                                
+                                scrubExpressions(parm);
+                                scrubMultiplicities(parm);
                             }
                             else
                             {
@@ -4273,8 +4242,220 @@ public class UMLParsingIntegrator
         return isAllowed;
     }
     
-    protected void analyzeAttributesForAssociations(
-        Node clazz, IClassifier clazzObj, INamespace classSpace)
+    /**
+     * Checks if any attributes are generic collection types.  If they are 
+     * generic collection types, the collection is removed and the type 
+     * of the attribute will be changed to the collections parameter.  The
+     * attribute will have a multiplicity of [0..*]
+     * 
+     * @param param The XML data for the class.
+     * @param clazzObj The UML metamodel object.
+     */
+    protected void analyzeParameterForCollections(Node param, 
+                                                  IClassifier clazzObj)
+    {
+        try
+        {
+            // Since we are reverse engineering, there will only be one language
+            ILanguage lang = clazzObj.getLanguages().get(0);
+            if ((param != null) && (lang != null))
+            {
+                Node derivation = isDerivationPresent(param, false);
+                            
+                if (derivation != null)
+                {
+                    convertCollection(derivation, param, lang);
+                }
+            }
+        }
+        
+        catch (Exception e)
+        {
+            sendExceptionMessage(e);
+        }
+    }
+    
+    /**
+     * Checks if any attributes are generic collection types.  If they are 
+     * generic collection types, the collection is removed and the type 
+     * of the attribute will be changed to the collections parameter.  The
+     * attribute will have a multiplicity of [0..*]
+     * 
+     * @param clazz The XML data for the class.
+     * @param clazzObj The UML metamodel object.
+     */
+    protected void analyzeAttributesForCollections(Node clazz, 
+                                                   IClassifier clazzObj)
+    {
+        try
+        {
+            // Get all of this Classes attributes and resolve their types...
+            List attrs = clazz.selectNodes(
+                "./UML:Element.ownedElement/UML:Attribute");
+            
+            // Since we are reverse engineering, there will only be one language
+            ILanguage lang = clazzObj.getLanguages().get(0);
+            if ((attrs != null) && (lang != null))
+            {
+                int numAttrs = attrs.size();
+                if (numAttrs > 0)
+                {
+                    for (int x = 0; x < numAttrs; x++)
+                    {
+                        Node attr = (Node) attrs.get(x);
+                        if (attr != null)
+                        {
+                            // Do not remove the derivation, unless the type is
+                            // a collection.
+                            Node derivation = isDerivationPresent(attr, false);
+                            
+                            if (derivation != null)
+                            {
+                                convertCollection(derivation, attr, lang);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        catch (Exception e)
+        {
+            sendExceptionMessage(e);
+        }
+    }
+    
+    /**
+     * Converts an attribute of a collection type, to have a type that is 
+     * contained by the collection.  There are two type the simple type
+     * where the contained type simply a type.  The muli-diminsional type, wher
+     * the contained type is another collection.
+     * 
+     * @param type The attributes type.
+     * @param attr The attribute to modify
+     * @param lang The language to use when determining a type is a collection. 
+     * @return true if a collection was found, false if a collection was not 
+     *         found.
+     */
+    protected boolean convertCollection(Node type, Node attr, ILanguage lang)
+    {
+        boolean retVal = false;
+        
+        String name = XMLManip.getAttributeValue(type, "name");
+        
+        // First try to find the fully qualified name of the type.  The fully
+        // qualified type name is needed to make sure that we compare the 
+        // correct types.
+        String fullName = "";
+        ETList < INamedElement > spNamedElements = m_Locator.findByNameInMembersAndImports(m_Project, name);
+        if ((spNamedElements != null) && (spNamedElements.size() > 0))
+        {
+            int numNamedElements = spNamedElements.size();
+            for (int j = 0; j < numNamedElements; j++)
+            {
+                INamedElement spNamedElement = (INamedElement) spNamedElements.get(j);
+                if (spNamedElement instanceof IClassifier)
+                {
+                    fullName =  spNamedElement.getFullyQualifiedName(false);
+                    fullName += "::" + name;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            fullName = name;
+        }
+        
+        // TODO: Need to search qualified name instead
+        if(lang.isCollectionType(fullName) == true)
+        {
+            List params = type.selectNodes("./DerivationParameter");
+            if(params.size() == 1)
+            {
+                // Currently the Data is setup so that if one of the parameters
+                // has derivation, then it is under the parent derivation not 
+                // the parameter.  It should be under the parameter.  However,
+                // since we only have 1 parameter this is not a big deal at this
+                // time.
+                
+                Node derivation = isDerivationPresent(type, false);
+                if(derivation != null)
+                {
+                    retVal = convertCollection(derivation, attr, lang);
+//                    type.detach();
+//                    setDefaultRange(attr);
+                    
+                    if(retVal == false)
+                    {
+                        
+                        
+                        Element tokenDesc = (Element) attr.selectSingleNode("./TokenDescriptors");
+                        derivation.detach();
+                        tokenDesc.add(derivation);
+                    }
+                }
+                else
+                { 
+                    Node param = (Node) params.get(0);
+                    String typeName = XMLManip.getAttributeValue(param, "value");
+                    
+                    XMLManip.setAttributeValue(attr, "type", typeName);
+                }
+                
+                setDefaultRange(attr);
+
+                // since we have moved the type directly into the attribute, we
+                // need to remove the derivation declaration.
+                type.detach();
+            }
+            
+            retVal = true;
+        }
+        
+        return retVal;
+    }
+    
+    protected void setDefaultRange(Node owner)
+    {
+
+        if(owner != null)
+        {
+            Node structureNode = XMLManip.ensureNodeExists(owner,
+                                           "UML:TypedElement.multiplicity",
+                                           "UML:TypedElement.multiplicity");
+
+            if(structureNode != null)
+            {
+                Node multiplictyNode = XMLManip.ensureNodeExists(structureNode,
+                                              "UML:Multiplicity",
+                                              "UML:Multiplicity");
+                if(multiplictyNode != null)
+                {
+                    Node rangeNode = XMLManip.ensureNodeExists(multiplictyNode,
+                                                 "UML:Multiplicity.range",
+                                                 "UML:Multiplicity.range");
+                    if(rangeNode instanceof Element)
+                    {
+                        Element rangeElement = (Element)rangeNode;
+                        Node dataNode = XMLManip.createElement(rangeElement, 
+                                                               "UML:MultiplicityRange");
+
+                        if(dataNode != null)
+                        {
+                            XMLManip.setAttributeValue(dataNode, "lower", "0");
+                            XMLManip.setAttributeValue(dataNode, "upper", "*");
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    protected void analyzeAttributesForAssociations(Node clazz, 
+                                                    IClassifier clazzObj,
+                                                    INamespace classSpace)
     {
         supervisor.log(ITaskSupervisor.VERBOSE, INDENT + INDENT + 
             " analyzing attribute for associations");
@@ -4714,6 +4895,8 @@ public class UMLParsingIntegrator
                                 supervisor.log(ITaskSupervisor.VERBOSE,
                                     INDENT + INDENT + analyzeAttributesMsg);
 
+                                analyzeAttributesForCollections(clazz, clazzObj);
+                                
                                 analyzeAttributesForAssociations(
                                     clazz, clazzObj, classSpace);
                                 
@@ -6695,31 +6878,6 @@ public class UMLParsingIntegrator
                 shortTypeName = typeName;
             }
             
-            //         newType = resolveUnknownType( shortTypeName, space );
-            //         if(newType != null)
-            //         {
-            //            ETSystem.out.println("newType = " + newType.getFullyQualifiedName(false));
-            //            addDataTypeToUnresolved(typeName, newType);
-            //
-            //            if(shortTypeName.length() < typeName.length())
-            //            {
-            //               //HashMap < String, UnresolvedType > m_Types m_Types
-            //               UnresolvedType unresolvedType = m_Types.get(shortTypeName);
-            //               if(unresolvedType != null)
-            //               {
-            //                  String typeID = getUnknownTypeID(unresolvedType);
-            //                  if((typeID == null) || (typeID.length() == 0))
-            //                  {
-            //                     // If the short name version of the type has not been resolved,
-            //                     // then be sure to "resolve" it, but indicate that a class dependency
-            //                     // check should be performed.
-            //                     addDataTypeToUnresolved(shortTypeName, newType, true);
-            //                  }
-            //               }
-            //            }
-            //         }
-            
-            //newType = resolveUnknownType( shortTypeName, space );
             if ((fullyQualified(typeName) == true) && (space.equals(m_Project) == true))
             {
                 // This is a case where we have a fully qualified type to a package

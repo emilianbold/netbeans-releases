@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework;
 
+import java.util.List;
 import org.dom4j.Node;
-
 import org.netbeans.modules.uml.core.generativeframework.IExpansionVariable;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -38,51 +38,72 @@ public interface ILanguage {
 
   /**
    * The name of the language that is represented by the ILanguage interface.
-  */
+   * 
+   * @return The name of the language.
+   */
   public String getName();
 
   /**
    * The name of the language that is represented by the ILanguage interface.
-  */
+   * @param value The name of the language
+   */
   public void setName( String value );
 
   /**
    * The data types that are supported by the language.
-  */
+   * @return the data types
+   */
   public ETList<ILanguageDataType> getDataTypes();
 
   /**
    * The data types that are supported by the language.
+   * 
+   * @param value the data types
   */
   public void setDataTypes( ETList<ILanguageDataType> value );
 
   /**
-   * The syntax that defines the language.  A syntax is made up of a collection of tokens that together define the syntax.
-  */
+   * The syntax that defines the language.  A syntax is made up of a collection 
+   * of tokens that together define the syntax.
+   * 
+   * @return The syntax object
+   */
   public ILanguageSyntax getSyntax();
 
   /**
-   * The syntax that defines the language.  A syntax is made up of a collection of tokens that together define the syntax.
-  */
+   * The syntax that defines the language.  A syntax is made up of a collection 
+   * of tokens that together define the syntax.
+   * 
+  * @param value The syntax object
+   */
   public void setSyntax( ILanguageSyntax value );
 
   /**
    * The code generation scripts that will generate source code for the langauge.
-  */
+   * 
+   * @return a collection of code generation scripts.
+   * @depercated
+   */
   public ETList<ICodeGenerationScript> getCodeGenerationScripts();
 
   /**
    * The code generation scripts that will generate source code for the langauge.
-  */
+   * 
+   * @param value A collection of code generation scripts
+   * @depercated
+   */
   public void setCodeGenerationScripts( ETList<ICodeGenerationScript> value );
 
   /**
    * Retrieve the ILanguageParser for the specified parser type.
-  */
+   * @param Type The type of parser <i>examples: default, java5</i>
+   * @return A parser can can be used to parse the language files.
+   */
   public ILanguageParser getParser( String Type );
 
   /**
-   * Add a CLSID that implements the ILangaugeParser interface.  The parser will be used to parser files written in the defined langauge.
+   * Add a CLSID that implements the ILangaugeParser interface.  The parser 
+   * will be used to parser files written in the defined langauge.
   */
   public void addParser( String Type, String clsid );
 
@@ -211,4 +232,19 @@ public interface ILanguage {
   public ILanguageManager getLanguageManager();
   
   public void setLanguageManager(ILanguageManager pManager);
+  
+  /**
+   * Sets the languages collection types.
+   * 
+   * @param types the list of collection types.
+   */
+  public void setCollectionTypes(List < CollectionType > types);
+  
+  /**
+   * Checks if a type is a collection type.
+   * 
+   * @param typeName the type to check.
+   * @return true if the type is a collection type.
+   */
+  public boolean isCollectionType(String typeName);
 }
