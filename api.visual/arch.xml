@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-   <api group="graph" name="VisualLibraryAPI" type="export" category="official">
+   <api group="java" name="VisualLibraryAPI" type="export" category="official">
      <p>
       The API provides a set of reusable pieces - widgets. By composing them you are creating a visualization.
       Each widget has various properties including layout, border, assigned actions, ... The library contains a set of pre-defined widgets that can be extended.
