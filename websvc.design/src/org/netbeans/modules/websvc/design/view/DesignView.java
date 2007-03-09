@@ -25,9 +25,12 @@ import java.awt.Color;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.websvc.design.view.widget.OperationWidget;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 
 /**
  * WebService Designer
@@ -40,17 +43,20 @@ public class DesignView extends JPanel  {
     /**
      * Creates a new instance of GraphView.
      */
-    public DesignView() {
+    public DesignView(Service service) {
         super(new BorderLayout());
 
         scene = new Scene();
         scene.setBackground(new Color(255, 255, 191));
 
-        Widget opWidget = new OperationWidget(scene,"operation");
+        Widget opWidget = new OperationsWidget(scene,service);
+        scene.setLayout(LayoutFactory.createVerticalLayout());
+        scene.setPreferredLocation(new Point(0,0));
         scene.addChild(opWidget);
-        opWidget.setPreferredLocation(new Point(30,30));
+        scene.getActions().addAction(ActionFactory.createMoveAction());
+        opWidget.setPreferredLocation(new Point(100,100));
 
-        add(scene.createView(), BorderLayout.CENTER);
+        add(scene.createView());
     }
 
     /**

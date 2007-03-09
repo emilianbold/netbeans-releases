@@ -30,6 +30,7 @@ import org.openide.awt.UndoRedo;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.openide.util.lookup.Lookups;
 
@@ -43,11 +44,13 @@ public class DesignMultiViewElement extends TopComponent
     private static final long serialVersionUID = 1L;
     private transient MultiViewElementCallback multiViewCallback;
     private transient JToolBar toolbar;
+    private transient DesignView designView;
+    private transient Service service;
+
     /**
      * Nullary constructor for deserialization.
      */
     public DesignMultiViewElement() {
-        initUI();
     }
     
     /**
@@ -61,6 +64,8 @@ public class DesignMultiViewElement extends TopComponent
     
     private void initialize(MultiViewSupport mvSupport) {
         associateLookup(Lookups.fixed(mvSupport));
+        service = mvSupport.getService();
+        initUI();
     }
     
     public int getPersistenceType() {
@@ -83,7 +88,8 @@ public class DesignMultiViewElement extends TopComponent
      */
     private void initUI() {
         setLayout(new BorderLayout());
-        add(new DesignView());
+        designView = new DesignView(service);
+        add(designView);
     }
     
     

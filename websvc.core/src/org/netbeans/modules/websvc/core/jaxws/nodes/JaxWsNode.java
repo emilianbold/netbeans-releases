@@ -127,7 +127,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
         content.add(service);
         content.add(implBeanClass);
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
-        OpenCookie cookie = getMultiViewCookie(this);
+        OpenCookie cookie = getMultiViewCookie(service, getDataObject());
         if(cookie==null) {
             cookie = new OpenCookie() {
                 public void open() {
@@ -148,10 +148,10 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
     /** 
      * Find MultiViewCookie for given this node
      */
-    public static MultiViewCookie getMultiViewCookie(JaxWsNode node) {
+    public static MultiViewCookie getMultiViewCookie(Service service, DataObject dataObject) {
         Collection<? extends MultiViewCookieProvider> instances = multiviewCookieProviders.allInstances();
         for (MultiViewCookieProvider impl: instances) {
-            MultiViewCookie cookie = impl.getMultiViewCookie(node, node.getDataObject());
+            MultiViewCookie cookie = impl.getMultiViewCookie(service, dataObject);
             if (cookie != null) {
                 return cookie;
             }

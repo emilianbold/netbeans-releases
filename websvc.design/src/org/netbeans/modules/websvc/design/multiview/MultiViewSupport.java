@@ -21,10 +21,12 @@ package org.netbeans.modules.websvc.design.multiview;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Enumeration;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.text.DataEditorSupport;
 import org.openide.loaders.DataObject;
 import org.openide.windows.Mode;
@@ -38,12 +40,12 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.core.MultiViewCookie;
-import org.netbeans.modules.websvc.core.MultiViewCookieProvider;
 
 /**
  * Class for creating the Multiview
@@ -55,7 +57,7 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
             "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif" ); //NOI18N
     static final long serialVersionUID = 1L;
     private DataObject dataObject;
-    private String displayName;
+    private transient Service service;
     
     public static String SOURCE_UNSAFE_CLOSE = "SOURCE_UNSAFE_CLOSE";
     private static String DESIGN_UNSAFE_CLOSE = "DESIGN_UNSAFE_CLOSE";
@@ -78,7 +80,6 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
      * Constructor for deserialization
      */
     public MultiViewSupport() {
-        
     }
 
     /**
@@ -86,9 +87,9 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
      * @param displayName 
      * @param dataObject 
      */
-    MultiViewSupport(Node node, DataObject dataObject) {
+    MultiViewSupport(Service service, DataObject dataObject) {
         this.dataObject = dataObject;
-        this.displayName = node.getDisplayName();
+        this.service = service;
     }
 
     public void open() {
@@ -101,6 +102,10 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
     
     DataObject getDataObject() {
         return dataObject;
+    }
+
+    Service getService() {
+        return service;
     }
 
     public boolean equals(Object obj) {
@@ -157,10 +162,9 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
                 , new CloseHandler(dataObject)
                 );
         
-        // This handles the "show file extensions" option automatically.
-        String name = dataObject.getNodeDelegate().getDisplayName();
-        multiview.setDisplayName(name);
-        multiview.setName(name);
+        String displayName = getServiceDisplayName();
+        multiview.setDisplayName(displayName);
+        multiview.setName(displayName);
         
         Mode editorMode = WindowManager.getDefault().findMode(
                 DataEditorSupport.EDITOR_MODE);
@@ -235,6 +239,37 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
         }
         return Collections.list(((CloneableTopComponent)tc).getReference().getComponents()).size();
     }
+    
+    /**
+     * creates display name for service
+     **/
+    private String getServiceDisplayName() {
+        if (service.getWsdlUrl()!=null)
+            return service.getServiceName()+"["+service.getPortName()+"]";
+        return service.getName();
+    } 
+    
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws IOException {
+        out.writeObject(dataObject);
+        out.writeObject(service.getImplementationClass());
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        Object firstObject = in.readObject();
+        if(firstObject instanceof DataObject) {
+            dataObject = (DataObject) firstObject;
+        }
+        Object secondObject = in.readObject();
+        if(secondObject instanceof String) {
+            String implClass = (String)secondObject;
+            Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+            JaxWsModel model = (JaxWsModel) project.getLookup().lookup(JaxWsModel.class);
+            service = model.findServiceByImplementationClass(implClass);
+        }
+    }
+
     /**
      * Implementation of CloseOperationHandler for multiview. Ensures the
      * editors correctly closed, data object is saved, etc. Holds a
