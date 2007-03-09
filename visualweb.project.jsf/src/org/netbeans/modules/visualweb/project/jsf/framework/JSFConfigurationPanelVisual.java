@@ -19,6 +19,11 @@
 
 package org.netbeans.modules.visualweb.project.jsf.framework;
 
+// <RAVE>
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
+import org.openide.util.Utilities;
+// </RAVE>
+
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -27,11 +32,16 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  petr
+ * @author Po-Ting Wu
  */
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
     private JSFConfigurationPanel panel;
+
+    // <RAVE> Default Bean Package
+    private boolean beanPackageModified = false;
+    // </RAVE>
+
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
         initComponents();
@@ -52,6 +62,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        beanPackageLabel = new javax.swing.JLabel();
+        beanPackageTextField = new javax.swing.JTextField();
         lServletName = new javax.swing.JLabel();
         tServletName = new javax.swing.JTextField();
         lURLPattern = new javax.swing.JLabel();
@@ -63,19 +75,43 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
         setLayout(new java.awt.GridBagLayout());
 
+        beanPackageLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/project/jsf/framework/Bundle").getString("MNE_DefaultBackingPackageLabelMnemonic").charAt(0));
+        beanPackageLabel.setLabelFor(beanPackageTextField);
+        beanPackageLabel.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_DefaultBackingPackageLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(beanPackageLabel, gridBagConstraints);
+
+        beanPackageTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                beanPackageTextFieldKeyReleased(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        add(beanPackageTextField, gridBagConstraints);
+        beanPackageTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_DefaultBackingPackageDesc"));
+
         lServletName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/project/jsf/framework/Bundle").getString("MNE_lServletName").charAt(0));
         lServletName.setLabelFor(tServletName);
         lServletName.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Servlet_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(lServletName, gridBagConstraints);
 
         tServletName.setEditable(false);
         tServletName.setText("Faces Servlet");
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         add(tServletName, gridBagConstraints);
         tServletName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ServletName"));
@@ -85,14 +121,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         lURLPattern.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_URL_Pattern"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(lURLPattern, gridBagConstraints);
 
         tURLPattern.setText("/faces/*");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
@@ -106,7 +142,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         cbValidate.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 5, 0);
         add(cbValidate, gridBagConstraints);
@@ -118,7 +154,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         cbVerify.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 5, 0);
         add(cbVerify, gridBagConstraints);
@@ -130,7 +166,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         cbPackageJars.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(cbPackageJars, gridBagConstraints);
@@ -149,9 +185,19 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         add(jPanel1, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+
+    private void beanPackageTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_beanPackageTextFieldKeyReleased
+        if (beanPackageTextField.getText().length() == 0)
+            beanPackageModified = false;
+        else
+            beanPackageModified = true;
+        panel.fireChangeEvent();
+    }//GEN-LAST:event_beanPackageTextFieldKeyReleased
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel beanPackageLabel;
+    protected javax.swing.JTextField beanPackageTextField;
     private javax.swing.JCheckBox cbPackageJars;
     private javax.swing.JCheckBox cbValidate;
     private javax.swing.JCheckBox cbVerify;
@@ -163,6 +209,15 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     // End of variables declaration//GEN-END:variables
  
     boolean valid(WizardDescriptor wizardDescriptor) {
+        // <RAVE> Checking default Bean Package
+        String beanPkg = beanPackageTextField.getText();
+        if (!isValidPkg(beanPkg)) {
+            String errMsg = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_InvalidPackage");
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+            return false;
+        }
+        // </RAVE>
+
         String urlPattern = tURLPattern.getText();
         if (urlPattern == null || urlPattern.trim().equals("")){
           wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
@@ -179,6 +234,24 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         return true;
     }
     
+    // <RAVE> Default Bean Package
+    protected boolean isBeanPackageModified() {
+         return beanPackageModified;
+    }
+
+    boolean isValidPkg(String pkgName) {
+        if (pkgName == null)
+            return false;
+        String[] pkg = pkgName.split("\\.");
+        for (int i = 0; i < pkg.length; i++) {
+            if (!Utilities.isJavaIdentifier(pkg[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    // </RAVE>
+
     private boolean isPatternValid(String pattern){
         if (pattern.startsWith("*.")){
             String p = pattern.substring(2);
@@ -224,6 +297,16 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         panel.fireChangeEvent();
     }
 
+    // <RAVE> Default Bean Package
+    public String getBeanPackage(){
+        return beanPackageTextField.getText();
+    }
+    
+    public void setBeanPackage(String pkg_name){
+        beanPackageTextField.setText(pkg_name);
+    }
+    // </RAVE>
+    
     public String getServletName(){
         return tServletName.getText();
     }
@@ -264,6 +347,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         cbPackageJars.setEnabled(enable);
         cbValidate.setEnabled(enable);
         cbVerify.setEnabled(enable);
+        beanPackageLabel.setEnabled(enable);
+        beanPackageTextField.setEnabled(enable);
         lServletName.setEnabled(enable);
         lURLPattern.setEnabled(enable);
         tServletName.setEnabled(enable);

@@ -29,11 +29,12 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
 
 /**
  *
- * @author petr
+ * @author Po-Ting Wu
  */
 public class JSFConfigurationPanel implements FrameworkConfigurationPanel, WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
     private WizardDescriptor wizardDescriptor;
@@ -101,8 +102,14 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
         if (substitute != null)
             wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
-    }
 
+        // <RAVE> Default Bean Package
+        String name = (String) wizardDescriptor.getProperty("name"); // NOI18N
+        if (name != null && name.length() > 0) {
+            setBeanPackage(name);
+        }
+        // </RAVE>
+    }
 
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
@@ -120,6 +127,46 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         component.enableComponents(enable);
 
     }
+
+    // <RAVE> Default Bean Package
+    public String getBeanPackage(){
+        return component.getBeanPackage();
+    }
+
+    public void setBeanPackage(String pkg_name){
+        component.setBeanPackage(deriveSafeName(pkg_name));
+    }
+
+    /**
+     * Derive an identifier suitable for a java package name or context path
+     * @param sourceName Original name from which to derive the name
+     * @return An identifier suitable for a java package name or context path
+     */
+    public static String deriveSafeName(String sourceName) {
+        StringBuffer dest = new StringBuffer(sourceName.length());
+        int sourceLen = sourceName.length();
+        if (sourceLen > 0) {
+            int pos = 0;
+            while (pos < sourceLen) {
+                if (Character.isJavaIdentifierStart(sourceName.charAt(pos))) {
+                    dest.append(Character.toLowerCase(sourceName.charAt(pos)));
+                    pos++;
+                    break;
+                }
+                pos++;
+            }
+
+            for (int i = pos; i < sourceLen; i++) {
+                if (Character.isJavaIdentifierPart(sourceName.charAt(i)))
+                    dest.append(Character.toLowerCase(sourceName.charAt(i)));
+            }
+        }
+        if (dest.length() == 0 || !Utilities.isJavaIdentifier(dest.toString()))
+            return "untitled";  // NOI18N
+        else
+            return dest.toString();
+    }
+    // </RAVE>
 
     public String getServletName(){
         return component.getServletName();
