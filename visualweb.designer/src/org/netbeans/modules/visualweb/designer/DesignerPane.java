@@ -66,7 +66,6 @@ import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.Document;
 import org.netbeans.modules.visualweb.text.Position;
-import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
 
 
 //import javax.swing.plaf.basic.BasicGraphicsUtils;
@@ -821,7 +820,7 @@ implements PropertyChangeListener {
             if (webform.isGridMode()) {
                 ImageIcon imgIcon =
                     new ImageIcon(this.getClass().getResource("/org/netbeans/modules/visualweb/designer/drop_position.gif")); // TODO get marquee icon
-                StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
+//                StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
                 org_cursor = pane.getCursor();
                 pane.setCursor(DragSource.DefaultCopyDrop);
             }
@@ -869,7 +868,7 @@ implements PropertyChangeListener {
 
             //StatusDisplayer.getDefault().setStatusText("(" + p.x + ", " + p.y + ")");
             // TODO : compute the component position itself, not the mouse position
-            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(p.x + "," + p.y);
+//            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(p.x + "," + p.y);
         }
 
         public void drop(DropTargetDropEvent dtde) {
@@ -902,7 +901,7 @@ implements PropertyChangeListener {
                 handler.setDropPoint(dtde.getLocation());
             }
              */
-            StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
+//            StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
         }
 
         public void dropActionChanged(DropTargetDragEvent dtde) {

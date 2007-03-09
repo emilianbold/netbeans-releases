@@ -49,6 +49,7 @@ import javax.swing.Timer;
 import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.ErrorManager;
+import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
@@ -67,7 +68,6 @@ import org.netbeans.modules.visualweb.css2.LineBoxGroup;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
-import org.netbeans.modules.visualweb.extension.openide.awt.MouseUtils_RAVE;
 import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.Document;
@@ -84,6 +84,10 @@ import org.netbeans.modules.visualweb.text.Position;
  * @author Tor Norbye
  */
 public class InteractionManager {
+
+    // XXX Moved from former MouseUtils_RAVE. What is this?
+    private static int DOUBLE_CLICK_DELTA = 300;
+
     // Log info pertaining to selection drawing
     public static final boolean ENABLE_DOM_INSPECTOR = true; // DOM inspector
 
@@ -1353,7 +1357,8 @@ public class InteractionManager {
 
 //            if (!paletteItemSelected && (insertModeBox != null) && (caret != null)
             if (!isCnCInProgress() && (insertModeBox != null) && (caret != null) 
-            && isInside(insertModeBox, e) && !MouseUtils_RAVE.isDoubleClick(e)) {
+//            && isInside(insertModeBox, e) && !MouseUtils_RAVE.isDoubleClick(e)) {
+            && isInside(insertModeBox, e) && !MouseUtils.isDoubleClick(e)) {
                 // Reroute the mouse press to the insert box
                 caret.mouseClicked(e);
 
@@ -1377,7 +1382,8 @@ public class InteractionManager {
                 // fall through
             }
 
-            if (MouseUtils_RAVE.isDoubleClick(e)) {
+//            if (MouseUtils_RAVE.isDoubleClick(e)) {
+            if (MouseUtils.isDoubleClick(e)) {
                 if (!isInlineEditing()) {
                     if (isInsideBoxDecoration(box, e.getX(), e.getY())) {
                         processDefaultDecorationAction(box);
@@ -1455,7 +1461,8 @@ public class InteractionManager {
         private void requestCycle(final int x, final int y) {
             cancelCycleRequest();
 
-            int delay = MouseUtils_RAVE.getDoubleClickInterval();
+//            int delay = MouseUtils_RAVE.getDoubleClickInterval();
+            int delay = DOUBLE_CLICK_DELTA;
             cycleTimer =
                 new Timer(delay,
                     new ActionListener() {

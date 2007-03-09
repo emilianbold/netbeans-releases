@@ -48,7 +48,6 @@ import org.w3c.dom.Node;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.PageBox;
-import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
 import org.netbeans.modules.visualweb.text.Position;
 
 
@@ -164,7 +163,7 @@ public class Dragger extends Interaction implements KeyListener {
         }
 
         // Restore status line
-        StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
+//        StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
 
 //        GridHandler gm = GridHandler.getInstance();
         GridHandler gm = webform.getGridHandler();
@@ -554,7 +553,7 @@ public class Dragger extends Interaction implements KeyListener {
 
             ImageIcon imgIcon = // XXX Does this have any effect anymore?
                 new ImageIcon(Dragger.class.getResource("/org/netbeans/modules/visualweb/designer/drag_position.gif"));
-            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
+//            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
 
             e.consume();
         }
@@ -1031,7 +1030,7 @@ public class Dragger extends Interaction implements KeyListener {
                     y = r.y + startY;
                 }
 
-                StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(x + "," + y);
+//                StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(x + "," + y);
             }
         }
     }

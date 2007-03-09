@@ -31,12 +31,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openide.ErrorManager;
+import org.openide.awt.MouseUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
-import org.netbeans.modules.visualweb.extension.openide.awt.MouseUtils_RAVE;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.Position;
 
@@ -606,7 +606,8 @@ public abstract class InlineEditor {
         // that this is a double click that means our assumption about
         // inline editing was wrong - in other words that it appeared
         // shortly after the inline edit request, and if so
-        if (MouseUtils_RAVE.isDoubleClick(e) && (lastClick <= editingStarted)) {
+//        if (MouseUtils_RAVE.isDoubleClick(e) && (lastClick <= editingStarted)) {
+        if (MouseUtils.isDoubleClick(e) && (lastClick <= editingStarted)) {
             webform.getManager().notifyEditedDoubleClick();
         }
 

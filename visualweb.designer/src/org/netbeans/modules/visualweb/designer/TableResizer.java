@@ -33,7 +33,6 @@ import javax.swing.ImageIcon;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
-import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
 
 
 /**
@@ -126,7 +125,8 @@ public class TableResizer extends Interaction implements KeyListener {
         pane.setCursor(previousCursor);
 
         // Restore status line
-        StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
+//        StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
+//        StatusDisplayer.getDefault().setStatusText(""); // TEMP
 
         // Clear
         if (prevX != -500) {
@@ -289,7 +289,7 @@ public class TableResizer extends Interaction implements KeyListener {
             ImageIcon imgIcon =
                 new ImageIcon(TableResizer.class.getResource(
                         "/org/netbeans/modules/visualweb/designer/drag_resize.gif"));
-            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
+//            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
 
             e.consume();
         }
@@ -332,7 +332,8 @@ public class TableResizer extends Interaction implements KeyListener {
 
             int size = (direction == CssBox.X_AXIS) ? currentSize.height : currentSize.width;
 
-            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(Integer.toString(size));
+//            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(Integer.toString(size));
+//            StatusDisplayer.getDefault().setStatusText(Integer.toString(size));
 
             e.consume();
         }

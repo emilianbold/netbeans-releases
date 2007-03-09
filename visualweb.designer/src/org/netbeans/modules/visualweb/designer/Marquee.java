@@ -27,7 +27,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.ImageIcon;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
-import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
 
 
 /**
@@ -75,7 +74,7 @@ public class Marquee extends Interaction {
         pane.setCursor(previousCursor);
 
         // Restore status line
-        StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
+//        StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
 
         // Clean out the selection rectangle
         Rectangle dirty = new Rectangle(marqueeBounds);
@@ -168,7 +167,7 @@ public class Marquee extends Interaction {
 
             pane.scrollRectToVisible(new Rectangle(currentPoint));
 
-            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(x + "," + y);
+//            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(x + "," + y);
         }
     }
 
@@ -220,7 +219,7 @@ public class Marquee extends Interaction {
 
             ImageIcon imgIcon =
                 new ImageIcon(Marquee.class.getResource("/org/netbeans/modules/visualweb/designer/drag_select.gif")); // TODO get marquee icon
-            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
+//            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
 
             e.consume();
         }

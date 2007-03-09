@@ -40,7 +40,6 @@ import javax.swing.ImageIcon;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
-import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
 import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 
@@ -151,7 +150,7 @@ public class Resizer extends Interaction implements KeyListener {
         pane.setCursor(previousCursor);
 
         // Restore status line
-        StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
+//        StatusDisplayer_RAVE.getRaveDefault().clearPositionLabel();
 
         // Clear
         if (prevX != -500) {
@@ -452,7 +451,7 @@ public class Resizer extends Interaction implements KeyListener {
 
             ImageIcon imgIcon =
                 new ImageIcon(Resizer.class.getResource("/org/netbeans/modules/visualweb/designer/drag_resize.gif"));
-            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
+//            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
 
             e.consume();
         }
@@ -508,7 +507,7 @@ public class Resizer extends Interaction implements KeyListener {
                 h = 0;
             }
 
-            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(w + "," + h);
+//            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelText(w + "," + h);
 
             e.consume();
         }

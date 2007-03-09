@@ -740,7 +740,7 @@ public class DesignerUtils {
 //            Action[] actions = NodeOp.findActions(nodes);
 //            
 //            if ((actions.length > 0) && ((actions.length > 1) || (actions[0] != null))) {
-//                org.netbeans.modules.visualweb.extension.openide.util.Utilities_RAVE.actionsToPopup(actions, parent,
+//                Utilities_RAVE.actionsToPopup(actions, parent,
 //                        menu);
 //                menu.addSeparator();
 //            }
