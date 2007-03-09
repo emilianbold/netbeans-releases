@@ -118,15 +118,15 @@ public class LoggingRepaintManager extends RepaintManager {
      * @param h hieght of the region
      */
     public synchronized void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
-        String log = "Dirty Region " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
+        String log = c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
         
         // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (10,19) in textfields
         // of some dialogs
         if (w > 10 || h > 19) { // painted region isn't cursor (or painted region is greater than cursor)
             if (regionFilter != null && !regionFilter.accept(c)) {
-                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "IGNORED - " + log);
+                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "IGNORED DirtyRegion: " + log);
             } else { // no filter || accepted by filter =>  measure it
-                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "ADD - " + log);
+                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "ADD DirtyRegion: " + log);
                 hasDirtyMatches = true;
             }
         }
@@ -172,9 +172,9 @@ public class LoggingRepaintManager extends RepaintManager {
     
     public void  setRegionFilter(RegionFilter filter) {
         if(filter != null)
-            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER : " + filter.getFilterName());
+            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: " + filter.getFilterName());
         else
-            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER : reset");
+            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: reset");
         
         regionFilter = filter;
     }

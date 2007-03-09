@@ -602,7 +602,7 @@ public class ActionTracker {
                     Element eventElement = doc.createElement(TN_EVENT);
                     evlistElement.appendChild(eventElement);
                     eventElement.setAttribute(ATTR_TYPE, t.getCodeName());
-                    eventElement.setAttribute(ATTR_NAME, t.getName());
+                    eventElement.setAttribute(ATTR_NAME, getShortenName(t.getName()));
                     eventElement.setAttribute(ATTR_TIME, getTimeMillisForLog(t));
                     eventElement.setAttribute(ATTR_TIME_DIFF_START, Long.toString(t.getTimeDifference()));
                     
@@ -622,12 +622,21 @@ public class ActionTracker {
         tr.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         DOMSource docSrc = new DOMSource(doc);
         StreamResult rslt = new StreamResult(out);
-
+        
         out.println("<?xml version=\"1.0\" ?>");
         out.println("<?xml-stylesheet type=\"text/xsl\" href=\"" + getPathToXsl(new File(actionTrackerXslLocation)) + "\" media=\"screen\"?>");
         tr.transform(docSrc, rslt);
     }
+
     
+    private static String getShortenName(String name){
+        name = name.replaceAll("javax.swing", "j");
+        name = name.replaceAll("org.netbeans.modules", "o.n.m");
+        name = name.replaceAll("org.netbeans", "o.n");
+        name = name.replaceAll("org.openide.awt", "o.o.a");
+        name = name.replaceAll("org.openide", "o.o");
+        return name;
+    }
     
     /**
      * Get name for the code
@@ -637,25 +646,25 @@ public class ActionTracker {
     public static String getNameForCode(int code) {
         String cname = "unk";
         switch (code) {
-            case TRACK_START:         cname = "start"; break;
-            case TRACK_PAINT:         cname = "paint"; break;
-            case TRACK_MOUSE_PRESS:   cname = "user_action"; break;
-            case TRACK_MOUSE_RELEASE: cname = "user_action"; break;
-            case TRACK_MOUSE_DRAGGED: cname = "user_action"; break;
-            case TRACK_MOUSE_MOVED:   cname = "user_action"; break;
-            case TRACK_KEY_PRESS:     cname = "user_action"; break;
-            case TRACK_KEY_RELEASE:   cname = "user_action"; break;
-            case TRACK_FRAME_SHOW:    cname = "paint"; break;
-            case TRACK_FRAME_HIDE:    cname = "application_message"; break;
-            case TRACK_DIALOG_SHOW:   cname = "paint"; break;
-            case TRACK_DIALOG_HIDE:   cname = "application_message"; break;
-            case TRACK_COMPONENT_SHOW:cname = "paint"; break;
-            case TRACK_COMPONENT_HIDE:cname = "application_message"; break;
-            case TRACK_INVOCATION:    cname = "application_message"; break;
-            case TRACK_UNKNOWN:       cname = "unknown"; break;
-            case TRACK_APPLICATION_MESSAGE: cname = "application_message"; break;
-            case TRACK_CONFIG_APPLICATION_MESSAGE: cname = "config_message"; break;
-            case TRACK_TRACE_MESSAGE: cname = "trace_message"; break;
+        case TRACK_START:         cname = "start"; break;
+        case TRACK_PAINT:         cname = "paint"; break;
+        case TRACK_MOUSE_PRESS:   cname = "user_action"; break;
+        case TRACK_MOUSE_RELEASE: cname = "user_action"; break;
+        case TRACK_MOUSE_DRAGGED: cname = "user_action"; break;
+        case TRACK_MOUSE_MOVED:   cname = "user_action"; break;
+        case TRACK_KEY_PRESS:     cname = "user_action"; break;
+        case TRACK_KEY_RELEASE:   cname = "user_action"; break;
+        case TRACK_FRAME_SHOW:    cname = "paint"; break;
+        case TRACK_FRAME_HIDE:    cname = "app_message"; break;
+        case TRACK_DIALOG_SHOW:   cname = "paint"; break;
+        case TRACK_DIALOG_HIDE:   cname = "app_message"; break;
+        case TRACK_COMPONENT_SHOW:cname = "paint"; break;
+        case TRACK_COMPONENT_HIDE:cname = "app_message"; break;
+        case TRACK_INVOCATION:    cname = "app_message"; break;
+        case TRACK_UNKNOWN:       cname = "unknown"; break;
+        case TRACK_APPLICATION_MESSAGE: cname = "app_message"; break;
+        case TRACK_CONFIG_APPLICATION_MESSAGE: cname = "config_message"; break;
+        case TRACK_TRACE_MESSAGE: cname = "trace_message"; break;
         }
         return cname;
     }
@@ -678,7 +687,7 @@ public class ActionTracker {
         return Long.toString(t.getTimeMillis() - t.getTimeMillis()/10000000*10000000);
     }
     
-    /** 
+    /**
      * Set location for ActionTracker.xsl file
      * @param dir where the ActionTracker.xsl file is going to be placed
      */
@@ -686,30 +695,30 @@ public class ActionTracker {
         this.actionTrackerXslLocation = xslLocation;
     }
     
- /**
-  * Create a relative path to XSL trnaformer for ActionTracker.xml log file
-  * @param file in the current workdir
-  * <pre>
+    /**
+     * Create a relative path to XSL trnaformer for ActionTracker.xml log file
+     * @param file in the current workdir
+     * <pre>
     We expect that "work" and "results" directories have the same parent :
     test_run/test_bag/user/class/method - directory after counting/moving results
           PARENT/work/user/class/method - working directory
           PARENT/results/testrun        - testrun directory
- 
+  
     test_run/test_bag/user/class/method
     -> up test_run/test_bag/user/class/
     -> up test_run/test_bag/user/
     -> up test_run/test_bag/
-    * -> Up to relative path from actionTrackerXslLocation=getWorkDir()
+     * -> Up to relative path from actionTrackerXslLocation=getWorkDir()
     -> up test_run/
    </pre>
-    */
+     */
     private static String getPathToXsl(File file) {
         StringBuilder pathToXsl = new StringBuilder();
         
         //skip the file name - go to folder
         if (file.isFile())
             file = file.getParentFile();
-            
+        
         // find the relative path to "work"
         while(file != null && !file.getName().equalsIgnoreCase("work")) {
             pathToXsl.append("../");
@@ -719,7 +728,7 @@ public class ActionTracker {
         // move up over "testbag_XX" folder
         pathToXsl.append("../");
         
-        // add ActionTracker.xsl 
+        // add ActionTracker.xsl
         pathToXsl.append("ActionTracker.xsl");
         
         return pathToXsl.toString();
@@ -909,8 +918,8 @@ public class ActionTracker {
             Tuple t = (Tuple) obj;
             return this.getCode()==t.getCode() &&
                     this.getName().equalsIgnoreCase(t.getName()) &&
-                    this.getTimeMillis()==t.getTimeMillis() &&
-                    this.getTimeDifference()==t.getTimeDifference();
+                    ( this.getTimeMillis()==t.getTimeMillis() ||
+                    this.getTimeDifference()==t.getTimeDifference() );
         }
         
     }

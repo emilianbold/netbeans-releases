@@ -13,8 +13,8 @@
                 tr.paint_measured { background:#ffb4b4; font-weight:bold; }
                 tr.user_action { background:#b5ffb0; }
                 tr.user_action_measured { background:#9cff95; font-weight:bold; }
-                tr.application_message { background:#eeeedd; }
-                tr.application_message_measured { background:#fffd6d; font-weight:bold; }
+                tr.app_message { background:#eeeedd; }
+                tr.app_message_measured { background:#fffd6d; font-weight:bold; }
                 tr.config_message { background:#ffffcc; }
                 tr.trace_message { background:#d9d9ff; }
                 tr.unknown {}
