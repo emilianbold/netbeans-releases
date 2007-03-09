@@ -26,10 +26,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
-
 import javax.swing.Action;
 import javax.xml.XMLConstants;
-
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Documentation;
 import org.netbeans.modules.xml.wsdl.model.Types;
@@ -62,7 +60,6 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.windows.TopComponent;
-
 import com.sun.org.apache.xml.internal.utils.XMLChar;
 import java.util.HashSet;
 import java.util.Set;
@@ -155,6 +152,16 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
     @Override
     public Action[] getActions(boolean context) {
         return ACTIONS;
+    }
+
+    @Override
+    public boolean canCopy() {
+        return false;
+    }
+
+    @Override
+    public boolean canCut() {
+        return false;
     }
 
     protected void updateDisplayName() {
@@ -284,12 +291,6 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
     }
     public static final class DefinitionsChildren extends GenericWSDLComponentChildren {
         
-        /*
-         *This will contain all the namespaces, which are treated to be special like BPEL extensions.
-         */
-        private Set<String> specialTargetNamespacesSet = new HashSet<String>();
-
-        
         public DefinitionsChildren(Definitions definitions) {
             super(definitions);
             //specialTargetNamespacesSet.addAll(BPELExtensibilityElementsFolderNode.getSupportedExtensionNamespaceSet());
@@ -314,12 +315,9 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
             if (SERVICES_FOLDER.equals(key)) {
                 node = new ServiceFolderNode((Definitions) getWSDLComponent());
             }
-/*            if (BPEL_EXTENSIBILITY_ELEMENTS_FOLDER.equals(key)) {
-               node = new BPELExtensibilityElementsFolderNode((Definitions) getWSDLComponent());
-            }*/
             
             if (EXTENSIBILITY_ELEMENTS_FOLDER.equals(key)) {
-                node = new ExtensibilityElementsFolderNode((Definitions) getWSDLComponent(), specialTargetNamespacesSet);
+                node = new ExtensibilityElementsFolderNode((Definitions) getWSDLComponent());
             }
             
             
@@ -351,21 +349,8 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
             keys.add(BINDING_FOLDER);
             keys.add(SERVICES_FOLDER);
             
-            //List<ExtensibilityElement> list = def.getExtensibilityElements();
-/*            List<ExtensibilityElement> sList = new ArrayList<ExtensibilityElement>();
-            List<ExtensibilityElement> nsList = new ArrayList<ExtensibilityElement>();
             
-            Utility.splitExtensibilityElements(list, BPELExtensibilityElementsFolderNode.getSupportedExtensionNamespaceSet(), sList, nsList);
-            
-            
-            if (sList != null && sList.size() > 0) {
-                keys.add(BPEL_EXTENSIBILITY_ELEMENTS_FOLDER);
-            }
-            
-            if (nsList != null && nsList.size() > 0) {*/
-            //if (list != null && list.size() > 0) {
-                keys.add(EXTENSIBILITY_ELEMENTS_FOLDER);
-            //}
+            keys.add(EXTENSIBILITY_ELEMENTS_FOLDER);
 
             return keys;
         }
@@ -380,7 +365,6 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
     public static final String BINDING_FOLDER  = "BINDING_FOLDER";//NOI18N
     public static final String SERVICES_FOLDER = "SERVICES_FOLDER";//NOI18N
     public static final String EXTENSIBILITY_ELEMENTS_FOLDER = "EXTENSIBILITY_ELEMENTS_FOLDER";//NOI18N
-    public static final String BPEL_EXTENSIBILITY_ELEMENTS_FOLDER = "BPEL_EXTENSIBILITY_ELEMENTS_FOLDER";//NOI18N
     //public static final String PREFIXES_FOLDER = "PREFIXES_FOLDER";//NOI18N
     
     

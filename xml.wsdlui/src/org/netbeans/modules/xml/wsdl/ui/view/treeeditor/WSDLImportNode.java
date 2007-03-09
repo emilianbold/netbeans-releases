@@ -30,23 +30,24 @@ import java.util.List;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLDefinitionNodeCookie;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
+import org.netbeans.modules.xml.wsdl.ui.cookies.SaveCookieDelegate;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
-import org.netbeans.modules.xml.wsdl.ui.property.model.Property;
 import org.netbeans.modules.xml.wsdl.ui.view.ImportWSDLCustomizer;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
-import org.openide.explorer.ExplorerManager;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.PropertySet;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 
 /**
@@ -115,20 +116,16 @@ public class WSDLImportNode extends ImportNode {
                 WSDLModel document = (WSDLModel) key;
                 Definitions definitions = document.getDefinitions();
                 try {
+                    // Create a lookup with save cookie of parent wsdl, so that save can be called on imported wsdl's nodes
+                    DataObject dobj = ActionHelper.getDataObject(mWsdlConstruct.getModel());
+                    InstanceContent content = new InstanceContent();
+                    content.add(new SaveCookieDelegate(dobj));
+                    Lookup parentLookup = new AbstractLookup(content);
                     
                     DataObject dataObj = DataObject.find((FileObject) document.getModelSource().getLookup().lookup(FileObject.class));
                     if(dataObj != null && dataObj instanceof WSDLDataObject) {
-                        WSDLDefinitionNodeCookie cookie = Utils.getWSDLDefinitionNodeCookie(getNode());
-                        ExplorerManager manager = null;
-                        TopComponent topComponent = null;
-                        
-                        if(cookie != null) {
-                            manager = cookie.getDefinitionsNode().getExplorerManager();
-                            topComponent = cookie.getDefinitionsNode().getTopComponent();
-                        }
-                        
                         DefinitionsNode node = new DefinitionsNode(definitions);
-                        FilterNode filterNode = new ReadOnlyNode(node);
+                        FilterNode filterNode = new ReadOnlyNode(node, parentLookup);
                         return new Node[] {filterNode};
                     }
                 } catch(Exception ex) {
@@ -162,8 +159,9 @@ public class WSDLImportNode extends ImportNode {
      
      public static class ReadOnlyNode extends FilterNode {
          
-         public ReadOnlyNode(Node original) {
-             super(original, new ReadOnlyChildren(original));
+         public ReadOnlyNode(Node original, Lookup lookup) {
+             super(original, new ReadOnlyChildren(original, lookup), lookup);
+             
          }
          
          @Override
@@ -217,13 +215,16 @@ public class WSDLImportNode extends ImportNode {
      
      public static class ReadOnlyChildren extends FilterNode.Children {
         
-        public ReadOnlyChildren(Node node) {
+         Lookup lookup;
+         
+        public ReadOnlyChildren(Node node, Lookup lookup) {
             super(node);
+            this.lookup = lookup;
         }
         
         @Override
         protected Node[] createNodes(Node n) {
-             return new Node[] {new ReadOnlyNode(n)};
+             return new Node[] {new ReadOnlyNode(n, lookup)};
         }
     } 
     

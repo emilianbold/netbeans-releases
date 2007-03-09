@@ -37,9 +37,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -58,24 +60,26 @@ import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageFolderNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
-
-public class MessagesWidget extends Widget implements  
+/**
+ * Container for the message widgets.
+ */
+public class MessagesWidget extends Widget implements
         ActionListener, ExpandableWidget, DnDHandler, PopupMenuProvider {
 
     private WSDLModel model;
-    
-    private Widget headerWidget = new Widget(getScene());
+    private Widget headerLabel;
+    private Widget headerWidget;
     private ExpanderWidget expanderWidget;
     private ButtonWidget addMessageButton;
     private ButtonWidget removeMessageButton;
-    private Widget right;
+    private Widget buttons;
 
     private Widget contentWidget;
     
@@ -96,40 +100,40 @@ public class MessagesWidget extends Widget implements
 
         stubWidget = new StubWidget(scene, NbBundle.getMessage(
                 MessagesWidget.class, 
-                "LBL_MessagesWidget_ThereAreNoMessages")); // MOI18N
+                "LBL_MessagesWidget_ThereAreNoMessages"));
         
-        addMessageButton = new ButtonWidget(getScene(), NbBundle.getMessage(
+        addMessageButton = new ButtonWidget(scene, NbBundle.getMessage(
                 MessagesWidget.class,
                 "LBL_MessagesWidget_AddMessage")); // NOI18N
         addMessageButton.setActionListener(this);
         
-        removeMessageButton = new ButtonWidget(getScene(), NbBundle.getMessage(
+        removeMessageButton = new ButtonWidget(scene, NbBundle.getMessage(
                 MessagesWidget.class,
                 "LBL_MessagesWidget_RemoveMessage")); // NOI18N
         removeMessageButton.setActionListener(this);
         
         boolean expanded = ExpanderWidget.isExpanded(this, true);
-        expanderWidget = new ExpanderWidget(getScene(), this, expanded);
+        expanderWidget = new ExpanderWidget(scene, this, expanded);
+
+        buttons = new Widget(scene);
+        buttons.setLayout(LayoutFactory.createHorizontalLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+        buttons.addChild(addMessageButton);
+        buttons.addChild(removeMessageButton);
+        buttons.addChild(expanderWidget);
         
+        headerWidget = new HeaderWidget(scene, expanderWidget);
+        headerWidget.setMinimumSize(new Dimension(
+                WidgetConstants.MINIMUM_WIDTH, 0));
+        headerWidget.setLayout(new LeftRightLayout(32));
+        addChild(headerWidget);
+        headerWidget.addChild(buttons);
+        
+        messageHitPoint = new MessageHitPointWidget(scene);
+
         contentWidget = new Widget(scene);
         contentWidget.setLayout(LayoutFactory.createVerticalLayout(
                 SerialAlignment.JUSTIFY, 8));
-
-        right = new Widget(getScene());
-        right.setLayout(LayoutFactory.createHorizontalLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        right.addChild(addMessageButton);
-        right.addChild(removeMessageButton);
-        right.addChild(expanderWidget);
-        
-        headerWidget = new HeaderWidget(getScene(), expanderWidget);
-        headerWidget.setMinimumSize(new Dimension(
-                WidgetConstants.MINIMUM_WIDTH, 0));
-        headerWidget.setLayout(new LeftRightLayout(8));
-        
-        messageHitPoint = new MessageHitPointWidget(scene);
-        
-        addChild(headerWidget);
         if (expanded) {
             addChild(contentWidget);
         }
@@ -138,8 +142,7 @@ public class MessagesWidget extends Widget implements
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
         createContent();
     }
-    
-    
+
     private void createContent() {
         Collection<Message> messages = model.getDefinitions().getMessages();
         
@@ -152,13 +155,10 @@ public class MessagesWidget extends Widget implements
         }
         
         Scene scene = getScene();
-        Widget label = new ImageLabelWidget(scene, IMAGE, NbBundle.getMessage(
-                MessagesWidget.class,
-                "LBL_MessagesWidget_Messages"), // NOI18N
-                "(" + messages.size() + ")"); // NOI18N
-        
-        headerWidget.addChild(label);
-        headerWidget.addChild(right);
+        headerLabel = new ImageLabelWidget(scene, IMAGE, NbBundle.getMessage(
+                MessagesWidget.class, "LBL_MessagesWidget_Messages"),
+                "(" + messages.size() + ")");
+        headerWidget.addChild(0, headerLabel);
         
         WidgetFactory factory = WidgetFactory.getInstance();
         
@@ -176,7 +176,7 @@ public class MessagesWidget extends Widget implements
     
     
     public void updateContent() {
-        headerWidget.removeChildren();
+        headerWidget.removeChild(headerLabel);
         contentWidget.removeChildren();
         createContent();
     }
@@ -192,7 +192,8 @@ public class MessagesWidget extends Widget implements
 
                     Part newPart = model.getFactory().createPart();
                     newPart.setName(MessagesUtils.createNewPartName(message));
-                    newPart.setType(MessagesUtils.getDefaultTypeReference(model));
+                    //to be consistent with add message from pop-up menu. do not set the type.
+                    //newPart.setType(MessagesUtils.getDefaultTypeReference(model));
 
                     message.addPart(newPart);
 
@@ -210,7 +211,6 @@ public class MessagesWidget extends Widget implements
             for (MessageWidget messageWidget : getMessageWidgets()) {
                 if (messageWidget.getState().isSelected()) {
                     Message message = messageWidget.getWSDLComponent();
-                    WSDLModel model = message.getModel();
                     try {
                         if (model.startTransaction()) {
                             model.getDefinitions().removeMessage(message);
@@ -307,7 +307,8 @@ public class MessagesWidget extends Widget implements
                     newMessage.setName(MessagesUtils.createNewMessageName(model));
                     Part newPart = model.getFactory().createPart();
                     newPart.setName(MessagesUtils.createNewPartName(newMessage));
-                    newPart.setType(MessagesUtils.getDefaultTypeReference(model));
+                    //dont set default type IZ 95970010
+                    //newPart.setType(MessagesUtils.getDefaultTypeReference(model)); 
                     newMessage.addPart(newPart);
 
                     copyView(null, newMessage);
@@ -454,9 +455,7 @@ public class MessagesWidget extends Widget implements
      */
     private synchronized Node getNode() {
         if (componentNode == null) {
-            // Use the factory to construct the Node.
-            NodesFactory factory = NodesFactory.getInstance();
-            componentNode = factory.create(model.getDefinitions());
+            componentNode = new MessageFolderNode(model.getDefinitions()); 
             componentNode = new WidgetFilterNode(componentNode);
         }
         return componentNode;

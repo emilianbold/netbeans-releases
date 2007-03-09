@@ -25,6 +25,9 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.List;
+import java.util.ListIterator;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -42,6 +45,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBord
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.actions.NewAction;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -149,11 +153,13 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     // It is quite likely that this widget just got wider
-                    // because of the new children widgets. Save this width
-                    // as the minimum size so we do not shrink when we are
+                    // because of the new children widgets. Save the width
+                    // of the parent collaborations widget as its new
+                    // minimum size so we do not shrink when we are
                     // collapsed, which would probably annoy the user.
-                    Rectangle bounds = getBounds();
-                    setMinimumSize(new Dimension(bounds.width, 0));
+                    Widget parent = getCollaborationWidget();
+                    Rectangle bounds = parent.getBounds();
+                    parent.setMinimumSize(new Dimension(bounds.width, 0));
                 }
             });
         }
@@ -239,5 +245,17 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     public Object hashKey() {
         PartnerLinkType comp = getWSDLComponent();
         return comp != null ? comp.getName() : this;
+    }
+
+    @Override
+    protected void updateActions(List<Action> actions) {
+        super.updateActions(actions);
+        ListIterator<Action> liter = actions.listIterator();
+        while (liter.hasNext()) {
+            Action action = liter.next();
+            if (action instanceof NewAction) {
+                liter.remove();
+            }
+        }
     }
 }

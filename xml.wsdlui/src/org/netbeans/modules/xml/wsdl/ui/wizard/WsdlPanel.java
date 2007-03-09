@@ -24,17 +24,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -45,11 +45,11 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 
@@ -157,94 +157,117 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     }
 
     public void storeSettings(Object settings) {
-        TemplateWizard wiz = (TemplateWizard)settings;
+        TemplateWizard wiz = (TemplateWizard) settings;
         
-        if ( WizardDescriptor.PREVIOUS_OPTION.equals( ((WizardDescriptor)settings).getValue() ) ) {
+        if (WizardDescriptor.PREVIOUS_OPTION.equals(((WizardDescriptor) settings).getValue())) {
             return;
         }
-        if ( WizardDescriptor.CANCEL_OPTION.equals( ((WizardDescriptor)settings).getValue() ) ) {
+        if (WizardDescriptor.CANCEL_OPTION.equals(((WizardDescriptor) settings).getValue())) {
             return;
         }
         
-//        ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
         String fileName = Templates.getTargetName(wiz);
-        ((WizardDescriptor)settings).putProperty (FILE_NAME, fileName); // NOI18N
+        wiz.putProperty(FILE_NAME, fileName);
         String targetNamespace = getNS();
-        ((WizardDescriptor)settings).putProperty (WSDL_TARGETNAMESPACE, targetNamespace); // NOI18N
-        
+        wiz.putProperty(WSDL_TARGETNAMESPACE, targetNamespace);
         String definitionName = fileName;
-        ((WizardDescriptor)settings).putProperty (WSDL_DEFINITION_NAME, definitionName); // NOI18N
-        
-        
-        FileObject template = Templates.getTemplate( wiz );
-        
+        wiz.putProperty(WSDL_DEFINITION_NAME, definitionName);
         try {
-            DataObject dTemplate = DataObject.find( template );
-            if(tempWSDLFile == null) {
-                if(dTemplate != null) {
-                    //create a temp file
-                	tempWSDLFile = File.createTempFile(fileName + "RIT", ".wsdl"); //NOTI18N
-                    tempWSDLFile.deleteOnExit();
-                    templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE, this.tempWSDLFile);
-                    
-                    FileObject templateFileObject = dTemplate.getPrimaryFile();
-                    
-                    //write content from template to tmp file
-                    DataObject templateDobj = DataObject.find(templateFileObject);
-                    EditCookie edit = (EditCookie) templateDobj.getCookie(EditCookie.class);
-                    EditorCookie editorCookie = (EditorCookie)templateDobj.getCookie(EditorCookie.class);
-                    editorCookie.openDocument();
-                    javax.swing.text.Document doc = editorCookie.getDocument();
-
-                    //write from tempModel to actual file
-                    FileWriter writer = new FileWriter(tempWSDLFile);
-                    try {
-                        writer.write(doc.getText(0, doc.getLength()));
-                        writer.close();
-                    } catch(Exception ex) {
-                            ErrorManager.getDefault().notify(ex);
-                    }
-                    
-                    writer.close();
-                            
-                    FileObject tempWSDLFileObject = FileUtil.toFileObject(tempWSDLFile.getCanonicalFile());
-                    ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(tempWSDLFileObject, 
-                    tempWSDLFileObject.canWrite());
-                    
-                    this.mTempWSDLModel  = WSDLModelFactory.getDefault().getModel(modelSource);
-                    this.mTempWSDLModel.startTransaction();
-                    this.mTempWSDLModel.getDefinitions().setName(definitionName);
-                    this.mTempWSDLModel.getDefinitions().setTargetNamespace(targetNamespace);
-                    ((AbstractDocumentComponent) this.mTempWSDLModel.getDefinitions()).addPrefix("tns", targetNamespace);
-                    if (mTempWSDLModel.getDefinitions().getTypes() == null) {
-                        mTempWSDLModel.getDefinitions().setTypes(mTempWSDLModel.getFactory().createTypes());
-                    }
-                    this.mTempWSDLModel.endTransaction();
-                    
-                    templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, this.mTempWSDLModel);
-                }
+            if (tempWSDLFile == null) {
+                // Create a temporary file for storing our settings.
+                tempWSDLFile = File.createTempFile(fileName + "RIT", ".wsdl"); // NOI18N
+                tempWSDLFile.deleteOnExit();
+                populateFileFromTemplate(tempWSDLFile);
+                templateWizard.putProperty(
+                        WizardPortTypeConfigurationStep.TEMP_WSDLFILE, tempWSDLFile);
+                mTempWSDLModel = prepareModelFromFile(tempWSDLFile);
+                templateWizard.putProperty(
+                        WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, mTempWSDLModel);
             } else {
-            	templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, this.mTempWSDLModel);
-                templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE, tempWSDLFile);
-                
-                this.mTempWSDLModel.startTransaction();
-                this.mTempWSDLModel.getDefinitions().setTargetNamespace(targetNamespace);
-                this.mTempWSDLModel.getDefinitions().setName(definitionName);
+                templateWizard.putProperty(
+                        WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, mTempWSDLModel);
+                templateWizard.putProperty(
+                        WizardPortTypeConfigurationStep.TEMP_WSDLFILE, tempWSDLFile);
+                mTempWSDLModel.startTransaction();
+                mTempWSDLModel.getDefinitions().setTargetNamespace(targetNamespace);
+                mTempWSDLModel.getDefinitions().setName(definitionName);
                 if (mTempWSDLModel.getDefinitions().getTypes() == null) {
-                    mTempWSDLModel.getDefinitions().setTypes(mTempWSDLModel.getFactory().createTypes());
+                    mTempWSDLModel.getDefinitions().setTypes(
+                            mTempWSDLModel.getFactory().createTypes());
                 }
-                this.mTempWSDLModel.endTransaction();
+                mTempWSDLModel.endTransaction();
             }
-                
-        } catch(Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
         }
-        
     }
-    
+
+    /**
+     * Create a temporary WSDL file that is based on the wizard template.
+     *
+     * @param  wizard  the template wizard.
+     * @param  file    the WSDL file to be written.
+     * @throws  DataObjectNotFoundException
+     *          if the wizard template is missing.
+     * @throws  IOException
+     *          if unable to create the temporary file.
+     */
+    void populateFileFromTemplate(File file) throws
+            DataObjectNotFoundException, IOException {
+        if (templateWizard == null) {
+            throw new IOException("templateWizard not defined");
+        }
+        FileObject template = Templates.getTemplate(templateWizard);
+        DataObject dTemplate = DataObject.find(template);
+        if (dTemplate != null) {
+            EditorCookie editorCookie = (EditorCookie) DataObject.find(
+                    dTemplate.getPrimaryFile()).getCookie(EditorCookie.class);
+            editorCookie.openDocument();
+            Document doc = editorCookie.getDocument();
+            FileWriter writer = new FileWriter(file);
+            try {
+                writer.write(doc.getText(0, doc.getLength()));
+            } catch (BadLocationException ble) {
+                // This basically cannot happen.
+                ErrorManager.getDefault().notify(ble);
+            }
+            writer.close();
+        }
+    }
+
+    /**
+     * Load and initialize the WSDL model from the given file, which should
+     * already have a minimal WSDL definition. The preparation includes
+     * setting the definition name, adding a namespace and prefix, and
+     * adding the types component.
+     *
+     * @param  file  the file with a minimal WSDL definition.
+     * @return  the model.
+     */
+    WSDLModel prepareModelFromFile(File file) {
+        file = FileUtil.normalizeFile(file);
+        FileObject fobj = FileUtil.toFileObject(file);
+        String definitionName = fobj.getName();
+        ModelSource modelSource = org.netbeans.modules.xml.retriever.
+                catalog.Utilities.getModelSource(fobj, fobj.canWrite());
+        WSDLModel model = WSDLModelFactory.getDefault().getModel(modelSource);
+        model.startTransaction();
+        model.getDefinitions().setName(definitionName);
+        String ns = getNS();
+        model.getDefinitions().setTargetNamespace(ns);
+        ((AbstractDocumentComponent) model.getDefinitions()).addPrefix("tns", ns);
+        if (model.getDefinitions().getTypes() == null) {
+            model.getDefinitions().setTypes(model.getFactory().createTypes());
+        }
+        model.endTransaction();
+        return model;
+    }
+
     String getNS() {
         String targetNamespace = gui.getNS();
-        if (targetNamespace.length()==0) targetNamespace = DEFAULT_TARGET_NAMESPACE;
+        if (targetNamespace.length() == 0) {
+            targetNamespace = DEFAULT_TARGET_NAMESPACE;
+        }
         return targetNamespace;
     }
     

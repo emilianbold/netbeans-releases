@@ -33,12 +33,24 @@ that typically take place between a BPEL process and its partner services.</p>
     When you create a property alias, you must specify the property and the message.</li>
 </ul>
 
-<p>Once you perform these steps in the WSDL file, you can define a correlation set in the BPEL process. 
+<p>Once you perform these steps in the WSDL file, you can create a correlation set in the BPEL process. 
   The correlation set references one or more properties. 
   The correlation set can then be used by message activities (Invoke, Reply, and Receive) 
   and by the <tt>onMessage</tt> branches of Pick elements.</p>
 
-<p><b>To define a property:</b></p>
+
+
+<ul class="note">
+  <li>You can also use the BPEL Designer Navigator to add properties and property aliases to a WSDL file. 
+  For more information, see 
+  <a href="nbdocs://org.netbeans.modules.bpel.bpelhelp/org/netbeans/modules/bpel/bpelhelp/design/add_props_navigator.html" 
+  title="Adding Properties and Property Aliases to WSDL Files Using the Navigator">
+  Adding Properties and Property Aliases to WSDL Files Using the Navigator</a>.</li>
+</ul>
+
+
+
+<p><b>To add a property to a WSDL file:</b></p>
 
 <ol>
   <li>In the WSDL view, right-click the Extensibility Elements node and choose Add &gt; Property. <br>
@@ -50,7 +62,7 @@ that typically take place between a BPEL process and its partner services.</p>
     If you added an inline schema or imported a schema, then you can select a type from the schema.</li>
 </ol>
 
-<p><b>To define a property alias:</b></p>
+<p><b>To add a property alias to a WSDL file:</b></p>
 
 <ol>
   <li>In the WSDL view, right-click the Extensibility Elements node and choose Add &gt; Property Alias. <br>

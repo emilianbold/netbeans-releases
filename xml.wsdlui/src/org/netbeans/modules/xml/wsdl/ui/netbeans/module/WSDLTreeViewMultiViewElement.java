@@ -57,6 +57,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallbackSystemAction;
@@ -234,7 +235,30 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
             }
         }
     }
-    
+
+    @SuppressWarnings("deprecation")
+    public void requestFocus() {
+        super.requestFocus();
+        // For Help to work properly, need to take focus.
+        if (categoryPane != null) {
+            categoryPane.getComponent().requestFocus();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public boolean requestFocusInWindow() {
+        boolean retVal = super.requestFocusInWindow();
+        // For Help to work properly, need to take focus.
+        if (categoryPane != null) {
+            return categoryPane.getComponent().requestFocusInWindow();
+        }
+        return retVal;
+    }
+
+    public HelpCtx getHelpCtx() {
+	return new HelpCtx(WSDLTreeViewMultiViewDesc.class);
+    }
+
     private static Boolean groupVisible = null;
     
     private void updateGroupVisibility(boolean closeGroup) {

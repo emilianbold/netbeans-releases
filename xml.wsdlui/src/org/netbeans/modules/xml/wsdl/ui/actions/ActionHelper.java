@@ -79,7 +79,21 @@ public class ActionHelper {
         }
         return null;
     }
-    
+
+    public static DataObject getDataObject(WSDLModel model) {
+        try {
+            if (model != null) {
+                FileObject fobj = (FileObject) model.getModelSource().
+                getLookup().lookup(FileObject.class);
+                if (fobj != null) {
+                    return DataObject.find(fobj);
+                }
+            }
+        } catch (DataObjectNotFoundException donfe) {
+            // fall through to return null
+        }
+        return null;
+    }
 /*	public static void selectNode(Component child, Node parent) {
 		if(child != null && parent != null) {
 			Children children = parent.getChildren();

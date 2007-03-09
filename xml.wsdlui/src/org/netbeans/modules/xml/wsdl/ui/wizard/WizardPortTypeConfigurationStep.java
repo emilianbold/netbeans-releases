@@ -185,135 +185,98 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
         if(templateWizard.getValue() == TemplateWizard.CANCEL_OPTION) {
         	return;
         }
-        
-        String portTypeName = this.mPanel.getPortTypeName();
-        String operationName = this.mPanel.getOperationName();        
-        OperationType ot = this.mPanel.getOperationType();
-        
-        templateWizard.putProperty(PORTTYPE_NAME, portTypeName);
-        templateWizard.putProperty(OPERATION_NAME, operationName);
-        templateWizard.putProperty(OPERATION_TYPE, ot);
-        
-        //operation input/output/fault
-        List<PartAndElementOrTypeTableModel.PartAndElementOrType> inputMessageParts = this.mPanel.getInputMessageParts();
-        List<PartAndElementOrTypeTableModel.PartAndElementOrType> outputMessageParts = this.mPanel.getOutputMessageParts();
-        List<PartAndElementOrTypeTableModel.PartAndElementOrType> faultMessageParts = this.mPanel.getFaultMessageParts();
 
-        templateWizard.putProperty(OPERATION_INPUT, inputMessageParts);
-        templateWizard.putProperty(OPERATION_OUTPUT, outputMessageParts);
-        templateWizard.putProperty(OPERATION_FAULT, faultMessageParts);
-        Map<String, String> namespaceToPrefixMap = mPanel.getNamespaceToPrefixMap();
-        templateWizard.putProperty(NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
-        
-        Map configurationMap = new HashMap();
-        //portType
-        configurationMap.put(WizardPortTypeConfigurationStep.PORTTYPE_NAME, portTypeName);
-        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_NAME, operationName);
-        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_TYPE, ot);
-
-        //opertion type
-        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT, inputMessageParts);
-        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT, outputMessageParts);
-        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_FAULT, faultMessageParts);
-        configurationMap.put(WizardPortTypeConfigurationStep.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
-        configurationMap.put(WizardPortTypeConfigurationStep.IS_FROM_WIZARD, Boolean.TRUE);
-        
-        
-//        try {
-//        	String fileName = (String) templateWizard.getProperty(WsdlPanel.FILE_NAME);
-//        	String targetNamespace = (String) templateWizard.getProperty(WsdlPanel.WSDL_TARGETNAMESPACE);
-//        	String definitionName = (String) templateWizard.getProperty(WsdlPanel.WSDL_DEFINITION_NAME);
-//        	
-//        	if(tempWSDLFile == null) {
-//            	tempWSDLFile = File.createTempFile(fileName + "TMP", ".wsdl"); //NOTI18N
-//            	templateWizard.putProperty(TEMP_WSDLFILE, this.tempWSDLFile);
-//            	
-//            	FileWriter writer = new FileWriter(tempWSDLFile);
-//                
-//                StringBuffer emptyWsdl = new StringBuffer(100);
-//                emptyWsdl.append("<definitions name=");
-//                emptyWsdl.append("\"");
-//                emptyWsdl.append(definitionName);
-//                emptyWsdl.append("\" ");
-//                emptyWsdl.append("targetNamespace=");
-//                emptyWsdl.append("\"");
-//                emptyWsdl.append(targetNamespace);
-//                emptyWsdl.append("\" ");
-//                emptyWsdl.append("xmlns:tns=");
-//                emptyWsdl.append("\"");
-//                emptyWsdl.append(targetNamespace);
-//                emptyWsdl.append("\" ");
-//                emptyWsdl.append("xmlns=\"http://schemas.xmlsoap.org/wsdl/\" ");
-//                emptyWsdl.append("xmlns:wsdl=\"http://schemas.xmlsoap.org/wsdl/\" ");
-//                emptyWsdl.append("xmlns:soap=\"http://schemas.xmlsoap.org/wsdl/soap/\" ");
-//                emptyWsdl.append("xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"> ");
-//                emptyWsdl.append("</definitions>");
-//                
-//                writer.write(emptyWsdl.toString());
-//                
-//                writer.close();
-//                
-//                FileObject tempWSDLFileObject = FileUtil.toFileObject(tempWSDLFile.getCanonicalFile());
-//                ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(tempWSDLFileObject, 
-//                tempWSDLFileObject.canWrite());
-//                
-//                
-//                this.mTempModel = WSDLModelFactory.getDefault().getModel(modelSource);
-//                
-//        	}
-//        	
-            
-            this.mTempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
-            if(this.mTempModel != null) {
-                this.mTempModel.startTransaction();
-                if(this.mPortType != null) {
-                    this.mTempModel.getDefinitions().removePortType(this.mPortType);
-
-                }
-
-                if(this.mNewMessageList != null) {
-                    for (Message msg : mNewMessageList) {
-                        this.mTempModel.getDefinitions().removeMessage(msg);
-                    }
-                }
-
-                if(this.mPartnerLinkTypeElement != null) {
-                    this.mTempModel.getDefinitions().removeExtensibilityElement(this.mPartnerLinkTypeElement);
-                }
-
-                if(this.mImports != null) {
-                    //Cleanup all inline schemas and remove the imported schemas from the inline schema.
-                    Collection<WSDLSchema> wSchemas = mTempModel.getDefinitions().getTypes().getExtensibilityElements(WSDLSchema.class);
-                    for (WSDLSchema wSchema : wSchemas) {
-                        Schema schema = wSchema.getSchemaModel().getSchema();
-                        //Wizard adds all imported schemas in a inline schema with same TNS as the definitions.
-                        //So remove from that schema.
-                        if (schema.getTargetNamespace().equals(mTempModel.getDefinitions().getTargetNamespace())) {
-                            for (Import imp : mImports) {
-                                schema.removeExternalReference(imp);
-                            }
-                        }
-                        mTempModel.getDefinitions().getTypes().removeExtensibilityElement(wSchema);
-                    }
-                }
-                
-                PortTypeGenerator ptGen = new PortTypeGenerator(this.mTempModel, configurationMap);
-                ptGen.execute();
-                this.mPortType = ptGen.getPortType();
-                this.mNewMessageList = ptGen.getNewMessages();
-                this.mPartnerLinkTypeElement = ptGen.getPartnerLinkType();
-                this.mImports = ptGen.getImports();
-                
-                this.mTempModel.endTransaction();
-
-                templateWizard.putProperty(PORTTYPE, this.mPortType);
-//            templateWizard.putProperty(TEMP_WSDLMODEL, this.mTempModel);
+        this.mTempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
+        if(this.mTempModel != null) {
+            this.mTempModel.startTransaction();
+            if(this.mPortType != null) {
+                this.mTempModel.getDefinitions().removePortType(this.mPortType);
             }
-//        } catch(IOException ex) {
-//            
-//        }
-        
-        
+
+            if(this.mNewMessageList != null) {
+                for (Message msg : mNewMessageList) {
+                    this.mTempModel.getDefinitions().removeMessage(msg);
+                }
+            }
+
+            if(this.mPartnerLinkTypeElement != null) {
+                this.mTempModel.getDefinitions().removeExtensibilityElement(this.mPartnerLinkTypeElement);
+            }
+
+            if(this.mImports != null) {
+                //Cleanup all inline schemas and remove the imported schemas from the inline schema.
+                Collection<WSDLSchema> wSchemas = mTempModel.getDefinitions().getTypes().getExtensibilityElements(WSDLSchema.class);
+                for (WSDLSchema wSchema : wSchemas) {
+                    Schema schema = wSchema.getSchemaModel().getSchema();
+                    //Wizard adds all imported schemas in a inline schema with same TNS as the definitions.
+                    //So remove from that schema.
+                    if (schema.getTargetNamespace().equals(mTempModel.getDefinitions().getTargetNamespace())) {
+                        for (Import imp : mImports) {
+                            schema.removeExternalReference(imp);
+                        }
+                    }
+                    mTempModel.getDefinitions().getTypes().removeExtensibilityElement(wSchema);
+                }
+            }
+
+            
+            mPortType = null;
+            mNewMessageList = null;
+            mPartnerLinkTypeElement = null;
+            mImports = null;
+
+            if (templateWizard.getValue() == TemplateWizard.PREVIOUS_OPTION) {
+                //commit the cleanup.
+                this.mTempModel.endTransaction();
+                return;
+            }
+            
+            String portTypeName = this.mPanel.getPortTypeName();
+            String operationName = this.mPanel.getOperationName();        
+            OperationType ot = this.mPanel.getOperationType();
+
+
+
+            //operation input/output/fault
+            List<PartAndElementOrTypeTableModel.PartAndElementOrType> inputMessageParts = this.mPanel.getInputMessageParts();
+            List<PartAndElementOrTypeTableModel.PartAndElementOrType> outputMessageParts = this.mPanel.getOutputMessageParts();
+            List<PartAndElementOrTypeTableModel.PartAndElementOrType> faultMessageParts = this.mPanel.getFaultMessageParts();
+
+            templateWizard.putProperty(OPERATION_INPUT, inputMessageParts);
+            templateWizard.putProperty(OPERATION_OUTPUT, outputMessageParts);
+            templateWizard.putProperty(OPERATION_FAULT, faultMessageParts);
+            Map<String, String> namespaceToPrefixMap = mPanel.getNamespaceToPrefixMap();
+            templateWizard.putProperty(NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
+
+            Map configurationMap = new HashMap();
+            //portType
+            configurationMap.put(WizardPortTypeConfigurationStep.PORTTYPE_NAME, portTypeName);
+            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_NAME, operationName);
+            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_TYPE, ot);
+
+            //opertion type
+            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT, inputMessageParts);
+            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT, outputMessageParts);
+            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_FAULT, faultMessageParts);
+            configurationMap.put(WizardPortTypeConfigurationStep.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
+            configurationMap.put(WizardPortTypeConfigurationStep.IS_FROM_WIZARD, Boolean.TRUE);
+
+            templateWizard.putProperty(PORTTYPE_NAME, portTypeName);
+            templateWizard.putProperty(OPERATION_NAME, operationName);
+            templateWizard.putProperty(OPERATION_TYPE, ot);
+
+            PortTypeGenerator ptGen = new PortTypeGenerator(this.mTempModel, configurationMap);
+            ptGen.execute();
+            this.mPortType = ptGen.getPortType();
+            this.mNewMessageList = ptGen.getNewMessages();
+            this.mPartnerLinkTypeElement = ptGen.getPartnerLinkType();
+            this.mImports = ptGen.getImports();
+
+            this.mTempModel.endTransaction();
+
+            templateWizard.putProperty(PORTTYPE, this.mPortType);
+        }
+
     }
     
     

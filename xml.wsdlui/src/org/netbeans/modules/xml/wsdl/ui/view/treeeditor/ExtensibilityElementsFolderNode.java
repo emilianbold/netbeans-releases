@@ -34,7 +34,6 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.ui.cookies.AddChildWSDLElementCookie;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
@@ -49,6 +48,17 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
     private Definitions mDef = null;
     private Set<String> mSpecialTargetNamespaces;
     
+    
+    public ExtensibilityElementsFolderNode(Definitions element) {
+        super(new ExtensibilityElementsFolderChildren(element),
+                element, ExtensibilityElement.class);
+        mDef = element;
+        this.setDisplayName(NbBundle.
+                getMessage(ExtensibilityElementsFolderNode.class,
+                "EXTENSIBILITY_ELEMENTS_FOLDER_NODE_NAME"));
+        getLookupContents().add(new AddChildWSDLElementCookie(element));
+        this.addNodeListener(new WSDLNodeListener(this));
+    }
     
     public ExtensibilityElementsFolderNode(Definitions element, Set<String> specialTargetNamespaces) {
         super(new ExtensibilityElementsFolderChildren(element, specialTargetNamespaces),
@@ -66,6 +76,12 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
     @Override
     public final NewType[] getNewTypes() {
         if (isEditable()) {
+            // hack for showing only partnerlink types in partner view.
+            // this filters the new types to be of only which are specified in mSpecialTargetNamespaces.
+            if (mSpecialTargetNamespaces != null && mSpecialTargetNamespaces.size() > 0) {
+                return new ExtensibilityElementNewTypesFactory(WSDLExtensibilityElements.ELEMENT_DEFINITIONS,
+                        mSpecialTargetNamespaces.toArray(new String[mSpecialTargetNamespaces.size()])).getNewTypes(mDef);
+            }
             return new ExtensibilityElementNewTypesFactory(WSDLExtensibilityElements.ELEMENT_DEFINITIONS).getNewTypes(mDef);
         }
         return new NewType[] {};
@@ -78,9 +94,13 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
     
     public static final class ExtensibilityElementsFolderChildren extends GenericWSDLComponentChildren {
         private Set<String> specialTargetNS;
+        
         public ExtensibilityElementsFolderChildren(Definitions definitions, Set<String> specialTargetNamespaces) {
             super(definitions);
             specialTargetNS = specialTargetNamespaces;
+        }
+        public ExtensibilityElementsFolderChildren(Definitions definitions) {
+            super(definitions);
         }
         
         @Override
@@ -88,6 +108,8 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
             Definitions def = (Definitions) getWSDLComponent();
             
             List<ExtensibilityElement> list = def.getExtensibilityElements();
+            if (specialTargetNS == null) return list;
+            
             List<ExtensibilityElement> finalList = new ArrayList<ExtensibilityElement>();
             if (list != null) {
                 for (ExtensibilityElement element : list) {

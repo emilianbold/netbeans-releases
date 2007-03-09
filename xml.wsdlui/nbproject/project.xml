@@ -130,6 +130,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.catalogsupport</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -353,6 +361,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <friend>org.netbeans.modules.wsdlextensions.msmq</friend>
                 <friend>org.netbeans.modules.wsdlextensions.hl7</friend>
                 <friend>org.netbeans.modules.wsdlextensions.smtp</friend>
+                <friend>org.netbeans.modules.wsdlextensions.snmp</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.xml.wsdl.ui.actions</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.api.property</package>

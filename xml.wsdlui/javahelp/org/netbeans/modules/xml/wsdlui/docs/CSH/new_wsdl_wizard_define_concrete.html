@@ -14,19 +14,44 @@
 <body>
 
 <h2>New WSDL Document Wizard: Concrete Configuration</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The Concrete Configuration page of the New WSDL Document wizard prompts you to supply information about the 
-following elements of the WSDL file: binding, service, and port. </p>
+<p>The New WSDL Document wizard enables you to create a WSDL file from scratch. 
+To open the wizard, you right-click the Process Files folder and choose New > WSDL Document.</p>
 
-<p>A <i>binding</i> contains protocol and data format information 
-for the operations and messages of a port type.</p>
+<p>The Concrete Configuration page prompts you to enter information about the binding, service, and port.</p>
+
+<p>A <i>binding</i> contains protocol and data format information for the operations and messages of a port type. 
+A <i>service</i> consists of one or more related ports. 
+A <i>port</i> associates a binding with a network address, thus defining an individual endpoint that clients can access.</p>
+
+<p>The Concrete Configuration page contains the following fields:</p>
 
 <ul>
-  <li><b>Binding Name.</b> Supply a name for the binding. The default value is derived from the WSDL name.</li>
-  <li><b>Binding Type.</b> Use this field to customize the WSDL file for a particular binding component. 
+
+  <li><b>Binding Name.</b> Enter a name for the binding. The default value is derived from the WSDL name.</li>
+
+  <li><b>Binding Type.</b> Select the type of binding. 
   The appropriate extensibility elements will be added to the WSDL file. </li>
-  <li><b>Binding Subtype.</b> If the binding type is SOAP, then the binding subtypes indicate how to translate 
-  the binding to a SOAP message. For other binding types, you typically have only one choice for the binding subtype.</li>
+
+  <li><b>Binding Subtype.</b> The choices vary depending on the binding type.</li>
+
+  <ul>
+
+    <li>If you selected the HTTP binding type, then you must specify whether the binding uses the GET or POST verb and 
+    whether message parts are encoded into the HTTP request URI using the standard URI-encoding rules or using a replacement algorithm.</li>
+
+    <li>If you selected the SOAP binding type, then you must specify whether the operations are RPC-oriented or document-oriented and 
+    how the message parts reference their types.</li>
+
+    <li>For other binding types, you typically have only one choice for the binding subtype.</li>
+
+  </ul>
+
+  <li><b>Service Name.</b> Enter a name for the service. The default value is derived from the WSDL name.</li>
+
+  <li><b>Port Name.</b> Enter a name for the port. The default value is derived from the WSDL name.</li>
+
 </ul>
 
 <p>The wizard checks for comformance to various requirements of the 
@@ -34,14 +59,6 @@ for the operations and messages of a port type.</p>
   These requirements concern the interaction of message parts and the binding subtype. 
   If your settings for message parts and the binding subtype do not conform to these requirements, 
   then an error message appears at the bottom of the wizard page and the Finish button is disabled.</p>
-
-<p>A <i>service</i> consists of one or more related ports. 
-Each <i>port</i> associates a binding with a network address, thus defining an individual endpoint that clients can access.</p>
-
-<ul>
-  <li><b>Service Name.</b> Supply a name for the service. The default value is derived from the WSDL name.</li>
-  <li><b>Port Name.</b> Supply a name for the port. The default value is derived from the WSDL name.</li>
-</ul>
 
 <p>When you click Finish, the WSDL file is created. The WSDL Editor appears in WSDL view. 
   The tree structure includes nodes for the port type, operation, message(s), binding, service, and port 
@@ -57,7 +74,9 @@ Each <i>port</i> associates a binding with a network address, thus defining an i
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
+<dd><a href="new_wsdl_wizard_name_location.html" title="New WSDL Document Wizard: Name and Location">New WSDL Document Wizard: Name and Location</a></dd>
 <dd><a href="new_wsdl_wizard_define_abstract.html" title="New WSDL Document Wizard: Abstract Configuration">New WSDL Document Wizard: Abstract Configuration</a></dd>
+<dd><a href="../wsdl_editor.html" title="About the WSDL Editor">About the WSDL Editor</a></dd>
 </dl>
 <hr>
 <small>  

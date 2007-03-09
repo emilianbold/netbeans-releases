@@ -21,15 +21,10 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingOperationNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.DocumentationNewType;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ImportSchemaNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.SchemaNewType;

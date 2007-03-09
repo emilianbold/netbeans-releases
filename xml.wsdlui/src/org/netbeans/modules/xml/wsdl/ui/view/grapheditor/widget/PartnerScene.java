@@ -73,6 +73,11 @@ public class PartnerScene extends ObjectScene implements ComponentListener {
         getActions().addAction(dndAction);
     }
 
+    public WSDLModel getModel() {
+        return model;
+    }
+    
+    
     /**
      * Return the provider for performing widget selections.
      *

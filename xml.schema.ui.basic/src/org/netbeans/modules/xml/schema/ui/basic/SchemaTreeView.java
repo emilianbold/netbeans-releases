@@ -141,7 +141,14 @@ public class SchemaTreeView extends JPanel
     }
 
     @Override
+    public void requestFocus() {
+        super.requestFocus();
+        treeView.requestFocus();
+    }
+
+    @Override
     public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
         return treeView.requestFocusInWindow();
     }
 

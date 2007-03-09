@@ -27,10 +27,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
-
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -303,6 +300,18 @@ public class WSDLColumnsView extends JPanel implements ColumnView,
                         new Node[]{path.get(path.size()-1)});
         } catch (PropertyVetoException ex) {
         }
+    }
+
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        columnView.requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return columnView.requestFocusInWindow();
     }
     
     //

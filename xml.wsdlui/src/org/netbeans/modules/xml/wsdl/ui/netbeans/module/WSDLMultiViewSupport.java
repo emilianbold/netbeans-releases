@@ -20,20 +20,26 @@
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.EventQueue;
-
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.spi.PrintProviderCookie;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie.View;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -50,9 +56,23 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
         PrintProviderCookie {
     /** The data object */
     private WSDLDataObject dobj;
+    /** Set of components that are shown in the Partner (design) view. */
+    private static final Class[] DESIGNABLE_COMPONENTS = new Class[] {
+        org.netbeans.modules.xml.wsdl.model.Message.class,
+        // Includes: Notifcation, OneWay, RequestResponse, SolicitResponse
+        org.netbeans.modules.xml.wsdl.model.Operation.class,
+        // Includes: Fault, Input, Output
+        org.netbeans.modules.xml.wsdl.model.OperationParameter.class,
+        org.netbeans.modules.xml.wsdl.model.Part.class,
+        org.netbeans.modules.xml.wsdl.model.PortType.class,
+        org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType.class,
+        org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role.class,
+    };
     
     /**
-     * Constructor
+     * Creates a new instance of WSDLMultiViewSupport.
+     *
+     * @param  dobj  the data object.
      */
     public WSDLMultiViewSupport(WSDLDataObject dobj) {
         this.dobj = dobj;
@@ -72,7 +92,7 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
     }
 
     // see schemamultiviewsupport for implementation
-    public void viewInSwingThread(View view, Component component,
+    private void viewInSwingThread(View view, Component component,
             Object... parameters) {
         if (canView(view,component)) {
             WSDLEditorSupport editor = dobj.getWSDLEditorSupport();
@@ -117,13 +137,45 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
     // see schemamultiviewsupport for implementation
     public boolean canView(ViewComponentCookie.View view, Component component) {
         if (view != null && component != null) {
-            switch(view) {
-                case SOURCE:
-                case STRUCTURE:
-                case DESIGN:
-                case CURRENT:
-                case SUPER:
+            switch (view) {
+            case SOURCE:
+                if (!WSDLSourceMultiviewDesc.PREFERRED_ID.equals(
+                        getMultiviewActive()) ||
+                        !getActiveComponents().contains(component)) {
                     return true;
+                }
+                break;
+            case STRUCTURE:
+                if (!(component instanceof SchemaComponent ||
+                        component instanceof WSDLComponent)) {
+                    return false;
+                }
+                if (WSDLTreeViewMultiViewDesc.PREFERRED_ID.equals(
+                        getMultiviewActive()) &&
+                        getActiveComponents().contains(component)) {
+                    TopComponent activeTC = TopComponent.getRegistry().getActivated();
+                    WSDLDataObject wdobj = (WSDLDataObject) activeTC.getLookup().
+                            lookup(WSDLDataObject.class);
+                    return wdobj != dobj;
+                }
+                return true;
+            case CURRENT:
+            case SUPER:
+                return true;
+            case DESIGN:
+                if (WSDLDesignMultiViewDesc.PREFERRED_ID.equals(
+                        getMultiviewActive())) {
+                    return false;
+                }
+                // Determine if this type of component is displayed
+                // in the partner view or not.
+                boolean okay = false;
+                for (Class type : DESIGNABLE_COMPONENTS) {
+                    if (type.isInstance(component)) {
+                        return true;
+                    }
+                }
+                break;
             }
         }
         return false;
@@ -173,5 +225,48 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
             }
         }
         return null;
+    }
+
+    /**
+     * Finds the preferredID of active multiview element. If activated
+     * TopComponent is not MultiViewTopComponent, returns null.
+     *
+     * @return  identifier of the active multiview element.
+     */
+    private static String getMultiviewActive() {
+        TopComponent activeTC = TopComponent.getRegistry().getActivated();
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(activeTC);
+        if (handler != null) {
+            return handler.getSelectedPerspective().preferredID();
+        }
+        return null;
+    }
+
+    /**
+     * Finds the activated components of active TopComponent.
+     *
+     * @return  collection of the active components.
+     */
+    private static Collection<Component> getActiveComponents() {
+        TopComponent activeTC = TopComponent.getRegistry().getActivated();
+        Collection<Component> activeComponents = Collections.emptySet();
+        for (Node node : activeTC.getActivatedNodes()) {
+            GetComponentCookie cake = (GetComponentCookie) node.
+                    getCookie(GetComponentCookie.class);
+            Component component = null;
+            if (cake != null) {
+                component = cake.getComponent();
+            }
+            if (component == null) {
+                component = (Component) node.getLookup().lookup(Component.class);
+            }
+            if (component != null) {
+                if (activeComponents.isEmpty()) {
+                    activeComponents = new HashSet<Component>();
+                }
+                activeComponents.add(component);
+            }
+        }
+        return activeComponents;
     }
 }

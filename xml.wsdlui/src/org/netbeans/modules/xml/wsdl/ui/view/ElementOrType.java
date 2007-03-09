@@ -26,7 +26,6 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 public class ElementOrType {

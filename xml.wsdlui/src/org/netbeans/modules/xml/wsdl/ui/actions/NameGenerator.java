@@ -646,11 +646,11 @@ public class NameGenerator {
         if (partnerLinkTypeNamePrefix == null)
             partnerLinkTypeNamePrefix = "new";
         
-        String partnerLinkType = partnerLinkTypeNamePrefix + "Partner"; 
+        String partnerLinkType = partnerLinkTypeNamePrefix + counter; 
         partnerLinkTypeName = partnerLinkType;
         while(isParterLinkTypeExists(partnerLinkTypeName, partnerLinkTypeElementQName, document)) {
-            partnerLinkTypeName = partnerLinkType + counter;
             counter++;
+            partnerLinkTypeName = partnerLinkType + counter;
         }
         
         return partnerLinkTypeName;

@@ -16,6 +16,7 @@
 <h2>Configuring Partner Link Types Using the WSDL View</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
+<!--
 <p>Before you can add a partner link to a BPEL process, 
 you must add a partner link type to the WSDL file.</p>
 
@@ -27,6 +28,20 @@ you must add a partner link type to the WSDL file.</p>
   A role describes the function that a service has in the relationship. 
   Examples of roles are <tt>loanRequestor</tt> and <tt>loanProcessor</tt>. 
   Each role must specify the port type that the service will use to receive messages.</p>
+-->
+
+<p>A <i>partner link type</i> characterizes the conversational relationship between two services. 
+A partner link type can have one role or two roles.</p>
+
+<ul>
+  <li>If a partner link type has one role, then the relationship involves a service that is willing to interact with any other service, without placing any requirements on the other service.</li>
+  <li>If a partner link type has two roles, then the relationship involves two peer services.</li>
+</ul>
+
+<p>A role describes the function that a partner has in the relationship. 
+For example, in a procurement scenario, the partner link type could have two roles: <tt>Buyer</tt> and <tt>Seller</tt>.</p>
+
+<p>A role must specify the port type that the service will use to receive messages.</p>
 
 <p><b>To add a partner link type automatically</b></p>
 

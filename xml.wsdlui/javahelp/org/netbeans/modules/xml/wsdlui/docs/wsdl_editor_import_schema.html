@@ -15,15 +15,25 @@
 <h2>Importing XML Schemas Using the WSDL View</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>You can use the WSDL Editor to import an XML schema file that is part of your project.</p>
+<p>You can use the WSDL Editor to import one or more XML schema files into a WSDL file.</p>
+
+<p>If an XML schema file cannot be imported, then the file is crossed out in the Add Import dialog box. 
+This situation can happen for the following reasons:</p>
+
+<ul>
+  <li>The XML schema file has already been imported.</li>
+  <li>The namespace is incompatible with the WSDL file that is doing the import.</li>
+</ul>
+
+<p>The WSDL Editor allows you to import an XML schema file that is located in a different project. For more information, see 
+<a href="nbdocs://org.netbeans.modules.xml.catalogsupport/org/netbeans/modules/xml/catalogsupport/docs/catalogsupport-about.html" title="About Cross-Project XML File References">About Cross-Project XML File References</a>.</p>
 
 <p><b>To import an XML schema:</b></p>
 
 <ol>
   <li>In the WSDL view, right-click the Types node and choose Add &gt; Schema Import.<br>
     The Add Import dialog box opens.</li>
-  <li>Expand the <tt>By File</tt> or <tt>By Namespace</tt> node to navigate to and select the XML schema file.<br>
-    The Namespace field is filled in by the IDE.</li>
+  <li>Expand the <tt>By File</tt> or <tt>By Namespace</tt> node to navigate to and select the XML schema file.</li>
 <!--
   <li>(Optional) In the New Prefix column, type the prefix that you want to use.
 -->
@@ -34,6 +44,7 @@
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="wsdl_editor_views.html" title="About the WSDL View">About the WSDL View</a></dd>
+<dd><a href="wsdl_editor_import_wsdl.html" title="Importing WSDL Files Using the WSDL View">Importing WSDL Files Using the WSDL View</a></dd>
 </dl>
 <hr>
 <small>  

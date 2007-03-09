@@ -16,34 +16,40 @@
 <h2>New WSDL Document Wizard: Abstract Configuration</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The Abstract Configuration page of the New WSDL Document wizard prompts you to supply information about the 
-following elements of the WSDL file: port type, operation, and message.</p>
+<p>The New WSDL Document wizard enables you to create a WSDL file from scratch. 
+To open the wizard, you right-click the Process Files folder and choose New > WSDL Document.</p>
 
-<p>A port type contains one or more related operations that the web service can perform. 
+<p>The Abstract Configuration page prompts you to enter information about the port type, operation, and messages.</p>
+
+<p>A <i>port type</i> contains one or more related operations that the web service can perform. 
   You can create only one operation in the Abstract Configuration page. 
   To create additional operations, you must do so from the WSDL Editor after the file is created.</p>
 
+<p>The Abstract Configuration page contains the following fields:</p>
+
 <ul>
-  <li><b>Port Type Name.</b> Supply a name for the port type. The default value is derived from the WSDL name.</li>
-  <li><b>Operation Name.</b> Supply a name for the operation. The default value is derived from the WSDL name.</li>
+
+  <li><b>Port Type Name.</b> Enter a name for the port type. The default value is derived from the WSDL name.</li>
+
+  <li><b>Operation Name.</b> Enter a name for the operation. The default value is derived from the WSDL name.</li>
+
   <li><b>Operation Type.</b> Select the category of operation.</li>
+
   <ul>
-    <li><b>Request-Response.</b> The operation receives a message as input, and sends a message as output.</li>
-    <li><b>One-Way.</b> The operation receives a message as input.</li>
+    <li><b>Request-Response Operation.</b> The operation receives a message as input, and sends a message as output.</li>
+    <li><b>One-Way Operation.</b> The operation receives a message as input.</li>
 <!--
     <li><b>Solicit-Response.</b> The operation sends a message as output, and receives a message as input.</li>
     <li><b>Notification.</b> The operation sends a message as output.</li>
 -->
   </ul>
-  </ul>
 
-<p>Depending on the category of operation, you supply message information for the input, or both the input and output. 
-If the operation is a request-response operation, then you can optionally supply message information for a fault.</p>
+  <li><b>Input.</b> Define the message that the operation receives as input.</li>
 
-<ul>
-  <li><b>Input.</b> Supply information about the message that the operation receives as input.</li>
-  <li><b>Output.</b> Supply information about the message that the operation sends as output.</li>
-  <li><b>Fault.</b> Supply information about the message that the operation sends as a fault.</li>
+  <li><b>Output.</b> If the operation is a request-response operation, then you must also define the message that the operation sends as output.</li>
+
+  <li><b>Fault.</b> If the operation is a request-response operation, then you can optionally define a message that the operation sends as a fault.</li>
+
 </ul>
 
 <p>Each message contains one or more logical parts. 
@@ -54,15 +60,18 @@ If the operation is a request-response operation, then you can optionally supply
   By default, the type of content is set to the built-in string type in W3C XML Schema. 
   To change the type or to select an element instead, click the ellipsis (...) button. 
   A dialog box enables you to select any of the built-in types in W3C XML Schema. 
-  If the project includes an XSD file, then the dialog box enables you to select an element or type from the XSD file.</p>
+  If the project includes an XML schema file, then the dialog box enables you to select an element or type from the XML schema file.</p>
 
 <p>If you click Next, then the Concrete Configuration page appears.</p>
 
-<p>If you click Finish, then the WSDL file is created without any concrete elements. The WSDL Editor appears in WSDL view.</p>
+<p>If you click Finish, then the WSDL file is created without any concrete elements. The WSDL Editor appears in WSDL view.
+  The tree structure includes nodes for the port type, operation, and message(s) that you specified in the wizard.</p>
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
+<dd><a href="new_wsdl_wizard_name_location.html" title="New WSDL Document Wizard: Name and Location">New WSDL Document Wizard: Name and Location</a></dd>
 <dd><a href="new_wsdl_wizard_define_concrete.html" title="New WSDL Document Wizard: Concrete Configuration">New WSDL Document Wizard: Concrete Configuration</a></dd>
+<dd><a href="../wsdl_editor.html" title="About the WSDL Editor">About the WSDL Editor</a></dd>
 </dl>
 <hr>
 <small>  

@@ -91,13 +91,9 @@ public class WSDLTreeViewMultiViewDesc extends Object
 	}
 
 
-	/**
-	 *
-	 *
-	 */
-	public org.openide.util.HelpCtx getHelpCtx() {
-		return new HelpCtx(getClass().getName());
-	}
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(WSDLTreeViewMultiViewDesc.class);
+        }
 
 
 	/**

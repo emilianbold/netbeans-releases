@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.util.EnumSet;
 
@@ -29,9 +30,10 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
+import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
 import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -44,10 +46,11 @@ public abstract class OperationWidget<T extends Operation>
         extends AbstractWidget<Operation> {
     private T mOperationConstruct;
     private LabelWidget mOperationNameLabelWidget;
-    protected Widget mOperationRectangleWidget;
+    protected RectangleWidget mOperationRectangleWidget;
     
     public OperationWidget(Scene scene, T operation, Lookup lookup) {
         super(scene, operation, lookup);
+        
         mOperationConstruct = operation;
         mOperationNameLabelWidget = new LabelWidget(getScene());
         mOperationNameLabelWidget.setLabel(mOperationConstruct.getName());
@@ -56,19 +59,12 @@ public abstract class OperationWidget<T extends Operation>
         mOperationNameLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
             
             public void setText(Widget widget, String text) {
-                Model model = mOperationConstruct.getModel();
-                try {
-                    if (model.startTransaction()) {
-                        mOperationConstruct.setName(text);
-                    }
-                } finally {
-                    model.endTransaction();
-                }
+                AnalysisUtilities.locallyRenameRefactor(getWSDLComponent(), text);
             }
             
             public boolean isEnabled(Widget widget) {
                 if (getWSDLComponent() != null) {
-                    return XAMUtils.isWritable(getWSDLComponent().getModel());
+                    return !isImported() && XAMUtils.isWritable(getWSDLComponent().getModel());
                 }
                 return false;
             }
@@ -80,8 +76,9 @@ public abstract class OperationWidget<T extends Operation>
         },
                 EnumSet.<InplaceEditorProvider.ExpansionDirection>of(InplaceEditorProvider.ExpansionDirection.LEFT,
                 InplaceEditorProvider.ExpansionDirection.RIGHT)));
-        
         mOperationRectangleWidget = new RectangleWidget(getScene(), 10, 67);
+        
+        if (isImported()) mOperationRectangleWidget.setColor(Color.GRAY);
     }
     
     /**
@@ -129,6 +126,20 @@ public abstract class OperationWidget<T extends Operation>
         if (!mOperationNameLabelWidget.getLabel().equals(mOperationConstruct.getName())) {
             mOperationNameLabelWidget.setLabel(mOperationConstruct.getName());
         }
+    }
+    
+    protected boolean isImported() {
+        if (getWSDLComponent() != null) {
+            return getModel() != getWSDLComponent().getModel();
+        }
+        return false;
+    }
+    
+    @Override
+    protected Node getNodeFilter(Node original) {
+        if (isImported()) return new ReadOnlyWidgetFilterNode(original);
+            
+        return super.getNodeFilter(original);
     }
     
 }

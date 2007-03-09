@@ -27,6 +27,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
+import java.awt.Color;
+
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Output;
@@ -51,7 +53,8 @@ public class OutputWidget extends OperationParameterWidget {
         super(scene, output, lookup);
         DirectionCookie dc = (DirectionCookie) lookup.lookup(DirectionCookie.class);
         boolean rightSided = dc == null ? false : dc.isRightSided();
-        Widget widget = new ArrowWidget(scene, !rightSided, ParameterType.OUTPUT);
+        ArrowWidget widget = new ArrowWidget(scene, !rightSided, ParameterType.OUTPUT);
+        if (isImported()) widget.setColor(Color.GRAY);
         addChild(widget);
     }
 }

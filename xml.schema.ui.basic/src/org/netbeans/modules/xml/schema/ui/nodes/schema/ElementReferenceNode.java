@@ -26,21 +26,18 @@ import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.ui.basic.editors.MaxOccursEditor;
 import org.netbeans.modules.xml.schema.ui.nodes.*;
 import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.BaseSchemaProperty;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.BooleanProperty;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.DefaultProperty;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.DerivationTypeProperty;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.FixedProperty;
 import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.GlobalReferenceProperty;
 import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.NonNegativeIntegerProperty;
-import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+
 /**
  *
  * @author  Todd Fast, todd.fast@sun.com
+ * @author  Nathan Fiedler
  */
 public class ElementReferenceNode extends SchemaComponentNode<ElementReference>
 {
@@ -81,100 +78,64 @@ public class ElementReferenceNode extends SchemaComponentNode<ElementReference>
     
     @Override
     protected Sheet createSheet() {
-		Sheet sheet = super.createSheet();
-		Sheet.Set set = sheet.get(Sheet.PROPERTIES);
-		try {
-			// The methods are used because the Node.Property support for
-			// netbeans doesn't recognize the is.. for boolean properties
+        Sheet sheet = super.createSheet();
+        Sheet.Set set = sheet.get(Sheet.PROPERTIES);
+        try {
+            // The methods are used because the Node.Property support for
+            // netbeans doesn't recognize the is.. for boolean properties
 
-			// nillable property
-			Node.Property nillableProp = new BooleanProperty(
-				getReference().get(), // schema component
-				LocalElement.NILLABLE_PROPERTY, // property name
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_Nillable_DisplayName"), // display name
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_Nillable_ShortDescription"),	// descr
-				true // default value is false
-				);
-			set.put(new SchemaModelFlushWrapper(getReference().get(),nillableProp));
+            if (getReference().get().allowsFullMultiplicity()) {
 
-			// fixed property
-			Node.Property fixedProp = new FixedProperty(
-				getReference().get(), // schema component
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_Fixed_DisplayName"), // display name
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_Fixed_ShortDescription")	// descr
-				);
-			set.put(new SchemaModelFlushWrapper(getReference().get(),fixedProp));
+                // maxOccurs
+                Property maxOccursProp = new BaseSchemaProperty(
+                        getReference().get(), // schema component
+                        String.class,
+                        ElementReference.MAX_OCCURS_PROPERTY,
+                        NbBundle.getMessage(ElementReferenceNode.class,"PROP_MaxOccurs_DisplayName"), // display name
+                        NbBundle.getMessage(ElementReferenceNode.class,"PROP_MaxOccurs_ShortDescription"),	// descr
+                        MaxOccursEditor.class
+                        );
+                set.put(new SchemaModelFlushWrapper(getReference().get(), maxOccursProp));
 
-			// default property
-			Node.Property defaultProp = new DefaultProperty(
-				getReference().get(), // schema component
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_Default_DisplayName"), // display name
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_Default_ShortDescription")	// descr
-				);
-			set.put(new SchemaModelFlushWrapper(getReference().get(),defaultProp));
+            }
 
-			if (getReference().get().allowsFullMultiplicity()) {
-			    
-			    // maxOccurs
-			    Property maxOccursProp = new BaseSchemaProperty(
-				getReference().get(), // schema component
-				String.class,
-				ElementReference.MAX_OCCURS_PROPERTY,
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_MaxOccurs_DisplayName"), // display name
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_MaxOccurs_ShortDescription"),	// descr
-				MaxOccursEditor.class
-				);
-			    set.put(new SchemaModelFlushWrapper(getReference().get(), maxOccursProp));
-			    
-			}
-			
-			//TODO 
-			// if (getReference().get().allowsFullMultiplicity()) {
-			// Add code here to support only zero or one for min occurs
-			/// 
-			// }
-			
-			// minOccurs
-			Property minOccursProp = new NonNegativeIntegerProperty(
-				getReference().get(), // schema component
-				LocalElement.MIN_OCCURS_PROPERTY,
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_MinOccurs_DisplayName"), // display name
-				NbBundle.getMessage(ElementReferenceNode.class,"PROP_MinOccurs_ShortDescription")	// descr
-				);
-			set.put(new SchemaModelFlushWrapper(getReference().get(), minOccursProp));
+            //TODO
+            // if (getReference().get().allowsFullMultiplicity()) {
+            // Add code here to support only zero or one for min occurs
+            ///
+            // }
 
-			//reference property
-			Node.Property refProp = new GlobalReferenceProperty<GlobalElement>(
-					getReference().get(),
-					LocalElement.REF_PROPERTY,
-					NbBundle.getMessage(ElementReferenceNode.class,
-					"PROP_Reference_DisplayName"), // display name
-					NbBundle.getMessage(ElementReferenceNode.class,
-					"HINT_Element_Reference"),	// descr
-					getTypeDisplayName(), // type display name
-					NbBundle.getMessage(ElementReferenceNode.class,
-					"LBL_GlobalElementNode_TypeDisplayName"), // reference type display name
-					GlobalElement.class
-					);
-			set.put(new SchemaModelFlushWrapper(getReference().get(), refProp));
+            // minOccurs
+            Property minOccursProp = new NonNegativeIntegerProperty(
+                    getReference().get(), // schema component
+                    LocalElement.MIN_OCCURS_PROPERTY,
+                    NbBundle.getMessage(ElementReferenceNode.class,"PROP_MinOccurs_DisplayName"), // display name
+                    NbBundle.getMessage(ElementReferenceNode.class,"PROP_MinOccurs_ShortDescription")	// descr
+                    );
+            set.put(new SchemaModelFlushWrapper(getReference().get(), minOccursProp));
 
-			// block property
-			Node.Property blockProp = new DerivationTypeProperty(
-					getReference().get(),
-					LocalElement.BLOCK_PROPERTY,
-					NbBundle.getMessage(ElementReferenceNode.class,"PROP_Block_DisplayName"), // display name
-					NbBundle.getMessage(ElementReferenceNode.class,"HINT_Block_ShortDesc"),	// descr
-					getTypeDisplayName()
-					);
-			set.put(new SchemaModelFlushWrapper(getReference().get(), blockProp));
+            //reference property
+            Node.Property refProp = new GlobalReferenceProperty<GlobalElement>(
+                    getReference().get(),
+                    LocalElement.REF_PROPERTY,
+                    NbBundle.getMessage(ElementReferenceNode.class,
+                    "PROP_Reference_DisplayName"), // display name
+                    NbBundle.getMessage(ElementReferenceNode.class,
+                    "HINT_Element_Reference"),	// descr
+                    getTypeDisplayName(), // type display name
+                    NbBundle.getMessage(ElementReferenceNode.class,
+                    "LBL_GlobalElementNode_TypeDisplayName"), // reference type display name
+                    GlobalElement.class
+                    );
+            set.put(new SchemaModelFlushWrapper(getReference().get(), refProp));
 
-			// remove name property
-			set.remove(LocalElement.NAME_PROPERTY);
-		} catch (NoSuchMethodException nsme) {
-			assert false : "properties should be defined";
-		}
+            // remove name property
+            set.remove(LocalElement.NAME_PROPERTY);
+        } catch (NoSuchMethodException nsme) {
+            assert false : "properties should be defined";
+        }
 
-		return sheet;
+        return sheet;
     }
 
 	/**

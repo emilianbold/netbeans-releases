@@ -27,6 +27,7 @@ package org.netbeans.modules.xml.wsdl.ui.view;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
@@ -35,11 +36,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.swing.SwingUtilities;
+import javax.xml.XMLConstants;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
@@ -49,20 +52,21 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypePropertyEditor;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.BuiltInTypeFolderNode;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.XSDTypesNode;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.ui.ProjectConstants;
+import org.netbeans.modules.xml.xam.ui.customizer.FolderNode;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -79,12 +83,22 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
     private Map<String, String> namespaceToPrefixMap;
     private Project mProject;
     private WSDLModel mModel;
+    private SchemaComponent mPreviousSelectedComponent;
     
     /** Creates new form ElementOrTypeChooserPanel */
     public ElementOrTypeChooserPanel(Project project, Map<String, String> namespaceToPrefixMap, WSDLModel model) {
         this.namespaceToPrefixMap = namespaceToPrefixMap;
         this.mProject = project;
         this.mModel = model;
+        initComponents();
+        initGUI();
+    }
+    
+    public ElementOrTypeChooserPanel(Project project, Map<String, String> namespaceToPrefixMap, WSDLModel model, SchemaComponent previousSelectedComponent) {
+        this.namespaceToPrefixMap = namespaceToPrefixMap;
+        this.mProject = project;
+        this.mModel = model;
+        this.mPreviousSelectedComponent = previousSelectedComponent;
         initComponents();
         initGUI();
     }
@@ -98,7 +112,11 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
     private void initComponents() {
         beanTreeView1 = new org.openide.explorer.view.BeanTreeView();
 
+        beanTreeView1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        beanTreeView1.setAutoscrolls(true);
         beanTreeView1.setDefaultActionAllowed(false);
+        beanTreeView1.setDragSource(false);
+        beanTreeView1.setDropTarget(false);
         beanTreeView1.setPopupAllowed(false);
         beanTreeView1.setRootVisible(false);
         beanTreeView1.setSelectionMode(1);
@@ -125,33 +143,67 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
     
     private void populateRootNode(Node rootNode) {
         ArrayList<Node> nodes = new ArrayList<Node>();
-        BuiltInTypeFolderNode builtInTypes = new BuiltInTypeFolderNode();
-        nodes.add(builtInTypes);
+        Node builtInTypes = new BuiltInTypeFolderNode();
+        Node inlineTypesFolderNode = null;
         if (mModel != null) {
             Definitions def = mModel.getDefinitions();
             if (def.getTypes() != null) {
                 Collection<Schema> schemas = def.getTypes().getSchemas();
                 if (schemas != null && !schemas.isEmpty()) {
-                    InlineTypesFolderNode inlineTypesFolderNode = new InlineTypesFolderNode(NodesFactory.getInstance().create(def.getTypes()), schemas);
-                    nodes.add(0, inlineTypesFolderNode);
+                    List<Schema> filteredSchemas = new ArrayList<Schema>();
+                    for (Schema schema : schemas) {
+                        Collection<SchemaComponent> children = schema.getChildren();
+                        for (SchemaComponent comp : children) {
+                            if (comp instanceof GlobalElement ||
+                                    comp instanceof GlobalSimpleType ||
+                                    comp instanceof GlobalComplexType) {
+                                filteredSchemas.add(schema);
+                                break;
+                            }
+                        }
+                    }
+                    if (filteredSchemas.size() > 0) {
+                        inlineTypesFolderNode = new InlineTypesFolderNode(NodesFactory.getInstance().create(def.getTypes()), filteredSchemas);
+                    }
                 }
             }
         }
+        Node externalSchemaNode  = null;
         if (mProject != null) {
-            FileObject projectDir = mProject.getProjectDirectory();
-            Node projectNode  = null;
-            try {
-                projectNode = new ProjectFolderNode(DataObject.find(projectDir).getNodeDelegate(), projectDir);
-                if (projectNode != null && nodes.size() == 1)  {
-                    nodes.add(0, projectNode);
-                } else {
-                    nodes.add(1, projectNode);
-                }
-            } catch (DataObjectNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            catalogSupport = new DefaultProjectCatalogSupport(mProject);
+            List<Node> projectNodes = new ArrayList<Node>();
+            
+            externalSchemaNode = new FolderNode(new Children.Array()); 
+            externalSchemaNode.setDisplayName(NbBundle.getMessage(ElementOrTypeChooserPanel.class, "LBL_ByFile_DisplayName"));
+            
+            Node projectFolderNode = createProjectFolderNode(mProject);
+            if (projectFolderNode != null) {
+                projectNodes.add(projectFolderNode);
             }
+            Set refProjects = catalogSupport.getProjectReferences();
+            if (refProjects != null && refProjects.size() > 0) {
+                for (Object o : refProjects) {
+                    Project refPrj = (Project) o;
+                    projectFolderNode = createProjectFolderNode(refPrj);
+                    if (projectFolderNode != null) {
+                        projectNodes.add(projectFolderNode);
+                    }
+                }
+            }
+            
+            externalSchemaNode.getChildren().add(projectNodes.toArray(new Node[projectNodes.size()]));
         }
+        
+        if (inlineTypesFolderNode != null) {
+            nodes.add(inlineTypesFolderNode);
+        }
+        
+        if (externalSchemaNode != null) {
+            nodes.add(externalSchemaNode);
+        }
+        //builtin is last
+        nodes.add(builtInTypes);
+        
         Node[] nodesArr = nodes.toArray(new Node[nodes.size()]);
         rootNode.getChildren().add(nodesArr);
         for (int i = 1; i < nodesArr.length; i++) {
@@ -159,8 +211,76 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         }
         beanTreeView1.expandNode(nodesArr[0]);
         
+        if (mPreviousSelectedComponent != null) {
+            String tns = mPreviousSelectedComponent.getModel().getSchema().getTargetNamespace();
+            boolean selected = false;
+            if (tns != null) {
+                if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(tns)) {
+                    selected = selectNode(builtInTypes, mPreviousSelectedComponent);
+                } else {
+                    if (inlineTypesFolderNode == null || !selectNode(inlineTypesFolderNode, mPreviousSelectedComponent)) {
+                        selected = externalSchemaNode != null ? selectNode(externalSchemaNode, mPreviousSelectedComponent) : false;
+                    } else {
+                        selected = true;
+                    }
+                }
+            } else {
+                // must be inline.
+                if (inlineTypesFolderNode != null) {
+                    selected = selectNode(inlineTypesFolderNode, mPreviousSelectedComponent);
+                }
+            }
+            if (selected) {
+                firePropertyChange(ElementOrTypeChooserPanel.PROP_ACTION_APPLY, false, true);
+            }
+        }
         
     }
+    
+    private ProjectFolderNode createProjectFolderNode(Project project) {
+        LogicalViewProvider viewProvider = (LogicalViewProvider) project.getLookup().
+        lookup(LogicalViewProvider.class);
+        return new ProjectFolderNode(viewProvider.createLogicalView(), project);
+    }
+
+    private boolean selectNode(Node parentNode, SchemaComponent element) {
+        Children children = parentNode.getChildren();
+        for (Node node : children.getNodes()) {
+            SchemaComponent sc = null;
+            SchemaComponentReference reference = (SchemaComponentReference) node.getLookup().lookup(SchemaComponentReference.class);
+            if (reference != null) {
+                sc = reference.get();
+            }
+            if (sc == null) {
+                sc = (SchemaComponent) node.getLookup().lookup(SchemaComponent.class);
+            }
+            
+            if (sc == element) {
+                final Node finalNode = node;
+                Runnable run = new Runnable() {
+                    public void run() {
+                        if(manager != null) {
+                                try {
+                                    manager.setExploredContextAndSelection(finalNode, new Node[] {finalNode});
+                                    beanTreeView1.expandNode(finalNode);
+                                } catch(PropertyVetoException ex) {
+                                    //ignore this
+                                }
+                            
+                        }
+                    }
+                };
+                SwingUtilities.invokeLater(run);
+                return true;
+            }
+            
+            if (selectNode(node, element)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     
     private File[] recursiveListFiles(File file, FileFilter filter) {
         List<File> files = new ArrayList<File>();
@@ -196,10 +316,22 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         }
     }
     
+    @Override
+    public void removeNotify() {
+        if (mEnv != null && mEnv.getState().equals(PropertyEnv.STATE_VALID)) {
+            if (selectedComponent != null) {
+                this.firePropertyChange(ElementOrTypePropertyEditor.PROP_NAME, null, selectedComponent);
+            }
+        }
+        
+        super.removeNotify();
+    }
+    
     private ExplorerManager manager;
     public static String PROP_ACTION_APPLY = "APPLY";
     private ElementOrType selectedElementOrType;
     private SchemaComponent selectedComponent;
+    private transient DefaultProjectCatalogSupport catalogSupport;
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -234,6 +366,10 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
 
     public ElementOrType getSelectedComponent() {
         return selectedElementOrType;
+    }
+    
+    public SchemaComponent getSelectedSchemaComponent() {
+        return selectedComponent;
     }
 
     public void setSelectedComponent(ElementOrType selectedComponent) {
@@ -270,18 +406,30 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
     
     public static final String SCHEMA_FILE_EXTENSION = "xsd";
     
+    class ExternalSchemaFolderNode extends AbstractNode {
+
+        public ExternalSchemaFolderNode(Children children) {
+            super(children);
+            setDisplayName(NbBundle.getMessage(ElementOrTypeChooserPanel.class, "LBL_ByFile_DisplayName"));
+        }
+        
+    }
+    
+    
     class ProjectFolderNode extends FilterNode {
-        public ProjectFolderNode(Node original, FileObject projectDir) {
-            super(original, new ProjectFolderChildren(projectDir));
+        public ProjectFolderNode(Node original, Project project) {
+            super(original, new ProjectFolderChildren(project));
         }
     }
     
     class ProjectFolderChildren extends Children.Keys {
         
         private final FileObject projectDir;
+        private final Project project;
 
-        public ProjectFolderChildren (FileObject projectDir) {
-            this.projectDir = projectDir;
+        public ProjectFolderChildren (Project project) {
+            this.project = project;
+            this.projectDir = project.getProjectDirectory();;
         }
         
         @Override
@@ -315,17 +463,18 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         @SuppressWarnings("unchecked")
         private void resetKeys() {
             ArrayList keys = new ArrayList();
-            Sources sources = ProjectUtils.getSources(mProject);
-            SourceGroup[] srcGroups = sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
-            if(srcGroups == null || srcGroups.length == 0) {
-                srcGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            }
-            for (SourceGroup srcGroup : srcGroups) {
-                File projectDirFile = FileUtil.toFile(srcGroup.getRootFolder());
-                File[] files = recursiveListFiles(projectDirFile, new SchemaFileFilter());
-                for (File file : files) {
-                    FileObject fo = FileUtil.toFileObject(file);
-                    keys.add(fo);
+            LogicalViewProvider viewProvider = (LogicalViewProvider) project.getLookup().
+            lookup(LogicalViewProvider.class);
+            Node node = viewProvider.createLogicalView();
+            Children children = node.getChildren();
+            for (Node child : children.getNodes()) {
+                DataObject dobj = (DataObject) child.getCookie(DataObject.class);
+                if (dobj != null) {
+                    File[] files = recursiveListFiles(FileUtil.toFile(dobj.getPrimaryFile()), new SchemaFileFilter());
+                    for (File file : files) {
+                        FileObject fo = FileUtil.toFileObject(file);
+                        keys.add(fo);
+                    }
                 }
             }
             this.setKeys(keys);
@@ -335,10 +484,6 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         public boolean remove(final Node[] arr) {
             return super.remove(arr);
         }
-        
-        
-        
-        
     }
     
     class SchemaFileNode extends FilterNode {
@@ -405,9 +550,9 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
      }
      
      static class InlineTypesFolderNode extends FilterNode {
-         private Collection mSchemas;
+         private Collection<Schema> mSchemas;
          
-         public InlineTypesFolderNode(Node node, Collection schemas) {
+         public InlineTypesFolderNode(Node node, Collection<Schema> schemas) {
              super(node);
              mSchemas = schemas;
              setDisplayName(NbBundle.getMessage(XSDTypesNode.class, "INLINE_SCHEMATYPE_NAME"));
@@ -427,7 +572,6 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
             filters.add(GlobalSimpleType.class);
             filters.add(GlobalComplexType.class);
             filters.add(GlobalElement.class);
-            filters.add(SchemaModelReference.class);
             CategorizedSchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
                     ((Schema)key).getModel(), filters, Lookup.EMPTY);
             Node node = factory.createNode((Schema) key);
@@ -448,7 +592,7 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         }
         
         private void resetKeys() {
-                this.setKeys(mSchemas);
+            this.setKeys(mSchemas);
         }
         
         @Override
@@ -467,4 +611,10 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         }
     }
      }
+
+    public void setEnvForPropertyEditor(PropertyEnv env) {
+        mEnv = env;
+    }
+    
+    PropertyEnv mEnv;
 }

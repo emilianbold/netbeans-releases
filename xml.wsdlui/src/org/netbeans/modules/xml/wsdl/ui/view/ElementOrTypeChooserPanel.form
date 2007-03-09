@@ -25,7 +25,11 @@
   <SubComponents>
     <Component class="org.openide.explorer.view.BeanTreeView" name="beanTreeView1">
       <Properties>
+        <Property name="verticalScrollBarPolicy" type="int" value="22"/>
+        <Property name="autoscrolls" type="boolean" value="true"/>
         <Property name="defaultActionAllowed" type="boolean" value="false"/>
+        <Property name="dragSource" type="boolean" value="false"/>
+        <Property name="dropTarget" type="boolean" value="false"/>
         <Property name="popupAllowed" type="boolean" value="false"/>
         <Property name="rootVisible" type="boolean" value="false"/>
         <Property name="selectionMode" type="int" value="1"/>

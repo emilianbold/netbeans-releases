@@ -26,9 +26,9 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.util.List;
-
+import java.util.ListIterator;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
-
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -49,6 +49,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortTypeNode;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.actions.NewAction;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -163,7 +164,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     private void refreshPortTypeColumn() {
         removeChildren();
         if (getWSDLComponent() == null) {
-            mLabelWidget = new CenteredLabelWidget(getScene(), getName(), Color.LIGHT_GRAY);
+            mLabelWidget = new CenteredLabelWidget(getScene(), getName(), WidgetConstants.DISABLED_GRAY);
             mLabelWidget.setToolTipText(NbBundle.getMessage(RoleWidget.class, "RoleWidget_DBL_CLICK_CREATE_NEW_ROLE_TT"));
         } else {
             mLabelWidget = new CenteredLabelWidget(getScene(), getName(), Color.WHITE);
@@ -371,5 +372,16 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     public boolean isCollapsed() {
         return false;
     }
-    
+
+    @Override
+    protected void updateActions(List<Action> actions) {
+        super.updateActions(actions);
+        ListIterator<Action> liter = actions.listIterator();
+        while (liter.hasNext()) {
+            Action action = liter.next();
+            if (action instanceof NewAction) {
+                liter.remove();
+            }
+        }
+    }
 }

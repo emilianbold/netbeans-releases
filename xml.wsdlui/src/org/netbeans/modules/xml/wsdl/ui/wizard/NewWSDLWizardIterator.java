@@ -48,6 +48,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -60,6 +61,7 @@ import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -83,6 +85,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     
     private WizardDescriptor.Panel folderPanel;
     private transient SourceGroup[] sourceGroups;
+    private transient DefaultProjectCatalogSupport catalogSupport;
     
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -131,10 +134,10 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         
         DataObject dTemplate = DataObject.find( template );
         DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
-        
         //create new data object
         if (dobj!=null) {
             
+            catalogSupport = DefaultProjectCatalogSupport.getInstance(dobj.getPrimaryFile());
             WSDLModel model = null;
            
             //is there a temp wsdl model. it will be if wizard screen is 2 or 3
@@ -144,9 +147,8 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                 try {
                     postProcessImports(tempModel, dobj);
                 } catch(Exception ex) {
-                        ErrorManager.getDefault().notify(ex);
+                    ErrorManager.getDefault().notify(ex);
                 }
-                
                 
             	FileObject tmpWsdlFileObject = (FileObject) tempModel.getModelSource().getLookup().lookup(FileObject.class);
                 if(tmpWsdlFileObject != null) {
@@ -178,36 +180,8 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                     dobj.getPrimaryFile().canWrite());
                     
                     model  = WSDLModelFactory.getDefault().getModel(modelSource);
-                     
-                    //write schema imports if user selects parts from external xsds
-//                    WSDLDataObject wsdlDataObject =  (WSDLDataObject) dobj;
-//                    EditorCookie eCookie = (EditorCookie)wsdlDataObject.getCookie(EditorCookie.class);
-//                    eCookie.openDocument();
-//                    
                     
-//                    model = wsdlDataObject.getWSDLEditorSupport().getModel();
-//                    model.startTransaction();
-//                    Map configurationMap = new HashMap();
-//
-//                    List<PartAndElementOrTypeTableModel.PartAndElementOrType> inputMessageParts = 
-//                        (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) wiz.getProperty(WizardPortTypeConfigurationStep.OPERATION_INPUT);
-//
-//                    List<PartAndElementOrTypeTableModel.PartAndElementOrType> outputMessageParts = 
-//                            (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) wiz.getProperty(WizardPortTypeConfigurationStep.OPERATION_OUTPUT);
-//
-//                    List<PartAndElementOrTypeTableModel.PartAndElementOrType> faultMessageParts = 
-//                            (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) wiz.getProperty(WizardPortTypeConfigurationStep.OPERATION_FAULT);
-//
-//                    Map<String, String> namespaceToPrefixMap = (Map) wiz.getProperty(WizardPortTypeConfigurationStep.NAMESPACE_TO_PREFIX_MAP);
-//
-//                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT, inputMessageParts);
-//                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT, outputMessageParts);
-//                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_FAULT, faultMessageParts);
-//                    configurationMap.put(WizardPortTypeConfigurationStep.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
-                            
-//                    SchemaImportsGenerator schemaImportGenerator = new SchemaImportsGenerator(model, configurationMap);
-//                    schemaImportGenerator.execute();
-//                    model.endTransaction();
+
                 }
             } else {
                 FileObject wsdlFile = dobj.getPrimaryFile();
@@ -226,7 +200,6 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                     def.setTypes(model.getFactory().createTypes());
                 }
                 
-                
                 model.endTransaction();
             }
             
@@ -234,7 +207,6 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                 addSchemaImport(model, dobj);
             }
             
-                
             SaveCookie save = (SaveCookie)dobj.getCookie(SaveCookie.class);
             if (save!=null) save.save();
         }
@@ -277,77 +249,72 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         while(it.hasNext()) {
             Schema schema = it.next();
             SchemaModel sModel = schema.getModel();
-            FileObject schmemaFile = (FileObject) sModel.getModelSource().getLookup().lookup(FileObject.class);
-            String location = getRelativePathOfSchema(dobj, schmemaFile.getURL().toString());
+            FileObject schemaFileObj = (FileObject) sModel.getModelSource().getLookup().lookup(FileObject.class);
+            String location = getRelativePathOfSchema(dobj, schemaFileObj.getURL().toString());
             imp.setSchemaLocation(location);
-
         }
-//        Collection<> sModel.findSchemas()
-//        FileObject schmemaFile = (FileObject) sModel.getModelSource().getLookup().lookup(FileObject.class);
-//        String location = getRelativePathOfSchema(dobj, schmemaFile.getURL().toString());
-//        imp.setSchemaLocation(location);
     }
     
     private void addSchemaImport(WSDLModel model, DataObject dobj) {
-                model.startTransaction();
-                WsdlPanel panel = (WsdlPanel)folderPanel;
-                String targetNamespace = panel.getNS();
+        model.startTransaction();
+        WsdlPanel panel = (WsdlPanel)folderPanel;
+        String targetNamespace = panel.getNS();
 
-                WsdlUIPanel.SchemaInfo[] infos = panel.getSchemas();
-                Schema schema = null;
-                WSDLSchema wsdlSchema = null;
+        WsdlUIPanel.SchemaInfo[] infos = panel.getSchemas();
+        Schema schema = null;
+        WSDLSchema wsdlSchema = null;
 
-                for (int i=0;i<infos.length;i++) {
-                    String ns = infos[i].getNamespace();
-                    if (ns.length()==0) ns = targetNamespace;//"urn:WS/types"+String.valueOf(i+1); //NOI18N
+        for (int i=0;i<infos.length;i++) {
+            String ns = infos[i].getNamespace();
+            if (ns.length()==0) ns = targetNamespace;//"urn:WS/types"+String.valueOf(i+1); //NOI18N
 
-                    String prefix = "ns" + String.valueOf(i+1);
+            String prefix = "ns" + String.valueOf(i+1);
 
 
-                    String relativePath = null;
-                    try{
-                        relativePath = getRelativePathOfSchema(dobj, infos[i].getSchemaName());
-                    }catch(URISyntaxException e){
-                        relativePath= infos[i].getSchemaName();
-                    }
+            String relativePath = null;
+            try{
+                relativePath = getRelativePathOfSchema(dobj, infos[i].getSchemaName());
+            }catch(URISyntaxException e){
+                relativePath= infos[i].getSchemaName();
+            }
 
-                    Definitions def = model.getDefinitions();
-                    Types types = def.getTypes();
-                    if (types == null) {
-                        types = model.getFactory().createTypes();
-                        def.setTypes(types);
-                    } 
-                    
-                    List<WSDLSchema> wsdlSchemas = types.getExtensibilityElements(WSDLSchema.class);
-                    
-                    if (wsdlSchemas == null || wsdlSchemas.size() == 0) {
-                        wsdlSchema = model.getFactory().createWSDLSchema();
-                        SchemaModel schemaModel = wsdlSchema.getSchemaModel();
-                        schema = schemaModel.getSchema();
-                        schema.setTargetNamespace(model.getDefinitions().getTargetNamespace());
-                        types.addExtensibilityElement(wsdlSchema);
-                    } else {
-                        wsdlSchema = wsdlSchemas.get(0);
-                        SchemaModel schemaModel = wsdlSchema.getSchemaModel();
-                        schema = schemaModel.getSchema();
-                    }
-                    
-                    
-                        
-                    if(!isSchemaImportExists(relativePath, ns, schema)) {
-                        schema.addPrefix(prefix, ns);
-                        ((AbstractDocumentComponent) def).addPrefix(prefix, ns);
+            Definitions def = model.getDefinitions();
+            Types types = def.getTypes();
+            if (types == null) {
+                types = model.getFactory().createTypes();
+                def.setTypes(types);
+            } 
 
-                        org.netbeans.modules.xml.schema.model.Import schemaImport =
-                            schema.getModel().getFactory().createImport();
-                         schemaImport.setNamespace(ns);       
-                         schemaImport.setSchemaLocation(relativePath);
+            List<WSDLSchema> wsdlSchemas = types.getExtensibilityElements(WSDLSchema.class);
 
-                         schema.addExternalReference(schemaImport);
-                    }
-                }
-                
-                model.endTransaction();
+            if (wsdlSchemas == null || wsdlSchemas.size() == 0) {
+                wsdlSchema = model.getFactory().createWSDLSchema();
+                SchemaModel schemaModel = wsdlSchema.getSchemaModel();
+                schema = schemaModel.getSchema();
+                schema.setTargetNamespace(model.getDefinitions().getTargetNamespace());
+                types.addExtensibilityElement(wsdlSchema);
+            } else {
+                wsdlSchema = wsdlSchemas.get(0);
+                SchemaModel schemaModel = wsdlSchema.getSchemaModel();
+                schema = schemaModel.getSchema();
+            }
+
+
+
+            if(!isSchemaImportExists(relativePath, ns, schema)) {
+                schema.addPrefix(prefix, ns);
+                ((AbstractDocumentComponent) def).addPrefix(prefix, ns);
+
+                org.netbeans.modules.xml.schema.model.Import schemaImport =
+                    schema.getModel().getFactory().createImport();
+                schemaImport.setNamespace(ns);       
+                schemaImport.setSchemaLocation(relativePath);
+
+                schema.addExternalReference(schemaImport);
+            }
+        }
+
+        model.endTransaction();
     }
     
     
@@ -373,7 +340,27 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     private String getRelativePathOfSchema(DataObject wsdlDO, String schemaURL) throws URISyntaxException{
         FileObject fo = wsdlDO.getPrimaryFile();
         File f = FileUtil.toFile(fo);
-        String relativePath = org.netbeans.modules.xml.retriever.catalog.Utilities.relativize(f.toURI(),new URI(schemaURL) );
+        FileObject schemaFO = FileUtil.toFileObject(new File(new URI(schemaURL)));
+        
+        String relativePath = null;
+        if (catalogSupport != null && catalogSupport.needsCatalogEntry(fo, schemaFO)) {
+//          Remove the previous catalog entry, then create new one.
+            URI uri;
+            try {
+                uri = catalogSupport.getReferenceURI(fo, schemaFO);
+                catalogSupport.removeCatalogEntry(uri);
+                catalogSupport.createCatalogEntry(fo, schemaFO);
+                relativePath = catalogSupport.getReferenceURI(fo, schemaFO).toString();
+            } catch (URISyntaxException use) {
+                ErrorManager.getDefault().notify(use);
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            } catch (CatalogModelException cme) {
+                ErrorManager.getDefault().notify(cme);
+            }
+        } else {
+            relativePath = org.netbeans.modules.xml.retriever.catalog.Utilities.relativize(f.toURI(),new URI(schemaURL));
+        }
         return relativePath;
     }
     

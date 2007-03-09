@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+<head>
+<title>Generate Binding and Service Port Dialog Box</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+
+<h2>Generate Binding and Service Port Dialog Box</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Generate Binding and Service Port dialog box enables you to create a binding and service from an existing port type.</p>
+
+<p>A <i>binding</i> contains protocol and data format information 
+for the operations and messages of a port type.</p>
+
+<ul>
+
+  <li><b>Binding Name.</b> Enter a name for the binding. The default value is derived from the WSDL name.</li>
+
+  <li><b>Binding Type.</b> Select the type of binding. 
+  The appropriate extensibility elements will be added to the WSDL file.</li>
+
+  <li><b>Binding Subtype.</b> 
+
+  If you selected the HTTP binding type, then you must specify whether the binding uses the GET or POST verb and 
+  whether message parts are encoded into the HTTP request URI using the standard URI-encoding rules or using a replacement algorithm. 
+
+  If you selected the SOAP binding type, then you must specify whether the operations are RPC-oriented or document-oriented and 
+  how the message parts reference their types.
+
+  For other binding types, you have only one choice for the binding subtype.</li>
+
+</ul>
+
+<p>A <i>service</i> consists of one or more related ports. 
+Each <i>port</i> associates a binding with a network address, thus defining an individual endpoint that clients can access.</p>
+
+<ul>
+  <li><b>Service Name.</b> Enter a name for the service. The default value is derived from the WSDL name.</li>
+  <li><b>Port Name.</b> Enter a name for the port. The default value is derived from the WSDL name.</li>
+</ul>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../wsdl_editor.html" title="About the WSDL Editor">About the WSDL Editor</a></dd>
+<dd><a href="../wsdl_editor_bindings.html" title="Configuring Bindings Using the WSDL View">Configuring Bindings Using the WSDL View</a></dd>
+<dd><a href="../wsdl_editor_services.html" title="Configuring Services Using the WSDL View">Configuring Services Using the WSDL View</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

@@ -35,11 +35,12 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
@@ -47,7 +48,6 @@ import javax.swing.SwingUtilities;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
-import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -89,6 +89,8 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
     private Node componentNode;
     /** Used to weakly listen to the component model. */
     private ComponentListener weakComponentListener;
+    /** store the WSDLModel representing the wsdl being edited **/
+    private WSDLModel model;
     
     
     /**
@@ -100,6 +102,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
      */
     public AbstractWidget(Scene scene, T component, Lookup lookup) {
         super(scene);
+        model = ((PartnerScene)scene).getModel();
         lookupContent = new InstanceContent();
         widgetLookup = new ProxyLookup(new Lookup[] {
             new AbstractLookup(lookupContent),
@@ -126,7 +129,6 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         }
         // Remove our compopnent listener.
         registerListener(null);
-        WSDLModel model = wsdlComponent.getModel();
         try {
             if (model.startTransaction()) {
                 model.removeChildComponent(wsdlComponent);
@@ -135,8 +137,13 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         } finally {
             model.endTransaction();
         }
+        model = null;
     }
 
+    public WSDLModel getModel() {
+        return model;
+    }
+    
     /**
      * Subclasses may override this method to make additional changes to
      * the model within the same transaction as the one used to delete
@@ -211,7 +218,10 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
 
     public JPopupMenu getPopupMenu(Widget widget, Point point) {
         Node node = getNode();
-        if (node != null) {
+        if (node != null && wsdlComponent != null) {
+            Set<WSDLComponent> set = new HashSet<WSDLComponent>();
+            set.add(getWSDLComponent());
+            ((PartnerScene) getScene()).setSelectedObjects(set);
             TopComponent tc = findTopComponent();
             Lookup lookup;
             if (tc != null) {
@@ -272,7 +282,6 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
             weakComponentListener = null;
         }
         if (component != null) {
-            Model model = component.getModel();
             weakComponentListener = (ComponentListener) WeakListeners.create(
                     ComponentListener.class, this, model);
             model.addComponentListener(weakComponentListener);

@@ -46,10 +46,15 @@ import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.ui.basic.DesignGotoType;
+import org.netbeans.modules.xml.schema.ui.basic.SchemaGotoType;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaSettings;
 import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.netbeans.modules.xml.xam.dom.Utils;
 import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
+import org.netbeans.modules.xml.xam.ui.actions.GotoType;
+import org.netbeans.modules.xml.xam.ui.actions.SourceGotoType;
+import org.netbeans.modules.xml.xam.ui.actions.SuperGotoType;
 import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.GetSuperCookie;
 import org.netbeans.modules.xml.xam.Component;
@@ -58,7 +63,8 @@ import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
-import org.netbeans.modules.xml.xam.ui.actions.ShowSchemaAction;
+import org.netbeans.modules.xml.schema.ui.basic.ShowSchemaAction;
+import org.netbeans.modules.xml.xam.ui.cookies.GotoCookie;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
@@ -106,12 +112,13 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  *
  * @author  Todd Fast, todd.fast@sun.com
+ * @author  Nathan Fiedler
  */
 public abstract class SchemaComponentNode<T extends SchemaComponent>
         extends AbstractNode
         implements Node.Cookie, ComponentListener, PropertyChangeListener,
         Highlighted, ReferenceableProvider, CountChildrenCookie,
-        GetComponentCookie, GetSuperCookie {
+        GetComponentCookie, GetSuperCookie, GotoCookie {
 
     /**
      *
@@ -803,15 +810,14 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     }
     
     @Override
- 	public Action getPreferredAction()
-	{
-        ReadOnlyCookie roc = (ReadOnlyCookie) getContext().getLookup().lookup(
-                ReadOnlyCookie.class);
+    public Action getPreferredAction() {
+        // This exists for use in the Navigator.
+        ReadOnlyCookie roc = (ReadOnlyCookie) getCookie(ReadOnlyCookie.class);
         if (roc != null && roc.isReadOnly()) {
-			return SystemAction.get(ShowSchemaAction.class);
-		}
-		return super.getPreferredAction();
-	}
+            return SystemAction.get(ShowSchemaAction.class);
+        }
+        return super.getPreferredAction();
+    }
     
     
    /**
@@ -830,7 +836,11 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         }
         return new NewType[] {};
     }
-    
+
+    public GotoType[] getGotoTypes() {
+        return GOTO_TYPES;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Listener methods
     ////////////////////////////////////////////////////////////////////////////
@@ -1014,7 +1024,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
 
     private SchemaUIContext context;
     private SchemaComponentReference<T> reference;
-	private Set<Component> referenceSet;
+    private Set<Component> referenceSet;
     /** Ordered list of highlights applied to this node. */
     private List<Highlight> highlights;
     private InstanceContent lookupContents;
@@ -1022,6 +1032,12 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     private PropertyChangeListener weakModelListener;
     private ComponentListener weakComponentListener;
     private SoftReference<Customizer> custRef;
+    private static final GotoType[] GOTO_TYPES = new GotoType[] {
+        new SourceGotoType(),
+        new SchemaGotoType(),
+        new DesignGotoType(),
+        new SuperGotoType(),
+    };
 
     /**
      * Implement ReferenceableProvider

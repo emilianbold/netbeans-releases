@@ -35,12 +35,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
+
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -56,16 +59,16 @@ import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.ButtonBorder;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ExtensibilityElementsFolderNode;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -86,6 +89,7 @@ public class CollaborationsWidget extends Widget
     private static final int GAP = 10;
     private Widget mLabelWidget;
     private Widget mHeaderWidget;
+    private ButtonWidget createButtonWidget;
     private ButtonWidget removeButtonWidget;
     private ExpanderWidget expanderWidget;
     private PartnerLinkTypeHitPointWidget partnerLinkTypeHitPoint; 
@@ -101,94 +105,83 @@ public class CollaborationsWidget extends Widget
         partnerLinkTypeHitPoint = new PartnerLinkTypeHitPointWidget(scene);
         stubWidget = new StubWidget(scene, NbBundle.getMessage(
                 CollaborationsWidget.class, 
-                "LBL_CollaborationsWidget_ThereAreNoPartnerLinkTypes")); // MOI18N
-        init();
-    }
+                "LBL_CollaborationsWidget_ThereAreNoPartnerLinkTypes"));
 
-    private void init() {
         setOpaque(true);
         setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 8));
         setBorder(MAIN_BORDER);
         
         boolean expanded = ExpanderWidget.isExpanded(this, true);
-        expanderWidget = new ExpanderWidget(getScene(), this, expanded);
+        expanderWidget = new ExpanderWidget(scene, this, expanded);
         
-        mHeaderWidget = new HeaderWidget(getScene(), expanderWidget);
+        mHeaderWidget = new HeaderWidget(scene, expanderWidget);
         mHeaderWidget.setMinimumSize(new Dimension(
                 WidgetConstants.MINIMUM_WIDTH, 0));
+        mHeaderWidget.setLayout(new LeftRightLayout(32));
         addChild(mHeaderWidget);
         
-        Widget actionsWidget = createActionWidget();
-        mHeaderWidget.setLayout(new LeftRightLayout(32));
-        mHeaderWidget.addChild(actionsWidget);
+        mHeaderWidget.addChild(createActionWidget(scene));
         
-        mCollaborationContentWidget = new Widget(getScene());
+        mCollaborationContentWidget = new Widget(scene);
         if (expanded) {
             addChild(mCollaborationContentWidget);
         }
-        mCollaborationContentWidget.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, GAP));
-        getActions().addAction(((PartnerScene)getScene()).getDnDAction());
+        mCollaborationContentWidget.setLayout(LayoutFactory.createVerticalLayout(
+                SerialAlignment.JUSTIFY, GAP));
+        getActions().addAction(((PartnerScene) scene).getDnDAction());
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
         createContent();
         //initially all plt widgets should be collapsed
         collapsePartnerLinkTypeWidgets();
     }
-    
-    private Widget createActionWidget() {
-        Widget actionWidget = new Widget(getScene());
-        actionWidget.setLayout(LayoutFactory.createHorizontalLayout(SerialAlignment.JUSTIFY, 8));
+
+    private Widget createActionWidget(Scene scene) {
+        Widget actionWidget = new Widget(scene);
+        actionWidget.setLayout(LayoutFactory.createHorizontalLayout(
+                SerialAlignment.JUSTIFY, 8));
 
         // Auto-create button.
-        Collection<PortType> ports = getUnusedPortTypes();
-        if (ports.size() > 0) {
-            ButtonWidget createButtonWidget = new ButtonWidget(getScene(),
-                    NbBundle.getMessage(CollaborationsWidget.class,
-                    "LBL_CollaborationsWidget_AutoCreate"));
-            createButtonWidget.setActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    // For each port type, create a role and partnerLinkType.
-                    WSDLComponentFactory factory = mModel.getFactory();
-                    QName qname = BPELQName.PARTNER_LINK_TYPE.getQName();
-                    try {
-                        if (mModel.startTransaction()) {
-                            Definitions definitions = mModel.getDefinitions();
-                            Collection<PortType> ports = getUnusedPortTypes();
-                            for (PortType pt : ports) {
-                                PartnerLinkType plt = (PartnerLinkType) factory.create(
-                                        definitions, qname);
-                                String name = pt.getName();
-                                int idx = name.toLowerCase().indexOf("porttype");
-                                if (idx > 0) {
-                                    name = name.substring(0, idx);
-                                }
-                                plt.setName(NameGenerator.generateUniquePartnerLinkType(
-                                        name, qname, mModel));
-                                Role role = (Role) factory.create(
-                                        plt, BPELQName.ROLE.getQName());
-                                role.setName("role1");
-                                NamedComponentReference<PortType> ptref =
-                                        role.createReferenceTo(pt, PortType.class);
-                                role.setPortType(ptref);
-                                plt.setRole1(role);
-                                definitions.addExtensibilityElement(plt);
+        createButtonWidget = new ButtonWidget(scene,
+                NbBundle.getMessage(CollaborationsWidget.class,
+                "LBL_CollaborationsWidget_AutoCreate"));
+        createButtonWidget.setActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // For each port type, create a role and partnerLinkType.
+                WSDLComponentFactory factory = mModel.getFactory();
+                QName qname = BPELQName.PARTNER_LINK_TYPE.getQName();
+                try {
+                    if (mModel.startTransaction()) {
+                        Definitions definitions = mModel.getDefinitions();
+                        Collection<PortType> ports = getUnusedPortTypes();
+                        for (PortType pt : ports) {
+                            PartnerLinkType plt = (PartnerLinkType) factory.create(
+                                    definitions, qname);
+                            String name = pt.getName();
+                            int idx = name.toLowerCase().indexOf("porttype");
+                            if (idx > 0) {
+                                name = name.substring(0, idx);
                             }
+                            plt.setName(NameGenerator.generateUniquePartnerLinkType(
+                                    name, qname, mModel));
+                            Role role = (Role) factory.create(
+                                    plt, BPELQName.ROLE.getQName());
+                            role.setName("role1");
+                            NamedComponentReference<PortType> ptref =
+                                    role.createReferenceTo(pt, PortType.class);
+                            role.setPortType(ptref);
+                            plt.setRole1(role);
+                            definitions.addExtensibilityElement(plt);
                         }
-                    } finally {
-                        mModel.endTransaction();
                     }
-                    // Remove the auto-create button from the parent widget.
-                    Widget widget = (Widget) e.getSource();
-                    Scene scene = widget.getScene();
-                    widget.getParentWidget().removeChild(widget);
-                    // May not be necessary, but do it anyway to be sure.
-                    scene.validate();
+                } finally {
+                    mModel.endTransaction();
                 }
-            });
-            actionWidget.addChild(createButtonWidget);
-        }
+            }
+        });
+        actionWidget.addChild(createButtonWidget);
 
         // Add partnerLinkType button.
-        ButtonWidget addButtonWidget = new ButtonWidget(getScene(),
+        ButtonWidget addButtonWidget = new ButtonWidget(scene,
                 NbBundle.getMessage(CollaborationsWidget.class,
                 "LBL_CollaborationsWidget_AddPartnerLinkType"));
         addButtonWidget.setActionListener(new ActionListener() {
@@ -199,9 +192,8 @@ public class CollaborationsWidget extends Widget
                         plt = (PartnerLinkType) mModel.
                                 getFactory().create(mModel.getDefinitions(),
                                 BPELQName.PARTNER_LINK_TYPE.getQName());
-                        // TODO: Should use file name instead of definitions name
                         plt.setName(NameGenerator.generateUniquePartnerLinkType(
-                                mModel.getDefinitions().getName(),
+                                "partnerlinktype",
                                 BPELQName.PARTNER_LINK_TYPE.getQName(), mModel));
                         Role role = (Role) mModel.getFactory().create(
                                 plt, BPELQName.ROLE.getQName());
@@ -220,7 +212,7 @@ public class CollaborationsWidget extends Widget
         actionWidget.addChild(addButtonWidget);
 
         // Remove partnerLinkType button.
-        removeButtonWidget = new ButtonWidget(getScene(),
+        removeButtonWidget = new ButtonWidget(scene,
                 NbBundle.getMessage(CollaborationsWidget.class,
                 "LBL_CollaborationsWidget_RemovePartnerLinkType"));
         removeButtonWidget.setActionListener(new ActionListener() {
@@ -267,15 +259,10 @@ public class CollaborationsWidget extends Widget
     }
 
     public void updateContent() {
-        removeContent();
-        createContent();
-    }
-    
-    private void removeContent() {
         mHeaderWidget.removeChild(mLabelWidget);
         mCollaborationContentWidget.removeChildren();
+        createContent();
     }
-
 
     private void createContent() {
         mLabelWidget = new ImageLabelWidget(getScene(), IMAGE, "PartnerLinkTypes", 
@@ -287,7 +274,7 @@ public class CollaborationsWidget extends Widget
         }
         
         List<PartnerLinkType> partnerLinkTypes = mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class);
-        if (partnerLinkTypes != null && partnerLinkTypes.isEmpty()) {
+        if (partnerLinkTypes == null || partnerLinkTypes.isEmpty()) {
             mCollaborationContentWidget.addChild(stubWidget);
         } else {
             Scene scene = getScene();
@@ -297,8 +284,11 @@ public class CollaborationsWidget extends Widget
                 mCollaborationContentWidget.addChild(widget);
             }
         }
-        
+
+        // Disable/hide buttons based on current widget availability.
         removeButtonWidget.setButtonEnabled(false);
+        Collection<PortType> ports = getUnusedPortTypes();
+        createButtonWidget.setVisible(ports.size() > 0);
     }
 
     private boolean hasPartnerLinkTypes() {
@@ -379,7 +369,7 @@ public class CollaborationsWidget extends Widget
                             getFactory().create(mModel.getDefinitions(),
                             BPELQName.PARTNER_LINK_TYPE.getQName());
                     String pltName = NameGenerator.generateUniquePartnerLinkType(
-                            mModel.getDefinitions().getName(), BPELQName.PARTNER_LINK_TYPE.getQName(), mModel);
+                            "partnerlinktype", BPELQName.PARTNER_LINK_TYPE.getQName(), mModel);
                     plt.setName(pltName);
                     Role role = (Role) mModel.getFactory().create(
                             plt, BPELQName.ROLE.getQName());
@@ -563,9 +553,10 @@ public class CollaborationsWidget extends Widget
      */
     private synchronized Node getNode() {
         if (componentNode == null) {
-            // Use the factory to construct the Node.
-            NodesFactory factory = NodesFactory.getInstance();
-            componentNode = factory.create(mModel.getDefinitions());
+            //Show only partnerlinktype in add action.
+            Set<String> tnsSet = new HashSet<String>();
+            tnsSet.add(BPELQName.PLNK_NS);
+            componentNode = new ExtensibilityElementsFolderNode(mModel.getDefinitions(), tnsSet);
             componentNode = new WidgetFilterNode(componentNode);
         }
         return componentNode;

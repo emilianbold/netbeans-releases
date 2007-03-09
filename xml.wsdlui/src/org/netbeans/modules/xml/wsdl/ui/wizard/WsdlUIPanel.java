@@ -23,18 +23,25 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-
 import javax.swing.JTextField;
-
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -180,28 +187,66 @@ public class WsdlUIPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-// TODO add your handling code here:
-        String dialogTitle = NbBundle.getMessage(WsdlUIPanel.class,"TITLE_selectSchema");
-        String maskTitle = NbBundle.getMessage(WsdlUIPanel.class,"TXT_schemaFiles");
-        java.io.File[] files = org.netbeans.modules.xml.wsdl.ui.wizard.Utilities.selectFiles("xsd XSD", dialogTitle, maskTitle, wizardPanel.getProject());
-        if(files == null || files.length ==0) return;
-        String original = schemaTF.getText().trim();
-        StringBuilder fileString = new StringBuilder(original);
-        for(int i = 0; i < files.length; i++) {
-            java.io.File f = files[i];
-            String location = f.toURI().normalize().toString();
-            if (fileString.indexOf(location)>=0) continue;
-            if(fileString.length() > 0){
-                fileString.append(",");
-            }
-            fileString.append(location);
+        // Create a temporary file and model for the import creator to use.
+        Project project = wizardPanel.getProject();
+        FileObject prjdir = project.getProjectDirectory();
+        // HACK: hard-coded NB project directory name
+        FileObject privdir = prjdir.getFileObject("nbproject/private");
+        // We prefer to use the private directory, but at the very
+        // least our file needs to be inside the project.
+        File directory = FileUtil.toFile(privdir != null ? privdir : prjdir);
+        String fname = fileNameTF.getText();
+        if (fname == null || fname.length() == 0) {
+            fname = "wizard";
         }
-        schemaTF.setText(fileString.toString());
-        schemaTF.firePropertyChange("VALUE_SET", false, true);
+        File file = null;
+        try {
+            file = File.createTempFile(fname, ".wsdl", directory);
+            wizardPanel.populateFileFromTemplate(file);
+        } catch (Exception e) {
+            // This is quite unexpected.
+            ErrorManager.getDefault().notify(e);
+            if (file != null) {
+                file.delete();
+            }
+            return;
+        }
+        WSDLModel model = wizardPanel.prepareModelFromFile(file);
+        model.startTransaction();
+        WSDLSchema wsdlSchema = model.getFactory().createWSDLSchema();
+        Definitions defs = model.getDefinitions();
+        defs.getTypes().addExtensibilityElement(wsdlSchema);
+        SchemaModel schemaModel = wsdlSchema.getSchemaModel();
+        Schema schema = schemaModel.getSchema();
+        // Must set namespace on embedded schema for import dialog to work.
+        schema.setTargetNamespace(defs.getTargetNamespace());
+        model.endTransaction();
+
+        // Use a specialized import creator for selecting files.
+        String original = schemaTF.getText().trim();
+        ImportSchemaCreator creator = new ImportSchemaCreator(schema, model, original);
+        DialogDescriptor descriptor = UIUtilities.getCreatorDialog(
+                creator, NbBundle.getMessage(WsdlUIPanel.class,
+                "TITLE_selectSchema"), true);
+        descriptor.setValid(false);
+        Object result = DialogDisplayer.getDefault().notify(descriptor);
+        if (result == DialogDescriptor.OK_OPTION) {
+            String selections = creator.getSelectedFiles();
+            schemaTF.setText(selections);
+            schemaTF.firePropertyChange("VALUE_SET", false, true);
+        }
+
+        // Must use DataObject to delete the temporary file.
+        file = FileUtil.normalizeFile(file);
+        FileObject fobj = FileUtil.toFileObject(file);
+        try {
+            DataObject.find(fobj).delete();
+        } catch (IOException ex) {
+            // Ignore, either the file isn't there or we can't delete it.
+        }
     }//GEN-LAST:event_browseButtonActionPerformed
     
     private void cbImportItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbImportItemStateChanged
-// TODO add your handling code here:
         if (cbImport.isSelected()) {
             schemaTF.setEditable(true);
             browseButton.setEnabled(true);
@@ -407,7 +452,8 @@ public class WsdlUIPanel extends javax.swing.JPanel {
                 String errorMessage = NbBundle.getMessage(WsdlUIPanel.class, "INVALID_SCHEMA_FILE", urlString);
                 throw new WizardValidationException(schemaTF, errorMessage, errorMessage);
             }
-            source = Utilities.createModelSource(fo, false);
+            source = org.netbeans.modules.xml.retriever.catalog.Utilities.
+                    createModelSource(fo, false);
         } catch (WizardValidationException e) {
             throw e;
         }   catch (CatalogModelException e) {

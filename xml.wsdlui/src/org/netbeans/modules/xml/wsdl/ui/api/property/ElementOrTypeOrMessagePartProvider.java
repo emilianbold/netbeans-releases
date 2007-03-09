@@ -58,12 +58,14 @@ public class ElementOrTypeOrMessagePartProvider {
 
                 switch (pType) {
                 case ELEMENT:
+                    Utility.addNamespacePrefix(o.getElement().getModel().getSchema(), extensibilityElement.getModel(), null);
                     extensibilityElement.setAttribute(elementAttributeName, o.toString());
                     extensibilityElement.setAttribute(typeAttributeName, null);
                     extensibilityElement.setAttribute(messageAttributeName, null);
                     extensibilityElement.setAttribute(partAttributeName, null);
                     break;
                 case TYPE:
+                    Utility.addNamespacePrefix(o.getType().getModel().getSchema(), extensibilityElement.getModel(), null);
                     extensibilityElement.setAttribute(elementAttributeName, null);
                     extensibilityElement.setAttribute(typeAttributeName, o.toString());
                     extensibilityElement.setAttribute(messageAttributeName, null);

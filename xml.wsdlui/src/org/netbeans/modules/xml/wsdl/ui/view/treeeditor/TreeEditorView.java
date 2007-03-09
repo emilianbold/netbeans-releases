@@ -207,4 +207,16 @@ public class TreeEditorView extends JPanel
         }
         return ctx;
     }
+
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        btv.requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return btv.requestFocusInWindow();
+    }
 }

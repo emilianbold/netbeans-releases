@@ -165,15 +165,26 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
         this.mPortType = (PortType) templateWizard.getProperty(WizardPortTypeConfigurationStep.PORTTYPE);
         this.mTempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
         
-        LocalizedTemplate bindingSubType = this.mPanel.getBindingSubType();
-        processBindingSubType(bindingSubType);
+/*        LocalizedTemplate bindingSubType = this.mPanel.getBindingSubType();
+        processBindingSubType(bindingSubType);*/
     }
 
     public void storeSettings(Object settings) {
         TemplateWizard templateWizard = (TemplateWizard)settings;
         if(templateWizard.getValue() == TemplateWizard.CANCEL_OPTION) {
-        	
         	return;
+        }
+        
+        if (templateWizard.getValue() == TemplateWizard.PREVIOUS_OPTION) {
+            mTempModel.startTransaction();
+            cleanUpBindings();
+            mTempModel.endTransaction();
+            templateWizard.putProperty(BINDING_NAME, null);
+            templateWizard.putProperty(BINDING_TYPE, null);
+            templateWizard.putProperty(BINDING_SUBTYPE, null);
+            templateWizard.putProperty(SERVICE_NAME, null);
+            templateWizard.putProperty(SERVICEPORT_NAME, null);
+            return;
         }
         
         String bindingName = this.mPanel.getBindingName();
@@ -191,6 +202,19 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
         processBindingSubType(bindingSubType);
     }
     
+    private void cleanUpBindings() {
+        if(this.mBinding != null) {
+            this.mTempModel.getDefinitions().removeBinding(this.mBinding);
+        }
+        
+        if(this.mService != null) {
+            this.mTempModel.getDefinitions().removeService(this.mService);
+        }
+        
+        mBinding = null;
+        mService = null;
+    }
+
     private boolean isValidName(Document doc) {
         try {
             String text = doc.getText(0, doc.getLength());
@@ -272,13 +296,7 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
             configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
             
             this.mTempModel.startTransaction();
-            if(this.mBinding != null) {
-            	this.mTempModel.getDefinitions().removeBinding(this.mBinding);
-            }
-            
-            if(this.mService != null) {
-            	this.mTempModel.getDefinitions().removeService(this.mService);
-            }
+            cleanUpBindings();
             
             BindingGenerator bGen = new BindingGenerator(this.mTempModel, this.mPortType, configurationMap);
             bGen.execute();

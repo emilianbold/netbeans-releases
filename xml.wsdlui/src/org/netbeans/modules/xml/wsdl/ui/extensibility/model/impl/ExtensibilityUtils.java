@@ -150,7 +150,7 @@ public class ExtensibilityUtils {
             try {
                 WSDLExtensibilityElements elements = WSDLExtensibilityElementsFactory.getInstance().getWSDLExtensibilityElements();
                 WSDLExtensibilityElement mExtensibilityElement = elements.getWSDLExtensibilityElement(extensibilityElementType);
-                if (qnames.size() > 0) {
+                if (mExtensibilityElement != null && qnames.size() > 0) {
                     WSDLExtensibilityElementInfo infos = mExtensibilityElement.getWSDLExtensibilityElementInfos(qnames.remove(0));
                     if (infos != null) {
                         Element element = infos.getElement();

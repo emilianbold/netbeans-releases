@@ -19,13 +19,18 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
+
+import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.Import;
@@ -40,6 +45,8 @@ import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel.PartAndElementOrType;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.RelativePath;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -103,6 +110,7 @@ public class SchemaImportsGenerator implements Command {
         
     }
     
+    /* Similiar logic can be found in Utility.addSchemaImport(). So if there are changes here, also change in Utility*/
      private void processImports(List<PartAndElementOrType> allParts, boolean fromWizard) {
          Map<String, String> locationToNamespaceMap = new HashMap<String, String>();
          Map<String, String> existingLocationToNamespaceMap = new HashMap<String, String>();
@@ -170,7 +178,7 @@ public class SchemaImportsGenerator implements Command {
              if (model != null) {
                  String schemaTNS = model.getSchema().getTargetNamespace();
                  if (schemaTNS != null && 
-                         !schemaTNS.equals("http://www.w3.org/2001/XMLSchema")) {
+                         !schemaTNS.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)) {
                      
                      FileObject fo = (FileObject) model.getModelSource().getLookup().lookup(FileObject.class);
                      
@@ -180,9 +188,25 @@ public class SchemaImportsGenerator implements Command {
                          if (fromWizard) {
                              // generate absolute URI, this will get changed later in wizard post process import
                              path = FileUtil.toFile(fo).toURI().toString();
-                         } else {
+                         } else if (!FileUtil.toFile(fo).toURI().equals(wsdlFileURI)) { 
                              //should be different files. in case of inline schemas.
-                             if (!FileUtil.toFile(fo).toURI().equals(wsdlFileURI)) {
+                             DefaultProjectCatalogSupport catalogSupport = DefaultProjectCatalogSupport.getInstance(wsdlFileObj);
+                             if (catalogSupport.needsCatalogEntry(wsdlFileObj, fo)) {
+                                 // Remove the previous catalog entry, then create new one.
+                                 URI uri;
+                                 try {
+                                     uri = catalogSupport.getReferenceURI(wsdlFileObj, fo);
+                                     catalogSupport.removeCatalogEntry(uri);
+                                     catalogSupport.createCatalogEntry(wsdlFileObj, fo);
+                                     path = catalogSupport.getReferenceURI(wsdlFileObj, fo).toString();
+                                 } catch (URISyntaxException use) {
+                                     ErrorManager.getDefault().notify(use);
+                                 } catch (IOException ioe) {
+                                     ErrorManager.getDefault().notify(ioe);
+                                 } catch (CatalogModelException cme) {
+                                     ErrorManager.getDefault().notify(cme);
+                                 }
+                             } else {
                                  path = RelativePath.getRelativePath(FileUtil.toFile(wsdlFileObj).getParentFile(), FileUtil.toFile(fo));
                              }
                          }

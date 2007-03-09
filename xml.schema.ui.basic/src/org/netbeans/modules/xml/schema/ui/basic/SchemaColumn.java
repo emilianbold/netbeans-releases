@@ -158,7 +158,14 @@ public class SchemaColumn extends JPanel
     }
 
     @Override
+    public void requestFocus() {
+        super.requestFocus();
+        nodeView.requestFocus();
+    }
+
+    @Override
     public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
         return nodeView.requestFocusInWindow();
     }
 

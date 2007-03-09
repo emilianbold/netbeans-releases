@@ -35,13 +35,9 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.Action;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-
-//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -51,10 +47,13 @@ import org.netbeans.modules.xml.wsdl.ui.commands.CommonAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.OtherAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.XMLAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.cookies.RemoveWSDLElementCookie;
+import org.netbeans.modules.xml.wsdl.ui.cookies.SaveCookieDelegate;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLAttributeCookie;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLElementCookie;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.view.DesignGotoType;
+import org.netbeans.modules.xml.wsdl.ui.view.StructureGotoType;
 import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.DocumentationNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
@@ -69,7 +68,11 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
+import org.netbeans.modules.xml.xam.ui.actions.GotoType;
+import org.netbeans.modules.xml.xam.ui.actions.SourceGotoType;
+import org.netbeans.modules.xml.xam.ui.actions.SuperGotoType;
 import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
+import org.netbeans.modules.xml.xam.ui.cookies.GotoCookie;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
@@ -85,7 +88,6 @@ import org.openide.actions.NewAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.ReorderAction;
-import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -101,14 +103,13 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * @author radval
+ * Base class for all Nodes used in the WSDL editor.
  *
- * To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * @author radval
  */
 public abstract class WSDLElementNode extends AbstractNode
         implements ComponentListener, ReferenceableProvider, Highlighted,
-        CountChildrenCookie, PropertyChangeListener {
+        CountChildrenCookie, PropertyChangeListener, GotoCookie {
     
     protected static final Logger mLogger = Logger.getLogger(WSDLElementNode.class.getName());
     
@@ -128,7 +129,7 @@ public abstract class WSDLElementNode extends AbstractNode
     private List<Highlight> highlights;
     
     /** cached so that during destroy all listeners can be cleaned up, nullified in destroy*/
-    private WSDLModel model;
+    private WSDLModel wsdlmodel;
     
     private static final SystemAction[] ACTIONS = new SystemAction[] {
         SystemAction.get(CutAction.class),
@@ -147,13 +148,17 @@ public abstract class WSDLElementNode extends AbstractNode
         null,
         SystemAction.get(PropertiesAction.class),
     };
+
+    private static final GotoType[] GOTO_TYPES = new GotoType[] {
+        new SourceGotoType(),
+        new StructureGotoType(),
+        new DesignGotoType(),
+        new SuperGotoType(),
+    };
     
     public WSDLElementNode(Children children, WSDLComponent element, NewTypesFactory newTypesFactory) {
         this(children, element);
         this.mNewTypesFactory = newTypesFactory;
-        if (element != null) {
-            model = element.getModel();
-        }
     }
 
     public WSDLElementNode(Children children, WSDLComponent element) {
@@ -181,19 +186,21 @@ public abstract class WSDLElementNode extends AbstractNode
         contents.add(new WSDLElementCookie(mElement));
         // Include the data object in order for the Navigator to
         // show the structure of the current document.
-        DataObject dobj = getDataObject();
+        DataObject dobj = ActionHelper.getDataObject(element.getModel());
         if (dobj != null) {
             contents.add(dobj);
         }
-        contents.add(new SaveCookieDelegate());
+        contents.add(new SaveCookieDelegate(dobj));
         contents.add(new RemoveWSDLElementCookie(mElement));
         contents.add(element);
-        Model model = element.getModel();
-        weakModelListener = WeakListeners.propertyChange(this, model);
-        model.addPropertyChangeListener(weakModelListener);
+        
+        wsdlmodel = element.getModel();
+        
+        weakModelListener = WeakListeners.propertyChange(this, wsdlmodel);
+        wsdlmodel.addPropertyChangeListener(weakModelListener);
         weakComponentListener = (ComponentListener) WeakListeners.create(
-                ComponentListener.class, this, model);
-        model.addComponentListener(weakComponentListener);
+                ComponentListener.class, this, wsdlmodel);
+        wsdlmodel.addComponentListener(weakComponentListener);
         addNodeListener(new WSDLNodeListener(this));
         mSheet = new Sheet();
         // Let the node try to update its display name.
@@ -230,16 +237,16 @@ public abstract class WSDLElementNode extends AbstractNode
     @Override
     public void destroy() throws IOException {
         //get the stored model.
-        if (model != null) {
+        if (wsdlmodel != null) {
             //remove the xml element listener when node is destroyed
-            model.removePropertyChangeListener(weakModelListener);
-            model.removeComponentListener(weakComponentListener);
+            wsdlmodel.removePropertyChangeListener(weakModelListener);
+            wsdlmodel.removeComponentListener(weakComponentListener);
             //remove reference for WSDLModel
-            model = null;
+            wsdlmodel = null;
         }
         
-        WSDLModel wsdlModel = getWSDLComponent() != null ? getWSDLComponent().getModel() : null;
-        if (wsdlModel != null) {
+        WSDLModel model = getWSDLComponent() != null ? getWSDLComponent().getModel() : null;
+        if (model != null) {
             //if we can get the model from wsdlcomponent, then delete the wsdlcomponent from model and appropriately select the node.
             WSDLComponent parent = getWSDLComponent().getParent();
             //try to select the parent.
@@ -268,10 +275,10 @@ public abstract class WSDLElementNode extends AbstractNode
             }
 
             try {
-                wsdlModel.startTransaction();
-                wsdlModel.removeChildComponent(getWSDLComponent());
+                model.startTransaction();
+                model.removeChildComponent(getWSDLComponent());
             } finally {
-                wsdlModel.endTransaction();
+                model.endTransaction();
             }
             ActionHelper.selectNode(nextSelection);
         }
@@ -333,6 +340,10 @@ public abstract class WSDLElementNode extends AbstractNode
             return getNewTypesFactory().getNewTypes(getWSDLComponent());
         }
         return new NewType[] {};
+    }
+
+    public GotoType[] getGotoTypes() {
+        return GOTO_TYPES;
     }
 
     /**
@@ -714,10 +725,6 @@ public abstract class WSDLElementNode extends AbstractNode
         return (mElement instanceof Referenceable)?Referenceable.class.cast(mElement):null;
     }
     
-    public DataObject getDataObject() {
-        return ActionHelper.getDataObject(mElement);
-    }
-
     public Set<Component> getComponents() {
         return referenceSet;
     }
@@ -791,20 +798,6 @@ public abstract class WSDLElementNode extends AbstractNode
         return applyHighlights(name);
     }
     
-    class SaveCookieDelegate implements SaveCookie {
-        
-        public void save() throws IOException {
-            DataObject dobj = getDataObject();
-            // May be null if component was removed from the model.
-            if (dobj != null) {
-                SaveCookie cookie = (SaveCookie) dobj.getCookie(SaveCookie.class);
-                if (cookie != null) {
-                    cookie.save();
-                }
-            }
-        }
-    }
-
     @Override
     public HelpCtx getHelpCtx() {
         //TODO:SKINI change this after documentation has been added for individual nodes

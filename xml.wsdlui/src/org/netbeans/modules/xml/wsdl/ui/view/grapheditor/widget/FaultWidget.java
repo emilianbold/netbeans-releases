@@ -28,6 +28,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
+import java.awt.Color;
+
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.ArrowWidget.ParameterType;
@@ -54,6 +56,7 @@ public class FaultWidget extends OperationParameterWidget {
         boolean direction = reversed ? rightSided : !rightSided;
         ArrowWidget widget = new ArrowWidget(scene, direction, ParameterType.FAULT);
         widget.setColor(WidgetConstants.FAULT_ARROW_COLOR);
+        if (isImported()) widget.setColor(Color.GRAY.darker());
         addChild(widget);
      }
     

@@ -301,6 +301,18 @@ public class SchemaColumnsView extends JPanel
         }
     }
 
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        columnView.requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return columnView.requestFocusInWindow();
+    }
+
     //
     // ColumnView implementation
     //

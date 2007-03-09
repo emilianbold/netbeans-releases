@@ -40,6 +40,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -111,7 +112,18 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jButton1ActionPerformed
     
     public void openSchemaComponentChooser() {
-        panel = new ElementOrTypeChooserPanel(mProject, namespaceToPrefixMap, mModel);
+        int rowNo = mPartsTable.getSelectedRow();
+        PartAndElementOrTypeTableModel tableModel = ((PartAndElementOrTypeTableModel) mPartsTable.getModel());
+        ElementOrType eot = (ElementOrType) tableModel.getValueAt(rowNo, 1);
+        if (eot != null) {
+            SchemaComponent comp = eot.getElement();
+            if (comp == null) {
+                comp = eot.getType();
+            }
+            panel = new ElementOrTypeChooserPanel(mProject, namespaceToPrefixMap, mModel, comp);
+        } else {
+            panel = new ElementOrTypeChooserPanel(mProject, namespaceToPrefixMap, mModel);
+        }
         final DialogDescriptor descriptor = new DialogDescriptor(panel , NbBundle.getMessage(ElementOrTypeChooserEditorPanel.class, "ElementOrTypeChooserEditorPanel.Dialog.title"), true, null);
         final PropertyChangeListener pcl = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -132,11 +144,11 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
                 }
                 if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
                     panel.apply();
-                    int rowNo = mPartsTable.getSelectedRow();
-                    PartAndElementOrTypeTableModel tableModel = ((PartAndElementOrTypeTableModel) mPartsTable.getModel());
-                    tableModel.setValueAt(panel.getSelectedComponent(), rowNo, 1);
+                    int rNo = mPartsTable.getSelectedRow();
+                    PartAndElementOrTypeTableModel tModel = ((PartAndElementOrTypeTableModel) mPartsTable.getModel());
+                    tModel.setValueAt(panel.getSelectedComponent(), rNo, 1);
                     mPartsTable.getColumnModel().getColumn(1).getCellEditor().stopCellEditing();
-                    mPartsTable.setEditingRow(rowNo);
+                    mPartsTable.setEditingRow(rNo);
                 }
             }
         };

@@ -23,6 +23,9 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -42,6 +45,8 @@ public final class ComboBoxInplaceEditorProvider implements InplaceEditorProvide
 
     private EnumSet<ExpansionDirection> expansionDirections;
     
+    private FocusListener focusListener;
+    
     public ComboBoxInplaceEditorProvider (ComboBoxInplaceEditor editor, EnumSet<ExpansionDirection> expansionDirections) {
         this.localEditor = editor;
         this.expansionDirections = expansionDirections;
@@ -56,10 +61,13 @@ public final class ComboBoxInplaceEditorProvider implements InplaceEditorProvide
         JComboBox comboBox = new JComboBox(model);
         comboBox.setEditable(localEditor.getEditable());
         comboBox.setPreferredSize(widget.getBounds().getSize());
+        
+        
+        
         return comboBox;
     }
 
-    public void notifyOpened (final EditorController controller, Widget widget, JComboBox editor) {
+    public void notifyOpened (final EditorController controller, final Widget widget, JComboBox editor) {
         editor.setMinimumSize (new Dimension (64, 19));
         keyListener = new KeyAdapter() {
             @Override
@@ -84,14 +92,24 @@ public final class ComboBoxInplaceEditorProvider implements InplaceEditorProvide
             }
         
         });
+        
+        FocusAdapter focusListener = new FocusAdapter() {
+            public void focusLost (FocusEvent e) {
+            	controller.closeEditor (true);
+            }
+        };
+        editor.addFocusListener(focusListener);
+        
         //editor.selectAll ();
     }
 
     public void notifyClosing (EditorController controller, Widget widget, JComboBox editor, boolean commit) {
         editor.removeKeyListener (keyListener);
         if (commit) {
-            if (widget != null)
-                widget.getScene ().validate ();
+            if (widget != null) {
+                widget.revalidate();
+                widget.repaint();
+            }
         }
         localEditor.setSelectedItem(editor.getSelectedItem());
     }

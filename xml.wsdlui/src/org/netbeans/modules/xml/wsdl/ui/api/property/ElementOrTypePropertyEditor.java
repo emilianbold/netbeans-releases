@@ -30,10 +30,22 @@ import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.view.ElementOrTypeChooserPanel;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.filesystems.FileObject;
 
 
 
@@ -47,7 +59,7 @@ public class ElementOrTypePropertyEditor extends PropertyEditorSupport
 implements ExPropertyEditor, PropertyChangeListener {
 
     /** property name used by propertyChangeEvent */
-    static final String PROP_NAME = "ElementOrType";//NOI18N
+    public static final String PROP_NAME = "ElementOrType";//NOI18N
 
     /** Environment passed to the ExPropertyEditor*/
     private PropertyEnv mEnv;
@@ -89,16 +101,55 @@ implements ExPropertyEditor, PropertyChangeListener {
     /** @return editor component */
     @Override
     public Component getCustomEditor () {
-        ElementOrTypePropertyPanel editor = new ElementOrTypePropertyPanel(mElementOrTypeProvider, this.mEnv);
-        editor.addPropertyChangeListener(PROP_NAME, this);
-        return editor;
+        WSDLModel model = mElementOrTypeProvider.getModel();
+        ModelSource modelSource = model.getModelSource();
+        FileObject wsdlFile = (FileObject) modelSource.getLookup().lookup(FileObject.class);
+        if(wsdlFile != null) {
+            Project project = FileOwnerQuery.getOwner(wsdlFile);
+            if(project != null) {
+                
+                Map<String, String> namespaceToPrefixMap = new HashMap<String, String>();
+                Map<String, String> map = ((AbstractDocumentComponent)model.getDefinitions()).getPrefixes();
+                for (String prefix : map.keySet()) {
+                    namespaceToPrefixMap.put(map.get(prefix), prefix);
+                }
+                ElementOrType eot = mElementOrTypeProvider.getElementOrType();
+                SchemaComponent comp = eot.getElement();
+                if (comp == null) {
+                    comp = eot.getType();
+                }
+                
+                final ElementOrTypeChooserPanel panel = new ElementOrTypeChooserPanel(project, namespaceToPrefixMap, model, comp);
+                
+                panel.setEnvForPropertyEditor(mEnv);
+                mEnv.setState(PropertyEnv.STATE_INVALID);
+                final PropertyChangeListener pcl = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if(evt.getSource()== panel && evt.getPropertyName().
+                                equals(ElementOrTypeChooserPanel.PROP_ACTION_APPLY)) {
+                            Boolean b = (Boolean) evt.getNewValue();
+                            mEnv.setState(b.booleanValue() ? PropertyEnv.STATE_VALID : PropertyEnv.STATE_INVALID);
+                        }
+                    }
+                };
+                panel.addPropertyChangeListener(ElementOrTypeChooserPanel.PROP_ACTION_APPLY, pcl);
+                panel.addPropertyChangeListener(PROP_NAME, this);
+                return panel;
+            }
+        }
+        return null;
     }
     /** handles property change
      *  
      * @param evt propertyChangeEvent
      */
     public void propertyChange(PropertyChangeEvent evt) {
-        setValue(evt.getNewValue());
+        Object comp = evt.getNewValue();
+        if (comp instanceof GlobalType) {
+            setValue(new ElementOrType((GlobalType) comp, mElementOrTypeProvider.getModel()));
+        } else if (comp instanceof GlobalElement){
+            setValue(new ElementOrType((GlobalElement) comp, mElementOrTypeProvider.getModel()));
+        }
     }
 }
 

@@ -54,13 +54,17 @@ import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.common.Constants;
+import org.netbeans.modules.xml.wsdl.ui.cookies.SaveCookieDelegate;
 import org.netbeans.modules.xml.xam.Component;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 public class NodesFactory {
     
@@ -165,9 +169,6 @@ public class NodesFactory {
             return createSchemaNode((WSDLSchema) component);
         } else if(component instanceof Documentation) {
             return new DocumentationNode((Documentation) component);
-        } else if (component instanceof SchemaComponent) {
-            // Those instances other than Schema, handled above.
-            return createSchemaNode((SchemaComponent) component);
         } else if (component instanceof PartnerLinkType) {
             return new PartnerLinkTypeNode((PartnerLinkType) component);
         } else if (component instanceof ExtensibilityElement) {
@@ -177,69 +178,22 @@ public class NodesFactory {
     }
 
     /**
-     * Creates node tree to represent the given schema component.
-     *
-     * @param  component  schema component.
-     * @return  node of schema component.
-     */
-    private static Node createSchemaNode(SchemaComponent component) {
-        SchemaModel model = component.getModel();
-        SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
-                model, Lookup.EMPTY);
-        if (component instanceof Schema) {
-            return factory.createRootNode();
-        }
-        return factory.createNode(component);
-    }
-
-    /**
      * Creates node tree to represent the given WSDL schema.
      *
      * @param  component  WSDL schema.
      * @return  node of WSDL schema.
      */
-    private static Node createSchemaNode(WSDLSchema component) {
+    private Node createSchemaNode(WSDLSchema component) {
         SchemaModel model = component.getSchemaModel();
         SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
                 model, Lookup.EMPTY);
         Node node = factory.createRootNode();
-        return new SchemaRootNode(node, component);
+        //To enable save when schema nodes are selected, get the save cookie.
+        InstanceContent content = new InstanceContent();
+        content.add(new SaveCookieDelegate(ActionHelper.getDataObject(component)));
+        Lookup lookup = new AbstractLookup(content);
+        Node schemaRootNode = new EmbeddedSchemaNode(node, component, lookup);
+        return schemaRootNode;
     }
 
-    /**
-     * Wrapper for the schema root node to allow it to be deleted.
-     *
-     * @author  Nathan Fiedler
-     */
-    private static class SchemaRootNode extends FilterNode {
-        /** The WSDL schema component. */
-        private WSDLSchema component;
-
-        public SchemaRootNode(Node node, WSDLSchema component) {
-            super(node);
-            this.component = component;
-        }
-
-        @Override
-        public boolean canDestroy() {
-            WSDLModel model = component.getModel();
-            return model != null && model.getModelSource().isEditable();
-        }
-
-        public void destroy() throws IOException {
-            SchemaComponentNode scn = (SchemaComponentNode) getOriginal().
-                    getCookie(SchemaComponentNode.class);
-            if (scn != null) {
-                // Let the schema node do its cleanup.
-                scn.destroy();
-            }
-            // Remove the schema root from the WSDL model.
-            WSDLModel model = component.getModel();
-            Types types = model.getDefinitions().getTypes();
-            model.startTransaction();
-            types.removeExtensibilityElement(component);
-                model.endTransaction();
-            super.destroy();
-        }
-    }
 }

@@ -35,6 +35,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -44,6 +45,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -69,6 +71,7 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.util.GeomUtil;
+import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Operation;
@@ -79,6 +82,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
+import org.netbeans.modules.xml.wsdl.ui.actions.schema.ExtensibilityElementCreatorVisitor;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditor;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditorProvider;
@@ -109,7 +113,11 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     private Layout mHorizontalJustifiedLayout = new OneSideJustifiedLayout(true);
     private Border greenBorder = BorderFactory.createLineBorder(Color.GREEN);
     private Border emptyBorder = BorderFactory.createEmptyBorder();
-
+    
+    private boolean enable = true;
+    private Paint enableColor = null;
+    private Color disableColor = WidgetConstants.DISABLED_GRAY;
+    
     /**
      * Creates a new instance of PortTypeWidget.
      *
@@ -129,13 +137,13 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         }
         
         init();
+        
+        
     }
 
     private void init() {
         setOpaque(true);
         setLayout(LayoutFactory.createVerticalLayout());
-/*        mHotspot = new IconNodeWidget(getScene(), IconNodeWidget.TextOrientation.BOTTOM_CENTER);
-        mHotspot.setImage(IMAGE_HOTSPOT);*/
         
         mHotspot = new RectangleWidget(getScene(), 12, 70);
         mHotspot.setThickness(2);
@@ -146,6 +154,8 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         nameHolderWidget.setLayout(mFillLayout);
         nameHolderWidget.setMinimumSize(new Dimension(225, 25));
         
+        enable = mRole != null && getWSDLComponent() != null && !isImported();
+        
         NamedComponentReference<PortType> ptRef = mRole == null ? null : mRole.getPortType();
         PortType pt;
         try {
@@ -154,7 +164,9 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
             // Indicates PortType reference is no longer in model.
             pt = null;
         }
-        if (ptRef != null && pt == null) {
+        //if port type cannot be found, then it may be the default value added for required attributes.
+        if (ptRef != null && pt == null && 
+                !ptRef.getRefString().equals(NbBundle.getMessage(ExtensibilityElementCreatorVisitor.class, "REQUIRED_PROPERTY_DEFAULT_VALUE"))) {
             mNameWidget = new CenteredLabelWidget(getScene(), ptRef.getRefString(),
                     new Color(217, 244, 218));
             mNameWidget.setFont(UIManager.getFont("Label.font").deriveFont(Font.ITALIC));
@@ -163,11 +175,14 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
             Color color = new Color(217, 244, 218); 
             if (mRole == null) {
                 greenBorder = BorderFactory.createLineBorder(Color.BLACK);
-                color = Color.LIGHT_GRAY;
+                color = WidgetConstants.DISABLED_GRAY;
             } else {
-                greenBorder = BorderFactory.createLineBorder(Color.GREEN);
+                if (enable) {
+                    greenBorder = BorderFactory.createLineBorder(Color.GREEN);
+                } else { 
+                    greenBorder = BorderFactory.createLineBorder(Color.gray);
+                }
             }
-            
             mNameWidget = new CenteredLabelWidget(getScene(), name, color);
         }
 
@@ -183,7 +198,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                     DisplayObject blankDispObj = new DisplayObject("", (Object) "Reset");
                     
                     public void setSelectedItem(Object selectedItem) {
-                        Model model = mRole.getModel();
+                        WSDLModel model = mRole.getModel();
                         try {
                             if (model.startTransaction()) {
                                 PortType portType = mRole.getPortType() == null ?
@@ -271,32 +286,33 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
 
                 public void setText(Widget widget, String text) {
                     if (text == null || text.trim().length() == 0) return;
-                    WSDLModel model = mRole.getModel();
-                    if (model.startTransaction()) {
-                        try {
-                            if (getWSDLComponent() == null) {
+                    if (getWSDLComponent() == null) {
+                        WSDLModel model = getModel();
+                        if (model.startTransaction()) {
+                            try {
                                 //create new one first time.
                                 PortType portType = model.getFactory().createPortType();
                                 portType.setName(text);
                                 model.getDefinitions().addPortType(portType);
                                 mRole.setPortType(mRole.createReferenceTo(portType, PortType.class));
-                            } else {
-                                getWSDLComponent().setName(text);
+                            } finally {
+                                model.endTransaction();
                             }
-                        } finally {
-                            model.endTransaction();
                         }
+                    } else {
+                        // try rename silent and locally
+                        AnalysisUtilities.locallyRenameRefactor(getWSDLComponent(), text);
                     }
                 }
 
                 public boolean isEnabled(Widget widget) {
-                    return isWritable();
+                    return !isImported() && isWritable();
                 }
 
                 public String getText(Widget widget) {
                     if (getWSDLComponent() != null)
                         return getWSDLComponent().getName();
-                    return NameGenerator.getInstance().generateUniquePortTypeName(mRole.getModel());
+                    return NameGenerator.getInstance().generateUniquePortTypeName(getModel());
                 }
 
             }, null));
@@ -323,6 +339,12 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         return false;
     }
     
+    private boolean isImported() {
+        if (getWSDLComponent() != null) {
+            return getModel() != getWSDLComponent().getModel();
+        }
+        return false;
+    }
     private void showComboBoxBtnWidget() {
         if (showComboBoxBtnWidget.getParentWidget() == null) {
             nameHolderWidget.setLayout(mHorizontalJustifiedLayout);
@@ -355,6 +377,16 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         return new SingleSelectInplaceEditorAction(provider, widget);
     }
     
+    
+    
+    @Override
+    protected Node getNodeFilter(Node original) {
+        if (isImported()) {
+            return new ReadOnlyWidgetFilterNode(original);
+        }
+        return super.getNodeFilter(original);
+    }
+
     @Override
     protected void postDeleteComponent(Model model) {
         // In addition to removing the component, clear the reference in
@@ -369,6 +401,10 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         }
         if (pt == null) {
             return NbBundle.getMessage(PortTypeWidget.class, "PortTypeWidget_BLANK_PORTTYPE_MSG");
+        }
+        String ptTNS = pt.getModel().getDefinitions().getTargetNamespace();
+        if (ptTNS != null) {
+            return Utility.getNameAndDropPrefixIfInCurrentModel(ptTNS, pt.getName(), mRole.getModel());
         }
         return pt.getName();
     }
@@ -513,8 +549,24 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         BasicStroke dotted = new BasicStroke(1, BasicStroke.CAP_SQUARE, 
                      BasicStroke.JOIN_ROUND, 10.0f, new float[]{5,10,5,10}, 0);
         
+        
+        
+        if(enable) {
+            if(enableColor != null) {
+                gr.setPaint(enableColor);
+            }
+            gr.setColor(Color.GRAY);
+        } else {
+            enableColor = gr.getPaint();
+            Rectangle rect = getBounds();
+            Rectangle2D rectShape = new Rectangle2D.Double(rect.x, rect.y, rect.width, 
+                    rect.height);
+            gr.setPaint(disableColor);
+            gr.fill(rectShape);
+            gr.setColor(Color.BLACK);
+        }
+        
         gr.setStroke(dotted);
-        gr.setColor(Color.GRAY);
         gr.setFont (getFont ());
         
         gr.drawLine((x+clientArea.width)/2, y + mNameWidget.getClientArea().height, (x+clientArea.width)/2, newY);
@@ -649,8 +701,10 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                     if (Node.class.isAssignableFrom(repClass)) {
                         Node node = Node.class.cast(transferable.getTransferData(flavor));
                         if (isAssignable(node)) {
-                            showHotSpot();
-                            return true;
+                            if (!isImported()) {
+                                showHotSpot();
+                                return true;
+                            }
                         } else if (node instanceof PortTypeNode) {
                             setBorder(BorderFactory.createLineBorder(WidgetConstants.HIT_POINT_BORDER, 2));
                             return true;

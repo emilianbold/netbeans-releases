@@ -19,7 +19,7 @@
 
 <p>The PartnerLinkTypes box contains one configuration box for each partner link type in the WSDL file.</p>
 
-<p>A partner link type can have one or two roles. The first role appears in the right side of the configuration box. 
+<p>A partner link type can have one role or two roles. The first role appears in the right side of the configuration box. 
 The second role appears in the left side of the configuration box.</p>
 
 <p>The role's port type appears below the role. A port type has one or more operations, which are illustrated in the space below the port types. 
@@ -32,20 +32,32 @@ A dashed horizontal arrow indicates a fault message.</p>
   <li>The configuration box resembles a sequence diagram in Unified Modeling Language (UML).</li>
 </ul>    
 
+
+
 <p><b>To create a partner link type with one role:</b></p>
 
 <ol>
-  <li>Click Add Partner Link Type. Alternately, you can drag the Partner Link Type icon from the Palette onto the PartnerLinkTypes box.<br>
+
+  <li>Do one of the following:<br>
+  <ul>
+    <li>Click Add Partner Link Type.</li>
+    <li>Drag the Partner Link Type icon from the Palette onto the PartnerLinkTypes box.</li>
+    <li>Right-click the PartnerLinkTypes box and choose Add PartnerLinkType.</li>
+  </ul>
   The configuration box for the partner link type appears. The partner link type contains a default role.</li>
+
   <li>In the right side of the configuration box, double-click <tt>Enter or Select a Port Type</tt> and specify the port type that the service will use to receive messages. 
   To create a new port type, enter the name. To use an existing port type, select the port type from the drop-down menu.</li>
+
   <li>If you created a new port type, then do the following:</li>
+
   <ol type="a">
     <li>Drag one or more operations from the Palette onto the dashed vertical line that extends below the port type.</li>
     <li>For each operation, select the messages. 
     You can double-click <tt>&lt;No Message Selected&gt;</tt> and select a message from the drop-down list. 
     Alternately, you can drag a message from the Navigator window onto <tt>&lt;No Message Selected&gt;</tt>.</li>
   </ol>
+
 </ol>
 
 <p><b>To add a second role to a partner link type:</b></p>
@@ -63,18 +75,12 @@ A dashed horizontal arrow indicates a fault message.</p>
   </ol>
 </ol>
 
-<p><b>To change the name of a partner link type:</b></p>
+
+
+<p><b>To change the name of a partner link type, role, or port type:</b></p>
 
 <ol>
-  <li>Double-click the partner link type name.</li>
-  <li>Change the name.</li>
-  <li>Press Enter.</li>
-</ol>
-
-<p><b>To change the name of a role:</b></p>
-
-<ol>
-  <li>Double-click the role name.</li>
+  <li>Double-click the partner link type name, role name, or port type name.</li>
   <li>Change the name.</li>
   <li>Press Enter.</li>
 </ol>
@@ -96,6 +102,8 @@ A dashed horizontal arrow indicates a fault message.</p>
   <li>Double-click <tt>&lt;No Message Selected&gt;</tt>.</li>
   <li>Select the fault message.</li>
 </ol>
+
+
 
 <p><b>To delete an operation:</b></p>
 

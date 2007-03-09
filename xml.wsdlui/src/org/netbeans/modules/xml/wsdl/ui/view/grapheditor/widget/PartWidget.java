@@ -25,6 +25,9 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.ListIterator;
+import javax.swing.Action;
 import javax.swing.JTextField;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
@@ -36,11 +39,12 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.action.TextFieldInplaceEditorProvider;
+import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.TableLayout;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.actions.NewAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -165,14 +169,8 @@ public class PartWidget extends AbstractWidget<Part> {
         public void setText(Widget widget, String text) {
             Part part = getPart(widget);
             if (part != null) {
-                WSDLModel model = part.getModel();
-                try {
-                    if (model.startTransaction()) {
-                        part.setName(text);
-                    }
-                } finally {
-                    model.endTransaction();
-                }
+                // try rename silent and locally
+                AnalysisUtilities.locallyRenameRefactor(part, text);
             }
         }
         
@@ -276,5 +274,17 @@ public class PartWidget extends AbstractWidget<Part> {
         Rectangle rect = getBounds();
         return new Rectangle2D.Double(rect.x + 1, rect.y + 2, rect.width - 2, 
                 rect.height - 3);
+    }
+
+    @Override
+    protected void updateActions(List<Action> actions) {
+        super.updateActions(actions);
+        ListIterator<Action> liter = actions.listIterator();
+        while (liter.hasNext()) {
+            Action action = liter.next();
+            if (action instanceof NewAction) {
+                liter.remove();
+            }
+        }
     }
 }

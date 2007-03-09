@@ -77,7 +77,7 @@ public class PortTypeNewType extends NewType {
                                                            DialogDescriptor.OK_CANCEL_OPTION,
                                                            DialogDescriptor.OK_OPTION,
                                                            DialogDescriptor.DEFAULT_ALIGN,
-                                                           HelpCtx.DEFAULT_HELP,
+                                                           new HelpCtx(PortTypeNewType.class),
                                                            null);
                 panel.setDialogDescriptor(dd);
                 

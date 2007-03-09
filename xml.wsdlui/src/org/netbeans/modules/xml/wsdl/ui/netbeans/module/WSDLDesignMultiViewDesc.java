@@ -99,12 +99,8 @@ public class WSDLDesignMultiViewDesc extends Object
 	}
 
 
-	/**
-	 *
-	 *
-	 */
-	public org.openide.util.HelpCtx getHelpCtx() {
-		return new HelpCtx(getClass().getName());
+	public HelpCtx getHelpCtx() {
+            return new HelpCtx(WSDLDesignMultiViewDesc.class);
 	}
 
 

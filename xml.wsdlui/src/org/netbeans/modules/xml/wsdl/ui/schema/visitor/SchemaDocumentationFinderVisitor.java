@@ -30,6 +30,7 @@ package org.netbeans.modules.xml.wsdl.ui.schema.visitor;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Locale;
 import org.netbeans.modules.xml.schema.model.Annotation;
 import org.netbeans.modules.xml.schema.model.Documentation;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
@@ -40,6 +41,7 @@ import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalComplexType;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.LocalSimpleType;
+import org.netbeans.modules.xml.wsdl.ui.model.StringAttribute;
 
 /**
  *
@@ -49,9 +51,13 @@ public class SchemaDocumentationFinderVisitor extends AbstractXSDVisitor {
     
     private StringBuffer mDocumentationBuf = new StringBuffer(40);
     
+    private static StringAttribute xmlLangAttribute =  new StringAttribute("xml:lang");
+    
+    private String xmlLangValue = "";
     
     /** Creates a new instance of SchemaDocumentationFinderVisitor */
     public SchemaDocumentationFinderVisitor() {
+        xmlLangValue = convertLocaleToXmlLangValue();
     }
     
     public String getDocumentation() {
@@ -149,14 +155,7 @@ public class SchemaDocumentationFinderVisitor extends AbstractXSDVisitor {
     }
 
     public void visit(Annotation ann) {
-        Collection docs = ann.getDocumentationElements();
-        if (docs != null) {
-            Iterator iter = docs.iterator();
-            while(iter.hasNext()) {
-                Documentation doc = (Documentation) iter.next();
-                visit(doc);
-            }
-        }
+    	visitLocalizedDocumentation(ann);
     }
     
     public void visit(Documentation doc) {
@@ -166,5 +165,72 @@ public class SchemaDocumentationFinderVisitor extends AbstractXSDVisitor {
         }
     }
     
+    private void visitLocalizedDocumentation(Annotation ann) {
+        boolean foundLocalizedDocumentation = false;
+        
+        Collection<Documentation> docs = ann.getDocumentationElements();
+        if (docs != null) {
+            Iterator<Documentation> iter = docs.iterator();
+            while(iter.hasNext()) {
+                Documentation doc = iter.next();
+                String xmlLang = doc.getAttribute(xmlLangAttribute);
+                //find the first documentation matching current locale
+                if(xmlLang != null && xmlLang.equals(xmlLangValue)) {
+                    visit(doc);
+                    foundLocalizedDocumentation = true;
+                    break;
+                }
+            }
+            
+            //no matching documentation found, so looks like xml:lang
+            //is not specified
+            if(!foundLocalizedDocumentation) {
+                //get the first documentation and use is as default
+                if(docs.size() > 0) {
+                    visitDefaultDocumentation(docs);
+                }
+            }
+        }
+    }
+    
+    private String convertLocaleToXmlLangValue() {
+         StringBuffer xmlLangValue = new StringBuffer(15);
+        
+        Locale l = Locale.getDefault();
+        String language = l.getLanguage();
+        String country = l.getCountry();
+        String variant = l.getVariant();
+        
+        if(language != null && !language.trim().equals("")) {
+            xmlLangValue.append(language);
+        }
+        
+        if(country != null && !country.trim().equals("")) {
+            xmlLangValue.append("-");
+            xmlLangValue.append(country);
+        }
+        
+        if(variant != null && !variant.trim().equals("")) {
+            xmlLangValue.append("-");
+            xmlLangValue.append(variant);
+        }
+        
+        return xmlLangValue.toString();
+    }
+    
+    private void visitDefaultDocumentation( Collection<Documentation> docs) {
+        //find documentation which does not have xml:lang
+        if (docs != null) {
+            Iterator<Documentation> iter = docs.iterator();
+            while(iter.hasNext()) {
+                Documentation doc = iter.next();
+                String xmlLang = doc.getAttribute(xmlLangAttribute);
+                if(xmlLang == null || xmlLang.trim().equals("")) {
+                    visit(doc);
+                    break;
+                }
+            }
+        }
+    }
 }
 

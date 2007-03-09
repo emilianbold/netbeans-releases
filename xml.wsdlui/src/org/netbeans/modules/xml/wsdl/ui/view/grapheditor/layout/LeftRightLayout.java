@@ -78,9 +78,6 @@ public class LeftRightLayout implements Layout {
 
         Rectangle bounds = widget.getClientArea();
 
-        Point l1 = w1.getLocation();
-        Point l2 = w2.getLocation();
-
         Rectangle b1 = w1.getBounds();
         Rectangle b2 = w2.getBounds();
 

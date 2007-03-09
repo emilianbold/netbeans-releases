@@ -22,6 +22,7 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 
 public class DefaultElementOrTypeProvider implements ElementOrTypeProvider {
@@ -42,13 +43,18 @@ public class DefaultElementOrTypeProvider implements ElementOrTypeProvider {
         }
         getModel().startTransaction();
         if (o.isElement()) {
+            Utility.addSchemaImport(o.getElement(), getModel());
+            Utility.addNamespacePrefix(o.getElement().getModel().getSchema(), extensibilityElement.getModel(), null);
             extensibilityElement.setAttribute(elementAttributeName, o.toString());
             extensibilityElement.setAttribute(typeAttributeName, null);
         } else {
+            Utility.addSchemaImport(o.getType(), getModel());
+            Utility.addNamespacePrefix(o.getType().getModel().getSchema(), extensibilityElement.getModel(), null);
             extensibilityElement.setAttribute(typeAttributeName, o.toString());
             extensibilityElement.setAttribute(elementAttributeName, null);
         }
         getModel().endTransaction();
+        ActionHelper.selectNode(extensibilityElement);
     }
 
     public ElementOrType getElementOrType() {

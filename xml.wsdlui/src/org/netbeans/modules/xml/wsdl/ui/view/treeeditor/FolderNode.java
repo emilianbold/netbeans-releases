@@ -28,9 +28,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.swing.Action;
+
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
+import org.netbeans.modules.xml.wsdl.ui.cookies.SaveCookieDelegate;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
@@ -89,7 +92,9 @@ public abstract class FolderNode extends AbstractNode
         if (dobj != null) {
             contents.add(dobj);
         }
-
+        
+        contents.add(new SaveCookieDelegate(dobj));
+        
         referenceSet = new HashSet<Component>();
         highlights = new LinkedList<Highlight>();
         HighlightManager hm = HighlightManager.getDefault();

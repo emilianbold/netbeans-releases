@@ -20,13 +20,13 @@
 
 <ul>
 
-<li>The Name and Location page prompts you to supply basic information 
+<li>The Name and Location page prompts you to enter basic information 
 about the WSDL file.</li>
 
-<li>The Abstract Configuration page prompts you to supply information about the 
+<li>The Abstract Configuration page prompts you to enter information about the 
 following elements of the WSDL file: port type, operation, and message.</li>
 
-<li>The Concrete Configuration page prompts you to supply information about the 
+<li>The Concrete Configuration page prompts you to enter information about the 
 following elements of the WSDL file: binding, service, and port. </li>
 
 </ul>
@@ -50,7 +50,7 @@ Or you can fill out the Name and Location page and the Abstract Configuration pa
   <li>In the Name and Location wizard page, do the following:</li>
 
   <ol type="a">
-    <li>Supply a name for the file. You cannot enter a name that already exists in the project.</li>
+    <li>Enter a name for the file. You cannot enter a name that already exists in the project.</li>
     <li>(Optional) Change the default folder by clicking Browse and selecting the new folder.</li>
     <li>Enter the target namespace for the WSDL file. The target namespace will appear in the root element.</li>
     <li>Specify any XML Schema files that you want to import.</li>
@@ -61,15 +61,15 @@ Or you can fill out the Name and Location page and the Abstract Configuration pa
   <li>In the Abstract Configuration wizard page, do the following:</li>
 
   <ol type="a">
-    <li>Supply a name for the port type.</li>
-    <li>Supply a name for the operation.</li>
+    <li>Enter a name for the port type.</li>
+    <li>Enter a name for the operation.</li>
     <li>Select the category of operation.</li>
     <li>Depending on the category of operation, 
-      you supply message information for the input, or both the input and output. 
+      you enter message information for the input, or both the input and output. 
       Each message contains one or more logical parts. 
       The Add and Remove buttons enable you to add and remove message parts.</li>
     <li>(Optional) If the operation is a request-response operation, 
-      then you can supply message information for a fault.</li>
+      then you can enter message information for a fault.</li>
     <li>If you want to configure the concrete information from the wizard, then click Next. 
         Otherwise, click Finish.</li>
   </ol>
@@ -77,14 +77,21 @@ Or you can fill out the Name and Location page and the Abstract Configuration pa
   <li>In the Concrete Configuration wizard page, do the following:</li>
 
   <ol type="a">
-    <li>Supply a name for the binding.</li>
-    <li>Use the binding type field to customize the WSDL file for a particular binding component. 
+    <li>Enter a name for the binding.</li>
+    <li>Select the type of binding. 
         The appropriate extensibility elements will be added to the WSDL file.</li>
-    <li>If the binding type is SOAP, then the binding subtypes indicate how to translate 
-        the binding to a SOAP message. For other binding types, 
-        you typically have only one choice for the binding subtype.</li>
-    <li>Supply a name for the service.</li>
-    <li>Supply a name for the port.</li>
+    <li>  
+
+  If you selected the HTTP binding type, then you must specify whether the binding uses the GET or POST verb and 
+  whether message parts are encoded into the HTTP request URI using the standard URI-encoding rules or using a replacement algorithm. 
+
+  If you selected the SOAP binding type, then you must specify whether the operations are RPC-oriented or document-oriented and 
+  how the message parts reference their types.
+
+  For other binding types, you typically have only one choice for the binding subtype.</li>
+
+    <li>Enter a name for the service.</li>
+    <li>Enter a name for the port.</li>
     <li>Click Finish.</li>
   </ol>
 
@@ -103,6 +110,7 @@ Or you can fill out the Name and Location page and the Abstract Configuration pa
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="wsdl_editor.html" title="About the WSDL Editor">About the WSDL Editor</a></dd>
+<dd><a href="wsdl_editor_creating_existing.html" title="Creating a WSDL File Based On an Existing WSDL File">Creating a WSDL File Based On an Existing WSDL File</a></dd>
 </dl>
 <hr>
 <small>  

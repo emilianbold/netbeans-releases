@@ -1001,7 +1001,7 @@ public class ComplexTypeCustomizer<T extends ComplexType>
                     } else {
                         ComplexContent cc = factory.createComplexContent();
                         ce = factory.createComplexExtension();
-                        moveAttributeContents(lac,ce);
+                        moveComplexContents(lac,ce);
                         cc.setLocalDefinition(ce);
                         type.setDefinition(cc);
                     }
@@ -1123,6 +1123,24 @@ public class ComplexTypeCustomizer<T extends ComplexType>
         attrChildTypes.add(AttributeGroupReference.class);
         attrChildTypes.add(AnyAttribute.class);
         for(SchemaComponent child :oldParent.getChildren(attrChildTypes)) {
+            if(newParent.canPaste(child))
+                model.addChildComponent(newParent,child.copy(newParent),-1);
+            model.removeChildComponent(child);
+        }
+    }
+        
+    private void moveComplexContents(final LocalAttributeContainer oldParent,
+            final LocalAttributeContainer newParent) {
+        if(oldParent==null || newParent==null) return;
+        SchemaModel model = getSchemaModel();
+        ArrayList<Class<? extends SchemaComponent>> childTypes =
+                new ArrayList<Class<? extends SchemaComponent>>(4);
+        childTypes.add(LocalAttribute.class);
+        childTypes.add(AttributeReference.class);
+        childTypes.add(AttributeGroupReference.class);
+        childTypes.add(AnyAttribute.class);
+        childTypes.add(ComplexTypeDefinition.class);
+        for(SchemaComponent child :oldParent.getChildren(childTypes)) {
             if(newParent.canPaste(child))
                 model.addChildComponent(newParent,child.copy(newParent),-1);
             model.removeChildComponent(child);

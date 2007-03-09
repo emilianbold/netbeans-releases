@@ -3,7 +3,9 @@
 * Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
+
 <html>
+
 <head>
 <title>Using Code Completion in WSDL Files</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -15,16 +17,38 @@
 
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>You can use the following types of code completion in WSDL files:</p>
+<p>The WSDL Editor enables you to use the following types of code completion in WSDL files:</p>
 
 <ul>
-  <li><b>Element code completion.</b> When you type an opening left angle bracket (&lt;) inside a parent element, the IDE displays a list of child elements for the parent element.</li>
-  <li><b>Attribute code completion.</b> When you type the space character inside an element tag, the IDE displays a list of attributes for the element.</li>
+
+  <li><b>Element code completion.</b> When you type a starting tag (&lt;) inside a parent element, 
+         the code completion box displays a list of child elements for the parent element. 
+         For example, assume that you place the cursor immediately after the <tt>&lt;portType&gt;</tt> element. 
+         When you type the starting tag (&lt;), the code completion box displays the following list of child elements: 
+         <tt>documentation</tt> and <tt>operation</tt>.</p>
+
+  <li><b>Attribute code completion.</b> When you press Spacebar inside an element tag, 
+         the code completion box displays a list of attributes for the element.</li>
+
+</ul>
+
+<p>The code completion box can include elements and attributes that are specific to individual bindings, 
+such as the FTP binding.</p>
+
+<p>When the code completion box is visible, you can continue typing to fine tune the selection of items in the list. 
+You can also use the mouse or navigation keys to scroll through the list.</p>
+
+<p>To select an item in the list, do one of the following:</p>
+
+<ul>
+  <li>Highlight the item and press Enter</li>
+  <li>Double-click the item</li>
 </ul>
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="wsdl_editor_source.html" title="About the Source View">About the Source View</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/editing/codecompletion/intro.html" title="Using Code Completion">Using Code Completion</a></dd>
 </dl>
 <hr>
 <small>  

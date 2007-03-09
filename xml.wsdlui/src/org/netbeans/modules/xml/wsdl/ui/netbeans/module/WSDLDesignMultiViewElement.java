@@ -62,6 +62,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -302,15 +303,16 @@ public class WSDLDesignMultiViewElement extends TopComponent
         }
         return mToolbar;
     }
-    
+
     public javax.swing.JComponent getVisualRepresentation() {
         return this;
-    }   
+    }
 
     @SuppressWarnings("deprecation")
     public void requestFocus() {
         super.requestFocus();
         // Ensure the graph widgets have the focus.
+        // Also helps to make F1 open the correct help topic.
         if (graphComponent != null) {
             graphComponent.requestFocus();
         }
@@ -320,10 +322,15 @@ public class WSDLDesignMultiViewElement extends TopComponent
     public boolean requestFocusInWindow() {
         boolean retVal = super.requestFocusInWindow();
         // Ensure the graph widgets have the focus.
+        // Also helps to make F1 open the correct help topic.
         if (graphComponent != null) {
             return graphComponent.requestFocusInWindow();
         }
         return retVal;
+    }
+
+    public HelpCtx getHelpCtx() {
+	return new HelpCtx(WSDLDesignMultiViewDesc.class);
     }
 
     public void readExternal(ObjectInput in) throws

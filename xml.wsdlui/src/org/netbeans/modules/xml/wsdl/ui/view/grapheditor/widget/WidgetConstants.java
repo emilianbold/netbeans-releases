@@ -42,5 +42,7 @@ public interface WidgetConstants {
     
     public Color PARTNERLINKTYPE_GRADIENT_BOTTOM_COLOR = Color.WHITE;
     
+    public Color DISABLED_GRAY = new Color(0xDDDDDD);
+    
     
 }

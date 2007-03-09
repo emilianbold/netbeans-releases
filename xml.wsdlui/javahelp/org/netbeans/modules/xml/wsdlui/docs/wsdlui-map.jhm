@@ -23,15 +23,19 @@
 	<mapID target="wsdlui_documentation" url="wsdl_editor_documentation.html"/>
 	<mapID target="wsdlui_find" url="wsdl_editor_find.html"/>
 	<mapID target="wsdlui_partner" url="wsdl_editor_partner.html"/>
+	<mapID target="wsdlui_partner_layout" url="wsdl_editor_partner_layout.html"/>
 	<mapID target="wsdlui_partner_nav" url="wsdl_editor_partner_nav.html"/>
+	<mapID target="wsdlui_partner_top_bottom" url="wsdl_editor_partner_top_bottom.html"/>
 	<mapID target="wsdlui_partner_types" url="wsdl_editor_partner_types.html"/>
 	<mapID target="wsdlui_partner_messages" url="wsdl_editor_partner_messages.html"/>
 	<mapID target="wsdlui_creating" url="wsdl_editor_creating.html"/>
 	<mapID target="wsdlui_creating_existing" url="wsdl_editor_creating_existing.html"/>
 	<mapID target="wsdlui_validation" url="wsdl_editor_validation.html"/>
+
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLColumnsView" url="wsdl_editor.html"/>
-	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLTreeViewMultiViewDesc" url="wsdl_editor.html"/>
+	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLTreeViewMultiViewDesc" url="wsdl_editor_views.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLSourceMultiviewDesc" url="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html"/>
+	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDesignMultiViewDesc" url="wsdl_editor_partner.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.TreeEditorView" url="wsdl_editor.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.BindingFolderNode" url="wsdl_editor_bindings.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageFolderNode" url="wsdl_editor_messages.html"/>
@@ -61,7 +65,13 @@
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.BindingOperationOutputNode" url="wsdlui-bindingoperationoutputnode.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.BindingOperationFaultNode" url="wsdlui-bindingoperationfaultnode.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortNode" url="wsdlui-portnode.html"/>
+
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.wizard.WsdlPanel" url="CSH/new_wsdl_wizard_name_location.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.wizard.WizardPortTypeConfigurationStep" url="CSH/new_wsdl_wizard_define_abstract.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.wizard.WizardBindingConfigurationStep" url="CSH/new_wsdl_wizard_define_concrete.html"/>
+
+	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.PortTypeNewType" url="CSH/create_new_port_type.html"/>
+	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.PortTypeOperationNewType" url="CSH/create_new_operation.html"/>
+	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingAndServiceNewType" url="CSH/generate_binding_service_port.html"/>
+
 </map>

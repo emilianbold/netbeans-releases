@@ -36,6 +36,7 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.actions.CommonAddExtensibilityAttributeAction;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.actions.RemoveAttributesAction;
@@ -235,16 +236,22 @@ public class PartNode extends WSDLNamedElementNode {
                 return;
             }
             this.mElementOrType = elementOrType;
-            
-            mPart.getModel().startTransaction();
+            WSDLModel model = mPart.getModel();
+            model.startTransaction();
             if (elementOrType.isElement()) {
+                GlobalElement element = mElementOrType.getElement();
+                Utility.addSchemaImport(element, model);
+                Utility.addNamespacePrefix(element, mPart.getModel().getDefinitions(), null);
                 mPart.setElement(mPart.createSchemaReference(mElementOrType.getElement(), GlobalElement.class));
                 mPart.setType(null);
             } else {
                 mPart.setElement(null);
+                Utility.addSchemaImport(mElementOrType.getType(), model);
+                Utility.addNamespacePrefix(mElementOrType.getType().getModel().getSchema(), mPart.getModel(), null);
                 mPart.setType(mPart.createSchemaReference(mElementOrType.getType(), GlobalType.class));
             }
-            mPart.getModel().endTransaction();
+            model.endTransaction();
+            ActionHelper.selectNode(mPart);
         }
         
         

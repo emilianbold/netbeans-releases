@@ -25,10 +25,26 @@
 
 <p><b>To create a message:</b></p>
 
-<ul>
-  <li>Click Add Message. Alternately, you can drag the Message icon from the Palette onto the Messages box.<br>
-  The configuration box for the message appears. The message contains a default part with the type of content set to <tt>xsd:string</tt>.</li>
-</ul>
+<ol>
+
+  <li>Do one of the following:<br>
+  <ul>
+    <li>Click Add Message.</li>
+    <li>Drag the Message icon from the Palette onto the Messages box.</li>
+    <li>Right-click the Messages box and choose Add Message.</li>
+  </ul>
+  The configuration box for the message appears. The message contains one part. The part's type of content is undefined.</li>
+
+  <li>Do one of the following:</li>
+  <ul>
+    <li>In the Part Type or Element column, click the ellipsis (...) button. 
+        Select any of the built-in types in W3C XML Schema. 
+        If you added an inline schema or imported a schema, then you can select a type from the schema. 
+        Click OK.</li>
+    <li>Drag an element or type from the Navigator window onto the Part Type or Element column.</li>
+  </ul>
+
+</ol>
 
 
 
@@ -66,10 +82,12 @@
 <p><b>To add a part:</b></p>
 
 <ul>
-  <li>Do one of the following:</li>
+  <li>Do one of the following:<br>
   <ul>
     <li>Click Add Part.<br>
-        A new row appears. By default, the type of content is set to <tt>xsd:string</tt>.</li>
+        A new row appears. The type of content is set to <tt>xs:string</tt>.</li>
+    <li>Right-click the configuration box for the message and choose Add Part from the pop-up menu.<br>
+        A new row appears. The type of content is undefined.</li>
     <li>Drag an element or type from the Navigator window onto the configuration box for the message, 
         and above or below an existing row.<br>
         A new row appears. The type of content is set to the element or type that you selected.</li>

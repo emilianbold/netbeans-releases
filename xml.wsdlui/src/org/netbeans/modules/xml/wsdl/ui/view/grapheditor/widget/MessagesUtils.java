@@ -70,7 +70,7 @@ public class MessagesUtils {
         String name;
         
         do {
-            name = "Message" + (++i);
+            name = "message" + (++i);
         } while (getMessageByName(model, name) != null);
         
         return name;        
@@ -88,7 +88,7 @@ public class MessagesUtils {
         String name;
         
         do {
-            name = "Part" + (++i); // NOI18N
+            name = "part" + (++i); // NOI18N
         } while (getPartByName(message, name) != null);
         
         return name;        

@@ -79,11 +79,6 @@ public class ReadOnlySchemaComponentNode extends FilterNode {
         this.displayTemplate = displayTemplate;
     }
     
-    public String getDisplayName() {
-        String retValue = super.getDisplayName();
-        return retValue;
-    }
-    
     public String getDefaultDisplayName() {
 	String displayName = null;
 	SchemaComponentNode scn = (SchemaComponentNode)

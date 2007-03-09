@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.Operation;
@@ -91,7 +92,7 @@ public class PortTypeOperationNewType extends NewType {
                                                            DialogDescriptor.OK_CANCEL_OPTION,
                                                            DialogDescriptor.OK_OPTION,
                                                            DialogDescriptor.DEFAULT_ALIGN,
-                                                           HelpCtx.DEFAULT_HELP,
+                                                           new HelpCtx(PortTypeOperationNewType.class),
                                                            null);
                 panel.setDialogDescriptor(dd);
                 

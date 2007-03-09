@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+<head>
+<title>Understanding the Top-Down and Bottom-Up Approaches</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+
+<h2>Understanding the Top-Down and Bottom-Up Approaches</h2>
+
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Partner view of the WSDL Editor supports the top-down and bottom-up approaches to creating a WSDL file.</p>
+
+<p>The top-down approach consists of the following steps:</p>
+
+<ol>
+  <li>Create a partner link type. 
+    The partner link type contains a default role, which appears on the right. 
+    If you want to define a peer-to-peer interaction, then you must add a second role on the left.</li>
+  <li>Create the messages that will be sent from one partner to another.</li>
+  <li>Assign the messages to the partner link type's operations.</li>
+  <li>Specify the data types for the messages. 
+    Note that you can create or import an XML schema by using the Navigator window, 
+    and then drag the schema elements or types into the messages.</li>
+</ol>
+
+<p>The bottom-up approach consists of the following steps:</p>
+
+<ol>
+  <li>Create or import an XML schema by using the Navigator window.</li>
+  <li>Create the messages that will be sent from one partner to another. 
+    Note that you can drag the schema elements or types from the Navigator window into the messages.</li>
+  <li>Create a partner link type. 
+    The partner link type contains a default role, which appears on the right. 
+    If you want to define a peer-to-peer interaction, then you must add a second role on the left.</li>
+  <li>Assign the messages to the partner link type's operations.</li>
+</ol>
+
+<p>If you are building a composite application, then you can use the 
+Composite Application Service Assembly (CASA) editor to configure the concrete bindings in the WSDL file. 
+This approach prevents the WSDL file from being tied to a particular binding.</p>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="wsdl_editor_partner.html" title="About the Partner View">About the Partner View</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

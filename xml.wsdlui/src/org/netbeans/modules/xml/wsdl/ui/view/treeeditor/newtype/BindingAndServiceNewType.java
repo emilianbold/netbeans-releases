@@ -46,6 +46,7 @@ import org.netbeans.modules.xml.wsdl.ui.wizard.WizardBindingConfigurationStep;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
@@ -95,7 +96,14 @@ public class BindingAndServiceNewType extends NewType {
         panel.setServicePortName(portName);
         
         
-        final DialogDescriptor descriptor = new DialogDescriptor(panel , "Generate Binding and Service Port", true, null);
+        final DialogDescriptor descriptor = new DialogDescriptor(panel,
+                NbBundle.getMessage(BindingAndServiceNewType.class, "LBL_Generate_Binding_and_ServicePort"),
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(BindingAndServiceNewType.class),
+                null);
         final PropertyChangeListener pcl = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if(evt.getSource()== panel && evt.getPropertyName().equals(BindingConfigurationDialogPanel.APPLY_CHANGE)) {

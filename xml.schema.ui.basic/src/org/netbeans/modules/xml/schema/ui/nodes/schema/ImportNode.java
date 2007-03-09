@@ -120,25 +120,22 @@ public class ImportNode extends SchemaComponentNode<Import>
 		return sheet;
     }
 
-	/**
-	 *
-	 *
-	 */
+    @Override
+    protected void updateDisplayName() {
+        // Force the display name to be updated.
+        fireDisplayNameChange("NotTheDefaultName", getDefaultDisplayName());
+    }
+
+    @Override
     public String getHtmlDisplayName() {
-        String name = getDefaultDisplayName() + 
-			" {" + getReference().get().getNamespace() + "}";
+        String name = getDefaultDisplayName() +
+                " {" + getReference().get().getNamespace() + "}";
         return applyHighlights(name);
     }
 
-
-	/**
-	 *
-	 *
-	 */
-	@Override
-	public String getTypeDisplayName()
-	{
-		return NbBundle.getMessage(ImportNode.class,
-			"LBL_ImportNode_TypeDisplayName"); // NOI18N
-	}
+    @Override
+    public String getTypeDisplayName() {
+        return NbBundle.getMessage(ImportNode.class,
+                "LBL_ImportNode_TypeDisplayName");
+    }
 }

@@ -43,14 +43,14 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+
 import javax.swing.JTextField;
+
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
@@ -59,11 +59,11 @@ import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.action.TextFieldInplaceEditorProvider;
+import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -72,7 +72,6 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.ButtonBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.AbstractComponent;
@@ -85,7 +84,7 @@ import org.openide.util.Utilities;
 
 public class MessageWidget extends AbstractWidget<Message>
         implements ExpandableWidget, ActionListener, DnDHandler {
-    private static final boolean EXPANDED_DEFAULT = false;
+    private static final boolean EXPANDED_DEFAULT = true;
     private ButtonWidget addPartButton;
     private ButtonWidget removePartButton;
     
@@ -123,7 +122,10 @@ public class MessageWidget extends AbstractWidget<Message>
         removePartButton.setActionListener(this);
         removePartButton.setButtonEnabled(false);
         
-        buttons = createButtonsContainer(scene);
+        buttons = new Widget(scene);
+        buttons.setBorder(BUTTONS_BORDER);
+        buttons.setLayout(LayoutFactory.createHorizontalLayout(
+                SerialAlignment.LEFT_TOP, 8));
         buttons.addChild(addPartButton);
         buttons.addChild(removePartButton);
         
@@ -139,6 +141,7 @@ public class MessageWidget extends AbstractWidget<Message>
     }
     
 
+    @Override
     protected void notifyStateChanged(ObjectState previousState, 
             ObjectState state) 
     {
@@ -178,21 +181,19 @@ public class MessageWidget extends AbstractWidget<Message>
     
     private void createContent() {
         header = createHeader(getScene(), getWSDLComponent());
+        addChild(header);
+
         table = createPartsTable(getScene(), getWSDLComponent());
-        
         if (table != null) {
             contentWidget.addChild(table);
         }
         
         contentWidget.addChild(buttons);
-        
-        addChild(0, header);
 
         updateButtonState();
     }
-    
-    
-    public void updateButtonState() {
+
+    void updateButtonState() {
         boolean enabled = false;
         if (table != null && table.getChildren() != null) {
             for (Widget w : table.getChildren()) {
@@ -201,7 +202,6 @@ public class MessageWidget extends AbstractWidget<Message>
                 }
             }
         }
-        
         if (enabled != removePartButton.isButtonEnabled()) {
             removePartButton.setButtonEnabled(enabled);
         }
@@ -335,33 +335,6 @@ public class MessageWidget extends AbstractWidget<Message>
         return (count == 1) ? "(1 part)" : ("(" + count + " parts)"); // NOI18N
     }
 
-    
-    public Widget createImageButton(Scene scene, Image image) {
-        ImageWidget result = new ImageWidget(scene, image);
-        result.setBorder(new ButtonBorder(2, 2, 2, 2));
-        return result;
-    }
-    
-    
-    public Widget createTextButton(Scene scene, String text) {
-        LabelWidget result = new LabelWidget(scene, text);
-        result.setFont(scene.getDefaultFont());
-        result.setBorder(new ButtonBorder(2, 8, 2, 8));
-        result.setAlignment(LabelWidget.Alignment.LEFT);
-        result.setVerticalAlignment(LabelWidget.VerticalAlignment.CENTER);
-        return result;
-    }
-    
-    
-    private Widget createButtonsContainer(Scene scene) {
-        Widget result = new Widget(scene);
-        result.setBorder(BUTTONS_BORDER);
-        result.setLayout(LayoutFactory.createHorizontalLayout(
-                SerialAlignment.LEFT_TOP, 8));
-        return result;
-    }
-    
-    
     private void showHitPoint(Point scenePoint, Object draggedObject) {
         this.draggedObject = draggedObject;
         
@@ -408,9 +381,8 @@ public class MessageWidget extends AbstractWidget<Message>
         partHitPointPosition = null;
         draggedObject = null;
     }
-    
-    
-    public Widget createHeaderLabel(Scene scene, Message message) {
+
+    private Widget createHeaderLabel(Scene scene, Message message) {
         String name = message.getName();
         
         if (name == null) {
@@ -427,9 +399,8 @@ public class MessageWidget extends AbstractWidget<Message>
         
         return result;
     }
-    
-    
-    public Widget createHeader(Scene scene, Message message) {
+
+    private Widget createHeader(Scene scene, Message message) {
         Widget result = new HeaderWidget(scene, expanderWidget);
 
         result.addChild(createHeaderLabel(scene, message));
@@ -444,9 +415,8 @@ public class MessageWidget extends AbstractWidget<Message>
         
         return result;
     }
-    
-    
-    public Widget createPartsTableHeaderCell(Scene scene, String text) {
+
+    private Widget createPartsTableHeaderCell(Scene scene, String text) {
         LabelWidget result = new LabelWidget(scene, text);
         result.setBorder(HEADER_CELL_BORDER);
         result.setFont(scene.getDefaultFont());
@@ -454,9 +424,8 @@ public class MessageWidget extends AbstractWidget<Message>
         result.setVerticalAlignment(LabelWidget.VerticalAlignment.CENTER);
         return result;
     }    
-    
-    
-    public Widget createPartsTableHeader(Scene scene) {
+
+    private Widget createPartsTableHeader(Scene scene) {
         Widget result = new Widget(scene);
         result.addChild(createPartsTableHeaderCell(scene, NbBundle.getMessage(
                 MessageWidget.class,
@@ -467,9 +436,8 @@ public class MessageWidget extends AbstractWidget<Message>
         result.setLayout(PartWidget.ROW_LAYOUT);
         return result;
     }
-    
-    
-    public Widget createPartsTable(Scene scene, Message message) {
+
+    private Widget createPartsTable(Scene scene, Message message) {
         List<Part> parts = message.getChildren(Part.class);
         
         if (parts == null) return null;
@@ -484,9 +452,8 @@ public class MessageWidget extends AbstractWidget<Message>
         
         return result;
     }
-    
-    
-    public Widget createEmptyTable(Scene scene) {
+
+    private Widget createEmptyTable(Scene scene) {
         Widget result = new Widget(scene);
         result.addChild(createPartsTableHeader(scene));
         result.setBorder(TABLE_BORDER);
@@ -645,39 +612,9 @@ public class MessageWidget extends AbstractWidget<Message>
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/message.png"); // NOI18N
     
-    private static final Image EXPANDED_IMAGE = new BufferedImage(12, 12, 
-            BufferedImage.TYPE_INT_ARGB);
-    
     public static final Border HEADER_CELL_BORDER = new FilledBorder(0, 0, 1, 8, null, 
             new Color(0xEEEEEE));
-    
-    
-    static {
-        Graphics2D g2 = ((BufferedImage) EXPANDED_IMAGE).createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        
-        float w = EXPANDED_IMAGE.getWidth(null);
-        float h = EXPANDED_IMAGE.getHeight(null);
-        float r = Math.min(w, h) * 0.5f * 0.75f;
-        
-        GeneralPath gp = new GeneralPath();
-        
-        float dx = (float) (r * Math.cos(Math.toRadians(-30)));
-        float dy = (float) (r * Math.sin(Math.toRadians(-30)));
-        
-        gp.moveTo(dx, dy);
-        gp.lineTo(0, r);
-        gp.lineTo(-dx, dy);
-        gp.lineTo(dx, dy);
-        gp.closePath();
-        
-        g2.translate(w / 2, h / 2);
-        g2.setPaint(new Color(0x888888));
-        g2.fill(gp);
-    }
 
-    
     protected void paintChildren() {
         super.paintChildren();
         
@@ -811,14 +748,8 @@ public class MessageWidget extends AbstractWidget<Message>
         public void setText(Widget widget, String text) {
             Message message = getMessage(widget);
             if (message != null) {
-                WSDLModel model = message.getModel();
-                try {
-                    if (model.startTransaction()) {
-                        message.setName(text);
-                    }
-                } finally {
-                    model.endTransaction();
-                }
+                // try rename silent and locally
+                AnalysisUtilities.locallyRenameRefactor(message, text);
             }
         }
         

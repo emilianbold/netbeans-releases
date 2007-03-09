@@ -36,12 +36,12 @@ import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Vector;
-
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
@@ -55,6 +55,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.LabelWidget.VerticalAlignment;
+import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -66,8 +67,8 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplace
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.HoverActionProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageNode;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.DisplayObject;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.actions.NewAction;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -76,7 +77,8 @@ import org.openide.util.NbBundle;
  *
  * @author radval
  */
-public class OperationParameterWidget extends AbstractWidget<OperationParameter> implements DnDHandler {
+public class OperationParameterWidget extends AbstractWidget<OperationParameter>
+        implements DnDHandler {
 
     private LabelWidget mParameterMessage;
     private OperationParameter mParameter;
@@ -92,6 +94,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     public OperationParameterWidget(Scene scene, OperationParameter parameter,
             Lookup lookup) {
         super(scene, parameter, lookup);
+
         mParameter = parameter;
         setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 1));
         mParameterMessage = new LabelWidget (scene);
@@ -109,7 +112,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         mParameterMessage.getActions().addAction(ActionFactory.createInplaceEditorAction(new ComboBoxInplaceEditorProvider(new ComboBoxInplaceEditor() {
             public boolean isEnabled(Widget widget) {
                 if (getWSDLComponent() != null) {
-                    return XAMUtils.isWritable(getWSDLComponent().getModel());
+                    return !isImported() && XAMUtils.isWritable(getWSDLComponent().getModel());
                 }
                 return false;
             }
@@ -186,19 +189,13 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
                 mLabel.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
 
                     public void setText(Widget widget, String text) {
-                        Model model = mParameter.getModel();
-                        try {
-                            if (model.startTransaction()) {
-                                mParameter.setName(text);
-                            }
-                        } finally {
-                            model.endTransaction();
-                        }
+                        if (getWSDLComponent() != null)
+                            AnalysisUtilities.locallyRenameRefactor(getWSDLComponent(), text);
                     }
 
                     public boolean isEnabled(Widget widget) {
                         if (getWSDLComponent() != null) {
-                            return XAMUtils.isWritable(getWSDLComponent().getModel());
+                            return !isImported() && XAMUtils.isWritable(getWSDLComponent().getModel());
                         }
                         return false;
                     }
@@ -231,6 +228,19 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         return this.mParameterMessage.getLabel();
     }
     
+    protected boolean isImported() {
+        if (getWSDLComponent() != null) {
+            return getModel() != getWSDLComponent().getModel();
+        }
+        return false;
+    }
+    
+    @Override
+    protected Node getNodeFilter(Node original) {
+        if (isImported()) return new ReadOnlyWidgetFilterNode(original);
+        
+        return super.getNodeFilter(original);
+    }
     
     private Vector<DisplayObject> getAllMessages(WSDLModel model) {
         Vector<DisplayObject> list = new Vector<DisplayObject>();
@@ -333,7 +343,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     }
 
     public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
-
+        if (isImported()) return false;
         Transferable transferable = event.getTransferable();
 
         try {
@@ -358,6 +368,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     }
 
     public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
+        if (isImported()) return false;
         Transferable transferable = event.getTransferable();
         try {
             if (transferable != null) {
@@ -382,11 +393,11 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
 
     private void setMessage(MessageNode node) {
         Message message = (Message) node.getWSDLComponent();
-        if (getWSDLComponent().getModel().startTransaction()) {
+        if (getModel().startTransaction()) {
             try {
             getWSDLComponent().setMessage(getWSDLComponent().createReferenceTo(message, Message.class));
             } finally {
-                getWSDLComponent().getModel().endTransaction();
+                getModel().endTransaction();
             }
         }
         
@@ -396,5 +407,17 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
 
     public boolean isCollapsed() {
         return false;
+    }
+
+    @Override
+    protected void updateActions(List<Action> actions) {
+        super.updateActions(actions);
+        ListIterator<Action> liter = actions.listIterator();
+        while (liter.hasNext()) {
+            Action action = liter.next();
+            if (action instanceof NewAction) {
+                liter.remove();
+            }
+        }
     }
 }
