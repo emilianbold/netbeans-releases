@@ -127,7 +127,8 @@ class BasicDropTargetListener implements DropTargetListener, UIResource, ActionL
     void updateAutoscrollRegion(JComponent c) {
 	// compute the outer
 	Rectangle visible = c.getVisibleRect();
-	outer.reshape(visible.x, visible.y, visible.width, visible.height);
+//	outer.reshape(visible.x, visible.y, visible.width, visible.height);
+	outer.setBounds(visible.x, visible.y, visible.width, visible.height);
 
 	// compute the insets
 	// TBD - the thing with the scrollable
@@ -141,7 +142,11 @@ class BasicDropTargetListener implements DropTargetListener, UIResource, ActionL
 	}
 
 	// set the inner from the insets
-	inner.reshape(visible.x + i.left,
+//	inner.reshape(visible.x + i.left,
+//		      visible.y + i.top,
+//		      visible.width - (i.left + i.right),
+//		      visible.height - (i.top  + i.bottom));
+	inner.setBounds(visible.x + i.left,
 		      visible.y + i.top,
 		      visible.width - (i.left + i.right),
 		      visible.height - (i.top  + i.bottom));
