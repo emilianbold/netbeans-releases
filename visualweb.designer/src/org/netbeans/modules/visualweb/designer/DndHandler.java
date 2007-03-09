@@ -68,10 +68,10 @@ import org.netbeans.modules.visualweb.text.Position;
  */
 public class DndHandler /*extends TransferHandler*/ {
 
-    /** XXX Copy from DropSupport. */
-    private static final int DROP_ABOVE  = -1;
-    private static final int DROP_CENTER = 0;
-    private static final int DROP_BELOW  = 1;
+//    /** XXX Copy from DropSupport. */
+//    private static final int DROP_ABOVE  = -1;
+//    private static final int DROP_CENTER = 0;
+//    private static final int DROP_BELOW  = 1;
 
 
     /** State indicating that a drop is not allowed */
