@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -534,9 +534,13 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     }
     
     public void stopProgress() {
+        //Method startProgress() must be called first
+        if (progressThread == null) {
+            return;
+        }
         logEvent(this, Log.DBG,"in progress stop");
-        progressThread.interrupt();
-        logEvent(this, Log.DBG,"interrupting ProgressThread ");
+        progressThread.finish();
+        logEvent(this, Log.DBG,"Finishing ProgressThread");
         //wait until progressThread is interrupted
         while (progressThread.isAlive()) {
             logEvent(this, Log.DBG,"Waiting for progressThread to die...");
@@ -544,11 +548,8 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 Thread.currentThread().sleep(1000);
             } catch (Exception ex) {}
         }
-        logEvent(this, Log.DBG,"ProgressThread interrupted");
-        progressThread.finish();
-        //progressThread = null;
-        
-        Thread.currentThread().yield();
+        logEvent(this, Log.DBG,"ProgressThread finished");
+        progressThread = null;
         logEvent(this, Log.DBG,"active Threads -> " + Thread.currentThread().activeCount());
     }
 
@@ -951,7 +952,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         }
         
         public void run() {
-            int sleepTime = 1000;
+            long sleepTime = 1000L;
             while (loop) {
                 try {
                     if (jdkDir.exists()) {
@@ -959,14 +960,13 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                         updateProgressBar();
                         //logEvent(this, Log.DBG,"going 2 updateStatusDetail");
                         updateStatusDetail();
-                        
-                        sleepTime = 1200;
                     } else {
                         updateStatusDetail();
-                        sleepTime = 2000;
                     }
                     Thread.currentThread().sleep(sleepTime);
-                    if (isCanceled()) return;
+                    if (isCanceled()) {
+                        return;
+                    }
                 } catch (InterruptedException ex) {
                     //ex.printStackTrace();
                     loop = false;
@@ -979,13 +979,13 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                     return;
                 }
             }
+            logEvent(this, Log.DBG,"Finished loop loop:" + loop);
         }
         
         public void finish() {
             loop = false;
-            Thread.currentThread().yield();
             mos.setStatusDetail("");
-            logEvent(this, Log.DBG,"Finishing");;
+            logEvent(this, Log.DBG,"Finishing");
             if(!mos.isCanceled()) {
                 mos.setStatusDescription("");
                 //As this action is not the last one (there is now StorageBuilder after)
@@ -994,8 +994,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                     logEvent(this, Log.DBG,"percentageCompleted = " + percentageCompleted + " updateCounter " + mos.getUpdateCounter());
                     mos.updatePercentComplete(ESTIMATED_TIME, 1L, 100L);
                 }*/
-            }
-            else {
+            } else {
                 String statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installationCancelled)");
                 mos.setStatusDescription(statusDesc);
                 mos.getProgress().setPercentComplete(0);
@@ -1003,15 +1002,12 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             
         }
         
-        /** Check if the operation is canceled. If not yield to other threads. */
+        /** Check if the operation is canceled. */
         private boolean isCanceled() {
             if(mos.isCanceled() && loop) {
                 logEvent(this, Log.DBG,"MOS is cancelled");
                 loop = false;
                 runCommand.interrupt();
-            }
-            else {
-                Thread.currentThread().yield();
             }
             
             return mos.isCanceled();

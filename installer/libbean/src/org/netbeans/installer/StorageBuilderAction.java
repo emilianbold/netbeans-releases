@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,16 +30,12 @@ import com.installshield.wizard.service.exitcode.ExitCodeService;
 import com.installshield.wizard.service.file.FileService;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 
 public class StorageBuilderAction extends ProductAction {
     
@@ -378,8 +374,8 @@ public class StorageBuilderAction extends ProductAction {
             return;
         }
         logEvent(this, Log.DBG,"in progress stop");
-        progressThread.interrupt();
-        logEvent(this, Log.DBG,"interrupting ProgressThread ");
+        progressThread.finish();
+        logEvent(this, Log.DBG,"Finishing ProgressThread");
         //wait until progressThread is interrupted
         while (progressThread.isAlive()) {
             logEvent(this, Log.DBG,"Waiting for progressThread to die...");
@@ -387,11 +383,8 @@ public class StorageBuilderAction extends ProductAction {
                 Thread.currentThread().sleep(1000);
             } catch (Exception ex) {}
         }
-        logEvent(this, Log.DBG,"ProgressThread interrupted");
-        progressThread.finish();
+        logEvent(this, Log.DBG,"ProgressThread finished");
         progressThread = null;
-        
-        Thread.currentThread().yield();
         logEvent(this, Log.DBG,"active Threads -> " + Thread.currentThread().activeCount());
     }
 
@@ -467,11 +460,11 @@ public class StorageBuilderAction extends ProductAction {
                     return;
                 }
             }
+            logEvent(this, Log.DBG,"Finished loop loop:" + loop);
         }
         
         public void finish() {
             loop = false;
-            Thread.currentThread().yield();
             mos.setStatusDetail("");
             logEvent(this, Log.DBG,"Finishing");;
             if (!mos.isCanceled()) {
@@ -489,13 +482,11 @@ public class StorageBuilderAction extends ProductAction {
             
         }
         
-        /** Check if the operation is canceled. If not yield to other threads. */
+        /** Check if the operation is canceled. */
         private boolean isCanceled() {
             if (mos.isCanceled() && loop) {
                 logEvent(this, Log.DBG,"MOS is cancelled");
                 loop = false;
-            } else {
-                Thread.currentThread().yield();
             }
             
             return mos.isCanceled();

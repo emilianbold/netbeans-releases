@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -769,31 +769,22 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     }
     
     public void stopProgress() {
+        //Method startProgress() must be called first
+        if (progressThread == null) {
+            return;
+        }
         logEvent(this, Log.DBG,"in progress stop");
-        progressThread.interrupt();
-        logEvent(this, Log.DBG,"interrupting ProgressThread ");
+        progressThread.finish();
+        logEvent(this, Log.DBG,"Finishing ProgressThread");
         //wait until progressThread is interrupted
-	int count = 0;
-        while (progressThread.isAlive() && count < 20) {
+        while (progressThread.isAlive()) {
             logEvent(this, Log.DBG,"Waiting for progressThread to die...");
-            // Sometimes the 1st interrupt is not good enough
-	    if (count == 10)
-		progressThread.interrupt();
-	    else if (count == 15) {
-                // now try something else instead of interrupt
-		progressThread.setLoop(false);
-	    }
-
             try {
                 Thread.currentThread().sleep(1000);
             } catch (Exception ex) {}
-	    count++;
         }
-        logEvent(this, Log.DBG,"ProgressThread interrupted");
-        progressThread.finish();
-        //progressThread = null;
-        
-        Thread.currentThread().yield();
+        logEvent(this, Log.DBG,"ProgressThread finished");
+        progressThread = null;
         logEvent(this, Log.DBG,"active Threads -> " + Thread.currentThread().activeCount());
     }
 
@@ -1043,10 +1034,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             }
         }
         
-	public void setLoop(boolean b) {
-	    loop = b;
-	}
-
         public void run() {
             long sleepTime = 1000L;
             while (loop) {
@@ -1088,11 +1075,11 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                     return;
                 }
             }
+            logEvent(this, Log.DBG,"Finished loop loop:" + loop);
         }
         
         public void finish() {
             loop = false;
-            Thread.currentThread().yield();
             mos.setStatusDetail("");
             logEvent(this, Log.DBG,"Finishing");
             if(!mos.isCanceled()) {
@@ -1110,14 +1097,12 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             stopReader(logFileReader);
         }
         
-        /**check if the operation is canceled. If not yield to other threads.*/
+        /**check if the operation is canceled. */
         private boolean isCanceled() {
             if (mos.isCanceled() && loop) {
                 logEvent(this, Log.DBG,"MOS is cancelled");
                 loop = false;
                 runCommand.interrupt();
-            } else {
-                Thread.currentThread().yield();
             }
             
             return mos.isCanceled();
