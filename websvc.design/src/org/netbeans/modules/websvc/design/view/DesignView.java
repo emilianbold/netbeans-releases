@@ -47,14 +47,16 @@ public class DesignView extends JPanel  {
         super(new BorderLayout());
 
         scene = new Scene();
+        // initialize configuration
         scene.setBackground(new Color(255, 255, 191));
-
-        Widget opWidget = new OperationsWidget(scene,service);
         scene.setLayout(LayoutFactory.createVerticalLayout());
-        scene.setPreferredLocation(new Point(0,0));
+        // add actions
+        scene.getActions().addAction(ActionFactory.createZoomAction ());
+        scene.getActions().addAction(ActionFactory.createPanAction ());
+
+        //add operations widget
+        Widget opWidget = new OperationsWidget(scene,service);
         scene.addChild(opWidget);
-        scene.getActions().addAction(ActionFactory.createMoveAction());
-        opWidget.setPreferredLocation(new Point(100,100));
 
         add(scene.createView());
     }

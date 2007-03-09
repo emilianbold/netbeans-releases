@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
+import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -44,6 +45,7 @@ public class OperationWidget extends LabelWidget{
         setBorder(BORDER_4);
         setOpaque(true);
         setBackground(new Color(191,255,255));
+        getActions().addAction(ActionFactory.createMoveAction());
     }
     
 }

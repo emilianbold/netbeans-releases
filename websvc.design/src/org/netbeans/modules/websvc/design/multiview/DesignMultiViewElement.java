@@ -65,7 +65,6 @@ public class DesignMultiViewElement extends TopComponent
     private void initialize(MultiViewSupport mvSupport) {
         associateLookup(Lookups.fixed(mvSupport));
         service = mvSupport.getService();
-        initUI();
     }
     
     public int getPersistenceType() {
@@ -103,6 +102,8 @@ public class DesignMultiViewElement extends TopComponent
     
     public void componentOpened() {
         super.componentOpened();
+        // create UI, this will be moved to componentShowing for refresh/sync
+        initUI();
     }
     
     public void componentClosed() {
@@ -111,7 +112,6 @@ public class DesignMultiViewElement extends TopComponent
     
     public void componentShowing() {
         super.componentShowing();
-        initUI();
     }
     
     public void componentHidden() {

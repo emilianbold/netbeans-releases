@@ -21,7 +21,7 @@ package org.netbeans.modules.websvc.design.view.widget;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
@@ -30,19 +30,25 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
  *
  * @author Ajit Bhate
  */
-public class OperationsWidget extends Widget{
+public class OperationsWidget extends LayerWidget {
     
+    private transient WsdlService wsdlService;
     /** 
      * Creates a new instance of OperationWidget 
      * @param scene 
-     * @param label 
+     * @param service 
      */
     public OperationsWidget(Scene scene, Service service) {
         super(scene);
-        createContent(service);
+        initialize(service);
+        createContent();
     }
     
-    private void createContent(Service service) {
+    /**
+     * Initialize the model. Try to find if the Service is created from WSDL.
+     * If so find the WsdlService object representing JAXWS service
+     */
+    private void initialize(Service service) {
         try {
             String wsdlUrlStr = service.getWsdlUrl();
             if(wsdlUrlStr==null) return;
@@ -50,16 +56,19 @@ public class OperationsWidget extends Widget{
             if(wsdlUrl==null) return;
             WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
             if(modeler==null) return;
-            WsdlModel model = modeler.getWsdlModel();
+            WsdlModel model = modeler.getAndWaitForWsdlModel();
             if(model==null) return;
-            WsdlService wsdlService = model.getServiceByName(service.getName());
-            if (wsdlService==null) return;
-            for(WsdlPort port:wsdlService.getPorts()) {
-                for(WsdlOperation operation:port.getOperations()) {
-                    addChild(new OperationWidget(getScene(),operation));
-                }
-            }
+            wsdlService = model.getServiceByName(service.getServiceName());
         } catch(MalformedURLException e) {
+        }
+    }
+
+    private void createContent() {
+        if (wsdlService==null) return;
+        for(WsdlPort port:wsdlService.getPorts()) {
+            for(WsdlOperation operation:port.getOperations()) {
+                addChild(new OperationWidget(getScene(),operation));
+            }
         }
     }
 }
