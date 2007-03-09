@@ -109,20 +109,32 @@ public class JavaClass {
     /*
      * Return all the methods
      */
-    public List<ExecutableElement> getMethods() {
-        return getMethods(null, null, null);
+    public List<Method> getMethods() {
+         return (List<Method>)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                List<Method> methods = new ArrayList<Method>();
+                for(ExecutableElement method : getMethods(cinfo, null, null, null)) {
+                    methods.add(new Method(method, JavaClass.this));
+                }
+                return methods;
+            }
+        }, fObj);        
     }
     
     /*
      * Return all methods that has same return type and parameter types as 
      * specified by arguments
      */ 
-    public List<String> getMethodNames(Class[] params, Class retType) {
-        List<String> names = new ArrayList<String>();
-        for(ExecutableElement method : getMethods(null, params, retType)) {
-            names.add(method.getSimpleName().toString());
-        }
-        return names;
+    public List<String> getMethodNames(final Class[] params, final Class retType) {
+        return (List<String>)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                List<String> names = new ArrayList<String>();
+                for(ExecutableElement method : getMethods(cinfo, null, params, retType)) {
+                    names.add(method.getSimpleName().toString());
+                }
+                return names;
+            }
+        }, fObj);        
     }    
     
     /*
@@ -181,8 +193,7 @@ public class JavaClass {
                 TypeElement typeElement = typeElementHandle.resolve(wc);
                 ClassTree ctree = wc.getTrees().getTree(typeElement);
                 ClassTree newctree = ctree;
-                TreeMakerUtils utils = new TreeMakerUtils(wc);
-                VariableTree vtree = utils.createPropertyField(name, type);
+                VariableTree vtree = TreeMakerUtils.createPropertyField(wc, name, type);
                 
                 // Find the constructor
                 // TBD: index selection logic, i.e where to add the field, getter and setter
@@ -191,11 +202,11 @@ public class JavaClass {
                 newctree = make.insertClassMember(newctree, ctree.getMembers().indexOf(ctor), vtree);
                 MethodTree mtree = null;
                 if(getter) {
-                    mtree = utils.createPropertyGetterMethod(name, type);
+                    mtree = TreeMakerUtils.createPropertyGetterMethod(wc, name, type);
                     newctree = make.insertClassMember(newctree, newctree.getMembers().indexOf(ctor), mtree);
                 }
                 if(setter) {
-                    mtree = utils.createPropertySetterMethod(name, type);
+                    mtree = TreeMakerUtils.createPropertySetterMethod(wc, name, type);
                     newctree = make.insertClassMember(newctree, newctree.getMembers().indexOf(ctor), mtree);
                 }
                 wc.rewrite(ctree, newctree);
@@ -284,29 +295,27 @@ public class JavaClass {
     /*
      *  Internal method to add a method, returns element handle which can be cached by the caller
      */ 
-    private Method addMethod(final ContextMethod cm, final String retType) {
+    private Method addMethod(final ContextMethod cm, final String retType, final boolean delegator) {
         Method method = null;
         method = (Method)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
-                ExecutableElement elem = getMethod(wc, cm.getName(), cm.getParameterTypes());
-                if(elem != null) {
-                    return new Method(elem, JavaClass.this);
-                } else {
+                Method m = getMethod(wc, cm.getName(), cm.getParameterTypes(), delegator);
+                if(m == null) {
                     TreeMaker make = wc.getTreeMaker();
                     TypeElement typeElement = typeElementHandle.resolve(wc);
-                    TreeMakerUtils utils = new TreeMakerUtils(wc);
                     ClassTree ctree = wc.getTrees().getTree(typeElement);
                     ClassTree newctree = ctree;
-                    MethodTree mtree = utils.createMethod(cm, retType);
+                    MethodTree mtree = TreeMakerUtils.createMethod(wc, cm, retType);
                     newctree = make.addClassMember(ctree, mtree);
                     wc.rewrite(ctree, newctree);
-                    return null;                    
                 }
+                return m;
             }
         }, fObj);
-        //If the method is newly added
+        //If the method is newly added, write task should be completed first before
+        //we access the method
         if(method == null) {
-            method = getMethod(cm.getName(), cm.getParameterTypes());
+            method = getMethod(cm.getName(), cm.getParameterTypes(), delegator);
         }
         return method;
     }
@@ -316,13 +325,17 @@ public class JavaClass {
         if(cm.getReturnType() != null) {
             retTypeName = cm.getReturnType().getCanonicalName();
         }
-        return addMethod(cm, retTypeName);
+        return addMethod(cm, retTypeName, false);
     }
     
 
-    public Method addMethod(MethodInfo mInfo) {
-        return addMethod(mInfo, mInfo.getReturnTypeName());
-    }
+   public Method addMethod(MethodInfo mInfo) {
+       return addMethod(mInfo, mInfo.getReturnTypeName(), false);
+   }
+   
+   public DelegatorMethod addDelegatorMethod(MethodInfo mInfo) {
+       return (DelegatorMethod)addMethod(mInfo, mInfo.getReturnTypeName(), true);
+   }
     
     /*
      * Removes a method corresponding to passed in element handle
@@ -348,7 +361,7 @@ public class JavaClass {
         for(Tree tree : ctree.getMembers()) {
             if(Tree.Kind.METHOD == tree.getKind()) {
                 MethodTree mtree = (MethodTree)tree;
-                if(mtree.getName().toString().equals("<init>") &&
+                if(mtree.getName().toString().equals(Method.CTOR) &&
                         !cinfo.getTreeUtilities().isSynthetic(TreeUtils.getTreePath(cinfo, ctree))) {
                     return mtree;
                 }
@@ -363,23 +376,62 @@ public class JavaClass {
     public Method getMethod(final String name, final Class[] params) {
         return (Method)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
-                ExecutableElement elem = getMethod(cinfo, name, params);
-                if(elem != null) {
-                    return new Method(elem, JavaClass.this);
-                }
-                return null;
+                return getMethod(cinfo, name, params, false);
             }
         }, fObj);
     }
     
     /*
+     * Returns a method corresponding to a method by given name and parameter types
+     */     
+    public Method getMethod(final String name, final Class[] params, final boolean delegator) {
+        return (Method)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                return getMethod(cinfo, name, params, delegator);
+            }
+        }, fObj);
+    }
+    
+    /*
+     * Returns a public method corresponding to a method by given name and parameter types
+     */         
+    public Method getPublicMethod(final String name, final Class[] params) {
+        return (Method)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                ExecutableElement elem = getMethod(cinfo, name, params);
+                if(elem.getModifiers().contains(Modifier.PUBLIC)) {
+                    return new Method(elem, JavaClass.this);
+                }
+                
+                return null;
+            }
+        }, fObj);        
+    }
+    
+    /*
+     * Returns a method corresponding to a method by given name and parameter types
+     */     
+    private Method getMethod(CompilationInfo cinfo, String name, Class[] params, 
+            boolean delegator) {
+        ExecutableElement elem = getMethod(cinfo, name, params);
+        if(elem != null) {
+            if(!delegator) {
+                return new Method(elem, this);
+            }else {
+                return new DelegatorMethod(elem, this);
+            }          
+        }
+        return null;
+    }    
+    
+    /*
      * Returns a element corresponding to a method by given name and parameter types
      */     
-    public ExecutableElement getMethod(CompilationInfo cinfo, String name, Class[] params) {
+    private ExecutableElement getMethod(CompilationInfo cinfo, String name, Class[] params) {
         if(params == null) {
             params = new Class[0];
         }
-        if(name.equals("<init>")) {
+        if(name.equals(Method.CTOR)) {
             return getConstructor(cinfo, params);
         }else {
             List<ExecutableElement> methods = getMethods(cinfo, name, params, null);
@@ -413,17 +465,6 @@ public class JavaClass {
         }
         return null;
     }    
-    
-    /*
-     *  Returns all methods that match the passed in name, parameter types and return type
-     */ 
-    private List<ExecutableElement> getMethods(final String name, final Class[] params, final Class retType) {
-         return (List<ExecutableElement>)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
-            public Object run(CompilationInfo cinfo) {
-                return getMethods(cinfo, name, params, retType);
-            }
-        }, fObj);
-     }
     
     /*
      * Returns all methods that match the passed in name, parameter types and return type

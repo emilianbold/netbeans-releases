@@ -30,6 +30,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -46,30 +47,20 @@ import org.netbeans.modules.visualweb.insync.beans.Naming;
  * @author jdeva
  */
 public class TreeMakerUtils {
-    WorkingCopy workingCopy;
-    
-    TreeMaker getTreeMaker() {
-        return workingCopy.getTreeMaker();
-    }
-    
-    /** Creates a new instance of TreeMakerUtils */
-    public TreeMakerUtils(WorkingCopy workingCopy) {
-        this.workingCopy = workingCopy;
-    }
     
     /*
      * Creates a variable tree for a property field
      */ 
-    public VariableTree createPropertyField(String name, Class type) {
-        TreeMaker make = getTreeMaker();
-        Tree typeTree = createType(type.getCanonicalName());
+    public static VariableTree createPropertyField(WorkingCopy wc, String name, Class type) {
+        TreeMaker make = wc.getTreeMaker();
+        Tree typeTree = createType(wc, type.getCanonicalName());
         ExpressionTree initializer = make.NewClass(null, 
                 Collections.<ExpressionTree>emptyList(), 
                 (ExpressionTree)typeTree, 
                 Collections.<ExpressionTree>emptyList(),
                 null);
         return make.Variable(
-                createModifiers(Modifier.PRIVATE), 
+                createModifiers(wc, Modifier.PRIVATE), 
                 name,
                 typeTree,
                 initializer);
@@ -78,12 +69,12 @@ public class TreeMakerUtils {
     /*
      * Creates a new method tree for a property getter method
      */ 
-    public MethodTree createPropertyGetterMethod(String name, Class type){
-        TreeMaker make = getTreeMaker();
+    public static MethodTree createPropertyGetterMethod(WorkingCopy wc, String name, Class type){
+        TreeMaker make = wc.getTreeMaker();
         return make.Method(
-                createModifiers(Modifier.PUBLIC),
+                createModifiers(wc, Modifier.PUBLIC),
                 Naming.getterName(name),
-                createType(type.getCanonicalName()),
+                createType(wc, type.getCanonicalName()),
                 Collections.<TypeParameterTree>emptyList(),
                 Collections.<VariableTree>emptyList(),
                 Collections.<ExpressionTree>emptyList(),
@@ -94,15 +85,15 @@ public class TreeMakerUtils {
     /*
      * Creates a new method tree for a property setter method
      */ 
-    public MethodTree createPropertySetterMethod(String name, Class type){
-        TreeMaker make = getTreeMaker();
+    public static MethodTree createPropertySetterMethod(WorkingCopy wc, String name, Class type){
+        TreeMaker make = wc.getTreeMaker();
         String argName = Naming.paramNames(new Class[] { type }, null)[0];
         return make.Method(
-                createModifiers(Modifier.PUBLIC),
+                createModifiers(wc, Modifier.PUBLIC),
                 Naming.setterName(name),
                 make.PrimitiveType(TypeKind.VOID),
                 Collections.<TypeParameterTree>emptyList(),
-                Collections.singletonList(createVariable(argName, type)),
+                Collections.singletonList(createVariable(wc, argName, type)),
                 Collections.<ExpressionTree>emptyList(),
                 "{ this." + name + " = " + argName + "; }", // NOI18N
                 null);
@@ -111,43 +102,49 @@ public class TreeMakerUtils {
     /*
      * Creates a new variable tree for a given name and type
      */     
-    public VariableTree createVariable(String name, Class type) {
-       return createVariable(name, createType(type.getCanonicalName()));
+    public static VariableTree createVariable(WorkingCopy wc, String name, Class type) {
+       return createVariable(wc, name, createType(wc, type.getCanonicalName()));
     }    
     
     /*
      * Creates a new variable tree for a given name and type
      */       
-    private VariableTree createVariable(String name, Tree type) {
-        TreeMaker make = getTreeMaker();
-        return make.Variable(createModifiers(), name, type, null);        
+    private static VariableTree createVariable(WorkingCopy wc, String name, Tree type) {
+        TreeMaker make = wc.getTreeMaker();
+        return make.Variable(createModifiers(wc), name, type, null);        
     }
     
     /*
      * Creates a method given context method and return type name
      */       
-    public MethodTree createMethod(ContextMethod mInfo, String retTypeName) {
-        TreeMaker make = getTreeMaker();
+    public static MethodTree createMethod(WorkingCopy wc, ContextMethod mInfo, String retTypeName) {
+        TreeMaker make = wc.getTreeMaker();
         Class[] pTypes = mInfo.getParameterTypes();
         String[] pNames = mInfo.getParameterNames();
-        List<VariableTree> params = Collections.<VariableTree>emptyList();
+        List<VariableTree> params = new ArrayList<VariableTree>();
         for (int i = 0 ; pTypes != null && i < pTypes.length; i++) {
-            params.add(createVariable(pNames[i], pTypes[i]));
+            VariableTree vtree = createVariable(wc, pNames[i], pTypes[i]);
+            params.add(vtree);
         }
         
         Class[] excepTypes = mInfo.getExceptionTypes();
-        List<ExpressionTree> throwsList = Collections.<ExpressionTree>emptyList();
+        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
         for (int i = 0 ; excepTypes != null && i < excepTypes.length; i++) {
-            throwsList.add((ExpressionTree)createType(excepTypes[i].getCanonicalName()));
+            throwsList.add((ExpressionTree)createType(wc, excepTypes[i].getCanonicalName()));
         }
         
-        MethodTree mtree = make.Method(createModifiers(mInfo.getModifiers()),
+        String body = mInfo.getMethodBodyText();
+        if(body == null) {
+            body = "";
+        }
+        
+        MethodTree mtree = make.Method(createModifiers(wc, mInfo.getModifiers()),
                 mInfo.getName(),
-                createType(retTypeName),
+                createType(wc, retTypeName),
                 Collections.<TypeParameterTree>emptyList(),
                 params,
                 throwsList,
-                mInfo.getMethodBodyText(),
+                "{" + body + "}",
                 null
                 );
         
@@ -163,24 +160,24 @@ public class TreeMakerUtils {
     /* 
      *
      */
-    public MethodTree updateMethod(ContextMethod cm, MethodTree methTree) {
-        TreeMaker make = getTreeMaker();
+    public static MethodTree updateMethod(WorkingCopy wc, ContextMethod cm, MethodTree methTree) {
+        TreeMaker make = wc.getTreeMaker();
         String[] pNames = cm.getParameterNames();
      
         int mods = cm.getModifiers();
         ModifiersTree modsTree = methTree.getModifiers();
         if (mods > 0) {
-            modsTree = createModifiers(mods);
+            modsTree = createModifiers(wc, mods);
         }
             
         //Update param name(s)
         List<? extends VariableTree> params = methTree.getParameters();
         if(cm.getParameterTypes().length > 0) {
-            List<VariableTree> newParams = Collections.<VariableTree>emptyList();
+            List<VariableTree> newParams = new ArrayList<VariableTree>();
             String[] paramNames = cm.getParameterNames();
             for (int i = 0; i < paramNames.length; i++) {
                 VariableTree param = params.get(i);
-                newParams.add(createVariable(param.getName().toString(), param.getType()));
+                newParams.add(createVariable(wc, param.getName().toString(), param.getType()));
             }
             params = newParams;
         }
@@ -192,14 +189,14 @@ public class TreeMakerUtils {
         }
 
         //Update body
-        String code = cm.getMethodBodyText();
+        String code = "{" + cm.getMethodBodyText() + "}";
 
         //Update return type
         Tree retTree = methTree.getReturnType();
-        if(!cm.getName().equals("<init>")) {
+        if(!cm.getName().equals("<init>")) {    //NOI18N
             Class retType = cm.getReturnType();
             if(retType != null) {
-                retTree = createType(retType.getCanonicalName());
+                retTree = createType(wc, retType.getCanonicalName());
             }
         }
 
@@ -212,8 +209,8 @@ public class TreeMakerUtils {
      * Returns a tree for a given type in string format
      * Note that import for type is handled by make.QualIdent()
      */ 
-    public Tree createType(String typeName) {
-        TreeMaker make = getTreeMaker();
+    public static Tree createType(WorkingCopy wc, String typeName) {
+        TreeMaker make = wc.getTreeMaker();
         TypeKind primitiveTypeKind = null;
         if ("boolean".equals(typeName)) {           // NOI18N
             primitiveTypeKind = TypeKind.BOOLEAN;
@@ -231,12 +228,14 @@ public class TreeMakerUtils {
             primitiveTypeKind = TypeKind.FLOAT;
         } else if ("double".equals(typeName)) {     // NOI18N
             primitiveTypeKind = TypeKind.DOUBLE;
+        } else if ("void".equals(typeName)) {
+            primitiveTypeKind = TypeKind.VOID;
         }
         if (primitiveTypeKind != null) {
             return make.PrimitiveType(primitiveTypeKind);
         }
         
-        TypeElement typeElement = workingCopy.getElements().getTypeElement(typeName);
+        TypeElement typeElement = wc.getElements().getTypeElement(typeName);
         if (typeElement == null) {
             throw new IllegalArgumentException("Type " + typeName + " cannot be found"); // NOI18N
         }
@@ -244,22 +243,22 @@ public class TreeMakerUtils {
     }
    
     
-    public ModifiersTree createModifiers() {
-        return getTreeMaker().Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
+    public static ModifiersTree createModifiers(WorkingCopy wc) {
+        return wc.getTreeMaker().Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
     }
     
     /*
      * Creates a modifier tree given a single modifier
      */ 
-    public ModifiersTree createModifiers(Modifier modifier) {
-        return getTreeMaker().Modifiers(EnumSet.of(modifier), Collections.<AnnotationTree>emptyList());
+    public static ModifiersTree createModifiers(WorkingCopy wc, Modifier modifier) {
+        return wc.getTreeMaker().Modifiers(EnumSet.of(modifier), Collections.<AnnotationTree>emptyList());
     }
     
     /*
      * Creates a modifier tree givena single modifier
      */ 
-    public ModifiersTree createModifiers(long flags) {
-        return getTreeMaker().Modifiers(flags, Collections.<AnnotationTree>emptyList());
+    public static ModifiersTree createModifiers(WorkingCopy wc, long flags) {
+        return wc.getTreeMaker().Modifiers(flags, Collections.<AnnotationTree>emptyList());
     }
     
     /*
@@ -272,13 +271,26 @@ public class TreeMakerUtils {
     }
     
     /*
+     * Creates a method invocation expression of the form b(arg1, ...)
+     */ 
+    public static MethodInvocationTree createMethodInvocation(WorkingCopy wc, String methodName, String[] pNames) {
+        TreeMaker treeMaker = wc.getTreeMaker();
+        List<ExpressionTree> args = new ArrayList<ExpressionTree>();
+        for (int i = 0 ; pNames != null && i < pNames.length; i++) {
+            ExpressionTree tree = treeMaker.Identifier(pNames[i]);
+            args.add(tree);
+        }        
+        return treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), 
+                treeMaker.Identifier(methodName), args);
+    }
+    
+    /*
      * Creates a new class expression with empty class body
      */ 
     public static NewClassTree createNewClassExpression(WorkingCopy wc, String className) {
         TreeMaker treeMaker = wc.getTreeMaker();
-        TreeMakerUtils treeMakerUtils = new TreeMakerUtils(wc);
-        Tree type = treeMakerUtils.createType(className);
-        ClassTree classTree = treeMaker.Class(treeMakerUtils.createModifiers(), null, 
+        Tree type = TreeMakerUtils.createType(wc, className);
+        ClassTree classTree = treeMaker.Class(TreeMakerUtils.createModifiers(wc), className, 
                 Collections.<TypeParameterTree>emptyList(), null,
                 Collections.<ExpressionTree>emptyList(), Collections.<Tree>emptyList());
         return treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(), 

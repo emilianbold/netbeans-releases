@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.visualweb.insync.beans;
 
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.Method;
 import org.netbeans.modules.visualweb.insync.java.Statement;
@@ -28,13 +27,11 @@ import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import org.openide.ErrorManager;
@@ -258,16 +255,9 @@ public class BeansUnit implements Unit {
      */
     protected void bind() {
         bindBeans();
-/*//NB6.0
-        StatementBlock[] blocks = getInitBlocks();
-        for(int i = 0; i < blocks.length; i++) {
-            bindProperties(blocks[i]);
-            bindEventSets(blocks[i]);
-        }
- //*/
-        Method method = getPropertiesInitMethod();
-        List<Statement> stmts = method.getPropertySetStatements();
+        List<Statement> stmts = getPropertiesInitStatements();
         bindProperties(stmts);
+        bindEventSets(stmts);
         bindBeanParents();
     }
 
@@ -507,29 +497,6 @@ public class BeansUnit implements Unit {
     /**
      *
      */
-    protected void bindProperties(Object/*BlockTree*/  block) {
-/*//NB6.0
-        if (block != null) {
-            List statements = block.getStatements();
-            ListIterator listIter = statements.listIterator();
-            while(listIter.hasNext()) {
-                Statement s = (Statement)listIter.next();
-                Property p = newBoundProperty(s);
-                if (p != null) {
-                    Bean b = p.bean;
-                    b.properties.add(p);
-                }
-                else {
-                    assert Trace.trace("insync.beans", "BU.bindProperties: Stmnt was NOT a property setter:" + s);  //NOI18N
-                }
-            }
-        }
- //*/
-    }
-
-    /**
-     *
-     */
     protected void bindProperties(List<Statement> stmts) {
         for(Statement stmt : stmts) {
             Property p = newBoundProperty(stmt);
@@ -549,31 +516,23 @@ public class BeansUnit implements Unit {
      * @param s
      * @return
      */
-    protected EventSet newBoundEventSet(Object/*StatementTree*/  s) {
-        return EventSet.newBoundInstance(this, s);
+    protected EventSet newBoundEventSet(Statement stmt) {
+        return EventSet.newBoundInstance(this, stmt);
     }
 
     /**
      * Scan the init block statements and create matching EventSets and register with their beans
      */
-    protected void bindEventSets(Object/*BlockTree*/ block) {
-/*//NB6.0
-        if (block != null) {
-            List statements = block.getStatements();
-            ListIterator listIter = statements.listIterator();
-            while(listIter.hasNext()) {
-                Statement s = (Statement)listIter.next();
-                EventSet es = newBoundEventSet(s);
-                if (es != null) {
-                    es.bean.eventSets.add(es);
-                }
-                else {
-                    assert Trace.trace("insync.beans", "BU.bindEventSets: Stmnt was NOT an event adder:" + s); //NOI18N
-                }
-            }
+    protected void bindEventSets(List<Statement> stmts) {
+        for(Statement stmt : stmts) {
+            EventSet es = newBoundEventSet(stmt);
+            if (es != null) {
+                es.bean.eventSets.add(es);
+            } else {
+                assert Trace.trace("insync.beans", "BU.bindEventSets: Stmnt was NOT an event adder:" + stmt); //NOI18N
+            }        
         }
- //*/
-    }
+    }    
 
     //------------------------------------------------------------------------------------ Accessors
 
@@ -641,30 +600,15 @@ public class BeansUnit implements Unit {
     /**
      * @return
      */
-    public Object/*BlockTree*/[]  getInitBlocks() {
-        return getBeanStructureScanner().getPropertiesInitBlocks();
+    public List<Statement>  getPropertiesInitStatements() {
+        return getBeanStructureScanner().getPropertiesInitStatements();
     }
 
     /**
      * @return
      */
-    public Object/*BlockTree*/ getPropertiesInitBlock() {
-        return getBeanStructureScanner().getPropertiesInitBlock();
-    }
-    
-    /**
-     * @return
-     */
     public Method getPropertiesInitMethod() {
         return getBeanStructureScanner().getPropertiesInitMethod();
-    }
-    
-    
-    /**
-     * @return
-     */
-    public Object/*BlockTree*/ getCleanupBlock() {
-        return getBeanStructureScanner().getDestroyBlock();
     }
     
     /**

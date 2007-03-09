@@ -754,9 +754,9 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
     /*
      * @see org.netbeans.modules.visualweb.insync.beans.BeansUnit#bindEventSets()
      */
-    protected void bindEventSets(Object/*BlockTree*/ b) {
+    protected void bindEventSets(List<Statement> stmts) {
         // bind statement-based event wiring
-        super.bindEventSets(b);
+        super.bindEventSets(stmts);
 
         // bind markup-based event wiring
         for (Iterator i = beans.iterator(); i.hasNext(); ) {

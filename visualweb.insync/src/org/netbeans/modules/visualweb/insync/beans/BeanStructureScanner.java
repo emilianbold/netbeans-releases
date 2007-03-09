@@ -18,21 +18,18 @@
  */
 package org.netbeans.modules.visualweb.insync.beans;
 
-import org.netbeans.api.java.source.ElementHandle;
+import java.util.List;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
-import org.netbeans.modules.visualweb.insync.java.JavaClassAdapter;
+import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
-import org.netbeans.modules.visualweb.insync.java.JMIMethodUtils;
 import java.beans.MethodDescriptor;
 import java.io.File;
-import java.util.List;
-import java.util.ListIterator;
 import org.netbeans.modules.visualweb.insync.java.Method;
+import org.netbeans.modules.visualweb.insync.java.Statement;
 
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import java.lang.reflect.Modifier;
 
 /**
@@ -155,20 +152,11 @@ public class BeanStructureScanner {
         try {
             String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureEventMethod"); //NOI18N
             event = beansUnit.getModel().writeLock(eventName);
-            boolean rollback = true;
-                /*
-                if (requiredImports != null) {
-                    for (int i = 0; i < requiredImports.length; i++) {
-                        JMIUtils.addImport(javaUnit.getJavaClass(), requiredImports[i]);
-                    }
-                }
-                 * */
-                
-                org.netbeans.modules.visualweb.insync.java.MethodInfo info =
-                        new org.netbeans.modules.visualweb.insync.java.MethodInfo(name, retType, Modifier.PUBLIC,
-                        pns, pts, body, null);
-                
-                return beansUnit.getThisClass().addMethod(info);
+            org.netbeans.modules.visualweb.insync.java.MethodInfo info =
+                    new org.netbeans.modules.visualweb.insync.java.MethodInfo(name, retType, Modifier.PUBLIC,
+                    pns, pts, body, null);
+            
+            return beansUnit.getThisClass().addMethod(info);
 
         }finally {
             if(event != null) {
@@ -217,14 +205,7 @@ public class BeanStructureScanner {
         try {
             String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureMethod"); //NOI18N
             event = beansUnit.getModel().writeLock(eventName);
-            boolean rollback = true;
-            try {
-                JMIUtils.beginTrans(true);
-                method = beansUnit.getThisClass().addMethod(info);
-                rollback = false;
-            }finally {
-                JMIUtils.endTrans(rollback);
-            }
+            method = beansUnit.getThisClass().addMethod(info);
         }finally {
             if(event != null) {
                 beansUnit.getModel().writeUnlock(event);
@@ -295,7 +276,7 @@ public class BeanStructureScanner {
     /**
     *
     */
-   protected JavaClassAdapter ensureThisClass() {
+   protected JavaClass ensureThisClass() {
 
        /*TODO - Deva
        // get the expected classname from the filename
@@ -374,7 +355,7 @@ public class BeanStructureScanner {
            String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureXrefAccessor"); //NOI18N
            event = beansUnit.getModel().writeLock(eventName);
            //NB6.0 TypeReference typeRef = beansUnit.getThisClass().resolveImportsForType(type);
-           String body = "{return (" + type + ")getBean(\"" + bname + "\");}"; //NOI18N
+           String body = "return (" + type + ")getBean(\"" + bname + "\");"; //NOI18N
            String comment = NbBundle.getMessage(BeanStructureScanner.class, "COMMENT_GetScopedBeanComment"); //NOI18N
            org.netbeans.modules.visualweb.insync.java.MethodInfo info =
                    new org.netbeans.modules.visualweb.insync.java.MethodInfo("get" + mname, //NOI18N
@@ -395,11 +376,6 @@ public class BeanStructureScanner {
        return beansUnit.getThisClass().getMethod("get" + name, new Class[] {}); //NOI18N
    }
 
-   public Object/*BlockTree*/ getPropertiesInitBlock() {
-//NB60        return propertiesInitInfo.getBlock();
-       return null;
-   }
-   
    public String getComment(String id) {
        return NbBundle.getMessage(BeanStructureScanner.class, id);
    }
@@ -415,22 +391,13 @@ public class BeanStructureScanner {
    /**
     * @return
     */
-   public Object/*BlockTree*/ getDestroyBlock() {
-//NB60        return destroyInfo.getBlock();
-       return null;
-   }
-   
-   /**
-    * @return
-    */
    public Method getDestroyMethod() {
        return beansUnit.getThisClass().getMethod(destroyInfo.getName(), new Class[]{});
    }
 
 
-   public Object/*BlockTree*/[] getPropertiesInitBlocks() {
-//NB60        return new StatementBlock[]{propertiesInitInfo.getBlock()};
-       return null;
+   public List<Statement> getPropertiesInitStatements() {
+        return propertiesInitInfo.getMethod().getPropertySetStatements();
    }    
 
     public JavaUnit getJavaUnit() {
@@ -481,7 +448,6 @@ public class BeanStructureScanner {
        Class retType;
        int modifiers;
        Method method;
-       Object/*BlockTree*/ block;
        
        public MethodInfo(String name, int modifiers, Class retType, String comment, String ensureMethodName, String exception) {
            this.retType = retType;
@@ -520,11 +486,6 @@ public class BeanStructureScanner {
            return exception;
        }
 
-       public Object/*BlockTree*/ getBlock() {
-//NB60            return method.getBody();
-           return null;
-       }
-       
        public Method getMethod() {
            return method;
        }

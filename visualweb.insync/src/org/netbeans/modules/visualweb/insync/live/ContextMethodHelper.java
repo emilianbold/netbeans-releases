@@ -18,14 +18,20 @@
  */
 package org.netbeans.modules.visualweb.insync.live;
 
+import javax.lang.model.element.ExecutableElement;
 import org.netbeans.modules.visualweb.insync.java.ClassUtil;
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.visualweb.insync.java.Method;
+import org.netbeans.modules.visualweb.insync.java.ReadTaskWrapper;
 import org.openide.util.NbBundle;
 import com.sun.rave.designtime.ContextMethod;
+import com.sun.source.tree.MethodTree;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.visualweb.insync.java.TreeUtils;
 
 /**
  *
@@ -49,26 +55,17 @@ public class ContextMethodHelper {
      *         this DesignContext (source file)
      */
     public ContextMethod[] getContextMethods() {
-/*//NB6.0
-        JMIUtils.beginTrans(false);
-        try {
-            JavaClassAdapter javaClass = lu.getSourceUnit().getThisClass();
-            ArrayList contextMethods = new ArrayList();
- 
-            //Go through all the available methods
-            Method[] methods = javaClass.getMethods();
-            for(int i = 0; i < methods.length; i++) {
-                //Construct a ContextMethod object
-                ContextMethod cm = getContextMethod(methods[i]);
-                if(cm != null)
-                    contextMethods.add(cm);
-            }
-            return (ContextMethod[])contextMethods.toArray(new ContextMethod[0]);
-        }finally {
-            JMIUtils.endTrans();
+        JavaClass javaClass = lu.getSourceUnit().getThisClass();
+        ArrayList contextMethods = new ArrayList();
+        
+        //Go through all the available methods
+        for(Method m : javaClass.getMethods()) {
+            //Construct a ContextMethod object
+            ContextMethod cm = getContextMethod(m);
+            if(cm != null)
+                contextMethods.add(cm);
         }
-//*/
-        return null;
+        return (ContextMethod[])contextMethods.toArray(new ContextMethod[0]);
     }
 
     /**
@@ -81,39 +78,33 @@ public class ContextMethodHelper {
      * @return A ContextMethod object describing the requested method, or <code>null</code> if no
      *         method exists with the specified name and parameter types
      */
-    public ContextMethod getContextMethod(Object/*ExecutableElement*/ m) {
-/*//NB6.0
-        JMIUtils.beginTrans(false);
-        try {
-            if(m != null /NB6.0*&& m.getAccessModifiers() == Modifier.PUBLIC* /) {
-                
-                List params = m.getParameters();
-                Class[] paramTypes = new Class[params.size()];
-                String[] paramNames = new String[params.size()];
-                Iterator iter = params.iterator();
-                int i = 0;
-                ClassLoader cl = lu.getSourceUnit().getClassLoader();
-                try {
-                    while(iter.hasNext()) {
-                        Parameter p = (Parameter)iter.next();
-                        paramTypes[i] = ClassUtil.getClass(p.getType().getName(), cl);
-                        paramNames[i] = p.getName();
-                        i++;
+    public ContextMethod getContextMethod(final Method m) {
+        return (ContextMethod)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                ExecutableElement elem = m.getElement(cinfo);
+                if(elem.getModifiers().contains(Modifier.PUBLIC)) {
+                    List<? extends VariableElement> params = elem.getParameters();
+                    Class[] paramTypes = new Class[params.size()];
+                    String[] paramNames = new String[params.size()];
+                    int i = 0;
+                    ClassLoader cl = lu.getSourceUnit().getClassLoader();
+                    try {
+                        for(VariableElement param : params) {
+                            paramTypes[i] = ClassUtil.getClass(param.asType().toString(), cl);
+                            paramNames[i++] = param.getSimpleName().toString();
+                        }
+                        MethodTree tree = cinfo.getTrees().getTree(elem);
+                        Class retType = ClassUtil.getClass(elem.getReturnType().toString(), cl);
+                        return new ContextMethod(lu, elem.getSimpleName().toString(),
+                                m.getModifierFlags(tree), retType,
+                                paramTypes, paramNames, Method.getBodyText(cinfo, tree),
+                                m.getCommentText(cinfo, tree));
+                    }catch(ClassNotFoundException cnfe) {
                     }
-                    Class retType = ClassUtil.getClass(m.getType().getName(), cl);
-                    
-                    return new ContextMethod(lu, m.getName(), m.getModifiers(), retType,
-                            paramTypes, paramNames, m.getBodyText(), m.getJavadocText());
-                }catch(ClassNotFoundException cnfe) {
-                    //Ignore the exception and return null
                 }
+                return null;
             }
-    }finally {
-        JMIUtils.endTrans();
-    }
-    return null;
-//*/
-        return null;
+        }, lu.getSourceUnit().getJavaUnit().getFileObject());
     }
 
     /**
@@ -141,19 +132,9 @@ public class ContextMethodHelper {
      *         method exists with the specified name and parameter types
      */
     public ContextMethod getContextMethod(String methodName, Class[] parameterTypes) {
-/*//NB6.0
-        JMIUtils.beginTrans(false);
-        try {
-            JavaClassAdapter javaClass = lu.getSourceUnit().getThisClass();
-            if(parameterTypes == null)
-                parameterTypes = new Class[0];
-            Method m = javaClass.getMethod(methodName, parameterTypes);
-            return getContextMethod(m);
-        }finally {
-            JMIUtils.endTrans();
-        }
-//*/
-        return null;
+        JavaClass javaClass = lu.getSourceUnit().getThisClass();
+        Method m = javaClass.getMethod(methodName, parameterTypes);
+        return getContextMethod(m);
     }
 
 
@@ -197,34 +178,21 @@ public class ContextMethodHelper {
     public boolean createContextMethod(ContextMethod method) throws IllegalArgumentException {
         if(method == null || method.getDesignContext() != lu)
             return false;
-/*//NB6.0
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            JavaClassAdapter javaClass = lu.getSourceUnit().getThisClass();
-            Class[] paramTypes = method.getParameterTypes();
-            if(paramTypes == null)
-                paramTypes = new Class[0];
-            Method m = javaClass.getMethod(method.getName(), paramTypes);
-            if(m != null)
+        JavaClass javaClass = lu.getSourceUnit().getThisClass();
+        Method m = javaClass.getPublicMethod(method.getName(), method.getParameterTypes());
+        if(m != null)
+            throw new IllegalArgumentException(
+                    NbBundle.getMessage(LiveUnit.class, "IllegalMethod"));  //NOI18N;
+        
+        //Add the new method at the end
+        m = javaClass.addMethod(method);
+        if(m != null) {
+            //Check if there are errors because of adding method
+            if(lu.getSourceUnit().getJavaUnit().getErrors().length > 0)
                 throw new IllegalArgumentException(
-                        NbBundle.getMessage(LiveUnit.class, "IllegalMethod"));  //NOI18N;
- 
-            //Add the new method at the end
-            CallableFeature cf = javaClass.addMethod(method);
-            if(cf != null) {
-                //Check if there are errors because of adding method
-                if(lu.getSourceUnit().getJavaUnit().getErrors().length > 0)
-                    throw new IllegalArgumentException(
-                            NbBundle.getMessage(LiveUnit.class, "IllegalSource"));  //NOI18N;
-                rollback = false;
-                return true;
-            }
-        }finally {
-            JMIUtils.endTrans(rollback);
+                        NbBundle.getMessage(LiveUnit.class, "IllegalSource"));  //NOI18N;
+            return true;
         }
-//*/
-
         return false;
     }
 
@@ -269,36 +237,24 @@ public class ContextMethodHelper {
     public ContextMethod updateContextMethod(ContextMethod method) throws IllegalArgumentException {
         if(method == null || method.getDesignContext() != lu)
             return null;
-
+        
         JavaClass javaClass = lu.getSourceUnit().getThisClass();
-/*//NB6.0
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            Class[] paramTypes = method.getParameterTypes();
-            if(paramTypes == null)
-                paramTypes = new Class[0];
-            Method m = javaClass.getMethod(method.getName(), paramTypes);
-            if(m != null /NB6.0*&& m.getAccessModifiers() == Modifier.PUBLIC*NB6.0/) {
-                javaClass.updateMethod(method);
-                //Check if there are errors because of updating method
-                /NB6.0*
+        Class[] paramTypes = method.getParameterTypes();
+        Method m = javaClass.getPublicMethod(method.getName(), paramTypes);
+        if(m != null) {
+            m.update(method);
+            //Check if there are errors because of updating method
+                /*
                 if(lu.getSourceUnit().getJavaUnit().getErrors().length > 0)
                     throw new IllegalArgumentException(
                             NbBundle.getMessage(LiveUnit.class, "IllegalSource"));  //NOI18N;
-                 *NB6.0/
-                ContextMethod retVal = getContextMethod(m);
-                rollback = false;
-                return retVal;
-            }else {
+                 */
+            ContextMethod retVal = getContextMethod(m);
+            return retVal;
+        }else {
             throw new IllegalArgumentException(
                     NbBundle.getMessage(LiveUnit.class, "IllegalMethod"));  //NOI18N;
-            }
-    }finally {
-        JMIUtils.endTrans(rollback);
-    }
-//*/
-        return null;
+        }
     }
 
     /**
@@ -330,26 +286,18 @@ public class ContextMethodHelper {
     public boolean removeContextMethod(ContextMethod method) {
         if(method == null || method.getDesignContext() != lu)
             return false;
-/*//NB6.0
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            JavaClassAdapter javaClass = lu.getSourceUnit().getThisClass();
-            Class[] paramTypes = method.getParameterTypes();
-            if(paramTypes == null)
-                paramTypes = new Class[0];
-            Method m = javaClass.getMethod(method.getName(), paramTypes);
-            if(m != null /NB6.0*&& m.getAccessModifiers() == Modifier.PUBLIC*NB6.0/) {
-                javaClass.removeMethod(m);
-            } else {
-                throw new IllegalArgumentException(
-                        NbBundle.getMessage(LiveUnit.class, "IllegalMethod"));  //NOI18N;
-            }
-            rollback = false;
-        } finally {
-            JMIUtils.endTrans(rollback);
+
+        JavaClass javaClass = lu.getSourceUnit().getThisClass();
+        Class[] paramTypes = method.getParameterTypes();
+        if(paramTypes == null)
+            paramTypes = new Class[0];
+        Method m = javaClass.getPublicMethod(method.getName(), paramTypes);
+        if(m != null) {
+            m.remove();
+        } else {
+            throw new IllegalArgumentException(
+                    NbBundle.getMessage(LiveUnit.class, "IllegalMethod"));  //NOI18N;
         }
-//*/
-        return false;
+        return true;
     }
 }

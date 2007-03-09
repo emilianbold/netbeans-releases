@@ -49,13 +49,8 @@ public class EventPropertyEditor extends PropertyEditorSupport {
         LiveUnit unit = bean.unit;
         EventDescriptor ed = event.getEventDescriptor();
         java.lang.reflect.Method m = ed.getListenerMethodDescriptor().getMethod();
-
-/*//NB6.0
-        Method[] ms = unit.sourceUnit.getThisClass().getMethods(m.getParameterTypes(), m.getReturnType());
-        methods = new String[ms.length];
-        for (int i = 0; i < ms.length; i++)
-            methods[i] = ms[i].getName();
-//*/
+        methods = unit.sourceUnit.getThisClass().getMethodNames(
+                m.getParameterTypes(), m.getReturnType()).toArray(new String[0]);
     }
 
     void update() {

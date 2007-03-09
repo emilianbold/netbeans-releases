@@ -21,12 +21,11 @@ package org.netbeans.modules.visualweb.insync.faces;
 
 import org.netbeans.modules.visualweb.insync.beans.BeanStructureScanner;
 import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
-import org.netbeans.modules.visualweb.insync.java.JMIMethodUtils;
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import org.netbeans.modules.visualweb.insync.java.MethodInfo;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.ListIterator;
+import org.netbeans.modules.visualweb.insync.java.Statement;
 import org.openide.util.NbBundle;
 
 public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner {
@@ -46,30 +45,10 @@ public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner
                 getComment("COMMENT_PropInitMethodComment"), ENSURE_EMPTYBLOCK, "Exception");
     }
 
-   public Object/*BlockTree*/[] getPropertiesInitBlocks() {
-/*//NB6.0
-       StatementBlock b = ctorInfo.getBlock();
- 
-       //Look for property initializers in the first try catch block, this is
-       //to support the code generated in constructor prior to FCS
-       List stats = b.getStatements();
-       ListIterator iter = stats.listIterator();
-       Statement s = null;
-       StatementBlock tryBlock = null;
-       while(iter.hasNext()) {
-           s = (Statement)iter.next();
-           if(s instanceof TryStatement) {
-               TryStatement tryStmt = (TryStatement)s;
-               tryBlock = tryStmt.getBody();
-           }
-       }
- 
-       if(tryBlock != null)
-           return new StatementBlock[]{tryBlock, propertiesInitInfo.getBlock()};
-       else
-           return super.getPropertiesInitBlocks();
-//*/
-       return null;
+   public List<Statement> getPropertiesInitStatements() {
+       List<Statement> stmts = ctorInfo.getMethod().getPropertySetStatements();
+       stmts.addAll(propertiesInitInfo.getMethod().getPropertySetStatements());
+       return stmts;
    }
 
    protected Object/*BlockTree*/ ensureInitBlock(MethodInfo mi) {

@@ -19,25 +19,18 @@
  */
 package org.netbeans.modules.visualweb.insync.beans;
 
-import com.sun.org.apache.bcel.internal.classfile.JavaClass;
 import com.sun.rave.designtime.Position;
-import org.netbeans.modules.visualweb.insync.UndoEvent;
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
-import org.netbeans.modules.visualweb.insync.java.JMIMethodUtils;
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
 import org.netbeans.modules.visualweb.insync.faces.config.ManagedBean;
-import org.netbeans.modules.visualweb.insync.java.JavaUnit;
-import org.netbeans.modules.visualweb.insync.java.JMIRefactor;
-import org.netbeans.modules.visualweb.insync.java.JMIRefactor.MethodInvocationRenamer;
+import org.netbeans.modules.visualweb.insync.java.Method;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
@@ -102,16 +95,13 @@ public class Bean extends BeansNode {
     public void insertEntry(Bean after) {
         Class type = beanInfo.getBeanDescriptor().getBeanClass();
         unit.getThisClass().addProperty(name, type, CREATE_GETTER, CREATE_SETTER);
-        /*
-            String cmn = getCleanupMethod();
-            if (cmn != null) {
-                Method method = unit.getCleanupMethod();
-                if (method != null) {
-                    JMIMethodUtils.addMethodInvocationStatement(
-                            method, getName(), cmn, new ArrayList());
-                }
+        String cmn = getCleanupMethod();
+        if (cmn != null) {
+            Method method = unit.getCleanupMethod();
+            if (method != null) {
+                method.addPropertyStatement(name, cmn, null);
             }
-         */
+        }
     }
 
     /**
@@ -133,14 +123,10 @@ public class Bean extends BeansNode {
             removed |= es.removeEntry();
             i.remove();
         }
-        /*
         String cmn = getCleanupMethod();  // the name of this bean's cleanup method, if any
-        if (cmn != null && unit.getCleanupBlock() != null) {
-            Statement cleanupCall = JMIMethodUtils.findStatement(unit.getCleanupBlock(), cmn, name);
-            if (cleanupCall != null) {
-                JMIMethodUtils.removeStatement(unit.getCleanupBlock(), cleanupCall);
-            }
-        }*/
+        if (cmn != null && unit.getCleanupMethod() != null) {
+                unit.getCleanupMethod().removeStatement(name, cmn);
+        }
         unit.getThisClass().removeProperty(name);
 
         removed |= true; //!CQ don't really know since clazz didn't tell us...

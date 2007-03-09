@@ -19,12 +19,12 @@
 package org.netbeans.modules.visualweb.insync.models;
 
 import java.beans.MethodDescriptor;
+import javax.swing.text.StyledDocument;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.insync.FacesDnDSupport;
 import org.netbeans.modules.visualweb.insync.InSyncServiceProvider;
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 
@@ -33,7 +33,6 @@ import java.beans.EventSetDescriptor;
 import java.net.URI;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -42,13 +41,11 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.visualweb.insync.java.Method;
 import org.openide.ErrorManager;
 import org.openide.cookies.CloseCookie;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.w3c.dom.DocumentFragment;
@@ -89,6 +86,11 @@ import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.live.LiveUnitWrapper;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import java.io.File;
+import java.util.List;
+import org.netbeans.modules.visualweb.insync.java.Statement;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.text.Line;
 
 /**
  * Representation of a complete JSF design-time model, including the composited insync units and
@@ -1343,28 +1345,10 @@ public class FacesModel extends Model {
      * @param boolean indicates if the method is newly added
      */    
     void positionTheCursor(Method m, boolean inserted) {
-/*//NB6.0
         try {
-            int indent = 0;
-            
-            List stmts = m.getBody().getStatements();
-            org.openide.text.PositionRef posRef;
-            if(stmts.size() > 0) {
-                posRef = JMManager.getManager().getElementPosition(
-                        (Statement)stmts.get(0)).getBegin();
-            }else {
-                posRef = JMManager.getManager().getElementPosition(m.getBody()).getEnd();
-                indent = 3;
-            }
-
-            int lineNo = posRef.getLine();
-            int col = posRef.getColumn() + indent;
-
-            //Have the cursor in a blank line before the first statement if the 
-            //method is newly inserted or when there are no statements
-            if(inserted || stmts.size() == 0) {
-                lineNo -= 1;
-            }
+            int[] pos = m.getCursorPosition(inserted);
+            int lineNo = pos[0];
+            int col = pos[1];
 
             assert Trace.trace("insync.models", "lineno=" + lineNo + " col=" + col);
             
@@ -1398,7 +1382,6 @@ public class FacesModel extends Model {
         catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
-//*/
     }
 
     //--------------------------------------------------------------------------- ModelSet Utilities

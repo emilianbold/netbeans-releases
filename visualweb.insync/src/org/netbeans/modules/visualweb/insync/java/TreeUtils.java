@@ -19,9 +19,15 @@
 
 package org.netbeans.modules.visualweb.insync.java;
 
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
+import static java.lang.reflect.Modifier.*;
 
 /**
  *
@@ -40,7 +46,45 @@ public class TreeUtils {
      * Not sure if it is the correct way of computing FQN
      */    
     static String getFQN(CompilationInfo cinfo, Tree tree) {
-        return cinfo.getTrees().getTypeMirror(cinfo.getTrees().getPath(cinfo.getCompilationUnit(), tree)).toString();
+        return cinfo.getTrees().getTypeMirror(getTreePath(cinfo, tree)).toString();
+    }
+    
+    /*
+     * Returns element for a given tree
+     */
+    static Element getElement(CompilationInfo cinfo, Tree tree) {
+        return cinfo.getTrees().getElement(getTreePath(cinfo, tree));
     }    
     
+    /**
+     * Returns the preceding immediate comment
+     */    
+    static String getPrecedingImmediateCommentText(CompilationInfo cinfo, Tree tree) {
+        List<Comment> comments = cinfo.getTreeUtilities().getComments(tree, true);
+        return comments.get(comments.size()-1).getText();
+    }
+    
+    /**
+     * Returns modifiers as bit flags
+     */
+    static long getModifierFlags(ModifiersTree tree) {
+        long flags = 0;
+        for(Modifier modifier : tree.getFlags()) {
+            switch (modifier) {
+                case PUBLIC:       flags |= PUBLIC; break;
+                case PROTECTED:    flags |= PROTECTED; break;
+                case PRIVATE:      flags |= PRIVATE; break;
+                case ABSTRACT:     flags |= ABSTRACT; break;
+                case STATIC:       flags |= STATIC; break;
+                case FINAL:        flags |= FINAL; break;
+                case TRANSIENT:    flags |= TRANSIENT; break;
+                case VOLATILE:     flags |= VOLATILE; break;
+                case SYNCHRONIZED: flags |= SYNCHRONIZED; break;
+                case NATIVE:       flags |= NATIVE; break;
+                default:
+                    break;
+            }
+        }
+        return flags;
+    }
 }

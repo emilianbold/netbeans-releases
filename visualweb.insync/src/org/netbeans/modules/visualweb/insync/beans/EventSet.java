@@ -20,10 +20,8 @@ package org.netbeans.modules.visualweb.insync.beans;
 
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.EventDescriptor;
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
-import org.netbeans.modules.visualweb.insync.java.JMIExpressionUtils;
-import org.netbeans.modules.visualweb.insync.java.JavaClassAdapter;
-import org.netbeans.modules.visualweb.insync.java.JMIMethodUtils;
+import org.netbeans.modules.visualweb.insync.java.DelegatorMethod;
+import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import java.beans.EventSetDescriptor;
 import java.beans.MethodDescriptor;
 import java.lang.reflect.Modifier;
@@ -31,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
+import org.netbeans.modules.visualweb.insync.java.Method;
+import org.netbeans.modules.visualweb.insync.java.Statement;
 
 /**
  * Representation of a wiring for a single event listener, which maps to a single add*Listener
@@ -48,8 +48,8 @@ public class EventSet extends BeansNode {
     final protected ArrayList events = new ArrayList();
 
     // Java source-based event set fields
-    Object/*StatementTree*/ stmt;
-    JavaClassAdapter adapterClass;
+    Statement stmt;
+    JavaClass adapterClass;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -71,12 +71,10 @@ public class EventSet extends BeansNode {
      *
      * @param beansUnit
      */
-    protected EventSet(Bean bean, EventSetDescriptor descriptor, Object/*StatementTree*/ stmnt,
-                        Object/*TypeElement*/ adapter) {
+    protected EventSet(Bean bean, EventSetDescriptor descriptor, Statement stmt, JavaClass adapter) {
         this(bean, descriptor);
-        this.stmt = stmnt;
-        this.adapterClass = new JavaClassAdapter(unit.getJavaUnit(), adapter);
-
+        this.stmt = stmt;
+        this.adapterClass = adapter;
         if (adapter != null)
             bindEvents();
 
@@ -95,38 +93,20 @@ public class EventSet extends BeansNode {
      * @param s
      * @return the new bound event set if bindable, else null
      */
-    static EventSet newBoundInstance(BeansUnit unit, Object/*StatementTree*/ s) {
-/*//NB6.0
-        // statement must be an exec (execute expression)
-        JMIUtils.beginTrans(false);
-        try {
-            MethodInvocation mExpr = Property.getExpression(unit, s);
-            if(mExpr == null)
-                return null;
-            PrimaryExpression pExpr = mExpr.getParentClass();
-            String cname = null;
-            if (pExpr instanceof VariableAccess) {
-                cname = ((VariableAccess)pExpr).getName();
-            } else if (pExpr instanceof MultipartId) {
-                cname = ((MultipartId)pExpr).getName();
-            }
-            Bean bean = unit.getBean(cname);
-            if (bean == null)
-                return null;
-            String mname = mExpr.getName();
-            EventSetDescriptor esd = bean.getEventSetDescriptorForAdder(mname);
-            if (esd == null)
-                return null;
-
-            Expression argExpr = (Expression) mExpr.getParameters().get(0);
-            if(!(argExpr instanceof NewClassExpression))
-                return null;
-            ClassDefinition clsDef = ((NewClassExpression)argExpr).getClassDefinition();
-            return new EventSet(bean, esd, s, clsDef);
-        }finally {
-            JMIUtils.endTrans();
+    static EventSet newBoundInstance(BeansUnit unit, Statement stmt) {
+        Bean bean = unit.getBean(stmt.getBeanName());
+        if(bean == null) {
+            return null;
         }
- //*/
+        EventSetDescriptor esd = bean.getEventSetDescriptorForAdder(stmt.getPropertySetterName());
+        if (esd == null) {
+            return null;
+        }
+        
+        JavaClass adapter = stmt.getAdapterClass();
+        if(adapter != null) {
+            return new EventSet(bean, esd, stmt, adapter);
+        }
         return null;
     }
 
@@ -147,7 +127,7 @@ public class EventSet extends BeansNode {
      * @param m
      * @return
      */
-    protected Event newBoundEvent(MethodDescriptor md, Object/*ExecutableElement*/ m) {
+    protected Event newBoundEvent(MethodDescriptor md, DelegatorMethod m) {
         return Event.newBoundInstance(this, md, m);
     }
 
@@ -155,22 +135,19 @@ public class EventSet extends BeansNode {
      * Scan our descriptor's methods and create individual events that match
      */
     protected void bindEvents() {
-/*//NB6.0
         MethodDescriptor[] lmds = descriptor.getListenerMethodDescriptors();
         for (int i = 0; i < lmds.length; i++) {
-            Method m = adapterClass.getMethod(lmds[i].getName(), 
-                    lmds[i].getMethod().getParameterTypes());
-            if(m != null) {
+            DelegatorMethod m = (DelegatorMethod)adapterClass.getMethod(lmds[i].getName(), 
+                    lmds[i].getMethod().getParameterTypes(), true);
+            if(m != null ) {
                 Event e = newBoundEvent(lmds[i], m);
                 if (e != null)
                     events.add(e);
             }
         }
- //*/
     }
 
-    protected Object/*ExecutableElement*/ stubDelegatorMethod(MethodDescriptor mdescr) {
-/*//NB6.0
+    protected DelegatorMethod stubDelegatorMethod(MethodDescriptor mdescr) {
         Class retType = mdescr.getMethod().getReturnType();
         
         // now add parameter(s)
@@ -185,39 +162,31 @@ public class EventSet extends BeansNode {
         org.netbeans.modules.visualweb.insync.java.MethodInfo info = 
                 new org.netbeans.modules.visualweb.insync.java.MethodInfo(mdescr.getName(), retType, Modifier.PUBLIC, 
                 pns, pts, body, null);        
-        return (Method)adapterClass.addMethod(info);
- //*/
-        return null;
+        return adapterClass.addDelegatorMethod(info);
     }
 
-    private void stubBody(Object/*ExecutableElement*/ method) {
-/*//NB6.0
+    private void stubBody(Method method) {
+        Class retType = getMethodDescriptor(method.getName()).getMethod().getReturnType();
         String body = null;
-        if (!method.getType().equals("void")) {
+        if (retType != Void.TYPE) {
             body = "return null;";
         }
-        
-        JMIMethodUtils.replaceMethodBody(method, body);
- //*/
+        method.replaceBody(body);
     }
 
-    protected Object/*ExecutableElement*/ getDelegatorMethod(MethodDescriptor mdescr) {
-/*//NB6.0
-        Method delegate = adapterClass.getMethod(mdescr.getMethod().getName(), 
-                mdescr.getMethod().getParameterTypes());
+    protected DelegatorMethod getDelegatorMethod(MethodDescriptor mdescr) {
+        DelegatorMethod delegate = (DelegatorMethod)adapterClass.getMethod(mdescr.getMethod().getName(), 
+                mdescr.getMethod().getParameterTypes(), true);
         if (delegate == null)
             delegate = stubDelegatorMethod(mdescr);
         return delegate;
- //*/
-        return null;
     }
 
-    protected void removeDelegatorMethod(Object/*ExecutableElement*/ delegator) {
-        Class atype = getAdapterType();
-        if (atype != null) {
-            adapterClass.removeMethod(delegator);
-        }
-        else {
+    protected void removeDelegatorMethod(Method delegator) {
+        Class type = getAdapterType();
+        if (type != null) {
+            delegator.remove();
+        } else {
             stubBody(delegator);
         }
     }
@@ -226,38 +195,23 @@ public class EventSet extends BeansNode {
      * Insert the stub source entry for this EventSet
      */
     protected void insertEntry() {
-/*//NB6.0
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            Class atype = getAdapterType();
-            String adapterClassName;
-            if (atype != null) {
-                adapterClassName = atype.getName();
-            }else {
-                adapterClassName = getListenerType().getName();
-            }
-            CallableFeature method = unit.getPropertiesInitMethod();
-            NewClassExpression nClsExpr = JMIExpressionUtils.getNewClassExpression(unit.getJavaUnit().getJavaClass(), adapterClassName);
-            ArrayList arrList = new ArrayList();
-            arrList.add(nClsExpr);
-            stmt = JMIMethodUtils.addMethodInvocationStatement(method,
-                    bean.getName(), descriptor.getAddListenerMethod().getName(), arrList);
-            adapterClass = new JavaClassAdapter(nClsExpr.getClassDefinition());
-            
-            if (atype == null) {
-                // stub all methods in adapter body if we are extending just the interface
-                MethodDescriptor[] mdescrs = descriptor.getListenerMethodDescriptors();
-                for (int i = 0; i < mdescrs.length; i++) {
-                    System.out.println("**********Adding method: " + mdescrs[i].getMethod().getName());
-                    stubDelegatorMethod(mdescrs[i]);
-                }
-            } 
-            rollback = false;
-        }finally {
-            JMIUtils.endTrans(rollback);
+        Class atype = getAdapterType();
+        String adapterClassName;
+        if (atype != null) {
+            adapterClassName = atype.getName();
+        }else {
+            adapterClassName = getListenerType().getName();
         }
- //*/
+        Method method = unit.getPropertiesInitMethod();
+        stmt = method.addEventSetStatement(bean.getName(), descriptor.getAddListenerMethod().getName(), adapterClassName);
+        adapterClass = stmt.getAdapterClass(); 
+        if (atype == null) {
+            // stub all methods in adapter body if we are extending just the interface
+            MethodDescriptor[] mdescrs = descriptor.getListenerMethodDescriptors();
+            for (int i = 0; i < mdescrs.length; i++) {
+                stubDelegatorMethod(mdescrs[i]);
+            }
+        }
     }
 
     /**
@@ -279,30 +233,7 @@ public class EventSet extends BeansNode {
     protected boolean removeEntry() {
         assert Trace.trace("insync.beans", "ES.removeEntry: " + this);
         events.clear();
-        boolean retVal = false;
-/*//NB6.0
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            StatementBlock[] blocks = unit.getInitBlocks();
-            for(int i = 0; i < blocks.length; i++) {
-                Statement stmt = JMIMethodUtils.findStatement(
-                        blocks[i], descriptor.getAddListenerMethod().getName(), 
-                        bean.getName());
-                if (stmt != null) {
-                    retVal = JMIMethodUtils.removeStatement(blocks[i], stmt);
-                    if(retVal)
-                        //!CQ maybe remove the delegate method(s) also? would need to let Event do that...
-                        stmt = null;
-					break;
-                }
-            }
-            rollback = false;
-        }finally {
-            JMIUtils.endTrans(rollback);
-        }
-//*/
-        return retVal;        
+        return stmt == null ? false : stmt.remove();
     }
 
     //------------------------------------------------------------------------------------ Accessors
@@ -324,7 +255,7 @@ public class EventSet extends BeansNode {
     /**
      * Get this EventSet's working adapter class
      */
-    public JavaClassAdapter getAdapter() {
+    public JavaClass getAdapter() {
         return adapterClass;
     }
 
@@ -345,8 +276,7 @@ public class EventSet extends BeansNode {
             String aname = lname.substring(0, lpos) + "Adapter";
             try {
                 return unit.getBeanClass(aname);
-            }
-            catch (ClassNotFoundException e) {
+            }catch (ClassNotFoundException e) {
             }
         }
         return null;

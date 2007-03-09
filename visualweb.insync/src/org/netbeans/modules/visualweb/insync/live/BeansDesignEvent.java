@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.visualweb.insync.live;
 
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
-import org.netbeans.modules.visualweb.insync.java.JMIRefactor;
 import java.util.List;
 
 import org.openide.util.NbBundle;
@@ -160,16 +158,8 @@ public class BeansDesignEvent extends SourceDesignEvent {
         try {
             String description = NbBundle.getMessage(BeansDesignEvent.class, "SetHandlerMethodSource", methodBody != null ? methodBody : "");  //NOI18N
             undoEvent = liveBean.unit.model.writeLock(description);
-/*//NB6.0
-            JMIUtils.beginTrans(true);
-            try {
-                event.getHandlerMethod().setBodyText(methodBody);
-            }finally {
-                JMIUtils.endTrans();
-            }
-//*/
-        }
-        finally {
+            event.getHandlerMethod().replaceBody(methodBody);
+        } finally {
             liveBean.unit.model.writeUnlock(undoEvent);
         }
     }
@@ -178,12 +168,9 @@ public class BeansDesignEvent extends SourceDesignEvent {
      * @see com.sun.rave.designtime.DesignEvent#getHandlerMethodSource()
      */
     public String getHandlerMethodSource() {
-/*//NB6.0
         return (event != null && event.getHandlerMethod() != null)
             ? event.getHandlerMethod().getBodyText()
             : null;
-//*/
-        return null;
     }
 
 

@@ -24,9 +24,11 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -73,11 +75,7 @@ public class Statement {
         WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
                 TreeMaker make = wc.getTreeMaker();
-                //StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(wc).getLeaf();
-                StatementTree stmtTree = method.findStatement(wc, beanName, setterName);
-                //We know for sure that this statement is a bean setter
-                MethodInvocationTree exprTree = (MethodInvocationTree)((ExpressionStatementTree)stmtTree).getExpression();
-                ExpressionTree arg = exprTree.getArguments().get(0);
+                ExpressionTree arg = getArgument(wc);
                 SourcePositions[] positions = new SourcePositions[1];
                 ExpressionTree newArg = wc.getTreeUtilities().parseExpression(valueSource, positions);
                 wc.rewrite(arg, newArg);
@@ -92,13 +90,38 @@ public class Statement {
     public Object evaluateArgument() {
         return ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
-                //StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(wc).getLeaf();
-                StatementTree stmtTree = method.findStatement(cinfo, beanName, setterName);
-                ExpressionTree arg = getMethodInvocationTree(cinfo, stmtTree).getArguments().get(0);
-                return ExpressionUtils.getValue(cinfo, arg);
+                return ExpressionUtils.getValue(cinfo, getArgument(cinfo));
             }
         }, method.getJavaClass().getFileObject());            
     }
+    
+    
+    /*
+     * Returns the argument for the property set statement
+     */ 
+    private ExpressionTree getArgument(CompilationInfo cinfo) {
+        //StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(wc).getLeaf();
+        StatementTree stmtTree = method.findPropertyStatement(cinfo, beanName, setterName);
+        ExpressionTree arg = getMethodInvocationTree(cinfo, stmtTree).getArguments().get(0);
+        return arg;
+    }
+    
+    /*
+     * Returns the eventset adapter class
+     */ 
+    public JavaClass getAdapterClass() {
+        return (JavaClass)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                ExpressionTree arg = getArgument(cinfo);
+                if(arg.getKind() == Tree.Kind.NEW_CLASS) {
+                    NewClassTree newClassTree = (NewClassTree)arg;
+                    TypeElement typeElem = (TypeElement)TreeUtils.getElement(cinfo, newClassTree.getClassBody());
+                    return new JavaClass(typeElem, Statement.this.method.getJavaClass().getFileObject());
+                }
+                return null;
+            }
+        }, method.getJavaClass().getFileObject());            
+    }    
     
     /*
      * Returns the textual string of the argument of  property setter method
@@ -106,16 +129,13 @@ public class Statement {
     public String getArgumentSource() {
         return (String)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
-                //StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(wc).getLeaf();
-                StatementTree stmtTree = method.findStatement(cinfo, beanName, setterName);
-                ExpressionTree arg = getMethodInvocationTree(cinfo, stmtTree).getArguments().get(0);
-                return ExpressionUtils.getArgumentSource(cinfo, arg);
+                 return ExpressionUtils.getArgumentSource(cinfo, getArgument(cinfo));
             }
         }, method.getJavaClass().getFileObject());            
     }    
     
     /*
-     * Returns a method invocation tree if the statement is a bean property setter
+     * Returns true if the statement represents a property set statement
      * For example - a.foo(arg);
      */
     public static boolean IsPropertySetter(CompilationInfo cinfo, StatementTree stmtTree) {
@@ -135,11 +155,15 @@ public class Statement {
         return false;
     }
     
-    
+    /*
+     * Creates a Statement class provided a statement tree reprsenting property set statement and its
+     * enclosing Method
+     */ 
     public static Statement createStatementClass(CompilationInfo cinfo, StatementTree stmtTree, Method method) {
         MethodInvocationTree methInvkTree = getMethodInvocationTree(cinfo, stmtTree);
-        String beanName = getBeanName(cinfo, methInvkTree);
-        String setterName = getPropertySetterName(cinfo, methInvkTree);
+        MemberSelectTree memSelTree = (MemberSelectTree)methInvkTree.getMethodSelect();
+        String beanName = ((IdentifierTree)memSelTree.getExpression()).getName().toString();
+        String setterName = memSelTree.getIdentifier().toString();
         return new Statement(TreePathHandle.create(
                 TreeUtils.getTreePath(cinfo, stmtTree), cinfo), method, beanName, setterName);
     }
@@ -152,38 +176,12 @@ public class Statement {
         return (MethodInvocationTree)((ExpressionStatementTree)stmtTree).getExpression();
     }
     
-    /*
-     * Extracts and returns the name of the bean whose property is being set
-     * For example in case of a.setFoo(arg), bean name is 'a'
-     */
-    private static String getBeanName(CompilationInfo cinfo, MethodInvocationTree methInvkTree) {
-        if(methInvkTree.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
-            MemberSelectTree memSelTree = (MemberSelectTree)methInvkTree.getMethodSelect();
-            if(memSelTree.getExpression().getKind() == Tree.Kind.IDENTIFIER) {
-                return ((IdentifierTree)memSelTree.getExpression()).getName().toString();
-            }
-        }
-        return null;
-    }    
-    
-    /*
-     * Extracts and returns the name of the property setter
-     * For example in case of a.setFoo(arg), property setter is 'setFoo'
-     */
-    private static String getPropertySetterName(CompilationInfo cinfo, MethodInvocationTree methInvkTree) {
-        if(methInvkTree.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
-            MemberSelectTree memSelTree = (MemberSelectTree)methInvkTree.getMethodSelect();
-            return memSelTree.getIdentifier().toString();
-        }
-        return null;
-    }            
-
     public boolean remove() {
         Boolean result = (Boolean)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
                 TreeMaker make = wc.getTreeMaker();
                 //StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(wc).getLeaf();
-                StatementTree stmtTree = method.findStatement(wc, beanName, setterName);
+                StatementTree stmtTree = method.findPropertyStatement(wc, beanName, setterName);
                 return method.removeStatement(wc, stmtTree);
             }
         }, method.getJavaClass().getFileObject());

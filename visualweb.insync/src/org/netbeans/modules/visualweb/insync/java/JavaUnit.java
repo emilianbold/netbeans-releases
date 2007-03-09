@@ -176,19 +176,19 @@ public class JavaUnit extends SourceUnit {
     /**
      * Add a new import after the given loc
      * @param ident
-     * @return
+     * @return true if the import was added
      */
-    public Object/*ImportTree*/ addImport(String ident) {
-        return null;
+    public boolean addImport(String fqn) {
+        return false;
     }
 
     /**
-     * Ensure that a given import is in the list, if not add it after loc
+     * Ensure that a given import is in the list, if not add it
      * @param ident
-     * @return The existing or added import
+     * @return true if the import was added
      */
-    public Object/*ImportTree*/ ensureImport(String ident) {
-        return null;
+    public boolean ensureImport(String fqn) {
+        return false;
     }
 
     /**

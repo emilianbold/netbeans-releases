@@ -18,14 +18,13 @@
  */
 package org.netbeans.modules.visualweb.insync.beans;
 
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
-import org.netbeans.modules.visualweb.insync.java.JMIExpressionUtils;
-import org.netbeans.modules.visualweb.insync.java.JavaClassAdapter;
-import org.netbeans.modules.visualweb.insync.java.JMIMethodUtils;
+import org.netbeans.modules.visualweb.insync.java.DelegatorMethod;
+import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import java.beans.MethodDescriptor;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import java.util.List;
+import org.netbeans.modules.visualweb.insync.java.Method;
 
 /**
  * Representation of a wiring for a single event handler within an EventSet's listener adapter in
@@ -45,9 +44,8 @@ public class Event extends BeansNode {
     protected String[] requiredImports;
 
     // Java source-based event fields
-    protected Object/*ExecutableElement*/ delegator;
-    protected Object/*ExecutableElement*/ handler;
-    protected Object/*MethodInvocationTree*/ mExpr;
+    protected DelegatorMethod delegator;
+    protected Method handler;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -73,10 +71,9 @@ public class Event extends BeansNode {
      * @param handler  Our handler method that is populated by the user.
      */
     private Event(EventSet set, MethodDescriptor descriptor,
-            Object/*ExecutableElement*/ delegator, Object/*MethodInvocationTree*/ call, Object/*ExecutableElement*/ handler) {
+            DelegatorMethod delegator, Object/*MethodInvocationTree*/ call, Method handler) {
         this(set, descriptor);
         this.delegator = delegator;
-        this.mExpr = call;
         this.handler = handler;
         assert Trace.trace("insync.beans", "E new bound Event: " + this);
     }
@@ -96,42 +93,14 @@ public class Event extends BeansNode {
      * @param am  The adapter
      * @return the new bound property if bindable, else null
      */
-    static Event newBoundInstance(EventSet set, MethodDescriptor md, Object/*ExecutableElement*/ am) {
-/*//NB6.0
-        JMIUtils.beginTrans(false);
-        try {
-            List stmts = am.getBody().getStatements();
-            if(stmts.size() != 1)
-                return null;
-
-            Statement stmt = (Statement)stmts.get(0);
-
-            Expression expr = null;
-            if(stmt instanceof ReturnStatement){
-                expr = ((ReturnStatement)stmt).getExpression();
-            } else if(stmt instanceof ExpressionStatement) {
-                expr = ((ExpressionStatement)stmt).getExpression();
-            } else {
-                return null;
-            }
-
-            if(!(expr instanceof MethodInvocation))
-                return null;
-
-            MethodInvocation mExpr = (MethodInvocation)expr;
-            String mname = mExpr.getName();
-
-            if(mExpr.getParameters().size() != am.getParameters().size())
-                return null;
-
+    static Event newBoundInstance(EventSet set, MethodDescriptor md, DelegatorMethod method) {
+        String mname = method.getDelegateName();
+        if(mname != null) {
             Method handler = set.getUnit().getThisClass().getMethod(mname, 
                     md.getMethod().getParameterTypes());
-
-            return new Event(set, md, am, mExpr, handler);
-        }finally {
-            JMIUtils.endTrans();
+            return new Event(set, md, method, null, handler);
         }
- //*/
+        
         return null;
     }
 
@@ -185,30 +154,13 @@ public class Event extends BeansNode {
      * @param delegate name of delegate, pass null to use a tmp name & set later
      */
     protected void insertEntry(String handler) {
-        String retType = descriptor.getMethod().getReturnType().getName();
-        // now add arg(s)
-        Class[] pts = descriptor.getMethod().getParameterTypes();
-        String[] pns = Naming.paramNames(pts, descriptor.getParameterDescriptors());
-/*//NB6.0
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            List args = JMIUtils.getParameters(set.getUnit().getJavaUnit().getJavaClass(), pts, pns);
-            
-            delegator = set.getDelegatorMethod(descriptor);
-            mExpr = JMIExpressionUtils.getMethodInvocation(
-                    set.getUnit().getJavaUnit().getJavaClass(),
-                    null, handler, args);
-            if (!retType.equals("void")) {
-                JMIMethodUtils.addReturnStatement(delegator, mExpr);
-            }else {
-                JMIMethodUtils.addMethodInvocationStatement(delegator, mExpr);
-            }
-            rollback = false;
-        }finally {
-            JMIUtils.endTrans(rollback);
+        Class[] pTypes = descriptor.getMethod().getParameterTypes();
+        String[] pNames = Naming.paramNames(pTypes, descriptor.getParameterDescriptors());
+        boolean noreturn = false;
+        if (descriptor.getMethod().getReturnType().getName().equals("void")) {
+            noreturn = true;
         }
- //*/
+        set.getDelegatorMethod(descriptor).addDelegateStatement(handler, pNames, noreturn);
     }
 
     /**
@@ -218,11 +170,10 @@ public class Event extends BeansNode {
      * @return true iff the source entry for this event was actually removed.
      */
     protected boolean removeEntry() {
-        JavaClassAdapter adapter = set.getAdapter();
+        JavaClass adapter = set.getAdapter();
         if (delegator != null) {
             set.removeDelegatorMethod(delegator);
             delegator = null;
-            mExpr = null;
             return true;
         }
         return false;
@@ -263,31 +214,17 @@ public class Event extends BeansNode {
      * @param name  The new handler method name.
      */
     public void setHandler(String name) {
-/*//NB6.0
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            
-            if (handler != null) {
-                if (!getUnit().hasEventMethod(descriptor, name))
-                    handler.setName(name);  // rename existing method in place
-                //else we'll just switch over to the existing one
-            } else {
-                handler = getUnit().ensureEventMethod(descriptor, name,
-                        defaultBody, parameterNames, requiredImports);
+        if (handler != null) {
+            if (!getUnit().hasEventMethod(descriptor, name)) {
+                handler.rename(name);  // rename existing method in place
             }
-            if (mExpr != null) {
-                /*
-                if(!mExpr.isValid())
-                    initializeCall();
-                 ** /
-                mExpr.setName(name);
-            }
-            rollback = false;
-        }finally {
-            JMIUtils.endTrans(rollback);
+        } else {
+            handler = getUnit().ensureEventMethod(descriptor, name,
+                    defaultBody, parameterNames, requiredImports);
         }
-//*/
+        if (delegator != null) {
+            delegator.setDelegateName(name);
+        }
     }
 
     /**
@@ -295,44 +232,21 @@ public class Event extends BeansNode {
      * @return The handler method name.
      */
     public String getHandlerName() {
-/*//NB6.0
-        // should match handler.getName() too, but handler may be null (temporarily lost)
-        //return ((Identifier)call.getMethod()).getFullname();
-        if(handler != null)
+        if(handler != null) {
             return handler.getName();
-        /NB6.0*
-        else {
-            if(!mExpr.isValid()) {
-                initializeCall();
-            }
+        } else if(delegator != null) {
+            return delegator.getDelegateName();
         }
- **NB6.0/
-        return mExpr.getName();
-        //*/
+        
         return null;
     }
-
-    /*
-    void initializeCall() {
-        StatementBlock stmtBlk = delegator1.getBody();
-        List stmts = stmtBlk.getStatements();
-        if(stmts.size() > 0) {
-            Statement s = (Statement)stmts.get(0);
-            if(s instanceof ReturnStatement) {
-                mExpr = (MethodInvocation)((ReturnStatement)s).getExpression();
-            } else {
-                mExpr = (MethodInvocation)((ExpressionStatement)s).getExpression();
-            }
-        }
-    }
-     **/
 
     /**
      * Get the handler method for this event.
      * 
      * @return The handler method itself.
      */
-    public Object/*ExecutableElement*/ getHandlerMethod() {
+    public Method getHandlerMethod() {
         return handler;
     }
 

@@ -154,7 +154,7 @@ public class Property extends BeansNode {
     public void setValue(Object value, String valueSource) {
         if(stmt == null) {
             Method method = unit.getPropertiesInitMethod();
-            stmt = method.addMethodInvocationStatement(bean.getName(), 
+            stmt = method.addPropertyStatement(bean.getName(), 
                     descriptor.getWriteMethod().getName(), valueSource);
         }else {
             stmt.replaceArgument(valueSource);

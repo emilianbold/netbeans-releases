@@ -151,15 +151,13 @@ public class BeansDesignProperty extends SourceDesignProperty {
             // Look locally first as an optimization
             DesignBean lb = liveBean.unit.getBeanForInstance(value);
             
-/*//NB6.0
             //VB expressions cannot be used to refer the properties in the same bean
             //when the initializers are added into the constructor
             //This is required for migrated reef projects
-            if((liveBean.unit.getBeansUnit().getPropertiesInitMethod().getName() == null) &&
+            if((liveBean.unit.getBeansUnit().getPropertiesInitMethod().isConstructor()) &&
                lb != null) {
                 return lb.getInstanceName();
             }
-//*/
             
             if(lb == null) {
                 // Now look through all contexts and see if we can find it
