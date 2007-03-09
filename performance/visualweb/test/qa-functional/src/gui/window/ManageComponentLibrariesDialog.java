@@ -35,30 +35,31 @@ public class ManageComponentLibrariesDialog  extends org.netbeans.performance.te
     private NbDialogOperator parent, dialog;
     private JButtonOperator manageComponentLibsButton;
     
+    private Node openNode;
+    
     /** Creates a new instance of ManageComponentLibrariesDialog */
     public ManageComponentLibrariesDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=3000;            
+        WAIT_AFTER_OPEN=2000;            
     }
     
     /** Creates a new instance of ManageComponentLibrariesDialog */
     public ManageComponentLibrariesDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=3000;        
+        WAIT_AFTER_OPEN=2000;        
     }
     
     protected void initialize() {
         log("::initialize");
-        Node openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"),org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.displayName"));
-        openNode.callPopup().pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibAction"));
-        parent = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplib"));
-        
-        
+        openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"),org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.displayName"));
     }
+    
     public void prepare() {
         log("::prepare");
+        openNode.callPopup().pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibAction"));
+        parent = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplib"));
         manageComponentLibsButton = new JButtonOperator(parent,"Manage Component Libraries..."); // NOI18N
     }
 
@@ -72,16 +73,16 @@ public class ManageComponentLibrariesDialog  extends org.netbeans.performance.te
     @Override
     public void close() {
         log("::close");
-        dialog.close();
+        dialog.closeByButton();
     }
 
     protected void shutdown() {
         log(":: shutdown");
-        super.shutdown();
         parent.close();
     }
     
     public static void main(String[] args) {
+        repeat = 2;
         junit.textui.TestRunner.run(new ManageComponentLibrariesDialog("measureTime","Measure Manage Component Libraries Dialog open time"));
     }
 
