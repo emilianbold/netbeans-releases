@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,7 +22,7 @@ package org.netbeans.modules.i18n;
 
 
 import java.awt.Image;
-import java.awt.Toolkit;
+import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.SimpleBeanInfo;
@@ -39,6 +39,16 @@ import org.openide.util.Utilities;
  * @author  Peter Zavadsky
  */
 public class I18nOptionsBeanInfo extends SimpleBeanInfo {
+    
+    /**
+     */
+    public BeanDescriptor getBeanDescriptor() {
+        BeanDescriptor descr = new BeanDescriptor(I18nOptions.class);
+        descr.setDisplayName(
+                NbBundle.getMessage(I18nOptions.class,
+                                    "LBL_Internationalization"));       //NOI18N
+        return descr;
+    }
 
     /** Overrides superclass method. */
     public PropertyDescriptor[] getPropertyDescriptors() {
