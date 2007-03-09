@@ -23,8 +23,8 @@ package org.netbeans.modules.compapp.casaeditor.model.jbi;
  * @author jqian
  */
 public interface Target extends JBIComponent {
-    public static final String ARTIFACTS_ZIP_PROPERTY = "artifacts-zip";
-    public static final String COMPONENT_NAME_PROPERTY = "component-name";
+    public static final String ARTIFACTS_ZIP_PROPERTY = "artifacts-zip";        // NOI18N
+    public static final String COMPONENT_NAME_PROPERTY = "component-name";      // NOI18N
     
     String getArtifactsZip();
     void setArtifactsZip(String artifactsZip);

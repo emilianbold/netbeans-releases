@@ -20,11 +20,11 @@ package org.netbeans.modules.compapp.casaeditor.model.jbi.impl;
 
 import java.util.List;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIComponent;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIComponentFactory;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.ExtensibilityElement;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModelFactory;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
@@ -77,7 +77,7 @@ public abstract class JBIComponentImpl extends AbstractDocumentComponent<JBIComp
     
     protected static Element createPrefixedElement(JBIModel model, QName qName) {
         String qualified = qName.getPrefix() == null ? qName.getLocalPart() :
-            qName.getPrefix() + ":" + qName.getLocalPart();
+            qName.getPrefix() + Constants.COLON_STRING + qName.getLocalPart();
         return model.getDocument().createElementNS(qName.getNamespaceURI(), qualified);
     }
     
@@ -111,15 +111,15 @@ public abstract class JBIComponentImpl extends AbstractDocumentComponent<JBIComp
         String namespaceURI;
         String prefix;
         
-        int colonIndex = prefixedName.indexOf(":");
+        int colonIndex = prefixedName.indexOf(Constants.COLON_STRING);
         if (colonIndex != -1) {
             prefix = prefixedName.substring(0, colonIndex);
             localPart = prefixedName.substring(colonIndex + 1);
             namespaceURI = getPeer().lookupNamespaceURI(prefix);
         } else {
-            prefix = "";
+            prefix = Constants.EMPTY_STRING;
             localPart = prefixedName;
-            namespaceURI = "";
+            namespaceURI = Constants.EMPTY_STRING;
         }
         
         return new QName(namespaceURI, localPart, prefix);

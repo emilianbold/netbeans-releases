@@ -20,6 +20,7 @@
 package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.datatransfer.DataFlavor;
@@ -28,12 +29,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import org.netbeans.api.visual.action.ConnectorState;
-import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExternal;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
@@ -52,20 +54,15 @@ import org.openide.loaders.DataObject;
 public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
 
     private CasaWrapperModel mModel;
-    private List<String> artifactTypes = new ArrayList();
+    private List<String> artifactTypes = new ArrayList<String>();
     
 
     public CasaPaletteAcceptProvider(CasaModelGraphScene scene, CasaWrapperModel model) {
         super(scene);
-        
         mModel = model;
-
-        // init
-        //artifactTypes.add("jar"); // No I18N
-        //artifactTypes.add("war"); // No I18N
-        //artifactTypes.add("ear"); // No I18N  TODO ear project does not have AntArtifactProvider
         artifactTypes.add(JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA);
     }
+    
 
     private String getJbiProjectType(Project p) {
         if (p == null) {
@@ -96,67 +93,63 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
 
     public ConnectorState isAcceptable (Widget widget, Point point, Transferable transferable){
         ConnectorState retState = ConnectorState.REJECT;
-        LayerWidget region = null;                
         try {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
                 CasaPaletteItem selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
-                if(selNode != null) {
-                    switch(selNode.getCategory()) {
-                        case WSDL_BINDINGS :
-                            region = getScene().getBindingRegion();
-                            if(region.getBounds().contains(region.convertSceneToLocal(point))){
-                                retState = ConnectorState.ACCEPT;
-                            }
-                            break;
-                        case SERVICE_UNITS :
-                            if        (CasaPalette.CASA_PALETTE_ITEM_TYPE.INT_SU == selNode.getPaletteItemType()) {
-                                region = getScene().getEngineRegion();
-                            } else if (CasaPalette.CASA_PALETTE_ITEM_TYPE.EXT_SU == selNode.getPaletteItemType()) {
-                                region = getScene().getExternalRegion();
-                            }
-                            if (
-                                    region != null && 
-                                    region.getBounds().contains(region.convertSceneToLocal(point))){
-                                retState = ConnectorState.ACCEPT;
-                            }
-                            break;
-                        default:
-                            retState = ConnectorState.REJECT;
-                    }
+                if (selNode != null) {
+                    retState = isAcceptableFromPalette(widget, point, selNode);
                 }
-            } else { // check for SU project node
-                DataFlavor[] dfs = transferable.getTransferDataFlavors();
-                region = getScene().getEngineRegion();
-                if(region.getBounds().contains(region.convertSceneToLocal(point))){
-                    if (dfs.length > 0) {
-                        Object dfo = transferable.getTransferData(dfs[0]);
-                        if (dfo instanceof Node) {
-                            try {
-                                DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
-                                Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
-                                if (getJbiProjectType(p) != null) {
-                                    // todo: 01/24/07 needs to check for duplicates...
-                                    if (mModel.existingServiceUnit(obj.getName())) {
-                                        retState = ConnectorState.REJECT;
-                                    } else {
-                                        retState = ConnectorState.ACCEPT;
-                                    }
-                                }
-                            } catch (Exception ex) { // bad data objects..
-                                retState = ConnectorState.REJECT;
-                            }
-                        }
-                    }
-                }
+            } else {
+                retState = isAcceptableFromOther(widget, point, transferable);
             }
         } catch (UnsupportedFlavorException ex) {
             ex.printStackTrace();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return retState;
     }
-
+    
+    private ConnectorState isAcceptableFromPalette(Widget widget, Point point, CasaPaletteItem selNode) {
+        CasaRegionWidget region = getApplicableRegion(selNode);
+        ConnectorState retState = ConnectorState.REJECT;
+        if (
+                region != null &&
+                region.getBounds().contains(region.convertSceneToLocal(point))) {
+            retState = ConnectorState.ACCEPT;
+        }
+        return retState;
+    }
+    
+    private ConnectorState isAcceptableFromOther(Widget widget, Point point, Transferable transferable) 
+    throws Exception {
+        DataFlavor[] dfs = transferable.getTransferDataFlavors();
+        CasaRegionWidget region = getScene().getEngineRegion();
+        if (region.getBounds().contains(region.convertSceneToLocal(point))) {
+            if (dfs.length > 0) {
+                Object dfo = transferable.getTransferData(dfs[0]);
+                if (dfo instanceof Node) {
+                    try {
+                        DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
+                        Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
+                        if (getJbiProjectType(p) != null) {
+                            String pname = p.getProjectDirectory().getName();
+                            // todo: 01/24/07 needs to check for duplicates...
+                            if (mModel.existingServiceUnit(pname)) {
+                                return ConnectorState.REJECT;
+                            } else {
+                                return ConnectorState.ACCEPT;
+                            }
+                        }
+                    } catch (Exception ex) { // bad data objects..
+                        ex.printStackTrace(System.err);
+                    }
+                }
+            }
+        }
+        return ConnectorState.REJECT;
+    }
+    
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
@@ -224,14 +217,101 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         }
         ProjectManager pm = ProjectManager.getDefault();
         Project p = null;
-
         for (FileObject fo=obj.getPrimaryFile(); fo != null; fo=fo.getParent()) {
             p = pm.findProject(fo);
             if (p != null) {
                 return p;
             }
         }
-
         return p;
     }
+
+    
+    public void acceptStarted(Transferable transferable) {
+        super.acceptStarted(transferable);
+        CasaPaletteItem selNode = getCasaPaletteItem(transferable);
+        CasaRegionWidget region = getApplicableRegion(selNode);
+        if (region != null) {    //Region can take the drop -- highlight it!
+            highlightRegion(region);
+        } else {    // Its WSDL Points and hence highlight external SUs
+                    // Sanity check...
+            if(selNode != null) {
+                if(selNode.getCategory() == CasaPalette.CASA_CATEGORY_TYPE.END_POINTS) {
+                    highlightExtSUs(true);
+                }
+            }
+        }
+    }
+    
+    public void acceptFinished() {
+        super.acceptFinished();
+        highlightExtSUs(false);
+        getScene().getBindingRegion().setHighlighted(false);
+        getScene().getEngineRegion().setHighlighted(false);
+        getScene().getExternalRegion().setHighlighted(false);
+    }
+    
+    private void highlightRegion(CasaRegionWidget region) {
+        region.setHighlighted(true);
+        showRegion(region);
+    }
+
+    private void highlightExtSUs(boolean bValue) {
+       for (Widget widget : getScene().getExternalRegion().getChildren()) {
+            if (widget instanceof CasaNodeWidgetEngineExternal) {
+                ((CasaNodeWidgetEngineExternal) widget).setHighlighted(bValue);
+            }
+       }
+       if (bValue) {
+            showRegion(getScene().getExternalRegion());
+       }
+    }
+    
+    private void showRegion(CasaRegionWidget region) {
+        Rectangle visibleRect = region.getBounds();     //Scroll to visible
+        visibleRect.x += region.getLocation().x;
+        visibleRect.y += region.getLocation().y;
+        visibleRect.width += region.getLocation().x;
+        visibleRect.height += region.getLocation().y;
+        getScene().getViewComponent().scrollRectToVisible(visibleRect);
+        
+    }
+
+    private CasaRegionWidget getApplicableRegion(CasaPaletteItem selNode) {
+        CasaRegionWidget region = null;
+        if (selNode != null) {
+            switch(selNode.getCategory()) {
+                case WSDL_BINDINGS :
+                    region = getScene().getBindingRegion();
+                    break;
+                case SERVICE_UNITS :
+                    if(CasaPalette.CASA_PALETTE_ITEM_TYPE.INT_SU == selNode.getPaletteItemType()) {
+                        region = getScene().getEngineRegion();
+                    } else if (CasaPalette.CASA_PALETTE_ITEM_TYPE.EXT_SU == selNode.getPaletteItemType()) {
+                        region = getScene().getExternalRegion();
+                    }
+                    break;
+            default:
+                break;
+           }
+        } else {
+            region = getScene().getEngineRegion();
+        }
+        return region;
+    }
+    
+    private CasaPaletteItem getCasaPaletteItem(Transferable transferable) {
+        CasaPaletteItem selNode = null;
+        if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
+            try {
+                selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+            } catch (UnsupportedFlavorException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return selNode;
+    }
 }
+ 

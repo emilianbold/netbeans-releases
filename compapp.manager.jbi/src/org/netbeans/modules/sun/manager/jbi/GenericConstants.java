@@ -161,6 +161,9 @@ public interface GenericConstants {
     public static final String LIST_SHARED_LIBRARIES_OPERATION_NAME = "listSharedLibraries"; // NOI18N
     public static final String LIST_SERVICE_ASSEMBLIES_OPERATION_NAME = "listServiceAssemblies"; // NOI18N
     public static final String LIST_SHARED_LIBRARY_DEPENDENTS_OPERATION_NAME = "listSharedLibraryDependents"; // NOI18N
+    
+    public static final String GET_COMPONENT_INSTALLATION_DESCRIPTOR_NAME = "getComponentInstallationDescriptor"; // NOI18N
+    public static final String GET_SHARED_LIBRARY_INSTALLATION_DESCRIPTOR_NAME = "getSharedLibraryInstallationDescriptor"; // NOI18N
 
     public static final String DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME = "deployServiceAssembly"; // NOI18N
     public static final String INSTALL_COMPONENT_OPERATION_NAME = "installComponent"; // NOI18N

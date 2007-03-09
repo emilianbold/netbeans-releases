@@ -29,27 +29,27 @@ import javax.xml.namespace.QName;
  */
 public enum CasaQName {    
     
-    CASA(createCasaQName("casa")),    
-    SERVICE_UNITS(createCasaQName("service-units")),    
-    ENGINE_ENGINE_SERVICE_UNIT(createCasaQName("service-engine-service-unit")),
-    BINDING_COMPONENT_SERVICE_UNIT(createCasaQName("binding-component-service-unit")),
-    CONNECTIONS(createCasaQName("connections")),
-    CONNECTION(createCasaQName("connection")),
-    ENDPOINTS(createCasaQName("endpoints")),
-    ENDPOINT(createCasaQName("endpoint")),
-    CONSUMES(createCasaQName("consumes")),
-    PROVIDES(createCasaQName("provides")),
-    PORTS(createCasaQName("ports")),
-    PORT(createCasaQName("port")),
-    BINDINGS(createCasaQName("bindings")),
-    PORTTYPES(createCasaQName("porttypes")),
-    SERVICES(createCasaQName("services")),
-    LINK(createCasaQName("link")),
-    REGIONS(createCasaQName("regions")),
-    REGION(createCasaQName("region"));
+    CASA(createCasaQName("casa")),                                                          // NOI18N
+    SERVICE_UNITS(createCasaQName("service-units")),                                        // NOI18N
+    ENGINE_ENGINE_SERVICE_UNIT(createCasaQName("service-engine-service-unit")),             // NOI18N
+    BINDING_COMPONENT_SERVICE_UNIT(createCasaQName("binding-component-service-unit")),      // NOI18N
+    CONNECTIONS(createCasaQName("connections")),                                            // NOI18N
+    CONNECTION(createCasaQName("connection")),                                              // NOI18N   
+    ENDPOINTS(createCasaQName("endpoints")),                                                // NOI18N
+    ENDPOINT(createCasaQName("endpoint")),                                                  // NOI18N
+    CONSUMES(createCasaQName("consumes")),                                                  // NOI18N
+    PROVIDES(createCasaQName("provides")),                                                  // NOI18N    
+    PORTS(createCasaQName("ports")),                                                        // NOI18N
+    PORT(createCasaQName("port")),                                                          // NOI18N        
+    BINDINGS(createCasaQName("bindings")),                                                  // NOI18N        
+    PORTTYPES(createCasaQName("porttypes")),                                                // NOI18N
+    SERVICES(createCasaQName("services")),                                                  // NOI18N
+    LINK(createCasaQName("link")),                                                          // NOI18N    
+    REGIONS(createCasaQName("regions")),                                                    // NOI18N
+    REGION(createCasaQName("region"));                                                      // NOI18N
     
-    public static final String CASA_NS_URI = "http://java.sun.com/xml/ns/casa";
-    public static final String CASA_NS_PREFIX = "casa";
+    public static final String CASA_NS_URI = "http://java.sun.com/xml/ns/casa";             // NOI18N
+    public static final String CASA_NS_PREFIX = "casa";                                     // NOI18N
         
     
     public static QName createCasaQName(String localName){
@@ -76,7 +76,7 @@ public enum CasaQName {
     }    
     
     public String getQualifiedName() {
-        return qName.getPrefix() + ":" + qName.getLocalPart();
+        return qName.getPrefix() + ":" + qName.getLocalPart();      // NOI18N
     }
     
     private final QName qName;

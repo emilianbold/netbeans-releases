@@ -38,6 +38,7 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.openide.util.NbBundle;
@@ -53,9 +54,9 @@ public class CasaRegionWidget extends LayerWidget {
     private static final int    BORDER_WIDTH  = 1;
     
     private static final Color  LABEL_COLOR   = new Color(168, 168, 168);
-    private static final Font   LABEL_FONT    = new Font("Dialog", Font.BOLD, 18);
+    private static final Font   LABEL_FONT    = new Font("Dialog", Font.BOLD, 18);  // NOI18N
     private static final int    LABEL_Y_POS   = 20;
-    private static final String LABEL_TRUNCATED = NbBundle.getMessage(CasaRegionWidget.class, "LBL_Truncated");
+    private static final String LABEL_TRUNCATED = NbBundle.getMessage(CasaRegionWidget.class, "LBL_Truncated"); // NOI18N
     
     private static int mTruncatedStringWidth = -1;
     
@@ -63,7 +64,7 @@ public class CasaRegionWidget extends LayerWidget {
     private int mRegionPreferredWidth;
     private String mLabelText;
     private int mFullStringWidth = -1;
-    
+    private boolean mIsHighlighted;
     private Widget mBorderWidget;
     
     
@@ -175,11 +176,19 @@ public class CasaRegionWidget extends LayerWidget {
         mLabelWidget.setFont(font);
     }
 
+    public void setHighlighted(boolean isHighlighted) {
+        if (mIsHighlighted != isHighlighted) {
+            mIsHighlighted = isHighlighted;
+            repaint();
+        }
+    }
+    
+    
     public static CasaRegionWidget createBindingRegion(Scene scene) {
         return new CasaRegionWidget(
                 scene, 
                 CasaFactory.getCasaCustomizer().getCOLOR_REGION_BINDING(), 
-                NbBundle.getMessage(CasaRegionWidget.class, "LBL_BindingRegion"),
+                NbBundle.getMessage(CasaRegionWidget.class, "LBL_BindingRegion"),   // NOI18N
                 CasaFactory.getCasaCustomizer().getCOLOR_BC_REGION_TITLE(),
                 CasaFactory.getCasaCustomizer().getFONT_BC_REGION_TITLE()
                 );
@@ -189,7 +198,7 @@ public class CasaRegionWidget extends LayerWidget {
         return new CasaRegionWidget(
                 scene, 
                 CasaFactory.getCasaCustomizer().getCOLOR_REGION_ENGINE(), 
-                NbBundle.getMessage(CasaRegionWidget.class, "LBL_EngineRegion"),
+                NbBundle.getMessage(CasaRegionWidget.class, "LBL_EngineRegion"),    // NOI18N
                 CasaFactory.getCasaCustomizer().getCOLOR_SU_REGION_TITLE(),
                 CasaFactory.getCasaCustomizer().getFONT_SU_REGION_TITLE()
                 );
@@ -199,9 +208,23 @@ public class CasaRegionWidget extends LayerWidget {
         return new CasaRegionWidget(
                 scene, 
                 CasaFactory.getCasaCustomizer().getCOLOR_REGION_EXTERNAL(), 
-                NbBundle.getMessage(CasaRegionWidget.class, "LBL_ExternalRegion"),
+                NbBundle.getMessage(CasaRegionWidget.class, "LBL_ExternalRegion"),  // NOI18N
                 CasaFactory.getCasaCustomizer().getCOLOR_EXT_SU_REGION_TITLE(),
                 CasaFactory.getCasaCustomizer().getFONT_EXT_SU_REGION_TITLE()
                 );
+    }
+    
+    
+    protected void paintWidget() {
+        super.paintWidget();
+        
+        if (mIsHighlighted) {
+            InnerGlowBorderDrawer.paintInnerGlowBorder(
+                    getGraphics(), 
+                    getBounds(), 
+                    CasaFactory.getCasaCustomizer().getCOLOR_SELECTION(), 
+                    0.3f,
+                    15);
+        }
     }
 }

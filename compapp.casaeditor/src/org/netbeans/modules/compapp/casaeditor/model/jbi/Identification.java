@@ -23,8 +23,8 @@ package org.netbeans.modules.compapp.casaeditor.model.jbi;
  * @author jqian
  */
 public interface Identification extends JBIComponent {
-    public static final String NAME_PROPERTY = "name";
-    public static final String DESCRIPTION_PROPERTY = "description";
+    public static final String NAME_PROPERTY = "name";                  // NOI18N
+    public static final String DESCRIPTION_PROPERTY = "description";    // NOI18N
     
     String getName();
     void setName(String name);

@@ -18,15 +18,17 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author jqian
  */
 public enum ConnectionState {
     
-    NEW("new"),
-    DELETED("deleted"),
-    UNCHANGED("unchanged");
+    NEW("new"),                     // NOI18N
+    DELETED("deleted"),             // NOI18N   
+    UNCHANGED("unchanged");         // NOI18N
     
     ConnectionState(String state) {
         this.state = state;
@@ -39,14 +41,14 @@ public enum ConnectionState {
     public static ConnectionState getConnectionState(String state) {
         if (state == null) {
             return null;
-        } else if (state.equals("new")) {
+        } else if (state.equals("new")) {       // NOI18N
             return NEW;
-        } else if (state.equals("deleted")) {
+        } else if (state.equals("deleted")) {   // NOI18N
             return DELETED;
-        } else if (state.equals("unchanged")) {
+        } else if (state.equals("unchanged")) { // NOI18N
             return UNCHANGED;
         } else {
-            throw new RuntimeException("Illegal connection state: " + state);
+            throw new RuntimeException(NbBundle.getMessage(ConnectionState.class, "Error_Illegal_connection_state") + state);    // NOI18N
         }
     }
     

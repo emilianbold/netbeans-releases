@@ -10,7 +10,7 @@
 			<tocitem text="Adding JBI Modules to Composite Application Projects" target="caps_basics_add_jbi" />
 			<tocitem text="Deploying Composite Application Projects" target="caps_basics_deploy" />
 		</tocitem>
-		<tocitem text="Working with the CASA Editor">
+		<tocitem text="Working With the CASA Editor">
 			<tocitem text="About the CASA Editor" target="casaeditor_about-casa" />
 			<tocitem text="Opening the CASA Editor" target="casaeditor_opening" />
 			<tocitem text="About the Design View" target="casaeditor_designview" />

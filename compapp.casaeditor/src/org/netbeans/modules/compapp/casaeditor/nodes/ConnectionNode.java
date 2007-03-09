@@ -30,7 +30,7 @@ package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
@@ -38,7 +38,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -49,14 +48,10 @@ import org.openide.util.Utilities;
 public class ConnectionNode extends CasaNode {
     
     private static final Image ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ConnectionNode.png");
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ConnectionNode.png");  // NOI18N
     
-    public ConnectionNode(CasaComponent component, Children children, Lookup lookup) {
-        super(component, children, lookup);
-    }
-    
-    public ConnectionNode(CasaComponent component, Lookup lookup) {
-        super(component, Children.LEAF, lookup);
+    public ConnectionNode(CasaConnection component, CasaNodeFactory factory) {
+        super(component, Children.LEAF, factory);
     }
     
     
@@ -71,19 +66,19 @@ public class ConnectionNode extends CasaNode {
         Sheet.Set consumerProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.CONSUMER_SET);
         Node.Property consumerServiceNameSupport = new PropertySupport.ReadOnly(
-                "serviceName", // NO18N
+                "serviceName",  // NOI18N
                 String.class,
-                NbBundle.getMessage(getClass(), "PROP_ServiceName"),
-                "") {
+                NbBundle.getMessage(getClass(), "PROP_ServiceName"),    // NOI18N
+                Constants.EMPTY_STRING) {
             public QName getValue() {
                 return casaConsumes.getServiceQName();
             }
         };
         Node.Property consumerEndpointNameSupport = new PropertySupport.ReadOnly(
-                "endpointName", // NO18N
+                "endpointName", // NOI18N
                 String.class,
-                NbBundle.getMessage(getClass(), "PROP_EndpointName"),
-                "") {
+                NbBundle.getMessage(getClass(), "PROP_EndpointName"), // NOI18N
+                Constants.EMPTY_STRING) {
             public String getValue() {
                 return casaConsumes.getEndpointName();
             }
@@ -94,19 +89,19 @@ public class ConnectionNode extends CasaNode {
         Sheet.Set providerProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.PROVIDER_SET);
         Node.Property providerServiceNameSupport = new PropertySupport.ReadOnly(
-                "serviceName", // NO18N
+                "serviceName", // NOI18N
                 String.class,
-                NbBundle.getMessage(getClass(), "PROP_ServiceName"),
-                "") {
+                NbBundle.getMessage(getClass(), "PROP_ServiceName"), // NOI18N
+                Constants.EMPTY_STRING) {
             public QName getValue() {
                 return casaProvides.getServiceQName();
             }
         };
         Node.Property providerEndpointNameSupport = new PropertySupport.ReadOnly(
-                "endpointName", // NO18N
+                "endpointName", // NOI18N
                 String.class,
-                NbBundle.getMessage(getClass(), "PROP_EndpointName"),
-                "") {
+                NbBundle.getMessage(getClass(), "PROP_EndpointName"),   // NOI18N
+                Constants.EMPTY_STRING) {
             public String getValue() {
                 return casaProvides.getEndpointName();
             }
@@ -122,7 +117,7 @@ public class ConnectionNode extends CasaNode {
         if (casaConnection != null) {
             try {
                 return casaConnection.getConsumer().get().getEndpointName() + 
-                        "<->" + casaConnection.getProvider().get().getEndpointName();
+                        "<->" + casaConnection.getProvider().get().getEndpointName();   // NOI18N
             } catch (Throwable t) {
                 // getName MUST recover gracefully.
                 return getBadName();
@@ -135,7 +130,7 @@ public class ConnectionNode extends CasaNode {
         CasaConnection casaConnection = (CasaConnection) getData();
         if (casaConnection != null) {
             return casaConnection.getConsumer().get().getEndpointName() + 
-                    "&#60;-&#62;" + casaConnection.getProvider().get().getEndpointName();
+                    "&#60;-&#62;" + casaConnection.getProvider().get().getEndpointName();   // NOI18N
         }
         return super.getName();
     }
@@ -148,8 +143,8 @@ public class ConnectionNode extends CasaNode {
             String decoration = null;
             if (casaConnection != null) {
                 String attr = casaConnection.getState();
-                if ((attr != null) && (attr.equalsIgnoreCase("deleted"))) {
-                    decoration = "<font color='#999999'><DEL>"+htmlDisplayName+"</DEL></font>";
+                if ((attr != null) && (attr.equalsIgnoreCase("deleted"))) {         // NOI18N
+                    decoration = "<font color='#999999'><DEL>"+htmlDisplayName+"</DEL></font>"; // NOI18N
                 }
             }
             if (decoration == null) {

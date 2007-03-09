@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.compapp.casaeditor.properties;
 
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.beans.PropertyEditorSupport;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.openide.util.NbBundle;
 
 /**
@@ -31,7 +29,7 @@ import org.openide.util.NbBundle;
  */
 public class StringEditor extends PropertyEditorSupport {
 
-    public final static String EMPTY = "";
+    public final static String EMPTY = Constants.EMPTY_STRING;
 
     /** Creates a new instance of StringEditor */
     public StringEditor() {
@@ -50,20 +48,11 @@ public class StringEditor extends PropertyEditorSupport {
     }
 
     public boolean isPaintable() {
-        return true;
-    }
-    
-    public void paintValue(Graphics g, Rectangle rectangle) {
-        String paintableString=getPaintableString();
-        
-        FontMetrics metrics=g.getFontMetrics();
-        g.drawString(paintableString,rectangle.x,
-                rectangle.y+(rectangle.height-metrics.getHeight())/2+
-                metrics.getAscent());
+        return false;
     }
     
     protected String getPaintableString() {
         String value=(String)getValue();
-        return value==null?NbBundle.getMessage(StringEditor.class,"LBL_Null"):value;
+        return value==null?NbBundle.getMessage(StringEditor.class,"LBL_Null"):value;    // NOI18N
     }
 }

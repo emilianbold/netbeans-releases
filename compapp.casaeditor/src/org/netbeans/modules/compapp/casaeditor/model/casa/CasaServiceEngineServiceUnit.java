@@ -26,14 +26,14 @@ import java.util.List;
  */
 public interface CasaServiceEngineServiceUnit extends CasaServiceUnit {
     
-    public static final String ENDPOINTS_PROPERTY = "endpoints";
-    public static final String X_PROPERTY = "x";
-    public static final String Y_PROPERTY = "y";
-    public static final String INTERNAL_PROPERTY = "internal";
-    public static final String DEFINED_PROPERTY = "defined";
-    public static final String UNKNOWN_PROPERTY = "unknown";
-    public static final String CONSUMES_PROPERTY = "consumes";
-    public static final String PROVIDES_PROPERTY = "provides";
+    public static final String ENDPOINTS_PROPERTY = "endpoints";        // NOI18N
+    public static final String X_PROPERTY = "x";                        // NOI18N
+    public static final String Y_PROPERTY = "y";                        // NOI18N
+    public static final String INTERNAL_PROPERTY = "internal";          // NOI18N
+    public static final String DEFINED_PROPERTY = "defined";            // NOI18N
+    public static final String UNKNOWN_PROPERTY = "unknown";            // NOI18N
+    public static final String CONSUMES_PROPERTY = "consumes";          // NOI18N
+    public static final String PROVIDES_PROPERTY = "provides";          // NOI18N
        
     List<CasaConsumes> getConsumes();
     void addConsumes(int index, CasaConsumes casaConsumes);

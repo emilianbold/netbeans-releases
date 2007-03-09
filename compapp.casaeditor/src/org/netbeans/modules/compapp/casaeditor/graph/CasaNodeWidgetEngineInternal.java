@@ -19,25 +19,17 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph;
 
-import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.*;
 
 import java.awt.*;
-import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.anchor.AnchorFactory;
-import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.model.StateModel;
-
 
 /**
  *
  * @author Ramesh Dara
  */
 public class CasaNodeWidgetEngineInternal extends CasaNodeWidgetEngine {
-    /**
-     * Creates a node widget.
-     * @param scene the scene
-     */
+    
+    
     public CasaNodeWidgetEngineInternal(Scene scene) {
         this(scene, true);
     }
@@ -49,27 +41,28 @@ public class CasaNodeWidgetEngineInternal extends CasaNodeWidgetEngine {
         setTitleColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_TITLE());
     }
     
+    
     protected Color getBackgroundColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_REGION_ENGINE();
     }
+    
     protected Color getPinHolderBorderColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BORDER();
     }
+    
     protected Color getPinHolderTitleColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_TITLE();
     }
+    
     protected Color getPinHolderBackgroundColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BACKGROUND();
     }
-
-    public GradientRectangleColorScheme getGradientColorSceheme() {
-        GradientRectangleColorScheme colorScheme = CasaFactory.getCasaCustomizer().getGradientINT_SU_BACKGROUND();
-        if(getState().isSelected()) {
-            colorScheme.setBorderColor(CasaFactory.getCasaCustomizer().getCOLOR_SELECTED_BORDER());
-        } else {
-            colorScheme.setBorderColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BORDER());
-        }
-        return colorScheme;
+    
+    public Font getPinFont() {
+        return CasaFactory.getCasaCustomizer().getFONT_SU_PIN();
     }
-
+    
+    public Color getPinColor() {
+        return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_PIN();
+    }
 }

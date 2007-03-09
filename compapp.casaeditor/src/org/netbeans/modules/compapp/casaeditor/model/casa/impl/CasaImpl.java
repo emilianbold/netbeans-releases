@@ -119,7 +119,7 @@ public class CasaImpl extends CasaComponentImpl implements Casa {
     
     // HACK FIXME
     public void setDefaultNamespace(String ns) {
-        setAttribute("DefaultNamespace", CasaAttribute.NS, ns);
+        setAttribute("DefaultNamespace", CasaAttribute.NS, ns); // NOI18N
     }
 
 }

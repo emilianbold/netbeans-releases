@@ -436,16 +436,16 @@ implements PropertyChangeListener {
                 
                 Set<?> selectedObjects = getSelectedObjects();
                 if (selectedObjects.size() < 1) {
-                    activeNode = mNodeFactory.createNode(mModel);
+                    activeNode = mNodeFactory.createModelNode(mModel);
                 } else {
                     CasaComponent component = (CasaComponent) selectedObjects.iterator().next();
-                    activeNode = mNodeFactory.createNode(component);
+                    activeNode = mNodeFactory.createNodeFor(component);
                 }
                 
                 // Tie-in to Node selection mechanism. This will cause the
                 // Navigator and Property Sheet to change context.
                 
-                if(activeNode != null) {
+                if (activeNode != null) {
                     Node[] nodes = new Node[] { activeNode };
                     mIsInternalNodeChange = true;
                     tc.setActivatedNodes(nodes);
@@ -550,15 +550,15 @@ implements PropertyChangeListener {
         return getView();
     }
     
-    public LayerWidget getBindingRegion() {
+    public CasaRegionWidget getBindingRegion() {
         return mBindingRegion;
     }
     
-    public LayerWidget getEngineRegion() {
+    public CasaRegionWidget getEngineRegion() {
         return mEngineRegion;
     }
     
-    public LayerWidget getExternalRegion() {
+    public CasaRegionWidget getExternalRegion() {
         return mExternalRegion;
     }
     

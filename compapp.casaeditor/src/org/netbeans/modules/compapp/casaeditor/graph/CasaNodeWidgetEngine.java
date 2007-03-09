@@ -17,15 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CasaNodeWidgetEngine.java
- *
- * Created on January 12, 2007, 9:56 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -36,27 +27,40 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
+import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter;
+import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularProvider;
+import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
+import org.netbeans.modules.compapp.casaeditor.graph.awt.Painter;
+import org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget;
 
 /**
  *
  * @author rdara
  */
-public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.Listener,  CasaGradientInterface {
+public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.Listener {
+    
+    public static final int ARROW_PIN_WIDTH           = 25;
+    public static final int MARGIN_SE_ROUNDED_RECTANGLE = ARROW_PIN_WIDTH * 77 / 100;
+    
+    private static final int PIN_VERTICAL_GAP         = 0;
     
     private static final int INVISIBLE_WRAPPER_OFFSET = 10;
     private static final int MINIMUM_SE_NODE_HEIGHT   = 20;
     private static final int MINIMUM_SE_NODE_WIDTH    = 120;
     
     private Widget mTopWidgetHolder;
-    private CasaGradientWidget mPinsHolderWidget;
+    private Widget mPinsHolderWidget;
     private CasaEngineTitleWidget mTitleWidget;
     private String mNodeType;
-    private int mPreviousHolderHeight;
     private Widget mMinimizedMoveCleanerWidget;
     
+    private Dimension mPreviousHolderSize = new Dimension();
     private StateModel mStateModel = new StateModel(2);
     private Anchor mNodeAnchor = new CasaNodeAnchor(this);
 
+    private boolean mIsHighlighted;
+    
+    
     /**
      * Creates a node widget.
      * @param scene the scene
@@ -76,27 +80,73 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         
         mTitleWidget = new CasaEngineTitleWidget(scene, mStateModel);
         
-        mPinsHolderWidget = new CasaGradientWidget(
-                scene,
-                // Draw a line below the title widget to separate 
-                // the title from the pin area.
-                new GradientRectangleDrawer.CustomPainter() {
-                    public void paint(Graphics g) {
-                        Rectangle rect = mTitleWidget.getBounds();
-                        if (rect != null) {
-                            if (getState().isSelected()) {
-                                g.setColor(CasaFactory.getCasaCustomizer().getCOLOR_SELECTED_BORDER());
-                            } else {
-                                g.setColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BORDER());
-                            }
-                            g.drawLine(0, rect.height, rect.width, rect.height);
-                        }
-                    }
-                }, this);
+        final BorderedRectangularProvider provider = new BorderedRectangularProvider() {
+            public Color getBorderColor() {
+                if (getState().isSelected()) {
+                    return CasaFactory.getCasaCustomizer().getCOLOR_SELECTION();
+                } else {
+                    return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BORDER();
+                }
+            }
+            public Color getBackgroundColor() {
+                return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BACKGROUND();
+            }
+            public Rectangle getHeaderRect() {
+                if (mTitleWidget.getBounds() != null) {
+                    return getClipRect().intersection(mTitleWidget.getBounds());
+                }
+                return null;
+            }
+            public Color getHeaderColor() {
+                return CasaFactory.getCasaCustomizer().getCOLOR_BC_TITLE_BACKGROUND();
+            }
+            public Rectangle getClipRect() {
+                Rectangle clientArea = mPinsHolderWidget.getClientArea();
+                Rectangle gradientRect = new Rectangle();
 
+                gradientRect.x = clientArea.x + MARGIN_SE_ROUNDED_RECTANGLE;
+                gradientRect.y = clientArea.y ;
+                gradientRect.width = clientArea.width - MARGIN_SE_ROUNDED_RECTANGLE - MARGIN_SE_ROUNDED_RECTANGLE;
+                gradientRect.height = clientArea.height;
+
+                return gradientRect;
+            }
+            public boolean isRounded() {
+                return true;
+            }
+        };
+        
+        Painter customWidgetPainter = new Painter() {
+            public void paint(Graphics2D g) {
+                // Draw a line below the title widget to separate
+                // the title from the pin area.
+                Rectangle rect = mTitleWidget.getBounds();
+                if (rect != null) {
+                    if (getState().isSelected()) {
+                        g.setColor(CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());
+                    } else {
+                        g.setColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BORDER());
+                    }
+                    g.drawLine(0, rect.height, rect.width, rect.height);
+                }
+                if (isHighlighted()) {
+                    InnerGlowBorderDrawer.paintInnerGlowBorder(
+                            getGraphics(),
+                            provider.getClipRect(),
+                            CasaFactory.getCasaCustomizer().getCOLOR_SELECTION(),
+                            0.6f,
+                            10);
+                }
+            }
+        };
+
+        mPinsHolderWidget = new PainterWidget(scene, new BorderedRectangularPainter(provider, customWidgetPainter));
         mPinsHolderWidget.setOpaque(false);
+        
         mPinsHolderWidget.addChild(mTitleWidget);
-        mPinsHolderWidget.setLayout(LayoutFactory.createVerticalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 2));
+        mPinsHolderWidget.setLayout(LayoutFactory.createVerticalLayout(
+                LayoutFactory.SerialAlignment.LEFT_TOP, 
+                PIN_VERTICAL_GAP));
         
         mTopWidgetHolder = new Widget(scene);
         mTopWidgetHolder.setOpaque(false);
@@ -115,16 +165,19 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                         getParentWidget() == null) {
                     return;
                 }
-                if (mPinsHolderWidget.getClientArea().getBounds().height != mPreviousHolderHeight)
+                
+                Rectangle bounds = mPinsHolderWidget.getClientArea().getBounds();
+                if (!bounds.getSize().equals(mPreviousHolderSize))
                 {
-                    Rectangle bounds = mPinsHolderWidget.getClientArea().getBounds();
-                    mPreviousHolderHeight = mPinsHolderWidget.getClientArea().getBounds().height;
-                    if (bounds.height < MINIMUM_SE_NODE_HEIGHT) {
-                        mPreviousHolderHeight = MINIMUM_SE_NODE_HEIGHT;
-                        bounds.height = MINIMUM_SE_NODE_HEIGHT;
-                    }
+                    mPreviousHolderSize = bounds.getSize();
+                    
                     if (bounds.width < MINIMUM_SE_NODE_WIDTH) {
+                        mPreviousHolderSize.width = MINIMUM_SE_NODE_WIDTH;
                         bounds.width = MINIMUM_SE_NODE_WIDTH;
+                    }
+                    if (bounds.height < MINIMUM_SE_NODE_HEIGHT) {
+                        mPreviousHolderSize.height = MINIMUM_SE_NODE_HEIGHT;
+                        bounds.height = MINIMUM_SE_NODE_HEIGHT;
                     }
                     
                     mPinsHolderWidget.setPreferredBounds(bounds);
@@ -146,19 +199,43 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         addDependency(pinSizer);
     }
 
+    /**
+     * Sets all node properties at once.
+     */
+    public void setNodeProperties(String nodeName, String nodeType) {
+        mNodeType = nodeType;
+        boolean hasNodeName = nodeName != null && nodeName.length() > 0;
+        boolean hasNodeType = nodeType != null && nodeType.length() > 0;
+        if (hasNodeType && hasNodeName) {
+            mTitleWidget.setLabel("(" + nodeType + ") " + nodeName);    // NOI18N
+        } else if (hasNodeType) {
+            mTitleWidget.setLabel("(" + nodeType + ")");                // NOI18N
+        } else if (hasNodeName) {
+            mTitleWidget.setLabel(nodeName);                            // NOI18N
+        }
+        
+        if (getBounds() != null) {
+            readjustBounds();
+        }
+    }
+    
+    public void stateChanged() {
+        readjustBounds();
+    }
+    
     public void readjustBounds() {
-        boolean isMinimized = false;
-        Rectangle rectangle = null;
+        boolean isMinimized = mStateModel.getBooleanState();
         for (Widget child : mPinsHolderWidget.getChildren()) {
             if (child instanceof CasaPinWidget) {
-                ((CasaPinWidget) child).readjustBounds(rectangle);
-            } else if(child instanceof CasaEngineTitleWidget) {
-                ((CasaEngineTitleWidget) child).readjustBounds(rectangle);
+                ((CasaPinWidget) child).updateBounds(isMinimized);
             }
         }
-        mPinsHolderWidget.setPreferredBounds(rectangle);
+        mTitleWidget.updateBounds(isMinimized);
+        mPinsHolderWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
+        mPreviousHolderSize = new Dimension();
         getScene().revalidate();
         getScene().validate();
+        invokeDependencies();
     }
 
     protected Color getBackgroundColor() {
@@ -185,11 +262,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         mTitleWidget.setTitleColor(color);
     }
 
-
-    public void paintWidget() {
-        mPinsHolderWidget.paintWidget();
-    }
-    
     public void initializeGlassLayer(LayerWidget layer) {
         mMinimizedMoveCleanerWidget = new Widget(getScene());
         mMinimizedMoveCleanerWidget.setOpaque(false);
@@ -232,11 +304,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
-        if (!previousState.isSelected() && state.isSelected()) {
-            //mPinsHolderWidget.setSelected(true);
-            repaint();
-        } else if (previousState.isSelected() && !state.isSelected()) {
-            //mPinsHolderWidget.setSelected(false);
+        if (previousState.isSelected() != state.isSelected()) {
             repaint();
         }
     }
@@ -248,6 +316,8 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     public void attachPinWidget(CasaPinWidget widget) {
         // All Provides pins should come before Consumes pins.
         addPinWithOrdering(widget);
+        setPinFont(getPinFont());
+        setPinColor(getPinColor());
         mPinsHolderWidget.setPreferredBounds(null);
     }
     
@@ -298,41 +368,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         return anchor;
     }
 
-    /**
-     * Sets all node properties at once.
-     */
-    public void setNodeProperties(String nodeName, String nodeType) {
-        mNodeType = nodeType;
-        boolean hasNodeName = nodeName != null && nodeName.length() > 0;
-        boolean hasNodeType = nodeType != null && nodeType.length() > 0;
-        if (hasNodeType && hasNodeName) {
-            mTitleWidget.setLabel("(" + nodeType + ") " + nodeName);
-        } else if (hasNodeName) {
-            mTitleWidget.setLabel(nodeName);
-        } else if (hasNodeType) {
-            mTitleWidget.setLabel("(" + nodeName + ")");
-        }
-        
-        if (getBounds() != null) {
-            readjustBounds();
-        }
-    }
-    
-    public void stateChanged() {
-        boolean isMinimized = mStateModel.getBooleanState();
-        Rectangle rectangle = isMinimized ? new Rectangle() : null;
-        for (Widget child : mPinsHolderWidget.getChildren()) {
-            if (child instanceof CasaPinWidget) {
-                ((CasaPinWidget) child).setMinimized(isMinimized);
-            }
-        }
-        mTitleWidget.setMinimized(isMinimized);
-        mPinsHolderWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
-        getScene().revalidate();
-        getScene().validate();
-        invokeDependencies();
-    }
-    
     public boolean getConfigurationStatus(){
         return mTitleWidget.getConfigurationStatus();
     }
@@ -345,26 +380,36 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         super.setEditable(bValue);
         mTitleWidget.setEditable(bValue);
     }
-    
-    public GradientRectangleColorScheme getGradientColorSceheme() {
+
+    public Font getPinFont() {
         return null;
     }
+    public Color getPinColor() {
+        return null;
+    }
+    public void setPinFont(Font font) {
+        for (Widget child : mPinsHolderWidget.getChildren()) {
+            if (child instanceof CasaPinWidgetEngine) {
+                ((CasaPinWidgetEngine)child).setLabelFont(font);
+            }
+        }
+    }
+    public void setPinColor(Color color) {
+        for (Widget child : mPinsHolderWidget.getChildren()) {
+            if (child instanceof CasaPinWidgetEngine) {
+                ((CasaPinWidgetEngine)child).setLabelColor(color);
+            }
+        }
+    }
     
-    public boolean isBorderShown() {
-        return true;
+    public void setHighlighted(boolean isHighlighted) {
+        if (mIsHighlighted != isHighlighted) {
+            mIsHighlighted = isHighlighted;
+            repaint();
+        }
     }
 
-    public Rectangle getRectangleToBePainted() {
-        Rectangle clientArea = mPinsHolderWidget.getClientArea();
-        Rectangle gradientRect = new Rectangle();
-        //X_MARGIN_SE_ROUNDED_RECTANGLE = RegionUtilities.MARGIN_SE_ROUNDED_RECTANGLE; 
-        //Y_MARGIN_ROUNDED_RECTANGLE = 0;
-
-        gradientRect.x = clientArea.x + RegionUtilities.MARGIN_SE_ROUNDED_RECTANGLE;
-        gradientRect.y = clientArea.y ;
-        gradientRect.width = clientArea.width - RegionUtilities.MARGIN_SE_ROUNDED_RECTANGLE - RegionUtilities.MARGIN_SE_ROUNDED_RECTANGLE;
-        gradientRect.height = clientArea.height ;
-        
-        return gradientRect;
+    public boolean isHighlighted() {
+        return mIsHighlighted;
     }
 }

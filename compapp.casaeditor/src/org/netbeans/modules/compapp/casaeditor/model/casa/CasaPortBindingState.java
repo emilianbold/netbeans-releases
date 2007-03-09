@@ -18,14 +18,18 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author jqian
  */
+
+
 public enum CasaPortBindingState {
-    
-    BOUND("bound"),
-    UNBOUND("unbound");
+            
+    BOUND("bound"),                             // NOI18N
+    UNBOUND("unbound");                         // NOI18N
     
     CasaPortBindingState(String state) {
         this.state = state;
@@ -38,12 +42,12 @@ public enum CasaPortBindingState {
     public static CasaPortBindingState getCasaPortBindingState(String state) {
         if (state == null) {
             return BOUND;   // be default
-        } else if (state.equals("bound")) {
+        } else if (state.equals("bound")) {     // NOI18N
             return BOUND;
-        } else if (state.equals("unbound")) {
+        } else if (state.equals("unbound")) {   // NOI18N
             return UNBOUND;
         } else {
-            throw new RuntimeException("Illegal connection state: " + state);
+            throw new RuntimeException(NbBundle.getMessage(CasaPortBindingState.class, "Error_Illegal_connection_state") + state);  // NOI18N
         }
     }
     

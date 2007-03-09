@@ -57,9 +57,6 @@ public class RegionUtilities {
     
     public static final Color RESIZER_COLOR = new Color(80, 80, 80, 60);
     
-    public static final int ARROW_PIN_WIDTH = 30;
-    public static final int MARGIN_SE_ROUNDED_RECTANGLE = RegionUtilities.ARROW_PIN_WIDTH * 77 / 100;
-    
     // The number of pixels of extra space that should exist between
     // a widget and it's region's right border.
     public static final int HORIZONTAL_EXPANSION_GAP = 10;
@@ -70,13 +67,13 @@ public class RegionUtilities {
     
 
     public static final Image IMAGE_DELETE_16_ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/palette/resources/delete16.png");
+            "org/netbeans/modules/compapp/casaeditor/palette/resources/delete16.png");      // NOI18N
     public static final Image IMAGE_EDIT_16_ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/palette/resources/edit16.png");
+            "org/netbeans/modules/compapp/casaeditor/palette/resources/edit16.png");        // NOI18N
     public static final Image IMAGE_HIDE_16_ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/palette/resources/hide16.png");
+            "org/netbeans/modules/compapp/casaeditor/palette/resources/hide16.png");        // NOI18N
     public static final Image IMAGE_WS_POLICY_16_ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/palette/resources/WSpolicy16.png");
+            "org/netbeans/modules/compapp/casaeditor/palette/resources/WSpolicy16.png");    // NOI18N
     
     public enum Directions {
         LEFT, TOP, RIGHT, BOTTOM

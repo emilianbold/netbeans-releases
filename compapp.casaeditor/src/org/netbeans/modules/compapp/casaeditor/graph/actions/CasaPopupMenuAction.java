@@ -30,6 +30,7 @@ import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 
 /**
  * Taken from David Kaspar's PopupMenuAction.
@@ -83,16 +84,25 @@ public class CasaPopupMenuAction extends WidgetAction.Adapter {
         if (event.isPopupTrigger ()) {
             
             CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
-            Object widgetData = scene.findObject(widget);
-            if (!(widgetData instanceof CasaComponent)) {
+            Object widgetData = null;
+            if (widget instanceof CasaModelGraphScene) {
+                widgetData = scene.getModel();
+            } else {
+                widgetData = scene.findObject(widget);
+            }
+            if (
+                    !(widgetData instanceof CasaComponent) &&
+                    !(widgetData instanceof CasaWrapperModel)) {
                 return State.REJECTED;
             }
             
             // First select the widgets, fire necessary selection events.
-            CasaComponent component = (CasaComponent) widgetData;
-            Set<CasaComponent> objectsToSelect = new HashSet<CasaComponent>();
-            objectsToSelect.add((CasaComponent) widgetData);
-            scene.userSelectionSuggested(objectsToSelect, false);
+            if (widgetData instanceof CasaComponent) {
+                CasaComponent component = (CasaComponent) widgetData;
+                Set<CasaComponent> objectsToSelect = new HashSet<CasaComponent>();
+                objectsToSelect.add((CasaComponent) widgetData);
+                scene.userSelectionSuggested(objectsToSelect, false);
+            }
 
             JPopupMenu popupMenu = provider.getPopupMenu (widget, event.getPoint ());
             if (popupMenu != null) {

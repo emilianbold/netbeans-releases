@@ -26,8 +26,8 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  * @author jqian
  */
 public interface ConnectionEnd extends JBIComponent {
-    public static final String SERVICE_NAME_PROPERTY = "service-name"; 
-    public static final String ENDPOINT_NAME_PROPERTY = "endpoint-name"; 
+    public static final String SERVICE_NAME_PROPERTY = "service-name";      // NOI18N
+    public static final String ENDPOINT_NAME_PROPERTY = "endpoint-name";    // NOI18N
         
     String /*NamedComponentReference<Service>*/ getServiceName();
     void setServiceName(String /*NamedComponentReference<Service>*/ serviceName);

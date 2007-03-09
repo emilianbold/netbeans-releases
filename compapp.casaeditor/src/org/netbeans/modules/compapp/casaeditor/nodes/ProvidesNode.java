@@ -17,26 +17,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * ProvidesNode.java
- *
- * Created on November 2, 2006, 8:59 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -47,14 +36,10 @@ import org.openide.util.Utilities;
 public class ProvidesNode extends CasaNode {
     
     private static final Image ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ProvidesNode.png");
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ProvidesNode.png");    // NOI18N
     
-    public ProvidesNode(CasaComponent component, Children children, Lookup lookup) {
-        super(component, children, lookup);
-    }
-    
-    public ProvidesNode(CasaComponent component, Lookup lookup) {
-        super(component, Children.LEAF, lookup);
+    public ProvidesNode(CasaProvides component, CasaNodeFactory factory) {
+        super(component, Children.LEAF, factory);
     }
     
     
@@ -70,23 +55,23 @@ public class ProvidesNode extends CasaNode {
         PropertyUtils.installEndpointInterfaceQNameProperty(
                 mainPropertySet, this, provides,
                 JBIAttributes.INTERFACE_NAME.getName(), 
-                "interfaceQName",
-                NbBundle.getMessage(getClass(), "PROP_InterfaceName"),
-                NbBundle.getMessage(getClass(), "PROP_InterfaceName"));
+                "interfaceQName",                                           // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_InterfaceName"),      // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_InterfaceName"));     // NOI18N
         
         PropertyUtils.installEndpointServiceQNameProperty(
                 mainPropertySet, this, provides,
                 JBIAttributes.SERVICE_NAME.getName(), 
-                "serviceQName",
-                NbBundle.getMessage(getClass(), "PROP_ServiceName"),
-                NbBundle.getMessage(getClass(), "PROP_ServiceName"));
+                "serviceQName",                                             // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_ServiceName"),        // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_ServiceName"));       // NOI18N
         
-        PropertyUtils.installEndpointEndpointNameProperty(
+        PropertyUtils.installEndpointNameProperty(
                 mainPropertySet, this, provides,
                 JBIAttributes.ENDPOINT_NAME.getName(), 
-                "endpointName",
-                NbBundle.getMessage(getClass(), "PROP_EndpointName"),
-                NbBundle.getMessage(getClass(), "PROP_EndpointName"));
+                "endpointName",                                             // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_EndpointName"),       // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_EndpointName"));      // NOI18N
     }
 
     public String getName() {

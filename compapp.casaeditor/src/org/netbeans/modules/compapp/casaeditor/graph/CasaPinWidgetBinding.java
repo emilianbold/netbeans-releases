@@ -17,20 +17,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
-* CasaEnginePinWidget.java
-*
-* Created on November 17, 2006, 12:18 PM
-*
-* To change this template, choose Tools | Template Manager
-* and open the template in the editor.
-*/
-
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Image;
 import java.awt.Rectangle;
-import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
@@ -40,12 +30,11 @@ import org.netbeans.api.visual.widget.Scene;
 public class CasaPinWidgetBinding extends CasaPinWidget {
     
     private Image mOriginalImage;
-    private ImageWidget mImageWidget;
+    
     
     public CasaPinWidgetBinding(Scene scene, Image arrowImage) {
         super(scene);
         mOriginalImage = arrowImage;
-        mImageWidget = new ImageWidget(scene);
         mImageWidget.setImage(arrowImage);
         addChild(mImageWidget);
     }
@@ -65,9 +54,5 @@ public class CasaPinWidgetBinding extends CasaPinWidget {
     
     protected void setPinName(String name) {
         // do nothing
-    }
-    
-    protected void setMinimized(boolean isMinimized) {
-        // do nothing, cannot minimize this widget
     }
 }

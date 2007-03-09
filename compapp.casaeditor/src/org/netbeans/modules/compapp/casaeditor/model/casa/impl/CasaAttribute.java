@@ -29,31 +29,31 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  * @author jqian
  */
 public enum CasaAttribute implements Attribute {
-        NS("xmlns"), // TMP
-        TYPE("type"),
-        NAME("name"),
-        UNIT_NAME("unit-name"),
-        DESCRIPTION("description"),
-        COMPONENT_NAME("component-name"),
-        ARTIFACTS_ZIP("artifacts-zip"),
-        WIDTH("width"),
-        X("x"),
-        Y("y"),
-        CONSUMER("consumer"),
-        PROVIDER("provider"),
-        IS_CONSUME("is-consume"),
-        ENDPOINT_NAME("endpoint-name"),
-        SERVICE_NAME("service-name"),
-        INTERFACE_NAME("interface-name"),
-        ENDPOINT("endpoint"),
-        STATE("state"),
-        INTERNAL("internal"),
-        DEFINED("defined"),
-        UNKNOWN("unknown"),
-        BINDINGSTATE("bindingState"),
-        BINDINGTYPE("bindingType"),
-        PORTTYPE("portType"),
-        TARGET_NAMESPACE("targetNamespace"),;
+        NS("xmlns"),            // NOI18N // TMP
+        TYPE("type"),           // NOI18N
+        NAME("name"),           // NOI18N
+        UNIT_NAME("unit-name"), // NOI18N
+        DESCRIPTION("description"),         // NOI18N
+        COMPONENT_NAME("component-name"),   // NOI18N
+        ARTIFACTS_ZIP("artifacts-zip"),     // NOI18N
+        WIDTH("width"),                     // NOI18N
+        X("x"),                             // NOI18N
+        Y("y"),                             // NOI18N
+        CONSUMER("consumer"),               // NOI18N
+        PROVIDER("provider"),               // NOI18N
+        IS_CONSUME("is-consume"),           // NOI18N
+        ENDPOINT_NAME("endpoint-name"),     // NOI18N
+        SERVICE_NAME("service-name"),       // NOI18N
+        INTERFACE_NAME("interface-name"),   // NOI18N    
+        ENDPOINT("endpoint"),               // NOI18N
+        STATE("state"),                     // NOI18N
+        INTERNAL("internal"),               // NOI18N
+        DEFINED("defined"),                 // NOI18N
+        UNKNOWN("unknown"),                 // NOI18N
+        BINDINGSTATE("bindingState"),       // NOI18N
+        BINDINGTYPE("bindingType"),         // NOI18N
+        PORTTYPE("portType"),               // NOI18N
+        TARGET_NAMESPACE("targetNamespace"),;   // NOI18N
     
     private String name;
     private Class type;

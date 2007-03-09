@@ -41,7 +41,9 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServi
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -247,13 +249,17 @@ public class CasaModelGraphUtilities {
         String bcCompName = model.getBindingComponentName(casaPort);
         if (bcCompName == null || bcCompName.length() == 0) {
             ErrorManager.getDefault().notify(new UnsupportedOperationException(
-                    "No Binding Component name for endpoint: " + name));
+                     NbBundle.getMessage(CasaModelGraphUtilities.class, "Error_No_Binding_Component_name_for_endpoint") + name));   // NOI18N
             return false;
         }
-        String bindingType = model.getDefaultBindingComponents().get(bcCompName);
+        // String bindingType = model.getDefaultBindingComponents().get(bcCompName);
+        String bindingType = casaPort.getBindingType();
+        if (bindingType == null) {
+            bindingType = model.getDefaultBindingComponents().get(bcCompName);
+        }
         if (bindingType == null) {
             ErrorManager.getDefault().notify(new UnsupportedOperationException(
-                    "Invalid Binding Component: " + bcCompName));
+                    NbBundle.getMessage(CasaModelGraphUtilities.class, "Error_Invalid_Binding_Component") + bcCompName));
             return false;
         }
         bindingType = bindingType.toUpperCase();
@@ -269,17 +275,9 @@ public class CasaModelGraphUtilities {
             CasaNodeWidget widget)
     {
         String name = su.getUnitName();
-        String componentName = model.getServiceUnitComponentName(su);
-        componentName = getShortNameInUpperCase(removeVersionInfo(componentName));
-        widget.setNodeProperties(name, componentName);
-    }
-    
-    private static String removeVersionInfo(String str) {
-        int versionIndex = str.indexOf('-');
-        if (versionIndex > 0) {
-            return str.substring(0, versionIndex);
-        }
-        return str;
+        String type = model.getServiceUnitComponentName(su);
+        type = JbiDefaultComponentInfo.getDisplayName(type).toUpperCase();
+        widget.setNodeProperties(name, type);
     }
 
     private static String getShortNameInUpperCase(String str) {
@@ -289,7 +287,7 @@ public class CasaModelGraphUtilities {
         }
         return str;
     }
-    
+
     // Ensure the suggestedLocation will properly fit in the widget's region.
     // Adjust the location if necessary.
     private static Point adjustLocation(

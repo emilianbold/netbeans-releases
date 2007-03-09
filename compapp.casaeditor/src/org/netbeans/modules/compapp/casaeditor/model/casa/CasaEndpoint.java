@@ -26,11 +26,11 @@ import javax.xml.namespace.QName;
  */
 public interface CasaEndpoint extends ReferenceableCasaComponent {
     
-    public static final String NAME_PROPERTY = "name";
-    public static final String IS_CONSUME_PROPERTY = "is-consume";
-    public static final String ENDPOINT_NAME_PROPERTY = "endpoint-name";
-    public static final String INTERFACE_NAME_PROPERTY = "interface-name";
-    public static final String SERVICE_NAME_PROPERTY = "service-name";
+    public static final String NAME_PROPERTY = "name";                      // NOI18N
+    public static final String IS_CONSUME_PROPERTY = "is-consume";          // NOI18N
+    public static final String ENDPOINT_NAME_PROPERTY = "endpoint-name";    // NOI18N
+    public static final String INTERFACE_NAME_PROPERTY = "interface-name";  // NOI18N
+    public static final String SERVICE_NAME_PROPERTY = "service-name";      // NOI18N
     
     boolean isConsumes();
     

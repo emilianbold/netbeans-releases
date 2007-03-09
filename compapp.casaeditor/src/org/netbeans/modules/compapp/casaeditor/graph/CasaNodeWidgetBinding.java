@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph;
 
-import javax.swing.border.CompoundBorder;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.*;
 
@@ -30,22 +29,22 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.model.ObjectState;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ramesh Dara
  */
-public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradientInterface {
+public class CasaNodeWidgetBinding extends CasaNodeWidget {
     
     private static final int VERT_TEXT_BAR_WIDTH      = 20;
     private static final int VERT_TEXT_BAR_MIN_HEIGHT = 40;
     private static final int VERT_TEXT_BAR_MAX_CHAR   =  6;
     private static final int VERT_TEXT_BAR_SPACING    =  8;
-    private static final int PINS_HOLDER_WIDTH        = 40;
     
     private static final int PIN_X_START              =  4;
-    private static final int PIN_Y_CONSUMES_START     =  2;
-    private static final int PIN_Y_PROVIDES_START     = 24;
+    private static final int PIN_Y_CONSUMES_START     =  4;
+    private static final int PIN_Y_PROVIDES_START     = 26;
     
     private static final int NAME_LEFT_EDGE_SPACING   =  0;
     
@@ -65,8 +64,9 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradien
     // Used for determining when we need to regenerate the vertical text image.
     // It must be regenerated any time we alter the node's height.
     private int mPreviousVertTextBarHeight;
-    private CasaGradientWidget mHeaderHolder;
+    private Widget mHeaderHolder;
 
+    
     public CasaNodeWidgetBinding(Scene scene) {
         super(scene);
         setOpaque(true);
@@ -102,10 +102,12 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradien
         
         regenerateHeaderBorder();
         
-        mHeaderHolder = new CasaGradientWidget(scene, null, this);
+        mHeaderHolder = new Widget(scene);
+        mHeaderHolder.setOpaque(true);
+        
+        mHeaderHolder.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_TITLE_BACKGROUND());
         mHeaderHolder.setLayout(LayoutFactory.createHorizontalLayout(
                 LayoutFactory.SerialAlignment.LEFT_TOP, 0));
-        mHeaderHolder.setOpaque(false);
         mHeaderHolder.addChild(mIconsWidget);
         mHeaderHolder.addChild(mImageWidget);
         mTopWidgetHolder.addChild(mHeaderHolder);
@@ -145,7 +147,8 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradien
     
     public void initializeGlassLayer(LayerWidget layer) {
         mNameWidget = new LabelWidget(getScene());
-        
+        mNameWidget.setFont(CasaFactory.getCasaCustomizer().getFONT_BC_LABEL());
+        mNameWidget.setForeground(CasaFactory.getCasaCustomizer().getCOLOR_BC_LABEL());
         layer.addChild(mNameWidget);
         
         // Update the name label location if the widget moves.
@@ -171,6 +174,16 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradien
         };
         mDependencies.add(nameLabeler);
         addDependency(nameLabeler);
+    }
+    
+    public void setLabelFont(Font font) {
+        mNameWidget.setFont(font);
+        mNameWidget.revalidate();
+        revalidate();
+    }
+    
+    public void setLabelColor(Color color) {
+        mNameWidget.setForeground(color);
     }
 
     public void removeAllDependencies() {
@@ -232,6 +245,15 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradien
         return bounds;
     }
 
+    public void setEndpointLabel(String nodeName) {
+        mNameWidget.setToolTipText(nodeName);
+        mNameWidget.setLabel(nodeName);
+        // validate to trigger a bounds update
+        getScene().validate();
+        // once the bounds is updated, reposition the label
+        invokeDependencies();
+    }
+    
     /**
      * Sets all node properties at once.
      * @param image the node image
@@ -276,7 +298,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradien
         
         String displayedText = mVertTextBarText;
         if (mVertTextBarText.length() > VERT_TEXT_BAR_MAX_CHAR) {
-            displayedText = displayedText.substring(0, VERT_TEXT_BAR_MAX_CHAR) + "...";
+            displayedText = displayedText.substring(0, VERT_TEXT_BAR_MAX_CHAR) + NbBundle.getMessage(getClass(), "ELLIPSIS");
         }
         
         Graphics2D sceneGraphics = getScene().getGraphics();
@@ -340,8 +362,8 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradien
     }
     
     public void setTitleBackgroundColor(Color color) {
-        mHeaderHolder.paintWidget();
-        //mIconsWidget.setBackground(color);
+        mHeaderHolder.setBackground(color);
+        mHeaderHolder.repaint();
     }
     
     
@@ -378,19 +400,12 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradien
         private Color mBorderColor;
         private BorderDefinition(Color borderColor) {
             mBorderColor = borderColor;
-            mBorder = new CompoundBorder(
-                javax.swing.BorderFactory.createMatteBorder(
-                    BORDER_WIDTH / 2,
-                    BORDER_WIDTH / 2,
-                    BORDER_WIDTH / 2,
+            mBorder = javax.swing.BorderFactory.createMatteBorder(
+                    BORDER_WIDTH,
+                    BORDER_WIDTH,
+                    BORDER_WIDTH,
                     0,
-                    borderColor.brighter()),
-                javax.swing.BorderFactory.createMatteBorder(
-                    BORDER_WIDTH / 2,
-                    BORDER_WIDTH / 2,
-                    BORDER_WIDTH / 2,
-                    0,
-                    borderColor));
+                    borderColor);
         }
         public Border getBorder() {
             return mBorder;
@@ -404,20 +419,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget implements CasaGradien
         }
         public static BorderDefinition createSelectedDefinition() {
             return new BorderDefinition(
-                CasaFactory.getCasaCustomizer().getCOLOR_SELECTED_BORDER());
+                CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());
         }
     }
-    
-    public GradientRectangleColorScheme getGradientColorSceheme() {
-        return CasaFactory.getCasaCustomizer().getGradientBC_TITLE_BACKGROUND();
-    }
-    
-    public boolean isBorderShown() {
-        return false;
-    }
-
-    public Rectangle getRectangleToBePainted() {
-        return mHeaderHolder.getClientArea();
-    }
-
 }

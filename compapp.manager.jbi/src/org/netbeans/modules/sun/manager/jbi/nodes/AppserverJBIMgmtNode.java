@@ -65,7 +65,8 @@ public abstract class AppserverJBIMgmtNode extends AppserverMgmtNode {
     public AppserverJBIMgmtController getAppserverJBIMgmtController() {
         try {
             if(appsrvrJBIMgmtController == null) { 
-                getLogger().log(Level.FINE, "AppserverJBIMgmtController is " + "null for [" + getNodeType() + "]");  // NOI18N
+                getLogger().log(Level.FINE, 
+                        "AppserverJBIMgmtController is " + "null for [" + getNodeType() + "]");  // NOI18N
             }
         } catch(Exception e) {
             getLogger().log(Level.FINE, e.getMessage(), e);
@@ -78,14 +79,18 @@ public abstract class AppserverJBIMgmtNode extends AppserverMgmtNode {
      */
     protected String getNodeDisplayName() {
         return NbBundle.getMessage(AppserverJBIMgmtNode.class, getNodeType());
-    }
-    
+    }    
        
     /**
      *
      */
     protected String getNodeShortDescription() {
-        return NbBundle.getMessage(AppserverJBIMgmtNode.class, getNodeType() + "_SHORT_DESC");  // NOI18N
+        try {
+            return NbBundle.getMessage(AppserverJBIMgmtNode.class, 
+                    getNodeType() + "_SHORT_DESC");  // NOI18N
+        } catch (Exception e) {
+            return ""; // not necessarily defined // NOI18N
+        }
     }
     
     /**
@@ -95,24 +100,43 @@ public abstract class AppserverJBIMgmtNode extends AppserverMgmtNode {
      * @returns the Sheet to display when Properties is chosen by the user.
      */
     protected Sheet createSheet() {
-        Sheet sheet = Sheet.createDefault();
+        Sheet sheet = new Sheet();
         
-        ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
+        Sheet.Set sheetSet = createSheetSet("General", // NOI18N
+                "LBL_GENERAL_PROPERTIES", // NOI18N
+                "DSC_GENERAL_PROPERTIES", // NOI18N
+                getSheetProperties());
+        sheet.put(sheetSet);
         
-        try {             
-            Thread.currentThread().setContextClassLoader(
-                    this.getClass().getClassLoader());
-            
-            Sheet.Set props = sheet.get(Sheet.PROPERTIES);
-            props.put(createPropertySupportArray(getSheetProperties()));
-            return sheet;
-        } catch(RuntimeException rex) {
-            return sheet;
-        } finally {
-            Thread.currentThread().setContextClassLoader(origClassLoader);
-        }
+        return sheet;
     }
-    
+        
+    /**
+     * Creates a property sheet set.
+     *
+     * @param name                  name of the property sheet set
+     * @param displayNameLabel      bundle name of the diaplay name of the 
+     *                              property sheet set 
+     * @param descriptoinLabel      bundle name of the description of the 
+     *                              property sheet set
+     * @parm properties             property map
+     */
+    protected Sheet.Set createSheetSet(String name, String displayNameLabel, 
+            String descriptionLabel, 
+            Map<Attribute, MBeanAttributeInfo> properties) {
+        
+        Sheet.Set sheetSet = new Sheet.Set();
+        sheetSet.setName(name);
+        sheetSet.setDisplayName(
+                NbBundle.getMessage(this.getClass(), displayNameLabel)); // NOI18N
+        sheetSet.setShortDescription(
+                NbBundle.getMessage(this.getClass(), descriptionLabel)); // NOI18N
+        if (properties != null) {
+            sheetSet.put(createPropertySupportArray(properties));
+        }
+        
+        return sheetSet;
+    }
     
     /**
      * Creates a PropertySupport array from a map of component properties.
@@ -120,7 +144,7 @@ public abstract class AppserverJBIMgmtNode extends AppserverMgmtNode {
      * @param properties The properties of the component.
      * @return An array of PropertySupport objects.
      */
-    private PropertySupport[] createPropertySupportArray(final Map attrMap) {
+    protected PropertySupport[] createPropertySupportArray(final Map attrMap) {
         PropertySupport[] supports = new PropertySupport[attrMap.size()];
         int i = 0;
         
@@ -142,7 +166,7 @@ public abstract class AppserverJBIMgmtNode extends AppserverMgmtNode {
      *
      * @returns a java.util.Map of all properties to be accessed from the Sheet.
      */
-    protected abstract Map getSheetProperties();
+    protected abstract Map<Attribute, MBeanAttributeInfo> getSheetProperties();
     
     /**
      * Sets the property as an attribute to the underlying AMX mbeans. It 

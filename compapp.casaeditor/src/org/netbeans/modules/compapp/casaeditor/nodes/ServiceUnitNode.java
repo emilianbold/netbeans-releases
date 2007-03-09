@@ -17,15 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * ServiceUnitNode.java
- *
- * Created on November 2, 2006, 8:59 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
@@ -36,17 +27,17 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.ServiceUnitAction;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
+
 /**
  *
  * @author Josh Sandusky
@@ -54,19 +45,16 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
 public class ServiceUnitNode extends CasaNode {
     
     private static final Image ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceUnitNode.png");
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceUnitNode.png");     // NOI18N
     
-    private static final String CHILD_ID_PROVIDES_LIST = "ProvidesList";
-    private static final String CHILD_ID_CONSUMES_LIST = "ConsumesList";
+    private static final String CHILD_ID_PROVIDES_LIST = "ProvidesList";        // NOI18N
+    private static final String CHILD_ID_CONSUMES_LIST = "ConsumesList";        // NOI18N
     
     
-    public ServiceUnitNode(CasaComponent component, Children children, Lookup lookup) {
-        super(component, children, lookup);
+    public ServiceUnitNode(CasaServiceEngineServiceUnit component, CasaNodeFactory factory) {
+        super(component, new MyChildren(component, factory), factory);
     }
     
-    public ServiceUnitNode(CasaComponent component, Lookup lookup) {
-        super(component, new MyChildren(component, lookup), lookup);
-    }
     
     public Action[] getActions(boolean context) {
         List actions = new ArrayList();
@@ -83,7 +71,7 @@ public class ServiceUnitNode extends CasaNode {
     public String getName() {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
         if (su != null) {
-            return NbBundle.getMessage(getClass(), "LBL_ServiceUnit");
+            return NbBundle.getMessage(getClass(), "LBL_ServiceUnit");      // NOI18N
         }
         return super.getName();
     }
@@ -97,13 +85,13 @@ public class ServiceUnitNode extends CasaNode {
             String decoration = null;
             if (casaSU != null) {
                 CasaWrapperModel model = (CasaWrapperModel) casaSU.getModel(); // TMP
-                decoration = NbBundle.getMessage(WSDLEndpointNode.class, "LBL_NameAttr",
+                decoration = NbBundle.getMessage(WSDLEndpointNode.class, "LBL_NameAttr",        // NOI18N
                         casaSU.getUnitName());
             }
             if (decoration == null) {
                 return htmlDisplayName;
             }
-            return htmlDisplayName + " <font color='#999999'>"+decoration+"</font>";
+            return htmlDisplayName + " <font color='#999999'>"+decoration+"</font>";        // NOI18N
         } catch (Throwable t) {
             // getHtmlDisplayName MUST recover gracefully.
             return getBadName();
@@ -123,15 +111,15 @@ public class ServiceUnitNode extends CasaNode {
         PropertyUtils.installServiceUnitNameProperty(
                 identificationProperties, this, casaSU,
                 CasaAttribute.UNIT_NAME.getName(),
-                "serviceUnitName",
-                NbBundle.getMessage(getClass(), "PROP_Name"),
-                NbBundle.getMessage(getClass(), "PROP_Name"));
+                "serviceUnitName",                                      // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_Name"),           // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_Name"));          // NOI18N
         
         Node.Property descriptionSupport = new PropertySupport.ReadOnly(
-                "description", // NO18N
+                "description", // NOI18N
                 String.class, 
-                NbBundle.getMessage(getClass(), "PROP_Description"), 
-                "") {
+                NbBundle.getMessage(getClass(), "PROP_Description"),    // NOI18N
+                Constants.EMPTY_STRING) {
             public String getValue() {
                 return casaSU.getDescription();
             }
@@ -141,10 +129,10 @@ public class ServiceUnitNode extends CasaNode {
         Sheet.Set targetProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.TARGET_SET);
         Node.Property artifactsZipSupport = new PropertySupport.ReadOnly(
-                "artifactsZip", // NO18N
+                "artifactsZip", // NOI18N
                 String.class, 
-                NbBundle.getMessage(getClass(), "PROP_ArtifactsZip"), 
-                "") {
+                NbBundle.getMessage(getClass(), "PROP_ArtifactsZip"),   // NOI18N
+                Constants.EMPTY_STRING) {
             public String getValue() {
                 return casaSU.getArtifactsZip();
             }
@@ -152,10 +140,10 @@ public class ServiceUnitNode extends CasaNode {
         targetProperties.put(artifactsZipSupport);
         
         Node.Property componentNameSupport = new PropertySupport.ReadOnly(
-                "componentName", // NO18N
+                "componentName", // NOI18N
                 String.class, 
-                NbBundle.getMessage(getClass(), "PROP_ComponentName"), 
-                "") {
+                NbBundle.getMessage(getClass(), "PROP_ComponentName"),  // NOI18N
+                Constants.EMPTY_STRING) {
             public String getValue() {
                 return casaSU.getComponentName();
             }
@@ -165,20 +153,20 @@ public class ServiceUnitNode extends CasaNode {
 
     
     private static class MyChildren extends CasaNodeChildren {
-        public MyChildren(CasaComponent component, Lookup lookup) {
-            super(component, lookup);
+        public MyChildren(CasaComponent component, CasaNodeFactory factory) {
+            super(component, factory);
         }
         protected Node[] createNodes(Object key) {
             assert key instanceof String;
             CasaServiceEngineServiceUnit serviceUnit = (CasaServiceEngineServiceUnit) getData();
             if (serviceUnit != null) {
-                CasaWrapperModel model = getCasaModel(serviceUnit);
+                CasaWrapperModel model = mNodeFactory.getCasaModel();
                 if (model != null) {
                     String keyName = (String) key;
                     if (keyName.equals(CHILD_ID_CONSUMES_LIST)) {
-                        return new Node[] { new ConsumesListNode(serviceUnit.getConsumes(), mLookup) };
+                        return new Node[] { mNodeFactory.createNode_consumesList(serviceUnit.getConsumes()) };
                     } else if (keyName.equals(CHILD_ID_PROVIDES_LIST)) {
-                        return new Node[] { new ProvidesListNode(serviceUnit.getProvides(), mLookup) };
+                        return new Node[] { mNodeFactory.createNode_providesList(serviceUnit.getProvides()) };
                     }
                 }
             }

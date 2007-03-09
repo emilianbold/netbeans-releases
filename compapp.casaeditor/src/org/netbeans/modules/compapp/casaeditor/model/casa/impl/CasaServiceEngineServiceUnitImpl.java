@@ -18,11 +18,12 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
+
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
@@ -99,27 +100,27 @@ public class CasaServiceEngineServiceUnitImpl extends CasaServiceUnitImpl
     }
 
     public boolean isInternal() {
-        return getAttribute(CasaAttribute.INTERNAL).equalsIgnoreCase("true");
+        return getAttribute(CasaAttribute.INTERNAL).equalsIgnoreCase(Constants.true_STRING);
     }
 
     public void setInternal(boolean internal) {
-        setAttribute(INTERNAL_PROPERTY, CasaAttribute.INTERNAL, internal ? "true" : "false");        
+        setAttribute(INTERNAL_PROPERTY, CasaAttribute.INTERNAL, internal ? Constants.true_STRING : Constants.false_STRING);        
     }
 
     public boolean isDefined() {
-        return getAttribute(CasaAttribute.DEFINED).equalsIgnoreCase("true");
+        return getAttribute(CasaAttribute.DEFINED).equalsIgnoreCase(Constants.true_STRING);
     }
 
     public void setDefined(boolean defined) {
-        setAttribute(DEFINED_PROPERTY, CasaAttribute.DEFINED, defined ? "true" : "false");        
+        setAttribute(DEFINED_PROPERTY, CasaAttribute.DEFINED, defined ? Constants.true_STRING : Constants.false_STRING);        
     }
 
     public boolean isUnknown() {
-        return getAttribute(CasaAttribute.UNKNOWN).equalsIgnoreCase("true");
+        return getAttribute(CasaAttribute.UNKNOWN).equalsIgnoreCase(Constants.true_STRING);
     }
 
     public void setUnknown(boolean unknown) {
-        setAttribute(UNKNOWN_PROPERTY, CasaAttribute.UNKNOWN, unknown ? "true" : "false");        
+        setAttribute(UNKNOWN_PROPERTY, CasaAttribute.UNKNOWN, unknown ? Constants.true_STRING : Constants.false_STRING);        
     }
         
     // Convenience methods

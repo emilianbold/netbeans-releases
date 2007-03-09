@@ -19,11 +19,11 @@
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
 import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaQName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.w3c.dom.Element;
 
@@ -76,15 +76,15 @@ public class CasaEndpointImpl extends CasaComponentImpl
         String prefix = qname.getPrefix();
         String localPart = qname.getLocalPart();
 
-        if (namespace != null && !namespace.equals("")) {
+        if (namespace != null && !namespace.equals(Constants.EMPTY_STRING)) {  
             String existingPrefix = lookupPrefix(namespace);
             if (existingPrefix == null) {
                 AbstractDocumentComponent root =
                         (AbstractDocumentComponent) getModel().getRootComponent();
                 existingPrefix = root.lookupPrefix(namespace);
                 if (existingPrefix == null) {
-                    if (prefix == null || prefix.equals("")) {
-                        prefix = "ns"; //NOI18N
+                    if (prefix == null || prefix.equals(Constants.EMPTY_STRING)) {      
+                        prefix = "ns";                             // NOI18N
                     }
                     prefix = ensureUnique(prefix, namespace);
                     root.addPrefix(prefix, namespace);
@@ -99,9 +99,9 @@ public class CasaEndpointImpl extends CasaComponentImpl
         String qName;
         if (//(prefix == null || prefix.trim().length() == 0) &&
             (localPart == null || localPart.trim().length() == 0)) {
-            qName = "";
+            qName = Constants.EMPTY_STRING;                                         
         } else {
-            qName = prefix + ":" + localPart;
+            qName = prefix + Constants.COLON_STRING + localPart;                   
         }
         setAttribute(INTERFACE_NAME_PROPERTY, CasaAttribute.INTERFACE_NAME, qName);     
     }
@@ -117,15 +117,15 @@ public class CasaEndpointImpl extends CasaComponentImpl
         String prefix = qname.getPrefix();
         String localPart = qname.getLocalPart();
 
-        if (namespace != null && !namespace.equals("")) {
+        if (namespace != null && !namespace.equals(Constants.EMPTY_STRING)) {           
             String existingPrefix = lookupPrefix(namespace);
             if (existingPrefix == null) {
                 AbstractDocumentComponent root =
                         (AbstractDocumentComponent) getModel().getRootComponent();
                 existingPrefix = root.lookupPrefix(namespace);
                 if (existingPrefix == null) {
-                    if (prefix == null || prefix.equals("")) {
-                        prefix = "ns"; //NOI18N
+                    if (prefix == null || prefix.equals(Constants.EMPTY_STRING)) {      
+                        prefix = "ns";                             // NOI18N
                     }
                     prefix = ensureUnique(prefix, namespace);
                     root.addPrefix(prefix, namespace);
@@ -140,9 +140,9 @@ public class CasaEndpointImpl extends CasaComponentImpl
         String qName;
         if (//(prefix == null || prefix.trim().length() == 0) &&
             (localPart == null || localPart.trim().length() == 0)) {
-            qName = "";
+            qName = Constants.EMPTY_STRING;                                            
         } else {
-            qName = prefix + ":" + localPart;
+            qName = prefix + Constants.COLON_STRING + localPart;                       
         }
         setAttribute(SERVICE_NAME_PROPERTY, CasaAttribute.SERVICE_NAME, qName);  
     }
@@ -154,15 +154,15 @@ public class CasaEndpointImpl extends CasaComponentImpl
         String namespaceURI;
         String prefix;
         
-        int colonIndex = prefixedName.indexOf(":");
+        int colonIndex = prefixedName.indexOf(Constants.COLON_STRING);             
         if (colonIndex != -1) {
             prefix = prefixedName.substring(0, colonIndex);
             localPart = prefixedName.substring(colonIndex + 1);
             namespaceURI = getPeer().lookupNamespaceURI(prefix);
         } else {
-            prefix = "";
+            prefix = Constants.EMPTY_STRING;                                
             localPart = prefixedName;
-            namespaceURI = "";
+            namespaceURI = Constants.EMPTY_STRING;
         }
         
         return new QName(namespaceURI, localPart, prefix);

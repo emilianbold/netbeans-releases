@@ -17,36 +17,22 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
-* CasaDesignView.java
-*
-* Created on November 2, 2006, 4:31 PM
-*
-* To change this template, choose Tools | Template Manager
-* and open the template in the editor.
-*/
-
 package org.netbeans.modules.compapp.casaeditor.design;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.util.Properties;
-import java.io.File;
-import java.io.IOException;
-import java.io.FileInputStream;
 import javax.swing.*;
 
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
-import org.openide.ErrorManager;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.BuildAction;
 import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -60,11 +46,10 @@ public class CasaDesignView {
     private JScrollPane mScroller;
 
     private JToolBar mToolBar;
-    private Action mAutoLayoutAction;
-    private Action mBuildAction;
-    private Action mCustomizeAction;
+    private AbstractAction mAutoLayoutAction;
+    private AbstractAction mBuildAction;
 
-
+    
     public CasaDesignView(CasaDataObject dataObject) {
         mDataObject = dataObject;
 
@@ -153,34 +138,8 @@ public class CasaDesignView {
     }
     
     private void setupActions() {
-        mAutoLayoutAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                mScene.autoLayout(true);
-            }
-        };
-        mBuildAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                mScene.getModel().buildCompApp();
-            }
-        };
-        mCustomizeAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                // customize L&F
-                // todo: pop up a dialog with LF customization options..
-                JFileChooser fc = new JFileChooser();
-                fc.showOpenDialog(WindowManager.getDefault().getMainWindow());
-                File selFile = fc.getSelectedFile();
-                if (selFile != null && selFile.exists()) {
-                    Properties ps = new Properties();
-                    try {
-                        ps.load(new FileInputStream(selFile));
-                        //CasaFactory.getCasaCustomizer().loadFromProperties(ps);
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
-                }
-            }
-        };
+        mAutoLayoutAction = new AutoLayoutAction(mScene);
+        mBuildAction = new BuildAction(mScene.getModel());
     }
 
     private void setupToolBar() {
@@ -188,24 +147,20 @@ public class CasaDesignView {
         mToolBar.addSeparator();
 
         mToolBar.add(createButton(mAutoLayoutAction,
-                                  "TXT_AutoLayout", // NOI18N
-                                  "resources/auto_layout.png")); // NOI18N
+                                  (String) mAutoLayoutAction.getValue(Action.NAME), // NOI18N
+                                  (Icon)   mAutoLayoutAction.getValue(Action.SMALL_ICON))); // NOI18N
         mToolBar.addSeparator();
 
         mToolBar.add(createButton(mBuildAction,
-                                  "TXT_Build", // NOI18N
-                                  "resources/build_project.png")); // NOI18N
-
-        // TODO should not go on the toolbar as per HFE
-//        mToolBar.add(createButton(mCustomizeAction,
-//                                  "TXT_Customize", // NOI18N
-//                                  "resources/style16.png")); // NOI18N
+                                  (String) mBuildAction.getValue(Action.NAME), // NOI18N
+                                  (Icon)   mBuildAction.getValue(Action.SMALL_ICON))); // NOI18N
     }
 
-    private JButton createButton(Action action, String tooltip, String icon) {
+    private JButton createButton(Action action, String tooltip, Icon icon) {
         JButton button = new JButton(action);
-        button.setToolTipText(NbBundle.getMessage(CasaDesignView.class, tooltip)); // NOI18N
-        button.setIcon(new ImageIcon(CasaDesignView.class.getResource(icon))); // NOI18N
+        button.setText("");
+        button.setToolTipText(tooltip);
+        button.setIcon(icon);
         return button;
     }
 
@@ -219,11 +174,11 @@ public class CasaDesignView {
 
     public JComponent getErrorPane() {
         JLabel errorLabel = new JLabel();
-        errorLabel.setText(NbBundle.getMessage(getClass(), "MSG_ModelError"));
+        errorLabel.setText(NbBundle.getMessage(getClass(), "MSG_ModelError")); // NOI18N
         errorLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         errorLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         errorLabel.setEnabled(false);
-        Color usualWindowBkg = UIManager.getColor("window"); //NOI18N
+        Color usualWindowBkg = UIManager.getColor("window"); // NOI18N
         errorLabel.setBackground(
                 usualWindowBkg != null ? usualWindowBkg : Color.white);
         errorLabel.setOpaque(true);

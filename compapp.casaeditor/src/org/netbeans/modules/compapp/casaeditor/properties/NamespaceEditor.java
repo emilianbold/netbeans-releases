@@ -22,9 +22,6 @@ package org.netbeans.modules.compapp.casaeditor.properties;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -34,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -47,7 +45,7 @@ import org.openide.util.NbBundle;
  */
 public class NamespaceEditor extends PropertyEditorSupport {
     
-    private final static String EMPTY = "";
+    private final static String EMPTY = Constants.EMPTY_STRING;
     
     private PropertyQName mPropertySupport;
     private String mPropertyName;
@@ -99,23 +97,13 @@ public class NamespaceEditor extends PropertyEditorSupport {
     }
 
     public boolean isPaintable() {
-        return true;
-    }
-    
-    public void paintValue(Graphics g, Rectangle rectangle) {
-        String paintableString = getPaintableString();
-        FontMetrics metrics = g.getFontMetrics();
-        g.drawString(
-                paintableString,
-                rectangle.x,
-                rectangle.y + (rectangle.height-metrics.getHeight()) / 2 +
-                metrics.getAscent());
+        return false;
     }
     
     protected String getPaintableString() {
         Object value = getValue();
         return value == null ? 
-            NbBundle.getMessage(StringEditor.class,"LBL_Null") : 
+            NbBundle.getMessage(StringEditor.class,"LBL_Null") :        // NOI18N
             getAsText();
     }
 
@@ -127,7 +115,7 @@ public class NamespaceEditor extends PropertyEditorSupport {
         panel.setEditable(mPropertySupport.canWrite());
         final DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
-                NbBundle.getMessage(NamespaceEditor.class, "LBL_QNAME_Editor"),
+                NbBundle.getMessage(NamespaceEditor.class, "LBL_QNAME_Editor"), // NOI18N
                 true,
                 new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -185,7 +173,7 @@ public class NamespaceEditor extends PropertyEditorSupport {
             return mNamespace;
         }
         public String toString() {
-            return mPrefix + ":" + mNamespace;
+            return mPrefix + Constants.COLON_STRING + mNamespace;
         }
     }
 }

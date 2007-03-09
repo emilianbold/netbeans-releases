@@ -26,11 +26,11 @@ import java.util.List;
  */
 public interface CasaServiceUnit extends CasaComponent {
     
-    public static final String NAME_PROPERTY = "name";
-    public static final String UNIT_NAME_PROPERTY = "unit-name";
-    public static final String DESCRIPTION_PROPERTY = "description";
-    public static final String COMPONENT_NAME_PROPERTY = "component-name";
-    public static final String ARTIFACTS_ZIP_PROPERTY = "artifacts-zip";
+    public static final String NAME_PROPERTY = "name";                          // NOI18N
+    public static final String UNIT_NAME_PROPERTY = "unit-name";                // NOI18N
+    public static final String DESCRIPTION_PROPERTY = "description";            // NOI18N
+    public static final String COMPONENT_NAME_PROPERTY = "component-name";      // NOI18N
+    public static final String ARTIFACTS_ZIP_PROPERTY = "artifacts-zip";        // NOI18N
            
     String getName();
     void setName(String name);

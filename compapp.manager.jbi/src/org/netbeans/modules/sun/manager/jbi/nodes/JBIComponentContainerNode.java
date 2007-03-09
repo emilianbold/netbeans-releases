@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -21,13 +21,23 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import java.awt.Image;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import javax.management.Attribute;
+import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
@@ -36,12 +46,18 @@ import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.actions.InstallAction;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.util.JarFileFilter;
+import org.netbeans.modules.sun.manager.jbi.util.ArchiveFileFilter;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Container node for all JBI Components of the same type.
@@ -50,13 +66,13 @@ import org.openide.util.HelpCtx;
  */
 public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContainerNode
         implements Installable {
-        
+    
     private static String lastInstallDir = null;
     
     private boolean busy;
     
     public JBIComponentContainerNode(final AppserverJBIMgmtController controller,
-            final String type, final String name) {
+            String type, String name) {
         super(controller, type);
         setDisplayName(name);
     }
@@ -101,7 +117,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         fireIconChange();
     }
     
-    protected Map getSheetProperties() {
+    protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {
         return null;
     }
     
@@ -120,10 +136,19 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         if (adminService != null) {
             JFileChooser chooser = getJFileChooser();
             int returnValue = chooser.showDialog(null,
-                    NbBundle.getMessage(JBIComponentContainerNode.class, "LBL_Install_JBI_Component_Button")); //NOI18N
+                    NbBundle.getMessage(JBIComponentContainerNode.class, 
+                    "LBL_Install_JBI_Component_Button")); //NOI18N
             
             if (returnValue == JFileChooser.APPROVE_OPTION){
-                File[] selectedFiles = chooser.getSelectedFiles();
+                File[] selectedFiles = chooser.getSelectedFiles();                
+                if (selectedFiles.length > 0) {
+                    lastInstallDir = selectedFiles[0].getParent();
+                }
+                
+                List<File> files = filterSelectedFiles(selectedFiles);                
+                if (files.size() == 0) {
+                    return;
+                }
                 
                 String progressLabel = getInstallProgressMessageLabel();
                 String message = NbBundle.getMessage(JBIComponentContainerNode.class, progressLabel);
@@ -136,8 +161,9 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
                     }
                 });
                 
-                for (int i = 0; i < selectedFiles.length; i++) {
-                    final String jarFilePath = selectedFiles[i].getAbsolutePath();
+                for (int i = 0; i < files.size(); i++) {
+                    File file = files.get(i);
+                    final String jarFilePath = file.getAbsolutePath();
                     final String result = installJBIComponent(jarFilePath);
                     
                     SwingUtilities.invokeLater(new Runnable() {
@@ -147,10 +173,6 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
                                     jarFilePath, result);
                         }
                     });
-                    
-                    if (i == 0) {
-                        lastInstallDir = selectedFiles[0].getParent();
-                    }
                 }
                 
                 SwingUtilities.invokeLater(new Runnable() {
@@ -161,6 +183,56 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
                 });
             }
         }
+    }
+    
+    private List<File> filterSelectedFiles(File[] files) {
+        List<File> ret = new ArrayList<File>();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = null;
+        try {
+            docBuilder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            ex.printStackTrace();
+        }
+        
+        if (docBuilder != null) {
+            for (File file : files) {
+                boolean isRightType = false;
+                
+                try {
+                    JarFile jf = new JarFile(file);
+                    JarEntry je = (JarEntry) jf.getEntry("META-INF/jbi.xml"); // NOI18N
+                    if (je != null) {
+                        InputStream is = jf.getInputStream(je);
+                        Document doc = docBuilder.parse(is);
+                        isRightType = isRightJBIDocType(doc); // very basic type checking
+                    }
+                    
+                    if (isRightType) {
+                        ret.add(file);
+                    } else {
+                        String compType = NbBundle.getMessage(
+                                getClass(),
+                                getComponentTypeLabel());
+                        String msg = NbBundle.getMessage(
+                                getClass(),
+                                "MSG_INVALID_COMPONENT_INSTALLATION", // NOI18N
+                                file.getName(),
+                                compType);
+                        NotifyDescriptor d = new NotifyDescriptor.Message(
+                                msg,
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(d);
+                    }
+                } catch (SAXException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        return ret;
     }
     
     protected AdministrationService getJBIAdministrationService() {
@@ -179,8 +251,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         chooser.setApproveButtonMnemonic(
                 bundle.getString("Install_JBI_Component_Button_Mnemonic").charAt(0)); //NOI18N
         chooser.setMultiSelectionEnabled(true);
-        chooser.addChoosableFileFilter(JarFileFilter.getInstance());
-        chooser.setAcceptAllFileFilterUsed(false);
+        
+        chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+        chooser.addChoosableFileFilter(ArchiveFileFilter.getInstance());        
+        
         chooser.setApproveButtonToolTipText(
                 bundle.getString("LBL_Install_JBI_Component_Button")); //NOI18N
         
@@ -206,6 +280,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
     
     protected abstract String getBadgeIconName();
     
+    protected abstract boolean isRightJBIDocType(Document jbiDoc);
+    
+    protected abstract String getComponentTypeLabel();
+    
     //==========================================================================
     
     
@@ -229,6 +307,18 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
             return adminService.installComponent(jarFilePath);
         }
         
+        protected boolean isRightJBIDocType(Document jbiDoc) {
+            NodeList ns = jbiDoc.getElementsByTagName("component"); // NOI18N
+            if (ns.getLength() > 0) {
+                Element e = (Element) ns.item(0);
+                String type = e.getAttribute("type"); // NOI18N
+                if (type != null && type.equals("service-engine")) {    // NOI18N 
+                    return true;
+                }
+            }
+            return false;
+        }
+        
         protected String getFileChooserTitleLabel() {
             return "LBL_Install_Service_Engine_Chooser_Name";      // NOI18N
         }
@@ -239,6 +329,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         
         protected String getBadgeIconName() {
             return IconConstants.SERVICE_ENGINES_BADGE_ICON;
+        }
+        
+        protected String getComponentTypeLabel() {
+            return "SERVICE_ENGINE";    // NOI18N
         }
         
         public HelpCtx getHelpCtx() {
@@ -266,6 +360,18 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
             AdministrationService adminService = getJBIAdministrationService();
             return adminService.installComponent(jarFilePath);
         }
+                
+        protected boolean isRightJBIDocType(Document jbiDoc) {            
+            NodeList ns = jbiDoc.getElementsByTagName("component"); // NOI18N
+            if (ns.getLength() > 0) {
+                Element e = (Element) ns.item(0);
+                String type = e.getAttribute("type"); // NOI18N
+                if (type != null && type.equals("binding-component")) {    // NOI18N // FIXME
+                    return true;
+                }
+            }
+            return false;
+        }
         
         protected String getFileChooserTitleLabel() {
             return "LBL_Install_Binding_Component_Chooser_Name";      // NOI18N
@@ -277,6 +383,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         
         protected String getBadgeIconName() {
             return IconConstants.BINDING_COMPONENTS_BADGE_ICON;
+        }
+                
+        protected String getComponentTypeLabel() {
+            return "BINDING_COMPONENT";    // NOI18N
         }
         
         public HelpCtx getHelpCtx() {
@@ -303,6 +413,11 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         protected String installJBIComponent(String jarFilePath) {
             AdministrationService adminService = getJBIAdministrationService();
             return adminService.installSharedLibrary(jarFilePath);
+        }        
+        
+        protected boolean isRightJBIDocType(Document jbiDoc) {            
+            NodeList ns = jbiDoc.getElementsByTagName("shared-library"); // NOI18N
+            return ns.getLength() > 0;
         }
         
         protected String getFileChooserTitleLabel() {
@@ -315,6 +430,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         
         protected String getBadgeIconName() {
             return IconConstants.SHARED_LIBRARIES_BADGE_ICON;
+        }
+        
+        protected String getComponentTypeLabel() {
+            return "SHARED_LIBRARY";    // NOI18N
         }
         
         public HelpCtx getHelpCtx() {

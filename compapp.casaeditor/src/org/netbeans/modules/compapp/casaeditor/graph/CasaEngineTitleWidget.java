@@ -44,17 +44,19 @@ import org.openide.util.Utilities;
  */
 public class CasaEngineTitleWidget extends Widget {
     
-    //private static final int   TITLE_GAP          = 8;
     private static final int   TITLE_GAP          = 3;
-    private static final int TITLE_MINIMIZE_BUTTON_DISPLACEMENT = RegionUtilities.MARGIN_SE_ROUNDED_RECTANGLE + 8;
+    
+    private static final int TITLE_MINIMIZE_BUTTON_DISPLACEMENT = CasaNodeWidgetEngine.MARGIN_SE_ROUNDED_RECTANGLE + 8;
+    
     private static final Image IMAGE_EXPAND       = Utilities.loadImage(
-            "org/netbeans/modules/visual/resources/vmd-expand.png"); // NOI18N
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/expand.png"); // NOI18N
     private static final Image IMAGE_COLLAPSE     = Utilities.loadImage(
-            "org/netbeans/modules/visual/resources/vmd-collapse.png"); // NOI18N
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/collapse.png"); // NOI18N
     private static final Image IMAGE_UNCONFIGURED = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/palette/resources/question_violet.png");
+            "org/netbeans/modules/compapp/casaeditor/palette/resources/question_violet.png");   // NOI18N
+    
     private static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder(
-            2, 2, null, new Color(0xBACDF0));
+            2, 2, null, new Color(154, 154, 154));
 
     private ImageWidget mDeleteWidget;
     private ImageWidget mEditWidget;
@@ -79,7 +81,7 @@ public class CasaEngineTitleWidget extends Widget {
                 LayoutFactory.SerialAlignment.LEFT_TOP, TITLE_GAP));
         Widget emptyWidget = new Widget(scene); //Placeholder to place MinimizeIcon inside rounded rectangle
         
-        emptyWidget.setPreferredBounds(new Rectangle(RegionUtilities.ARROW_PIN_WIDTH, 0));
+        emptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 0));
         mTitleWidget.addChild(emptyWidget);
         
         minimizeWidget = new ImageWidget(scene, IMAGE_COLLAPSE);
@@ -106,7 +108,7 @@ public class CasaEngineTitleWidget extends Widget {
         mTitleWidget.addChild(typeWidget);
         
         Widget rightEmptyWidget = new Widget(scene); //Placeholder to place MinimizeIcon inside rounded rectangle
-        rightEmptyWidget.setPreferredBounds(new Rectangle(RegionUtilities.ARROW_PIN_WIDTH, 0));
+        rightEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 0));
         mTitleWidget.addChild(rightEmptyWidget);
         
         Widget topHolderWidget = new Widget(scene);
@@ -135,10 +137,6 @@ public class CasaEngineTitleWidget extends Widget {
         mNameWidget.setLabel(label);
     }
     
-    public void setMinimized(boolean isMinimized) {
-        minimizeWidget.setImage(isMinimized ? IMAGE_EXPAND : IMAGE_COLLAPSE);
-    }
-    
     public boolean getConfigurationStatus(){
         return mConfigurationStatus;
     }
@@ -152,10 +150,12 @@ public class CasaEngineTitleWidget extends Widget {
         mEditWidget.setImage(bValue ? RegionUtilities.IMAGE_EDIT_16_ICON : null);
     }
     
-    protected void readjustBounds(Rectangle rectangle) {
-        mTitleWidget.setPreferredBounds(rectangle);
-        mNameWidget.setPreferredBounds(rectangle);
-        this.setPreferredBounds(rectangle);
+    protected void updateBounds(boolean isMinimized) {
+        mTitleWidget.setPreferredBounds(null);
+        mNameWidget.setPreferredBounds(null);
+        setPreferredBounds(null);
+        
+        minimizeWidget.setImage(isMinimized ? IMAGE_EXPAND : IMAGE_COLLAPSE);
     }
 
 

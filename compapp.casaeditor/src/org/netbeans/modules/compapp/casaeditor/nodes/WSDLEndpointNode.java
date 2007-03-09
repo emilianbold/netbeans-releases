@@ -17,38 +17,27 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * ServiceUnitNode.java
- *
- * Created on November 2, 2006, 8:59 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.WSDLEndpointAction;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
 import javax.swing.Action;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 
 /**
  *
@@ -57,18 +46,14 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 public class WSDLEndpointNode extends CasaNode {
     
     private static final Image ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/nodes/resources/WSDLEndpointNode.png");
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/WSDLEndpointNode.png");    // NOI18N
     
-    private static final String CHILD_ID_PROVIDES = "Provides";
-    private static final String CHILD_ID_CONSUMES = "Consumes";
+    private static final String CHILD_ID_PROVIDES = "Provides"; // NOI18N
+    private static final String CHILD_ID_CONSUMES = "Consumes"; // NOI18N
     
     
-    public WSDLEndpointNode(CasaComponent component, Children children, Lookup lookup) {
-        super(component, children, lookup);
-    }
-    
-    public WSDLEndpointNode(CasaComponent component, Lookup lookup) {
-        super(component, new MyChildren(component, lookup), lookup);
+    public WSDLEndpointNode(CasaPort component, CasaNodeFactory factory) {
+        super(component, new MyChildren(component, factory), factory);
     }
     
     
@@ -89,13 +74,13 @@ public class WSDLEndpointNode extends CasaNode {
             CasaPort endpoint = (CasaPort) getData();
             String decoration = null;
             if (endpoint != null) {
-                decoration = NbBundle.getMessage(WSDLEndpointNode.class, "LBL_NameAttr",
+                decoration = NbBundle.getMessage(WSDLEndpointNode.class, "LBL_NameAttr",    // NOI18N
                         ((CasaWrapperModel)endpoint.getModel()).getEndpointName(endpoint));
             }
             if (decoration == null) {
                 return htmlDisplayName;
             }
-            return htmlDisplayName + " <font color='#999999'>"+decoration+"</font>";
+            return htmlDisplayName + " <font color='#999999'>"+decoration+"</font>";    // NOI18N
         } catch (Throwable t) {
             // getHtmlDisplayName MUST recover gracefully.
             return getBadName();
@@ -108,37 +93,49 @@ public class WSDLEndpointNode extends CasaNode {
         for (Action parentAction : parentActions) {
             actions.add(parentAction);
         }
+
+        // todo: 02/23/07 disable WSIT action until run-time is ready...
+        /*
         actions.add(null);
         actions.add(SystemAction.get(WSDLEndpointAction.class));
+        */
         return (Action[]) actions.toArray(new Action[actions.size()]);
     }
     
     protected void setupPropertySheet(Sheet sheet) {
-        final CasaPort endpoint = (CasaPort) getData();
-        if (endpoint == null) {
+        final CasaPort casaPort = (CasaPort) getData();
+        if (casaPort == null) {
             return;
         }
         
         Sheet.Set identificationProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.IDENTIFICATION_SET);
+        
+        PropertyUtils.installEndpointNameProperty(
+                identificationProperties, this, casaPort,
+                JBIAttributes.ENDPOINT_NAME.getName(),
+                "endpointName",            // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_EndpointName"),       // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_EndpointName"));      // NOI18N
+                
         Node.Property nameSupport = new PropertySupport.ReadOnly(
-                "name", // NO18N
+                "name", // NOI18N
                 String.class,
-                NbBundle.getMessage(getClass(), "PROP_EndpointName"),
-                "") {
+                NbBundle.getMessage(getClass(), "PROP_EndpointName"),       // NOI18N
+                Constants.EMPTY_STRING) {
             public String getValue() {
-                return ((CasaWrapperModel)endpoint.getModel()).getEndpointName(endpoint);
+                return ((CasaWrapperModel)casaPort.getModel()).getEndpointName(casaPort);
             }
         };
         identificationProperties.put(nameSupport);
         
         Node.Property componentNameSupport = new PropertySupport.ReadOnly(
-                "componentName", // NO18N
+                "componentName", // NOI18N
                 String.class,
-                NbBundle.getMessage(getClass(), "PROP_ComponentName"),
-                "") {
+                NbBundle.getMessage(getClass(), "PROP_ComponentName"),  // NOI18N
+                Constants.EMPTY_STRING) {
             public String getValue() {
-                return ((CasaWrapperModel)endpoint.getModel()).getBindingComponentName(endpoint); 
+                return ((CasaWrapperModel)casaPort.getModel()).getBindingComponentName(casaPort); 
             }
         };
         identificationProperties.put(componentNameSupport);
@@ -146,34 +143,18 @@ public class WSDLEndpointNode extends CasaNode {
     
     
     private static class MyChildren extends CasaNodeChildren {
-        public MyChildren(CasaComponent component, Lookup lookup) {
-            super(component, lookup);
+        public MyChildren(CasaComponent component, CasaNodeFactory factory) {
+            super(component, factory);
         }
         
         protected Node[] createNodes(Object key) {
             if (key instanceof Port) {
                 Node pn = NodesFactory.getInstance().create((Port) key);
-                //((WSDLElementNode) pn).setEditable(false);
                 return new Node[] { pn };
             } else if (key instanceof Binding) {
                 Node bn = NodesFactory.getInstance().create((Binding) key);
-                //((WSDLElementNode) bn).setEditable(false);
                 return new Node[] { bn };
             }
-            
-            // todo: 12/18/06 removed the consume and provide node within WSDL port
-            /*
-            assert key instanceof String;
-            CasaPort endpoint = (CasaPort) getData();
-            if (endpoint != null) {
-                String keyName = (String) key;
-                if (keyName.equals(CHILD_ID_CONSUMES)) {
-                    return new Node[] { new ConsumesNode(endpoint.getConsumes(true), mLookup) };
-                } else if (keyName.equals(CHILD_ID_PROVIDES)) {
-                    return new Node[] { new ProvidesNode(endpoint.getProvides(true), mLookup) };
-                }
-            }
-             */
             return null;
         }
         

@@ -25,10 +25,10 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  * @author jqian
  */
 public enum JBIAttributes implements Attribute {
-    BINDING_COMPONENT("binding-component", Boolean.class),
-    INTERFACE_NAME("interface-name"),
-    SERVICE_NAME("service-name"),
-    ENDPOINT_NAME("endpoint-name");
+    BINDING_COMPONENT("binding-component", Boolean.class),          // NOI18N
+    INTERFACE_NAME("interface-name"),                               // NOI18N
+    SERVICE_NAME("service-name"),                                   // NOI18N
+    ENDPOINT_NAME("endpoint-name");                                 // NOI18N
 
     private String name;
     private Class type;

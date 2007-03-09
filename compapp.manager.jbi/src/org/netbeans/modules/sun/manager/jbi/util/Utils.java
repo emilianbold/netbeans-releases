@@ -68,12 +68,14 @@ public class Utils {
         Image ret = new ImageIcon(clazz.getResource(iconName)).getImage();
         
         if (internalBadgeIconName != null) {
-            Image internalBadgeImg = new ImageIcon(clazz.getResource(internalBadgeIconName)).getImage();
+            Image internalBadgeImg = 
+                    new ImageIcon(clazz.getResource(internalBadgeIconName)).getImage();
             ret = Utilities.mergeImages(ret, internalBadgeImg, 7, 7);
         }
         
         if (externalBadgeIconName != null) {
-            Image externalBadgeImg = new ImageIcon(clazz.getResource(externalBadgeIconName)).getImage();
+            Image externalBadgeImg = 
+                    new ImageIcon(clazz.getResource(externalBadgeIconName)).getImage();
             ret = Utilities.mergeImages(ret, externalBadgeImg, 15, 8);
         }
         
@@ -92,11 +94,17 @@ public class Utils {
         }
     }
     
-    public static Map<Attribute, MBeanAttributeInfo> getIntrospectedPropertyMap(Object bean) {
+    public static Map<Attribute, MBeanAttributeInfo> getIntrospectedPropertyMap(
+            Object bean) {
         return getIntrospectedPropertyMap(bean, false);
     }
     
-    public static Map<Attribute,MBeanAttributeInfo> getIntrospectedPropertyMap(Object bean, boolean sort) {
+    public static Map<Attribute,MBeanAttributeInfo> getIntrospectedPropertyMap(
+            Object bean, boolean sort) {
+        
+        if (bean == null) {
+            return null;
+        }
         
         Class beanClass = bean.getClass();
         BeanInfo beanInfo = null;
@@ -130,11 +138,7 @@ public class Utils {
                 Object propertyValue = null;
                 try {
                     propertyValue = readMethod.invoke(bean, (Object[])null);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 Attribute attr = new Attribute(propertyName, propertyValue);

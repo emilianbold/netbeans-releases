@@ -51,13 +51,13 @@ public class UndeployAction extends NodeAction {
                         Object obj = lookup.lookup(Undeployable.class);
                         
                         if (obj instanceof Undeployable) {
-                            Undeployable undeployable = (Undeployable)obj;
-                            undeployable.undeploy();
                             // There will be at most one parent node that
                             // needs refreshing
                             if (parentNode == null) {
                                 parentNode = node.getParentNode();
                             }
+                            Undeployable undeployable = (Undeployable)obj;
+                            undeployable.undeploy();
                         }
                     }
                     
@@ -72,7 +72,7 @@ public class UndeployAction extends NodeAction {
                             });
                         }
                     }
-                } catch(java.lang.RuntimeException rex) {
+                } catch(RuntimeException rex) {
                     //gobble up exception
                 }
             }

@@ -42,7 +42,7 @@ public class NodeDeleteAction extends NodeAbstractAction {
     
     
     public NodeDeleteAction(CasaNode node) {
-        super(NbBundle.getMessage(NodeDeleteAction.class, "NAME_Delete"), node);
+        super(NbBundle.getMessage(NodeDeleteAction.class, "NAME_Delete"), node);        // NOI18N
     }
     
     

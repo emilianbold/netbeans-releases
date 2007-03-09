@@ -25,7 +25,7 @@ import java.util.List;
  * @author jqian
  */
 public interface CasaLinksContainer extends CasaComponent {
-    public static final String LINK_PROPERTY = "link";
+    public static final String LINK_PROPERTY = "link";      // NOI18N
     
     List<CasaLink> getLinks();
     void addLink(int index, CasaLink link);

@@ -21,6 +21,7 @@ package org.netbeans.modules.compapp.casaeditor.model.visitor;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -62,11 +63,11 @@ public class FindJBIComponentVisitor extends JBIVisitor.Deep {
         
         // Temporary workaround to get around XDM XPath limitation
         Node result = null;
-        if (xpath.startsWith("/jbi/service-assembly/connections/connection[")) {
+        if (xpath.startsWith("/jbi/service-assembly/connections/connection[")) {                    // NOI18N
             List<Node> connectionNodes = root.getModel().getAccess().findNodes(doc,
-                    "/jbi/service-assembly/connections/connection");
+                    "/jbi/service-assembly/connections/connection");                                // NOI18N
             
-            Pattern pattern = Pattern.compile("consumer\\[@endpoint-name='(.*?)'\\] and provider\\[@endpoint-name='(.*?)'\\]");
+            Pattern pattern = Pattern.compile("consumer\\[@endpoint-name='(.*?)'\\] and provider\\[@endpoint-name='(.*?)'\\]"); // NOI18N
             Matcher matcher = pattern.matcher(xpath);            
             assert matcher.find() && matcher.groupCount() == 2;
             
@@ -74,12 +75,12 @@ public class FindJBIComponentVisitor extends JBIVisitor.Deep {
             String providerEndpointName = matcher.group(2);
             
             result = findConnection(connectionNodes, consumerEndpointName, providerEndpointName);
-        } else if (xpath.startsWith("/jbi/service-assembly/service-unit[")) {
+        } else if (xpath.startsWith("/jbi/service-assembly/service-unit[")) {   // NOI18N
             List<Node> suNodes = root.getModel().getAccess().findNodes(doc,
-                    "/jbi/service-assembly/service-unit");
+                    "/jbi/service-assembly/service-unit");                      // NOI18N
             
-            int index1 = xpath.indexOf("'");
-            int index2 = xpath.lastIndexOf("'");
+            int index1 = xpath.indexOf("'");                                    // NOI18N
+            int index2 = xpath.lastIndexOf("'");                                // NOI18N
             String componentTargetName = xpath.substring(index1+1, index2);
             
             result = findServiceUnit(suNodes, componentTargetName);
@@ -108,10 +109,10 @@ public class FindJBIComponentVisitor extends JBIVisitor.Deep {
             String consumerEndpointName, String providerEndpointName) {
         for (Node connectionNode : connectionNodes) {
             Element connection = (Element) connectionNode;
-            Element consumer = (Element) connection.getElementsByTagName("consumer").item(0);
-            Element provider = (Element) connection.getElementsByTagName("provider").item(0);
-            if (consumer.getAttribute("endpoint-name").equals(consumerEndpointName) &&
-                    provider.getAttribute("endpoint-name").equals(providerEndpointName)) {
+            Element consumer = (Element) connection.getElementsByTagName("consumer").item(0);       // NOI18N
+            Element provider = (Element) connection.getElementsByTagName("provider").item(0);       // NOI18N
+            if (consumer.getAttribute("endpoint-name").equals(consumerEndpointName) &&              // NOI18N        
+                    provider.getAttribute("endpoint-name").equals(providerEndpointName)) {          // NOI18N
                 return connection;
             }
         }
@@ -123,9 +124,9 @@ public class FindJBIComponentVisitor extends JBIVisitor.Deep {
             String componentTargetName) {
         for (Node suNode : suNodes) {
             Element su = (Element) suNode;
-            Element target = (Element) su.getElementsByTagName("target").item(0);
-            Element componentName = (Element) target.getElementsByTagName("component-name").item(0);
-            String name = componentName.getFirstChild() != null ? componentName.getFirstChild().getNodeValue() : ""; // FIXME
+            Element target = (Element) su.getElementsByTagName("target").item(0);                       // NOI18N
+            Element componentName = (Element) target.getElementsByTagName("component-name").item(0);    // NOI18N
+            String name = componentName.getFirstChild() != null ? componentName.getFirstChild().getNodeValue() : Constants.EMPTY_STRING; // FIXME
             if (componentTargetName.equals(name)) {
                 return su;
             }

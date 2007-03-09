@@ -25,7 +25,7 @@ import java.util.List;
  * @author jqian
  */
 public interface CasaConnections extends CasaComponent {
-    public static final String CONNECTION_PROPERTY = "connection";
+    public static final String CONNECTION_PROPERTY = "connection";      // NOI18N
     
     List<CasaConnection> getConnections();
     void removeConnection(CasaConnection connection);

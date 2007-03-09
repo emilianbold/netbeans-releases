@@ -20,12 +20,14 @@ package org.netbeans.modules.compapp.casaeditor.model.jbi.impl;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIComponent;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
 import org.netbeans.modules.compapp.casaeditor.model.visitor.JBIVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.Identification;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.ServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.Target;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 
 /**
@@ -67,11 +69,17 @@ public class ServiceUnitImpl extends JBIComponentImpl implements ServiceUnit {
     
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("ServiceUnit: [");
+        //sb.append("ServiceUnit: [");
+        sb.append(NbBundle.getMessage(getClass(), "ServiceUnit"));  // NOI18N
+        sb.append(Constants.COLON_STRING);
+        sb.append(Constants.SPACE);
+        sb.append(Constants.SQUARE_BRACKET_OPEN);
+        
         sb.append(getIdentification());
-        sb.append(", ");
+
+        sb.append(Constants.COMMA);
         sb.append(getTarget());
-        sb.append("]");
+        sb.append(Constants.SQUARE_BRACKET_CLOSE);
         
         return sb.toString();
     }

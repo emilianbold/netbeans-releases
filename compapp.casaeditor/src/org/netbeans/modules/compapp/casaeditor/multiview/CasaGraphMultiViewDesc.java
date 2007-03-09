@@ -42,7 +42,7 @@ public class CasaGraphMultiViewDesc extends Object
     
     static final long serialVersionUID = -8758210714472856508L;
     
-    public static final String PREFERRED_ID = "casa-graphview";
+    public static final String PREFERRED_ID = "casa-graphview";     // NOI18N
     private CasaDataObject mDataObject;
     
     
@@ -69,7 +69,7 @@ public class CasaGraphMultiViewDesc extends Object
     
     public String getDisplayName() {
         return NbBundle.getMessage(CasaGraphMultiViewDesc.class,
-                "LBL_designView_name");
+                "LBL_designView_name");         // NOI18N
     }
     
     public MultiViewElement createElement() {

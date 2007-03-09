@@ -23,8 +23,8 @@ package org.netbeans.modules.compapp.casaeditor.model.jbi;
  * @author jqian
  */
 public interface ServiceUnit extends JBIComponent {
-    public static final String IDENTIFICATION_PROPERTY = "identification";
-    public static final String TARGET_PROPERTY = "target";
+    public static final String IDENTIFICATION_PROPERTY = "identification";      // NOI18N
+    public static final String TARGET_PROPERTY = "target";                      // NOI18N
     
     Identification getIdentification();
     void setIdentification(Identification identification);

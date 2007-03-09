@@ -24,8 +24,8 @@ package org.netbeans.modules.compapp.casaeditor.model.jbi;
  */
 public interface JBI extends JBIComponent {
     
-    public static final String SERVICES_PROPERTY = "services";
-    public static final String SERVICE_ASSEMBLY_PROPERTY = "service-assembly";
+    public static final String SERVICES_PROPERTY = "services";                      // NOI18N
+    public static final String SERVICE_ASSEMBLY_PROPERTY = "service-assembly";      // NOI18N
     
     Services getServices();
     void setServices(Services services);

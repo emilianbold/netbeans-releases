@@ -43,7 +43,7 @@ public class CasaSourceMultiViewDesc implements MultiViewDescription, Serializab
 
     static final long serialVersionUID = -5788279983060164909L;
     
-    public static final String PREFERRED_ID = "casa-sourceview";
+    public static final String PREFERRED_ID = "casa-sourceview";    // NOI18N
     private CasaDataObject mDataObject;
 
     
@@ -76,7 +76,7 @@ public class CasaSourceMultiViewDesc implements MultiViewDescription, Serializab
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(CasaSourceMultiViewDesc.class, "LBL_sourceView_name");
+        return NbBundle.getMessage(CasaSourceMultiViewDesc.class, "LBL_sourceView_name");   // NOI18N
     }
 
     public MultiViewElement createElement() {

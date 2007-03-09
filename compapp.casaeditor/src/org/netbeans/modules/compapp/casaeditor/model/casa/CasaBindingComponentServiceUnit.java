@@ -26,7 +26,7 @@ import java.util.List;
  */
 public interface CasaBindingComponentServiceUnit extends CasaServiceUnit {
     
-    public static final String PORTS_PROPERTY = "ports";
+    public static final String PORTS_PROPERTY = "ports";        // NOI18N
            
     CasaPorts getPorts();
     void setPorts(CasaPorts ports);

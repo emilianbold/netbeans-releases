@@ -29,6 +29,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
@@ -49,26 +50,36 @@ public class CasaPopupMenuProvider implements PopupMenuProvider {
         mScene = (CasaModelGraphScene) widget.getScene();
         mModel = mScene.getModel();
         
-        Object widgetData = mScene.findObject(mWidget);
-        if (!(widgetData instanceof CasaComponent)) {
-            return null;
+        Node node = null;
+        if (widget instanceof CasaModelGraphScene) {
+            node = mScene.getNodeFactory().createModelNode(mModel);
+        } else {
+            Object widgetData = mScene.findObject(mWidget);
+            if (widgetData instanceof CasaComponent) {
+                node = mScene.getNodeFactory().createNodeFor((CasaComponent) widgetData);
+            }
         }
-        CasaComponent component = (CasaComponent) widgetData;
         
         boolean hasActions = false;
         JPopupMenu popupMenu = new JPopupMenu();
-        Node node = mScene.getNodeFactory().createNode(component);
-        Action[] actions = node.getActions(true);
-        for (Action action : actions) {
-            if (action instanceof AbstractAction) {
-                popupMenu.add(action);
-                hasActions = true;
-            } else if (action instanceof NodeAction) {
-                // Cannot add a NodeAction directly to a popup menu.
-                JMenuItem menuItem = new JMenuItem();
-                popupMenu.add(menuItem);
-                Actions.connect(menuItem, action);
-                hasActions = true;
+        
+        if (node instanceof CasaNode) {
+            CasaNode casaNode = (CasaNode) node;
+            Action[] actions = node.getActions(true);
+            for (Action action : actions) {
+                Point sceneLocation = widget.convertLocalToScene(localLocation);
+                if (casaNode.isValidSceneActionForLocation(action, widget, sceneLocation)) {
+                    if (action instanceof AbstractAction) {
+                        popupMenu.add(action);
+                        hasActions = true;
+                    } else if (action instanceof NodeAction) {
+                        // Cannot add a NodeAction directly to a popup menu.
+                        JMenuItem menuItem = new JMenuItem();
+                        popupMenu.add(menuItem);
+                        Actions.connect(menuItem, action);
+                        hasActions = true;
+                    }
+                }
             }
         }
         

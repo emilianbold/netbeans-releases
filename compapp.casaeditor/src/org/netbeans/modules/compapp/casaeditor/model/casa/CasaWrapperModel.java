@@ -38,28 +38,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaImpl;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Connection;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.ConnectionEnd;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Connections;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Consumer;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Consumes;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Endpoint;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Identification;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIComponent;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIComponentFactory;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModelFactory;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JarCatalogModel;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Provider;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Provides;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.ServiceAssembly;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.ServiceUnit;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Services;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Target;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaModelImpl;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
-import org.netbeans.modules.compapp.casaeditor.model.visitor.FindJBIComponentVisitor;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
@@ -74,8 +56,6 @@ import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplateG
 import org.netbeans.modules.xml.wsdl.ui.wizard.BindingGenerator;
 import org.netbeans.modules.xml.wsdl.ui.wizard.WizardBindingConfigurationStep;
 import org.netbeans.modules.xml.wsdl.ui.spi.ValidationInfo;
-import org.netbeans.modules.xml.xam.ComponentEvent;
-import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
@@ -99,23 +79,23 @@ import org.w3c.dom.Node;
  */
 public class CasaWrapperModel extends CasaModelImpl {
     
-    public static final String PROPERTY_PREFIX               = "model_property_";
-    public static final String PROPERTY_MODEL_RELOAD         = PROPERTY_PREFIX + "reload";
-    public static final String PROPERTY_CONNECTION_REMOVED   = PROPERTY_PREFIX + "connection_removed";
-    public static final String PROPERTY_CONNECTION_ADDED     = PROPERTY_PREFIX + "connection_added";
-    public static final String PROPERTY_CASA_PORT_REMOVED    = PROPERTY_PREFIX + "casa_port_removed";
-    public static final String PROPERTY_CASA_PORT_ADDED      = PROPERTY_PREFIX + "casa_port_added";
-    public static final String PROPERTY_ENDPOINT_REMOVED     = PROPERTY_PREFIX + "endpoint_removed";
-    public static final String PROPERTY_ENDPOINT_ADDED       = PROPERTY_PREFIX + "endpoint_added";
-    public static final String PROPERTY_ENDPOINT_RENAMED     = PROPERTY_PREFIX + "endpoint_renamed";
-    public static final String PROPERTY_SERVICE_UNIT_RENAMED = PROPERTY_PREFIX + "service_unit_renamed";
-    public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_ADDED   = PROPERTY_PREFIX + "service_unit_added";
-    public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED = PROPERTY_PREFIX + "service_unit_removed";
+    public static final String PROPERTY_PREFIX               = "model_property_";                           // NOI18N
+    public static final String PROPERTY_MODEL_RELOAD         = PROPERTY_PREFIX + "reload";                  // NOI18N
+    public static final String PROPERTY_CONNECTION_REMOVED   = PROPERTY_PREFIX + "connection_removed";      // NOI18N
+    public static final String PROPERTY_CONNECTION_ADDED     = PROPERTY_PREFIX + "connection_added";        // NOI18N
+    public static final String PROPERTY_CASA_PORT_REMOVED    = PROPERTY_PREFIX + "casa_port_removed";       // NOI18N
+    public static final String PROPERTY_CASA_PORT_ADDED      = PROPERTY_PREFIX + "casa_port_added";         // NOI18N
+    public static final String PROPERTY_ENDPOINT_REMOVED     = PROPERTY_PREFIX + "endpoint_removed";        // NOI18N
+    public static final String PROPERTY_ENDPOINT_ADDED       = PROPERTY_PREFIX + "endpoint_added";          // NOI18N
+    public static final String PROPERTY_ENDPOINT_RENAMED     = PROPERTY_PREFIX + "endpoint_renamed";        // NOI18N
+    public static final String PROPERTY_SERVICE_UNIT_RENAMED = PROPERTY_PREFIX + "service_unit_renamed";    // NOI18N
+    public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_ADDED   = PROPERTY_PREFIX + "service_unit_added";   // NOI18N
+    public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED = PROPERTY_PREFIX + "service_unit_removed"; // NOI18N
     
-    private static final String CASA_WSDL_RELATIVE_LOCATION = "../jbiasa/";
-    private static final String CASA_WSDL_FILENAME = "casa.wsdl";
-    private static final String JBI_SERVICE_UNITS_DIR = "jbiServiceUnits";
-    private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";
+    private static final String CASA_WSDL_RELATIVE_LOCATION = "../jbiasa/";                         // NOI18N
+    private static final String CASA_WSDL_FILENAME = "casa.wsdl";                                   // NOI18N
+    private static final String JBI_SERVICE_UNITS_DIR = "jbiServiceUnits";                          // NOI18N
+    private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";                          // NOI18N
     
     private static JarCatalogModel acm = new JarCatalogModel();
     private static CatalogWriteModel catalogModel;
@@ -209,8 +189,21 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
         //assert endpoint != null;
         if (endpointRef == null) // TMP
-            return "getEndpointName=null, Uh?";
+            return "getEndpointName=null, Uh?";         // NOI18N
         return endpointRef.getEndpoint().get().getEndpointName();
+    }
+
+    public void setEndpointName(CasaPort casaPort, String endpointName) { // Move me to CasaPort
+        CasaEndpointRef endpointRef = casaPort.getConsumes();
+        if (endpointRef == null) {
+            endpointRef = casaPort.getProvides();
+        }
+        assert endpointRef != null;
+        setEndpointName(casaPort, endpointRef, endpointName);
+    }
+
+    public void setEndpointName(CasaEndpointRef endpointRef, String endpointName) {
+        setEndpointName(endpointRef, endpointRef, endpointName);
     }
     
     public String getBindingComponentName(CasaPort casaPort) { // Move me to CasaPort
@@ -256,7 +249,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         WSDLComponent wsdlComponent = (WSDLComponent) cachedReferences.get(linkHref);
         
         if (wsdlComponent == null) {
-            String regex = "(.*)#xpointer\\((.*)\\)";
+            String regex = "(.*)#xpointer\\((.*)\\)";       // NOI18N
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(linkHref);
             
@@ -743,9 +736,9 @@ public class CasaWrapperModel extends CasaModelImpl {
                 null, null));
     }
     
-    private void fireCasaEndpointRenamed(CasaEndpointRef casaEndpointRef) {
+    private void fireCasaEndpointRenamed(CasaComponent casaComponent) {
         firePropertyChangeEvent(new PropertyChangeEvent(
-                casaEndpointRef,
+                casaComponent,
                 PROPERTY_ENDPOINT_RENAMED,
                 null, null));
     }
@@ -1661,7 +1654,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             mAddProjects.put(projectName, project); // todo: needs to fix duplicate proj names..
         }
         
-        addEngineServiceUnit(projectName, trimVersion(type),
+        addEngineServiceUnit(projectName, type, // trimVersion(type),
                 true,  // is internal SESU
                 false, // is known
                 x, y);
@@ -1789,6 +1782,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             return "FIXME: getServiceUnitComponentName"; // TMP
         }
         String componentName = su.getTarget().getComponentName();
+        /*
         int javaPackageNameIndex = componentName.lastIndexOf('.') + 1;
         if (javaPackageNameIndex > 0 && javaPackageNameIndex < componentName.length()) {
             // Assume java package naming scheme: com.foo.myse-version
@@ -1804,8 +1798,10 @@ public class CasaWrapperModel extends CasaModelImpl {
             } else {
                 componentName = componentName.substring(javaPackageNameIndex).toUpperCase();
             }
+            componentName = componentName.substring(javaPackageNameIndex).toUpperCase();
         }
-        return componentName;
+        */
+        return componentName.toUpperCase();
     }
     
     // TMP: remove me
@@ -1822,7 +1818,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Gets the owning compapp project.
      */
-    private Project getJBIProject() throws IOException {
+    public Project getJBIProject() throws IOException {
         ModelSource modelSource = getModelSource();
         Lookup lookup = modelSource.getLookup();
         FileObject casaFO = (FileObject) lookup.lookup(FileObject.class);
@@ -2305,7 +2301,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Sets name of an endpoint.
      */
-    public void setEndpointName(CasaEndpointRef endpointRef, String endpointName) {
+    private void setEndpointName(CasaComponent component, CasaEndpointRef endpointRef, String endpointName) {
         CasaEndpoint casaEndpoint = endpointRef.getEndpoint().get();
        
         if (!casaEndpoint.getEndpointName().equals(endpointName)) {
@@ -2314,7 +2310,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 casaEndpoint.setEndpointName(endpointName);
             } finally {
                 if (isIntransaction()) {
-                    fireCasaEndpointRenamed(endpointRef);
+                    fireCasaEndpointRenamed(component);
                     endTransaction();
                 }
             }
@@ -2462,3 +2458,5 @@ public class CasaWrapperModel extends CasaModelImpl {
                 null));
     }
 }
+
+

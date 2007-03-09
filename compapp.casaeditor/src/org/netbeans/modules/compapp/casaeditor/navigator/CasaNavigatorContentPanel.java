@@ -70,7 +70,7 @@ implements ExplorerManager.Provider, HelpCtx.Provider, Runnable, PropertyChangeL
     private TreeView treeView;
     
     private final JLabel notAvailableLabel = new JLabel(
-            NbBundle.getMessage(CasaNavigatorContentPanel.class, "MSG_NotAvailable"));
+            NbBundle.getMessage(CasaNavigatorContentPanel.class, "MSG_NotAvailable"));  // NOI18N
     
     
     public CasaNavigatorContentPanel() {
@@ -87,7 +87,7 @@ implements ExplorerManager.Provider, HelpCtx.Provider, Runnable, PropertyChangeL
         
         notAvailableLabel.setHorizontalAlignment(SwingConstants.CENTER);
         notAvailableLabel.setEnabled(false);
-        Color usualWindowBkg = UIManager.getColor("window"); //NOI18N
+        Color usualWindowBkg = UIManager.getColor("window"); // NOI18N   
         notAvailableLabel.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
         // to ensure our background color will have effect
         notAvailableLabel.setOpaque(true);
@@ -185,7 +185,7 @@ implements ExplorerManager.Provider, HelpCtx.Provider, Runnable, PropertyChangeL
     
     private void showNavTree(boolean showImmediately) {
         removeAll();
-        Node rootNode = mNodeFactory.createNode(mCasaModel);
+        Node rootNode = mNodeFactory.createModelNode(mCasaModel);
         myExplorerManager.setRootContext(rootNode);
         add(treeView, BorderLayout.CENTER);
         if (showImmediately) {

@@ -17,15 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CasaCommonAcceptProvider.java
- *
- * Created on January 22, 2007, 3:03 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.awt.Image;
@@ -46,47 +37,32 @@ import org.openide.nodes.Node;
 public class CasaCommonAcceptProvider implements CasaAcceptProvider {
     
     private CasaModelGraphScene mScene;
-    
-    private Image mIconImage;
+    private Image mIconImage = null;
     private String mIconLable;
     
     
-    /** Creates a new instance of CasaCommonAcceptProvider */
     public CasaCommonAcceptProvider(CasaModelGraphScene scene) {
         mScene = scene;
+        mIconImage = null;
     }
+    
 
     public CasaModelGraphScene getScene() {
         return mScene;
     }
     
-    public void createIcon(Transferable t) {
-        try {
-            if (t != null) {
-                for (DataFlavor flavor : t.getTransferDataFlavors()) {
-                    Class repClass = flavor.getRepresentationClass();
-                    Object data = t.getTransferData(flavor);
-                    if (Node.class.isAssignableFrom(repClass)) {
-                        Node node = (Node) data;
-                        mIconLable = "    " + node.getName();
-                        mIconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
-                        // DnD from palette
-                        IconNodeWidget iconNodeWidget = new IconNodeWidget(mScene);
-                        iconNodeWidget.setOpaque(false);
-                        if(mScene.getDragLayer().getChildren().size() < 1) {
-                            mScene.getDragLayer().addChild(iconNodeWidget);
-                        }
-                        break;
-                    }
-                }
-            }
-        } catch (Exception ex) {
-        }
+    public void acceptFinished() {
+        mScene.getDragLayer().removeChildren();
+        mIconImage = null;
+    }   
+    
+    public void acceptStarted(Transferable t) {
+        populateIconInfo(t);
     }
     
     public void positionIcon(Widget widget, Point point, ConnectorState state) {
         boolean bValue = state == ConnectorState.REJECT ? false : true;
-        if(mScene.getDragLayer().getChildren().size() > 0) {
+        if (mScene.getDragLayer().getChildren().size() > 0) {
             IconNodeWidget iconNodeWidget = (IconNodeWidget) mScene.getDragLayer().getChildren().get(0);
             iconNodeWidget.setImage(bValue ? mIconImage : null);
             iconNodeWidget.setLabel(bValue ? mIconLable : null);
@@ -94,15 +70,37 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
         }
     }
     
-    public void removeIcon() {
-        mScene.getDragLayer().removeChildren();
-    }
-    
     public ConnectorState isAcceptable (Widget widget, Point point, Transferable transferable){
         return ConnectorState.REJECT;
     }
+    
     public void accept(Widget widget, Point point, Transferable transferable) {
-        
     }
     
+    protected void populateIconInfo(Transferable t) {
+        if((mIconImage == null) || (mScene.getDragLayer().getChildren().size() < 1)) {
+            try {
+                if (t != null) {
+                    for (DataFlavor flavor : t.getTransferDataFlavors()) {
+                        Class repClass = flavor.getRepresentationClass();
+                        Object data = t.getTransferData(flavor);
+                        if (Node.class.isAssignableFrom(repClass)) {
+                            Node node = (Node) data;
+                            mIconLable = "    " + node.getName();   // NOI18N
+                            mIconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
+                            // DnD from palette
+                            IconNodeWidget iconNodeWidget = new IconNodeWidget(mScene);
+                            iconNodeWidget.setOpaque(false);
+                            if(mScene.getDragLayer().getChildren().size() < 1) {
+                                mScene.getDragLayer().addChild(iconNodeWidget);
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
+    }
 }

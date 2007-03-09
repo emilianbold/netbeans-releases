@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.util.Map;
 
 import javax.management.Attribute;
+import javax.management.MBeanAttributeInfo;
 
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceUnitStatus;
@@ -54,10 +55,9 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
      *
      * @return A java.util.Map containing all JVM properties.
      */
-    protected Map getSheetProperties() {
+    protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {
         JBIServiceUnitStatus serviceUnit = getServiceUnitStatus();
-        Map map = Utils.getIntrospectedPropertyMap(serviceUnit, true);
-        return map;
+        return Utils.getIntrospectedPropertyMap(serviceUnit, true);
     }
     
     /**
@@ -74,7 +74,8 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
     private JBIServiceUnitStatus getServiceUnitStatus() {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
         String assemblyName = getParentNode().getName();
-        return controller.getJBIServiceUnitStatus(assemblyName, getName());
+        return controller.getJBIAdministrationService().
+                getServiceUnitStatus(assemblyName, getName());
     }
     
     /**

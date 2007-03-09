@@ -19,22 +19,29 @@
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
+import java.awt.Point;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.NodeDeleteAction;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.ErrorManager;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * This class represents the base class for Casa related nodes.
@@ -47,18 +54,23 @@ public abstract class CasaNode<T> extends AbstractNode
     private static Map<Object, Image> mImageMap = new HashMap<Object, Image>();
 
     
-    public CasaNode(Object data, Lookup lookup) {
-        this(data, Children.LEAF, lookup);
+    public CasaNode() {
+        super(Children.LEAF);
+    }
+
+    public CasaNode(Object data, Children children, CasaNodeFactory factory) {
+        this(data, children, factory.createInstanceContent());
     }
     
-    public CasaNode(Object data, Children children, Lookup lookup) {
-        super(children, lookup);
+    private CasaNode(Object data, Children children, InstanceContent content) {
+        super(children, new AbstractLookup(content));
         mDataReference = new WeakReference(data);
+        content.add(new SaveCookieDelegate());
     }
+    
     
     /**
      * Looks for the Properties Set by the Group enum.
-     * If the group isn't
      */
     protected Sheet.Set getPropertySet(
             Sheet sheet, 
@@ -86,6 +98,10 @@ public abstract class CasaNode<T> extends AbstractNode
         return null;
     }
     
+    public CasaDataObject getDataObject() {
+        return (CasaDataObject) getLookup().lookup(CasaDataObject.class);
+    }
+        
     public CasaWrapperModel getModel() {
         return (CasaWrapperModel) getLookup().lookup(CasaWrapperModel.class);
     }
@@ -112,8 +128,16 @@ public abstract class CasaNode<T> extends AbstractNode
         return (Action[]) actions.toArray(new Action[actions.size()]);
     }
     
+    /**
+     * If this action is invoked from the graph, this method will be called to determine
+     * if the graph location in context is valid for the given action.
+     */
+    public boolean isValidSceneActionForLocation(Action action, Widget widget, Point sceneLocation) {
+        return true;
+    }
+    
     protected String getBadName() {
-        return NbBundle.getMessage(PropertyUtils.class, "PROP_ERROR_VALUE");
+        return NbBundle.getMessage(PropertyUtils.class, "PROP_ERROR_VALUE");    // NOI18N
     }
     
     protected final Sheet createSheet() {
@@ -130,5 +154,20 @@ public abstract class CasaNode<T> extends AbstractNode
     
     protected void setupPropertySheet(Sheet sheet) {
         // Subclasses can intialize the sheet if desired.
+    }
+    
+    
+    
+    class SaveCookieDelegate implements SaveCookie {
+        public void save() throws IOException {
+            DataObject dobj = getDataObject();
+            // May be null if component was removed from the model.
+            if (dobj != null) {
+                SaveCookie cookie = (SaveCookie) dobj.getCookie(SaveCookie.class);
+                if (cookie != null) {
+                    cookie.save();
+                }
+            }
+        }
     }
 }

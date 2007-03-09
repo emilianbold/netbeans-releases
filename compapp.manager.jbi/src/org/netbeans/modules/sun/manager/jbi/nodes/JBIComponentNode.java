@@ -59,15 +59,47 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     private boolean busy;
     
     private JBIComponentStatus cachedComponentStatus;
+    private String compType;
     
     public JBIComponentNode(final AppserverJBIMgmtController controller,
-            final String nodeType,
-            final String name,
-            final String description) {
+            String compType, String nodeType, String name, String description) {
         super(controller, nodeType);
         setName(name);
         setDisplayName(name);
         setShortDescription(description);
+        this.compType = compType;
+    }
+    
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+        
+        // Augment the general property sheet   
+        try {
+            Sheet.Set sheetSet = createSheetSet("Identification", // NOI18N
+                    "LBL_IDENTIFICATION_PROPERTIES", // NOI18N
+                    "DSC_IDENTIFICATION_PROPERTIES", // NOI18N
+                    getIdentificationProperties());
+            sheet.put(sheetSet);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        try {
+            Sheet.Set sheetSet = createSheetSet("Configuration", // NOI18N
+                    "LBL_CONFIG_PROPERTIES", // NOI18N
+                    "DSC_CONFIG_PROPERTIES", // NOI18N
+                    getConfigurationProperties());
+            sheet.put(sheetSet);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return sheet;
+    }
+        
+    protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {
+        JBIComponentStatus jbiComponent = getJBIComponentStatus();
+        return Utils.getIntrospectedPropertyMap(jbiComponent, true);        
     }
     
     /**
@@ -75,26 +107,20 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      * @return A java.util.Map containing all JBIComponent properties.
      */
-    protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {
-        JBIComponentStatus jbiComponent = getJBIComponentStatus();
-        Map<Attribute, MBeanAttributeInfo> map = Utils.getIntrospectedPropertyMap(jbiComponent, true);
-        
+    private Map<Attribute, MBeanAttributeInfo> getIdentificationProperties() 
+    throws Exception {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
-        
-        try {
-            String containerType = getContainerType();
-            Map<Attribute, MBeanAttributeInfo> configMap = 
-                    controller.getJBIComponentConfigProperties(containerType, getName(), true);
-            if (configMap != null) {
-                map.putAll(configMap);
-            }
-        } catch (Exception e) {
-            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-        }
-        return map;
+        return getIdentificationProperties(controller, true);
     }
+    
+    private Map<Attribute, MBeanAttributeInfo> getConfigurationProperties() 
+    throws Exception {
+        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+        String containerType = getContainerType();
+        String name = getName();
+        return controller.getJBIComponentConfigProperties(
+                containerType, name, true);
+    }   
     
     /**
      * Sets the property as an attribute to the underlying AMX mbeans. It
@@ -186,7 +212,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     private JBIComponentStatus getJBIComponentStatus(boolean cached) {
         if (cachedComponentStatus == null || !cached) {
             cachedComponentStatus =
-                    getAppserverJBIMgmtController().getJBIComponentStatus(getName());
+                    getAppserverJBIMgmtController().getJBIAdministrationService().
+                    getJBIComponentStatus(compType, getName());
         }
         
         return cachedComponentStatus;
@@ -257,10 +284,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                             GenericConstants.START_COMPONENT_OPERATION_NAME,
                             componentName, result);
                     setBusy(false);
+                    updatePropertySheet();
                 }
-            });
-            
-            updatePropertySheet();
+            });            
         }
     }
     
@@ -305,10 +331,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                             GenericConstants.STOP_COMPONENT_OPERATION_NAME,
                             componentName, result);
                     setBusy(false);
+                    updatePropertySheet();
                 }
-            });
-            
-            updatePropertySheet();
+            });            
         }
     }
     
@@ -318,13 +343,18 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public boolean canShutdown() {
-        return !busy && JBIComponentStatus.STOPPED_STATE.equals(getState(true)); // cached
+        return canStop() ||
+                !busy && JBIComponentStatus.STOPPED_STATE.equals(getState(true)); // cached
     }
     
     /**
      *
      */
     public void shutdown() {
+        if (canStop()) {
+            stop();
+        }
+        
         AdministrationService adminService =
                 getAppserverJBIMgmtController().getJBIAdministrationService();
         
@@ -353,10 +383,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                             GenericConstants.SHUTDOWN_COMPONENT_OPERATION_NAME,
                             componentName, result);
                     setBusy(false);
+                    updatePropertySheet();
                 }
-            });
-            
-            updatePropertySheet();
+            });            
         }
     }
     
@@ -366,13 +395,18 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public boolean canUninstall() {
-        return !busy && JBIComponentStatus.INSTALLED_STATE.equals(getState(true)); // cached
+        return canShutdown() ||
+                !busy && JBIComponentStatus.INSTALLED_STATE.equals(getState(true)); // cached
     }
     
     /**
      *
      */
     public void uninstall() {
+        if (canShutdown()) {
+            shutdown();
+        }
+        
         AdministrationService adminService =
                 getAppserverJBIMgmtController().getJBIAdministrationService();
         
@@ -407,10 +441,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                             GenericConstants.UNINSTALL_COMPONENT_OPERATION_NAME,
                             componentName, result);
+                    //updatePropertySheet();
                 }
-            });
-            
-            updatePropertySheet();
+            });            
         }
     }
     
@@ -431,6 +464,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     protected abstract String uninstallComponent(
             AdministrationService adminService, String componentName);
     
+    protected abstract Map<Attribute, MBeanAttributeInfo> getIdentificationProperties(
+            AppserverJBIMgmtController controller, boolean sort) throws Exception;
+    
     //==========================================================================
     
     
@@ -441,12 +477,13 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      * Node class for a Service Engine.
      */
     public static class ServiceEngine extends JBIComponentNode {
-        
-        private static final String NODE_TYPE = NodeTypes.SERVICE_ENGINE;
-        
+                
         public ServiceEngine(final AppserverJBIMgmtController controller,
-                final String name, final String description) {
-            super(controller, NODE_TYPE, name, description);
+                String name, String description) {
+            super(controller, 
+                    JBIComponentStatus.ENGINE_TYPE,
+                    NodeTypes.SERVICE_ENGINE, 
+                    name, description);
         }
         
         public Action[] getActions(boolean flag) {
@@ -488,6 +525,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         protected String getUninstallProgressLabel() {
             return "LBL_Uninstalling_Service_Engine";   // NOI18N
         }
+        
+        protected Map<Attribute, MBeanAttributeInfo> getIdentificationProperties(
+                AppserverJBIMgmtController controller, boolean sort) throws Exception {
+            return controller.getJBIComponentIdentificationProperties(getName(), sort);
+        }
     }
     
     //==========================================================================
@@ -496,12 +538,13 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      * Node class for a Binding Component.
      */
     public static class BindingComponent extends JBIComponentNode {
-        
-        private static final String NODE_TYPE = NodeTypes.BINDING_COMPONENT;
-        
+                
         public BindingComponent(final AppserverJBIMgmtController controller,
-                final String name, final String description) {
-            super(controller, NODE_TYPE, name, description);
+                String name, String description) {
+            super(controller, 
+                    JBIComponentStatus.BINDING_TYPE, 
+                    NodeTypes.BINDING_COMPONENT, 
+                    name, description);
         }
         
         public Action[] getActions(boolean flag) {
@@ -543,6 +586,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         protected String getUninstallProgressLabel() {
             return "LBL_Uninstalling_Binding_Component";    // NOI18N
         }
+        
+        protected Map<Attribute, MBeanAttributeInfo> getIdentificationProperties(
+                AppserverJBIMgmtController controller, boolean sort) throws Exception {
+            return controller.getJBIComponentIdentificationProperties(getName(), sort);
+        }
     }
     
     //==========================================================================
@@ -552,11 +600,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      */
     public static class SharedLibrary extends JBIComponentNode {
         
-        private static final String NODE_TYPE = NodeTypes.SHARED_LIBRARY;
-        
         public SharedLibrary(final AppserverJBIMgmtController controller,
-                final String name, final String description) {
-            super(controller, NODE_TYPE, name, description);
+                String name, String description) {
+            super(controller, 
+                    JBIComponentStatus.NAMESPACE_TYPE,
+                    NodeTypes.SHARED_LIBRARY, 
+                    name, description);
         }
         
         public Action[] getActions(boolean flag) {
@@ -606,6 +655,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         
         protected String getUnknownIconBadgeName() {
             return null;
+        }
+        
+        protected Map<Attribute, MBeanAttributeInfo> getIdentificationProperties(
+                AppserverJBIMgmtController controller, boolean sort) throws Exception {
+            return controller.getSharedLibraryIdentificationProperties(getName(), sort);
         }
     }
 }

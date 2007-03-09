@@ -43,7 +43,7 @@ public class CasaCustomizerRegistor {
     }
 
     public void propagateChange() {
-        PropertyChangeEvent pce = new PropertyChangeEvent(this, CasaCustomizer.PROPERTY_CHANGE, "", "");
+        PropertyChangeEvent pce = new PropertyChangeEvent(this, CasaCustomizer.PROPERTY_CHANGE, "", "");    // NOI18N
         for (PropertyChangeListener pcl : mWeakListenersMap.keySet()) {
             pcl.propertyChange(pce);
         }

@@ -17,15 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CasaPaletteAcceptAction.java
- *
- * Created on January 16, 2007, 2:59 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.awt.dnd.DnDConstants;
@@ -39,7 +30,7 @@ import org.netbeans.api.visual.widget.Widget;
 /**
  * For better visual display of showing icon/name along the cursor for DND,
  * access to the WidgetAction.Adapter is needed.
- * Its best to extend from AcceptAction class, but as that calss is declared asfinal,
+ * Its best to extend from AcceptAction class, but as that class is declared asfinal,
  * there is no option left other than to copy/paste AcceptAction code here. 
  * @author rdara
  */
@@ -53,7 +44,6 @@ public class CasaPaletteAcceptAction extends WidgetAction.Adapter {
 
     public State dragOver (Widget widget, WidgetDropTargetDragEvent event) {
         ConnectorState acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
-        provider.createIcon(event.getTransferable());
         provider.positionIcon(widget, event.getPoint(), acceptable);
         if (acceptable == ConnectorState.ACCEPT) {
             event.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
@@ -67,7 +57,7 @@ public class CasaPaletteAcceptAction extends WidgetAction.Adapter {
 
     public State dropActionChanged (Widget widget, WidgetDropTargetDragEvent event) {
         ConnectorState acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
-        provider.createIcon(event.getTransferable());
+        //provider.acceptStarted(event.getTransferable());
         provider.positionIcon(widget, event.getPoint(), acceptable);
         if (acceptable == ConnectorState.ACCEPT) {
             event.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
@@ -81,7 +71,7 @@ public class CasaPaletteAcceptAction extends WidgetAction.Adapter {
 
     public State drop (Widget widget, WidgetDropTargetDropEvent event) {
         ConnectorState acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
-        provider.removeIcon();
+        provider.acceptFinished();
         if (acceptable == ConnectorState.ACCEPT)
             provider.accept (widget, event.getPoint (), event.getTransferable ());
 
@@ -95,29 +85,26 @@ public class CasaPaletteAcceptAction extends WidgetAction.Adapter {
         return State.REJECTED;
     }
     
-        /**
-         * Called for handling a dragEnter event.
-         * @param widget the widget where the action is assigned
-         * @param event  the drop target drag event
-         * @return the event state
-         */
-        public State dragEnter (Widget widget, WidgetDropTargetDragEvent event) {
-            provider.createIcon(event.getTransferable());
-            provider.positionIcon(widget, event.getPoint(), ConnectorState.REJECT);
-            return State.REJECTED;
-        }
+    /**
+     * Called for handling a dragEnter event.
+     * @param widget the widget where the action is assigned
+     * @param event  the drop target drag event
+     * @return the event state
+     */
+    public State dragEnter(Widget widget, WidgetDropTargetDragEvent event) {
+        provider.acceptStarted(event.getTransferable());
+        provider.positionIcon(widget, event.getPoint(), ConnectorState.REJECT);
+        return State.REJECTED;
+    }
     
-
-        /**
-         * Called for handling a dragExit event.
-         * @param widget the widget where the action is assigned
-         * @param event  the drop target event
-         * @return the event state
-         */
-        public State dragExit (Widget widget, WidgetDropTargetEvent event) {
-            provider.removeIcon();
-            return State.REJECTED;
-        }
-    
-    
+    /**
+     * Called for handling a dragExit event.
+     * @param widget the widget where the action is assigned
+     * @param event  the drop target event
+     * @return the event state
+     */
+    public State dragExit(Widget widget, WidgetDropTargetEvent event) {
+        provider.acceptFinished();
+        return State.REJECTED;
+    }
 }

@@ -91,11 +91,9 @@ public class JBINode extends AppserverJBIMgmtContainerNode {
      *
      * @return A java.util.Map containing all JVM properties.
      */
-    protected Map getSheetProperties() {                
+    protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {                
         JBIFrameworkService frameworkService = getJBIFrameworkService();
-        Map<Attribute, MBeanAttributeInfo> map = Utils.getIntrospectedPropertyMap(frameworkService, true);
-       
-        return map;
+        return Utils.getIntrospectedPropertyMap(frameworkService, true);
     }
   
     // FIXME

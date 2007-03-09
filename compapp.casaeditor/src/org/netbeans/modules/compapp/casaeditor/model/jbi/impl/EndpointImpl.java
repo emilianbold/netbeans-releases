@@ -19,15 +19,13 @@
 package org.netbeans.modules.compapp.casaeditor.model.jbi.impl;
 
 import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.Endpoint;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.Consumes;
-import org.netbeans.modules.compapp.casaeditor.model.visitor.JBIVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.Provides;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.w3c.dom.Element;
-
-import java.util.Map;
 
 /**
  *
@@ -105,7 +103,7 @@ public abstract class EndpointImpl extends JBIComponentImpl implements Endpoint 
             existingPrefix = root.lookupPrefix(namespace);
             if (existingPrefix == null) {
                 if (prefix == null) {
-                    prefix = "ns"; //NOI18N
+                    prefix = "ns"; // NOI18N
                 }
                 prefix = ensureUnique(prefix, namespace);
                 root.addPrefix(prefix, namespace);
@@ -116,7 +114,7 @@ public abstract class EndpointImpl extends JBIComponentImpl implements Endpoint 
             prefix = existingPrefix;
         }
 
-        setServiceName(prefix + ":" + localPart);
+        setServiceName(prefix + Constants.COLON_STRING + localPart);
     }
 
     public void setInterfaceQName(QName qname) {
@@ -131,7 +129,7 @@ public abstract class EndpointImpl extends JBIComponentImpl implements Endpoint 
             existingPrefix = root.lookupPrefix(namespace);
             if (existingPrefix == null) {
                 if (prefix == null) {
-                    prefix = "ns"; //NOI18N
+                    prefix = "ns"; // NOI18N
                 }
                 prefix = ensureUnique(prefix, namespace);
                 root.addPrefix(prefix, namespace);
@@ -142,6 +140,6 @@ public abstract class EndpointImpl extends JBIComponentImpl implements Endpoint 
             prefix = existingPrefix;
         }
 
-        setInterfaceName(prefix + ":" + localPart);
+        setInterfaceName(prefix + Constants.COLON_STRING + localPart);
     }
 }

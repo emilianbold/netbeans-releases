@@ -19,6 +19,8 @@
 package org.netbeans.modules.compapp.casaeditor.properties;
 
 
+import org.netbeans.modules.compapp.casaeditor.Constants;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceUnit;
 //import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
@@ -61,12 +63,12 @@ public abstract class PropertyUtils {
     
     public static Node.Property createErrorProperty(String displayName) {
         return new PropertySupport.ReadOnly(
-            "error", // NO18N
+            "error", // NOI18N
             String.class,
             displayName,
-            "") {
+            Constants.EMPTY_STRING) {
             public String getValue() {
-                return NbBundle.getMessage(PropertyUtils.class, "PROP_ERROR_VALUE");
+                return NbBundle.getMessage(PropertyUtils.class, "PROP_ERROR_VALUE");    // NOI18N
             }
         };
     }
@@ -117,16 +119,16 @@ public abstract class PropertyUtils {
         }
     }
     
-    public static void installEndpointEndpointNameProperty(
+    public static void installEndpointNameProperty(
             Sheet.Set propertySet, 
             CasaNode node,
-            CasaEndpointRef component,
+            CasaComponent component,
             String propertyType, 
             String attributeName,
             String displayName,
             String displayDescription) {
         try {
-            Node.Property property = new PropertyEndpointEndpointName(
+            Node.Property property = new PropertyEndpointName(
                 node, 
                 component, 
                 propertyType, 

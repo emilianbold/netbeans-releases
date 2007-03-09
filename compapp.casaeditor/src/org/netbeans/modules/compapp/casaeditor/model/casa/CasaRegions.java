@@ -25,9 +25,7 @@ import java.util.List;
  * @author jqian
  */
 public interface CasaRegions extends CasaComponent {    
-    public static final String REGION_PROPERTY = "region";
+    public static final String REGION_PROPERTY = "region";              // NOI18N
     
     List<CasaRegion> getRegions();
-//    void addRegion(int index, CasaRegion region);
-//    void removeRegion(CasaRegion region);
 }

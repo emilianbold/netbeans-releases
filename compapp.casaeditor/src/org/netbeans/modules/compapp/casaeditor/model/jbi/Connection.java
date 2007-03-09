@@ -23,8 +23,8 @@ package org.netbeans.modules.compapp.casaeditor.model.jbi;
  * @author jqian
  */
 public interface Connection extends JBIComponent {
-    public static final String PROVIDER_PROPERTY = "provider";
-    public static final String CONSUMER_PROPERTY = "consumer";
+    public static final String PROVIDER_PROPERTY = "provider";  // NOI18N
+    public static final String CONSUMER_PROPERTY = "consumer";  // NOI18N
     
     Provider getProvider();
     void setProvider(Provider provider);

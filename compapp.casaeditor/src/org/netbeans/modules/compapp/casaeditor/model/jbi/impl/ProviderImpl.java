@@ -18,10 +18,11 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.jbi.impl;
 
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
 import org.netbeans.modules.compapp.casaeditor.model.visitor.JBIVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.Provider;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 
 /**
@@ -45,11 +46,29 @@ public class ProviderImpl extends ConnectionEndImpl implements Provider {
     
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Provider: service-name=\"");
+        //sb.append("Provider: service-name=\"");
+        sb.append(NbBundle.getMessage(getClass(), "Provider"));     // NOI18N
+        sb.append(Constants.COLON_STRING);
+        sb.append(Constants.SPACE);
+        sb.append(NbBundle.getMessage(getClass(), "service-name"));     // NOI18N
+        sb.append(Constants.EQUAL_TO);
+        sb.append(Constants.DOUBLE_QUOTE);
+        
         sb.append(getServiceName());
-        sb.append("\" endpoint-name=\"");
+
+        //sb.append("\" endpoint-name=\"");
+        sb.append(Constants.DOUBLE_QUOTE);
+        sb.append(Constants.SPACE);
+        sb.append(NbBundle.getMessage(getClass(), "endpoint-name"));     // NOI18N
+        sb.append(Constants.EQUAL_TO);
+        sb.append(Constants.DOUBLE_QUOTE);
+        
         sb.append(getEndpointName());
-        sb.append("\"]");
+        
+        //sb.append("\"]");
+        sb.append(Constants.DOUBLE_QUOTE);
+        sb.append(Constants.SQUARE_BRACKET_CLOSE);
+        
         return sb.toString();
     }
 }

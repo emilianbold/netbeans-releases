@@ -25,13 +25,13 @@ import org.netbeans.modules.compapp.casaeditor.model.*;
  * @author jqian
  */
 public interface CasaRegion extends CasaComponent {
-    public static final String NAME_PROPERTY = "name";
-    public static final String WIDTH_PROPERTY = "width";
+    public static final String NAME_PROPERTY = "name";          // NOI18N
+    public static final String WIDTH_PROPERTY = "width";        // NOI18N
     
     public enum Name {
-        WSDL_ENDPOINTS("WSDL Endpoints"),
-        JBI_MODULES("JBI Modules"),
-        EXTERNAL_MODULES("External Modules");
+        WSDL_ENDPOINTS("WSDL Endpoints"),                       // NOI18N
+        JBI_MODULES("JBI Modules"),                             // NOI18N
+        EXTERNAL_MODULES("External Modules");                   // NOI18N
         
         private String name;
         

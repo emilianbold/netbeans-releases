@@ -25,9 +25,9 @@ import java.util.List;
  * @author jqian
  */
 public interface ServiceAssembly extends JBIComponent {
-    public static final String IDENTIFICATION_PROPERTY = "identification";
-    public static final String SERVICE_UNIT_PROPERTY = "service-unit";
-    public static final String CONNECTIONS_PROPERTY = "connections";
+    public static final String IDENTIFICATION_PROPERTY = "identification";  // NOI18N
+    public static final String SERVICE_UNIT_PROPERTY = "service-unit";      // NOI18N
+    public static final String CONNECTIONS_PROPERTY = "connections";        // NOI18N
     
     Identification getIdentification();
     void setIdentification(Identification identification);

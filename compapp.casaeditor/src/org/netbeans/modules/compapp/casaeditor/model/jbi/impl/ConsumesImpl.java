@@ -18,9 +18,11 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.jbi.impl;
 
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.Consumes;
 import org.netbeans.modules.compapp.casaeditor.model.visitor.JBIVisitor;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 
 /**
@@ -44,13 +46,38 @@ public class ConsumesImpl extends EndpointImpl implements Consumes {
        
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Consumes: [interface-name=\"");
+        //sb.append("Consumes: [interface-name=\"");
+        sb.append(NbBundle.getMessage(getClass(), "Consumes"));         // NOI18N
+        sb.append(Constants.COLON_STRING);
+        sb.append(Constants.SPACE);
+        sb.append(Constants.SQUARE_BRACKET_OPEN);
+        sb.append(NbBundle.getMessage(getClass(), "interface-name"));   // NOI18N
+        sb.append(Constants.EQUAL_TO);
+        sb.append(Constants.DOUBLE_QUOTE);
+        
         sb.append(getInterfaceName());
-        sb.append("\" service-name=\"");
+
+        //sb.append("\" service-name=\"");
+        sb.append(Constants.DOUBLE_QUOTE);
+        sb.append(Constants.SPACE);
+        sb.append(NbBundle.getMessage(getClass(), "service-name"));     // NOI18N
+        sb.append(Constants.EQUAL_TO);
+        sb.append(Constants.DOUBLE_QUOTE);
+        
         sb.append(getServiceName());
-        sb.append("\" endpoint-name=\"");
+
+        //sb.append("\" endpoint-name=\"");
+        sb.append(Constants.DOUBLE_QUOTE);
+        sb.append(Constants.SPACE);
+        sb.append(NbBundle.getMessage(getClass(), "endpoint-name"));    // NOI18N
+        sb.append(Constants.EQUAL_TO);
+        sb.append(Constants.DOUBLE_QUOTE);
+        
         sb.append(getEndpointName());
-        sb.append("\"]");
+        //sb.append("\"]");
+        sb.append(Constants.DOUBLE_QUOTE);
+        sb.append(Constants.SQUARE_BRACKET_CLOSE);
+
         return sb.toString();
     }
 }

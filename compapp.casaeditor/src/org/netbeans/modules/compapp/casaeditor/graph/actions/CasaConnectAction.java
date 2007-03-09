@@ -36,12 +36,13 @@ import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaConnectionWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Consumes;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Provides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 
 /**
  * This is a version of ConnectAction that causes the connection
@@ -57,13 +58,14 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
     private Widget interractionLayer;
     private ConnectProvider provider;
 
-    private ConnectionWidget connectionWidget;
+    private ConnectionWidget dragConnectionWidget;
     private Widget connectionSourceWidget;
     private Widget connectionTargetWidget;
     private Point startingPoint;
     
     private CasaModelGraphScene mScene;
     private boolean mIsCommitted;
+    private boolean mIsConnectionHintsSet;
     
 
     public CasaConnectAction(CasaModelGraphScene casaScene, Widget interractionLayer) {
@@ -93,35 +95,8 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
     
         this.provider = new ConnectProvider() {
             
-            // Simply provides a convenient way of grabbing
-            // Consumes/Provides info from the pin widgets.
-            class ConsumesProvides {
-                CasaConsumes mConsumes;
-                CasaProvides mProvides;
-                public ConsumesProvides(Widget sourceWidget, Widget targetWidget)
-                {
-                    if (
-                            sourceWidget instanceof CasaPinWidget &&
-                            targetWidget instanceof CasaPinWidget)
-                    {
-                        Object sourceObject = mScene.findObject(sourceWidget);
-                        Object targetObject = mScene.findObject(targetWidget);
-                        if (sourceObject instanceof CasaConsumes) {
-                            mConsumes = (CasaConsumes) sourceObject;
-                        } else if (sourceObject instanceof CasaProvides) {
-                            mProvides = (CasaProvides) sourceObject;
-                        }
-                        if (targetObject instanceof CasaConsumes) {
-                            mConsumes = (CasaConsumes) targetObject;
-                        } else if (targetObject instanceof CasaProvides) {
-                            mProvides = (CasaProvides) targetObject;
-                        }
-                    }
-                }
-            }
-            
             public void createConnection(Widget sourceWidget, Widget targetWidget) {
-                ConsumesProvides info = new ConsumesProvides(sourceWidget, targetWidget);
+                ConsumesProvides info = new ConsumesProvides(mScene, sourceWidget, targetWidget);
                 if (info.mConsumes != null && info.mProvides != null) {
                     for (CasaConnection connection : mScene.getModel().getCasaConnectionList(false)) {
                         CasaEndpointRef iterConsumes = mScene.getModel().getCasaEndpoint(connection, true);
@@ -148,7 +123,7 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
 
             public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
                 if (targetWidget instanceof CasaPinWidget && sourceWidget != targetWidget) {
-                    ConsumesProvides info = new ConsumesProvides(sourceWidget, targetWidget);
+                    ConsumesProvides info = new ConsumesProvides(mScene, sourceWidget, targetWidget);
                     if (
                             info.mConsumes == null ||
                             info.mProvides == null ||
@@ -182,9 +157,9 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
                 connectionSourceWidget = widget;
                 connectionTargetWidget = null;
                 startingPoint = new Point (event.getPoint ());
-                connectionWidget = decorator.createConnectionWidget (interractionLayer.getScene ());
-                assert connectionWidget != null;
-                connectionWidget.setSourceAnchor (decorator.createSourceAnchor (widget));
+                dragConnectionWidget = decorator.createConnectionWidget (interractionLayer.getScene ());
+                assert dragConnectionWidget != null;
+                dragConnectionWidget.setSourceAnchor (decorator.createSourceAnchor (widget));
                 // Do not lock the state nor consume the event because we have
                 // not yet committed to drawing a connection. The user has only
                 // pressed the mouse button - which does not necessarily mean
@@ -208,13 +183,16 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
         connectionSourceWidget = null;
         connectionTargetWidget = null;
         startingPoint = null;
-        connectionWidget.setSourceAnchor (null);
-        connectionWidget.setTargetAnchor (null);
-        if (interractionLayer.getChildren().contains(connectionWidget)) {
-            interractionLayer.removeChild (connectionWidget);
+        dragConnectionWidget.setSourceAnchor (null);
+        dragConnectionWidget.setTargetAnchor (null);
+        if (interractionLayer.getChildren().contains(dragConnectionWidget)) {
+            interractionLayer.removeChild (dragConnectionWidget);
         }
-        connectionWidget = null;
+        dragConnectionWidget = null;
         mIsCommitted = false;
+        
+        updateConnectionHints();
+        
         return State.CONSUMED;
     }
 
@@ -222,14 +200,19 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
         if (connectionSourceWidget == null || widget != connectionSourceWidget) {
             return State.REJECTED;
         }
+        
         if (!mIsCommitted) {
             // The user has dragged the mouse following the initial
             // mouse press - this commits us to attempting to create
             // a connection.
-            interractionLayer.addChild (connectionWidget);
+            interractionLayer.addChild (dragConnectionWidget);
             mIsCommitted = true;
         }
+        
         move(widget, event.getPoint ());
+        
+        updateConnectionHints();
+        
         return State.createLocked (widget, this);
     }
 
@@ -248,7 +231,7 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
             targetAnchor = decorator.createTargetAnchor (connectionTargetWidget);
         if (targetAnchor == null)
             targetAnchor = decorator.createFloatAnchor (targetSceneLocation);
-        connectionWidget.setTargetAnchor (targetAnchor);
+        dragConnectionWidget.setTargetAnchor (targetAnchor);
     }
 
     private Widget resolveTargetWidgetCore (Scene scene, Point sceneLocation) {
@@ -288,4 +271,65 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
         return true;
     }
 
+    private void updateConnectionHints() {
+        if (
+                connectionSourceWidget != null && 
+                mIsCommitted &&
+                !mIsConnectionHintsSet) {
+            mIsConnectionHintsSet = true;
+            updatePinHighlights((CasaEndpointRef) mScene.findObject(connectionSourceWidget));
+        } else if (connectionSourceWidget == null) {
+            mIsConnectionHintsSet = false;
+            updatePinHighlights(null);
+        }
+    }
+    
+    private void updatePinHighlights(CasaEndpointRef srcRef) {
+        for (CasaComponent node : mScene.getNodes()) {
+            if (
+                    node instanceof CasaPort ||
+                    node instanceof CasaServiceEngineServiceUnit) {
+                for (CasaComponent pin : mScene.getNodePins(node)) {
+                    boolean isHighlighted = false;
+                    CasaPinWidget targPin = (CasaPinWidget) mScene.findWidget(pin);
+                    if (srcRef != null) {
+                        CasaEndpointRef targRef = (CasaEndpointRef) pin;
+                        if (mScene.getModel().canConnect(srcRef, targRef)) {
+                            isHighlighted = true;
+                        }
+                    }
+                    targPin.setHighlighted(isHighlighted);
+                }
+            }
+        }
+    }
+
+    
+    
+    // Simply provides a convenient way of grabbing
+    // Consumes/Provides info from the pin widgets.
+    private static class ConsumesProvides {
+        
+        CasaConsumes mConsumes;
+        CasaProvides mProvides;
+        
+        public ConsumesProvides(CasaModelGraphScene scene, Widget src, Widget targ) {
+            if (
+                    src instanceof CasaPinWidget &&
+                    targ instanceof CasaPinWidget) {
+                Object sourceObject = scene.findObject(src);
+                Object targetObject = scene.findObject(targ);
+                if (sourceObject instanceof CasaConsumes) {
+                    mConsumes = (CasaConsumes) sourceObject;
+                } else if (sourceObject instanceof CasaProvides) {
+                    mProvides = (CasaProvides) sourceObject;
+                }
+                if (targetObject instanceof CasaConsumes) {
+                    mConsumes = (CasaConsumes) targetObject;
+                } else if (targetObject instanceof CasaProvides) {
+                    mProvides = (CasaProvides) targetObject;
+                }
+            }
+        }
+    }
 }

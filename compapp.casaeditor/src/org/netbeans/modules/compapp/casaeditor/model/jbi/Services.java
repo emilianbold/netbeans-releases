@@ -25,9 +25,9 @@ import java.util.List;
  * @author jqian
  */
 public interface Services extends JBIComponent {
-    public static final String BINDING_COMPONENT_PROPERTY = "binding-component"; //JBIDescriptorAttributes.BINDING_COMPONENT.getName();
-    public static final String PROVIDES_PROPERTY = "provides";
-    public static final String CONSUMES_PROPERTY = "consumes";
+    public static final String BINDING_COMPONENT_PROPERTY = "binding-component";  // NOI18N //JBIDescriptorAttributes.BINDING_COMPONENT.getName();
+    public static final String PROVIDES_PROPERTY = "provides";                    // NOI18N
+    public static final String CONSUMES_PROPERTY = "consumes";                    // NOI18N
     
     Boolean getBindingComponent();
     void setBindingComponent(Boolean bindingComponent);

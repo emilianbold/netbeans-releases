@@ -17,15 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * AcceptProviderEngineNode.java
- *
- * Created on January 22, 2007, 3:55 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.Point;
@@ -35,6 +26,7 @@ import java.io.IOException;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExternal;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
@@ -47,10 +39,10 @@ import org.openide.ErrorManager;
  */
 public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
     
-    /** Creates a new instance of AcceptProviderEngineNode */
     public AcceptProviderEngineNode(CasaModelGraphScene scene) {
         super(scene);
     }
+    
     
     public ConnectorState isAcceptable (Widget widget, Point point, Transferable transferable){
         ConnectorState retState = ConnectorState.REJECT;
@@ -60,6 +52,7 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
                 if (selNode != null) {
                     switch(selNode.getCategory()) {
                         case END_POINTS:
+                            populateIconInfo(transferable); 
                             retState = ConnectorState.ACCEPT;
                             break;
                         default:
@@ -82,6 +75,7 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
                 if(selNode != null) {
                     switch(selNode.getCategory()) {
                         case END_POINTS:
+                            highlightExtSUs(false);
                             addEndpoint(widget, selNode.getPaletteItemType());
                             break;
                         default:
@@ -104,5 +98,21 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
         } else if (type == CasaPalette.CASA_PALETTE_ITEM_TYPE.PROVIDE) {
             scene.getModel().addEndpointToExternalServiceUnit(su, false);
         }
+    }
+    
+    private void highlightExtSUs(boolean bValue) {
+       for(Widget widget : getScene().getExternalRegion().getChildren()) {
+            if(widget instanceof CasaNodeWidgetEngineExternal) {
+                ((CasaNodeWidgetEngineExternal) widget).setHighlighted(bValue);
+            }
+        }
+    }
+
+    public void acceptFinished() {
+        super.acceptFinished();
+    }
+    
+    public void acceptStarted(Transferable t) {
+        super.acceptStarted(t);
     }
 }

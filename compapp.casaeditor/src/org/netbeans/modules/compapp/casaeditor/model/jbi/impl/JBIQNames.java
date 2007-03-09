@@ -22,33 +22,34 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 
 /**
  *
  * @author jqian
  */
 public enum JBIQNames {
-    JBI("jbi"),
+    JBI("jbi"),                 // NOI18N
     
-    SERVICES("services"),
-    PROVIDES("provides"),
-    CONSUMES("consumes"),
+    SERVICES("services"),       // NOI18N
+    PROVIDES("provides"),       // NOI18N
+    CONSUMES("consumes"),       // NOI18N
     
-    SERVICE_ASSEMBLY("service-assembly"),
-    SERVICE_UNIT("service-unit"),
-    CONNECTIONS("connections"),
-    CONNECTION("connection"),
-    PROVIDER("provider"),
-    CONSUMER("consumer"),
-    IDENTIFICATION("identification"),
-    TARGET("target"),
-    NAME("name"),
-    DESCRIPTION("description"),
-    ARTIFACTS_ZIP("artifacts-zip"),
-    COMPONENT_NAME("component-name");    
+    SERVICE_ASSEMBLY("service-assembly"),       // NOI18N
+    SERVICE_UNIT("service-unit"),               // NOI18N
+    CONNECTIONS("connections"),                 // NOI18N
+    CONNECTION("connection"),                   // NOI18N
+    PROVIDER("provider"),                       // NOI18N
+    CONSUMER("consumer"),                       // NOI18N
+    IDENTIFICATION("identification"),           // NOI18N
+    TARGET("target"),                           // NOI18N
+    NAME("name"),                               // NOI18N
+    DESCRIPTION("description"),                 // NOI18N
+    ARTIFACTS_ZIP("artifacts-zip"),             // NOI18N
+    COMPONENT_NAME("component-name");           // NOI18N
     
-    public static final String JBI_NS_URI = "http://java.sun.com/xml/ns/jbi";
-    public static final String JBI_NS_PREFIX = "jbi";
+    public static final String JBI_NS_URI = "http://java.sun.com/xml/ns/jbi";   // NOI18N
+    public static final String JBI_NS_PREFIX = "jbi";                           // NOI18N
     
     private static Set<QName> mappedQNames = new HashSet<QName>();
     static {
@@ -85,7 +86,7 @@ public enum JBIQNames {
     }
     
     public String getQualifiedName() {
-        return qname.getPrefix() + ":" + qname.getLocalPart();
+        return qname.getPrefix() + Constants.COLON_STRING + qname.getLocalPart();
     }
     
     public static Set<QName> getMappedQNames() {

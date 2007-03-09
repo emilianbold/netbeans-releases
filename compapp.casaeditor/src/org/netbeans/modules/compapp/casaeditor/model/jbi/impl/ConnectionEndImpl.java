@@ -19,6 +19,7 @@
 package org.netbeans.modules.compapp.casaeditor.model.jbi.impl;
 
 import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.ConnectionEnd;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -68,7 +69,7 @@ public abstract class ConnectionEndImpl extends JBIComponentImpl implements Conn
         if (existingPrefix == null) {
             AbstractDocumentComponent root = (AbstractDocumentComponent) getModel().getRootComponent();
             if (prefix == null) {
-                prefix = "ns"; //NOI18N
+                prefix = "ns"; // NOI18N
             }
             prefix = ensureUnique(prefix, namespace); 
             root.addPrefix(prefix, namespace);
@@ -76,6 +77,6 @@ public abstract class ConnectionEndImpl extends JBIComponentImpl implements Conn
             prefix = existingPrefix;
         }
         
-        setServiceName(prefix + ":" + localPart);
+        setServiceName(prefix + Constants.COLON_STRING + localPart);
     }
 }

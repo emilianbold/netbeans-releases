@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
+
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.ReferenceableCasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.visitor.FindReferencedVisitor;
@@ -66,13 +68,7 @@ public class GlobalReferenceImpl<T extends ReferenceableCasaComponent>
     }
     
     public String getEffectiveNamespace() {
-//        if (refString == null) {
-//            assert getReferenced() != null;
-//            return getReferenced().getModel().getDefinitions().getTargetNamespace();
-//        } else {
-//            return getParent().lookupNamespaceURI(getPrefix());
-//        }
         
-       return ""; //http://java.sun.com/xml/ns/casa"; // TMP
+       return Constants.EMPTY_STRING; //http://java.sun.com/xml/ns/casa"; // TMP
     }
 }

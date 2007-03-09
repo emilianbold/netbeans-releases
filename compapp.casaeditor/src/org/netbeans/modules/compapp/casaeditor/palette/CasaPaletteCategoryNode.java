@@ -17,26 +17,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CasaPaletteNode.java
- *
- * Created on December 8, 2006, 4:17 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.palette;
 
-import javax.swing.Action;
 import org.netbeans.spi.palette.PaletteController;
-import org.openide.actions.NewAction;
-import org.openide.actions.PasteAction;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node.Cookie;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -44,31 +29,26 @@ import org.openide.util.lookup.Lookups;
  */
 public class CasaPaletteCategoryNode extends AbstractNode {
    
-    /** Creates a new instance of CasaPaletteNode */
-    public CasaPaletteCategoryNode( CasaPaletteCategory category ) {
-        super( new CasaPaletteItems(category), Lookups.singleton(category) );
+    public CasaPaletteCategoryNode(CasaPaletteCategory category, Lookup lookup) {
+        super(new CasaPaletteItems(category, lookup), lookup);
+        setName(category.getName());
         setDisplayName(category.getName());
         setValue(PaletteController.ATTR_IS_EXPANDED, Boolean.TRUE);
     }
 
-    public Cookie getCookie(Class clazz) {
-        Children ch = getChildren();
-        
-        if (clazz.isInstance(ch)) {
-            return (Cookie) ch;
-        }
-        
-        return super.getCookie(clazz);
+    public boolean canCut() {
+        return false;
     }
-
     
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get( NewAction.class ),
-            SystemAction.get( PasteAction.class ) };
+    public boolean canCopy() {
+        return false;
+    }
+    
+    public boolean canRename() {
+        return false;
     }
     
     public boolean canDestroy() {
-        return true;
+        return false;
     }
 }    

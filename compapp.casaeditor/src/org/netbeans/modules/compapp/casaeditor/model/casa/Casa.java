@@ -24,13 +24,13 @@ package org.netbeans.modules.compapp.casaeditor.model.casa;
  */
 public interface Casa extends CasaComponent {
     
-    public static final String SERVICE_UNITS_PROPERTY = "service-units";
-    public static final String CONNECTIONS_PROPERTY = "connections";
-    public static final String PORTTYPES_PROPERTY = "porttypes";
-    public static final String BINDINGS_PROPERTY = "bindings";
-    public static final String SERVICES_PROPERTY = "services";
-    public static final String ENDPOINTS_PROPERTY = "endpoints";
-    public static final String REGIONS_PROPERTY = "regions";
+    public static final String SERVICE_UNITS_PROPERTY = "service-units";    // NOI18N
+    public static final String CONNECTIONS_PROPERTY = "connections";        // NOI18N
+    public static final String PORTTYPES_PROPERTY = "porttypes";            // NOI18N
+    public static final String BINDINGS_PROPERTY = "bindings";              // NOI18N
+    public static final String SERVICES_PROPERTY = "services";              // NOI18N
+    public static final String ENDPOINTS_PROPERTY = "endpoints";            // NOI18N
+    public static final String REGIONS_PROPERTY = "regions";                // NOI18N
     
     CasaServiceUnits getServiceUnits();
     void setServiceUnits(CasaServiceUnits serviceUnits);

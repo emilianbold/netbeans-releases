@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.w3c.dom.Element;
 
 /**
@@ -75,5 +76,5 @@ public class Util {
         }
     }
     
-    public static final String SEP = " "; //NOI18N
+    public static final String SEP = Constants.SPACE; //NOI18N
 }

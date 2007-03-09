@@ -17,23 +17,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * ServiceEnginesNode.java
- *
- * Created on November 2, 2006, 8:59 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
+import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -44,30 +34,26 @@ import org.openide.util.Utilities;
 public class ServiceEnginesNode extends CasaNode {
     
     private static final Image ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceEnginesNode.png");
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceEnginesNode.png");      // NOI18N
     
-    public ServiceEnginesNode(Object data, Children children, Lookup lookup) {
-        super(data, children, lookup);
-    }
-    
-    public ServiceEnginesNode(Object data, Lookup lookup) {
-        super(data, new MyChildren(data, lookup), lookup);
+    public ServiceEnginesNode(List<CasaServiceEngineServiceUnit> data, CasaNodeFactory factory) {
+        super(data, new MyChildren(data, factory), factory);
     }
     
     
     public String getName() {
-        return NbBundle.getMessage(getClass(), "LBL_JbiModules");
+        return NbBundle.getMessage(getClass(), "LBL_JbiModules");       // NOI18N
     }
     
     
     private static class MyChildren extends CasaNodeChildren {
-        public MyChildren(Object data, Lookup lookup) {
-            super(data, lookup);
+        public MyChildren(Object data, CasaNodeFactory factory) {
+            super(data, factory);
         }
         protected Node[] createNodes(Object key) {
             assert key instanceof CasaComponent;
             if (key instanceof CasaServiceEngineServiceUnit) {
-                return new Node[] { new ServiceUnitNode( (CasaServiceEngineServiceUnit) key, mLookup ) };
+                return new Node[] { mNodeFactory.createNodeFor((CasaServiceEngineServiceUnit) key) };
             }
             return null;
         }

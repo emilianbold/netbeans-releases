@@ -26,7 +26,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  */
 public interface CasaEndpointRef extends CasaComponent {
     
-    public static final String ENDPOINT_PROPERTY = "endpoint";
+    public static final String ENDPOINT_PROPERTY = "endpoint";  // NOI18N
         
     NamedComponentReference<CasaEndpoint> getEndpoint();
     void setEndpoint(NamedComponentReference<CasaEndpoint> endpoint);

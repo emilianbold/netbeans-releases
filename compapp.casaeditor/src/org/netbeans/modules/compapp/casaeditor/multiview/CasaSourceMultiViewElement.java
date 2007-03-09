@@ -118,7 +118,7 @@ public class CasaSourceMultiViewElement extends CloneableEditor implements Multi
 
     @Override
     protected String preferredID() {
-        return "CasaSourceMultiViewElementTC";  //  NOI18N
+        return "CasaSourceMultiViewElementTC";  // NOI18N
     }
 
     @Override

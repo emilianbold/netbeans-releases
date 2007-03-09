@@ -48,7 +48,7 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
     
     static final long serialVersionUID = -665273878020879395L;
     
-    public static final String PREFERRED_ID = "CasaGraphMultiViewElementTC";
+    public static final String PREFERRED_ID = "CasaGraphMultiViewElementTC";        // NOI18N
     
     private CasaDataObject mDataObject;
     private CasaDesignView mDesignView;
@@ -89,7 +89,7 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
                 // project is closed.
                 mDataObject
             }),
-            Lookups.singleton(CasaPalette.getPalette()),
+            Lookups.singleton(CasaPalette.getPalette(Lookups.fixed(new Object[] { mDataObject, delegate }))),
             nodesMediator.getLookup(),
             // The Node delegate Lookup must be the last one in the list
             // for the CookieProxyLookup to work properly.
@@ -194,7 +194,9 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
                 } catch (Exception e) {}
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        RegionUtilities.stretchScene(mDesignView.getScene());
+                        if (mDesignView != null && mDesignView.getScene() != null) {
+                            RegionUtilities.stretchScene(mDesignView.getScene());
+                        }
                     }
                 });
             }

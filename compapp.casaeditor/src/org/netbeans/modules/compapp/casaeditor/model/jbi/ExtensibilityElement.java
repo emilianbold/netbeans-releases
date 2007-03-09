@@ -32,7 +32,7 @@ import org.netbeans.modules.xml.xam.ComponentUpdater;
  * @author Nam Nguyen
  */
 public interface ExtensibilityElement extends JBIComponent {
-	public static final String CONTENT_FRAGMENT_PROPERTY = "content";
+	public static final String CONTENT_FRAGMENT_PROPERTY = "content";       // NOI18N
     
     /**
      * Set/get attribute value.

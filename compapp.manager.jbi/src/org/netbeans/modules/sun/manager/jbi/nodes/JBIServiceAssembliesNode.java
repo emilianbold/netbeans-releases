@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.management.Attribute;
+import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -32,6 +33,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
+import org.netbeans.modules.sun.manager.jbi.util.ArchiveFileFilter;
+import org.netbeans.modules.sun.manager.jbi.util.JarFileFilter;
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.actions.DeployAction;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
@@ -161,7 +164,7 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         }
     }
     
-    protected Map getSheetProperties() {
+    protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {
         return null;
     }
     
@@ -180,8 +183,10 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         chooser.setApproveButtonMnemonic(
                 bundle.getString("Deploy_Service_Assembly_Button_Mnemonic").charAt(0)); //NOI18N
         chooser.setMultiSelectionEnabled(true);
-        chooser.addChoosableFileFilter(ZipFileFilter.getInstance());
-        chooser.setAcceptAllFileFilterUsed(false);
+        
+        chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+        chooser.addChoosableFileFilter(ArchiveFileFilter.getInstance());
+        
         chooser.setApproveButtonToolTipText(
                 bundle.getString("LBL_Deploy_Service_Assembly_Button")); //NOI18N
         chooser.getAccessibleContext().setAccessibleName(

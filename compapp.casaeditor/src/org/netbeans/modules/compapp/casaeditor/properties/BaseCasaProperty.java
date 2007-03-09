@@ -20,6 +20,7 @@
 package org.netbeans.modules.compapp.casaeditor.properties;
 
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
@@ -65,8 +66,15 @@ public abstract class BaseCasaProperty extends Node.Property {
     
     @Override
     public boolean canWrite() {
-        // Check for null model since component may have been removed.
         try {
+            
+            CasaDataEditorSupport editorSupport = mNode.getDataObject().getEditorSupport();
+            if (editorSupport == null || !editorSupport.isDocumentLoaded()) {
+                // Ensure the document is loaded, otherwise writes will surely fail.
+                // A document may not be loaded if the user closed the editor.
+                return false;
+            }
+            
             Model model = mComponent.getModel();
             return XAMUtils.isWritable(model) && mNode.isEditable(mPropertyType);
         } catch (Throwable t) {

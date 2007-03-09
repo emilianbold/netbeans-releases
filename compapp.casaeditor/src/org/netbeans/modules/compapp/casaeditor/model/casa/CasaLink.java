@@ -25,16 +25,12 @@ import org.netbeans.modules.compapp.casaeditor.model.*;
  * @author jqian
  */
 public interface CasaLink extends CasaComponent {
-    public static final String TYPE_PROPERTY = "type";
-    public static final String HREF_PROPERTY = "href";
-//    public static final String STATE_PROPERTY = "state";
+    public static final String TYPE_PROPERTY = "type";          // NOI18N
+    public static final String HREF_PROPERTY = "href";          // NOI18N
     
     String getType();
     void setType(String type);
     
     String getHref();
     void setHref(String href);
-    
-//    String getState();
-//    void setState(String state);
 }

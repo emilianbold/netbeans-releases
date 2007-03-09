@@ -17,15 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CasaAcceptProvider.java
- *
- * Created on January 16, 2007, 3:09 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.awt.Point;
@@ -40,10 +31,10 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public interface CasaAcceptProvider extends AcceptProvider {
     
-    void createIcon(Transferable t);
+    void acceptStarted(Transferable t);
     
     void positionIcon(Widget widget, Point point, ConnectorState state);
     
-    void removeIcon();
+    void acceptFinished();
     
 }

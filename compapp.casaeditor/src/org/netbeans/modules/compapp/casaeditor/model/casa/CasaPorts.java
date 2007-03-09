@@ -25,7 +25,7 @@ import java.util.List;
  * @author jqian
  */
 public interface CasaPorts extends CasaComponent {    
-    public static final String PORT_PROPERTY = "port";
+    public static final String PORT_PROPERTY = "port";          // NOI18N
     
     List<CasaPort> getPorts();
     void addPort(int index, CasaPort port);

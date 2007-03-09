@@ -19,9 +19,12 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph;
 
+import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
@@ -29,12 +32,15 @@ import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
+import java.awt.image.RescaleOp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.GrayFilter;
+import javax.swing.ImageIcon;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
+import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
@@ -52,15 +58,22 @@ public abstract class CasaPinWidget extends Widget {
     };
 
     protected static final Image IMAGE_ARROW_LEFT_PROVIDES = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/graph/resources/arrow_bc_provides.png"); // NOI18N
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesLeft.png"); // NOI18N
     protected static final Image IMAGE_ARROW_RIGHT_CONSUMES = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/graph/resources/arrow_bc_consumes.png"); // NOI18N
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRight.png"); // NOI18N
     protected static final Image IMAGE_ARROW_RIGHT_PROVIDES = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/graph/resources/arrow_se_provides.png"); // NOI18N */
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesRight.png"); // NOI18N
     protected static final Image IMAGE_ARROW_LEFT_CONSUMES = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/graph/resources/arrow_se_consumes.png"); // NOI18N
-
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesLeft.png"); // NOI18N
     
+    protected ImageWidget mImageWidget;
+    
+    // How much lighter/darker to make a highlighted version of the image.
+    // value < 1 is darker, value > 1 is lighter
+    private static final float HIGHLIGHT_LIGHT_FACTOR = 0.6f;
+    
+    private boolean mIsHighlighted;
+    private Image mUnHighlightedImage;
     private GrayFilter mPinGrayFilter = new GrayFilter(true, 20);
     
     
@@ -70,6 +83,9 @@ public abstract class CasaPinWidget extends Widget {
      */
     public CasaPinWidget(Scene scene) {
         super (scene);
+        
+        mImageWidget = new ImageWidget(scene);
+        
         setOpaque(false);
         setLayout(LayoutFactory.createHorizontalLayout(LayoutFactory.SerialAlignment.CENTER, 0));
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
@@ -80,8 +96,10 @@ public abstract class CasaPinWidget extends Widget {
     
     protected abstract void setSelected(boolean isSelected);
     
-    protected abstract void setMinimized(boolean isMinimized);
     
+    protected void updateBounds(boolean isMinimized) {
+        // does nothing by deafult
+    }
     
     /**
      * Called to notify about the change of the widget state.
@@ -120,14 +138,6 @@ public abstract class CasaPinWidget extends Widget {
         }
     }
     
-    protected Image createSelectedPinImage(Image pinImage) {
-        ImageProducer prod = new FilteredImageSource(
-                pinImage.getSource(), 
-                mPinGrayFilter);
-        Image selectedImage = Toolkit.getDefaultToolkit().createImage(prod);
-        return selectedImage;
-    }
-    
     /**
      * Sets all pin properties at once.
      * @param name the pin name
@@ -144,7 +154,65 @@ public abstract class CasaPinWidget extends Widget {
                     0);
     }
     
-    protected void readjustBounds(Rectangle rectangle) {
+    protected Image createSelectedPinImage(Image pinImage) {
+        ImageProducer prod = new FilteredImageSource(
+                pinImage.getSource(), 
+                mPinGrayFilter);
+        Image selectedImage = Toolkit.getDefaultToolkit().createImage(prod);
+        return selectedImage;
+    }
+    
+    public void setHighlighted(boolean isHighlighted) {
+        if (mIsHighlighted != isHighlighted) {
+            mIsHighlighted = isHighlighted;
+            if (isHighlighted) {
+                mUnHighlightedImage = mImageWidget.getImage();
+                if (mUnHighlightedImage != null) {
+                    mImageWidget.setImage(createHighlightedImage(mUnHighlightedImage));
+                }
+            } else {
+                if (mUnHighlightedImage != null) {
+                    mImageWidget.setImage(mUnHighlightedImage);
+                }
+            }
+        }
+    }
+    
+    private Image createHighlightedImage(Image src) {
+        RescaleOp convolution = new RescaleOp(HIGHLIGHT_LIGHT_FACTOR, 0, null);
+        Image targ = Toolkit.getDefaultToolkit().createImage(src.getSource());
+        BufferedImage bs = toBufferedImage(src);
+        BufferedImage bt = toBufferedImage(targ);
+	return convolution.filter(bs, bt);
+    }
+    
+    private static final BufferedImage toBufferedImage(Image img) {
+        // load the image
+        new ImageIcon(img);
+        
+        BufferedImage rep = createBufferedImage(img.getWidth(null), img.getHeight(null));
+        Graphics g = rep.createGraphics();
+        g.drawImage(img, 0, 0, null);
+        g.dispose();
+        img.flush();
+        
+        return rep;
     }
 
+    private static final BufferedImage createBufferedImage(int width, int height) {
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
+        }
+        
+        ColorModel model = GraphicsEnvironment.getLocalGraphicsEnvironment()
+            .getDefaultScreenDevice().getDefaultConfiguration()
+            .getColorModel(java.awt.Transparency.TRANSLUCENT);
+        BufferedImage buffImage = new BufferedImage(
+                model, 
+                model.createCompatibleWritableRaster(width, height), 
+                model.isAlphaPremultiplied(), 
+                null);
+        
+        return buffImage;
+    }
 }

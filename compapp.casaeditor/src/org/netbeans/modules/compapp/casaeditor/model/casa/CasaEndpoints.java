@@ -25,19 +25,7 @@ import java.util.List;
  * @author jqian
  */
 public interface CasaEndpoints extends CasaComponent {
-    public static final String ENDPOINT_PROPERTY = "endpoint";
-//    public static final String CONSUMES_PROPERTY = "consumes";
-//    public static final String PROVIDES_PROPERTY = "provides";
-//    
-//    List<CasaConsumes> getConsumes();
-//    void addConsumes(int index, CasaConsumes casaConsumes);
-//    void removeConsumes(CasaConsumes casaConsumes);       
-//    
-//    List<CasaProvides> getProvides();
-//    void addProvides(int index, CasaProvides casaProvides);
-//    void removeProvides(CasaProvides casaProvides); 
-//    
-//    // Convinience methods
+    public static final String ENDPOINT_PROPERTY = "endpoint";          // NOI18N
     
     List<CasaEndpoint> getEndpoints();
     void addEndpoint(int index, CasaEndpoint casaEndpoint);

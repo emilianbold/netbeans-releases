@@ -37,60 +37,68 @@ import org.netbeans.api.visual.widget.Scene;
 
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.graph.awt.GradientRectangleColorScheme;
 
 /**
  *
  * @author rdara
  */
 public class CasaCustomizer {
-    private static final String S_COLOR_REGION_BINDING = "COLOR_REGION_BINDING";
-    private static final String S_COLOR_REGION_ENGINE = "COLOR_REGION_ENGINE";
-    private static final String S_COLOR_REGION_EXTERNAL = "COLOR_REGION_EXTERNAL";
-
-    private static final String S_COLOR_SU_INTERNAL_BORDER = "COLOR_SU_INTERNAL_BORDER";
-    private static final String S_COLOR_SU_INTERNAL_TITLE = "COLOR_SU_INTERNAL_TITLE";
-    private static final String S_COLOR_SU_INTERNAL_BACKGROUND = "COLOR_SU_INTERNAL_BACKGROUND";
-
-    private static final String S_COLOR_SU_EXTERNAL_BORDER = "COLOR_SU_EXTERNAL_BORDER";
-    private static final String S_COLOR_SU_EXTERNAL_TITLE = "COLOR_SU_EXTERNAL_TITLE";
-    private static final String S_COLOR_SU_EXTERNAL_BACKGROUND = "COLOR_SU_EXTERNAL_BACKGROUND";
-
-    private static final String S_COLOR_BC_TITLE = "COLOR_BC_TITLE";
-    private static final String S_COLOR_BC_BACKGROUND = "COLOR_BC_BACKGROUND";
-    private static final String S_COLOR_BC_BORDER = "COLOR_BC_BORDER";
-    private static final String S_COLOR_BC_TITLE_BACKGROUND = "COLOR_BC_TITLE_BACKGROUND";
     
-    private static final String S_COLOR_CONNECTION_NORMAL = "COLOR_CONNECTION_NORMAL";
-    private static final String S_COLOR_SELECTED_BORDER = "COLOR_SELECTED_BORDER";
+    private static final String S_COLOR_REGION_BINDING = "COLOR_REGION_BINDING";            // NOI18N
+    private static final String S_COLOR_REGION_ENGINE = "COLOR_REGION_ENGINE";              // NOI18N
+    private static final String S_COLOR_REGION_EXTERNAL = "COLOR_REGION_EXTERNAL";          // NOI18N
 
-    private static final String S_COLOR_CONNECTION_SELECTED = "COLOR_CONNECTION_SELECTED";
-    private static final String S_COLOR_CONNECTION_HOVERED = "COLOR_CONNECTION_HOVERED";
+    private static final String S_COLOR_SU_INTERNAL_BORDER = "COLOR_SU_INTERNAL_BORDER";    // NOI18N
+    private static final String S_COLOR_SU_INTERNAL_TITLE = "COLOR_SU_INTERNAL_TITLE";      // NOI18N
+    private static final String S_COLOR_SU_INTERNAL_BACKGROUND = "COLOR_SU_INTERNAL_BACKGROUND";    // NOI18N
+    private static final String S_COLOR_SU_INTERNAL_PIN = "COLOR_SU_INTERNAL_PIN";          // NOI18N
 
+    private static final String S_COLOR_SU_EXTERNAL_BORDER = "COLOR_SU_EXTERNAL_BORDER";    // NOI18N
+    private static final String S_COLOR_SU_EXTERNAL_TITLE = "COLOR_SU_EXTERNAL_TITLE";      // NOI18N
+    private static final String S_COLOR_SU_EXTERNAL_BACKGROUND = "COLOR_SU_EXTERNAL_BACKGROUND";    // NOI18N
+    private static final String S_COLOR_SU_EXTERNAL_PIN = "COLOR_SU_EXTERNAL_PIN";          // NOI18N
+
+    private static final String S_COLOR_BC_TITLE = "COLOR_BC_TITLE";                        // NOI18N
+    private static final String S_COLOR_BC_BACKGROUND = "COLOR_BC_BACKGROUND";              // NOI18N
+    private static final String S_COLOR_BC_BORDER = "COLOR_BC_BORDER";                      // NOI18N
+    private static final String S_COLOR_BC_TITLE_BACKGROUND = "COLOR_BC_TITLE_BACKGROUND";  // NOI18N
+    private static final String S_COLOR_BC_LABEL = "COLOR_BC_LABEL";                        // NOI18N
     
-    private static final String S_COLOR_BC_REGION_TITLE = "COLOR_BC_REGION_TITLE";
-    private static final String S_COLOR_SU_REGION_TITLE = "COLOR_SU_REGION_TITLE";
-    private static final String S_COLOR_EXT_SU_REGION_TITLE = "COLOR_EXT_SU_REGION_TITLE";
-
-    private static final String S_FONT_BC_REGION_TITLE = "FONT_BC_REGION_TITLE";
-    private static final String S_FONT_SU_REGION_TITLE = "FONT_SU_REGION_TITLE";
-    private static final String S_FONT_EXT_SU_REGION_TITLE = "FONT_EXT_SU_REGION_TITLE";
-
-    private static final String S_FONT_BC_TITLE = "FONT_BC_TITLE";
-    private static final String S_FONT_SU_TITLE = "FONT_SU_TITLE";
-    private static final String S_FONT_EXT_SU_TITLE = "FONT_EXT_SU_TITLE";
-
-    private static final String S_GEN_AUTO_SAVE = "GEN_AUTO_SAVE";
-    private static final String S_GEN_RESTORE_DEFAULTS = "GEN_RESTORE_DEFAULTS";
-
+    private static final String S_COLOR_SELECTION = "COLOR_SELECTION";                      // NOI18N
     
-    public static final String PROPERTY_CHANGE = "Customizer_Property_Changed";
+    private static final String S_COLOR_CONNECTION_NORMAL = "COLOR_CONNECTION_NORMAL";      // NOI18N
+    private static final String S_COLOR_CONNECTION_HOVERED = "COLOR_CONNECTION_HOVERED";    // NOI18N
+    
+    private static final String S_COLOR_BC_REGION_TITLE = "COLOR_BC_REGION_TITLE";          // NOI18N
+    private static final String S_COLOR_SU_REGION_TITLE = "COLOR_SU_REGION_TITLE";          // NOI18N
+    private static final String S_COLOR_EXT_SU_REGION_TITLE = "COLOR_EXT_SU_REGION_TITLE";  // NOI18N
+
+    private static final String S_FONT_BC_REGION_TITLE = "FONT_BC_REGION_TITLE";            // NOI18N
+    private static final String S_FONT_SU_REGION_TITLE = "FONT_SU_REGION_TITLE";            // NOI18N
+    private static final String S_FONT_EXT_SU_REGION_TITLE = "FONT_EXT_SU_REGION_TITLE";    // NOI18N
+
+    private static final String S_FONT_BC_TITLE = "FONT_BC_TITLE";                          // NOI18N
+    private static final String S_FONT_BC_LABEL = "FONT_BC_LABEL";                          // NOI18N
+    private static final String S_FONT_SU_TITLE = "FONT_SU_TITLE";                          // NOI18N
+    private static final String S_FONT_SU_PIN = "FONT_SU_PIN";                              // NOI18N
+    
+    private static final String S_FONT_EXT_SU_TITLE = "FONT_EXT_SU_TITLE";                  // NOI18N
+    private static final String S_FONT_EXT_SU_PIN = "FONT_EXT_SU_PIN";                      // NOI18N
+    
+    public static final String PROPERTY_CHANGE = "Customizer_Property_Changed";             // NOI18N
 
     //private Font FONT_BC_HEADER = new Font("Helvetica", Font.BOLD, 14);    
     
     private LinkedHashMap<String, Color> mColorsMap = new LinkedHashMap<String, Color>();
     private LinkedHashMap<String, Font> mFontsMap   = new LinkedHashMap<String, Font>();
     private LinkedHashMap<String, GradientRectangleColorScheme> mGradientsMap = new LinkedHashMap<String, GradientRectangleColorScheme>();
-    private LinkedHashMap<String, Boolean> mGeneralsMap   = new LinkedHashMap<String, Boolean>();
+
+    private static String S_SEPARATOR = ",";                                                    // NOI18N
+    /**
+     * Default Lable Font: java.awt.Font[family=Dialog,name=Dialog,style=plain,size=12]
+     * Default Lable color: java.awt.Color[r=0,g=0,b=0]
+     */
     
     public LinkedHashMap<String, Color> getColorsMapReference() {
         return mColorsMap;
@@ -102,21 +110,14 @@ public class CasaCustomizer {
     public LinkedHashMap<String, GradientRectangleColorScheme> getGradientsMapReference() {
         return mGradientsMap;
     }
-    
-    public LinkedHashMap<String, Boolean> getGeneralsMapReference() {
-        return mGeneralsMap;
-    }
            
     /** Creates a new instance of CasaCustomizer */
     public CasaCustomizer() {
         loadFromPreferences(getPreferences(), false);
-        if(isRestoreDefaults()) {
-            restoreDefaults(false);
-        }
     }
     
     private Preferences getPreferences() {
-        String ourNodeName = "/org/netbeans/modules/compapp/casaeditor/graph/CasaCustomizer";
+        String ourNodeName = "/org/netbeans/modules/compapp/casaeditor/graph/CasaCustomizer";   // NOI18N
         Preferences prefs = Preferences.userRoot().node(ourNodeName);
         //Preferences prefs = Preferences.systemRoot().node(ourNodeName);
         return prefs;
@@ -170,6 +171,14 @@ public class CasaCustomizer {
         mColorsMap.put(S_COLOR_SU_INTERNAL_BACKGROUND, COLOR_SU_INTERNAL_BACKGROUND);
     }
 
+    public Color getCOLOR_SU_INTERNAL_PIN() {
+        return mColorsMap.get(S_COLOR_SU_INTERNAL_PIN);
+    }
+
+    public void setCOLOR_SU_INTERNAL_PIN(Color COLOR_SU_INTERNAL_PIN) {
+        mColorsMap.put(S_COLOR_SU_INTERNAL_PIN, COLOR_SU_INTERNAL_PIN);
+    }
+
     public Color getCOLOR_SU_EXTERNAL_BORDER() {
         return mColorsMap.get(S_COLOR_SU_EXTERNAL_BORDER);
     }
@@ -193,6 +202,15 @@ public class CasaCustomizer {
     public void setCOLOR_SU_EXTERNAL_BACKGROUND(Color COLOR_SU_EXTERNAL_BACKGROUND) {
         mColorsMap.put(S_COLOR_SU_EXTERNAL_BACKGROUND, COLOR_SU_EXTERNAL_BACKGROUND);
     }
+    
+    public Color getCOLOR_SU_EXTERNAL_PIN() {
+        return mColorsMap.get(S_COLOR_SU_EXTERNAL_PIN);
+    }
+
+    public void setCOLOR_SU_EXTERNAL_PIN(Color COLOR_SU_EXTERNAL_PIN) {
+        mColorsMap.put(S_COLOR_SU_EXTERNAL_PIN, COLOR_SU_EXTERNAL_PIN);
+    }
+
 
     public Color getCOLOR_BC_TITLE() {
         return mColorsMap.get(S_COLOR_BC_TITLE);
@@ -227,13 +245,14 @@ public class CasaCustomizer {
     public void setCOLOR_BC_BORDER(Color COLOR_BC_BORDER) {
         mColorsMap.put(S_COLOR_BC_BORDER, COLOR_BC_BORDER);
     }
-
-    public Color getCOLOR_SELECTED_CONNECTION() {
-        return mColorsMap.get(S_COLOR_CONNECTION_SELECTED);
+    
+    
+    public Color getCOLOR_BC_LABEL() {
+        return mColorsMap.get(S_COLOR_BC_LABEL);
     }
 
-    public void setCOLOR_SELECTED_CONNECTION(Color COLOR_SELECTED_EDGE) {
-        mColorsMap.put(S_COLOR_CONNECTION_SELECTED, COLOR_SELECTED_EDGE);
+    public void setCOLOR_BC_LABEL(Color COLOR_BC_LABEL) {
+        mColorsMap.put(S_COLOR_BC_LABEL, COLOR_BC_LABEL);
     }
 
     public Color getCOLOR_HOVERED_EDGE() {
@@ -244,14 +263,13 @@ public class CasaCustomizer {
         mColorsMap.put(S_COLOR_CONNECTION_HOVERED, COLOR_HOVERED_EDGE);
     }
 
-    public Color getCOLOR_SELECTED_BORDER() {
-        return mColorsMap.get(S_COLOR_SELECTED_BORDER);
+    public Color getCOLOR_SELECTION() {
+        return mColorsMap.get(S_COLOR_SELECTION);
     }
 
-    public void setCOLOR_SELECTED_BORDER(Color COLOR_SELECTED_BORDER) {
-        mColorsMap.put(S_COLOR_SELECTED_BORDER, COLOR_SELECTED_BORDER);
+    public void setCOLOR_SELECTION(Color COLOR_SELECTION) {
+        mColorsMap.put(S_COLOR_SELECTION, COLOR_SELECTION);
     }
-
 
     public Color getCOLOR_CONNECTION_NORMAL() {
         return mColorsMap.get(S_COLOR_CONNECTION_NORMAL);
@@ -308,18 +326,42 @@ public class CasaCustomizer {
     public void setFONT_BC_HEADER(Font font) {
         mFontsMap.put(S_FONT_BC_TITLE, font);
     }
+
+    public Font getFONT_BC_LABEL() {
+        return mFontsMap.get(S_FONT_BC_LABEL);
+    }
+    public void setFONT_BC_LABEL(Font font) {
+        mFontsMap.put(S_FONT_BC_LABEL, font);
+    }
+
     public Font getFONT_SU_HEADER() {
         return mFontsMap.get(S_FONT_SU_TITLE);
     }
     public void setFONT_SU_HEADER(Font font) {
         mFontsMap.put(S_FONT_SU_TITLE, font);
     }
+
+    public Font getFONT_SU_PIN() {
+        return mFontsMap.get(S_FONT_SU_PIN);
+    }
+    public void setFONT_SU_PIN(Font font) {
+        mFontsMap.put(S_FONT_SU_PIN, font);
+    }
+    
     public Font getFONT_EXT_SU_HEADER() {
         return mFontsMap.get(S_FONT_EXT_SU_TITLE);
     }
     public void setFONT_EXT_SU_HEADER(Font font) {
         mFontsMap.put(S_FONT_EXT_SU_TITLE, font);
     }
+    
+    public Font getFONT_EXT_SU_PIN() {
+        return mFontsMap.get(S_FONT_EXT_SU_PIN);
+    }
+    public void setFONT_EXT_SU_PIN(Font font) {
+        mFontsMap.put(S_FONT_EXT_SU_PIN, font);
+    }
+    
     
     public GradientRectangleColorScheme getGradientINT_SU_BACKGROUND() {
         return mGradientsMap.get(S_COLOR_SU_INTERNAL_BACKGROUND);
@@ -336,10 +378,8 @@ public class CasaCustomizer {
         changeEngineRegion(scene);
         changeExternalRegion(scene);
         changeConnectionLayer(scene);
+        scene.revalidate();
         scene.validate();
-        if(isAutoSave()) {
-            savePreferences();
-        }
     }
 
     private void changeBindingRegion(CasaModelGraphScene scene) {
@@ -354,6 +394,7 @@ public class CasaCustomizer {
                 change((CasaNodeWidgetBinding) widget);
             }
         }
+        
     }
     
     private void changeEngineRegion(CasaModelGraphScene scene) {
@@ -396,49 +437,57 @@ public class CasaCustomizer {
     private void change(CasaNodeWidgetEngineInternal internalSUWidget) {
         internalSUWidget.setTitleColor(getCOLOR_SU_INTERNAL_TITLE());
         internalSUWidget.setTitleFont(getFONT_SU_HEADER());
-        internalSUWidget.paintWidget();
+        internalSUWidget.setPinFont(getFONT_SU_PIN());
+        internalSUWidget.setPinColor(getCOLOR_SU_INTERNAL_PIN());
+        internalSUWidget.readjustBounds();
     }
+    
     private void change(CasaNodeWidgetEngineExternal externalSUWidget){
         externalSUWidget.setTitleColor(getCOLOR_SU_EXTERNAL_TITLE());
         externalSUWidget.setTitleFont(this.getFONT_EXT_SU_HEADER());
-        externalSUWidget.paintWidget();
+        externalSUWidget.setPinFont(getFONT_EXT_SU_PIN());
+        externalSUWidget.setPinColor(getCOLOR_SU_EXTERNAL_PIN());
+        externalSUWidget.readjustBounds();
     }
+    
     private void change(CasaNodeWidgetBinding bindingWidget) {
         bindingWidget.setBackgroundColor(getCOLOR_BC_BACKGROUND());
-        //bindingWidget.setTitleBackgroundColor(getCOLOR_BC_TITLE_BACKGROUND());
         bindingWidget.regenerateHeaderBorder();
         bindingWidget.regenerateVerticalTextBarImage(); //For FONT_BC_HEADER
         bindingWidget.setTitleBackgroundColor(getCOLOR_BC_TITLE_BACKGROUND());
+        bindingWidget.setLabelColor(getCOLOR_BC_LABEL());
+        bindingWidget.setLabelFont(getFONT_BC_LABEL());
     }
+
     private void change(CasaConnectionWidget connectionWidget) {
         connectionWidget.setForegroundColor(getCOLOR_CONNECTION_NORMAL());
     }
 
     public Font getFont(String str) {
         //Font name, style, size
-        if (str == null || str.trim().equals("")) {
+        if (str == null || str.trim().equals("")) {                         // NOI18N
             Scene scene = new Scene();
             return scene.getDefaultFont().deriveFont(Font.BOLD);
         }
-        String[] strNumbers = str.split(",");
+        String[] strNumbers = str.split(S_SEPARATOR);                               // NOI18N
         int appearance = Integer.parseInt(strNumbers[1].trim());
         int size = Integer.parseInt(strNumbers[2].trim());
         return new Font(strNumbers[0].trim(), appearance, size);
     }
     
     public GradientRectangleColorScheme getGradient(String str) {
-        String[] strNumbers = str.split(",");
-        return new GradientRectangleColorScheme(null, 
-                    new Color(Integer.parseInt(strNumbers[0])),
-                    new Color(Integer.parseInt(strNumbers[1])),
-                    new Color(Integer.parseInt(strNumbers[2])),
-                    new Color(Integer.parseInt(strNumbers[3])),
-                    new Color(Integer.parseInt(strNumbers[4])));
+        String[] strNumbers = str.split(S_SEPARATOR);                               // NOI18N
+        return new GradientRectangleColorScheme(
+                new Color(Integer.parseInt(strNumbers[0])),
+                new Color(Integer.parseInt(strNumbers[1])),
+                new Color(Integer.parseInt(strNumbers[2])),
+                new Color(Integer.parseInt(strNumbers[3])),
+                new Color(Integer.parseInt(strNumbers[4])));
     }
 
     public Boolean getBoolean(String str) {
         Boolean bValue;
-        if(str.equalsIgnoreCase("true")) {
+        if(str.equalsIgnoreCase("true")) {                                  // NOI18N
             bValue = new Boolean(true);
         } else {
             bValue = new Boolean(false);
@@ -452,9 +501,7 @@ public class CasaCustomizer {
            retValue =  (Object) getColorsMapReference().get(key);
         } else if(getFontsMapReference().containsKey(key)) {
            retValue =  (Object) getFontsMapReference().get(key);
-        } else if(getGeneralsMapReference().containsKey(key)) {
-           retValue = (Object)  getGeneralsMapReference().get(key);
-        }
+        } 
         return retValue;
     }
 
@@ -477,20 +524,7 @@ public class CasaCustomizer {
         getGradientsMapReference().put(key, gradient);
         CasaFactory.getCasaCustomizerRegistor().propagateChange();
     }
-
-    public void setValue(String key, Boolean bValue) {
-        getGeneralsMapReference().put(key, bValue);
-        if(key.equals(S_GEN_AUTO_SAVE)) {
-            if(bValue.booleanValue()) {
-                savePreferences();
-            }
-        }  else if(key.equals(this.S_GEN_RESTORE_DEFAULTS)) {
-            if(bValue.booleanValue()) {
-                restoreDefaults(true);
-            }
-        }
-    }
-
+    
     public void restoreDefaults(boolean bPropagateChange) {
         LinkedHashMap<String, String> defaultColors = getDefaultColors();
         int i;
@@ -510,13 +544,6 @@ public class CasaCustomizer {
         for(String key : dafaultGradients.keySet()){
             gradientColor = getGradient(dafaultGradients.get(key));
             mGradientsMap.put(key, gradientColor);
-        }
-
-        LinkedHashMap<String, String> dafaultGenerals = getDefaultGenerals();
-        Boolean booleanValue;
-        for(String key : dafaultGenerals.keySet()){
-           booleanValue = getBoolean(dafaultGenerals.get(key));
-            mGeneralsMap.put(key, booleanValue);
         }
 
          if(bPropagateChange) {
@@ -561,26 +588,14 @@ public class CasaCustomizer {
             }
             mGradientsMap.put(key, gradientColor);
         }
-        
-        LinkedHashMap<String, String> dafaultGenerals = getDefaultGenerals();
-        Boolean booleanValue;
-        for(String key : dafaultGenerals.keySet()){
-            value = prefs.get(key, dafaultGenerals.get(key));
-            try {
-                booleanValue = getBoolean(value);
-            } catch(Exception e) {
-                booleanValue = getBoolean(dafaultGenerals.get(key));
-            }
-            mGeneralsMap.put(key, booleanValue);
-        }
-        
+
         if(bRenderDesignView) {
             CasaFactory.getCasaCustomizerRegistor().propagateChange();
         }
     }
     
     public void savePreferences() {
-        String ourNodeName = "/org/netbeans/modules/compapp/casaeditor/graph/CasaCustomizer";
+        String ourNodeName = "/org/netbeans/modules/compapp/casaeditor/graph/CasaCustomizer";   // NOI18N
         Preferences prefs = Preferences.userRoot().node(ourNodeName);
         
         for(String key : mColorsMap.keySet()){
@@ -590,79 +605,77 @@ public class CasaCustomizer {
         String value;
         for(String key : mFontsMap.keySet()){
             font = mFontsMap.get(key);
-            value = font.getName() + "," + Integer.toString(font.getStyle()) + "," + Integer.toString(font.getSize());
+            value = font.getName() + S_SEPARATOR + Integer.toString(font.getStyle()) + S_SEPARATOR + Integer.toString(font.getSize());  // NOI18N
             prefs.put(key, value);
         }
         
         GradientRectangleColorScheme gradientColor;
         for(String key : mGradientsMap.keySet()){
             gradientColor = mGradientsMap.get(key);
-            value = Integer.toString(gradientColor.getColor1().getRGB()) + "," + 
-                    Integer.toString(gradientColor.getColor2().getRGB()) + "," +
-                    Integer.toString(gradientColor.getColor3().getRGB()) + "," +
-                    Integer.toString(gradientColor.getColor4().getRGB()) + "," +
+            value = Integer.toString(gradientColor.getColor1().getRGB()) + S_SEPARATOR +                
+                    Integer.toString(gradientColor.getColor2().getRGB()) + S_SEPARATOR +                
+                    Integer.toString(gradientColor.getColor3().getRGB()) + S_SEPARATOR +                
+                    Integer.toString(gradientColor.getColor4().getRGB()) + S_SEPARATOR +                
                     Integer.toString(gradientColor.getColor5().getRGB());
             prefs.put(key, value);
-        }
-
-        for(String key : mGeneralsMap.keySet()){
-            prefs.put(key, mGeneralsMap.get(key).toString());
         }
     }
     
     public LinkedHashMap<String, String> getDefaultColors() {
-         LinkedHashMap<String, String> colorsMap = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> colorsMap = new LinkedHashMap<String, String>();
+        
+        // REGIONS
         
         colorsMap.put(S_COLOR_REGION_BINDING, new Integer((new Color(241, 254, 239)).getRGB()).toString());
-        colorsMap.put(S_COLOR_BC_REGION_TITLE, new Integer((new Color(64, 114,  57)).getRGB()).toString());
-        
+        colorsMap.put(S_COLOR_BC_REGION_TITLE, new Integer((new Color(153, 153, 153)).getRGB()).toString());
         colorsMap.put(S_COLOR_REGION_ENGINE,  new Integer((new Color(255, 255, 255)).getRGB()).toString());
-        colorsMap.put(S_COLOR_SU_REGION_TITLE, new Integer((new Color(70,  70,  70)).getRGB()).toString());
-        
+        colorsMap.put(S_COLOR_SU_REGION_TITLE, new Integer((new Color(153, 153, 153)).getRGB()).toString());
         colorsMap.put(S_COLOR_REGION_EXTERNAL, new Integer((new Color(251, 249, 242)).getRGB()).toString());
-        colorsMap.put(S_COLOR_EXT_SU_REGION_TITLE, new Integer((new Color(209,  97,   0)).getRGB()).toString());
-
+        colorsMap.put(S_COLOR_EXT_SU_REGION_TITLE, new Integer((new Color(153, 153, 153)).getRGB()).toString());
+        
+        // WIDGETS
+        
         colorsMap.put(S_COLOR_BC_TITLE, new Integer((new Color(102, 102,  102)).getRGB()).toString());
+        colorsMap.put(S_COLOR_BC_LABEL, new Integer((new Color(102, 102,  102)).getRGB()).toString());
         colorsMap.put(S_COLOR_BC_BACKGROUND, new Integer((new Color(255, 255, 255)).getRGB()).toString());
-        colorsMap.put(S_COLOR_BC_TITLE_BACKGROUND, new Integer((new Color(191, 219, 219)).getRGB()).toString());
+        colorsMap.put(S_COLOR_BC_TITLE_BACKGROUND, new Integer((new Color(180, 200, 220)).getRGB()).toString());
         colorsMap.put(S_COLOR_BC_BORDER, new Integer((new Color(186, 205, 240)).getRGB()).toString());
         
-        // temporarily preserve these colors, as it is still undecided on the title color defaults
-//        colorsMap.put(S_COLOR_BC_REGION_TITLE, new Integer((new Color(64, 114,  57)).getRGB()).toString());
-//        colorsMap.put(S_COLOR_SU_REGION_TITLE, new Integer((new Color(70,  70,  70)).getRGB()).toString());
-//        colorsMap.put(S_COLOR_EXT_SU_REGION_TITLE, new Integer((new Color(209,  97,   0)).getRGB()).toString());
-        colorsMap.put(S_COLOR_BC_REGION_TITLE, new Integer((new Color(153, 153, 153)).getRGB()).toString());
-        colorsMap.put(S_COLOR_SU_REGION_TITLE, new Integer((new Color(153, 153, 153)).getRGB()).toString());
-        colorsMap.put(S_COLOR_EXT_SU_REGION_TITLE, new Integer((new Color(153, 153, 153)).getRGB()).toString());
-
         colorsMap.put(S_COLOR_SU_INTERNAL_BORDER, new Integer((new Color(186, 205, 240)).getRGB()).toString());
         colorsMap.put(S_COLOR_SU_INTERNAL_TITLE, new Integer((new Color(102,  102, 102)).getRGB()).toString());
-        colorsMap.put(S_COLOR_SU_INTERNAL_BACKGROUND, new Integer((new Color(191, 219, 219)).getRGB()).toString());
+        colorsMap.put(S_COLOR_SU_INTERNAL_PIN, new Integer((new Color(102,  102, 102)).getRGB()).toString());
+        colorsMap.put(S_COLOR_SU_INTERNAL_BACKGROUND, new Integer((new Color(241, 249, 249)).getRGB()).toString());
         
         colorsMap.put(S_COLOR_SU_EXTERNAL_BORDER, new Integer((new Color(186, 205, 240)).getRGB()).toString());
         colorsMap.put(S_COLOR_SU_EXTERNAL_TITLE, new Integer((new Color(102, 102, 102)).getRGB()).toString());
-        colorsMap.put(S_COLOR_SU_EXTERNAL_BACKGROUND, new Integer((new Color(255, 230, 159)).getRGB()).toString());
+        colorsMap.put(S_COLOR_SU_EXTERNAL_PIN, new Integer((new Color(102,  102, 102)).getRGB()).toString());
+        colorsMap.put(S_COLOR_SU_EXTERNAL_BACKGROUND, new Integer((new Color(241, 249, 249)).getRGB()).toString());
         
+        // SELECTION COLOR
         
-        colorsMap.put(S_COLOR_SELECTED_BORDER, new Integer((new Color(255, 130, 0)).getRGB()).toString());
+        colorsMap.put(S_COLOR_SELECTION, new Integer((new Color(51, 0, 204)).getRGB()).toString());
+        
+        // CONNECTIONS
+        
         colorsMap.put(S_COLOR_CONNECTION_NORMAL, new Integer((new Color(204, 204, 204)).getRGB()).toString());
         colorsMap.put(S_COLOR_CONNECTION_HOVERED, new Integer((new Color(38,  85,  185)).getRGB()).toString());
-        colorsMap.put(S_COLOR_CONNECTION_SELECTED, new Integer((new Color(255, 130, 0)).getRGB()).toString());
-
-
+        
         return colorsMap;
     }
     
     public LinkedHashMap<String, String> getDefaultFonts() {
         LinkedHashMap<String, String> fontsMap = new LinkedHashMap<String, String>();   
         
-        fontsMap.put(S_FONT_BC_REGION_TITLE, "Dialog, 1, 14");
-        fontsMap.put(S_FONT_SU_REGION_TITLE, "Dialog, 1, 14");
-        fontsMap.put(S_FONT_EXT_SU_REGION_TITLE, "Dialog, 1, 14");
+        fontsMap.put(S_FONT_BC_REGION_TITLE, "Dialog, 1, 14");          // NOI18N
+        fontsMap.put(S_FONT_SU_REGION_TITLE, "Dialog, 1, 14");          // NOI18N
+        fontsMap.put(S_FONT_EXT_SU_REGION_TITLE, "Dialog, 1, 14");      // NOI18N
 
-        fontsMap.put(S_FONT_BC_TITLE, "SansSerif, 1, 14");
-        fontsMap.put(S_FONT_SU_TITLE, "");
-        fontsMap.put(S_FONT_EXT_SU_TITLE, "");
+        fontsMap.put(S_FONT_BC_TITLE, "SansSerif, 1, 14");              // NOI18N
+        fontsMap.put(S_FONT_BC_LABEL, "Dialog, 0, 12");                 // NOI18N
+        fontsMap.put(S_FONT_SU_TITLE, "");                              // NOI18N
+        fontsMap.put(S_FONT_SU_PIN, "Dialog, 0, 12");                   // NOI18N
+        fontsMap.put(S_FONT_EXT_SU_TITLE, "");                          // NOI18N
+        fontsMap.put(S_FONT_EXT_SU_PIN, "Dialog, 0, 12");               // NOI18N
         
         return fontsMap;
     }
@@ -670,10 +683,10 @@ public class CasaCustomizer {
     public LinkedHashMap<String, String> getDefaultGradients() {
         LinkedHashMap<String, String> gradientsMap = new LinkedHashMap<String, String>();
 
-        String gradientColor = new Integer((new Color(221, 235, 246)).getRGB()).toString() + "," +
-                              new Integer((new Color(255, 255, 255)).getRGB()).toString() + "," +
-                              new Integer((new Color(214, 235, 255)).getRGB()).toString() + "," +
-                              new Integer((new Color(241, 249, 253)).getRGB()).toString() + "," +
+        String gradientColor = new Integer((new Color(221, 235, 246)).getRGB()).toString() + S_SEPARATOR +
+                              new Integer((new Color(255, 255, 255)).getRGB()).toString() + S_SEPARATOR +
+                              new Integer((new Color(214, 235, 255)).getRGB()).toString() + S_SEPARATOR +
+                              new Integer((new Color(241, 249, 253)).getRGB()).toString() + S_SEPARATOR +
                               new Integer((new Color(255, 255, 255)).getRGB()).toString();
         
         gradientsMap.put(S_COLOR_SU_INTERNAL_BACKGROUND, gradientColor);
@@ -681,20 +694,5 @@ public class CasaCustomizer {
         gradientsMap.put(S_COLOR_BC_TITLE_BACKGROUND, gradientColor);
         
         return gradientsMap;
-    }
-    
-    public LinkedHashMap<String, String> getDefaultGenerals() {
-        LinkedHashMap<String, String> generalsMap = new LinkedHashMap<String, String>();
-        generalsMap.put(S_GEN_AUTO_SAVE, "false");
-        generalsMap.put(S_GEN_RESTORE_DEFAULTS, "false");
-        return generalsMap;
-    }
-    
-    private boolean isAutoSave() {
-        return getGeneralsMapReference().get(S_GEN_AUTO_SAVE).booleanValue();
-    }
-    
-    private boolean isRestoreDefaults() {
-        return getGeneralsMapReference().get(S_GEN_RESTORE_DEFAULTS).booleanValue();
     }
 }

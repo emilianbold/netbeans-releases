@@ -17,17 +17,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CasaEnginePinWidget.java
- *
- * Created on November 17, 2006, 12:18 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.graph;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -37,6 +30,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -45,15 +39,11 @@ import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
 public class CasaPinWidgetEngine extends CasaPinWidget {
     
     private static final int LABEL_MAX_CHAR = 48;
-    
+    private static final int VERTICAL_GAP = 3;
     private LabelWidget mNameWidget;
     private Image mCurrentOriginalImage;
     private Image mCurrentDisplayedImage;
     private ImageWidget mCurrentImageWidget;
-    private ImageWidget mArrowImageWidget;
-    private boolean mIsMinimized;
-    private boolean mIsSelected;
-    
     private ImageWidget mEmptyWidget;
     
     
@@ -63,54 +53,56 @@ public class CasaPinWidgetEngine extends CasaPinWidget {
         mCurrentOriginalImage = image;
         mCurrentDisplayedImage = image;
         
-        mArrowImageWidget = new ImageWidget(scene);
-        mArrowImageWidget.setImage(image);
+        mImageWidget.setImage(image);
         
         mEmptyWidget = new ImageWidget(scene);
-        mEmptyWidget.setPreferredBounds(mArrowImageWidget.getPreferredBounds());
+        mEmptyWidget.setPreferredBounds(mImageWidget.getPreferredBounds());
                 
         mNameWidget = new LabelWidget(scene);
         mNameWidget.setOpaque(false);
         
+        Widget holderWidget = new Widget(scene);
         switch(getDirection()) {
             case LEFT :
-                setLayout(LayoutFactory.createHorizontalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 5));
-                addChild(mArrowImageWidget);
-                addChild(mNameWidget);
-                addChild(mEmptyWidget);
+                holderWidget.setLayout(LayoutFactory.createHorizontalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 5));
+                holderWidget.addChild(mImageWidget);
+                holderWidget.addChild(mNameWidget);
+                holderWidget.addChild(mEmptyWidget);
                 break;
             case RIGHT :
-                setLayout(RegionUtilities.createHorizontalLayoutWithJustifications(LayoutFactory.SerialAlignment.RIGHT_BOTTOM, 5));
-                addChild(mEmptyWidget);
-                addChild(mNameWidget);
-                addChild(mArrowImageWidget);
+                holderWidget.setLayout(RegionUtilities.createHorizontalLayoutWithJustifications(LayoutFactory.SerialAlignment.RIGHT_BOTTOM, 5));
+                holderWidget.addChild(mEmptyWidget);
+                holderWidget.addChild(mNameWidget);
+                holderWidget.addChild(mImageWidget);
                 break;
         }
+        
+        setLayout(LayoutFactory.createVerticalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, VERTICAL_GAP));
+        Widget topVerticalGap = new Widget(scene);
+        addChild(topVerticalGap);
+        addChild(holderWidget);
+        Widget verticalGap = new Widget(scene);
+        addChild(verticalGap);
     }
     
     protected void setSelected(boolean isSelected) {
-        mIsSelected = isSelected;
-        updateImage();
-    }
-    
-    private void updateImage() {
-        if (mIsSelected) {
+        if (isSelected) {
             mCurrentDisplayedImage = createSelectedPinImage(mCurrentOriginalImage);
         } else {
             mCurrentDisplayedImage = mCurrentOriginalImage;
         }
-        if (mIsMinimized) {
-            mArrowImageWidget.setImage(null);
-        } else {
-            mArrowImageWidget.setImage(mCurrentDisplayedImage);
+        if (mImageWidget.getImage() != null) {
+            // If the image is supposed to be displayed, show it in whatever
+            // selection state we currently have.
+            mImageWidget.setImage(mCurrentDisplayedImage);
         }
     }
     
     protected void setPinName(String name) {
-        mArrowImageWidget.setToolTipText(name);
+        mImageWidget.setToolTipText(name);
         String displayedText = name;
         if (displayedText.length() > LABEL_MAX_CHAR) {
-            displayedText = displayedText.substring(0, LABEL_MAX_CHAR) + "...";
+            displayedText = displayedText.substring(0, LABEL_MAX_CHAR) + NbBundle.getMessage(getClass(), "ELLIPSIS");   // NOI18N
         }
         mNameWidget.setLabel(displayedText);
 
@@ -131,18 +123,25 @@ public class CasaPinWidgetEngine extends CasaPinWidget {
         return RegionUtilities.createFixedDirectionalAnchor(this, getDirection(), 0);
     }
     
-    protected void setMinimized(boolean isMinimized) {
-        mIsMinimized = isMinimized;
-        Rectangle rectangle = isMinimized ? new Rectangle() : null;
-        mNameWidget.setPreferredBounds(rectangle);
-        mArrowImageWidget.setPreferredBounds(rectangle);
-        this.setPreferredBounds(rectangle);
-        updateImage();
+    protected void updateBounds(boolean isMinimized) {
+        Rectangle rect = isMinimized ? new Rectangle() : null;
+        mNameWidget.setPreferredBounds(rect);
+        mImageWidget.setPreferredBounds(rect);
+        setPreferredBounds(rect);
+        
+        if (isMinimized) {
+            mImageWidget.setImage(null);
+        } else {
+            mImageWidget.setImage(mCurrentDisplayedImage);
+        }
     }
     
-    protected void readjustBounds(Rectangle rectangle) {
-        mNameWidget.setPreferredBounds(rectangle);
-        mArrowImageWidget.setPreferredBounds(rectangle);
-        this.setPreferredBounds(rectangle);
+    public void setLabelFont(Font font) {
+        mNameWidget.setFont(font);
     }
+    
+    public void setLabelColor(Color color) {
+        mNameWidget.setForeground(color);
+    }
+
 }

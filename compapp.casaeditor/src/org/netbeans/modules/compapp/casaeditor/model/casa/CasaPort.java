@@ -28,33 +28,20 @@ import org.netbeans.modules.compapp.casaeditor.model.jbi.Provides;
  * @author jqian
  */
 public interface CasaPort extends CasaComponent {
-    public static final String LINK_PROPERTY = "link";
-    public static final String X_PROPERTY = "x";
-    public static final String Y_PROPERTY = "y";
-//    public static final String STATE_PROPERTY = "state";
-//    public static final String LOCATION_PROPERTY = "location";
-//    public static final String ENDPOINTS_PROPERTY = "endpoints";
-    public static final String CONSUMES_PROPERTY = "consumes";
-    public static final String PROVIDES_PROPERTY = "provides";
+    public static final String LINK_PROPERTY = "link";                  // NOI18N
+    public static final String X_PROPERTY = "x";                        // NOI18N
+    public static final String Y_PROPERTY = "y";                        // NOI18N
+    public static final String CONSUMES_PROPERTY = "consumes";          // NOI18N
+    public static final String PROVIDES_PROPERTY = "provides";          // NOI18N
     
-    public static final String BINDINGTYPE_PROPERTY = "bindingType";
-    public static final String PORTTYPE_PROPERTY = "portType";
-//    public static final String BINDINGSTATE_PROPERTY = "bindingState";    
-    
-//    String getState();
-//    void setState(String state);
-    
-//    String getBindingState();
-//    void setBindingState(String bindingState);
-//    
+    public static final String BINDINGTYPE_PROPERTY = "bindingType";    // NOI18N
+    public static final String PORTTYPE_PROPERTY = "portType";          // NOI18N
+
     String getPortType();
     void setPortType(String portType);
     
     String getBindingType();
     void setBindingType(String bindingType);
-//        
-//    CasaEndpoints getEndpoints();
-//    void setEndpoints(CasaEndpoints endpoints);        
     
     int getX();
     void setX(int x);
@@ -70,10 +57,4 @@ public interface CasaPort extends CasaComponent {
     
     CasaProvides getProvides();
     void setProvides(CasaProvides casaProvides);
-    
-//    String getEndpointName();
-//    String getBindingComponentName();
-//    
-//    void addEndpoint(boolean isConsumes);
-//    void removeEndpoint(Endpoint endpoint);
 }

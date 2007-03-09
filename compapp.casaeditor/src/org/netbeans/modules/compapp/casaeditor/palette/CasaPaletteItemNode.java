@@ -17,29 +17,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CasaPaletteItemNode.java
- *
- * Created on December 8, 2006, 4:42 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import javax.swing.Action;
-import org.openide.actions.CopyAction;
-import org.openide.actions.CutAction;
-import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -49,41 +35,16 @@ public class CasaPaletteItemNode extends AbstractNode {
     
     private CasaPaletteItem mPaletteItem;
 
-    public CasaPaletteItemNode(CasaPaletteItem key, String icon) {
-        super(Children.LEAF, Lookups.fixed( new Object[] {key} ) );
+    public CasaPaletteItemNode(CasaPaletteItem key, String icon, Lookup lookup) {
+        super(Children.LEAF, lookup);
         mPaletteItem = key;
-        setDisplayName(key.getTitle());
         setIconBaseWithExtension(icon);
         setName(key.getTitle());
-        
-    }
-    
-    public CasaPaletteItemNode(CasaPaletteItem key) {
-        super(Children.LEAF, Lookups.fixed( new Object[] {key} ) );
-        mPaletteItem = key;
         setDisplayName(key.getTitle());
     }
-
+    
     public CasaPaletteItem getCasaPaletteItem() {
         return mPaletteItem;
-    }
-    
-    public boolean canCut() {
-        
-        return true;
-    }
-    
-    public boolean canDestroy() {
-        return true;
-    }
-    
-    public Action[] getActions(boolean popup) {
-        return new Action[] {
-            SystemAction.get( CopyAction.class ),
-            SystemAction.get( CutAction.class ),
-            null,
-            SystemAction.get( DeleteAction.class ) };
-        
     }
     
     public Transferable drag() throws IOException {
@@ -97,5 +58,19 @@ public class CasaPaletteItemNode extends AbstractNode {
         return retValue;
     }
     
+    public boolean canCut() {
+        return false;
+    }
     
+    public boolean canCopy() {
+        return false;
+    }
+    
+    public boolean canRename() {
+        return false;
+    }
+    
+    public boolean canDestroy() {
+        return false;
+    }
 }    

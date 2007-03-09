@@ -24,7 +24,9 @@ import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -81,10 +83,14 @@ implements
     /** Used for managing the prepareTask listener. */
     private transient Task prepareTask2;
     
+    /** Needed for casa file deletion. */
+    private static Map<DataObject, CasaWrapperModel> modelMap = 
+            new HashMap<DataObject, CasaWrapperModel>();
+    
     
     public CasaDataEditorSupport(CasaDataObject sobj) {
         super(sobj, new CasaEditorEnv(sobj));
-        setMIMEType("text/xml");
+        setMIMEType("text/xml");     // NOI18N
         //TODO: we need to use below one eventually
         //setMIMEType(WSDLDataLoader.MIME_TYPE);
     }
@@ -292,16 +298,20 @@ implements
     }
     
     public CasaWrapperModel getModel() {
-	CasaDataObject dobj = getEnv().getCasaDataObject();
+        CasaDataObject dobj = getEnv().getCasaDataObject();
         return getModel(dobj);
     }
     
     private static CasaWrapperModel getModel(DataObject dobj) {
-	ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), true);
-        if (modelSource != null) {
-            return (CasaWrapperModel) CasaModelFactory.getInstance().getModel(modelSource);
+        CasaWrapperModel model = modelMap.get(dobj);
+        if (model == null) {
+            ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), true);
+            if (modelSource != null) {
+                model = (CasaWrapperModel) CasaModelFactory.getInstance().getModel(modelSource);
+                modelMap.put(dobj, model);
+            }
         }
-        return null;
+        return model;
     }
     
     /**
@@ -516,7 +526,13 @@ ErrorManager.getDefault().notify(ioe);
 		myDataObject.setModified(false);
                 
                 // discard changes to related models
-                getModel(myDataObject).discardRelatedDataObjects();
+                CasaWrapperModel model = getModel(myDataObject);
+                if (model != null) {
+                    // when deleting casa file, the model will be null at
+                    // the second time. The related data objects should have
+                    // been discarded at the first time.
+                    model.discardRelatedDataObjects();
+                }
                 
                 // invalidate the in-memory copy of this data object 
                 try {
@@ -524,6 +540,8 @@ ErrorManager.getDefault().notify(ioe);
                 } catch (PropertyVetoException ex) {
                     ex.printStackTrace();
                 }
+                
+                modelMap.remove(myDataObject);
 	    }
 	    return canClose;
         }

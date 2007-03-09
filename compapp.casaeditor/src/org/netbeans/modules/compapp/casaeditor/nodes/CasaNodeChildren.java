@@ -32,16 +32,9 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -49,14 +42,14 @@ import org.openide.util.Lookup;
  */
 public abstract class CasaNodeChildren extends Children.Keys {
     
-    protected Lookup mLookup;
+    protected CasaNodeFactory mNodeFactory;
     private WeakReference mDataReference;
     
     
-    public CasaNodeChildren(Object data, Lookup lookup) {
+    public CasaNodeChildren(Object data, CasaNodeFactory factory) {
         super();
         mDataReference = new WeakReference(data);
-        mLookup = lookup;
+        mNodeFactory = factory;
         reloadFrom(data);
     }
     
@@ -73,14 +66,6 @@ public abstract class CasaNodeChildren extends Children.Keys {
                 }
             }
             return ref;
-        }
-        return null;
-    }
-    
-    protected CasaWrapperModel getCasaModel(CasaComponent comp) {
-        CasaDataObject dataObject = (CasaDataObject) getDataObject(comp);
-        if (dataObject != null) {
-            return dataObject.getEditorSupport().getModel();
         }
         return null;
     }
@@ -107,21 +92,5 @@ public abstract class CasaNodeChildren extends Children.Keys {
         } else {
             setKeys(Collections.emptyList());
         }
-    }
-    
-    private static DataObject getDataObject(CasaComponent comp) {
-        try {
-            CasaModel model = comp.getModel();
-            if (model != null) {
-                FileObject fobj = (FileObject) model.getModelSource().
-                        getLookup().lookup(FileObject.class);
-                if (fobj != null) {
-                    return DataObject.find(fobj);
-                }
-            }
-        } catch (DataObjectNotFoundException donfe) {
-            // fall through to return null
-        }
-        return null;
     }
 }

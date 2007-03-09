@@ -28,11 +28,11 @@ import javax.xml.namespace.QName;
  * @author jqian
  */
 public enum XlinkAttributeQName {
-    HREF("href"),
-    TYPE("type");
+    HREF("href"),                       // NOI18N
+    TYPE("type");                       // NOI18N
     
-    public static final String XLINK_NS_URI = "http://www.w3.org/2000/xlink";
-    public static final String XLINK_NS_PREFIX = "xlink";
+    public static final String XLINK_NS_URI = "http://www.w3.org/2000/xlink";   // NOI18N
+    public static final String XLINK_NS_PREFIX = "xlink";                       // NOI18N
         
     private QName qname;
     
@@ -49,6 +49,6 @@ public enum XlinkAttributeQName {
     }
     
     public String getQualifiedName() {
-        return qname.getPrefix() + ":" + qname.getLocalPart();
+        return qname.getPrefix() + ":" + qname.getLocalPart();  // NOI18N
     }    
 }

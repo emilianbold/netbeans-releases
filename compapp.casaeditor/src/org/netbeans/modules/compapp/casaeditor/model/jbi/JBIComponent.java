@@ -30,7 +30,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
  */
 public interface JBIComponent extends DocumentComponent<JBIComponent> {
     
-    public static final String EXTENSIBILITY_ELEMENT_PROPERTY = "extensibilityElement";
+    public static final String EXTENSIBILITY_ELEMENT_PROPERTY = "extensibilityElement";     // NOI18N
     
     JBIModel getModel();
     

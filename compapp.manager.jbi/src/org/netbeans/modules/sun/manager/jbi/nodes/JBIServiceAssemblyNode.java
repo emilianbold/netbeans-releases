@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.management.Attribute;
+import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
@@ -61,8 +62,8 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     
     /** Creates a new instance of ServiceAssemblyNode */
     public JBIServiceAssemblyNode(final AppserverJBIMgmtController controller,
-            final String name,
-            final String description) {
+            String name,
+            String description) {
         super(controller, NodeTypes.SERVICE_ASSEMBLY);
         setName(name);
         setDisplayName(name);
@@ -76,7 +77,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     private JBIServiceAssemblyStatus getAssembly(boolean cached) {
         if (cachedAssemblyStatus == null || !cached) {
             cachedAssemblyStatus =
-                    getAppserverJBIMgmtController().getJBIServiceAssemblyStatus(getName());
+                    getAdminService().getServiceAssemblyStatus(getName());
         }
         
         return cachedAssemblyStatus;
@@ -135,11 +136,10 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
      *
      * @return A java.util.Map containing all JVM properties.
      */
-    protected Map getSheetProperties() {
+    protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {
         JBIServiceAssemblyStatus assemblyStatus =
-                getAppserverJBIMgmtController().getJBIServiceAssemblyStatus(getName());
-        Map map = Utils.getIntrospectedPropertyMap(assemblyStatus, true);
-        return map;
+                getAdminService().getServiceAssemblyStatus(getName());
+        return Utils.getIntrospectedPropertyMap(assemblyStatus, true);
     }
     
     public Attribute setSheetProperty(String attrName, Object value) {
@@ -177,10 +177,6 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     //========================== Startable =====================================
     
     public boolean canStart() {
-//        String status = getAssemblyStatus();
-//        return !busy &&
-//                (JBIServiceAssemblyStatus.STOP_STATUS.equals(status) ||
-//                JBIServiceAssemblyStatus.SHUTDOWN_STATUS.equals(status));
         
         boolean ret = false;
         
@@ -193,10 +189,9 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             } else if (JBIServiceAssemblyStatus.SHUTDOWN_STATUS.equals(assemblyStatus)) {
                 ret = true;
             } else if (JBIServiceAssemblyStatus.START_STATUS.equals(assemblyStatus)) {
-                List units = assembly.getJbiServiceUnitStatusList();
+                List<JBIServiceUnitStatus> units = assembly.getJbiServiceUnitStatusList();
                 if (units != null) {
-                    for (Iterator it = units.iterator(); it.hasNext();) {
-                        JBIServiceUnitStatus unit = (JBIServiceUnitStatus) it.next();
+                    for (JBIServiceUnitStatus unit : units) {
                         String unitStatus = unit.getStatus();
                         if (JBIServiceAssemblyStatus.STOP_STATUS.equals(unitStatus) ||
                                 JBIServiceAssemblyStatus.SHUTDOWN_STATUS.equals(unitStatus)) {
@@ -240,17 +235,15 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
                             GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
                             assemblyName, result);
                     setBusy(false);
+                    updatePropertySheet();
                 }
-            });
-            
-            updatePropertySheet();
+            });            
         }
     }
     
     //========================== Stoppable =====================================
     
     public boolean canStop() {
-//        return !busy && JBIServiceAssemblyStatus.START_STATUS.equals(getAssemblyStatus());
         
         boolean ret = false;
         
@@ -306,21 +299,19 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
                             GenericConstants.STOP_SERVICE_ASSEMBLY_OPERATION_NAME,
                             assemblyName, result);
                     setBusy(false);
+                    updatePropertySheet();
                 }
-            });
-            
-            updatePropertySheet();
+            });            
         }
     }
     
     //========================== Shutdownable ==================================
     
     public boolean canShutdown() {
-//        return !busy && JBIServiceAssemblyStatus.STOP_STATUS.equals(getAssemblyStatus());
         
-        boolean ret = false;
+        boolean ret = canStop();
         
-        if (!busy) {
+        if (!ret && !busy) {
             JBIServiceAssemblyStatus assembly = getAssembly(true);  // cached
             String assemblyStatus = (assembly != null) ? assembly.getStatus() : null;
             
@@ -346,6 +337,11 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     }
     
     public void shutdown() {
+        
+        if (canStop()) {
+            stop();
+        }
+        
         AdministrationService adminService = getAdminService();
         
         if (adminService != null) {
@@ -374,10 +370,9 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
                             GenericConstants.SHUTDOWN_SERVICE_ASSEMBLY_OPERATION_NAME,
                             assemblyName, result);
                     setBusy(false);
+                    updatePropertySheet();
                 }
-            });
-            
-            updatePropertySheet();
+            });            
         }
     }
     
@@ -385,10 +380,16 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     
     public boolean canUndeploy() {
         String assemblyStatus = getAssemblyStatus(true); // cached
-        return !busy && JBIServiceAssemblyStatus.SHUTDOWN_STATUS.equals(assemblyStatus);
+        return canShutdown() ||
+                !busy && JBIServiceAssemblyStatus.SHUTDOWN_STATUS.equals(assemblyStatus);
     }
     
     public void undeploy() {
+                 
+        if (canShutdown()) {
+            shutdown();
+        }
+        
         AdministrationService adminService = getAdminService();
         
         if (adminService != null) {
@@ -417,10 +418,9 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
                             GenericConstants.UNDEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
                             assemblyName, result);
                     setBusy(false);
+                    //updatePropertySheet();
                 }
-            });
-            
-            updatePropertySheet();
+            });            
         }
     }
 }

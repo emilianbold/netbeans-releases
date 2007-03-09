@@ -17,15 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CasaPaletteItems.java
- *
- * Created on December 8, 2006, 4:39 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.util.ArrayList;
@@ -34,6 +25,7 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -43,9 +35,12 @@ import org.openide.util.NbBundle;
 public class CasaPaletteItems extends Index.ArrayChildren {
    
     private CasaPaletteCategory category;
+    private Lookup mLookup;
+    
    
-    public CasaPaletteItems(CasaPaletteCategory Category) {
+    public CasaPaletteItems(CasaPaletteCategory Category, Lookup lookup) {
         this.category = Category;
+        mLookup = lookup;
     }
 
     protected java.util.List<Node> initCollection() {
@@ -72,7 +67,10 @@ public class CasaPaletteItems extends Index.ArrayChildren {
                 item.setCategoryType(CasaPalette.CASA_CATEGORY_TYPE.WSDL_BINDINGS);
                 item.setTitle(bi.getBindingName());
                 item.setComponentName(bi.getBcName());
-                childrenNodes.add( new CasaPaletteItemNode( item, bi.getIcon().getFile()) );
+                childrenNodes.add( new CasaPaletteItemNode( 
+                        item, 
+                        bi.getIcon().getFile(),
+                        mLookup) );
             }
         }
     }
@@ -81,34 +79,43 @@ public class CasaPaletteItems extends Index.ArrayChildren {
         CasaPaletteItem consumeItem = new CasaPaletteItem();
         consumeItem.setCategoryType(CasaPalette.CASA_CATEGORY_TYPE.END_POINTS);
         consumeItem.setPaletteItemType(CasaPalette.CASA_PALETTE_ITEM_TYPE.CONSUME);
-        consumeItem.setTitle(getMessage("Palette_Consume_Title"));
-        childrenNodes.add( new CasaPaletteItemNode( consumeItem, "org/netbeans/modules/compapp/casaeditor/palette/resources/consume16.png" ) );
+        consumeItem.setTitle(getMessage("Palette_Consume_Title"));      // NOI18N
+        childrenNodes.add( new CasaPaletteItemNode( 
+                consumeItem, 
+                "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRight.png", // NOI18N
+                mLookup) );
         
         CasaPaletteItem provideItem = new CasaPaletteItem();
         provideItem.setCategoryType(CasaPalette.CASA_CATEGORY_TYPE.END_POINTS);
         provideItem.setPaletteItemType(CasaPalette.CASA_PALETTE_ITEM_TYPE.PROVIDE);
-        provideItem.setTitle(getMessage("Palette_Provide_Title"));
-        childrenNodes.add( new CasaPaletteItemNode( provideItem, "org/netbeans/modules/compapp/casaeditor/palette/resources/provide16.png" ) );
-      
+        provideItem.setTitle(getMessage("Palette_Provide_Title"));  // NOI18N
+        childrenNodes.add( new CasaPaletteItemNode( 
+                provideItem, 
+                "org/netbeans/modules/compapp/casaeditor/graph/resources/providesRight.png", // NOI18N
+                mLookup) ); 
     }
 
     private void addServiceUnits(ArrayList childrenNodes) {
         CasaPaletteItem intsuItem = new CasaPaletteItem();
         intsuItem.setCategoryType(CasaPalette.CASA_CATEGORY_TYPE.SERVICE_UNITS);
         intsuItem.setPaletteItemType(CasaPalette.CASA_PALETTE_ITEM_TYPE.INT_SU);
-        intsuItem.setTitle(getMessage("Palette_IntSU_Title"));
-        childrenNodes.add( new CasaPaletteItemNode( intsuItem, "org/netbeans/modules/compapp/casaeditor/palette/resources/intsu.png" ) );
+        intsuItem.setTitle(getMessage("Palette_IntSU_Title"));      // NOI18N
+        childrenNodes.add( new CasaPaletteItemNode( 
+                intsuItem, 
+                "org/netbeans/modules/compapp/casaeditor/palette/resources/intsu.png",  // NOI18N
+                mLookup) );
 
         CasaPaletteItem extsuItem = new CasaPaletteItem();
         extsuItem.setCategoryType(CasaPalette.CASA_CATEGORY_TYPE.SERVICE_UNITS);
         extsuItem.setPaletteItemType(CasaPalette.CASA_PALETTE_ITEM_TYPE.EXT_SU);
-        extsuItem.setTitle(getMessage("Palette_ExtSU_Title"));
-        childrenNodes.add( new CasaPaletteItemNode( extsuItem, "org/netbeans/modules/compapp/casaeditor/palette/resources/extsu.png" ) );
-
+        extsuItem.setTitle(getMessage("Palette_ExtSU_Title"));  // NOI18N
+        childrenNodes.add( new CasaPaletteItemNode( 
+                extsuItem, 
+                "org/netbeans/modules/compapp/casaeditor/palette/resources/extsu.png", // NOI18N
+                mLookup) );   
     }
 
     private String getMessage(String key) {
         return NbBundle.getBundle(CasaPaletteItems.class).getString(key); 
     }
-
 }

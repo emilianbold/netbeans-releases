@@ -26,6 +26,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import java.net.URI;
 import java.util.HashMap;
 import java.io.File;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -67,10 +68,10 @@ public class JarCatalogModel implements CatalogModel {
             // if a relative uri, try to normalize using referencing model's file path
             try {
                 File f = (File) ms.getLookup().lookup(File.class);
-                String path = f.getParentFile().getPath().replace('\\', '/') + "/" + uri.toString();
+                String path = f.getParentFile().getPath().replace('\\', '/') + Constants.FORWARD_SLASH + uri.toString();
                 int idx = path.indexOf("build/SEDeployment.jar"); // NOI18N
                 if (idx > 0) { // OK, needs to strip off Chris W. fixes..
-                    path = f.getParentFile().getParentFile().getPath().replace('\\', '/') + "/" + uri.toString(); // NOI18N
+                    path = f.getParentFile().getParentFile().getPath().replace('\\', '/') + Constants.FORWARD_SLASH + uri.toString(); // NOI18N
                     path = path.substring(idx+23);
                 }
                 return new URI(path);

@@ -25,7 +25,7 @@ import java.util.List;
  * @author jqian
  */
 public interface Connections extends JBIComponent {
-    public static final String CONNECTION_PROPERTY = "connection";
+    public static final String CONNECTION_PROPERTY = "connection";  // NOI18N
     
     List<Connection> getConnections();
     void removeConnection(Connection connection);

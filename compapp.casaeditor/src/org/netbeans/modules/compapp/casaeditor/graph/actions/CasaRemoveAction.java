@@ -55,7 +55,7 @@ public class CasaRemoveAction extends WidgetAction.Adapter {
             Set objectsToDelete = mScene.getSelectedObjects();
             for (Object object : objectsToDelete) {
                 CasaNode node = 
-                        (CasaNode) mScene.getNodeFactory().createNode((CasaComponent) object);
+                        (CasaNode) mScene.getNodeFactory().createNodeFor((CasaComponent) object);
                 if (!node.isDeletable()) {
                     return State.REJECTED;
                 }

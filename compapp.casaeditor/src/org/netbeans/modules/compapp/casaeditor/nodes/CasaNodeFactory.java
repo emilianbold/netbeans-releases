@@ -18,135 +18,73 @@
  */
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaConnectionImpl;
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaConnectionsImpl;
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaConsumesImpl;
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaServiceEngineServiceUnitImpl;
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaPortImpl;
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaProvidesImpl;
-import org.openide.ErrorManager;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
+import org.openide.util.lookup.InstanceContent;
 
 
-/**
- * It's implied here that the Node has a constructors with at least one
- * from two possible parameters set. The cases are following:
- *  -- Assign reference, Lookup lookup
- *  -- Assign reference, Children children, Lookup lookup
- *
- * @author nk160297
- */
 public class CasaNodeFactory {
     
+    private CasaDataObject mDataObject;
     private CasaWrapperModel mModel;
-    private Lookup mLookup;
-    
-    private Map<Class<? extends CasaComponent>, Class<? extends Node>> constant2Class;
     
     
     public CasaNodeFactory(CasaDataObject dataObject, CasaWrapperModel model) {
+        mDataObject = dataObject;
         mModel = model;
-        
-        mLookup = Lookups.fixed(new Object[] {
-            dataObject, 
-            model
-        });
-        
-        constant2Class = new HashMap<Class<? extends CasaComponent>, Class<? extends Node>>();
-        constant2Class.put(CasaServiceEngineServiceUnitImpl.class,     ServiceUnitNode.class);
-        constant2Class.put(CasaPortImpl.class,        WSDLEndpointNode.class);
-        constant2Class.put(CasaConnectionsImpl.class,     ConnectionsNode.class);
-        constant2Class.put(CasaConnectionImpl.class,      ConnectionNode.class);
-        constant2Class.put(CasaProvidesImpl.class,        ProvidesNode.class);
-        constant2Class.put(CasaConsumesImpl.class,        ConsumesNode.class);
     }
     
     
-    public Node createNode(CasaWrapperModel model) {
+    public CasaWrapperModel getCasaModel() {
+        return mModel;
+    }
+    
+    public InstanceContent createInstanceContent() {
+        InstanceContent content = new InstanceContent();
+        content.add(mDataObject);
+        content.add(mModel);
+        return content;
+    }
+    
+    public CasaNode createModelNode(CasaWrapperModel model) {
         assert model != null;
-        return new CasaRootNode(model, mLookup);
+        return new CasaRootNode(model, this);
     }
     
-    public Node createNode(CasaComponent component) {
-        assert component != null;
-        return createNode(component, null);
+    public CasaNode createNode_connectionList(List<CasaConnection> data) {
+        return new ConnectionsNode(data, this);
     }
+    
+    public CasaNode createNode_consumesList(List<CasaConsumes> data) {
+        return new ConsumesListNode(data, this);
+    }
+    
+    public CasaNode createNode_providesList(List<CasaProvides> data) {
+        return new ProvidesListNode(data, this);
+    }
+    
+    public CasaNode createNode_suList(List<CasaServiceEngineServiceUnit> data) {
+        return new ServiceEnginesNode(data, this);
+    }
+    
+    public CasaNode createNode_portList(List<CasaPort> data) {
+        return new WSDLEndpointsNode(data, this);
+    }
+    
+    public CasaNode createNodeFor(CasaComponent component) {
+        CasaNodeCreationVisitor visitor = new CasaNodeCreationVisitor(this);
+        component.accept(visitor);
+        return visitor.getNode();
+    }
+    
 
-    public Node createNode(CasaComponent component, Children children) {
-        assert component != null;
-        Class<? extends Node> nodeClass = constant2Class.get(component.getClass());
-        if (nodeClass == null) {
-            return null;
-        }
-        Node newNode = Node.EMPTY;
-        try {
-            //
-            // Here the reflection is used intensively
-            // Try to find constructors with 2 and 3 parameters at first
-            Constructor<? extends Node> constr2Params = null;
-            Constructor<? extends Node> constr3Params = null;
-            //
-            Class[] params2 = new Class[] {component.getClass(), Lookup.class};
-            Class[] params3 = new Class[] {component.getClass(), Children.class, Lookup.class};
-            //
-            Constructor[] constArr = nodeClass.getConstructors();
-            for (Constructor constr : constArr) {
-                Class<?>[] paramClassArr = constr.getParameterTypes();
-                if (constr2Params == null &&
-                        isAssignable(params2, paramClassArr)) {
-                    constr2Params = constr;
-                }
-                if (constr3Params == null &&
-                        isAssignable(params3, paramClassArr)) {
-                    constr3Params = constr;
-                }
-            }
-            //
-            if (children == null)  {
-                if (constr2Params != null) {
-                    // Call the constructor without children parameter
-                    // This is the normal branch
-                    newNode = constr2Params.newInstance(
-                            new Object[] {component, mLookup});
-                } else if (constr3Params != null) {
-                    // Call the constructor with children parameter with
-                    // the Children.LEAF value
-                    newNode = constr3Params.newInstance(
-                            new Object[] {component, Children.LEAF, mLookup});
-                } else {
-                    throw new Exception("The " + nodeClass.getName() +  // NOI18N
-                            " class doesn't have the requred constructor.");  // NOI18N
-                }
-            } else {
-                if (constr3Params != null) {
-                    // Call the constructor with children parameter
-                    // This is the normal branch
-                    newNode = constr3Params.newInstance(
-                            new Object[] {component, children, mLookup});
-                } else if (constr2Params != null) {
-                    // Call the constructor without children parameter
-                    newNode = constr2Params.newInstance(
-                            new Object[] {component, mLookup});
-                } else {
-                    throw new Exception("The " + nodeClass.getName() +  // NOI18N
-                            " class doesn't have the requred constructor.");  // NOI18N
-                }
-            }
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-        return newNode;
-    }
-    
     /**
      * Checks if the classes from source array are assignable to the
      * corresponding classes from target array.

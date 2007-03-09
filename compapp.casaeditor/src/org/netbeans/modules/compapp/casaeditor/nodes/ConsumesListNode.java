@@ -29,11 +29,10 @@
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
+import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -44,30 +43,26 @@ import org.openide.util.Utilities;
 public class ConsumesListNode extends CasaNode {
     
     private static final Image ICON = Utilities.loadImage(
-            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ConsumesListNode.png");
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ConsumesListNode.png");    // NOI18N
     
-    public ConsumesListNode(Object data, Children children, Lookup lookup) {
-        super(data, children, lookup);
-    }
-    
-    public ConsumesListNode(Object data, Lookup lookup) {
-        super(data, new MyChildren(data, lookup), lookup);
+    public ConsumesListNode(List<CasaConsumes> data, CasaNodeFactory factory) {
+        super(data, new MyChildren(data, factory), factory);
     }
     
     
     public String getName() {
-        return NbBundle.getMessage(getClass(), "LBL_ConsumesList");
+        return NbBundle.getMessage(getClass(), "LBL_ConsumesList"); // NOI18N
     }
 
 
     private static class MyChildren extends CasaNodeChildren {
-        public MyChildren(Object data, Lookup lookup) {
-            super(data, lookup);
+        public MyChildren(Object data, CasaNodeFactory factory) {
+            super(data, factory);
         }
         protected Node[] createNodes(Object key) {
             assert key instanceof CasaComponent;
             if (key instanceof CasaConsumes) {
-                return new Node[] { new ConsumesNode( (CasaConsumes) key, mLookup ) };
+                return new Node[] { mNodeFactory.createNodeFor((CasaConsumes) key) };
             }
             return null;
         }

@@ -120,27 +120,27 @@ public class WSDLEndpointAction extends NodeAction {
             if (n instanceof PortNode) {
                 p = (Port) ((PortNode) n).getWSDLComponent();
                 s = (Service) p.getParent();
-                System.out.println("portNode: "+n.getName()+", "+s.getName() + "." + p.getName());
+                //System.out.println("portNode: "+n.getName()+", "+s.getName() + "." + p.getName());  
             } else if (n instanceof BindingNode) {
                 b = (Binding) ((BindingNode) n).getWSDLComponent();
-                System.out.println("bindingNode: "+n.getName()+", "+b.getName());
+                //System.out.println("bindingNode: "+n.getName()+", "+b.getName());
             }
         }
-        System.out.println("Got WSDLEndpoint Action.. PtN: "+ptn);
+        //System.out.println("Got WSDLEndpoint Action.. PtN: "+ptn);
         pt = ((CasaWrapperModel) cp.getModel()).getCasaPortType(cp);
-        System.out.println("Got WSDLEndpoint Action.. Pt: "+pt);
+        //System.out.println("Got WSDLEndpoint Action.. Pt: "+pt);
 
         WSDLModel wsdlModel = (WSDLModel) b.getModel();
         Collection<Binding> bindings = new HashSet();
         bindings.add(b);
         final JComponent stc = WSITConfigProvider.getDefault().getWSITServiceConfig(wsdlModel, null, bindings);
         // final ServiceTopComponent stc = new ServiceTopComponent(null, null, wsdlModel, node, null, bindings);
-        System.out.println("Got WsitTC: "+stc);
+        //System.out.println("Got WsitTC: "+stc);
 
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){
                 // tc.addTabs(editors, node, jaxWsModel );
-                DialogDescriptor dialogDesc = new DialogDescriptor(stc, "WS-Policy Attachement: "+node.getName());
+                DialogDescriptor dialogDesc = new DialogDescriptor(stc, "WS-Policy Attachement: "+node.getName());  // NOI18N
                 //dialogDesc.setHelpCtx(new HelpCtx(EditWSAttributesCookieImpl.class));
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
                 dialog.setVisible(true);

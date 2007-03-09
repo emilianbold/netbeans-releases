@@ -52,7 +52,7 @@ public class CasaConnectionWidget extends ConnectionWidget {
         if (state.isSelected ()) {
             bringToFront();
             setStroke(STROKE_SELECTED);
-            setForeground (CasaFactory.getCasaCustomizer().getCOLOR_SELECTED_CONNECTION());
+            setForeground (CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());
         } else if (state.isHovered ()) {
             bringToFront();
             setStroke(STROKE_DEFAULT);

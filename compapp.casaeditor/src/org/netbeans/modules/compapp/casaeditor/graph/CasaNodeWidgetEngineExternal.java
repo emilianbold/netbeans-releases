@@ -25,7 +25,6 @@ import java.awt.*;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.AcceptProviderEngineNode;
 
-
 /**
  *
  * @author Ramesh Dara
@@ -35,6 +34,7 @@ public class CasaNodeWidgetEngineExternal extends CasaNodeWidgetEngine {
     public CasaNodeWidgetEngineExternal(Scene scene) {
         this(scene, true);
     }
+    
     public CasaNodeWidgetEngineExternal(Scene scene, boolean confStatus) {
         super(scene);
         getActions().addAction(CasaFactory.createAcceptAction(new AcceptProviderEngineNode((CasaModelGraphScene) scene)));
@@ -43,27 +43,27 @@ public class CasaNodeWidgetEngineExternal extends CasaNodeWidgetEngine {
         setTitleColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_TITLE());
     }
    
+    
     protected Color getBackgroundColor() {
         return Color.WHITE;
     }
+    
     protected Color getPinHolderBorderColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_BORDER();
     }
+    
     protected Color getPinHolderTitleColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_TITLE();
     }
+    
     protected Color getPinHolderBackgroundColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_BACKGROUND();
     }
 
-    public GradientRectangleColorScheme getGradientColorSceheme() {
-        GradientRectangleColorScheme colorScheme = CasaFactory.getCasaCustomizer().getGradientEXT_SU_BACKGROUND();
-        if(getState().isSelected()) {
-            colorScheme.setBorderColor(CasaFactory.getCasaCustomizer().getCOLOR_SELECTED_BORDER());
-        } else {
-            colorScheme.setBorderColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_BORDER());
-        }
-        return colorScheme;
+    public Font getPinFont() {
+        return CasaFactory.getCasaCustomizer().getFONT_EXT_SU_PIN();
     }
-    
+    public Color getPinColor() {
+        return CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_PIN();
+    }
 }

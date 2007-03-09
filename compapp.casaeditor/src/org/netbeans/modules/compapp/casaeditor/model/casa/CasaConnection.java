@@ -25,9 +25,9 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  * @author jqian
  */
 public interface CasaConnection extends CasaComponent {
-    public static final String STATE_PROPERTY = "state";
-    public static final String PROVIDER_PROPERTY = "provider";
-    public static final String CONSUMER_PROPERTY = "consumer";
+    public static final String STATE_PROPERTY = "state";            // NOI18N
+    public static final String PROVIDER_PROPERTY = "provider";      // NOI18N
+    public static final String CONSUMER_PROPERTY = "consumer";      // NOI18N
         
     void setConsumer(NamedComponentReference<CasaEndpoint> endpoint);
     NamedComponentReference<CasaEndpoint> getConsumer();

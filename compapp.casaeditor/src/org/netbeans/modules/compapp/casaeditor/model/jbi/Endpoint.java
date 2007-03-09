@@ -25,9 +25,9 @@ import javax.xml.namespace.QName;
  * @author jqian
  */
 public interface Endpoint extends JBIComponent {
-    public static final String INTERFACE_NAME_PROPERTY = "interface-name"; 
-    public static final String SERVICE_NAME_PROPERTY = "service-name";
-    public static final String ENDPOINT_NAME_PROPERTY = "endpoint-name"; 
+    public static final String INTERFACE_NAME_PROPERTY = "interface-name";  // NOI18N
+    public static final String SERVICE_NAME_PROPERTY = "service-name";      // NOI18N
+    public static final String ENDPOINT_NAME_PROPERTY = "endpoint-name";    // NOI18N
     
     String getInterfaceName();
     void setInterfaceName(String interfaceName);

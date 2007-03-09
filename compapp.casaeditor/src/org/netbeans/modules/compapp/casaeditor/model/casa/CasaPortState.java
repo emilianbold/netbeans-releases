@@ -18,15 +18,17 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author jqian
  */
 public enum CasaPortState {
     
-    VISIBLE("visible"),
-    INVISIBLE("invisible"),
-    NEW("new");
+    VISIBLE("visible"),                 // NOI18N
+    INVISIBLE("invisible"),             // NOI18N
+    NEW("new");                         // NOI18N
     
     CasaPortState(String state) {
         this.state = state;
@@ -39,14 +41,14 @@ public enum CasaPortState {
     public static CasaPortState getCasaPortState(String state) {
         if (state == null) {
             return null;
-        } else if (state.equals("visible")) {
+        } else if (state.equals("visible")) {       // NOI18N
             return VISIBLE;
-        } else if (state.equals("invisible")) {
-            return INVISIBLE;
-        } else if (state.equals("new")) {
+        } else if (state.equals("invisible")) {     // NOI18N
+            return INVISIBLE;   
+        } else if (state.equals("new")) {           // NOI18N
             return NEW;
         } else {
-            throw new RuntimeException("Illegal connection state: " + state);
+            throw new RuntimeException(NbBundle.getMessage(CasaPortState.class, "Error_Illegal_connection_state") + state); // NOI18N
         }
     }
     

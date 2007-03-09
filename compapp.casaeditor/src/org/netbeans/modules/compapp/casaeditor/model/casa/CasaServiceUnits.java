@@ -26,8 +26,8 @@ import java.util.List;
  */
 public interface CasaServiceUnits extends CasaComponent {
     
-    public static final String SERVICE_ENGINE_SERVICE_UNIT_PROPERTY = "service-engine-service-unit";
-    public static final String BINDING_COMPONENT_SERVICE_UNIT_PROPERTY = "binding-component-service-unit";
+    public static final String SERVICE_ENGINE_SERVICE_UNIT_PROPERTY = "service-engine-service-unit";        // NOI18N
+    public static final String BINDING_COMPONENT_SERVICE_UNIT_PROPERTY = "binding-component-service-unit";  // NOI18N
     
     List<CasaServiceEngineServiceUnit> getServiceEngineServiceUnits();
     void removeServiceEngineServiceUnit(CasaServiceEngineServiceUnit engineServiceUnit);

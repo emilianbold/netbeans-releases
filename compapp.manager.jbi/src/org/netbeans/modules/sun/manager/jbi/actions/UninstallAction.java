@@ -54,14 +54,14 @@ public class UninstallAction extends NodeAction {
                         Object obj = lookup.lookup(Uninstallable.class);
                         
                         if (obj instanceof Uninstallable) {
-                            Uninstallable uninstallable = (Uninstallable)obj;
-                            uninstallable.uninstall();
-                            // There will be at most one parent node that
+                            // There will be at least one parent node that
                             // needs refreshing
                             Node parentNode = node.getParentNode();
                             if (!parentNodes.contains(parentNode)) {
                                 parentNodes.add(parentNode);
                             }
+                            Uninstallable uninstallable = (Uninstallable)obj;
+                            uninstallable.uninstall();
                         }
                     }
                     
@@ -78,7 +78,7 @@ public class UninstallAction extends NodeAction {
                         }
                     });                  
                     
-                } catch(java.lang.RuntimeException rex) {
+                } catch(RuntimeException rex) {
                     //gobble up exception
                 }
             }
