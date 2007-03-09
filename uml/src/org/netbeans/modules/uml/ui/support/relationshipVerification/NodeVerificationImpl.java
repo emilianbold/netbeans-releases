@@ -27,7 +27,6 @@ package org.netbeans.modules.uml.ui.support.relationshipVerification;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.Iterator;
-
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.common.generics.ETTripleT;
 import org.netbeans.modules.uml.core.IApplication;
@@ -36,7 +35,6 @@ import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IFinal
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IPseudoState;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -47,7 +45,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.IPort;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IComponent;
-import org.netbeans.modules.uml.core.support.umlsupport.ETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
@@ -55,7 +52,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
-import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETNode;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.IETGraphObjectUI;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.umltsconversions.RectConversions;
@@ -67,12 +63,10 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import org.netbeans.modules.uml.ui.support.applicationmanager.DrawingFactory;
 import com.tomsawyer.editor.TSENode;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSPoint;
 import com.tomsawyer.drawing.geometry.TSPoint;
+import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 
 /**
  * 
@@ -271,159 +265,176 @@ public class NodeVerificationImpl implements INodeVerification {
 	 * @param sInitializationString [in] The init string that was used to create the model element.
 	 */
 	private void postCreate(IElement pModelElement, String sInitStr)
-	{
-		if (sInitStr == null)
-		{
-			return;
-		}
-      
-      int pos = sInitStr.indexOf(' ');
-      if(pos >= 0)
-      {
-         sInitStr = sInitStr.substring(pos);
-         sInitStr = sInitStr.trim();
-      }
-      
-		IPseudoState pPseudoState = null;
-		IState pState = null;
-		IClassifier pClassifier = null;
-		IPartFacade pPartFacade = null;
-		IFinalState pFinalState = null;
-		IPort pPort = null;
-		if (pModelElement instanceof IPseudoState)
-		{
-			pPseudoState = (IPseudoState)pModelElement;
-		}
-		if (pModelElement instanceof IState)
-		{
-			pState = (IState)pModelElement;
-		}
-		if (pModelElement instanceof IClassifier)
-		{
-			pClassifier = (IClassifier)pModelElement;
-		}
-		if (pModelElement instanceof IPartFacade)
-		{
-			pPartFacade = (IPartFacade)pModelElement;
-		}
-		if (pModelElement instanceof IFinalState)
-		{
-			pFinalState = (IFinalState)pModelElement;
-		}
-		if (pModelElement instanceof IPort)
-		{
-			pPort = (IPort)pModelElement;
-		}
-		
-		if (pPseudoState != null)
-		{
-			if (sInitStr.equals("PseudoState Choice"))
-			{
-				pPseudoState.setKind(IPseudostateKind.PK_CHOICE);
-			}
-			else if (sInitStr.equals("PseudoState EntryPoint"))
-			{
-				pPseudoState.setKind(IPseudostateKind.PK_ENTRYPOINT);
-				pPseudoState.setName("activeEntry");
-			}
-			else if (sInitStr.equals("PseudoState DeepHistory"))
-			{
-				pPseudoState.setKind(IPseudostateKind.PK_DEEPHISTORY);
-			}
-			else if (sInitStr.equals("PseudoState ShallowHistory"))
-			{
-				pPseudoState.setKind(IPseudostateKind.PK_SHALLOWHISTORY);
-			}
-			else if (sInitStr.equals("PseudoState Initial"))
-			{
-				pPseudoState.setKind(IPseudostateKind.PK_INITIAL);
-			}
-			else if (sInitStr.equals("PseudoState Junction"))
-			{
-				pPseudoState.setKind(IPseudostateKind.PK_JUNCTION);
-			}
-			else if (sInitStr.equals("PseudoState Join") || sInitStr.equals("PseudoState Join Horizontal"))
-			{
-				pPseudoState.setKind(IPseudostateKind.PK_JOIN);
-			}
-		}
-		else if (pPartFacade != null)
-		{
-			if (pPartFacade instanceof IParameterableElement)
-			{
-				IParameterableElement pParamEle = (IParameterableElement)pPartFacade;
-				if (sInitStr.equals("PartFacade Interface"))
-				{
-					pParamEle.setTypeConstraint("Interface");
-					if (pPartFacade instanceof IClassifier)
-					{
-						((IClassifier)pPartFacade).setIsAbstract(true);
-					}
-				}
-				else if (sInitStr.equals("PartFacade Class"))
-				{
-					pParamEle.setTypeConstraint("Class");
-				}
-				else if (sInitStr.equals("PartFacade UseCase"))
-				{
-					pParamEle.setTypeConstraint("UseCase");
-				}
-				else if (sInitStr.equals("PartFacade Actor"))
-				{
-					pParamEle.setTypeConstraint("Actor");
-				}
-			}
-		}
-		else if (pFinalState != null)
-		{
-			if (sInitStr.equals("FinalState Aborted"))
-			{
-				pFinalState.setName("aborted");
-			}
-		}
-		else if (pState != null)
-		{
-			if (sInitStr.equals("CompositeState"))
-			{
-				pState.setIsComposite(true);
-			}
-			else if (sInitStr.equals("SimpleState"))
-			{
-				pState.setIsSimple(true);
-			}
-			else if (sInitStr.equals("SubmachineState"))
-			{
-				pState.setIsSubmachineState(true);
-			}
-		}
-		else if (pClassifier != null)
-		{
-			if (sInitStr.equals("TemplateClass"))
-			{
-				IElement pEle = DrawingFactory.retrieveModelElement("ParameterableElement");
-				if (pEle != null && pEle instanceof IParameterableElement)
-				{
-					pClassifier.addTemplateParameter((IParameterableElement)pEle);
-				}
-			}
-			else if (sInitStr.equals("UtilityClass"))
-			{
-				pClassifier.applyStereotype2("utility");
-			}
-		}
-		else if (pPort != null)
-		{
-			// The namespace of the port is assumed to be the featuring classifier
-			INamespace pSpace = pPort.getNamespace();
-			
-			if (pSpace != null && pSpace instanceof IComponent)
-			{
-				IComponent pComponent = (IComponent)pSpace;
-				pPort.setFeaturingClassifier(pComponent);
-				pComponent.addExternalInterface(pPort);
-			}
-		}
-	}
+        {
+           if (sInitStr == null)
+           {
+              return;
+           }
+           
+           int pos = sInitStr.indexOf(' ');
+           if(pos >= 0)
+           {
+              sInitStr = sInitStr.substring(pos);
+              sInitStr = sInitStr.trim();
+           }
+           
+           IPseudoState pPseudoState = null;
+           IState pState = null;
+           IClassifier pClassifier = null;
+           IPartFacade pPartFacade = null;
+           IFinalState pFinalState = null;
+           IPort pPort = null;
+           ILifeline pLifeline = null;
+           
+           if (pModelElement instanceof IPseudoState)
+           {
+              pPseudoState = (IPseudoState)pModelElement;
+           }
+           if (pModelElement instanceof IState)
+           {
+              pState = (IState)pModelElement;
+           }
+           if (pModelElement instanceof IClassifier)
+           {
+              pClassifier = (IClassifier)pModelElement;
+           }
+           if (pModelElement instanceof IPartFacade)
+           {
+              pPartFacade = (IPartFacade)pModelElement;
+           }
+           if (pModelElement instanceof IFinalState)
+           {
+              pFinalState = (IFinalState)pModelElement;
+           }
+           if (pModelElement instanceof IPort)
+           {
+              pPort = (IPort)pModelElement;
+           }
+           if (pModelElement instanceof ILifeline)
+           {
+              pLifeline = (ILifeline)pModelElement;
+           }
+           
+           if (pPseudoState != null)
+           {
+              if (sInitStr.equals("PseudoState Choice"))
+              {
+                 pPseudoState.setKind(IPseudostateKind.PK_CHOICE);
+              }
+              else if (sInitStr.equals("PseudoState EntryPoint"))
+              {
+                 pPseudoState.setKind(IPseudostateKind.PK_ENTRYPOINT);
+                 pPseudoState.setName("activeEntry");
+              }
+              else if (sInitStr.equals("PseudoState DeepHistory"))
+              {
+                 pPseudoState.setKind(IPseudostateKind.PK_DEEPHISTORY);
+              }
+              else if (sInitStr.equals("PseudoState ShallowHistory"))
+              {
+                 pPseudoState.setKind(IPseudostateKind.PK_SHALLOWHISTORY);
+              }
+              else if (sInitStr.equals("PseudoState Initial"))
+              {
+                 pPseudoState.setKind(IPseudostateKind.PK_INITIAL);
+              }
+              else if (sInitStr.equals("PseudoState Junction"))
+              {
+                 pPseudoState.setKind(IPseudostateKind.PK_JUNCTION);
+              }
+              else if (sInitStr.equals("PseudoState Join") || sInitStr.equals("PseudoState Join Horizontal"))
+              {
+                 pPseudoState.setKind(IPseudostateKind.PK_JOIN);
+              }
+           }
+           else if (pPartFacade != null)
+           {
+              if (pPartFacade instanceof IParameterableElement)
+              {
+                 IParameterableElement pParamEle = (IParameterableElement)pPartFacade;
+                 if (sInitStr.equals("PartFacade Interface"))
+                 {
+                    pParamEle.setTypeConstraint("Interface");
+                    if (pPartFacade instanceof IClassifier)
+                    {
+                       ((IClassifier)pPartFacade).setIsAbstract(true);
+                    }
+                 }
+                 else if (sInitStr.equals("PartFacade Class"))
+                 {
+                    pParamEle.setTypeConstraint("Class");
+                 }
+                 else if (sInitStr.equals("PartFacade UseCase"))
+                 {
+                    pParamEle.setTypeConstraint("UseCase");
+                 }
+                 else if (sInitStr.equals("PartFacade Actor"))
+                 {
+                    pParamEle.setTypeConstraint("Actor");
+                 }
+              }
+           }
+           else if (pFinalState != null)
+           {
+              if (sInitStr.equals("FinalState Aborted"))
+              {
+                 pFinalState.setName("aborted");
+              }
+           }
+           else if (pState != null)
+           {
+              if (sInitStr.equals("CompositeState"))
+              {
+                 pState.setIsComposite(true);
+              }
+              else if (sInitStr.equals("SimpleState"))
+              {
+                 pState.setIsSimple(true);
+              }
+              else if (sInitStr.equals("SubmachineState"))
+              {
+                 pState.setIsSubmachineState(true);
+              }
+           }
+           else if (pClassifier != null)
+           {
+              if (sInitStr.equals("TemplateClass"))
+              {
+                 IElement pEle = DrawingFactory.retrieveModelElement("ParameterableElement");
+                 if (pEle != null && pEle instanceof IParameterableElement)
+                 {
+                    pClassifier.addTemplateParameter((IParameterableElement)pEle);
+                 }
+              }
+              else if (sInitStr.equals("UtilityClass"))
+              {
+                 pClassifier.applyStereotype2("utility");
+              }
+           }
+           else if (pPort != null)
+           {
+              // The namespace of the port is assumed to be the featuring classifier
+              INamespace pSpace = pPort.getNamespace();
+              
+              if (pSpace != null && pSpace instanceof IComponent)
+              {
+                 IComponent pComponent = (IComponent)pSpace;
+                 pPort.setFeaturingClassifier(pComponent);
+                 pComponent.addExternalInterface(pPort);
+              }
+           }
+           // Fixed 82207, 82208, 78848
+           // Set an attribute of this lifeline to indicate that it is an actor lifeline.
+           // This attribute can later be used to determine the presentation of the element
+           // on collaboration and sequence diagram
+           else if (pLifeline != null)
+           {
+              if (sInitStr.equals("Actor"))
+              {
+                 pLifeline.setIsActorLifeline(true);
+              }
+           }
+        }
 
 	/**
 	 * Verifies that this node is valid at this point.  Fired by the diagram 
