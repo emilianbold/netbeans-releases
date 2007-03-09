@@ -38,7 +38,6 @@ import com.tomsawyer.graph.TSGraph;
 import com.tomsawyer.graph.TSGraphObject;
 import com.tomsawyer.graph.TSNode;
 import com.tomsawyer.util.TSObject;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
@@ -57,7 +56,6 @@ import javax.swing.Action;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.common.ETSystem;
 import org.netbeans.modules.uml.common.Util;
@@ -218,7 +216,6 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.diagramtools.DiagramAddPart
 import org.netbeans.modules.uml.ui.swing.drawingarea.diagramtools.NodeDecoratorTool;
 import org.netbeans.modules.uml.ui.swing.propertyeditor.IPropertyEditor;
 import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.Separator;
-
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.PropertiesAction;
@@ -2179,6 +2176,10 @@ public class ADCoreEngine extends DiagramEngine
                             "MBK_SYNCH_ELEMENT_WITH_DATA")); // NOI18N
 
                         addSeparatorMenuItem(manager);
+                        createNodeAlignmentPullright(manager);
+                        addSeparatorMenuItem(manager);
+                        
+                        addSeparatorMenuItem(manager);
 
                         if (pGraphic == null)
                             createNodeNavigationPullright(manager);
@@ -2987,6 +2988,37 @@ public class ADCoreEngine extends DiagramEngine
 		}
 	}
 
+    private void createNodeAlignmentPullright(IMenuManager manager)
+    {
+        IMenuManager alignMenu = manager.createSubMenu(loadString(
+            "IDS_ALIGNMENT_POPUP_TITLE"), 
+            "org.netbeans.modules.uml.view.drawingarea.edit.popup");
+        
+        if (alignMenu != null)
+        {
+            // Add horizontal alignment menu actions
+            alignMenu.add(createMenuAction(
+                loadString("IDS_ALIGN_LEFT"), "MBK_ALIGN_LEFT"));
+            alignMenu.add(createMenuAction(
+                loadString("IDS_ALIGN_HCENTER"), "MBK_ALIGN_HCENTER"));
+            alignMenu.add(createMenuAction(
+                loadString("IDS_ALIGN_RIGHT"), "MBK_ALIGN_RIGHT"));
+            
+            addSeparatorMenuItem(alignMenu);
+            
+            // Add vertical alignment menu actions
+            alignMenu.add(createMenuAction(
+                loadString("IDS_ALIGN_TOP"), "MBK_ALIGN_TOP"));
+            alignMenu.add(createMenuAction(
+                loadString("IDS_ALIGN_VCENTER"), "MBK_ALIGN_VCENTER"));
+            alignMenu.add(createMenuAction(
+                loadString("IDS_ALIGN_BOTTOM"), "MBK_ALIGN_BOTTOM"));
+
+            manager.add(alignMenu);
+        }
+    }
+        
+        
 	private String loadString(String key) {
 		try {
 			return RESOURCE_BUNDLE.getString(key);
@@ -4244,6 +4276,54 @@ public class ADCoreEngine extends DiagramEngine
         else if (id.equals("MBK_DIMENSIONAL_RESIZE_ELEMENT"))
         {
             if (control.resizeDimensions())
+                control.setIsDirty(true);
+            
+            bHandled = true;
+        }
+        
+        else if (id.equals("MBK_ALIGN_LEFT"))
+        {
+            if (control.alignLeft())
+                control.setIsDirty(true);
+            
+            bHandled = true;
+        }
+        
+        else if (id.equals("MBK_ALIGN_HCENTER"))
+        {
+            if (control.alignHorizontalCenter())
+                control.setIsDirty(true);
+            
+            bHandled = true;
+        }
+        
+        else if (id.equals("MBK_ALIGN_RIGHT"))
+        {
+            if (control.alignRight())
+                control.setIsDirty(true);
+            
+            bHandled = true;
+        }
+        
+        else if (id.equals("MBK_ALIGN_TOP"))
+        {
+            if (control.alignTop())
+                control.setIsDirty(true);
+            
+            bHandled = true;
+        }
+        
+        else if (id.equals("MBK_ALIGN_VCENTER"))
+        {
+            if (control.alignVerticalCenter())
+                control.setIsDirty(true);
+            
+            bHandled = true;
+        }
+        
+        else if (id.equals("MBK_ALIGN_BOTTOM"))
+        {
+            if (control.alignBottom())
                 control.setIsDirty(true);
             
             bHandled = true;

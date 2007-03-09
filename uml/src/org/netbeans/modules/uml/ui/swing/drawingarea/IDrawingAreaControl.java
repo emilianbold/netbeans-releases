@@ -976,6 +976,36 @@ public interface IDrawingAreaControl {
     public boolean resizeDimensions();
     
     /**
+     * Align selected elements to the left position of the first selected element.
+     */
+    public boolean alignLeft();
+    
+    /**
+     * Align selected elements horizontally to the center position of the first selected element.
+     */
+    public boolean alignHorizontalCenter();
+    
+    /**
+     * Align selected elements to the right position of the first selected element.
+     */
+    public boolean alignRight();
+    
+    /**
+     * Align selected elements to the top position of the first selected element.
+     */
+    public boolean alignTop();
+    
+    /**
+     * Align selected elements vertically to the cener position of the first selected element.
+     */
+    public boolean alignVerticalCenter();
+    
+    /**
+     * Align selected elements to the bottom position of the first selected element.
+     */
+    public boolean alignBottom();
+    
+    /**
      * Resizes the elements (selected or all) to their contents.
      */
     public void sizeToContents( boolean bJustSelectedElements );

@@ -189,6 +189,17 @@ public class DrawingAreaContextMenuSorter extends SorterHelper implements IProdu
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_RESET_EDGES", new Integer(IMenuKind.MK_BUTTON)));
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_RESIZE_ELEMENT_TO_CONTEXT", new Integer(IMenuKind.MK_BUTTON)));
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DIMENSIONAL_RESIZE_ELEMENT", new Integer(IMenuKind.MK_BUTTON)));
+			
+                        // horizontal alignment
+                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_LEFT", new Integer(IMenuKind.MK_BUTTON)));
+			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_HCENTER", new Integer(IMenuKind.MK_BUTTON)));
+			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_RIGHT", new Integer(IMenuKind.MK_BUTTON)));
+
+                        // vertical alignment
+			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_TOP", new Integer(IMenuKind.MK_BUTTON)));
+			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_VCENTER", new Integer(IMenuKind.MK_BUTTON)));
+			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_BOTTOM", new Integer(IMenuKind.MK_BUTTON)));
+                        
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_SYNCH_ELEMENT_WITH_DATA", new Integer(IMenuKind.MK_BUTTON)));
 			m_TopSortItems.add(new ETPairT<String, Integer>("", new Integer(IMenuKind.MK_SEPARATOR)));
 			m_TopSortItems.add(new ETPairT<String, Integer>(LabelManager.loadString("IDS_POPUP_HIDING_TITLE"), new Integer(IMenuKind.MK_PULLRIGHTTITLE)));

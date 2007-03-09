@@ -12518,65 +12518,136 @@ public class ADDrawingAreaControl extends ApplicationView
         return addedNodes;
     }
 
-                        
-//    public ETNode addNodeToCenter(IElement element)
-//    {
-//        if (element == null)
-//            return null;
-//        
-//        try
-//        {
-//            ETNode addedNode = addNode(element, getCenterPoint());
-//            
-//            if (addedNode != null)
-//            {
-//                addedNode.setSelected(true);
-//                addedNode.invalidate();
-//            }
-//            
-//            return addedNode;
-//        }
-//        
-//        catch (ETException ex)
-//        {
-//            ex.printStackTrace();
-//            return null;
-//        }
-//    }
-    
-//    //
-//    // Property change support
-//    //
-//
-//    /** Add a property change listener.
-//     * @param l the listener to add
-//    */
-//    public void addPropertyChangeListener (PropertyChangeListener l) {
-//        synchronized (listenersMethodLock) {
-//            if (changeSupport == null)
-//                changeSupport = new PropertyChangeSupport(this);
-//        }
-//        changeSupport.addPropertyChangeListener(l);
-//    }
-//
-//    /** Remove a property change listener.
-//     * @param l the listener to remove
-//    */
-//    public void removePropertyChangeListener (PropertyChangeListener l) {
-//        if (changeSupport != null)
-//            changeSupport.removePropertyChangeListener(l);
-//    }
-//
-//    /** Fires property change notification to all listeners registered via
-//    * {@link #addPropertyChangeListener}.
-//    *
-//    * @param name of property
-//    * @param oldValue old value
-//    * @param newValue new value
-//    */
-//    protected final void firePropertyChange (String name, boolean oldValue, boolean newValue) {
-//        if (changeSupport != null)
-//            changeSupport.firePropertyChange(name, oldValue, newValue);
-//    }
+   public final static int ALIGN_LEFT = 0;
+   public final static int ALIGN_HCENTER = 1;
+   public final static int ALIGN_RIGHT = 2;
+   public final static int ALIGN_TOP = 3;
+   public final static int ALIGN_VCENTER = 4;
+   public final static int ALIGN_BOTTOM = 5;
 
+   public boolean alignLeft()
+   {
+       return align(ALIGN_LEFT);
+   }
+   
+    
+    public boolean alignHorizontalCenter() 
+    {
+       return align(ALIGN_HCENTER);
+    }
+
+    public boolean alignRight() 
+    {
+       return align(ALIGN_RIGHT);
+    }
+
+    public boolean alignTop() 
+    {
+       return align(ALIGN_TOP);
+    }
+
+    public boolean alignVerticalCenter() 
+    {
+       return align(ALIGN_VCENTER);
+    }
+
+    public boolean alignBottom() 
+    {
+       return align(ALIGN_BOTTOM);
+    }
+    
+    
+    private boolean align(int alignHow)
+    {
+       ETList<IPresentationElement> presElements = null;
+       presElements = getSelectedPresentionNodes();
+       
+       if (presElements == null || presElements.size() < 2)
+           return false;
+
+       // get the first selected node to align to
+       TSENode anchorNode = null;
+       for (IPresentationElement presElem: presElements)
+       {
+           if (presElem != null && presElem instanceof INodePresentation)
+           {
+               
+               break; // we just need the first selected presentation node
+           }
+       }
+
+       // loop through selected elements and align them
+       for (IPresentationElement presElem: presElements)
+       {
+           if (presElem != null && presElem instanceof INodePresentation)
+           {
+               INodePresentation nodePres = (INodePresentation)presElem;
+               TSENode tsNode = nodePres.getTSNode();
+
+               if (anchorNode == null)
+               {
+                   anchorNode = tsNode;
+                   continue; // this is the node to align to
+               }
+
+               nodePres.invalidate();
+               tsNode.setCenter(calculateNewCenter(
+                   anchorNode, tsNode, alignHow));
+                nodePres.invalidate();
+           } // if instanceof INodePresentation
+       } // for
+       
+       // need to call refresh here because the drawing area does not refresh
+       // properly when elements are moved
+       refresh(true);
+       
+       requestFocus();
+       return true;
+    }
+
+    private TSConstPoint calculateNewCenter(
+        TSENode anchorNode, TSENode alignNode, int alignHow)
+    {
+        switch(alignHow)
+        {
+            case ALIGN_LEFT:
+                return new TSConstPoint(
+                    anchorNode.getCenterX() - 
+                        ((anchorNode.getWidth() - alignNode.getWidth()) / 2), 
+                    alignNode.getCenterY());
+                
+            case ALIGN_HCENTER:
+                return new TSConstPoint(
+                    anchorNode.getCenterX(), 
+                    alignNode.getCenterY());
+                
+            case ALIGN_RIGHT:
+                return new TSConstPoint(
+                    anchorNode.getCenterX() + 
+                        ((anchorNode.getWidth() - alignNode.getWidth()) / 2), 
+                    alignNode.getCenterY());
+                
+            case ALIGN_TOP:
+                return new TSConstPoint(
+                    alignNode.getCenterX(),
+                    anchorNode.getCenterY() +
+                        ((anchorNode.getHeight() - alignNode.getHeight()) / 2));
+                
+            case ALIGN_VCENTER:
+                return new TSConstPoint(
+                    alignNode.getCenterX(), 
+                    anchorNode.getCenterY());
+                
+            case ALIGN_BOTTOM:
+                return new TSConstPoint(
+                    alignNode.getCenterX(),
+                    anchorNode.getCenterY() -
+                        ((anchorNode.getHeight() - alignNode.getHeight()) / 2));
+                
+        }
+        
+        // if all else fails, return the same center so it doesn't move at all
+        // should never reach here, though
+        return alignNode.getCenter();
+    }
 }
