@@ -60,17 +60,31 @@ public final class ProjectOp {
      */
     public static ProjectOp valueOf(LogRecord rec) {
         if ("UI_CLOSED_PROJECTS".equals(rec.getMessage())) {
-            String type = (String) rec.getParameters()[0];
-            String name = (String) rec.getParameters()[1];
-            int cnt = Integer.parseInt((String)rec.getParameters()[2]);
+            String type = getStringParam(rec, 0, "unknown"); // NOI18N
+            String name = getStringParam(rec, 1, "unknown"); // NOI18N
+            int cnt = Integer.parseInt(getStringParam(rec, 2, "0"));
             return new ProjectOp(name, type, -cnt);
         }
         if ("UI_OPEN_PROJECTS".equals(rec.getMessage())) {
-            String type = (String) rec.getParameters()[0];
-            String name = (String) rec.getParameters()[1];
-            int cnt = Integer.parseInt((String)rec.getParameters()[2]);
+            String type = getStringParam(rec, 0, "unknown"); // NOI18N
+            String name = getStringParam(rec, 1, "unknown"); // NOI18N
+            int cnt = Integer.parseInt(getStringParam(rec, 2, "0"));
             return new ProjectOp(name, type, cnt);
         }
         return null;
+    }
+    
+    private static String getStringParam(LogRecord rec, int index, String def) {
+        if (rec == null) {
+            return def;
+        }
+        Object[] params = rec.getParameters();
+        if (params == null || params.length <= index) {
+            return def;
+        }
+        if (params[index] instanceof String) {
+            return (String)params[index];
+        }
+        return def;
     }
 }
