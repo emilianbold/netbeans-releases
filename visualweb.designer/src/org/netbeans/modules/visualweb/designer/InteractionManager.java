@@ -930,7 +930,7 @@ public class InteractionManager {
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 // Icons on mac look compressed - use a 32x32 (twice as large)
                 // version of the pointer
-                image = Utilities.loadImage("org/netbeans/modules/visualweb/designer/insert-cursor-mac.gif"); //NOI18N
+                image = Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/insert-cursor-mac.gif"); //NOI18N
                 // WEIRD! Would have thought it should be 16,16 or 17,17
                 // here, but apparently while the image needs to be
                 // twice the size, the hotspot needs to be in the 16x16
@@ -938,7 +938,7 @@ public class InteractionManager {
                 p = new Point(9,9);
             } else {
             */
-            image = org.openide.util.Utilities.loadImage("org/netbeans/modules/visualweb/designer/insert-cursor.gif"); //NOI18N
+            image = org.openide.util.Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/insert-cursor.gif"); //NOI18N
             p = new Point(9, 9);
 
             /* This doesn't work well - want to set our own hotspot
@@ -973,7 +973,7 @@ public class InteractionManager {
                 p = new Point(9,9);
             } else {
             */
-            image = org.openide.util.Utilities.loadImage("org/netbeans/modules/visualweb/designer/linked-cursor.gif"); //NOI18N
+            image = org.openide.util.Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/linked-cursor.gif"); //NOI18N
             p = new Point(9, 9);
 
             /* This doesn't work well - want to set our own hotspot
