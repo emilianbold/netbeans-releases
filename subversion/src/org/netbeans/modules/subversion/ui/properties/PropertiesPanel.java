@@ -89,35 +89,34 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
 
         btnBrowse.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnBrowse.text")); // NOI18N
 
-        btnAdd.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnAdd.text")); // NOI18N
-        btnAdd.setMaximumSize(new java.awt.Dimension(75, 23));
-        btnAdd.setMinimumSize(new java.awt.Dimension(75, 23));
-
         org.jdesktop.layout.GroupLayout propsPanelLayout = new org.jdesktop.layout.GroupLayout(propsPanel);
         propsPanel.setLayout(propsPanelLayout);
         propsPanelLayout.setHorizontalGroup(
             propsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 412, Short.MAX_VALUE)
+            .add(0, 421, Short.MAX_VALUE)
         );
         propsPanelLayout.setVerticalGroup(
             propsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 124, Short.MAX_VALUE)
+            .add(0, 101, Short.MAX_VALUE)
         );
-
-        btnRefresh.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnRefresh.text")); // NOI18N
-        btnRefresh.setMaximumSize(new java.awt.Dimension(75, 23));
-        btnRefresh.setMinimumSize(new java.awt.Dimension(75, 23));
-
-        cbxRecursively.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.cbxRecursively.text")); // NOI18N
-        cbxRecursively.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbxRecursively.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         txtAreaValue.setColumns(20);
         txtAreaValue.setRows(5);
         jScrollPane1.setViewportView(txtAreaValue);
 
+        btnRefresh.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnRefresh.text")); // NOI18N
+        btnRefresh.setMaximumSize(new java.awt.Dimension(75, 23));
+        btnRefresh.setMinimumSize(new java.awt.Dimension(75, 23));
+
         btnRemove.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnRemove.text")); // NOI18N
-        btnRemove.setPreferredSize(new java.awt.Dimension(75, 23));
+
+        btnAdd.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnAdd.text")); // NOI18N
+        btnAdd.setMaximumSize(new java.awt.Dimension(75, 23));
+        btnAdd.setMinimumSize(new java.awt.Dimension(75, 23));
+
+        cbxRecursively.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.cbxRecursively.text")); // NOI18N
+        cbxRecursively.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbxRecursively.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -126,32 +125,31 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
                     .add(jLabel1)
                     .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, comboName, 0, 306, Short.MAX_VALUE)
-                            .add(btnBrowse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, comboName, 0, 315, Short.MAX_VALUE)
+                            .add(btnBrowse)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                     .add(propsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(btnAdd, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnAdd, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
+                        .add(cbxRecursively)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 73, Short.MAX_VALUE)
+                        .add(btnRemove)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbxRecursively, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
-                        .add(19, 19, 19)
-                        .add(btnRemove, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(btnRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {btnAdd, btnBrowse, btnRemove}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {btnAdd, btnBrowse, btnRefresh, btnRemove}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -169,13 +167,12 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(btnRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(btnRemove)
                     .add(btnAdd, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE, false)
-                        .add(btnRemove, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(cbxRecursively)
-                        .add(btnRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(cbxRecursively))
+                .add(14, 14, 14)
                 .add(propsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
