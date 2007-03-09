@@ -137,8 +137,8 @@
 
     <folder name="SeeBeyondJbiComponents">
         <!-- JBI Component -->
-        <folder name="com.sun.httpsoapbc">
-            <attr name="id" stringvalue="com.sun.httpsoapbc-1.0-2"/>
+        <folder name="sun-http-binding">
+            <attr name="id" stringvalue="sun-http-binding"/>
             <attr name="description" stringvalue="HTTP Soap Binding to send SOAP messages e.g. to and from BPEL service engine."/>
             <attr name="type" stringvalue="Binding"/>
             <file name="soap.binding-1.0">
