@@ -111,7 +111,8 @@ public class CustomButtonBox extends CssBox {
             font = CssUtilities.getDesignerFontForElement(element, string);
         }
 
-        fm = Toolkit.getDefaultToolkit().getFontMetrics(font);
+//        fm = Toolkit.getDefaultToolkit().getFontMetrics(font);
+        fm = DesignerUtils.getFontMetrics(font);
 
         textWidth = DesignerUtils.getNonTabbedTextWidth(stringChars, 0, stringChars.length, fm);
         prefWidth = textWidth;

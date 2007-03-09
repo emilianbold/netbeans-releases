@@ -258,7 +258,8 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         Font font = UIManager.getFont("Label.font"); // NOI18N
         g.setFont(font);
 
-        FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+//        FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+        FontMetrics metrics = DesignerUtils.getFontMetrics(font);
         FontRenderContext frc = g.getFontRenderContext();
         int lineHeight = metrics.getHeight() + LINESPACING;
 
@@ -580,7 +581,8 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
     public FontMetrics getMetrics() {
         if (metrics == null) {
             Font font = getFont();
-            metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+//            metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+            metrics = DesignerUtils.getFontMetrics(font);
         }
 
         return metrics;
@@ -591,7 +593,8 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         if (boldMetrics == null) {
             Font font = getFont();
             font = font.deriveFont(Font.BOLD);
-            boldMetrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+//            boldMetrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+            boldMetrics = DesignerUtils.getFontMetrics(font);
         }
 
         return boldMetrics;

@@ -62,7 +62,8 @@ public final class CssUtilities {
      * @see #getDesignerFontForElement */
     public static FontMetrics getDesignerFontMetricsForElement(Element element, String text) {
         Font font = getDesignerFontForElement(element, text);
-        return Toolkit.getDefaultToolkit().getFontMetrics(font);
+//        return Toolkit.getDefaultToolkit().getFontMetrics(font);
+        return DesignerUtils.getFontMetrics(font);
     }
 
 //    /** Gets designer <code>Font</code> used for <code>element</code> and text in its value attribute.

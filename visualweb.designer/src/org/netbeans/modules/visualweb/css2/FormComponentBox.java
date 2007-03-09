@@ -317,7 +317,8 @@ public class FormComponentBox extends ContainerBox {
             if ((tag != HtmlTag.TEXTAREA) && (font != null)) {
                 // This returns 0 for some reason:
                 //baseline = font.getBaselineFor('j');
-                FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+//                FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+                FontMetrics metrics = DesignerUtils.getFontMetrics(font);
                 baseline = metrics.getHeight() - metrics.getDescent();
 
                 // Here I wanted to look up the component's insets, and border insets

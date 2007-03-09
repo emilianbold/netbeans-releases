@@ -913,7 +913,8 @@ public class ContainerBox extends CssBox {
 
             Font font = metrics.getFont();
             font = font.deriveFont(Font.ITALIC);
-            metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+//            metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+            metrics = DesignerUtils.getFontMetrics(font);
         }
 
         if (metrics == null) {

@@ -18,8 +18,10 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import javax.swing.SwingUtilities;
 
 import org.openide.ErrorManager;
@@ -1323,4 +1325,10 @@ public class DesignerUtils {
 //
 //        return dropAction & supportedActions;
 //    }    
+
+    /** XXX To keep the deprecated Toolkit.getFrontMetrics method separated.
+    /* TODO Find out how actually is one suppose replace the Toolkit.getFontMetrics method. */
+    public static FontMetrics getFontMetrics(Font font) {
+        return Toolkit.getDefaultToolkit().getFontMetrics(font);
+    }
 }
