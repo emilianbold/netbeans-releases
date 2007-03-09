@@ -86,6 +86,7 @@ public class ScreenViewController implements DesignDocumentAwareness {
                 } else {
                     visual.add (loadingPanel, BorderLayout.CENTER);
                 }
+                toolbar.validate ();
                 visual.validate ();
             }
         });
