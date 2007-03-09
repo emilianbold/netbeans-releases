@@ -26,8 +26,6 @@ import java.util.*;
 
 /**
  * This class supplies the tree graph-oriented layout for a GraphScene.
- * <p>
- * WARNING: This class is meant to be redesigned later.
  *
  * @author David Kaspar
  */

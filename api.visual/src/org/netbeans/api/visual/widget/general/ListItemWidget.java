@@ -26,9 +26,8 @@ import org.netbeans.api.visual.widget.Scene;
 
 /**
  * This class represents a general list item widget. Right now it presented as a label.
- * <p>
- * WARNING: This class is meant to be redesigned later.
-
+ *
+ * @deprecated
  * @author David Kaspar
  */
 public class ListItemWidget extends LabelWidget {

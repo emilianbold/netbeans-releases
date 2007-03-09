@@ -26,13 +26,12 @@ import java.util.List;
 /**
  * This class is an extension of the ConnectionWidget. Primarily it is used with FreeRouter and optionally Free*Anchor.
  * It has a method for adding and removing control points on specific locations.
- * <p>
- * WARNING: This class is meant to be redesigned later.
- * @deprecated
+ *
  * @author Alex
  */
+// TODO - later, logic of this class can be moved to the ConnectionWidget class directly
 // TODO - control points can be modified by accessing: getControlPoints ().get (0).x or y
-@Deprecated public class FreeConnectionWidget extends ConnectionWidget {
+public class FreeConnectionWidget extends ConnectionWidget {
 
     private double createSensitivity=1.00, deleteSensitivity=5.00;
 

@@ -29,9 +29,8 @@ import java.awt.*;
 /**
  * This class represents a general list widget which is rendered as a rectangle with a header on top and list item widgets
  * underneath.
- * <p>
- * Note: This class is meant to be redesigned later.
  *
+ * @deprecated
  * @author David Kaspar
  */
 public class ListWidget extends Widget {
