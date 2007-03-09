@@ -167,11 +167,23 @@ public interface ILifeline extends INamedElement
 	*/
 	public void setRepresentingClassifier2( String classifierName );
     
-    /**
-     * Sets the representing classifier on this Lifeline by the name or alias 
-     * of that Classifier
-     *
-     * @param alias The name of the Classifier to locate and set.
-	 */
-    public void setRepresentingClassifierWithAlias( String alias );
+        /**
+         * Sets the representing classifier on this Lifeline by the name or alias
+         * of that Classifier
+         *
+         * @param alias The name of the Classifier to locate and set.
+         */
+        public void setRepresentingClassifierWithAlias( String alias );
+    
+        /**
+         * Sets the flag to indicate if this lifeline is the Actor lifeline 
+         *
+         * @param the boolean value to indicate if this lifeline is the Actor lifeline 
+         */
+        public void setIsActorLifeline(boolean val);
+        
+        /**
+         * Gets the flag to indicate if this lifeline is the Actor lifeline 
+         */
+        public boolean getIsActorLifeline();
 }

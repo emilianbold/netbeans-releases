@@ -21,7 +21,6 @@ package org.netbeans.modules.uml.core.metamodel.dynamics;
 
 import org.dom4j.Document;
 import org.dom4j.Node;
-
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
@@ -37,6 +36,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IExpression;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.NamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IPart;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IStructuredClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
@@ -425,6 +425,24 @@ public class Lifeline extends NamedElement implements ILifeline
                 setRepresentingClassifier2(alias);
             }
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline#setIsActorLifeline(boolean val)
+     */
+    public void setIsActorLifeline(boolean val)
+    {
+       String boolStr = String.valueOf(val);
+       UMLXMLManip.setAttributeValue(this, "actorLifeline", boolStr);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline#getIsActorLifeline(boolean val)
+     */
+    public boolean getIsActorLifeline()
+    {
+       String booleanStr = UMLXMLManip.getAttributeValue(getNode(), "actorLifeline");
+       return (booleanStr != null ? Boolean.parseBoolean(booleanStr) : false);
     }
     
     /* (non-Javadoc)
