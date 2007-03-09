@@ -32,6 +32,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.view.DesignView;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -46,6 +47,7 @@ public class DesignMultiViewElement extends TopComponent
     private transient JToolBar toolbar;
     private transient DesignView designView;
     private transient Service service;
+    private transient FileObject implementationClass;
 
     /**
      * Nullary constructor for deserialization.
@@ -65,6 +67,7 @@ public class DesignMultiViewElement extends TopComponent
     private void initialize(MultiViewSupport mvSupport) {
         associateLookup(Lookups.fixed(mvSupport));
         service = mvSupport.getService();
+        implementationClass = mvSupport.getDataObject().getPrimaryFile();
     }
     
     public int getPersistenceType() {
@@ -87,7 +90,7 @@ public class DesignMultiViewElement extends TopComponent
      */
     private void initUI() {
         setLayout(new BorderLayout());
-        designView = new DesignView(service);
+        designView = new DesignView(service,implementationClass);
         add(designView);
     }
     

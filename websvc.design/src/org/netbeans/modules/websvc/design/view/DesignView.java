@@ -20,17 +20,18 @@
 package org.netbeans.modules.websvc.design.view;
 
 import java.awt.BorderLayout;
-import java.awt.Point;
 import java.awt.Color;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.netbeans.api.visual.action.ActionFactory;
-import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
+import org.openide.filesystems.FileObject;
 
 /**
  * WebService Designer
@@ -43,16 +44,19 @@ public class DesignView extends JPanel  {
     /**
      * Creates a new instance of GraphView.
      */
-    public DesignView(Service service) {
+    public DesignView(Service service, FileObject implementationClass) {
         super(new BorderLayout());
 
         scene = new Scene();
         // initialize configuration
         scene.setBackground(new Color(255, 255, 191));
-        scene.setLayout(LayoutFactory.createVerticalLayout());
         // add actions
         scene.getActions().addAction(ActionFactory.createZoomAction ());
         scene.getActions().addAction(ActionFactory.createPanAction ());
+        scene.getActions().addAction(ActionFactory.createPopupMenuAction(
+                new DesignViewPopupProvider(new Action [] {
+            new AddOperationAction(implementationClass),
+        })));
 
         //add operations widget
         Widget opWidget = new OperationsWidget(scene,service);
