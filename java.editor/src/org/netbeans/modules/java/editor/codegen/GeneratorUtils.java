@@ -187,10 +187,12 @@ public class GeneratorUtils {
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
-            ClassTree nue = (ClassTree)path.getLeaf();
+            ClassTree clazz = (ClassTree)path.getLeaf();
+            List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
             for(ExecutableElement element : findUndefs(wc, te, te))
-                nue = make.addClassMember(nue, createMethodImplementation(wc, element, (DeclaredType)te.asType()));
-            wc.rewrite(path.getLeaf(), nue);
+                members.add(createMethodImplementation(wc, element, (DeclaredType)te.asType()));
+            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
+            wc.rewrite(clazz, nue);
         }
     }
     
@@ -199,10 +201,14 @@ public class GeneratorUtils {
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
-            ClassTree nue = (ClassTree)path.getLeaf();
+            ClassTree clazz = (ClassTree)path.getLeaf();
+            List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
+            List<Tree> methods = new ArrayList<Tree>();
             for(ExecutableElement element : elements)
-                nue = make.addClassMember(nue, createMethodImplementation(wc, element, (DeclaredType)te.asType()));
-            wc.rewrite(path.getLeaf(), nue);
+                methods.add(createMethodImplementation(wc, element, (DeclaredType)te.asType()));
+            members.addAll(index, methods);
+            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
+            wc.rewrite(clazz, nue);
         }
     }
     
@@ -220,10 +226,14 @@ public class GeneratorUtils {
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
-            ClassTree nue = (ClassTree)path.getLeaf();
+            ClassTree clazz = (ClassTree)path.getLeaf();
+            List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
+            List<Tree> methods = new ArrayList<Tree>();
             for(ExecutableElement element : elements)
-                nue = make.addClassMember(nue, createMethodImplementation(wc, element, (DeclaredType)te.asType()));
-            wc.rewrite(path.getLeaf(), nue);
+                methods.add(createMethodImplementation(wc, element, (DeclaredType)te.asType()));
+            members.addAll(index, methods);
+            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
+            wc.rewrite(clazz, nue);
         }
     }
     
@@ -264,14 +274,18 @@ public class GeneratorUtils {
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
-            ClassTree nue = (ClassTree)path.getLeaf();
+            ClassTree clazz = (ClassTree)path.getLeaf();
+            List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
+            List<Tree> methods = new ArrayList<Tree>();
             for(VariableElement element : fields) {
                 if (type != SETTERS_ONLY)
-                    nue = make.insertClassMember(nue, index, createGetterMethod(wc, element, (DeclaredType)te.asType()));
+                    methods.add(createGetterMethod(wc, element, (DeclaredType)te.asType()));
                 if (type != GETTERS_ONLY)
-                    nue = make.insertClassMember(nue, index, createSetterMethod(wc, element, (DeclaredType)te.asType()));
+                    methods.add(createSetterMethod(wc, element, (DeclaredType)te.asType()));
             }
-            wc.rewrite(path.getLeaf(), nue);
+            members.addAll(index, methods);
+            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
+            wc.rewrite(clazz, nue);
         }
     }
     
