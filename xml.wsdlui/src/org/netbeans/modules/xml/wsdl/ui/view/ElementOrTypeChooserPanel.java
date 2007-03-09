@@ -201,6 +201,13 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         if (externalSchemaNode != null) {
             nodes.add(externalSchemaNode);
         }
+        if (inlineTypesFolderNode != null) {
+            nodes.add(inlineTypesFolderNode);
+        }
+        
+        if (externalSchemaNode != null) {
+            nodes.add(externalSchemaNode);
+        }
         //builtin is last
         nodes.add(builtInTypes);
         
