@@ -99,7 +99,7 @@ public abstract class TextAction extends AbstractAction {
      * @return the augmented list
      */
     public static final Action[] augmentList(Action[] list1, Action[] list2) {
-        Hashtable h = new Hashtable();
+        Hashtable<String, Action> h = new Hashtable<String, Action>();
 
         for (int i = 0; i < list1.length; i++) {
             Action a = list1[i];
@@ -116,8 +116,8 @@ public abstract class TextAction extends AbstractAction {
         Action[] actions = new Action[h.size()];
         int index = 0;
 
-        for (Enumeration e = h.elements(); e.hasMoreElements();) {
-            actions[index++] = (Action)e.nextElement();
+        for (Enumeration<Action> e = h.elements(); e.hasMoreElements();) {
+            actions[index++] = e.nextElement();
         }
 
         return actions;
