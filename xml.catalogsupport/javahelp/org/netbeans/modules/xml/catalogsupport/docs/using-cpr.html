@@ -12,10 +12,10 @@
 <h2>Using Cross-Project XML File References</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>Once you have added project references to your project to allow you to use XML file artifacts from another project, you use <tt>import</tt>, <tt>include</tt>, or <tt>redefine</tt> components to reference those artifacts.</p>
-<p>For example, assume you have two projects, a SOA BluePrint project called <tt>BluePrint-1</tt> and a BPEL Module project called <tt>BEPL-1</tt>. <tt>BluePrint-1</tt> has one schema file, <tt>a.xsd</tt>. <tt>BPEL-1</tt> has one schema file, <tt>b.xsd</tt>. While you work with <tt>b.xsd</tt>, you want to have access to all the information in <tt>a.xsd</tt>. To do this, you must do the following:</p>
+<p>For example, assume you have two projects, a SOA BluePrint project called <tt>SOA-BluePrint-1</tt> and a BPEL Module project called <tt>BPEL-Module-1</tt>. <tt>SOA-BluePrint-1</tt> has one schema file, <tt>soa.xsd</tt>. <tt>BPEL-Module-1</tt> has one schema file, <tt>bpel.xsd</tt>. While you work with <tt>bpel.xsd</tt>, you want to have access to all the information in <tt>soa.xsd</tt>. To do this, you must do the following:</p>
 <ol>
-<li>In <tt>BluePrint-1</tt>, add <tt>BPEL-1</tt> as project reference.</li>
-<li>Open <tt>b.xsd</tt> and add an <tt>import</tt>, <tt>include</tt>, or <tt>redefine</tt> component to import <tt>a.xsd</tt>.</li>
+<li>In <tt>BPEL-Module-1</tt>, add <tt>SOA-BluePrint-1</tt> as project reference.</li>
+<li>Open <tt>bpel.xsd</tt> and add an <tt>import</tt>, <tt>include</tt>, or <tt>redefine</tt> component to import <tt>soa.xsd</tt>.</li>
 </ol>
 <p>The following topics explain how to add <tt>import</tt>, <tt>include</tt>, or <tt>redefine</tt> components to reference files in another project:</p>
 

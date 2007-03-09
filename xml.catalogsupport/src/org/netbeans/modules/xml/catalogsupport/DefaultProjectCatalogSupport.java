@@ -99,10 +99,12 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
             String targetPrjRelativeRoot = helper.getProperties(
                     AntProjectHelper.PROJECT_PROPERTIES_PATH).
                     getProperty("project.".concat(ssp));
-            File myPrjRoot = FileUtil.toFile(project.getProjectDirectory());
-            File tgtPrjRoot = new File(myPrjRoot.toURI().resolve(targetPrjRelativeRoot));
-            FileObject tgtPrjFobj = FileUtil.toFileObject(FileUtil.normalizeFile(tgtPrjRoot));
-            return tgtPrjFobj.getFileObject(uriToBeResolved.getFragment());
+            if(targetPrjRelativeRoot!=null){
+                File myPrjRoot = FileUtil.toFile(project.getProjectDirectory());
+                File tgtPrjRoot = new File(myPrjRoot.toURI().resolve(targetPrjRelativeRoot));
+                FileObject tgtPrjFobj = FileUtil.toFileObject(FileUtil.normalizeFile(tgtPrjRoot));
+                return tgtPrjFobj.getFileObject(uriToBeResolved.getFragment());
+            }
         }
         return null;
     }
