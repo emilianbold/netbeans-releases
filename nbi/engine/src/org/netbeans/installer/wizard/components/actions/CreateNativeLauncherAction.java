@@ -101,7 +101,9 @@ public class CreateNativeLauncherAction extends WizardAction {
                     break;
                     
             }
-            nl.setJar(new File(targetPath));
+            
+            nl.addBundledJar(new File(targetPath));
+            
             nl.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});
             
             File f = nl.create(platform, progress);
