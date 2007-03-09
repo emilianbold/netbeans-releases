@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -89,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="set-installer.basename" unless="unstaller.basename" depends="set-buildnumber">
-    <property name="installer.basename" value="NetBeans6.0dev-jdkbundle-${buildnumber}"/>
+    <property name="installer.basename" value="NetBeans6.0dev-jdk5_11-${buildnumber}"/>
   </target>
   
   <macrodef name="transform-ml">
