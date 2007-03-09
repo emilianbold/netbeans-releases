@@ -202,13 +202,23 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         ClassPath.EXECUTE,
         ClassPath.COMPILE,
     };
-
+    
     /**
      * Called when project is opened.
      * Tries to find all compilation units and calculate all the paths needed
      * for each of them and register them all.
      */
-    public synchronized void opened() {
+    public void opened() {
+        // #97366: taking read access to prevent deadlock, same trick as #77015
+        ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+            public Void run() {
+                openedImpl();
+                return null;
+            }
+        });
+    }
+    
+    private synchronized void openedImpl() {
         if (registeredClasspaths != null) {
             return;
         }
