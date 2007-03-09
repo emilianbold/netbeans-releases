@@ -35,8 +35,8 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
  * @author sumitabhk
  *
  */
-public class Operation extends BehavioralFeature implements IOperation,
-															IParameterableElement
+public class Operation extends BehavioralFeature 
+    implements IOperation, IParameterableElement
 {
 
 	private IParameterableElement m_ParameterableAggregate = null;
@@ -649,7 +649,11 @@ public class Operation extends BehavioralFeature implements IOperation,
         if (params.size() != otherParams.size())
             return false;
         
-        for (int i=0; i < params.size(); i++)
+        // skip first param as it is return param and a diff in return type
+        // doesn't make the operation unique
+        // i.e. - String getFoo() is not different from int getFoo()
+        // both can not coexist in the same Class
+        for (int i=1; i < params.size(); i++)
         {
             if (!params.get(i).isSimilar(otherParams.get(i)))
                 return false;

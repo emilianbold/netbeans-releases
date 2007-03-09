@@ -1063,7 +1063,7 @@ public class Util
      * @param self An instance of the NamedElement being search for.
      * @return true, if a elements are <em>similar</em>; false, otherwise.
      */
-    public static boolean constainsSimilarElement(
+    public static boolean containsSimilarElement(
         INamespace space, String name, String newType, INamedElement self)
     {
         IElementLocator pElementLocator = new ElementLocator();

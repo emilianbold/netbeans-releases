@@ -24,6 +24,10 @@ package org.netbeans.modules.uml.ui.products.ad.compartments;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 public class ETNamedElementListCompartment extends ETListCompartment implements IADNamedElementListCompartment {
 
@@ -90,4 +94,36 @@ public class ETNamedElementListCompartment extends ETListCompartment implements 
 	{
 		return "ADNamedElementListCompartment";
 	}
+        
+    protected DuplicateElementRenameDescriptor showDuplicateElementRenameDialog(
+            String dupeName)
+    {
+        DuplicateElementRenamePanel derPanel = 
+            new DuplicateElementRenamePanel(dupeName);
+        
+        DuplicateElementRenameDescriptor derDesc = 
+            new DuplicateElementRenameDescriptor(
+                derPanel, // inner pane
+                NbBundle.getMessage(ETNamedElementListCompartment.class, 
+                    "LBL_DuplicateElementRenamePanel_Title"), // NOI18N
+                true, // modal flag
+                NotifyDescriptor.OK_CANCEL_OPTION, // button option type
+                NotifyDescriptor.OK_OPTION, // default button
+                DialogDescriptor.DEFAULT_ALIGN, // button alignment
+                null, // new HelpCtx(""), // NOI18N // TODO: alert Docs
+                derPanel); // button action listener
+  
+//        derPanel.getAccessibleContext().setAccessibleName(NbBundle
+//            .getMessage(ETNamedElementListCompartment.class, 
+//            "ACSN_DuplicateElementRenameDialog")); // NOI18N
+//        
+//        derPanel.getAccessibleContext().setAccessibleDescription(NbBundle
+//            .getMessage(ETNamedElementListCompartment.class, 
+//            "ACSD_DuplicateElementRenameDialog")); // NOI18N
+        
+        derPanel.requestFocus();
+        DialogDisplayer.getDefault().notify(derDesc);
+        
+        return derDesc;
+    }
 }

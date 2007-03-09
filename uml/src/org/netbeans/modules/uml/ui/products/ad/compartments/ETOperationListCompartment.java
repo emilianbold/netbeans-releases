@@ -44,6 +44,7 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.uml.common.Util;
+import org.openide.NotifyDescriptor;
 
 /**
  * @author Embarcadero Technologies Inc.
@@ -119,27 +120,56 @@ public class ETOperationListCompartment extends ETNamedElementListCompartment im
                                 this.moveCompartment(foundCompartment, insertionPoint, false);
                                 
                             }
+                            
                             else
                             {
                                 if (sourceFeature != null)
                                 {
-                                    if (!Util.constainsSimilarElement(
-                                        targetClassifier, sourceFeature.getName(), 
+                                    boolean continueDrop = true;
+                                    
+                                    if (Util.containsSimilarElement(
+                                        targetClassifier, sourceFeature.getName(),
                                         sourceFeature.getElementType(), sourceFeature))
+                                    {
+                                        DuplicateElementRenameDescriptor descr =
+                                            showDuplicateElementRenameDialog(
+                                            sourceFeature.getName());
+                                        
+                                        if (descr.getValue() == NotifyDescriptor.OK_OPTION)
+                                        {
+                                            String newName = descr.getNewName();
+                                            
+                                            if (!newName.equals(sourceFeature.getName()))
+                                                sourceFeature.setName(newName);
+                                            
+                                            else
+                                                continueDrop = false;
+                                        }
+                                        
+                                        else
+                                            continueDrop = false;
+                                    }
+                                    
+                                    if (continueDrop)
                                     {
                                         if (bMoving)
                                         {
-                                            sourceFeature.moveToClassifier(targetClassifier);
+                                            sourceFeature.moveToClassifier(
+                                                targetClassifier);
+                                            
                                             // refresh source node affected by the move operation
                                             sourceCompartment.getEngine().init();
                                             sourceCompartment.getEngine().invalidate();
                                         }
+                                        
                                         else
                                         {
-                                            sourceFeature.duplicateToClassifier(targetClassifier);
+                                            sourceFeature.duplicateToClassifier(
+                                                targetClassifier);
                                         }
                                     }
                                 }
+                                
                                 //refresh the target node affected by the move/copy operation;
                                 this.getEngine().init();
                                 this.getEngine().invalidate();
@@ -153,9 +183,9 @@ public class ETOperationListCompartment extends ETNamedElementListCompartment im
                     }
                 }
             }
-            
-            return eventHandled;
-        }
+
+        return eventHandled;
+    }
 
 	public void addModelElement(IElement pElement, int pIndex) {
 		try {

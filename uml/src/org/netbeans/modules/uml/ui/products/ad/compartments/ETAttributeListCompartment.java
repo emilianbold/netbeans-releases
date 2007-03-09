@@ -45,6 +45,8 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.uml.common.Util;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 public class ETAttributeListCompartment extends ETNamedElementListCompartment
@@ -139,9 +141,32 @@ public class ETAttributeListCompartment extends ETNamedElementListCompartment
                         {
                             if (sourceFeature != null)
                             {
-                                if (!Util.constainsSimilarElement(
+                                boolean continueDrop = true;
+                                
+                                if (Util.containsSimilarElement(
                                     targetClassifier, sourceFeature.getName(), 
                                     sourceFeature.getElementType(), sourceFeature))
+                                {
+                                    DuplicateElementRenameDescriptor descr = 
+                                        showDuplicateElementRenameDialog(
+                                            sourceFeature.getName());
+                                    
+                                    if (descr.getValue() == NotifyDescriptor.OK_OPTION) 
+                                    {
+                                        String newName = descr.getNewName();
+                                        
+                                        if (!newName.equals(sourceFeature.getName()))
+                                            sourceFeature.setName(newName);
+                                        
+                                        else
+                                            continueDrop = false;
+                                    }
+
+                                    else
+                                        continueDrop = false;
+                                }
+                                
+                                if (continueDrop)
                                 {
                                     if (bMoving)
                                     {
