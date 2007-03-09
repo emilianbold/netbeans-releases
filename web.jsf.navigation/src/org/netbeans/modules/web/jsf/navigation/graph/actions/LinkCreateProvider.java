@@ -18,7 +18,9 @@ import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.web.jsf.navigation.graph.NavigationGraphScene;
+import org.netbeans.modules.web.jsf.navigation.PageFlowController;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
+import org.openide.nodes.AbstractNode;
 
 /**
  *
@@ -26,15 +28,17 @@ import org.netbeans.modules.web.jsf.navigation.graph.NavigationGraphScene;
  */
 public class LinkCreateProvider implements ConnectProvider {
     
-    private NavigationGraphScene graphScene;
-    Page source = null;
-    Page target = null;
-    NavigableComponent navComp = null;
+    private PageFlowScene graphScene;
+    AbstractNode source = null;
+    AbstractNode target = null;
+    String navComp = null;
     
     /**
      * Creates a new instance of LinkCreateProvider
+     * @param graphScene 
+     * 
      */
-    public LinkCreateProvider(NavigationGraphScene graphScene) {
+    public LinkCreateProvider(PageFlowScene graphScene) {
         this.graphScene = graphScene;
     }
     
@@ -42,14 +46,18 @@ public class LinkCreateProvider implements ConnectProvider {
         
         Object object = graphScene.findObject(sourceWidget);
         source = null;
-        navComp = null;
-        if (graphScene.isPin(object)){
-            Pin pin = (Pin)object;
-            source = pin.getPage();
-            navComp = pin.getNavComp();
-        } else if ( graphScene.isNode(object) ){
-            source = (Page)object;
+//        navComp = null;
+//        if (graphScene.isPin(object)){
+//            Pin pin = (Pin)object;
+//            source = pin.getPage();
+//            navComp = pin.getNavComp();
+//        } else if ( graphScene.isNode(object) ){
+//            source = (Page)object;
+//        }
+        if( graphScene.isNode(object)){
+            source = (AbstractNode)object;
         }
+        
         return source != null;
         
     }
@@ -57,7 +65,7 @@ public class LinkCreateProvider implements ConnectProvider {
     public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
         target = null;
         Object object = graphScene.findObject(targetWidget);
-        target = graphScene.isNode(object) ? (Page) object : null;
+        target = graphScene.isNode(object) ? (AbstractNode) object : null;
         if (target != null)
             return ConnectorState.ACCEPT;
         return object != null ? ConnectorState.REJECT_AND_STOP : ConnectorState.REJECT;
@@ -83,8 +91,9 @@ public class LinkCreateProvider implements ConnectProvider {
     }
     
     public void createConnection(Widget sourceWidget, Widget targetWidget) {
-        if ( sourceWidget != null && targetWidget != null ) {
-            NavigationBridgeUtilities.getInstance().createLink(source, target, navComp);
+        PageFlowController pfc = graphScene.getPageFlowView().getPageFlowController();
+        if ( pfc != null && sourceWidget != null && targetWidget != null ) {
+            pfc.createLink(source, target, navComp);
         }
 //            addEdge (edge);
 //            setEdgeSource (edge, source);

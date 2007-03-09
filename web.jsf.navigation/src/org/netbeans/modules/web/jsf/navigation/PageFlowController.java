@@ -9,6 +9,7 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -51,6 +53,55 @@ public class PageFlowController {
         
     }
     
+    /**
+     * 
+     * @param source 
+     * @param target 
+     * @param comp 
+     * @return 
+     */
+    public NavigationCase createLink(AbstractNode source, AbstractNode target, String comp) {
+        
+        configModel.startTransaction();
+        org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase navCase = configModel.getFactory().createNavigationCase();
+        
+        navCase.setToViewId(target.getName());
+        org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig facesConfig = configModel.getRootComponent();
+        org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule navRule = getRuleWithFromViewID(facesConfig,
+                source.getName());
+        
+        if (navRule == null) {
+            navRule = configModel.getFactory().createNavigationRule();
+            navRule.setFromViewId(source.getName());
+            facesConfig.addNavigationRule(navRule);
+        }
+        navRule.addNavigationCase(navCase);
+        configModel.endTransaction();
+        try {
+            configModel.sync();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        view.createEdge(navRule, navCase);
+        return navCase;
+        
+    }
+    
+    /**
+     * @return the navigation rule.  This will be null if none was found
+     **/
+    private NavigationRule getRuleWithFromViewID(FacesConfig facesConfig, String fromViewId ){
+        List<NavigationRule> rules = facesConfig.getNavigationRules();
+        for( NavigationRule rule : rules ){
+            if( rule.FROM_VIEW_ID == fromViewId ){
+                return rule;
+            }
+        }
+        return null;
+    }
+    
+    
+
     
     private Collection<FileObject> getAllProjectRelevantFilesObjects() {
         FileObject parentFolder = project.getProjectDirectory();
@@ -84,7 +135,7 @@ public class PageFlowController {
     /**
      * Setup The Graph
      * Should only be called by init();
-     * 
+     *
      **/
     public void setupGraph(){
         assert configModel !=null;
@@ -101,10 +152,10 @@ public class PageFlowController {
         if (currentScope.equals(PageFlowUtilities.LBL_SCOPE_FACESCONFIG)){
             createFacesConfigPageNodes(pagesInConfig);
         } else if (currentScope.equals(PageFlowUtilities.LBL_SCOPE_PROJECT)) {
-            createAllProjectPageNodes(pagesInConfig); 
+            createAllProjectPageNodes(pagesInConfig);
         }
         createAllEdges(rules);
-//        view.layoutGraph();
+        //        view.layoutGraph();
         
         view.validateGraph();
         

@@ -65,6 +65,15 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         //        this(context, new InstanceContent());
     }
     
+    
+    /**
+     * 
+     * @return PageFlowController
+     */
+    public PageFlowController getPageFlowController() {
+        return pfc;
+    }
+    
     //    PageFlowView(JSFConfigEditorContext context, InstanceContent ic ){
     //        super( new AbstractLookup( ic ) );
     //        ic.add( initializePalette() );

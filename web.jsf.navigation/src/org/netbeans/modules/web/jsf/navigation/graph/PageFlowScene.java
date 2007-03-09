@@ -49,13 +49,15 @@ import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
+import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.navigation.PageFlowController;
+import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
 
 /**
  * This class represents a GraphPinScene for the Navigation Editor which is soon to be the Page Flow Editor.
@@ -84,18 +86,18 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
     private WidgetAction popupGraphAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this));
     private WidgetAction moveAction = ActionFactory.createMoveAction();
     private WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
-    //    private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
+    private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     //    private WidgetAction deleteAction = new DeleteAction(this);
     private WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     
     private SceneLayout sceneLayout;
-    private TopComponent tc;
+    private PageFlowView tc;
     
     /**
      * Creates a VMD graph scene.
-     * @param view
+     * @param tc or TopComponent/container.
      */
-    public PageFlowScene(TopComponent tc) {
+    public PageFlowScene(PageFlowView tc) {
         this.tc = tc;
         
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
@@ -129,6 +131,14 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         }));
     }
     
+    public PageFlowView getPageFlowView(){
+        return tc;
+    }
+    
+//    protected PageFlowController getPageFlowController() {
+//        return tc.getPageFlowController();
+//    }
+//    
     private static final Image POINT_SHAPE_IMAGE = Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"); // NOI18N
     
     private static final int PAGE_WIDGET_INDEX = 0;
@@ -142,8 +152,12 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
      */
     protected Widget attachNodeWidget(AbstractNode node) {
         assert node != null;
-        VMDNodeWidget nodeWidget = new NavigationNodeWidget(this);
+        VMDNodeWidget nodeWidget = new VMDNodeWidget(this);
         nodeWidget.setNodeName(node.getName());
+        
+        ImageWidget imageWidget = new ImageWidget(this, POINT_SHAPE_IMAGE);
+        Widget header = nodeWidget.getHeader();
+        header.addChild(imageWidget);
         
         //        Widget widget = new Widget(this);
         //        ImageWidget imageWidget = new ImageWidget(this, POINT_SHAPE_IMAGE);
@@ -276,48 +290,48 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         
     }
     
-    private static class NodePinLayout implements Layout {
-        int gap = 0;
-        int displacepin = 0;
-        
-        public NodePinLayout(int gap ){
-            this.gap = gap;
-            this.displacepin = displacepin;
-        }
-        
-        public void layout(Widget widget) {
-            
-            Collection<Widget> children = widget.getChildren();
-            int pos = 0;
-            for( Widget child : children ){
-                Rectangle preferredBounds = child.getPreferredBounds();
-                int x = preferredBounds.x;
-                int y = preferredBounds.y;
-                int width = preferredBounds.width;
-                int height = preferredBounds.height;
-                int lx = pos - x;
-                int ly = - y;
-                if ( child.isVisible() ) {
-                    if(child instanceof VMDNodeWidget ) {
-                        child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, width, height));
-                    } else {
-                        child.resolveBounds(new Point(lx , ly + 5), new Rectangle(x, y, width, height));
-                    }
-                    pos += width + gap;
-                } else {
-                    child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, 0, 0));
-                }
-            }
-        }
-        
-        public boolean requiresJustification(Widget arg0) {
-            return false;
-        }
-        
-        public void justify(Widget arg0) {
-            
-        }
-    }
+//    private static class NodePinLayout implements Layout {
+//        int gap = 0;
+//        int displacepin = 0;
+//        
+//        public NodePinLayout(int gap ){
+//            this.gap = gap;
+//            this.displacepin = displacepin;
+//        }
+//        
+//        public void layout(Widget widget) {
+//            
+//            Collection<Widget> children = widget.getChildren();
+//            int pos = 0;
+//            for( Widget child : children ){
+//                Rectangle preferredBounds = child.getPreferredBounds();
+//                int x = preferredBounds.x;
+//                int y = preferredBounds.y;
+//                int width = preferredBounds.width;
+//                int height = preferredBounds.height;
+//                int lx = pos - x;
+//                int ly = - y;
+//                if ( child.isVisible() ) {
+//                    if(child instanceof VMDNodeWidget ) {
+//                        child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, width, height));
+//                    } else {
+//                        child.resolveBounds(new Point(lx , ly + 5), new Rectangle(x, y, width, height));
+//                    }
+//                    pos += width + gap;
+//                } else {
+//                    child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, 0, 0));
+//                }
+//            }
+//        }
+//        
+//        public boolean requiresJustification(Widget arg0) {
+//            return false;
+//        }
+//        
+//        public void justify(Widget arg0) {
+//            
+//        }
+//    }
     
 
     private final class PageFlowSelectProvider implements SelectProvider {
