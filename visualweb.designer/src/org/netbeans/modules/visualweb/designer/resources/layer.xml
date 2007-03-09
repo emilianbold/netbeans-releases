@@ -38,7 +38,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Services">
         <file name="org-netbeans-modules-visualweb-designer-DesignerSettings.settings" url="DesignerSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.designer.Bundle"/>
 	    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/designer/resources/designer.gif"/>
 	    <attr name="helpID" stringvalue="projrave_ui_elements_options_visual_editor"/> 
 	</file>
