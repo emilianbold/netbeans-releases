@@ -227,7 +227,6 @@ abstract class PositionEstimator {
                 if (wideEnd < treeEnd) wideEnd = treeEnd;
                 data.add(new int[] { wideStart, wideEnd, previousEnd });
             }
-            System.err.println(toString());
             initialized = true;
         }
 
@@ -377,9 +376,6 @@ abstract class PositionEstimator {
                     }
                 }
             }
-            System.err.print("SectionToRemove: '");
-            System.err.print(copy.getText().substring(sectionStart, sectionEnd));
-            System.err.println("'");
             return new int[] { sectionStart, sectionEnd };
         }
     }
