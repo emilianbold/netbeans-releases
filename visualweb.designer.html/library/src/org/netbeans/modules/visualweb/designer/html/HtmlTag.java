@@ -97,7 +97,7 @@ final public class HtmlTag {
      * Is this a tag which should be completely hidden?
      * Returns <code>true</code> if this tag is a tag that should
      * be hidden in the webform designer - such as the script tag.
-     * @deprecated You cannot tell from a tag alone if it's hidden.
+     * WARNING: Use this carefully! You cannot tell from a tag alone if it's hidden.
      *    HtmlTag.INPUT is hidden whenever @type != "hidden" for example.
      */
     public boolean isHiddenTag() {
