@@ -174,9 +174,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         List<CasaPort> ret = new ArrayList<CasaPort>();
         
         for (CasaBindingComponentServiceUnit bcSU : getBindingComponentServiceUnits()) {
-            for (CasaPort casaPort : bcSU.getPorts().getPorts()) {
-                ret.add(casaPort);
-            }
+            ret.addAll(bcSU.getPorts().getPorts());
         }
         
         return ret;
@@ -606,50 +604,35 @@ public class CasaWrapperModel extends CasaModelImpl {
         // if there is no visible connections left after the connection deletion.
         // Existing WSDL endpoints are left alone because there might be "deleted"
         // connections hanging around.
-        CasaEndpointRef casaConsumes = getCasaEndpointRef(casaConnection.getConsumer().get());
-        CasaPort casaPort = getCasaPort(casaConsumes);
-        if (casaPort != null) {
-            if (isDefinedInCompApp(casaPort)) {
-                if (getConnections(casaPort, false).size() == 0) { // no visible connection left
-                    CasaConsumes casaPortConsumes = casaPort.getConsumes();
-                    if (casaPortConsumes != null) {
-                        clearCasaEndpointInterfaceName(casaPortConsumes);
-                    }
-                    CasaProvides casaPortProvides = casaPort.getProvides();
-                    if (casaPortProvides != null) {
-                        clearCasaEndpointInterfaceName(casaPortProvides);
-                    }
-                }
-            }
-        } else {
-            CasaServiceEngineServiceUnit sesu = getCasaEngineServiceUnit(casaConsumes);
-            if (sesu != null && !sesu.isInternal()) { // endpoint belongs to external SESU
-                if (getConnections(casaConsumes, false).size() == 0) { // no visible connection left
-                    clearCasaEndpointInterfaceName(casaConsumes);
-                }
-            }
-        }
+        CasaEndpointRef casaConsumes = 
+                getCasaEndpointRef(casaConnection.getConsumer().get());
+        CasaEndpointRef casaProvides = 
+                getCasaEndpointRef(casaConnection.getProvider().get());
         
-        CasaEndpointRef casaProvides = getCasaEndpointRef(casaConnection.getProvider().get());
-        casaPort = getCasaPort(casaProvides);
-        if (casaPort != null) {
-            if (isDefinedInCompApp(casaPort)) {
-                if (getConnections(casaPort, false).size() == 0) {
-                    CasaConsumes casaPortConsumes = casaPort.getConsumes();
-                    if (casaPortConsumes != null) {
-                        clearCasaEndpointInterfaceName(casaPortConsumes);
-                    }
-                    CasaProvides casaPortProvides = casaPort.getProvides();
-                    if (casaPortProvides != null) {
-                        clearCasaEndpointInterfaceName(casaPortProvides);
+        for (CasaEndpointRef endpointRef : 
+            new CasaEndpointRef[] {casaConsumes, casaProvides}) {
+                
+            CasaPort casaPort = getCasaPort(endpointRef);
+            if (casaPort != null) {
+                if (isDefinedInCompApp(casaPort)) {
+                    if (getConnections(casaPort, false).size() == 1) { // this is the only visible connection left
+                        CasaConsumes casaPortConsumes = casaPort.getConsumes();
+                        if (casaPortConsumes != null) {
+                            clearCasaEndpointInterfaceName(casaPortConsumes);
+                        }
+                        CasaProvides casaPortProvides = casaPort.getProvides();
+                        if (casaPortProvides != null) {
+                            clearCasaEndpointInterfaceName(casaPortProvides);
+                        }
                     }
                 }
-            }
-        } else {
-            CasaServiceEngineServiceUnit sesu = getCasaEngineServiceUnit(casaConsumes);
-            if (sesu != null && !sesu.isInternal()) { // endpoint belongs to external SESU
-                if (getConnections(casaProvides, false).size() == 0) {
-                    clearCasaEndpointInterfaceName(casaProvides);
+            } else {
+                CasaServiceEngineServiceUnit sesu = 
+                        getCasaEngineServiceUnit(endpointRef);
+                if (sesu != null && !sesu.isInternal()) { // endpoint belongs to external SESU
+                    if (getConnections(endpointRef, false).size() == 1) { // this is the only visible connection left
+                        clearCasaEndpointInterfaceName(endpointRef);
+                    }
                 }
             }
         }
@@ -2221,13 +2204,19 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     /**
      * Checks whether an endpoint is editable.
-     * Only endpoints in external service units are editable.
+     * Only endpoints in external service units and editable casaports 
+     * are editable.
      * @deprecated use #isEditable(CasaEndpoint, String) instead
      */
     public boolean isEditable(CasaEndpointRef endpointRef) {
         CasaServiceEngineServiceUnit seSU =
                 getCasaEngineServiceUnit(endpointRef);
-        return seSU != null && !seSU.isInternal();
+        if (seSU != null) {
+            return !seSU.isInternal();
+        } else {
+            CasaPort casaPort = getCasaPort(endpointRef);
+            return isEditable(casaPort);
+        }        
     }
     
     /**
