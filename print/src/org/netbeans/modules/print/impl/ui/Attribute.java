@@ -47,7 +47,6 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 import org.openide.DialogDescriptor;
-import org.openide.text.PrintSettings;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.print.api.PrintUI;
@@ -272,7 +271,7 @@ final class Attribute extends PrintUI
       i18n("TLT_Page_Setup"), // NOI18N
       new AbstractAction(i18n("LBL_PageSetup")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          if (pageSetup()) {
+          if (Util.showPageSetup()) {
             updatePreview();
           }
         }
@@ -281,18 +280,6 @@ final class Attribute extends PrintUI
     panel.add(button, c);
 
     return panel;
-  }
-
-  private boolean pageSetup() {
-    PrinterJob job = PrinterJob.getPrinterJob();
-    PageFormat oldFormat = PrintSettings.getPageFormat(job);
-    PageFormat newFormat = job.pageDialog(oldFormat);
-
-    if (oldFormat == newFormat) {
-      return false;
-    }
-    Util.getPrintSettings().setPageFormat(newFormat);
-    return true;
   }
 
   private JPanel getTitlePanel() {

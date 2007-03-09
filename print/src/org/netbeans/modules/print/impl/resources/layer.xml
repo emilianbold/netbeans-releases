@@ -31,6 +31,7 @@
 
     <folder name="Actions">
         <folder name="File">
+            <file name="org-netbeans-modules-print-impl-action-PageSetupAction.instance"/>
             <file name="org-netbeans-modules-print-impl-action-PrintAction.instance"/>
             <file name="org-netbeans-modules-print-impl-action-PreviewAction.instance"/>
         </folder>
@@ -38,19 +39,26 @@
     
     <folder name="Menu">
         <folder name="File">
+            <file name="org-netbeans-modules-print-impl-action-PageSetupAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PageSetupAction.instance"/>
+            </file>
+            
             <file name="org-netbeans-modules-print-impl-action-PrintAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
             </file>
+
             <file name="org-netbeans-modules-print-impl-action-PreviewAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PreviewAction.instance"/>
             </file>
 
             <!-- sorting -->
-            <attr name="org-openide-actions-PageSetupAction.instance/org-netbeans-modules-print-impl-action-PrintAction.shadow" boolvalue="true"/>
+            <attr name="org-openide-actions-SaveAllAction.instance/org-netbeans-modules-print-impl-action-PageSetupAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-print-impl-action-PageSetupAction.shadow/org-netbeans-modules-print-impl-action-PrintAction.shadow" boolvalue="true"/>
             <attr name="org-netbeans-modules-print-impl-action-PrintAction.shadow/org-netbeans-modules-print-impl-action-PreviewAction.shadow" boolvalue="true"/>
             <attr name="org-netbeans-modules-print-impl-action-PreviewAction.shadow/org-netbeans-modules-editor-ExportHtmlAction.instance" boolvalue="true"/>
 
             <!-- hide -->
+            <file name="org-openide-actions-PageSetupAction.instance_hidden"/>
             <file name="org-openide-actions-PrintAction.instance_hidden"/>
         </folder>
     </folder>
