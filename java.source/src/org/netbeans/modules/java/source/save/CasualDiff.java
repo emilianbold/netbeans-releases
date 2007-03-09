@@ -1930,7 +1930,7 @@ public class CasualDiff {
         }
         int i = 0;
         // copy to start position
-        copyTo(localPointer, estimator.getInsertPos(0), printer);
+        copyTo(localPointer, localPointer = estimator.getInsertPos(0), printer);
         // go on, match it!
         for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
@@ -1996,6 +1996,9 @@ public class CasualDiff {
                 }
                 case DELETE: {
                     int[] pos = estimator.getPositions(i);
+                    if (localPointer < pos[0]) {
+                        copyTo(localPointer, pos[0], printer);
+                    }
                     lastdel = oldList.get(i);
                     ++i;
                     localPointer = pos[1];

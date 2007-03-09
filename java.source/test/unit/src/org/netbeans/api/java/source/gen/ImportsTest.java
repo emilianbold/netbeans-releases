@@ -65,7 +65,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         suite.addTest(new ImportsTest("testMissingNewLine"));
         suite.addTest(new ImportsTest("testRemoveAllInDefault"));
         suite.addTest(new ImportsTest("testRemoveAllInDefault2"));
-//        suite.addTest(new ImportsTest("testRemoveAfterEmpty"));
+        suite.addTest(new ImportsTest("testRemoveAfterEmpty"));
         suite.addTest(new ImportsTest("testRemoveBeforeEmpty"));
         return suite;
     }
