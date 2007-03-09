@@ -20,6 +20,7 @@ package org.netbeans.api.visual.border;
 
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.visual.border.*;
+import org.netbeans.modules.visual.util.GeomUtil;
 
 import java.awt.*;
 
@@ -261,6 +262,18 @@ public final class BorderFactory {
     /**
      * Creates a resize border rendered with dashed stroke.
      * The instance can be shared by multiple widgets.
+     * @param color the border color
+     * @param width the inset width
+     * @param height the inset height
+     * @return the dashed border
+     */
+    public static Border createDashedBorder (Color color, int width, int height) {
+        return createDashedBorder (color, width, height, false);
+    }
+
+    /**
+     * Creates a resize border rendered with dashed stroke.
+     * The instance can be shared by multiple widgets.
      * @param color  the border color
      * @param width  the inset width
      * @param height the inset height
@@ -268,23 +281,10 @@ public final class BorderFactory {
      * @return the dashed border
      */
     public static Border createDashedBorder (Color color, int width, int height, boolean squares) {
-        if (squares)
-            return new DashedBorder (color != null ? color : Color.BLACK, width, height);
-        else
+        if (! squares)
             return new FancyDashedBorder (color != null ? color : Color.BLACK, width, height);
-    }
-
-    /**
-     * Creates a resize border rendered with dashed stroke.
-     * The instance can be shared by multiple widgets.
-     * @param color the border color
-     * @param width the inset width
-     * @param height the inset height
-     * @return the dashed border
-     * @deprecated use createDashedBorder (color, width, height, squares) method instead
-     */
-    public static Border createDashedBorder (Color color, int width, int height) {
-        return new DashedBorder (color != null ? color : Color.BLACK, width, height);
+        else
+            return new DashedBorder (color != null ? color : Color.BLACK, width, height);
     }
 
     /**
@@ -294,9 +294,10 @@ public final class BorderFactory {
      * @param width the inset width
      * @param height the inset height
      * @return the fancy dashed border
-     * @deprecated use createDashedBorder (color, width, height, squares) method instead
+     * @deprecated use createDashedBorder (color, width, height, true) method instead
      */
     public static Border createFancyDashedBorder (Color color, int width, int height) {
+        GeomUtil.LOG.warning ("BorderFactory.createFancyDashedBorder() method is deprecated. Use BorderFactory.createDashedBorder(color,width,height,true) method instead."); // NOI18N
         return new FancyDashedBorder (color != null ? color : Color.BLACK, width, height);
     }
 

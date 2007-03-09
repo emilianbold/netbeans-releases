@@ -20,11 +20,14 @@ package org.netbeans.modules.visual.util;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.logging.Logger;
 
 /**
  * @author David Kaspar
  */
 public final class GeomUtil {
+
+    public static final Logger LOG = Logger.getLogger ("org.netbeans.api.visual"); // NOI18N 
 
     private GeomUtil () {
     }

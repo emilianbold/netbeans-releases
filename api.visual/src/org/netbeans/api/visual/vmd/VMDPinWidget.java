@@ -29,7 +29,8 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * This class represents a pin widget in the VMD plug-in.
+ * This class represents a pin widget in the VMD visualization style.
+ * The pin widget consists of a name and a glyph set.
  *
  * @author David Kaspar
  */
@@ -49,7 +50,7 @@ public class VMDPinWidget extends Widget {
         setBorder (VMDNodeWidget.BORDER);
         setBackground (VMDNodeWidget.COLOR_SELECTED);
         setOpaque (false);
-        setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, 8));
+        setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         addChild (nameWidget = new LabelWidget (scene));
         addChild (glyphsWidget = new VMDGlyphSetWidget (scene));
 

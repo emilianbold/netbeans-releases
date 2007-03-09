@@ -21,7 +21,7 @@ package org.netbeans.api.visual.vmd;
 import org.netbeans.api.visual.border.Border;
 
 /**
- * Used as a factory class for VMD-plugin specific components.
+ * Used as a factory class for objects defined in VMD visualization style.
  *
  * @author David Kaspar
  */

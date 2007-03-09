@@ -38,7 +38,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * This class represents a GraphPinScene for the VMD plug-in. Nodes, edges and pins are represented using String class.
+ * This class represents a GraphPinScene for the VMD visualization style. Nodes, edges and pins are represented using String class.
  * The visualization is done by: VMDNodeWidget for nodes, VMDPinWidget for pins, ConnectionWidget fro edges.
  * <p>
  * The scene has 4 layers: background, main, connection, upper.

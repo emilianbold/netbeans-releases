@@ -28,9 +28,9 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
- * This class represents a node anchor. The anchor could be assign by multiple connection widgets.
- * For each usage the anchor resolves a different possition.
- * The position are resolved at the top and the bottom of the widget where the anchor is attached to.
+ * This class represents a node anchor used in VMD visualization style. The anchor could be assign by multiple connection widgets.
+ * For each usage the anchor resolves a different position.
+ * The positions are resolved at the top and the bottom of the widget where the anchor is attached to.
  *
  * @author David Kaspar
  */

@@ -30,7 +30,7 @@ import org.openide.util.Utilities;
 import java.awt.*;
 
 /**
- * This class represents a connection widget in the VMD plug-in.
+ * This class represents a connection widget in the VMD visualization style. Can be combined with any other widget.
  *
  * @author David Kaspar
  */

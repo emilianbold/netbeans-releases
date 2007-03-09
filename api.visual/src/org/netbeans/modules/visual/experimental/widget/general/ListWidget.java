@@ -1,29 +1,10 @@
-/*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- */
-package org.netbeans.api.visual.widget.general;
+package org.netbeans.modules.visual.experimental.widget.general;
 
-import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.widget.*;
 import org.netbeans.api.visual.laf.LookFeel;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.widget.*;
-import org.netbeans.modules.visual.util.GeomUtil;
 
 import java.awt.*;
 
@@ -31,7 +12,6 @@ import java.awt.*;
  * This class represents a general list widget which is rendered as a rectangle with a header on top and list item widgets
  * underneath.
  *
- * @deprecated
  * @author David Kaspar
  */
 public class ListWidget extends Widget {
@@ -46,7 +26,6 @@ public class ListWidget extends Widget {
      */
     public ListWidget (Scene scene) {
         super (scene);
-        GeomUtil.LOG.warning ("org.netbeans.api.visual.widget.general.ListWidget class is deprecated. Use org.netbeans.modules.visual.experimental.widget.general.ListWidget class instead. Since it is an experimental class outside of public-API packages, you have to set an implementation dependency on the org.netbeans.api.visual module."); // NOI18N
 
         LookFeel lookFeel = scene.getLookFeel ();
         setOpaque (true);

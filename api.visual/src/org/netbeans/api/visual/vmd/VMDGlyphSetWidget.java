@@ -40,7 +40,7 @@ public class VMDGlyphSetWidget extends Widget {
      */
     public VMDGlyphSetWidget (Scene scene) {
         super (scene);
-        setLayout (LayoutFactory.createHorizontalLayout ());
+        setLayout (LayoutFactory.createHorizontalFlowLayout ());
     }
 
     /**

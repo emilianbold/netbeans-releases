@@ -23,6 +23,7 @@ import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.modules.visual.layout.*;
+import org.netbeans.modules.visual.util.GeomUtil;
 
 /**
  * This class is a factory of all built-in layouts.
@@ -32,10 +33,10 @@ import org.netbeans.modules.visual.layout.*;
 public final class LayoutFactory {
 
     private static final AbsoluteLayout LAYOUT_ABSOLUTE = new AbsoluteLayout ();
-    private static final FillLayout LAYOUT_FILL = new FillLayout ();
+    private static final OverlayLayout LAYOUT_OVERLAY = new OverlayLayout ();
 
     /**
-     * Alignment of children widgets within a calculated widget used by SerialLayout (vertical and horizontal box layout).
+     * Alignment of children widgets within a calculated widget used by FlowLayout (vertical and horizontal flow layout).
      */
     public static enum SerialAlignment {
 
@@ -63,43 +64,91 @@ public final class LayoutFactory {
     }
 
     /**
-     * Creates a vertical box layout with default style where widgets are placed vertically one to the bottom from another.
+     * Creates a vertical flow layout with default style where widgets are placed vertically one to the bottom from another.
      * The instance can be shared by multiple widgets.
-     * @return the vertical box layout
+     * @return the vertical flow layout
+     * @deprecated use createVerticalFlowLayout method instead
      */
     public static Layout createVerticalLayout () {
-        return createVerticalLayout (null, 0);
+        GeomUtil.LOG.warning ("LayoutFactory.createVerticalLayout() method is deprecated. Use LayoutFactory.createVerticalFlowLayout() method instead."); // NOI18N
+        return createVerticalFlowLayout (null, 0);
     }
 
     /**
-     * Creates a vertical box layout with a specific style where widgets are placed vertically one to the bottom from another.
+     * Creates a vertical flow layout with a specific style where widgets are placed vertically one to the bottom from another.
      * The instance can be shared by multiple widgets.
      * @param alignment the alignment
      * @param gap the gap between widgets
-     * @return the vertical box layout
+     * @return the vertical flow layout
+     * @deprecated use createVerticalFlowLayout (alignment, gap) method instead
      */
     public static Layout createVerticalLayout (SerialAlignment alignment, int gap) {
-        return new SerialLayout (true, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
+        GeomUtil.LOG.warning ("LayoutFactory.createVerticalLayout(alignment,gap) method is deprecated. Use LayoutFactory.createVerticalFlowLayout(alignment,gap) method instead."); // NOI18N
+        return new FlowLayout (true, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
     }
 
     /**
-     * Creates a horizontal box layout with default style where widgets are placed horizontally one to the right from another.
+     * Creates a vertical flow layout with default style where widgets are placed vertically one to the bottom from another.
      * The instance can be shared by multiple widgets.
-     * @return the horizontal box layout
+     * @return the vertical flow layout
      */
-    public static Layout createHorizontalLayout () {
-        return createHorizontalLayout (null, 0);
+    public static Layout createVerticalFlowLayout () {
+        return createVerticalFlowLayout (null, 0);
     }
 
     /**
-     * Creates a horizontal box layout with a specific style where widgets are placed horizontally one to the right from another.
+     * Creates a vertical flow layout with a specific style where widgets are placed vertically one to the bottom from another.
      * The instance can be shared by multiple widgets.
      * @param alignment the alignment
      * @param gap the gap between widgets
-     * @return the horizontal box layout
+     * @return the vertical flow layout
+     */
+    public static Layout createVerticalFlowLayout (SerialAlignment alignment, int gap) {
+        return new FlowLayout (true, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
+    }
+
+    /**
+     * Creates a horizontal flow layout with default style where widgets are placed horizontally one to the right from another.
+     * The instance can be shared by multiple widgets.
+     * @return the horizontal flow layout
+     * @deprecated use createHorizontalFlowLayout method instead
+     */
+    public static Layout createHorizontalLayout () {
+        GeomUtil.LOG.warning ("LayoutFactory.createHorizontalLayout() method is deprecated. Use LayoutFactory.createHorizontalFlowLayout() method instead."); // NOI18N
+        return createHorizontalFlowLayout (null, 0);
+    }
+
+    /**
+     * Creates a horizontal flow layout with a specific style where widgets are placed horizontally one to the right from another.
+     * The instance can be shared by multiple widgets.
+     * @param alignment the alignment
+     * @param gap the gap between widgets
+     * @return the horizontal flow layout
+     * @deprecated use createHorizontalFlowLayout (alignment, gap) method instead
      */
     public static Layout createHorizontalLayout (SerialAlignment alignment, int gap) {
-        return new SerialLayout (false, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
+        GeomUtil.LOG.warning ("LayoutFactory.createHorizontalLayout(alignment,gap) method is deprecated. Use LayoutFactory.createHorizontalFlowLayout(alignment,gap) method instead."); // NOI18N
+        return new FlowLayout (false, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
+    }
+    
+    /**
+     * Creates a horizontal flow layout with default style where widgets are placed horizontally one to the right from another.
+     * The instance can be shared by multiple widgets.
+     * @return the horizontal flow layout
+     */
+    public static Layout createHorizontalFlowLayout () {
+        return createHorizontalFlowLayout (null, 0);
+    }
+
+    /**
+     * Creates a horizontal flow layout with a specific style where widgets are placed horizontally one to the right from another.
+     * The instance can be shared by multiple widgets.
+     * @param alignment the alignment
+     * @param gap the gap between widgets
+     * @return the horizontal flow layout
+     */
+    public static Layout createHorizontalFlowLayout (SerialAlignment alignment, int gap) {
+        return new FlowLayout (false, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
     }
 
     /**
@@ -139,10 +188,22 @@ public final class LayoutFactory {
      * Returns a fill layout where all children widgets has the boundary at the biggest one of them or
      * they are expanded to the parent widget boundaries during justification.
      * The instance can be shared by multiple widgets.
+     * @deprecated use createOverlayLayout method instead
      * @return the fill layout
      */
     public static Layout createFillLayout () {
-        return LAYOUT_FILL;
+        GeomUtil.LOG.warning ("LayoutFactory.createFillLayout() method is deprecated. Use LayoutFactory.createOverlayLayout() method instead."); // NOI18N
+        return createOverlayLayout ();
+    }
+
+    /**
+     * Returns a overlay layout where all children widgets has the boundary at the biggest one of them or
+     * they are expanded to the parent widget boundaries during justification.
+     * The instance can be shared by multiple widgets.
+     * @return the overlay layout
+     */
+    public static Layout createOverlayLayout () {
+        return LAYOUT_OVERLAY;
     }
 
     /**

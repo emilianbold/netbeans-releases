@@ -23,6 +23,7 @@ import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.visual.util.GeomUtil;
 
 /**
  * This class represents a general list item widget. Right now it presented as a label.
@@ -38,6 +39,7 @@ public class ListItemWidget extends LabelWidget {
      */
     public ListItemWidget (Scene scene) {
         super (scene);
+        GeomUtil.LOG.warning ("org.netbeans.api.visual.widget.general.ListItemWidget class is deprecated. Use org.netbeans.modules.visual.experimental.widget.general.ListItemWidget class instead. Since it is an experimental class outside of public-API packages, you have to set an implementation dependency on the org.netbeans.api.visual module."); // NOI18N
 
         setState (ObjectState.createNormal ());
     }

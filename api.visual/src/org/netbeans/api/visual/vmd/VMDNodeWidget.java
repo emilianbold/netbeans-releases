@@ -35,8 +35,12 @@ import java.util.*;
 import java.util.List;
 
 /**
- * This class represents a node widget in the VMD plug-in. It implements the minimize ability. It allows to add pin widgets into the widget
- * using attachPinWidget method.
+ * This class represents a node widget in the VMD visualization style. It implements the minimize ability.
+ * It allows to add pin widgets into the widget using <code>attachPinWidget</code> method.
+ * <p>
+ * The node widget consists of a header (with an image, a name, secondary name and a glyph set) and the content.
+ * The content contains pin widgets. Pin widgets can be organized in pin-categories defined by calling <code>sortPins</code> method.
+ * The <code>sortPins</code> method has to be called refresh the order after adding a pin widget.
  *
  * @author David Kaspar
  */
@@ -75,14 +79,14 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
 
         setOpaque (false);
         setBorder (VMDFactory.createVMDNodeBorder ());
-        setLayout (LayoutFactory.createVerticalLayout ());
+        setLayout (LayoutFactory.createVerticalFlowLayout ());
         setMinimumSize (new Dimension (128, 8));
 
         header = new Widget (scene);
         header.setBorder (BORDER);
         header.setBackground (COLOR_SELECTED);
         header.setOpaque (false);
-        header.setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, 8));
+        header.setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         addChild (header);
 
         minimizeWidget = new ImageWidget (scene, IMAGE_COLLAPSE);

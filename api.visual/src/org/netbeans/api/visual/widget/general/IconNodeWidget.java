@@ -66,10 +66,10 @@ public class IconNodeWidget extends Widget {
 
         switch (orientation) {
             case BOTTOM_CENTER:
-                setLayout (LayoutFactory.createVerticalLayout (LayoutFactory.SerialAlignment.CENTER, - lookFeel.getMargin () + 1));
+                setLayout (LayoutFactory.createVerticalFlowLayout (LayoutFactory.SerialAlignment.CENTER, - lookFeel.getMargin () + 1));
                 break;
             case RIGHT_CENTER:
-                setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, - lookFeel.getMargin () + 1));
+                setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, - lookFeel.getMargin () + 1));
                 break;
         }
 
