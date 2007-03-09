@@ -34,6 +34,14 @@ import org.openide.util.Utilities;
  * @author  Marian Petras
  */
 public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
+    
+    public BeanDescriptor getBeanDescriptor() {
+        BeanDescriptor descr = new BeanDescriptor(JUnitSettings.class);
+        descr.setDisplayName(
+                NbBundle.getMessage(JUnitSettings.class,
+                                    "SettingsNodeName"));               //NOI18N
+        return descr;
+    }
 
     public PropertyDescriptor[] getPropertyDescriptors () {
         try {
