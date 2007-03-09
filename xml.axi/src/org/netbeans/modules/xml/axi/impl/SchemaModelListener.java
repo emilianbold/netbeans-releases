@@ -22,6 +22,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 /**
  *
@@ -49,14 +51,38 @@ public class SchemaModelListener implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        assert(model != null);
-        
-        //do not add events if we mutated the model
-        if(model.isIntransaction())
+        assert(model != null);        
+        if(model.isIntransaction() || !isValidEvent(evt))
             return;
-        
+
         events.add(evt);
         ((ModelAccessImpl)model.getAccess()).setDirty();
+    }
+    
+    private boolean isValidEvent(PropertyChangeEvent evt) {
+        if(evt.getSource() instanceof SchemaModel) {
+            return true;
+        }
+        
+        if(!(evt.getSource() instanceof SchemaComponent))
+            return false;
+        
+        SchemaComponent component = (SchemaComponent)evt.getSource();
+        if( (evt.getOldValue() == null) &&
+            (evt.getNewValue() != null) &&
+            (evt.getNewValue() instanceof SchemaComponent) ) {
+            component = (SchemaComponent)evt.getNewValue();
+        }
+        
+        if( (evt.getNewValue() == null) &&
+            (evt.getOldValue() != null) &&
+            (evt.getOldValue() instanceof SchemaComponent) ) {
+            component = (SchemaComponent)evt.getOldValue();
+        }
+        
+        //query to check if this component affects the model
+        AXIModelBuilderQuery query = new AXIModelBuilderQuery(model);
+        return query.affectsModel(component);
     }
     
     private List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();

@@ -90,6 +90,14 @@ public class AXIModelUpdater extends DeepAXITreeVisitor {
         }        
         return syncCompleted;
     }
+    
+    
+    /**
+     * Syncs only the specified component.
+     */
+    public void syncOne(AXIComponent component) {
+        component.accept(this);
+    }
         
     /**
      * Syncs one component at a time. For each component, it creates

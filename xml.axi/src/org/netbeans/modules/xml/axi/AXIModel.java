@@ -20,7 +20,10 @@ package org.netbeans.modules.xml.axi;
 
 import java.util.List;
 import org.netbeans.modules.xml.axi.impl.AXIDocumentImpl;
+import org.netbeans.modules.xml.axi.impl.AXIModelImpl;
+import org.netbeans.modules.xml.axi.impl.AXIModelBuilderQuery;
 import org.netbeans.modules.xml.axi.impl.ModelAccessImpl;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.ModelAccess;
@@ -95,6 +98,14 @@ public abstract class AXIModel extends AbstractModel<AXIComponent> {
             return !fo.canWrite();
         }
         return true;
+    }
+    
+    /**
+     * Returns true if there exists a corresponding visible AXIComponent.
+     */
+    public boolean canView(SchemaComponent component) {
+        AXIModelBuilderQuery factory = new AXIModelBuilderQuery((AXIModelImpl)this);
+        return factory.canView(component);
     }
 
     /////////////////////////////////////////////////////////////////////

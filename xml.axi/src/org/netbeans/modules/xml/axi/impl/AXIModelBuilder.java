@@ -36,14 +36,14 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  *
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
-public class AXIModelBuilder extends DeepSchemaVisitor {
+public class AXIModelBuilder extends AbstractModelBuilder {
 
     /**
      * Creates a new instance of AXIModelBuilder
      */
     public AXIModelBuilder(AXIComponent parent) {
+        super((AXIModelImpl)parent.getModel());
         this.parent = parent;
-        this.model = (AXIModelImpl)parent.getModel();
     }
             
     /**
@@ -72,6 +72,12 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
         }
     }
 
+    /**
+     * Visit Schema.
+     */
+    public void visit(Schema schema) {        
+    }
+    
     /**
      * Visit AnyElement.
      */
@@ -305,11 +311,7 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
         }
         children.add(child);
     }
-    
-    private AXIModelImpl getModel() {
-        return model;
-    }
-    
+        
     ////////////////////////////////////////////////////////////////////
     ////////////////////////// member variables ////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -322,11 +324,6 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
      * Ref to the original children list being passed by the caller.
      */
     private List<AXIComponent> children;
-
-    /**
-     * Ref to the current model.
-     */
-    private AXIModelImpl model;
 }
 
 

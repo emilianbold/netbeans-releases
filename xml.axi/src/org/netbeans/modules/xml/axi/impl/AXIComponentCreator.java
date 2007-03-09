@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.axi.impl;
 
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -26,7 +25,6 @@ import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.schema.model.*;
-import org.netbeans.modules.xml.schema.model.visitor.DefaultSchemaVisitor;
 
 /**
  * This is a visitor, which visits a specified schema component
@@ -37,14 +35,14 @@ import org.netbeans.modules.xml.schema.model.visitor.DefaultSchemaVisitor;
  * 
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
-public class AXIComponentCreator extends DefaultSchemaVisitor {
+public class AXIComponentCreator extends AbstractModelBuilder {
 
     /**
      * Creates a new instance of AXIComponentCreator
      */
     public AXIComponentCreator(AXIModelImpl model) {
-        this.model = model;
-        this.factory = model.getComponentFactory();
+        super(model);
+        factory = model.getComponentFactory();
     }
 
     /**
@@ -257,6 +255,17 @@ public class AXIComponentCreator extends DefaultSchemaVisitor {
         newAXIComponent = cm;
     }
             
+    public void visit(LocalComplexType component) {        
+    }
+    public void visit(ComplexContent component) {        
+    }    
+    public void visit(SimpleContent component) {        
+    }
+    public void visit(SimpleExtension component) {        
+    }    
+    public void visit(ComplexExtension component) {        
+    }
+
     ////////////////////////////////////////////////////////////////////
     ////////////////////////// member variables ////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -264,14 +273,6 @@ public class AXIComponentCreator extends DefaultSchemaVisitor {
      * Newly created component.
      */
     private AXIComponent newAXIComponent;
-    
-    /**
-     * AXIModel.
-     */
-    private AXIModelImpl model;
-    
-    /**
-     * AXIComponentFactory.
-     */
     private AXIComponentFactory factory;
 }
+

@@ -926,16 +926,22 @@ public class SchemaGeneratorUtil {
             final SchemaModel sm, final SchemaComponent sc) {
         if(!(attribute.getPeer() instanceof LocalAttribute)) return;
         LocalAttribute attr = (LocalAttribute) attribute.getPeer();
-        if(sc instanceof LocalAttributeContainer)
-            ((LocalAttributeContainer)sc).removeLocalAttribute(attr);
+        SchemaComponent attrParent = attr.getParent();
+        if(attrParent instanceof LocalAttributeContainer)
+            ((LocalAttributeContainer)attrParent).removeLocalAttribute(attr);
+        else if(attrParent instanceof SimpleExtension)
+            ((SimpleExtension)attrParent).removeLocalAttribute(attr);
     }
     
     public static void removeAttributeRef(final Attribute attribute,
             final SchemaModel sm, final SchemaComponent sc) {
         if(!(attribute.getPeer() instanceof AttributeReference)) return;
         AttributeReference ref = (AttributeReference) attribute.getPeer();
-        if(sc instanceof LocalAttributeContainer)
-            ((LocalAttributeContainer)sc).removeAttributeReference(ref);
+        SchemaComponent attrParent = ref.getParent();
+        if(attrParent instanceof LocalAttributeContainer)
+            ((LocalAttributeContainer)attrParent).removeAttributeReference(ref);
+        else if(attrParent instanceof SimpleExtension)
+            ((SimpleExtension)attrParent).removeAttributeReference(ref);
     }
     
     public static void removeComplexTypeDefinition(final SchemaUpdate.UpdateUnit u,

@@ -21,12 +21,13 @@ package org.netbeans.modules.xml.axi;
 
 import javax.swing.text.Document;
 import junit.framework.*;
+import org.netbeans.modules.xml.axi.datatype.BooleanType;
 import org.netbeans.modules.xml.schema.model.AttributeGroupReference;
 import org.netbeans.modules.xml.schema.model.Choice;
-import org.netbeans.modules.xml.schema.model.ComplexContent;
 import org.netbeans.modules.xml.schema.model.GlobalAttributeGroup;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalComplexType;
 import org.netbeans.modules.xml.schema.model.LocalElement;
@@ -55,6 +56,11 @@ public class SchemaGeneratorTest extends AbstractTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+    }
+    
+    protected void tearDown() throws Exception {
+        axiModel.endTransaction();
+        super.tearDown();
     }
     
     public static Test suite() {
@@ -230,19 +236,22 @@ public class SchemaGeneratorTest extends AbstractTestCase {
         assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
         validateSchema(axiModel.getSchemaModel());
         
-//		try {
-//			SchemaModel sm = getSchemaModel();
-//			doc = ((AbstractDocumentModel)sm).getBaseDocument();
-//			System.out.println("doc: "+doc.getText(0, doc.getLength()));
-//		} catch (BadLocationException ex) {
-//			ex.printStackTrace();
-//		}
+//        try {
+//            SchemaModel sm = getSchemaModel();
+//            doc = ((AbstractDocumentModel)sm).getBaseDocument();
+//            System.out.println("doc: "+doc.getText(0, doc.getLength()));
+//        } catch (BadLocationException ex) {
+//            ex.printStackTrace();
+//        }
     }
     
     public void testSimpleToComplexContent() {
         assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());        
         Element newElem = axiModel.getComponentFactory().createElement();
         newElem.setName("City");
+        Attribute newAttr = axiModel.getComponentFactory().createAttribute();
+        newAttr.setName("a1");
+        
         GlobalElement ge2 = null;
         Element e2 = null;
         for(Element e:axiModel.getRoot().getElements()) {
@@ -253,14 +262,88 @@ public class SchemaGeneratorTest extends AbstractTestCase {
         }
         assertTrue("complexcontent",
                 ((GlobalComplexType)ge2.getType().get()).getDefinition() instanceof SimpleContent);
+        assertEquals("global Complex types",4,getSchemaModel().getSchema().getComplexTypes().size());
         
         axiModel.startTransaction();
-        e2.addElement(newElem);       
+        e2.addElement(newElem);
+        e2.addAttribute(newAttr);
+        axiModel.endTransaction();   
+   
+        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global Complex types",4,getSchemaModel().getSchema().getComplexTypes().size());
+        assertEquals("local element",1,e2.getChildElements().size());
+        assertEquals("local attr",2,e2.getAttributes().size());
+        assertNotNull("complexcontent", ge2.getType());
+        org.netbeans.modules.xml.schema.model.Sequence seq = 
+                (org.netbeans.modules.xml.schema.model.Sequence) 
+                    ((GlobalComplexType)ge2.getType().get()).getDefinition();
+        assertNotNull("sequence", seq);
+        assertEquals("complexcontent attr size", 2, 
+                ((GlobalComplexType)ge2.getType().get()).getLocalAttributes().size());        
+        validateSchema(axiModel.getSchemaModel());
+                     
+        //FIXME: Exception on AXIComponent.removeChild()
+//        axiModel.startTransaction();
+//        e2.removeElement(newElem);
+//        e2.removeAttribute(newAttr);
+//        axiModel.endTransaction();     
+//        
+//        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
+//        assertNotNull("complexcontent", ge2.getType());
+//        newcc = (ComplexContent) ((GlobalComplexType)ge2.getType().get()).getDefinition();
+//        assertNotNull("simplecontent", newcc);
+//        ccr = (ComplexContentRestriction) newcc.getLocalDefinition();
+//        assertNotNull("complexcontent", ccr);
+//        assertNotNull("complexcontent", ccr.getBase().get() instanceof GlobalSimpleType);
+//        assertEquals("complexcontent attr size", 1, ccr.getLocalAttributes().size());        
+//        validateSchema(axiModel.getSchemaModel());        
+    }   
+    
+    public void testCreateSimpleContent() {
+        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());        
+        Element newElem = axiModel.getComponentFactory().createElement();
+        newElem.setName("e1");
+        
+        Element newElem2 = axiModel.getComponentFactory().createElement();
+        newElem2.setName("e2");
+        
+        axiModel.startTransaction();
+        axiModel.getRoot().addElement(newElem);
         axiModel.endTransaction();
         
-        assertTrue("complexcontent",
-                ((GlobalComplexType)ge2.getType().get()).getDefinition() instanceof ComplexContent);
-        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
+        GlobalElement ge2 = (GlobalElement) newElem.getPeer();
+        
+        axiModel.startTransaction();
+        newElem.setType(new BooleanType());
+        axiModel.endTransaction();
+        
+        assertTrue("complexcontent",ge2.getType().get() instanceof GlobalSimpleType);
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         validateSchema(axiModel.getSchemaModel());
+        
+        Attribute newAttr = axiModel.getComponentFactory().createAttribute();
+        newAttr.setName("a1");
+        
+        axiModel.startTransaction();
+        newElem.addAttribute(newAttr);
+        axiModel.endTransaction();
+        assertNull("simplecontent", ge2.getType());
+        SimpleContent newsc = (SimpleContent) ((LocalComplexType)ge2.getInlineType()).getDefinition();
+        assertNotNull("simplecontent", newsc);
+        SimpleExtension se = (SimpleExtension) newsc.getLocalDefinition();
+        assertNotNull("simplecontent", se);
+        assertNotNull("simplecontent", se.getBase().get() instanceof GlobalSimpleType);
+        assertEquals("simplecontent attr size", 1, se.getLocalAttributes().size());
+        
+        axiModel.startTransaction();
+        newElem.removeAttribute(newAttr);
+        axiModel.endTransaction();
+        assertNull("simplecontent", ge2.getType());
+        newsc = (SimpleContent) ((LocalComplexType)ge2.getInlineType()).getDefinition();
+        assertNotNull("simplecontent", newsc);
+        se = (SimpleExtension) newsc.getLocalDefinition();
+        assertNotNull("simplecontent", se);
+        assertNotNull("simplecontent", se.getBase().get() instanceof GlobalSimpleType);
+        assertEquals("simplecontent attr size", 0, se.getLocalAttributes().size());
     }    
 }
