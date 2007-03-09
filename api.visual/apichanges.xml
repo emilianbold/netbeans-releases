@@ -42,6 +42,20 @@ Microsystems, Inc. All Rights Reserved.
             <issue number="95110"/>
         </change>
 
+        <change>
+            <api name="general"/>
+            <summary>Cut-distance can be specified for Triangle anchor shape</summary>
+            <version major="2" minor="0"/>
+            <date day="9" month="3" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                AnchorShapeFactory.createTriangleAnchorShape factory method now takes cut-distance parameter.
+            </description>
+            <class package="org.netbeans.api.visual.anchor" name="AnchorShapeFactory" link="yes"/>
+            <issue number="91613"/>
+        </change>
+
     </changes>
 
     <htmlcontents>

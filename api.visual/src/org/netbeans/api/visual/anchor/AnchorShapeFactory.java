@@ -58,9 +58,22 @@ public class AnchorShapeFactory {
      * @param size the size of triangle
      * @param filled if true, then the triangle is filled
      * @param output if true, then it is output triangle
+     * @return the anchor shape
      */
     public static AnchorShape createTriangleAnchorShape (int size, boolean filled, boolean output) {
         return new TriangleAnchorShape (size, filled, output, false, 0.0);
+    }
+
+    /**
+     * Creates a triangular anchor shape.
+     * @param size the size of triangle
+     * @param filled if true, then the triangle is filled
+     * @param output if true, then it is output triangle
+     * @param cutDistance the distance where the related line is cut (usually 1px smaller than the size)
+     * @return the anchor shape
+     */
+    public static AnchorShape createTriangleAnchorShape (int size, boolean filled, boolean output, int cutDistance) {
+        return new TriangleAnchorShape (size, filled, output, false, cutDistance);
     }
 
 }
