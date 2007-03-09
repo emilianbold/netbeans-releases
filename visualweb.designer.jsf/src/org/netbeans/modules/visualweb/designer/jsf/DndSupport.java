@@ -112,8 +112,8 @@ class DndSupport {
         return getFacesModel().getDnDSupport().pasteBeans(t, parent, pos, location, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
     }
 
-    int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp, int nodePos) {
-        return getFacesModel().getDnDSupport().computeActions(droppee, transferable, searchUp, nodePos);
+    int computeActions(DesignBean droppee, Transferable transferable) {
+        return getFacesModel().getDnDSupport().computeActions(droppee, transferable);
     }
 
     int processLinks(Element origElement, Class[] classes, List beans, boolean selectFirst, boolean handleLinks, boolean showLinkTarget) {

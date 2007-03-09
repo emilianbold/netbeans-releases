@@ -1804,157 +1804,157 @@ public class DndHandler /*extends TransferHandler*/ {
 //        return WebForm.getHtmlDomProviderService().getDefaultMarkupPositionUnderParent(parent);
 //    }
 
-    /** Figure out which kind of action we can do for the given
-     * transferable over the given droppee.
-     *
-     * @param droppee The target component
-     * @param transferable The transferable being considered dropped
-     *        or linked on the droppee. If it references multiple
-     *        components, it will set the allowable action union of
-     *        all the components.
-     * @param searchUp If true, you are permitted to search upwards
-     *        as well.
-     */
-//    public int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp,
+//    /** Figure out which kind of action we can do for the given
+//     * transferable over the given droppee.
+//     *
+//     * @param droppee The target component
+//     * @param transferable The transferable being considered dropped
+//     *        or linked on the droppee. If it references multiple
+//     *        components, it will set the allowable action union of
+//     *        all the components.
+//     * @param searchUp If true, you are permitted to search upwards
+//     *        as well.
+//     */
+////    public int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp,
+////        int nodePos) {
+//    public int computeActions(Element dropeeComponentRootElement, Transferable transferable, boolean searchUp,
 //        int nodePos) {
-    public int computeActions(Element dropeeComponentRootElement, Transferable transferable, boolean searchUp,
-        int nodePos) {
-//        if(DesignerUtils.DEBUG) {
-//            DesignerUtils.debugLog(getClass().getName() + ".computeActions(DesignBean, Transferable, boolean, int)");
-//        }
-//        if(transferable == null) {
-//            throw(new IllegalArgumentException("Null transferable."));
-//        }
-//        int action = DnDConstants.ACTION_NONE;
-//        String[] classes = null;
-//        DesignBean[] beans = null;
-//        DataFlavor[] flavors = transferable.getTransferDataFlavors();
-//
-//        for (int j = 0; j < flavors.length; j++) {
-//            Class clz = flavors[j].getRepresentationClass();
-//
-//            if (clz == DisplayItem.class) {
-//                // Can always "move" from the palette - it's an implied copy.
-//                // The explorer drag & drop is a bit weird about this - they
-//                // only pass "move" as the valid operation, not copy.
-//                action |= DnDConstants.ACTION_MOVE;
-//
-//                Object data;
-//
-//                try {
-//                    data = transferable.getTransferData(flavors[j]);
-//                } catch (Exception e) {
-//                    ErrorManager.getDefault().notify(e);
-//
-//                    return action;
-//                }
-//
-//                if (!(data instanceof DisplayItem)) {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-//                            new IllegalStateException("Invalid DisplayItem transfer data: " + data)); // NOI18N
-//
-//                    return action;
-//                }
-//
-//                List list = new ArrayList();
-//                DisplayItem item = (DisplayItem)data;
-//
-//                if (item instanceof BeanCreateInfo) {
-//                    BeanCreateInfo bci = (BeanCreateInfo)item;
-//                    classes = new String[] { bci.getBeanClassName() };
-//                } else if (item instanceof BeanCreateInfoSet) {
-//                    BeanCreateInfoSet bcis = (BeanCreateInfoSet)item;
-//                    classes = bcis.getBeanClassNames();
-//                } else {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                            new IllegalStateException("Illegal item=" + item)); // NOI18N
-//                }
-//
-//                break;
-//            } else if (clz == DesignBean.class) {
-//                Object data;
-//
-//                try {
-//                    data = transferable.getTransferData(flavors[j]);
-//                } catch (IOException ex) {
-//                    ErrorManager.getDefault().notify(ex);
-//
-//                    return action;
-//                } catch (UnsupportedFlavorException ex) {
-//                    ErrorManager.getDefault().notify(ex);
-//
-//                    return action;
-//                }
-//
-//                if ((data != null) && data instanceof DesignBean[]) {
-//                    beans = (DesignBean[])data;
-//
-//                    if (beans == null) {
-//                        return action;
-//                    }
-//
-//                    classes = new String[beans.length];
-//
-//                    for (int i = 0; i < beans.length; i++) {
-//                        classes[i] = beans[i].getInstance().getClass().getName();
-//                    }
-//
-//                    // See if we can move these beans. We can move if the
-//                    // parent target location is not a child of any of the beans,
-//                    // or the beans themselves
-//                    boolean cannot = false;
-//
-//                    for (int i = 0; i < beans.length; i++) {
-//                        DesignBean d = droppee;
-//
-//                        while (d != null) {
-//                            if (d == beans[i]) {
-//                                cannot = true;
-//
-//                                break;
-//                            }
-//
-//                            d = d.getBeanParent();
-//                        }
-//                    }
-//
-//                    if (!cannot) {
-//                        action |= DnDConstants.ACTION_MOVE;
-//                    }
-//
-//                    break;
-//                }
-//            } else if (clz == LiveUnit.ClipImage.class) {
-//                Object data;
-//
-//                try {
-//                    data = transferable.getTransferData(flavors[j]);
-//                } catch (Exception e) {
-//                    ErrorManager.getDefault().notify(e);
-//
-//                    return action;
-//                }
-//
-//                if (!(data instanceof LiveUnit.ClipImage)) {
-//                    ErrorManager.getDefault().log("Invalid LiveUnit.ClipImage transfer data: " +
-//                        data);
-//
-//                    return action;
-//                }
-//
-//                LiveUnit.ClipImage luc = (LiveUnit.ClipImage)data;
-//                classes = luc.getTypes();
-//            }
-//        }
-//
-//        if (classes == null) {
-//            return action;
-//        }
-//
-//        return computeActions(droppee, classes, beans, action, searchUp, nodePos);
-//        return webform.computeActions(droppee, transferable, searchUp, nodePos);
-        return webform.computeActions(dropeeComponentRootElement, transferable, searchUp, nodePos);
-    }
+////        if(DesignerUtils.DEBUG) {
+////            DesignerUtils.debugLog(getClass().getName() + ".computeActions(DesignBean, Transferable, boolean, int)");
+////        }
+////        if(transferable == null) {
+////            throw(new IllegalArgumentException("Null transferable."));
+////        }
+////        int action = DnDConstants.ACTION_NONE;
+////        String[] classes = null;
+////        DesignBean[] beans = null;
+////        DataFlavor[] flavors = transferable.getTransferDataFlavors();
+////
+////        for (int j = 0; j < flavors.length; j++) {
+////            Class clz = flavors[j].getRepresentationClass();
+////
+////            if (clz == DisplayItem.class) {
+////                // Can always "move" from the palette - it's an implied copy.
+////                // The explorer drag & drop is a bit weird about this - they
+////                // only pass "move" as the valid operation, not copy.
+////                action |= DnDConstants.ACTION_MOVE;
+////
+////                Object data;
+////
+////                try {
+////                    data = transferable.getTransferData(flavors[j]);
+////                } catch (Exception e) {
+////                    ErrorManager.getDefault().notify(e);
+////
+////                    return action;
+////                }
+////
+////                if (!(data instanceof DisplayItem)) {
+////                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+////                            new IllegalStateException("Invalid DisplayItem transfer data: " + data)); // NOI18N
+////
+////                    return action;
+////                }
+////
+////                List list = new ArrayList();
+////                DisplayItem item = (DisplayItem)data;
+////
+////                if (item instanceof BeanCreateInfo) {
+////                    BeanCreateInfo bci = (BeanCreateInfo)item;
+////                    classes = new String[] { bci.getBeanClassName() };
+////                } else if (item instanceof BeanCreateInfoSet) {
+////                    BeanCreateInfoSet bcis = (BeanCreateInfoSet)item;
+////                    classes = bcis.getBeanClassNames();
+////                } else {
+////                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                            new IllegalStateException("Illegal item=" + item)); // NOI18N
+////                }
+////
+////                break;
+////            } else if (clz == DesignBean.class) {
+////                Object data;
+////
+////                try {
+////                    data = transferable.getTransferData(flavors[j]);
+////                } catch (IOException ex) {
+////                    ErrorManager.getDefault().notify(ex);
+////
+////                    return action;
+////                } catch (UnsupportedFlavorException ex) {
+////                    ErrorManager.getDefault().notify(ex);
+////
+////                    return action;
+////                }
+////
+////                if ((data != null) && data instanceof DesignBean[]) {
+////                    beans = (DesignBean[])data;
+////
+////                    if (beans == null) {
+////                        return action;
+////                    }
+////
+////                    classes = new String[beans.length];
+////
+////                    for (int i = 0; i < beans.length; i++) {
+////                        classes[i] = beans[i].getInstance().getClass().getName();
+////                    }
+////
+////                    // See if we can move these beans. We can move if the
+////                    // parent target location is not a child of any of the beans,
+////                    // or the beans themselves
+////                    boolean cannot = false;
+////
+////                    for (int i = 0; i < beans.length; i++) {
+////                        DesignBean d = droppee;
+////
+////                        while (d != null) {
+////                            if (d == beans[i]) {
+////                                cannot = true;
+////
+////                                break;
+////                            }
+////
+////                            d = d.getBeanParent();
+////                        }
+////                    }
+////
+////                    if (!cannot) {
+////                        action |= DnDConstants.ACTION_MOVE;
+////                    }
+////
+////                    break;
+////                }
+////            } else if (clz == LiveUnit.ClipImage.class) {
+////                Object data;
+////
+////                try {
+////                    data = transferable.getTransferData(flavors[j]);
+////                } catch (Exception e) {
+////                    ErrorManager.getDefault().notify(e);
+////
+////                    return action;
+////                }
+////
+////                if (!(data instanceof LiveUnit.ClipImage)) {
+////                    ErrorManager.getDefault().log("Invalid LiveUnit.ClipImage transfer data: " +
+////                        data);
+////
+////                    return action;
+////                }
+////
+////                LiveUnit.ClipImage luc = (LiveUnit.ClipImage)data;
+////                classes = luc.getTypes();
+////            }
+////        }
+////
+////        if (classes == null) {
+////            return action;
+////        }
+////
+////        return computeActions(droppee, classes, beans, action, searchUp, nodePos);
+////        return webform.computeActions(droppee, transferable, searchUp, nodePos);
+//        return webform.computeActions(dropeeComponentRootElement, transferable, searchUp, nodePos);
+//    }
 
 //    private int computeActions(DesignBean origDroppee, String[] classes, DesignBean[] beans,
 //        int action, boolean searchUp, int nodePos) {

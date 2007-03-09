@@ -1684,8 +1684,8 @@ public class WebForm implements Designer {
 //    int computeActions(DesignBean droppee, Transferable transferable, boolean searchUp, int nodePos) {
 //        return htmlDomProvider.computeActions(droppee, transferable, searchUp, nodePos);
 //    }
-    int computeActions(Element dropeeComponentRootElement, Transferable transferable, boolean searchUp, int nodePos) {
-        return htmlDomProvider.computeActions(dropeeComponentRootElement, transferable, searchUp, nodePos);
+    int computeActions(Element dropeeComponentRootElement, Transferable transferable) {
+        return htmlDomProvider.computeActions(dropeeComponentRootElement, transferable);
     }
 
 //    DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
