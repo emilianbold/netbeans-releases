@@ -41,29 +41,21 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         setName(org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_Message")); // NOI18N
+
         mergeEndRepositoryFolderLabel.setLabelFor(mergeEndUrlComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndRepositoryFolderLabel, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_RepositoryFolder")); // NOI18N
-        mergeEndRepositoryFolderLabel.getAccessibleContext().setAccessibleDescription("Repository Folder");
 
         mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png")));
         mergeAfterRevisionLabel.setLabelFor(mergeEndRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_EndingRevision")); // NOI18N
-        mergeAfterRevisionLabel.getAccessibleContext().setAccessibleDescription("End Revision for Merging");
-
-        mergeEndRevisionTextField.getAccessibleContext().setAccessibleName("End Revision");
-        mergeEndRevisionTextField.getAccessibleContext().setAccessibleDescription("End Revision");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterEmptyLabel, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_EmptyHint")); // NOI18N
 
         mergeEndUrlComboBox.setEditable(true);
-        mergeEndUrlComboBox.getAccessibleContext().setAccessibleName("Repository URL ");
-        mergeEndUrlComboBox.getAccessibleContext().setAccessibleDescription("Repository URL");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndBrowseButton, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_Browse")); // NOI18N
-        mergeEndBrowseButton.getAccessibleContext().setAccessibleDescription("Browse Repository URL");
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndSearchButton, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_Search")); // NOI18N
-        mergeEndSearchButton.getAccessibleContext().setAccessibleDescription("Search Revision for Merging");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -98,14 +90,23 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
                     .add(mergeEndUrlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(7, 7, 7)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(mergeAfterRevisionLabel)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(mergeAfterRevisionLabel)
-                        .add(mergeEndSearchButton))
-                    .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(mergeEndSearchButton)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mergeAfterEmptyLabel)
                 .addContainerGap())
         );
+
+        mergeEndRepositoryFolderLabel.getAccessibleContext().setAccessibleDescription("Repository Folder");
+        mergeAfterRevisionLabel.getAccessibleContext().setAccessibleDescription("End Revision for Merging");
+        mergeEndRevisionTextField.getAccessibleContext().setAccessibleName("End Revision");
+        mergeEndRevisionTextField.getAccessibleContext().setAccessibleDescription("End Revision");
+        mergeEndUrlComboBox.getAccessibleContext().setAccessibleName("Repository URL ");
+        mergeEndUrlComboBox.getAccessibleContext().setAccessibleDescription("Repository URL");
+        mergeEndBrowseButton.getAccessibleContext().setAccessibleDescription("Browse Repository URL");
+        mergeEndSearchButton.getAccessibleContext().setAccessibleDescription("Search Revision for Merging");
     }// </editor-fold>//GEN-END:initComponents
     
     

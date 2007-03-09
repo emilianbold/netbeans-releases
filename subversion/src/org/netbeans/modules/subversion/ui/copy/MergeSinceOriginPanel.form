@@ -56,11 +56,11 @@
               </Group>
               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="mergeAfterRevisionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="mergeAfterRevisionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                      <Component id="mergeEndRevisionTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="mergeEndSearchButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="mergeEndRevisionTextField" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="mergeAfterEmptyLabel" min="-2" max="-2" attributes="0"/>
