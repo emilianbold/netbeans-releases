@@ -31,8 +31,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /**
@@ -51,7 +54,9 @@ public class WebServicesNodeFactory implements NodeFactory {
     }
     
     private static class WsNodeList implements NodeList<String> {
-        // Web service client
+        // Web Services
+        private static final String KEY_SERVICES = "web_services"; // NOI18N
+        // Web Service Client
         private static final String KEY_SERVICE_REFS = "serviceRefs"; // NOI18N
         
         private Project project;
@@ -68,9 +73,16 @@ public class WebServicesNodeFactory implements NodeFactory {
         public List<String> keys() {
             List<String> result = new ArrayList<String>();
             jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
-            JAXWSClientSupport jwcss = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
-            if ( jwcss != null && jaxWsModel != null ) {
-                    result.add(KEY_SERVICE_REFS);
+            FileObject projectDir = project.getProjectDirectory();
+            JAXWSSupport jaxwsSupport = JAXWSSupport.getJAXWSSupport(projectDir);
+            JAXWSClientSupport jaxwsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(projectDir);
+            if (jaxWsModel != null) {
+                if ( jaxwsSupport != null && jaxWsModel.getServices().length>0) {
+                        result.add(KEY_SERVICES);
+                }
+                if ( jaxwsClientSupport != null && jaxWsModel.getClients().length>0) {
+                        result.add(KEY_SERVICE_REFS);
+                }
             }
             return result;
         }
@@ -96,7 +108,10 @@ public class WebServicesNodeFactory implements NodeFactory {
         }
         
         public Node node(String key) {
-            if (jaxWsModel!=null && jaxWsModel.getClients().length>0) {
+            if (KEY_SERVICES.equals(key)) {
+                JAXWSView view = JAXWSView.getJAXWSView();
+                return view.createJAXWSView(project);
+            } else if (KEY_SERVICE_REFS.equals(key)) {
                 JAXWSClientView view = JAXWSClientView.getJAXWSClientView();
                 return view.createJAXWSClientView(project);
             }
