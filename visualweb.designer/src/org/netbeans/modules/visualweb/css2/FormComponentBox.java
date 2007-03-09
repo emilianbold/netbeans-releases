@@ -489,7 +489,7 @@ public class FormComponentBox extends ContainerBox {
             boolean multiple = el.hasAttribute(HtmlAttribute.MULTIPLE);
 
             if ((size > 1) || multiple) {
-                Vector v = new Vector();
+                Vector<String> v = new Vector<String>();
                 int[] selected = populateOptions(element, v);
 
                 JList list;
@@ -530,7 +530,7 @@ public class FormComponentBox extends ContainerBox {
                     jp.setUI(ui);
                 }
             } else {
-                Vector v = new Vector();
+                Vector<String> v = new Vector<String>();
                 int[] selected = populateOptions(element, v);
 
                 JComboBox jc;
@@ -642,11 +642,11 @@ public class FormComponentBox extends ContainerBox {
      * of the given Vector. (After whitespace is stripped, of course.)
      * Return the set of selected indices.
      */
-    public static int[] populateOptions(Element element, Vector v) {
+    public static int[] populateOptions(Element element, Vector<String> v) {
         // <markup_separation>
 //        MarkupService markupService = MarkupServiceProvider.getDefault();
         // </markup_separation>
-        ArrayList selected = new ArrayList();
+        List<Integer> selected = new ArrayList<Integer>();
         NodeList list = element.getChildNodes();
         int len = list.getLength();
 
@@ -720,7 +720,7 @@ public class FormComponentBox extends ContainerBox {
             int[] result = new int[selected.size()];
 
             for (int i = 0, n = selected.size(); i < n; i++) {
-                result[i] = ((Integer)selected.get(i)).intValue();
+                result[i] = (selected.get(i)).intValue();
             }
 
             return result;

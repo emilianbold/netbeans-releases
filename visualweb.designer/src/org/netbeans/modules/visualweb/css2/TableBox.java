@@ -165,7 +165,7 @@ public class TableBox extends ContainerBox {
     private boolean computingPrefWidth = false;
 
     /** List of caption boxes, if any */
-    private ArrayList captionBoxes;
+    private List<CssBox> captionBoxes;
 
     /** Applies only when there is a caption: if true, place caption above, otherwise below table */
     private boolean captionAbove;
@@ -822,7 +822,7 @@ public class TableBox extends ContainerBox {
             int y = 0;
 
             for (int i = 0, n = captionBoxes.size(); i < n; i++) {
-                CssBox box = (CssBox)captionBoxes.get(i);
+                CssBox box = captionBoxes.get(i);
 
                 if (box.getBoxType().isNormalFlow()) {
                     prevBox = box;
@@ -915,7 +915,7 @@ public class TableBox extends ContainerBox {
             int y = this.height;
 
             for (int i = 0, n = captionBoxes.size(); i < n; i++) {
-                CssBox box = (CssBox)captionBoxes.get(i);
+                CssBox box = captionBoxes.get(i);
 
                 // Should be a ContainerBox, for the caption element
                 box.setX(x);
@@ -1095,7 +1095,7 @@ public class TableBox extends ContainerBox {
                 addNode(context, caption, null, null, null);
 
                 int n = getBoxCount();
-                captionBoxes = new ArrayList(n);
+                captionBoxes = new ArrayList<CssBox>(n);
 
                 for (int i = 0; i < n; i++) {
                     captionBoxes.add(getBox(i));
@@ -1271,7 +1271,7 @@ public class TableBox extends ContainerBox {
 
             // Add boxes added for the caption into the caption box list
             int n = getBoxCount();
-            captionBoxes = new ArrayList(n - i);
+            captionBoxes = new ArrayList<CssBox>(n - i);
 
             for (; i < n; i++) {
                 captionBoxes.add(getBox(i));

@@ -95,7 +95,7 @@ public final class CssUtilities {
 
     // >>> XXX Moved from CssValueServiceImpl
     private static FontKey fontSearch = new FontKey(null, 0, 0);
-    private static Map fontTable = new Hashtable();
+    private static Map<FontKey, Font> fontTable = new Hashtable<FontKey, Font>();
 
     /**
      * Gets a new font.  This returns a Font from a cache
@@ -111,7 +111,7 @@ public final class CssUtilities {
     private static Font getFont(String family, int style, int size) {
         fontSearch.setValue(family, style, size);
 
-        Font f = (Font)fontTable.get(fontSearch);
+        Font f = fontTable.get(fontSearch);
 
         if (f == null) {
             // haven't seen this one yet.
