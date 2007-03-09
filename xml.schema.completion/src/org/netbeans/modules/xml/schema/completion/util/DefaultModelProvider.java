@@ -20,17 +20,20 @@ package org.netbeans.modules.xml.schema.completion.util;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
+import org.netbeans.modules.xml.schema.completion.util.CatalogModelProvider;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * Helps in getting the model for code completion.
@@ -67,9 +70,18 @@ public class DefaultModelProvider extends CompletionModelProvider {
     private CompletionModel getCompletionModel(URI schemaURI) {
         CompletionModel model = null;
         try {
-            ModelSource modelSource = Utilities.getModelSource(context.getPrimaryFile(), true);
-            CatalogModelFactory factory = CatalogModelFactory.getDefault();
-            CatalogModel catalogModel = factory.getCatalogModel(modelSource);
+            ModelSource modelSource = null;
+            CatalogModel catalogModel = null;
+            CatalogModelProvider catalogModelProvider = getCatalogModelProvider();
+            if(catalogModelProvider == null) {
+                modelSource = Utilities.getModelSource(context.getPrimaryFile(), true);
+                CatalogModelFactory factory = CatalogModelFactory.getDefault();
+                catalogModel = factory.getCatalogModel(modelSource);
+            } else {
+                //purely for unit testing purposes.
+                modelSource = catalogModelProvider.getModelSource(context.getPrimaryFile(), true);
+                catalogModel = catalogModelProvider.getCatalogModel();
+            }
             ModelSource schemaModelSource;
             schemaModelSource = catalogModel.getModelSource(schemaURI, modelSource);
             SchemaModel sm = null;
@@ -90,5 +102,22 @@ public class DefaultModelProvider extends CompletionModelProvider {
         }
         return model;
     }
-
+    
+    /**
+     * Uses lookup to find all CatalogModelProvider. If found uses the first one,
+     * else returns null. This is purely to solve the problem of not being able to
+     * use TestCatalogModel from unit tests.
+     *
+     * During actual CC from IDE, this will return null.
+     */
+    private CatalogModelProvider getCatalogModelProvider() {
+        Lookup.Template templ = new Lookup.Template(CatalogModelProvider.class);
+        Lookup.Result result = Lookup.getDefault().lookup(templ);
+        Collection impls = result.allInstances();
+        if(impls == null || impls.size() == 0)
+            return null;
+        
+        return (CatalogModelProvider)impls.iterator().next();
+    }
+    
 }

@@ -18,26 +18,16 @@
  */
 package org.netbeans.modules.xml.schema.completion;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.xml.axi.AXIModel;
-import org.netbeans.modules.xml.axi.AXIModelFactory;
-import org.netbeans.modules.xml.axi.Element;
-import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
-import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
-import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -52,33 +42,40 @@ public class CompletionQuery extends AsyncCompletionQuery {
         this.primaryFile = primaryFile;
     }    
     
+    /**
+     *
+     */
     protected void prepareQuery(JTextComponent component) {
         this.component = component;
     }
     
+    /**
+     *
+     */
     protected void query(CompletionResultSet resultSet,
-            Document doc, int caretOffset) {
-        //Step 1: create a context
-        XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.
-                getDocument(component).getSyntaxSupport();
-        context = new CompletionContextImpl(primaryFile, support, caretOffset);
-        
-        //Step 2: Accumulate all models
-        if(!context.initModels()) {
-            resultSet.finish();
-            return;
-        }
-                
-        //Step 3: Query
-        context.initContext();
-        List<CompletionResultItem> items = getCompletionItems();
+            Document doc, int caretOffset) {                
+        List<CompletionResultItem> items = getCompletionItems(doc, caretOffset);
         if(items != null) resultSet.addAllItems(items);
         resultSet.finish();
     }
     
-    private List<CompletionResultItem> getCompletionItems() {
+    
+    /**
+     * This method is needed for unit testing purposes.
+     */
+    List<CompletionResultItem> getCompletionItems(Document doc, int caretOffset) {
         List<CompletionResultItem> completionItems = null;
         
+        //Step 1: create a context
+        XMLSyntaxSupport support = (XMLSyntaxSupport) ((BaseDocument)doc).getSyntaxSupport();
+        context = new CompletionContextImpl(primaryFile, support, caretOffset);
+        
+        //Step 2: Accumulate all models and initialize the context
+        if(!context.initModels() || !context.initContext()) {
+            return null;
+        }
+                
+        //Step 3: Query
         switch (context.getCompletionType()) {
             case COMPLETION_TYPE_ELEMENT:
                 completionItems = CompletionUtil.getElements(context);

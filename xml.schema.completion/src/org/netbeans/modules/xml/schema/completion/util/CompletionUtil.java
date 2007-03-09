@@ -188,37 +188,15 @@ public class CompletionUtil {
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
         String typedChars = context.getTypedChars();
         for(AbstractAttribute aa: element.getAttributes()) {
+            if(aa.getTargetNamespace() == null) {  //no namespace
+                results.add(createResultItem(aa, null, context));
+                continue;
+            }            
             if(aa instanceof AnyAttribute) {
                 results.addAll(substituteAny((AnyAttribute)aa, context));
                 continue;
             }
-            CompletionResultItem item = null;
-            if(aa.getTargetNamespace() == null) {  //no namespace
-                results.add(new AttributeResultItem(aa, context));
-                continue;
-            }            
-            if(!isFormQualified(aa)) {
-                item = new AttributeResultItem(aa, context);
-                if(typedChars == null) {
-                    results.add(item);
-                } else if(item.getReplacementText().startsWith(typedChars)) {
-                    results.add(item);
-                } else
-                    continue;
-            } else {
-                List<String> prefixes = getPrefixesAgainstTargetNamespace(
-                        context, aa.getTargetNamespace());
-                for(String prefix: prefixes) {
-                    if(prefix == null) prefix = aa.getTargetNamespace();
-                    item = new AttributeResultItem(aa, prefix, context);
-                    if(typedChars == null) {
-                        results.add(item);
-                    } else if(item.getReplacementText().startsWith(typedChars)) {
-                        results.add(item);
-                    } else
-                        continue;
-                }
-            }
+            addNSAwareCompletionItems(aa,context,null,results);
         }
         return results;
     }
@@ -235,42 +213,74 @@ public class CompletionUtil {
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
         String typedChars = context.getTypedChars();
         for(AbstractElement ae: element.getChildElements()) {
+            if(ae.getTargetNamespace() == null) {  //no namespace
+                results.add(createResultItem(ae, null, context));
+                continue;
+            }            
             if(ae instanceof AnyElement) {
                 results.addAll(substituteAny((AnyElement)ae, context));
                 continue;
             }
-            CompletionResultItem item = null;
-            if(ae.getTargetNamespace() == null) {  //no namespace
-                results.add(new ElementResultItem(ae, context));
-                continue;
-            }
-            if(!isFormQualified(ae)) {
-                item = new ElementResultItem(ae, context);
-                if(typedChars == null) {
-                    results.add(item);
-                } else if(item.getReplacementText().startsWith(typedChars)) {
-                    results.add(item);
-                } else
-                    continue;                
-            } else {                
-                List<String> prefixes = getPrefixesAgainstTargetNamespace(
-                        context, ae.getTargetNamespace());
-                for(String prefix: prefixes) {
-                    if(prefix == null)
-                        item = new ElementResultItem(ae, context);
-                    else
-                        item = new ElementResultItem(ae, prefix, context);
-
-                    if(typedChars == null) {
-                        results.add(item);
-                    } else if(item.getReplacementText().startsWith(typedChars)) {
-                        results.add(item);
-                    } else
-                        continue;
-                }
-            }
+            addNSAwareCompletionItems(ae,context,null,results);
         }
         return results;
+    }
+    
+    private static void addNSAwareCompletionItems(AXIComponent axi, CompletionContextImpl context,
+            CompletionModel cm, List<CompletionResultItem> results) {
+        String typedChars = context.getTypedChars();
+        CompletionResultItem item = null;
+        if(!isFormQualified(axi)) {
+            item = createResultItem(axi, null, context);
+            if(typedChars == null) {
+                results.add(item);
+            } else if(item.getReplacementText().startsWith(typedChars)) {
+                results.add(item);
+            }
+            return;
+        }
+        //namespace aware items
+        List<String> prefixes = getPrefixes(context, axi, cm);
+        for(String prefix: prefixes) {
+            item = createResultItem(axi, prefix, context);
+            if(typedChars == null) {
+                results.add(item);
+            } else if(item.getReplacementText().startsWith(typedChars)) {
+                results.add(item);
+            }
+        }
+    }
+    
+    private static CompletionResultItem createResultItem(AXIComponent axi,
+            String prefix, CompletionContextImpl context) {
+        CompletionResultItem item = null;
+        if(axi instanceof AbstractElement) {
+            if(prefix == null)
+                item = new ElementResultItem((AbstractElement)axi, context);
+            else
+                item = new ElementResultItem((AbstractElement)axi, prefix, context);
+        }
+        
+        if(axi instanceof AbstractAttribute) {
+            if(prefix == null)
+                item = new AttributeResultItem((AbstractAttribute)axi, context);
+            else
+                item = new AttributeResultItem((AbstractAttribute)axi, prefix, context);
+        }
+        
+        return item;
+    }
+    
+    private static List<String> getPrefixes(CompletionContextImpl context, AXIComponent ae, CompletionModel cm) {
+        List<String> prefixes = null;
+        if(cm == null)
+            return getPrefixesAgainstTargetNamespace(context, ae.getTargetNamespace());
+        
+        prefixes = getPrefixesAgainstTargetNamespace(context, cm.getTargetNamespace());
+        if(prefixes.size() == 0)
+            prefixes.add(cm.getSuggestedPrefix());
+        
+        return prefixes;
     }
     
     private static boolean isFormQualified(AXIComponent component) {
@@ -285,12 +295,15 @@ public class CompletionUtil {
         }
         
         if(component instanceof Element) {
+            AXIComponent original = component.getOriginal();
+            if( ((Element)original).isReference() ||
+                (original.getParent() instanceof AXIDocument) )
+                return true;
             Element e = (Element)component;
             return (e.getForm() == Form.QUALIFIED);
         }
         
         return false;
-        
     }
     
     /**
@@ -315,6 +328,9 @@ public class CompletionUtil {
         
         AXIModel am = AXIModelFactory.getDefault().getModel(cm.getSchemaModel());
         AXIComponent parent = am.getRoot();
+        if(parent == null)
+            return null;
+        
         AXIComponent child = null;
         for(QName qname : path) {
             child = findChildElement(parent, qname);
@@ -329,6 +345,8 @@ public class CompletionUtil {
     
     private static AXIComponent findChildElement(AXIComponent parent,
             QName qname) {
+        if(parent == null)
+            return null;
         for(AbstractElement element : parent.getChildElements()) {
             if(!(element instanceof Element))
                 continue;
@@ -384,26 +402,16 @@ public class CompletionUtil {
     }
     
     private static void populateItemsForAny(CompletionModel cm,
-            AXIComponent any, CompletionContext context, List<CompletionResultItem> items) {
+            AXIComponent any, CompletionContextImpl context, List<CompletionResultItem> items) {
         AXIModel am = AXIModelFactory.getDefault().getModel(cm.getSchemaModel());
         if(any instanceof AnyElement) {
             for(Element e : am.getRoot().getElements()) {
-                CompletionResultItem item = null;
-                if(cm.getSuggestedPrefix() == null)
-                    item = new ElementResultItem(e, context);
-                else
-                    item = new ElementResultItem(e, cm.getSuggestedPrefix(), context);
-                items.add(item);
+                addNSAwareCompletionItems(e,context,cm,items);
             }
         }
         if(any instanceof AnyAttribute) {
             for(Attribute a : am.getRoot().getAttributes()) {
-                CompletionResultItem item = null;
-                if(cm.getSuggestedPrefix() == null)
-                    item = new AttributeResultItem(a, context);
-                else
-                    item = new AttributeResultItem(a, cm.getSuggestedPrefix(), context);
-                items.add(item);
+                addNSAwareCompletionItems(a,context,cm,items);
             }
         }        
     }

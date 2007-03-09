@@ -31,9 +31,6 @@ import org.w3c.dom.NamedNodeMap;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.xml.axi.AXIModel;
-import org.netbeans.modules.xml.axi.AXIModelFactory;
-import org.netbeans.modules.xml.axi.AbstractElement;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
@@ -43,6 +40,7 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext.CompletionType;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
+import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.openide.util.Lookup;
 
@@ -161,81 +159,90 @@ public class CompletionContextImpl extends CompletionContext {
      * in the document, finds the type of query that needs to be
      * carried out and finds the path from root.
      */
-    public void initContext() {
-        fromNoNamespace = false;
-        noNamespaceModel = null;
-        int id = token.getTokenID().getNumericID();
-        switch ( id) {
-            //user enters < character
-            case XMLDefaultTokenContext.TEXT_ID:
-                String chars = token.getImage().trim();
-                if(chars.equals("") &&
-                   token.getPrevious().getImage().trim().equals(">")) {
-                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-                    break;
-                }
-                if(!chars.equals("<") &&
-                   token.getPrevious().getImage().trim().equals(">")) {
-                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-                    break;
-                }
-                completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                pathFromRoot = getPathFromRoot(element);
-                break;
-                
-            //start tag of an element
-            case XMLDefaultTokenContext.TAG_ID:
-                if(lastTypedChar == '>') {
-                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-                    //pathFromRoot = getPathFromRoot(element);
-                    break;
-                }
-                if(element instanceof StartTag) {
-                    StartTag tag = (StartTag)element;
-                    typedChars = tag.getTagName();
-                }
-                completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                pathFromRoot = getPathFromRoot(element.getPrevious());
-                break;
-                
-            //user enters an attribute name
-            case XMLDefaultTokenContext.ARGUMENT_ID:
-                completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
-                typedChars = token.getImage();
-                pathFromRoot = getPathFromRoot(element);
-                break;
-                
-            //not sure
-            case XMLDefaultTokenContext.CHARACTER_ID:
-                break;
-                
-            //user enters = character, we should ignore all other operators
-            case XMLDefaultTokenContext.OPERATOR_ID:
-            //user enters either ' or "
-            case XMLDefaultTokenContext.VALUE_ID:
-                completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-                break;
-                
-            //user enters white-space character
-            case XMLDefaultTokenContext.WS_ID:
-                completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-                TokenItem prev = token.getPrevious();
-                while( prev != null &&
-                       (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID) ) {
-                        prev = prev.getPrevious();
-                }                    
-                if( (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
-                    (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID) ) {
-                    completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+    public boolean initContext() {
+        try {
+            fromNoNamespace = false;
+            noNamespaceModel = null;
+            int id = token.getTokenID().getNumericID();
+            switch ( id) {
+                //user enters < character
+                case XMLDefaultTokenContext.TEXT_ID:
+                    String chars = token.getImage().trim();
+                    if(chars != null && chars.equals("") &&
+                       token.getPrevious().getImage().trim().equals(">")) {
+                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        break;
+                    }
+                    if(chars != null && !chars.equals("<") &&
+                       token.getPrevious().getImage().trim().equals(">")) {
+                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        break;
+                    }
+                    completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
                     pathFromRoot = getPathFromRoot(element);
-                }
-                break;
-                
-            default:
-                completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-                pathFromRoot = getPathFromRoot(element);
-                break;
+                    break;
+
+                //start tag of an element
+                case XMLDefaultTokenContext.TAG_ID:
+                    if(lastTypedChar == '>') {
+                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        break;
+                    }
+                    if(element instanceof EmptyTag) {
+                        completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+                        pathFromRoot = getPathFromRoot(element);
+                        break;
+                    }
+                    
+                    if(element instanceof StartTag) {
+                        StartTag tag = (StartTag)element;
+                        typedChars = tag.getTagName();
+                    }
+                    completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
+                    pathFromRoot = getPathFromRoot(element.getPrevious());
+                    break;
+
+                //user enters an attribute name
+                case XMLDefaultTokenContext.ARGUMENT_ID:
+                    completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+                    typedChars = token.getImage();
+                    pathFromRoot = getPathFromRoot(element);
+                    break;
+
+                //some random character
+                case XMLDefaultTokenContext.CHARACTER_ID:
+                //user enters = character, we should ignore all other operators
+                case XMLDefaultTokenContext.OPERATOR_ID:
+                //user enters either ' or "
+                case XMLDefaultTokenContext.VALUE_ID:
+                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    break;
+
+                //user enters white-space character
+                case XMLDefaultTokenContext.WS_ID:
+                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    TokenItem prev = token.getPrevious();
+                    while( prev != null &&
+                           (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID) ) {
+                            prev = prev.getPrevious();
+                    }                    
+                    if( (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
+                        (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID) ) {
+                        completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+                        pathFromRoot = getPathFromRoot(element);
+                    }
+                    break;
+
+                default:
+                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    pathFromRoot = getPathFromRoot(element);
+                    break;
+            }
+        } catch (Exception ex) {
+            return false;
         }
+        
+        return true;        
     }
        
     public NamedNodeMap getDocRootAttributes() {
@@ -251,11 +258,15 @@ public class CompletionContextImpl extends CompletionContext {
         Stack stack = new Stack();
         while( se != null) {            
             if( (se instanceof EndTag) ||
+                (se instanceof EmptyTag && stack.isEmpty()) ||
                 (se instanceof StartTag && stack.isEmpty()) ) {
                 stack.push(se);
-                if(defaultNamespace == null && (se instanceof StartTag) &&
-                   isRootInNoNSModels(((StartTag)se).getTagName())) {
-                    break;
+                if( defaultNamespace == null &&
+                    (se instanceof StartTag || se instanceof EmptyTag) ) {
+                    String tagName = (se instanceof StartTag)?
+                        ((StartTag)se).getTagName():((EmptyTag)se).getTagName();
+                    if(isRootInNoNSModels(tagName))
+                        break;
                 }
                 se = se.getPrevious();
                 continue;
@@ -268,8 +279,10 @@ public class CompletionContextImpl extends CompletionContext {
                         stack.pop();
                     }
                 } else {
-                    StartTag current = (StartTag)stack.peek();
-                    if(isRoot(current.getTagName()))
+                    SyntaxElement e = (SyntaxElement)stack.peek();
+                    String tagAtTop = (e instanceof StartTag)?
+                        ((StartTag)e).getTagName():((EmptyTag)e).getTagName();
+                    if(isRoot(tagAtTop))
                         break;
                     stack.push(se);
                 }
@@ -296,9 +309,11 @@ public class CompletionContextImpl extends CompletionContext {
     private ArrayList<QName> createPath(Stack stack) {
         ArrayList<QName> path = new ArrayList<QName>();
         while(!stack.isEmpty()) {
-            StartTag tag = (StartTag)stack.pop();
-            String prefix = CompletionUtil.getPrefixFromTag(tag.getTagName());
-            String lName = CompletionUtil.getLocalNameFromTag(tag.getTagName());
+            Object top = stack.pop();
+            String tagName = (top instanceof StartTag)?
+                ((StartTag)top).getTagName():((EmptyTag)top).getTagName();
+            String prefix = CompletionUtil.getPrefixFromTag(tagName);
+            String lName = CompletionUtil.getLocalNameFromTag(tagName);
             if(fromNoNamespace) {
                 path.add(new QName(lName));
                 continue;
@@ -387,7 +402,8 @@ public class CompletionContextImpl extends CompletionContext {
         Lookup.Template templ = new Lookup.Template(CompletionModelProvider.class);
         Lookup.Result result = Lookup.getDefault().lookup(templ);
         Collection impls = result.allInstances();
-        CompletionModel primaryCompletionModel = null;
+        if(impls == null || impls.size() == 0)
+            return false;
         for(Object obj: impls) {
             CompletionModelProvider modelProvider = (CompletionModelProvider)obj;
             List<CompletionModel> models = modelProvider.getModels(this);
@@ -404,7 +420,7 @@ public class CompletionContextImpl extends CompletionContext {
             }
         }
         
-        return true;
+        return !(nsModelMap.size() == 0 && noNSModels.size() == 0);
     }
     
     /**
