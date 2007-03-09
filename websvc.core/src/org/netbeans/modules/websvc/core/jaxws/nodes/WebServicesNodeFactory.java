@@ -63,7 +63,6 @@ public class WebServicesNodeFactory implements NodeFactory {
         
         private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         private final JaxWsChangeListener jaxWsListener;
-        private JaxWsModel jaxWsModel;
         
         public WsNodeList(Project proj) {
             project = proj;
@@ -72,7 +71,7 @@ public class WebServicesNodeFactory implements NodeFactory {
         
         public List<String> keys() {
             List<String> result = new ArrayList<String>();
-            jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+            JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
             FileObject projectDir = project.getProjectDirectory();
             JAXWSSupport jaxwsSupport = JAXWSSupport.getJAXWSSupport(projectDir);
             JAXWSClientSupport jaxwsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(projectDir);
