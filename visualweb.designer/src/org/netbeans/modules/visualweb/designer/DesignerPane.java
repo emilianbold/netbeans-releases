@@ -819,7 +819,7 @@ implements PropertyChangeListener {
             
             if (webform.isGridMode()) {
                 ImageIcon imgIcon =
-                    new ImageIcon(this.getClass().getResource("/org/netbeans/modules/visualweb/designer/drop_position.gif")); // TODO get marquee icon
+                    new ImageIcon(this.getClass().getResource("/org/netbeans/modules/visualweb/designer/resources/drop_position.gif")); // TODO get marquee icon
 //                StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
                 org_cursor = pane.getCursor();
                 pane.setCursor(DragSource.DefaultCopyDrop);
