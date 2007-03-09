@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.uml.requirements.doorsprovider/1
-OpenIDE-Module-Specification-Version: 1.1.13
+OpenIDE-Module-Specification-Version: 1.1.14
 OpenIDE-Module-Layer: org/netbeans/modules/uml/requirements/doorsprovider/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/uml/requirements/doorsprovider/Bundle.properties
