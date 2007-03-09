@@ -147,7 +147,6 @@ public class VWPFootprintUtilities extends gui.VWPUtilities{
         //MainWindowOperator.getDefault().waitStatusText("debug");
     }
     
-    
     static void testProject(String project) {
         actionOnProject(project, "Test Project");
         //MainWindowOperator.getDefault().waitStatusText("test");
@@ -163,7 +162,6 @@ public class VWPFootprintUtilities extends gui.VWPUtilities{
         actionOnProject(project, "Verify Project");
         MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (verify)");
     }
-    
     
     static void killRunOnProject(String project) {
         killProcessOnProject(project, "run");

@@ -49,8 +49,12 @@ public class VWPUtilities extends gui.Utilities{
     }
 
     public static void waitForPendingBackgroundTasks() {
-        // wait maximum 5 minutes
-        for (int i=0; i<5*60; i++) {
+        waitForPendingBackgroundTasks(5);
+    }
+    
+    public static void waitForPendingBackgroundTasks(int n) {
+        // wait maximum n minutes
+        for (int i=0; i<n*60; i++) {
             if (org.netbeans.progress.module.Controller.getDefault().getModel().getSize()==0)
                 return;
             try {
