@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.cldcplatform.UEIEmulatorConfiguratorImpl;
 import org.netbeans.modules.mobility.cldcplatform.startup.PostInstallJ2meAction;
@@ -115,7 +116,7 @@ public class TestUtil extends ProxyLookup {
     static public void setEnv() {
         getPlatform();
         /*Add the layer file */
-        URL res=TestUtil.class.getClassLoader().getResource("org/netbeans/modules/mobility/project/ui/resources/layer.xml");
+        URL res=J2MEProject.class.getClassLoader().getResource("org/netbeans/modules/mobility/project/ui/resources/layer.xml");
         FileSystem fs=null;
         try
         {

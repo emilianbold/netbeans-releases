@@ -188,7 +188,7 @@ public class J2MEActionProviderTest extends NbTestCase {
         assertNotNull(someSource2);
         assertNotNull(someSource3);
         assertNotNull(DataObject.find(fo));
-        
+        OpenProjectList.getDefault().close(OpenProjectList.getDefault().getOpenProjects(), true);        
     }
     
     protected void tearDown() throws Exception {
