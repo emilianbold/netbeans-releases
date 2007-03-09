@@ -155,6 +155,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
+                <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <package>org.netbeans.modules.xml.xam.ui</package>
                 <package>org.netbeans.modules.xml.xam.ui.actions</package>
                 <package>org.netbeans.modules.xml.xam.ui.category</package>
