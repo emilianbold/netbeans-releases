@@ -28,6 +28,7 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -79,9 +80,13 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
             // do nothing
         }
         
-        NbDialogOperator dop = new NbDialogOperator("Question"); // NOI18N
-        JButtonOperator but = new JButtonOperator(dop,"Discard"); // NOI18N
-        but.push();
+        try {
+            NbDialogOperator dop = new NbDialogOperator("Question"); // NOI18N
+            JButtonOperator but = new JButtonOperator(dop,"Discard"); // NOI18N
+            but.push();
+        } catch(TimeoutExpiredException exc){
+            // do nothing
+        }
     }
     
     public void cancelSelection() {
