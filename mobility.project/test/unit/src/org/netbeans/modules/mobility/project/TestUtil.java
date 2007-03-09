@@ -80,7 +80,7 @@ import org.xml.sax.SAXException;
  */
 public class TestUtil extends ProxyLookup {
     
-    static public  final   String rootStr="cldcpack";
+    static public  final   String rootStr="mobility";
     static private String message;
     static private AntProjectHelper p=null;
     static private J2MEPlatform instance=null;
