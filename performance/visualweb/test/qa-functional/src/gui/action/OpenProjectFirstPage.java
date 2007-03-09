@@ -19,13 +19,16 @@
 
 package gui.action;
 
+import gui.VWPUtilities;
 import gui.window.WebFormDesignerOperator;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -35,7 +38,8 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 public class OpenProjectFirstPage extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private Node openNode;
-    private String project_name;
+    private String targetProject;
+    private boolean projectwasopened = true;
     
     /** Creates a new instance of OpenProjectFirstPage */
     public OpenProjectFirstPage(String testName) {
@@ -52,38 +56,36 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     }
     
     public void testOpenSmallProjectFirstPage() {
-        project_name = "VisualWebProject";
+        targetProject = "VisualWebProject";
         doMeasurement();
     }
     
     public void testOpenLargeProjectFirstPage() {
-        project_name = "HugeApp";
+        targetProject = "HugeApp";
         doMeasurement();
     }
     
-//TODO remove ?    protected void openProject(String projectName) {
-//        new ActionNoBlock("File|Open Project...",null).perform();
-//        WizardOperator wizard = new WizardOperator("Open Project");
-//        JTextComponentOperator path = new JTextComponentOperator(wizard,1);
-//        
-//        String buttonCaption = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "BTN_PrjChooser_ApproveButtonText");
-//        JButtonOperator openButton = new JButtonOperator(wizard,buttonCaption);
-//        
-//        String paths = System.getProperty("xtest.tmpdir")+ java.io.File.separator +projectName;
-//        path.setText(paths);
-//        openButton.pushNoBlock();
-//    }
     
     public void initialize(){
         log("::initialize::");
+        Node pNode = null;
+        try {
+            pNode = new ProjectsTabOperator().getProjectRootNode(targetProject);
+        } catch(TimeoutExpiredException te) {
+            projectwasopened = false;  
+        }
+        if(projectwasopened) {
+            ProjectSupport.closeProject(targetProject);
+        }
     }
     
     public void prepare(){
         log("::prepare");
-//TODO remove ?        openProject(project_name);
-//TODO remove ?        log("::open Project passed");
-//TODO remove ?        new CloseAllDocumentsAction().performAPI();
-        openNode = new Node(new ProjectsTabOperator().getProjectRootNode(project_name), gui.VWPUtilities.WEB_PAGES + '|' + "Page1.jsp");
+        
+        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +targetProject);
+        VWPUtilities.waitForPendingBackgroundTasks(); 
+        
+        openNode = new Node(new ProjectsTabOperator().getProjectRootNode(targetProject), gui.VWPUtilities.WEB_PAGES + '|' + "Page1.jsp");
         
         if (this.openNode == null) {
             throw new Error("Cannot find expected node ");
@@ -110,12 +112,15 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     public void close(){
         log("::close");
         if(testedComponentOperator != null) { ((WebFormDesignerOperator)testedComponentOperator).close(); }
-//TODO remove ?        ProjectSupport.closeProject(project_name);
-//TODO remove ?        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        ProjectSupport.closeProject(targetProject);
     }
     
     protected void shutdown() {
         log("::shutdown");
+        if(projectwasopened) {
+            VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +targetProject);
+            VWPUtilities.waitForPendingBackgroundTasks();             
+        }       
     }
     
     public static void main(java.lang.String[] args) {
