@@ -29,6 +29,7 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.NativeLauncher;
 import org.netbeans.installer.utils.helper.Platform;
+import org.netbeans.installer.utils.helper.launchers.ExternalFile;
 import org.netbeans.installer.utils.helper.launchers.JavaCompatibleProperties;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
@@ -102,9 +103,8 @@ public class CreateNativeLauncherAction extends WizardAction {
                     
             }
             
-            nl.addBundledJar(new File(targetPath));
-            
-            nl.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});
+            nl.addBundledJar(new File(targetPath));            
+            nl.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});                        
             
             File f = nl.create(platform, progress);
             
