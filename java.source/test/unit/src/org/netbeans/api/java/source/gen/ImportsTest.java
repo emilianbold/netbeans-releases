@@ -45,26 +45,28 @@ public class ImportsTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(ImportsTest.class);
-//        suite.addTest(new ImportsTest("testAddFirst"));
-//        suite.addTest(new ImportsTest("testAddFirstAgain"));
-//        suite.addTest(new ImportsTest("testAddSecondImport"));
-//        suite.addTest(new ImportsTest("testAddSecondImportWithEndLineCmt"));
-//        suite.addTest(new ImportsTest("testAddTwoImportsOrigWithComment"));
-//        suite.addTest(new ImportsTest("testAddBetweenImports"));
-//        suite.addTest(new ImportsTest("testRemoveBetweenImportsWithLineEndComment"));
-//        suite.addTest(new ImportsTest("testRemoveAllImports"));
-//        suite.addTest(new ImportsTest("testRemoveAllImports2"));
-//        suite.addTest(new ImportsTest("testAddFirstTwo"));
-//        suite.addTest(new ImportsTest("testAddFirstToExisting"));
-//        suite.addTest(new ImportsTest("testRemoveInnerImport"));
-//        suite.addTest(new ImportsTest("testEmptyLines"));
-//        suite.addTest(new ImportsTest("testIndentedImport"));
-//        suite.addTest(new ImportsTest("testIndentedImport2"));
+//        suite.addTestSuite(ImportsTest.class);
+        suite.addTest(new ImportsTest("testAddFirst"));
+        suite.addTest(new ImportsTest("testAddFirstAgain"));
+        suite.addTest(new ImportsTest("testAddSecondImport"));
+        suite.addTest(new ImportsTest("testAddSecondImportWithEndLineCmt"));
+        suite.addTest(new ImportsTest("testAddTwoImportsOrigWithComment"));
+        suite.addTest(new ImportsTest("testAddBetweenImports"));
+        suite.addTest(new ImportsTest("testRemoveBetweenImportsWithLineEndComment"));
+        suite.addTest(new ImportsTest("testRemoveAllImports"));
+        suite.addTest(new ImportsTest("testRemoveAllImports2"));
+        suite.addTest(new ImportsTest("testAddFirstTwo"));
+        suite.addTest(new ImportsTest("testAddFirstToExisting"));
+        suite.addTest(new ImportsTest("testRemoveInnerImport"));
+        suite.addTest(new ImportsTest("testEmptyLines"));
+        suite.addTest(new ImportsTest("testIndentedImport"));
+        suite.addTest(new ImportsTest("testIndentedImport2"));
 //        suite.addTest(new ImportsTest("testUnformatted"));
-//        suite.addTest(new ImportsTest("testMissingNewLine"));
-//        suite.addTest(new ImportsTest("testRemoveAllInDefault"));
-//        suite.addTest(new ImportsTest("testRemoveAllInDefault2"));
+        suite.addTest(new ImportsTest("testMissingNewLine"));
+        suite.addTest(new ImportsTest("testRemoveAllInDefault"));
+        suite.addTest(new ImportsTest("testRemoveAllInDefault2"));
+//        suite.addTest(new ImportsTest("testRemoveAfterEmpty"));
+        suite.addTest(new ImportsTest("testRemoveBeforeEmpty"));
         return suite;
     }
 
@@ -936,6 +938,90 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 CompilationUnitTree copy = make.removeCompUnitImport(cut, 0);
                 copy = make.removeCompUnitImport(copy, 0);
                 copy = make.removeCompUnitImport(copy, 0);
+                workingCopy.rewrite(cut, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveAfterEmpty() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "import java.util.List;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Collections; // test\n" +
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "import java.util.List;\n" +
+            "\n" +
+            "import java.util.Collections; // test\n" +
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.removeCompUnitImport(cut, 1);
+                workingCopy.rewrite(cut, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveBeforeEmpty() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "import java.util.List;\n" +
+            "import java.util.ArrayList;\n" +
+            "\n" +
+            "import java.util.Collections; // test\n" +
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "import java.util.List;\n" +
+            "\n" +
+            "import java.util.Collections; // test\n" +
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                CompilationUnitTree copy = make.removeCompUnitImport(cut, 1);
                 workingCopy.rewrite(cut, copy);
             }
 
