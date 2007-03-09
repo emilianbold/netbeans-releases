@@ -43,7 +43,7 @@ import org.w3c.dom.Element;
  * @author ads
  */
 public class PropertyAliasImpl extends GenericExtensibilityElement implements
-        PropertyAlias
+        PropertyAlias, ExtensibilityElement.ParentSelector
 {
 
     public PropertyAliasImpl( WSDLModel model, Element e ) {

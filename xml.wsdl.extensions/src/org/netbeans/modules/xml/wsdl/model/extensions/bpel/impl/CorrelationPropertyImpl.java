@@ -79,5 +79,4 @@ public class CorrelationPropertyImpl extends NamedExtensibilityElementBase imple
         }
         return false;
     }
-
 }
