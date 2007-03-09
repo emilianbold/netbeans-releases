@@ -36,36 +36,13 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
-    <folder name="Services">
-        <file name="org-netbeans-modules-visualweb-designer-DesignerSettings.settings" url="DesignerSettings.settings">
-	    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/designer/resources/designer.gif"/>
-	    <attr name="helpID" stringvalue="projrave_ui_elements_options_visual_editor"/> 
-	</file>
-
-        <!-- XXX Moved to designer/jsf.
-       <file name="com-sun-rave-designer-RefreshServiceProvider.instance">
-          <attr name="instanceOf" stringvalue="org.netbeans.modules.visualweb.project.jsf.services.RefreshService"/>
-          <attr name="instanceClass" stringvalue="com.sun.rave.designer.RefreshServiceProvider"/>
-       </file>
-       -->
-    </folder> <!-- Services -->
-
     <folder name="UI">
-    <!-- settings categories UI presentation -->
         <folder name="Services">
-            <file name="org-netbeans-modules-visualweb-designer-DesignerSettings.shadow">
-                <attr name="originalFile" stringvalue="Services/org-netbeans-modules-visualweb-designer-DesignerSettings.settings"/>
+            <file name="org-netbeans-modules-visualweb-designer-DesignerSettingsNode.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.visualweb.designer.DesignerSettings.createViewNode"/>
             </file>
-        </folder> <!-- Services -->
-
-        <folder name="BasicServices">
-	    <attr name="Editing/DesignerSettings.shadow" boolvalue="true"/>
-
-            <file name="DesignerSettings.shadow">
-                <attr name="originalFile" stringvalue="Services/org-netbeans-modules-visualweb-designer-DesignerSettings.settings"/>
-            </file>
-        </folder> <!-- BasicServices -->
-    </folder> <!-- UI -->
+        </folder>
+    </folder>
     
     <!-- XXX Actions for DesignBeanNodes, TODO revise the policy of naming of folders. -->
     <folder name="DesignBeanNodes">

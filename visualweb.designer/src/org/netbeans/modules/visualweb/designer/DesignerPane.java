@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
@@ -79,7 +81,7 @@ import org.netbeans.modules.visualweb.text.Position;
  * @author Tor Norbye
 */
 public class DesignerPane extends org.netbeans.modules.visualweb.text.DesignerPaneBase
-implements PropertyChangeListener {
+implements /*PropertyChangeListener,*/ PreferenceChangeListener {
     /** Whether or not to use alpha rendering in the GUI */
     static boolean useAlpha = true;
     private static int adjustX = 0;
@@ -157,7 +159,8 @@ implements PropertyChangeListener {
 
         // Set listener.
         DesignerSettings settings = DesignerSettings.getInstance();
-        settings.addPropertyChangeListener(WeakListeners.propertyChange(this, settings));
+//        settings.addPropertyChangeListener(WeakListeners.propertyChange(this, settings));
+        settings.addWeakPreferenceChangeListener(this);
 
         dndHandler = new DndHandler(webform);
 //        setTransferHandler(dndHandler);
@@ -796,13 +799,15 @@ implements PropertyChangeListener {
         pageBox.list(out, indent + 1);
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (DesignerSettings.PROP_SHOW_DECORATIONS.equals(evt.getPropertyName())) {
+//    public void propertyChange(PropertyChangeEvent evt) {
+    public void preferenceChange(PreferenceChangeEvent evt) {
+//        if (DesignerSettings.PROP_SHOW_DECORATIONS.equals(evt.getPropertyName())) {
+        if (DesignerSettings.PROP_SHOW_DECORATIONS.equals(evt.getKey())) {
             // XXX maybe better to have a copy of the value and in that case to reset it.
             repaint();
         }
     }
-    
+  
 
     class DesignerDropHandler implements DropTargetListener {
         Component pane;
