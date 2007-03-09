@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance
+  with the License.
+  
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+  http://www.netbeans.org/cddl.txt.
+  
+  When distributing Covered Code, include this CDDL Header Notice in each file and
+  include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+  the following below the CDDL Header, with the fields enclosed by brackets []
+  replaced by your own identifying information:
+  
+      "Portions Copyrighted [year] [name of copyright owner]"
+  
+  The Original Software is NetBeans. The Initial Developer of the Original Software
+  is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+  Rights Reserved.
+-->
+<project name="Comment_Correcter" default="correct" basedir=".">
+    <property name="src.dir" value="${basedir}/src"/>
+    <property name="cls.dir" value="${basedir}/build/classes"/>
+    
+    <property name="comment.file" value="${basedir}/cddl.txt"/>
+    <property name="line.length" value="85"/>
+    <property name="files.dir" value="${basedir}"/>
+    
+    <target name="correct">
+        <!-- compile the sources for the comment correcter -->
+        <delete 
+            dir="${cls.dir}"/>
+        <mkdir 
+            dir="${cls.dir}"/>
+        <javac 
+            srcdir="${src.dir}" 
+            destdir="${cls.dir}" 
+            debug="true"/>
+        
+        <!-- define the task -->
+        <taskdef 
+            name="comment" 
+            classname="org.netbeans.installer.infra.utils.comment.ant.CommentCorrecterTask" 
+            classpath="${cls.dir}"/>
+        
+        <!-- run the correcter -->
+        <comment text="${comment.file}" lineLength="${line.length}">
+            <fileset dir="${files.dir}">
+                <include name="**/*"/>
+                <exclude name="**/nbproject/private/**/*"/>
+                <exclude name="**/nbproject/build-impl.xml"/>
+                <exclude name="**/nbproject/profiler-build-impl.xml"/>
+                <exclude name="**/nbproject/genfiles.properties"/>
+                <exclude name="**/nbproject/Makefile-Debug.mk"/>
+                <exclude name="**/nbproject/Makefile-Release.mk"/>
+                <exclude name="**/nbproject/Makefile-impl.mk"/>
+            </fileset>
+        </comment>
+    </target>
+</project>
