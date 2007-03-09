@@ -49,18 +49,12 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class RepositoryStep
-        extends AbstractStep
-        implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener
-{
+public class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener {
     
     private Repository repository;        
     private RepositoryStepPanel panel;    
-
     private RepositoryFile repositoryFile;    
-
     private int repositoryModeMask;
-
     private WizardStepProgressSupport support;
 
     public RepositoryStep() {
@@ -165,29 +159,20 @@ public class RepositoryStep
                 SvnClient client;
                 SVNUrl url = rc.getSvnUrl();
                 try {
-                    //String hostString = SvnUtils.ripUserFromHost(rc.getSUrl().getHost());
-                    //ProxyDescriptor pd = repository.getProxyDescriptor();
-                    client = Subversion.getInstance().getClient(url,
-                                                                rc.getProxyDescriptor(),
-                                                                rc.getUsername(),
-                                                                rc.getPassword(),
-                                                                ExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS ^ // the default without
-                                                                (ExceptionHandler.EX_NO_HOST_CONNECTION |        // host connection errors (misspeled host or proxy urls, ...)
-                                                                 ExceptionHandler.EX_AUTHENTICATION) );          // authentication errors 
+                    int handledExceptions = ExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS ^ // the default without
+                                            (ExceptionHandler.EX_NO_HOST_CONNECTION |        // host connection errors (misspeled host or proxy urls, ...)
+                                             ExceptionHandler.EX_AUTHENTICATION) ;           // authentication errors 
+                    client = Subversion.getInstance().getClient(url, rc.getUsername(), rc.getPassword(), handledExceptions);
                 } catch (SVNClientException ex) {
                     ErrorManager.getDefault().notify(ex);
                     invalidMsg = ex.getLocalizedMessage();
                     return;
                 }
-
+                    
                 repositoryFile = null; // reset
-
-                ISVNInfo info = null;
+                ISVNInfo info = null;    
                 try {
                     repository.storeConfigValues();                     
-                    if(isCanceled()) {
-                        return;
-                    }                
                     info = client.getInfo(url);
                 } catch (SVNClientException ex) {
                     annotate(ex);

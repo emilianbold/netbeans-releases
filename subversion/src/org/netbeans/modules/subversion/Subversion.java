@@ -34,7 +34,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -217,23 +216,34 @@ public class Subversion {
     }
 
     public SvnClient getClient(SVNUrl repositoryUrl,
-                               ProxyDescriptor pd, 
                                String username, 
                                String password) 
     throws SVNClientException    
     {
-        return getClient(repositoryUrl, pd, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);                    
+        return getClient(repositoryUrl, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);                    
     }
     
     public SvnClient getClient(SVNUrl repositoryUrl,
-                               ProxyDescriptor pd, 
                                String username, 
                                String password,
                                int handledExceptions) throws SVNClientException {
-        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, null, pd, username, password, handledExceptions);            
+        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, null, username, password, handledExceptions);            
         attachListeners(client);            
         return client;
     }
+    
+    public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support) throws SVNClientException {  
+        String username = ""; // NOI18N
+        String password = ""; // NOI18N
+        RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());        
+        if(rc != null) {
+            username = rc.getUsername();
+            password = rc.getPassword();            
+        }          
+        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, /*null, */username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
+        attachListeners(client);
+        return client;
+    }    
     
     public SvnClient getClient(File file) throws SVNClientException {
         return getClient(file, null);
@@ -263,19 +273,6 @@ public class Subversion {
     
     public SvnClient getClient(SVNUrl repositoryUrl) throws SVNClientException {
         return getClient(repositoryUrl, null);
-    }
-
-    public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support) throws SVNClientException {  
-        String username = ""; // NOI18N
-        String password = ""; // NOI18N
-        RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());        
-        if(rc != null) {
-            username = rc.getUsername();
-            password = rc.getPassword();            
-        }          
-        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, null, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
-        attachListeners(client);
-        return client;
     }
     
     /**

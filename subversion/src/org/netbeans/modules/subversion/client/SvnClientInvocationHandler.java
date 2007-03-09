@@ -26,6 +26,7 @@ import java.util.*;
 import javax.net.ssl.SSLKeyException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -172,11 +173,15 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if(support != null) {
                 support.setCancellableDelegate(cancellable);
             }
+            if (remoteMethods.contains(proxyMethod.getName())) {
+                // save the proxy settings into the svn servers file
+                SvnConfigFiles.getInstance().setProxy(desc.getSvnUrl().toString());
+            }
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
             if(support != null) {
                 support.setCancellableDelegate(null);
             }
-        } else if( Cancellable.class.isAssignableFrom(declaringClass) ) {return 
+        } else if( Cancellable.class.isAssignableFrom(declaringClass) ) { 
             // Cancellable
             ret = cancellable.getClass().getMethod(proxyMethod.getName(), parameters).invoke(cancellable, args);
         } else if( SvnClientDescriptor.class.isAssignableFrom(declaringClass) ) {            

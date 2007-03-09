@@ -16,7 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.client;    
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
+import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 
 /**
@@ -55,7 +56,7 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
             } catch (LocalSubversionException ex) {
                 //Exception thrown.  Call out to the default adapter
             }
-        } else {
+        } else {            
             ret = handle(proxyMethod, args);    
         }
         return ret;

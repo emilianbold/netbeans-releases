@@ -47,7 +47,6 @@ import org.netbeans.modules.proxy.ConnectivitySettings;
 import org.netbeans.modules.subversion.Diagnostics;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.CertificateFile;
-import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
@@ -133,7 +132,6 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
 
             adapter.setUsername(username);
             adapter.setPassword(password);                                        
-            repository.storeConfigValues();    
             SvnModuleConfig.getDefault().insertRecentUrl(rc);
         }                 
         return ret;
@@ -161,19 +159,6 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
             }
         };
 
-        ProxyDescriptor proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(hostString); 
-        Socket proxy = null;
-        if (proxyDescriptor != null && proxyDescriptor.getHost() != null ) { 
-            ConnectivitySettings connectivitySettings = proxyDescriptor.toConnectivitySettings();
-            try {
-                proxy = new Socket(connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
-                connectProxy(proxy, hostString, url.getPort(), connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-                return false;
-            }            
-        }
-
         SSLContext context = null;
         try {
             context = SSLContext.getInstance("SSL"); // NOI18N
@@ -189,11 +174,7 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
         SSLSocketFactory factory = context.getSocketFactory();                                         
         SSLSocket socket = null;
         try {
-            if(proxy == null) {
-                socket = (SSLSocket) (factory).createSocket(hostString, url.getPort());
-            } else {
-                socket = (SSLSocket) (factory).createSocket(proxy, hostString, url.getPort(), true);
-            }
+            socket = (SSLSocket) factory.createSocket(hostString, url.getPort());
             socket.startHandshake();
         } catch (IOException ex) {
             throw ex;
@@ -227,7 +208,7 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
         }
 
         AcceptCertificatePanel acceptCertificatePanel = new AcceptCertificatePanel();
-        acceptCertificatePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed"));
+        acceptCertificatePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N
         acceptCertificatePanel.certificatePane.setText(getCertMessage(cert, hostString));
         DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
@@ -318,7 +299,7 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
    }
     
     private boolean isOKresponse(String ret) {
-        return ret.startsWith("http/1.1 200") || ret.startsWith("http/1.0 200");
+        return ret.startsWith("http/1.1 200") || ret.startsWith("http/1.0 200"); // NOI18N
     }
 
     private String getCertMessage(X509Certificate cert, String host) { 

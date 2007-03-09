@@ -22,9 +22,7 @@ import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -85,7 +83,6 @@ public class SvnClientFactory {
      * The mask <tt>handledExceptions</tt> specifies which exceptions are to be handled.
      *
      * @param repositoryUrl
-     * @param pd
      * @param support
      * @param username
      * @param password
@@ -94,8 +91,8 @@ public class SvnClientFactory {
      * @return the configured SvnClient
      *
      */    
-    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, ProxyDescriptor pd, String username, String password, int handledExceptions) {
-        return factory.createSvnClient(repositoryUrl, support, pd, username, password, handledExceptions);
+    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, String password, int handledExceptions) {
+        return factory.createSvnClient(repositoryUrl, support, username, password, handledExceptions);
     }
     
     /**
@@ -124,7 +121,16 @@ public class SvnClientFactory {
                     ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not setup JavaHl. Falling back on the commandline client!");                    
                     setupCommandline();
                 }
-            } else {                
+            } /*else if(factoryType.equals(JavaSvnClientAdapterFactory.JAVASVN_CLIENT)) {
+                try {                    
+                    setupJavaSvn();
+                } catch (Throwable t) {                    
+                    // something went wrong - fallback on the commandline                                                            
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, t);                                        
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not setup javasvn. Falling back on the commandline client!");                    
+                    setupCommandline();
+                }
+            } */else {                
                 throw new SVNClientException("Unknown factory: " + factoryType);
             } 
         } catch (Throwable t) {                                    
@@ -151,6 +157,24 @@ public class SvnClientFactory {
         };
         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on javahl");
     }
+    
+    /*
+    private void setupJavaSvn () throws SVNClientException {        
+        JavaSvnClientAdapterFactory.setup();        
+        factory = new ClientAdapterFactory() {            
+            protected ISVNClientAdapter createAdapter() {
+                return SVNClientAdapterFactory.createSVNClient(JavaSvnClientAdapterFactory.JAVASVN_CLIENT);           
+            }
+            protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
+            }
+            protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
+                return new SvnClientCallback(repositoryUrl, handledExceptions);
+            }
+        };
+        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on javasvn");
+    }
+    */
     
     private void setupUnsupported () throws SVNClientException {                
        factory = new ClientAdapterFactory() {
@@ -206,10 +230,10 @@ public class SvnClientFactory {
          * @return the created SvnClientInvocationHandler instance
          *
          */        
-        public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, ProxyDescriptor pd, String username, String password, int handledExceptions) {
+        public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, String password, int handledExceptions) {
             ISVNClientAdapter adapter = createAdapter();
             SvnClientInvocationHandler handler = getInvocationHandler(adapter, createDescriptor(repositoryUrl), support, handledExceptions);            
-            setupAdapter(adapter, repositoryUrl, pd, username, password, createCallback(repositoryUrl, handledExceptions));
+            setupAdapter(adapter, username, password, createCallback(repositoryUrl, handledExceptions));
             return createSvnClient(handler);
         }
         
@@ -232,14 +256,7 @@ public class SvnClientFactory {
             return null;
         }   
                   
-        protected void setupAdapter(ISVNClientAdapter adapter, SVNUrl repositoryUrl, ProxyDescriptor pd, 
-                                    String username, String password, ISVNPromptUserPassword callback) {                    
-            
-            if(pd != null && pd.getType() == ProxyDescriptor.TYPE_HTTP) {
-                // if there is a http proxy descriptor, then write the proxy into the 
-                // subversions 'servers' file 
-                SvnConfigFiles.getInstance().setProxy(pd, SvnUtils.ripUserFromHost(repositoryUrl.getHost()));
-            }        
+        protected void setupAdapter(ISVNClientAdapter adapter, String username, String password, ISVNPromptUserPassword callback) {                    
             
             if(callback != null) {
                 adapter.addPasswordCallback(callback);

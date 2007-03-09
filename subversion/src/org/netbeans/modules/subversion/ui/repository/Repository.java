@@ -45,15 +45,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -128,24 +126,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     }
     
     private void onProxyConfiguration() {
-        // don't call SvnConfigFiles.getInstance().getProxyDescriptor(url.getHost());
-        // in awt
-        RequestProcessor requestProcessor = new RequestProcessor().getDefault();
-        requestProcessor.post(new Runnable() {
-            public void run() {
-                RepositoryConnection rc = getSelectedRC();                                                        
-                if(rc.getProxyDescriptor() == null) {
-                    rc.setProxyDescriptor(SvnConfigFiles.getInstance().getProxyDescriptor(SvnUtils.ripUserFromHost(rc.getUrl())));
-                }                
-                ProxySelector selector = new ProxySelector();
-                selector.setProxyDescriptor(rc.getProxyDescriptor());
-                ProxyDescriptor pd = selector.selectProxy();
-                if (pd != null) {
-                    rc.setProxyDescriptor(pd);
-                }
-            }
-        });
-        setValid(true, "");
+        OptionsDisplayer.getDefault().open("General");              // NOI18N
     }    
     
     private void initPanel() {        
@@ -232,20 +213,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         
         try {
             SVNUrl repositoryUrl = rc.getSvnUrl();
-            if (repositoryUrl.getProtocol().equals("http")  ||    // NOI18N
-                repositoryUrl.getProtocol().equals("https") ||    // NOI18N
-                repositoryUrl.getProtocol().equals("svn")   ||    // NOI18N
-                repositoryUrl.getProtocol().startsWith("svn+") )  // NOI18N
-            {                                
-                // XXX the way the usr, password and proxy settings are stored is not symetric and consistent...
-                SvnConfigFiles.getInstance().setProxy(rc.getProxyDescriptor(), SvnUtils.ripUserFromHost(repositoryUrl.getHost()));
-                if(repositoryUrl.getProtocol().startsWith("svn+")) {
-                    SvnConfigFiles.getInstance().setExternalCommand(getTunnelName(repositoryUrl.getProtocol()), repositoryPanel.tunnelCommandTextField.getText());
-                }
+            if(repositoryUrl.getProtocol().startsWith("svn+")) {
+                SvnConfigFiles.getInstance().setExternalCommand(getTunnelName(repositoryUrl.getProtocol()), repositoryPanel.tunnelCommandTextField.getText());
             }    
         } catch (MalformedURLException mue) {
             // should not happen
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); 
         }
         
     }

@@ -22,11 +22,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.ErrorManager;
@@ -51,16 +56,16 @@ public class SvnConfigFiles {
     private static SvnConfigFiles instance;
 
     /** the Ini instance holding the configuration values stored in the <b>servers</b>
-     * file used by the Subversion module */
-    private Ini servers = null;
+     * file used by the Subversion module */    
+    private Ini svnServers = null;
+    
     /** the Ini instance holding the configuration values stored in the <b>config</b>
      * file used by the Subversion module */
     private Ini config = null;
 
     private static final String UNIX_CONFIG_DIR = ".subversion/";                                                               // NOI18N
-    private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   // NOI18N
     private static final String GROUPS_SECTION = "groups";                                                                      // NOI18N
-    private String GLOBAL_SECTION = "global";                                                                                   // NOI18N
+    private static final String GLOBAL_SECTION = "global";                                                                      // NOI18N
     private static final String WINDOWS_USER_APPDATA = getAPPDATA();
     private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Subversion";                                     // NOI18N
     private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion";                                // NOI18N
@@ -94,11 +99,8 @@ public class SvnConfigFiles {
     private SvnConfigFiles() {      
         // copy config file        
         config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher());    // NOI18N
-        // get the nb servers file merged with the systems servers files
-        servers = loadNetbeansIniFile("servers");                                       // NOI18N
-        
-        // and store it so any commnand against the repository may use it
-        storeIni(servers, "servers");
+        // get the system servers file 
+        svnServers = loadSystemIniFile("servers");        
     }
     
     /**
@@ -114,139 +116,90 @@ public class SvnConfigFiles {
     }
 
     /**
-     * Returns a {@link org.netbeans.modules.subversion.config.ProxyDescriptor}.
-     * The ProxyDescritor is created from the proxy settings for the given 
-     * Hostname or IP address stored in the <b>servers</b> file used by the 
-     * Subversion module.
-     *
-     * @param host the host. May be the host name or an IP address
-     * @return a {@link org.netbeans.modules.subversion.config.ProxyDescriptor}
-     *
-     */
-    public ProxyDescriptor getProxyDescriptor(String host) {
-        if(host == null || host.equals("")) {                                   // NOI18N
-            return ProxyDescriptor.DIRECT;
-        }
-        Ini.Section group = getServerGroup(host);
-        if(group==null) {
-            // check if there is a [global] group
-            group = servers.get("global");
-            if(group == null) {
-                // no proxy specified -> direct
-                return ProxyDescriptor.DIRECT;
-            } else {
-                // check first if the host is in the exceptions section
-                String exceptions = group.get("http-proxy-exceptions");         // NOI18N
-                if(exceptions != null) {
-                    exceptions = exceptions.trim();
-                    if(!exceptions.equals("") && match(exceptions, host)) {
-                        // it's between the exceptions -> direct
-                        return ProxyDescriptor.DIRECT;
-                    } 
-                }
-            }
-        }
-        String proxyHost = group.get("http-proxy-host");                        // NOI18N
-        if(proxyHost == null || proxyHost.length() == 0) {
-            // no host specified -> direct
-            return ProxyDescriptor.DIRECT;
-        }
-        String proxyPortString = group.get("http-proxy-port");                  // NOI18N
-        int proxyPort;
-        if(proxyPortString == null || proxyPortString.length() == 0) {
-            proxyPort = -1; 
-        } else {
-            proxyPort = Integer.parseInt(proxyPortString); 
-        }
-        String username = group.get("http-proxy-username");                     // NOI18N
-        String password = group.get("http-proxy-password");                     // NOI18N
-        return new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, proxyHost, proxyPort, username, password);    
-    }
-
-    /**
      * Stores the proxy host, port, username and password from the given  
      * {@link org.netbeans.modules.subversion.config.ProxyDescriptor} in the 
      * <b>servers</b> file used by the Subversion module.  
-     *
-     * @param pd the {@link org.netbeans.modules.subversion.config.ProxyDescriptor}
+     *     
      * @param host the host
      */
-    public void setProxy(ProxyDescriptor pd, String host) {
-
-        assert host != null : "can't do anything for a null host";
+    public void setProxy(String host) {
+     
+        assert host != null && !host.trim().equals(""): "can\'t do anything for a null host";               // NOI18N
+         
+        if(host.startsWith("file:///")) {
+            // a proxy will be needed only for remote repositories
+            return;
+        }
         
-        if(pd != null && pd.getHost() != null) {
-            Ini.Section group = getServerGroup(host);
-            if(group==null) {
-                group = getServerGroup(pd);
-                if(group==null) {                  
-                    // check the global section
-                    Ini.Section globalSection = servers.get(GLOBAL_SECTION);
-                    if(globalSection != null) {
-                        String globalProxy = globalSection.get("http-proxy-host");                      // NOI18N
-                        String globalPort = globalSection.get("http-proxy-port");                       // NOI18N
-                        if( globalProxy != null && globalProxy.trim().equals(pd.getHost()) && 
-                            globalPort != null && globalPort.trim().equals(Integer.toString(pd.getPort())) ) 
-                        {
-                            // do nothing if there is a global section with the same proxy
-                            return;                            
-                        } else {
-                            // if there is a global section with a different proxy
-                            // then check if the host isn't in its exceptions                            
-                            String exceptionsStrig = globalSection.get("http-proxy-exceptions");
-                            if (exceptionsStrig == null) exceptionsStrig  = "";                                        
-                            String[] hosts = exceptionsStrig.split(",");     // NOI18N
-                            StringBuffer newHosts = new StringBuffer();
-                            for (int i = 0; i < hosts.length; i++) {
-                                if(!hosts[i].trim().equals(host)) {
-                                    if(i > 0) {
-                                        newHosts.append(",");                                           // NOI18N
-                                    }                                    
-                                    newHosts.append(hosts[i]);
-                                }
-                            }
-                            globalSection.put("http-proxy-exceptions", newHosts.toString());            // NOI18N
-                        }
-                    }
-                    
-                    // create a new group
-                    group = addServerGroup(host);                        
-                    setProxy(group, pd);                                                                                                  
-                    
-                } else {
-                    String groupName = group.getName();
-                    Ini.Section serverGroups = getServerGroups(true);
-                    String groupsHosts = serverGroups.get(groupName);
-                    if(groupsHosts != null) {
-                        groupsHosts = groupsHosts.trim();                        
-                        if(!groupsHosts.equals("") && !match(groupsHosts, host)) {
-                            // host not in the group yet -> add it
-                            serverGroups.put(groupName, groupsHosts + "," + host);              // NOI18N
-                        }
-                    }        
-                }
-            } else {
-                setProxy(group, pd);
+        ProxySelector ps = ProxySelector.getDefault();
+        List<Proxy> proxies = null;
+        try {
+            proxies = ps.select(new java.net.URI(host));            
+        } catch (URISyntaxException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }        
+                                
+        Proxy proxy = null;
+        for(Proxy p : proxies) {                        
+            if( p.type().equals(Proxy.Type.HTTP) || 
+                p.type().equals(Proxy.Type.DIRECT) ) 
+            {                                
+                proxy = p;                
+                if (proxy.type().equals(Proxy.Type.DIRECT)) {
+                    break;
+                }                   
+            }                                             
+        }                   
+        
+        Ini nbServers = new Ini();
+        Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
+        Ini.Section svnGlobalSection = svnServers.get(GLOBAL_SECTION);
+        if(proxy.type().equals(Proxy.Type.DIRECT)) {
+            // no proxy host means no proxy at all                                                
+            if(svnGlobalSection != null) {
+                // if there is a global section than get the no proxy settings                                                                 
+                mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);                
+            }
+        } else {            
+            // get the proxy 
+            SocketAddress sa = proxy.address();            
+            InetSocketAddress proxyAddress = (InetSocketAddress) sa;
+            
+            nbGlobalSection.put("http-proxy-host", proxyAddress.getHostName());                     // NOI18N
+            nbGlobalSection.put("http-proxy-port", Integer.toString(proxyAddress.getPort()));       // NOI18N            
+            
+            // and the authentication
+            Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core");  // NOI18N    
+            boolean useAuth = prefs.getBoolean ("useProxyAuthentication", false);                   // NOI18N    
+            if(useAuth) {
+                String username = prefs.get ("proxyAuthenticationUsername", "");                    // NOI18N
+                String password = prefs.get ("proxyAuthenticationPassword", "");                    // NOI18N    
+                
+                nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
+                nbGlobalSection.put("http-proxy-password", password);                               // NOI18N            
             }            
             
-        } else {
-            // no proxy host means no proxy at all
-            removeFromServerGroup(host);
-            
-            // and if there is a global section then set this as an exception
-            Ini.Section group = servers.get(GLOBAL_SECTION);
-            if(group != null) {
-                String exceptions = group.get("http-proxy-exceptions");                                     // NOI18N
-                if(exceptions == null || exceptions.trim().equals("")) {
-                    exceptions = host;
-                } else if(!match(exceptions, host)) {
-                    exceptions = exceptions.trim().length() > 0 ? exceptions + ", " + host : host;          // NOI18N              
-                }                
-                group.put("http-proxy-exceptions", exceptions);
+            // we have a proxy for the host, so check 
+            // if in the there are also some no proxy settings 
+            // we should get from the original svn servers file
+            Ini.Section svnHostGroup = getServerGroup(host);
+            if(svnGlobalSection != null) {
+                // if there is a global section than get the no proxy settings                                                                 
+                mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);                
+            }            
+            if(svnHostGroup != null) {
+                mergeNonProxyKeys(svnHostGroup, nbGlobalSection);                
             }
+        }        
+        storeIni(nbServers, "servers");                                                       // NOI18N    
+    }        
+    
+    private void mergeNonProxyKeys(Ini.Section source, Ini.Section target) {
+        for (String key : source.keySet()) {
+            if(!isProxyConfigurationKey(key)) {
+                target.put(key, source.get(key));                                                
+            }                    
         }
-        // XXX call store from outside, who knows what else is goint to be stored into the files...
-        storeIni(servers, "servers");                                                    // NOI18N    
     }
     
     public void setExternalCommand(String tunnelName, String command) {
@@ -277,19 +230,7 @@ public class SvnConfigFiles {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-    }
-    
-    private void setProxy(final Ini.Section group, final ProxyDescriptor pd) {
-
-        group.put("http-proxy-host", pd.getHost());                                         // NOI18N
-        group.put("http-proxy-port", String.valueOf(pd.getPort()));                         // NOI18N
-        if(pd.getUserName()!=null) {
-            group.put("http-proxy-username", pd.getUserName());                             // NOI18N
-        }
-        if(pd.getPassword()!=null) {
-            group.put("http-proxy-password", pd.getPassword());                             // NOI18N
-        }
-    }
+    }    
 
     /**
      * Returns the miscellany/global-ignores setting from the config file.
@@ -348,77 +289,6 @@ public class SvnConfigFiles {
         return nbHome + "/config/svn/config/";                                  // NOI18N
     }
     
-    /** 
-     * Adds a new group into the <b>servers</b> config file used by the Subversion module. </br>
-     * The result is a new section with a generated name and an new entry in the groups section 
-     * assotiating the new group with the given host.
-     *
-     * @param host the host name 
-     * @return the Ini.Section newly created
-     */
-    private Ini.Section addServerGroup(String host) {
-        Ini.Section groups = getServerGroups(true);
-        int idx = 0;
-        String name = "group0";                                                 // NOI18N
-        while(groups.get(name)!=null) {
-            idx++;
-            name = "group" + idx;                                               // NOI18N
-        }
-        
-        Ini.Section group = servers.add(name);
-        groups.put(name, host);
-        return group;
-    }
-
-    /**
-     * Removes a group from the <b>servers</b> config file used by the Subversion module. </br>
-     * The entry in the groups section will always be removed. The according section holding the proxy settings will 
-     * be removed as long there is no more host assotiated with the group.
-     * 
-     * @param host the host which has to removed from the groups section
-     */
-    private void removeFromServerGroup(String host) {
-        Ini.Section group = getServerGroup(host);
-        if(group != null) {
-            String groupName = group.getName();
-            Ini.Section serverGroups = getServerGroups(false);
-            if(serverGroups == null) {
-                return;
-            }
-            String hostsString = serverGroups.get(groupName);
-            if(hostsString==null) hostsString = "";
-            String[] hosts = hostsString.split(",");            // NOI18N
-            if(hosts.length == 1) {
-                serverGroups.remove(groupName);
-                servers.remove(group);
-            } else {
-                StringBuffer newHosts = new StringBuffer();
-                for (int i = 0; i < hosts.length; i++) {
-                    if(!hosts[i].trim().equals(host)) {
-                        if(i > 0) {
-                            newHosts.append(",");                               // NOI18N
-                        }                        
-                        newHosts.append(hosts[i]);                        
-                    }
-                }
-                serverGroups.put(groupName, newHosts.toString());
-            }            
-        }
-    }
-    
-    /**
-     * Retruns the groups section from <b>servers</b> config file used by the Subversion module. </br>
-     *
-     * @return the groups section
-     */ 
-    private Ini.Section getServerGroups(boolean create) {
-        Ini.Section groups = servers.get(GROUPS_SECTION);
-        if(groups==null) {
-            groups = servers.add(GROUPS_SECTION);                               // NOI18N
-        }
-        return groups;
-    }
-
     /**
      * Returns the section from the <b>servers</b> config file used by the Subversion module which 
      * is holding the proxy settings for the given host
@@ -430,7 +300,7 @@ public class SvnConfigFiles {
         if(host == null || host.equals("")) {                                   // NOI18N
             return null;
         }
-        Ini.Section groups = getServerGroups(false);
+        Ini.Section groups = svnServers.get(GROUPS_SECTION);
         if(groups != null) {
             for (Iterator<String> it = groups.keySet().iterator(); it.hasNext();) {
                 String key = it.next();
@@ -439,39 +309,14 @@ public class SvnConfigFiles {
                     // XXX the same pattern everywhere when calling match()
                     value = value.trim();                    
                     if(value != null && match(value, host)) {
-                        return servers.get(key);
+                        return svnServers.get(key);
                     }      
                 }
             }
         }
         return null;
     }
-    
-   /**
-     * Returns the section from the <b>servers</b> config file used by the Subversion module which 
-     * is holding the proxy settings from the given {@link org.netbeans.modules.subversion.config.ProxyDescriptor}
-     *
-     * @param pd the {@link org.netbeans.modules.subversion.config.ProxyDescriptor}
-     * @return the section holding the proxy settings for the given {@link org.netbeans.modules.subversion.config.ProxyDescriptor}
-     */ 
-    private Ini.Section getServerGroup(ProxyDescriptor pd) {
-        for (Iterator<Ini.Section> it = servers.values().iterator(); it.hasNext();) {
-            Ini.Section group = it.next();
-            if (group.getName().equals(GROUPS_SECTION) || group.getName().equals(GLOBAL_SECTION)) {
-                
-                continue;
-            }
-            if( pd.getHost().equals(group.get("http-proxy-host")) &&                                        // NOI18N
-                String.valueOf(pd.getPort()).equals(group.get("http-proxy-port")) &&                        // NOI18N
-                (pd.getUserName()==null || pd.getUserName().equals(group.get("http-proxy-username")))  &&   // NOI18N
-                (pd.getPassword()==null || pd.getPassword().equals(group.get("http-proxy-password"))) )     // NOI18N
-            {
-                return group;
-            }
-        }
-        return null;
-    }
-    
+       
     /**
      * Evaluates if the given hostaname or IP address is in the given value String.
      *
@@ -543,34 +388,6 @@ public class SvnConfigFiles {
     }
 
     /**
-     * Loads the ini configuration file from the configuration directory used by the Netbeans Subversion module.
-     *
-     * @param fileName the file name
-     * @return an Ini instance holding the cofiguration file. 
-     */    
-    private Ini loadNetbeansIniFile(String fileName) {
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + fileName)); // NOI18N
-        Ini nbIni = null;
-        try {
-            if(file.exists()) {
-                nbIni = new Ini(FileUtils.createInputStream(file));
-            }            
-        } catch (FileNotFoundException ex) {
-            // do nothing
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-
-        Ini system = loadSystemIniFile(fileName);
-        if(nbIni==null) {
-            nbIni = system;
-        } else {
-            mergeWithoutProxyConfigurations(system, nbIni);
-        }            
-        return nbIni;
-    }
-
-    /**
      * Loads the ini configuration file from the directory used by 
      * the Subversion commandline client. The settings are loaded and merged together in 
      * in the folowing order:
@@ -639,77 +456,7 @@ public class SvnConfigFiles {
             }            
         }
     }
-
-    /**
-     * Merges all sections/keys/values from source into target as long
-     * as they are no proxy configuration values. 
-     *
-     * @param source the source ini file
-     * @param target the target ini file in which the values from the source file are going to be merged
-     */
-    private void mergeWithoutProxyConfigurations(Ini source, Ini target) {
-        // add changes from source
-        for (Iterator<String> itSections = source.keySet().iterator(); itSections.hasNext();) {
-            String sectionName = itSections.next();
-            Ini.Section sourceSection = source.get( sectionName );
-            Ini.Section targetSection = target.get( sectionName );
-            
-            for (Iterator<String> itVariables = sourceSection.keySet().iterator(); itVariables.hasNext();) {
-                String key = itVariables.next();
-
-                if(!isProxyConfigurationKey(key)) {
-                    if(targetSection == null) {
-                        targetSection = target.add(sectionName);
-                    }                    
-                    targetSection.put(key, sourceSection.get(key));
-                }
-            }
-        }
-
-        // delete from target what's missing in source
-        //List toRemove = new ArrayList();
-        for (Iterator<String> itSections = target.keySet().iterator(); itSections.hasNext();) {
-            String sectionName = itSections.next();
-
-            if(sectionName.equals(GROUPS_SECTION)) {
-                continue;
-            }
-
-            Ini.Section sourceSection = source.get( sectionName );
-            Ini.Section targetSection = target.get( sectionName );
-
-            if(sourceSection == null) {
-                // the whole section is missing -> drop it as long there is no "proxy key"
-                if(!isProxyConfigurationSection(targetSection)) {
-                    itSections.remove();
-                }                
-                continue;
-            }                    
-
-            for (Iterator<String> itVariables = targetSection.keySet().iterator(); itVariables.hasNext();) {
-                String key = itVariables.next();
-                if(sourceSection.get(key) == null && !isProxyConfigurationKey(key)) {
-                    // a variable is missing -> drop it
-                    itVariables.remove();
-                }
-            }
-        }        
-    }
-
-    /**
-     * Evaluates if the section holds some proxy setting values.
-     *
-     * @param section the section
-     * @return true if the section holds some proxy setting values. Otherwise false
-     */    
-    private boolean isProxyConfigurationSection(Ini.Section section) {
-        Collection<String> keys = section.keySet();
-        return keys.contains("http-proxy-host")     || // NOI18N
-               keys.contains("http-proxy-port")     || // NOI18N
-               keys.contains("http-proxy-username") || // NOI18N
-               keys.contains("http-proxy-password");   // NOI18N
-    }
-    
+   
     /**
      * Evaluates if the value stored under the key is a proxy setting value.
      *
@@ -753,7 +500,7 @@ public class SvnConfigFiles {
      */
     private static String getGlobalAPPDATA() {
         if(Utilities.isWindows()) {
-            String globalProfile = System.getenv("ALLUSERSPROFILE");                       // NOI18N
+            String globalProfile = System.getenv("ALLUSERSPROFILE");                                // NOI18N
             if(globalProfile == null || globalProfile.trim().equals("")) {                          // NOI18N
                 globalProfile = "";
             }

@@ -19,7 +19,6 @@
 package org.netbeans.modules.subversion.ui.repository;
 
 import java.net.MalformedURLException;
-import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.Scrambler;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
@@ -38,28 +37,23 @@ public class RepositoryConnection {
     private String url;   
     private String username;
     private String password;
-    private ProxyDescriptor proxyDescriptor;
     private String externalCommand;
     
     private SVNUrl svnUrl;
     private SVNRevision svnRevision;
     
-
     public RepositoryConnection(RepositoryConnection rc) {
-        this(rc.url, rc.username, rc.password, rc.proxyDescriptor, rc.externalCommand);
+        this(rc.url, rc.username, rc.password, rc.externalCommand);
     }
     
     public RepositoryConnection(String url) {
-        this(url, null, null, null, null);
+        this(url, null, null, null);
     }
             
-    public RepositoryConnection(String url, String username, String password,
-                                ProxyDescriptor proxyDescriptor,
-                                String externalCommand) {
+    public RepositoryConnection(String url, String username, String password, String externalCommand) {
         this.setUrl(url);
         this.setUsername(username);
         this.setPassword(password);
-        this.setProxyDescriptor(proxyDescriptor);
         this.setExternalCommand(externalCommand);                
     }
 
@@ -73,10 +67,6 @@ public class RepositoryConnection {
 
     public String getPassword() {
         return password == null ? "" : password ;
-    }
-
-    public ProxyDescriptor getProxyDescriptor() {
-        return proxyDescriptor;
     }
 
     public String getExternalCommand() {
@@ -115,9 +105,7 @@ public class RepositoryConnection {
     
     public int hashCode() {
         int hash = 3;
-
-        hash = 61 * hash + (this.url != null ? this.url.hashCode()
-                                             : 0);        
+        hash = 61 * hash + (this.url != null ? this.url.hashCode() : 0);        
         return hash;
     }
 
@@ -133,10 +121,6 @@ public class RepositoryConnection {
 
     void setPassword(String password) {
         this.password = password;
-    }
-
-    void setProxyDescriptor(ProxyDescriptor proxyDescriptor) {
-        this.proxyDescriptor = proxyDescriptor;
     }
 
     void setExternalCommand(String externalCommand) {
@@ -160,7 +144,7 @@ public class RepositoryConnection {
                     revisionString = urlString.substring(idx + 1);
                     svnRevision = SvnUtils.getSVNRevision(revisionString);
                 } catch (NumberFormatException ex) {
-                    throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", revisionString));
+                    throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", revisionString));     // NOI18N
                 }
             } else {
                 svnRevision = SVNRevision.HEAD;
@@ -206,10 +190,9 @@ public class RepositoryConnection {
             url = rc.getSvnUrl();
         } catch (MalformedURLException mue) {
             // should not happen
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); // should not happen
-            return "";
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); 
+            return "";                                                          // NOI18N
         }        
-        
         StringBuffer sb = new StringBuffer();        
         sb.append(url.toString());
         sb.append(RC_DELIMITER);
@@ -219,39 +202,18 @@ public class RepositoryConnection {
         sb.append(RC_DELIMITER);
         sb.append(rc.getExternalCommand());
         sb.append(RC_DELIMITER);        
-        ProxyDescriptor pd = rc.getProxyDescriptor();
-        sb.append(pd != null && pd.getHost() != null     ? pd.getHost()                                       : "");
-        sb.append(RC_DELIMITER);                        
-        sb.append(pd != null && pd.getUserName() != null ? pd.getUserName()                                   : "");
-        sb.append(RC_DELIMITER);                        
-        sb.append(pd != null && pd.getPassword() != null ? Scrambler.getInstance().scramble(pd.getPassword()) : "");
-        sb.append(RC_DELIMITER);        
-        sb.append(pd != null && pd.getPort() != -1       ? pd.getPort()                                       : "");
-        sb.append(RC_DELIMITER);        
-        sb.append(pd != null && pd.getType() != -1       ? pd.getType()                                       : "");
         sb.append(RC_DELIMITER);
         return sb.toString();
     }
     
     public static RepositoryConnection parse(String str) {        
         String[] fields = str.split(RC_DELIMITER);
-        
         int l = fields.length;
-        
-        ProxyDescriptor pd = null;
         String url          =           fields[0];
         String username     = l > 1 && !fields[1].equals("") ? fields[1] : null;
         String password     = l > 2 && !fields[2].equals("") ? Scrambler.getInstance().descramble(fields[2]) : null;
         String extCmd       = l > 3 && !fields[3].equals("") ? fields[3] : null;
-        
-        String pdHost       = l > 4 && !fields[4].equals("") ? fields[4] : null;
-        String pdUsername   = l > 5 && !fields[5].equals("") ? fields[5] : null;
-        String pdPassword   = l > 6 && !fields[6].equals("") ? Scrambler.getInstance().descramble(fields[6]) : null;
-        int pdPort          = l > 7 && !fields[7].equals("") ? Integer.parseInt(fields[7]) : -1;
-        int pdType          = l > 8 && !fields[8].equals("") ? Integer.parseInt(fields[8]) : -1;                        
-        pd = new ProxyDescriptor(pdType, pdHost, pdPort, pdUsername, pdPassword);        
-        
-        return new RepositoryConnection(url, username, password, pd, extCmd);        
+        return new RepositoryConnection(url, username, password, extCmd);        
     }
     
 }
