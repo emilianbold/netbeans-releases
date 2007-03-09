@@ -672,20 +672,20 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         org.openide.awt.Mnemonics.setLocalizedText(tgbAll, org.openide.util.NbBundle.getBundle(VersioningPanel.class).getString("CTL_Synchronize_Action_All_Label")); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle"); // NOI18N
         tgbAll.setToolTipText(bundle.getString("CTL_Synchronize_Action_All_Tooltip")); // NOI18N
+        tgbAll.setFocusable(false);
         tgbAll.addActionListener(this);
-
         jPanel2.add(tgbAll);
 
         org.openide.awt.Mnemonics.setLocalizedText(tgbLocal, org.openide.util.NbBundle.getBundle(VersioningPanel.class).getString("CTL_Synchronize_Action_Local_Label")); // NOI18N
         tgbLocal.setToolTipText(bundle.getString("CTL_Synchronize_Action_Local_Tooltip")); // NOI18N
+        tgbLocal.setFocusable(false);
         tgbLocal.addActionListener(this);
-
         jPanel2.add(tgbLocal);
 
         org.openide.awt.Mnemonics.setLocalizedText(tgbRemote, org.openide.util.NbBundle.getBundle(VersioningPanel.class).getString("CTL_Synchronize_Action_Remote_Label")); // NOI18N
         tgbRemote.setToolTipText(bundle.getString("CTL_Synchronize_Action_Remote_Tooltip")); // NOI18N
+        tgbRemote.setFocusable(false);
         tgbRemote.addActionListener(this);
-
         jPanel2.add(tgbRemote);
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
@@ -694,18 +694,17 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/refresh.png")));
         btnRefresh.setToolTipText(bundle.getString("CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
-        btnRefresh.setActionCommand(null); // NOI18N
+        btnRefresh.setFocusable(false);
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 23));
         btnRefresh.addActionListener(this);
-
         jPanel2.add(btnRefresh);
         btnRefresh.getAccessibleContext().setAccessibleName("Refresh Status");
 
         btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff.png")));
         btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
+        btnDiff.setFocusable(false);
         btnDiff.setPreferredSize(new java.awt.Dimension(22, 25));
         btnDiff.addActionListener(this);
-
         jPanel2.add(btnDiff);
         btnDiff.getAccessibleContext().setAccessibleName("Diff All");
 
@@ -714,17 +713,17 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/update.png")));
         btnUpdate.setToolTipText(bundle.getString("CTL_Synchronize_Action_Update_Tooltip")); // NOI18N
+        btnUpdate.setFocusable(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(22, 25));
         btnUpdate.addActionListener(this);
-
         jPanel2.add(btnUpdate);
         btnUpdate.getAccessibleContext().setAccessibleName("Update");
 
         btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/commit.png")));
         btnCommit.setToolTipText(bundle.getString("CTL_CommitForm_Action_Commit_Tooltip")); // NOI18N
+        btnCommit.setFocusable(false);
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));
         btnCommit.addActionListener(this);
-
         jPanel2.add(btnCommit);
         btnCommit.getAccessibleContext().setAccessibleName("Commit");
 
@@ -737,7 +736,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
         add(jPanel2, gridBagConstraints);
-
     }
 
     // Code for dispatching events from components to event handlers.
