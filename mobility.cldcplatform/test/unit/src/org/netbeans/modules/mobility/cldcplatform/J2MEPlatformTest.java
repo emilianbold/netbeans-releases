@@ -67,7 +67,7 @@ public class J2MEPlatformTest extends NbTestCase {
     static private void createPlatform()  {
         String destPath = Manager.getWorkDirPath();
         String wtkStr = "wtk22";
-        final   String rootStr="cldcpack";
+        final   String rootStr="mobility";
         final String rootWTK=File.separator+"test"+File.separator+"emulators"+File.separator;
         osarch = System.getProperty("os.name", null);
         String ossuf = null;
@@ -94,7 +94,7 @@ public class J2MEPlatformTest extends NbTestCase {
             if (index==-1) {
                 /* Running as a part of validity test */
                 String s2=Manager.getWorkDirPath();
-                platPath=new File(s2).getParentFile().getParentFile().getParentFile().getParent()+rootMobility+rootWTK;
+                platPath=new File(s2).getParentFile().getParentFile().getParentFile().getParentFile().getParent()+rootMobility+rootWTK;
             } else {
                 /* Running as a part of xtest test */
                 int id1=classPath.lastIndexOf(File.pathSeparator,index)==-1?0:classPath.lastIndexOf(File.pathSeparator,index)+1;
