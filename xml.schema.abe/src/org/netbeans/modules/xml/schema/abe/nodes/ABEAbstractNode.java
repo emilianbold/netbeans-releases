@@ -23,7 +23,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
@@ -40,24 +39,23 @@ import org.netbeans.modules.xml.refactoring.RenameRequest;
 //import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
 //import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
-import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.DeleteRefactoringUI;
-import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.RenameRefactoringUI;
-//import org.netbeans.modules.xml.refactoring.ui.j.ui.RefactoringPanel;
-import org.netbeans.modules.xml.refactoring.ui.views.WhereUsedView;
 import org.netbeans.modules.xml.schema.abe.InstanceDesignConstants;
 import org.netbeans.modules.xml.schema.abe.InstanceUIContext;
 import org.netbeans.modules.xml.schema.abe.StartTagPanel;
 import org.netbeans.modules.xml.schema.abe.UIUtilities;
+import org.netbeans.modules.xml.schema.abe.action.ShowDesignAction;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.ui.basic.SchemaGotoType;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
-import org.netbeans.modules.xml.xam.ui.actions.ShowDesignAction;
+import org.netbeans.modules.xml.xam.ui.actions.GotoType;
+import org.netbeans.modules.xml.xam.ui.actions.SourceGotoType;
 import org.netbeans.modules.xml.xam.ui.cookies.GetSuperCookie;
-import org.netbeans.modules.xml.nbprefuse.View;
+import org.netbeans.modules.xml.xam.ui.cookies.GotoCookie;
 import org.openide.ErrorManager;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.NewAction;
@@ -68,8 +66,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -79,7 +75,6 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.TopComponent;
 
 /**
  * Base class of all ABE nodes. Each node is associated with some
@@ -98,7 +93,7 @@ import org.openide.windows.TopComponent;
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public abstract class ABEAbstractNode extends AbstractNode
-        implements PropertyChangeListener, ReferenceableProvider{
+        implements GotoCookie, PropertyChangeListener, ReferenceableProvider {
     
     private InstanceUIContext context;
     private AXIComponent axiComponent;
@@ -131,7 +126,6 @@ public abstract class ABEAbstractNode extends AbstractNode
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(evt.getPropertyName().equals(InstanceDesignConstants.PROP_SHUTDOWN)){
                         ABEAbstractNode.this.icont.remove(instanceUIContext);
-                        ABEAbstractNode.this.context = null;
                         ABEAbstractNode.this.axiComponent = null;
                     }
                 }
@@ -236,6 +230,10 @@ public abstract class ABEAbstractNode extends AbstractNode
             return SUB_ACTIONS;
     }
     
+    private static final GotoType[] GOTO_TYPES = new GotoType[] {
+        new SourceGotoType(),
+        new SchemaGotoType(),
+    };
     
     
     private static final SystemAction[] ALL_ACTIONS=
@@ -305,6 +303,10 @@ public abstract class ABEAbstractNode extends AbstractNode
     public NewType[] getNewTypes() {
         return new NewType[0];
     }    
+
+    public GotoType[] getGotoTypes() {
+        return GOTO_TYPES;
+    }
     
     public void remove() {
         if(!canWrite())
@@ -371,7 +373,7 @@ public abstract class ABEAbstractNode extends AbstractNode
     
     
     public void setName(String name) {
-        if(getName().equals(name))
+        if(name == null || getName().equals(name))
             return;
         InstanceUIContext context = (InstanceUIContext) this.
                 getLookup().lookup(InstanceUIContext.class);

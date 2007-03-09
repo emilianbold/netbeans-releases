@@ -41,7 +41,6 @@ public class InstanceUIContext {
     
     protected InstanceDesignerPanel instanceDesignerPanel;
     protected PaletteController paletteController;
-    private boolean modelInducedEventMode;
     private boolean userInducedEventMode;
     private JScrollPane instanceDesignerScrollPane;
     private TopComponent topComponent;
@@ -53,25 +52,11 @@ public class InstanceUIContext {
         componentSelectionManager = new ComponentSelectionManager(this);
         mcaManager = new MultiComponentActionManager(this);
     }
-    
-    protected InstanceUIContext(InstanceDesignerPanel panel,
-            PaletteController controller) {
-        this();
-        instanceDesignerPanel = panel;
-        paletteController=controller;
-    }
-    
-    
+        
     public InstanceDesignerPanel getInstanceDesignerPanel() {
         return instanceDesignerPanel;
-    }
-    
-    
-    public PaletteController getPaletteController() {
-        return paletteController;
-    }
-    
-    
+    }    
+        
     public SchemaModel getSchemaModel() {
         return getInstanceDesignerPanel().getSchemaModel();
     }
@@ -84,14 +69,6 @@ public class InstanceUIContext {
         return mcaManager;
     }
     
-    boolean isModelInducedEventMode() {
-        return modelInducedEventMode;
-    }
-    
-    void setModelInducedEventMode(boolean eventMode){
-        this.modelInducedEventMode = eventMode;
-    }
-    
     public boolean isUserInducedEventMode() {
         return this.userInducedEventMode;
     }
@@ -100,7 +77,6 @@ public class InstanceUIContext {
         this.userInducedEventMode = userInducedEventMode;
         if(!userInducedEventMode)
             this.userActedComponent = null;
-        //instanceDesignerPanel.setUserInducedEventMode(userInducedEventMode);
     }
     
     ABEBaseDropPanel userActedComponent;
@@ -124,16 +100,11 @@ public class InstanceUIContext {
     public void setInstanceDesignerScrollPane(JScrollPane instanceDesignerScrollPane) {
         this.instanceDesignerScrollPane = instanceDesignerScrollPane;
     }
-    
-    public void setTopComponent(TopComponent topComponent) {
-        this.topComponent = topComponent;
-    }
-    
+        
     public TopComponent getTopComponent(){
         return topComponent;
     }
-    
-    
+        
     public Lookup getLookup() {
         return getSchemaDataObject().getNodeDelegate().getLookup();
     }
@@ -141,11 +112,7 @@ public class InstanceUIContext {
     public DataObject getSchemaDataObject() {
         return schemaDataObject;
     }
-    
-    public void setSchemaDataObject(DataObject schemaDataObject) {
-        this.schemaDataObject = schemaDataObject;
-    }
-    
+        
     void showPopupMenu() {
         throw new UnsupportedOperationException("Not yet implemented");
     }
@@ -181,17 +148,19 @@ public class InstanceUIContext {
     }
     
     public void shutdown() {
-        pcs.fireIndexedPropertyChange(InstanceDesignConstants.PROP_SHUTDOWN, 0, 
-                "", InstanceDesignConstants.PROP_SHUTDOWN);
-        this.paletteController = null;
-        this.instanceDesignerPanel = null;
-        this.topComponent = null;
+        pcs.firePropertyChange(InstanceDesignConstants.PROP_SHUTDOWN, null, true);
         this.componentSelectionManager = null;
-        this.instanceDesignerScrollPane = null;
         this.mcaManager = null;
         this.pcs = null;
-        this.schemaDataObject = null;
         this.userActedComponent = null;
         this.focusTraversalManager = null;
+    }
+
+    void initialize(TopComponent tc, DataObject schemaDataObject,
+            InstanceDesignerPanel instanceDesignerPanel, PaletteController paletteController) {
+        this.topComponent = tc;
+        this.schemaDataObject = schemaDataObject;
+        this.paletteController = paletteController;
+        this.instanceDesignerPanel = instanceDesignerPanel;        
     }
 }

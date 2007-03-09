@@ -198,7 +198,6 @@ public final class SchemaTransformPatternSelectionUI extends JPanel {
         typeGroup = new javax.swing.ButtonGroup();
         selectedPatternDescLabel = new javax.swing.JLabel();
         patternExampleLabel = new javax.swing.JLabel();
-        patternDescText = new javax.swing.JTextArea();
         selectedPatternText = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         patternExamplePane = new javax.swing.JEditorPane()
@@ -222,21 +221,13 @@ public final class SchemaTransformPatternSelectionUI extends JPanel {
         reusableType = new javax.swing.JLabel();
         createtype = new javax.swing.JRadioButton();
         noType = new javax.swing.JRadioButton();
+        patternDescText = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(selectedPatternDescLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("LBL_SchemaTransform_Selected_DesignPattern_Desc"));
         selectedPatternDescLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("HINT_SchemaTransform_Selected_DesignPattern_Desc"));
 
         org.openide.awt.Mnemonics.setLocalizedText(patternExampleLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("LBL_SchemaTransform_DesignPattern_Example"));
         patternExampleLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("HINT_SchemaTransform_DesignPattern_Example"));
-
-        patternDescText.setBackground(new java.awt.Color(236, 233, 216));
-        patternDescText.setColumns(20);
-        patternDescText.setEditable(false);
-        patternDescText.setRows(5);
-        patternDescText.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("MSG_SchemaTransform_Desc"));
-        patternDescText.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("HINT_SchemaTransform_Desc"));
-        patternDescText.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("MSG_SchemaTransform_Desc"));
-        patternDescText.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("HINT_SchemaTransform_Desc"));
 
         org.openide.awt.Mnemonics.setLocalizedText(selectedPatternText, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("LBL_SchemaTransform_Selected_DesignPattern_Text"));
 
@@ -284,6 +275,14 @@ public final class SchemaTransformPatternSelectionUI extends JPanel {
         noType.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         noType.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        patternDescText.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        patternDescText.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        patternDescText.setMaximumSize(new java.awt.Dimension(333333, 333333));
+        patternDescText.setMinimumSize(new java.awt.Dimension(3, 17));
+        patternDescText.setPreferredSize(new java.awt.Dimension(3, 17));
+        patternDescText.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("MSG_SchemaTransform_Desc"));
+        patternDescText.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/abe/wizard/Bundle").getString("HINT_SchemaTransform_Desc"));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -306,7 +305,6 @@ public final class SchemaTransformPatternSelectionUI extends JPanel {
                             .add(createtype)))
                     .add(patternExampleLabel)
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE)
-                    .add(patternDescText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(selectedPatternDescLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -314,7 +312,8 @@ public final class SchemaTransformPatternSelectionUI extends JPanel {
                         .add(35, 35, 35)
                         .add(existingPatternDescLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(existingPatternText)))
+                        .add(existingPatternText))
+                    .add(patternDescText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -357,7 +356,7 @@ public final class SchemaTransformPatternSelectionUI extends JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JRadioButton multipleGlobalElement;
     private javax.swing.JRadioButton noType;
-    private javax.swing.JTextArea patternDescText;
+    private javax.swing.JLabel patternDescText;
     private javax.swing.JLabel patternExampleLabel;
     private javax.swing.JEditorPane patternExamplePane;
     private javax.swing.JLabel reusableType;

@@ -74,10 +74,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
     private InstanceDesignerPanel(AXIModel axiModel, DataObject schemaDataObject, TopComponent tc, InstanceUIContext context) {
         super(context);
         this.axiModel = axiModel;
-        this.context.instanceDesignerPanel = this;
-        this.context.paletteController = getPaletteController();
-        context.setTopComponent(tc);
-        context.setSchemaDataObject(schemaDataObject);
+        context.initialize(tc, schemaDataObject, this, getPaletteController());
         initComponents();
         initialize();
         initMouseListener();
@@ -88,9 +85,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
      *
      */
     private void initialize() {
-        initComponents();
-        
-        
+        initComponents();                
         JPanel wrapperPanel = new JPanel(new BorderLayout());
         wrapperPanel.setOpaque(true);
         wrapperPanel.setBackground(new Color(252, 250, 245));
@@ -197,7 +192,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
      *
      *
      */
-    protected synchronized PaletteController getPaletteController() {
+    public synchronized PaletteController getPaletteController() {
         if (paletteController!=null)
             return paletteController;
         
@@ -361,6 +356,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
     
     public void shutdown() {
         context.shutdown();
+        context = null;
     }
     
     

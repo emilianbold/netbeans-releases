@@ -161,13 +161,15 @@ public class WSDLRefactoringEngine extends RefactoringEngine {
             UsageGroup ug = new UsageGroup(this, searchRoot.getModel(), (WSDLModel) target);
             for (Import i : definitions.getImports()) {
                 Model imported = null;
-                try {
-                    imported = i.getImportedWSDLModel();
-                } catch(CatalogModelException ex) {
-                    ug.addError(searchRoot, ex.getMessage());
+                if (namespace.equals(i.getNamespace())) {
+                    try {
+                        imported = i.getImportedWSDLModel();
+                    } catch(CatalogModelException ex) {
+                        ug.addError(searchRoot, ex.getMessage());
+                    }
                 }
 
-                if (namespace.equals(i.getNamespace()) && imported == target) {
+                if (imported == target) {
                     ug.addItem(i);
                 }
             }

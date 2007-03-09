@@ -60,7 +60,6 @@ public abstract class ABEBaseDropPanel extends JPanel {
                 if(evt.getPropertyName().equals(InstanceDesignConstants.
                         PROP_SHUTDOWN)){
                     ABEBaseDropPanel.this.context.removePropertyChangeListener(this);
-                    ABEBaseDropPanel.this.context = null;
                 }
             }
         });

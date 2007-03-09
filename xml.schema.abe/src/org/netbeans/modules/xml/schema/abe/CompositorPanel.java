@@ -492,23 +492,18 @@ public class CompositorPanel extends ElementsContainerPanel{
         super.setupAXIComponentListener();
         getAXIParent().addPropertyChangeListener(new ModelEventMediator(this, getAXIParent()) {
             public void _propertyChange(PropertyChangeEvent evt) {
-                context.setModelInducedEventMode(true);
-                try{
-                    if(evt.getPropertyName().equals(Compositor.PROP_COMPOSITOR)){
-                        //a compositor event
-                        if((evt.getOldValue() == null) && (evt.getNewValue() != null)){
-                            //new element added
-                            addCompositor((Compositor) evt.getNewValue());
-                        }else if((evt.getNewValue() == null) && (evt.getOldValue() != null)){
-                            //old element removed
-                            removeChildCompositor((Compositor) evt.getOldValue());
-                        }
-                    }else if(evt.getPropertyName().equals(Compositor.PROP_TYPE)){
-                        //handle compositor change event
-                        compositorTypeLabel.setText(getCompositorTypeString());
+                if(evt.getPropertyName().equals(Compositor.PROP_COMPOSITOR)){
+                    //a compositor event
+                    if((evt.getOldValue() == null) && (evt.getNewValue() != null)){
+                        //new element added
+                        addCompositor((Compositor) evt.getNewValue());
+                    }else if((evt.getNewValue() == null) && (evt.getOldValue() != null)){
+                        //old element removed
+                        removeChildCompositor((Compositor) evt.getOldValue());
                     }
-                }finally{
-                    context.setModelInducedEventMode(false);
+                }else if(evt.getPropertyName().equals(Compositor.PROP_TYPE)){
+                    //handle compositor change event
+                    compositorTypeLabel.setText(getCompositorTypeString());
                 }
                 refreshItemCount();
             }

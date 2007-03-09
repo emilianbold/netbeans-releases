@@ -59,23 +59,18 @@ public abstract class ElementsContainerPanel extends ContainerPanel{
     protected void setupAXIComponentListener() {
         getAXIParent().addPropertyChangeListener(new ModelEventMediator(this, getAXIParent()) {
             public void _propertyChange(PropertyChangeEvent evt) {
-                context.setModelInducedEventMode(true);
-                try{
-                    if(evt.getPropertyName().startsWith(Element.PROP_ELEMENT)){
-                        if(context.isUserInducedEventMode())
-                            setVisible(true);
-                        //event is for child element
-                        if((evt.getOldValue() == null) && (evt.getNewValue() != null)){
-                            //new element added
-                            addElement((AbstractElement)evt.getNewValue());
-                        }else if((evt.getNewValue() == null) && (evt.getOldValue() != null)){
-                            //old element removed
-                            removeElement((AbstractElement)evt.getOldValue());
-                        }
-                        
+                if(evt.getPropertyName().startsWith(Element.PROP_ELEMENT)){
+                    if(context.isUserInducedEventMode())
+                        setVisible(true);
+                    //event is for child element
+                    if((evt.getOldValue() == null) && (evt.getNewValue() != null)){
+                        //new element added
+                        addElement((AbstractElement)evt.getNewValue());
+                    }else if((evt.getNewValue() == null) && (evt.getOldValue() != null)){
+                        //old element removed
+                        removeElement((AbstractElement)evt.getOldValue());
                     }
-                }finally{
-                    context.setModelInducedEventMode(false);
+
                 }
             }
         });

@@ -80,29 +80,24 @@ public class StartTagPanel extends TagPanel {
         //add listener for name changes
         elementPanel.getAXIContainer().addPropertyChangeListener(new ModelEventMediator(this, elementPanel.getAXIContainer()) {
             public void _propertyChange(PropertyChangeEvent evt) {
-                elementPanel.getUIContext().setModelInducedEventMode(true);
-                try{
-                    if(evt.getPropertyName().equals(Element.PROP_NAME)){
-                        setTagName(getElementPanel().getAXIContainer().getName());
-                        forceSizeRecalculate();
-                        revalidate();
-                        repaint();
-                    }else if(evt.getPropertyName().startsWith(Attribute.PROP_ATTRIBUTE)){
-                        updateAttributes();
-                        if(evt.getNewValue() != null){
-                            //its a new attribute add event
-                            if((StartTagPanel.super.context.getUserActedComponent() == StartTagPanel.this)){
-                                showAttributes();
-                                showAttributeEditFor((Attribute) evt.getNewValue());
-                                StartTagPanel.super.context.resetUserActedComponent();
-                            }
+                if(evt.getPropertyName().equals(Element.PROP_NAME)){
+                    setTagName(getElementPanel().getAXIContainer().getName());
+                    forceSizeRecalculate();
+                    revalidate();
+                    repaint();
+                }else if(evt.getPropertyName().startsWith(Attribute.PROP_ATTRIBUTE)){
+                    updateAttributes();
+                    if(evt.getNewValue() != null){
+                        //its a new attribute add event
+                        if((StartTagPanel.super.context.getUserActedComponent() == StartTagPanel.this)){
+                            showAttributes();
+                            showAttributeEditFor((Attribute) evt.getNewValue());
+                            StartTagPanel.super.context.resetUserActedComponent();
                         }
-                    }else if(evt.getPropertyName().equals(Element.PROP_TYPE)){
-                        //indirectly update the element properties panel
-                        updateAttributes();
                     }
-                }finally{
-                    elementPanel.getUIContext().setModelInducedEventMode(false);
+                }else if(evt.getPropertyName().equals(Element.PROP_TYPE)){
+                    //indirectly update the element properties panel
+                    updateAttributes();
                 }
             }
         });

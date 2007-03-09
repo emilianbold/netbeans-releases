@@ -132,6 +132,10 @@ public class SchemaTransformWizard implements WizardDescriptor.InstantiatingIter
         wizardDescriptor.setTitle(
                 NbBundle.getMessage(SchemaTransformWizard.class,"TITLE_SchemaTransform"));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(SchemaTransformWizard.class,"TITLE_SchemaTransform"));
+        dialog.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(SchemaTransformWizard.class,"HINT_SchemaTransform"));
         dialog.setVisible(true);
         dialog.toFront();
         

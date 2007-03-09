@@ -78,14 +78,9 @@ public class AttributePanel extends ABEBaseDropPanel {
         initialize();
         attribute.addPropertyChangeListener(new ModelEventMediator(this, attribute) {
             public void _propertyChange(PropertyChangeEvent evt) {
-                context.setModelInducedEventMode(true);
-                try{
-                    String str = evt.getPropertyName();
-                    if(str.equals(Attribute.PROP_NAME) || str.equals(Attribute.PROP_TYPE))
-                        attributePropertyChangeAction(evt);
-                }finally{
-                    context.setModelInducedEventMode(false);
-                }
+                String str = evt.getPropertyName();
+                if(str.equals(Attribute.PROP_NAME) || str.equals(Attribute.PROP_TYPE))
+                    attributePropertyChangeAction(evt);
             }
         });
         initKeyListener();

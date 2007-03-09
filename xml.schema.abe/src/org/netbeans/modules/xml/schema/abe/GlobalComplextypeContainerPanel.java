@@ -57,25 +57,20 @@ public class GlobalComplextypeContainerPanel extends ElementsContainerPanel{
     protected void setupAXIComponentListener() {
         getAXIParent().addPropertyChangeListener(new ModelEventMediator(this, getAXIParent()) {
             public void _propertyChange(PropertyChangeEvent evt) {
-                context.setModelInducedEventMode(true);
-                try{
-                    if(evt.getPropertyName().equals(ContentModel.PROP_CONTENT_MODEL)){
-                        if(context.isUserInducedEventMode()){
-                            addAllChildren();
-                            setVisible(true);
-                        }
-                        //event is for child element
-                        if((evt.getOldValue() == null) && (evt.getNewValue() != null)){
-                            //new element added
-                            addElement((AXIContainer)evt.getNewValue());
-                        }else if((evt.getNewValue() == null) && (evt.getOldValue() != null)){
-                            //old element removed
-                            removeElement((AXIContainer)evt.getOldValue());
-                        }
-                        
+                if(evt.getPropertyName().equals(ContentModel.PROP_CONTENT_MODEL)){
+                    if(context.isUserInducedEventMode()){
+                        addAllChildren();
+                        setVisible(true);
                     }
-                }finally{
-                    context.setModelInducedEventMode(false);
+                    //event is for child element
+                    if((evt.getOldValue() == null) && (evt.getNewValue() != null)){
+                        //new element added
+                        addElement((AXIContainer)evt.getNewValue());
+                    }else if((evt.getNewValue() == null) && (evt.getOldValue() != null)){
+                        //old element removed
+                        removeElement((AXIContainer)evt.getOldValue());
+                    }
+
                 }
             }
         });

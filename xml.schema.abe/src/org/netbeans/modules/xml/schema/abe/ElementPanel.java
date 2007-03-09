@@ -91,27 +91,20 @@ public class ElementPanel extends ABEBaseDropPanel{
     private void addElementListener(){
         axiContainer.addPropertyChangeListener(new ModelEventMediator(this, axiContainer){
             public void _propertyChange(PropertyChangeEvent evt) {
-                if(context.isUserInducedEventMode())
-                    context.setModelInducedEventMode(true);
-                try{
+                if(evt.getPropertyName().equals(Compositor.PROP_COMPOSITOR)){
                     if(evt.getPropertyName().equals(Compositor.PROP_COMPOSITOR)){
-                        if(evt.getPropertyName().equals(Compositor.PROP_COMPOSITOR)){
-                            //a compositor event
-                            if((evt.getOldValue() == null) && (evt.getNewValue() != null)){
-                                //new Compositor added
-                                addCompositor((Compositor) evt.getNewValue());
-                            }else if((evt.getNewValue() == null) && (evt.getOldValue() != null)){
-                                //old Compositor removed
-                                removeCompositor((Compositor) evt.getOldValue());
-                            }
+                        //a compositor event
+                        if((evt.getOldValue() == null) && (evt.getNewValue() != null)){
+                            //new Compositor added
+                            addCompositor((Compositor) evt.getNewValue());
+                        }else if((evt.getNewValue() == null) && (evt.getOldValue() != null)){
+                            //old Compositor removed
+                            removeCompositor((Compositor) evt.getOldValue());
                         }
-                    }else if(evt.getPropertyName().equals(
-                            org.netbeans.modules.xml.axi.Element.PROP_TYPE)){
-                        startTag.updateAttributes();
                     }
-                }finally{
-                    if(context.isUserInducedEventMode())
-                        context.setModelInducedEventMode(false);
+                }else if(evt.getPropertyName().equals(
+                        org.netbeans.modules.xml.axi.Element.PROP_TYPE)){
+                    startTag.updateAttributes();
                 }
             }
         });
