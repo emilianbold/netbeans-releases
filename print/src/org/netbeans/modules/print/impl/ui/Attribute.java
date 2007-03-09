@@ -82,7 +82,7 @@ final class Attribute extends PrintUI
   protected DialogDescriptor createDescriptor()
   {
     myDescriptor = new DialogDescriptor(
-      getPanel(),
+      getMainPanel(),
       i18n("LBL_Options"), // NOI18N
       true,
       getButtons(),
@@ -207,7 +207,7 @@ final class Attribute extends PrintUI
   }
 
   @Override
-  protected JPanel createMainPanel()
+  protected JPanel createInnerPanel()
   {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();

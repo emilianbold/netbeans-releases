@@ -59,7 +59,7 @@ public final class Search extends PrintUI {
   }
 
   @Override
-  protected JPanel createMainPanel()
+  protected JPanel createInnerPanel()
   {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
@@ -226,7 +226,7 @@ public final class Search extends PrintUI {
   {
     Object [] buttons = getButtons();
     myDescriptor = new DialogDescriptor(
-      getPanel(),
+      getMainPanel(),
       i18n("LBL_Advanced_Search"), // NOI18N
       true, // modal
       buttons,

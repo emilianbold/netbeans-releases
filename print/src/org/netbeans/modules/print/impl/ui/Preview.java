@@ -106,7 +106,7 @@ public class Preview extends PrintUI implements Percent.Listener {
   }
 
   @Override
-  protected JPanel createMainPanel()
+  protected JPanel createInnerPanel()
   {
 //out("Create Main panel");
     JPanel p = new JPanel(new GridBagLayout());
@@ -655,7 +655,7 @@ public class Preview extends PrintUI implements Percent.Listener {
   {
     Object [] buttons = getButtons();
     DialogDescriptor descriptor = new DialogDescriptor(
-      getPanel(),
+      getMainPanel(),
       i18n("LBL_Print_Preview"), // NOI18N
       true,
       buttons,

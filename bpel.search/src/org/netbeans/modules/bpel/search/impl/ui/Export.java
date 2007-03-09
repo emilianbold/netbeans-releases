@@ -60,7 +60,7 @@ class Export extends PrintUI {
   }
 
   @Override
-  protected JPanel createMainPanel()
+  protected JPanel createInnerPanel()
   {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
@@ -251,7 +251,7 @@ class Export extends PrintUI {
   protected DialogDescriptor createDescriptor()
   {
     myDescriptor = new DialogDescriptor(
-      createMainPanel(),
+      createInnerPanel(),
       i18n("LBL_Export_Title") // NOI18N
     );
     return myDescriptor;
