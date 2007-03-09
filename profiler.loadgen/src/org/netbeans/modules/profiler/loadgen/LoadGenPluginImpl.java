@@ -134,15 +134,15 @@ public class LoadGenPluginImpl implements LoadGenPlugin, ProcessInstanceListener
    * @return an array of FileObjects that are the source roots for this project
    */
   private static FileObject[] getSourceRoots(final Project project, final boolean traverse) {
-    Set/*<FileObject>*/ set = new HashSet/*<FileObject>*/ ();
-    Set/*<Project>*/ projects = new HashSet();
+    Set<FileObject> set = new HashSet<FileObject>();
+    Set<Project> projects = new HashSet<Project>();
     
     projects.add(project);
     getSourceRoots(project,traverse,projects,set);
     return (FileObject[])set.toArray(new FileObject[0]);
   }
   
-  private static void getSourceRoots(final Project project, final boolean traverse, Set projects, Set roots) {
+  private static void getSourceRoots(final Project project, final boolean traverse, Set<Project> projects, Set<FileObject> roots) {
     final Sources sources = ProjectUtils.getSources(project);
     final SourceGroup[] sgs = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     for (int i = 0; i < sgs.length; i++) {
