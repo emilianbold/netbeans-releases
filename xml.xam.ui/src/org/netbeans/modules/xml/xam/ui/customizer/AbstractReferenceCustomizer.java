@@ -104,8 +104,9 @@ public abstract class AbstractReferenceCustomizer<T extends Component>
     protected abstract ExternalReferenceDecorator getNodeDecorator();
 
     /**
-     * Construct the tree view and explorer manager for the location value.
-     * Load the component values into the interface widgets.
+     * Load the component values into the interface widgets. Do not, under
+     * any circumstances, create interface components and add them to the
+     * customizer. This instance is cached and re-used over and over again.
      */
     protected abstract void initializeUI();
 

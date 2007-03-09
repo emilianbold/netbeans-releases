@@ -21,6 +21,7 @@ package org.netbeans.modules.xml.xam.ui.customizer;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.openide.filesystems.FileObject;
@@ -113,6 +114,11 @@ public class NamespaceChildren extends Children.Keys {
                 });
             }
         });
+    }
+
+    @Override
+    protected void removeNotify() {
+        setKeys(Collections.emptySet());
     }
 
     private static class NamespaceNode extends FolderNode

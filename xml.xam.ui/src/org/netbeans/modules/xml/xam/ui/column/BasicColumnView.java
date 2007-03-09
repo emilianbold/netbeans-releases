@@ -295,6 +295,27 @@ public class BasicColumnView extends JPanel implements ColumnView {
         return columnList.get(columnList.indexOf(column) + 1);
     }
 
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        int index = lastShowingColumnIndex();
+        if (index > -1) {
+            Column column = columnList.get(index);
+            column.getComponent().requestFocus();
+        }
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        boolean retVal = super.requestFocusInWindow();
+        int index = lastShowingColumnIndex();
+        if (index > -1) {
+            Column column = columnList.get(index);
+            return column.getComponent().requestFocusInWindow();
+        }
+        return retVal;
+    }
+
     /**
      * Determine the index of the right-most visible column.
      *

@@ -56,11 +56,10 @@ import org.openide.util.Utilities;
  */
 public abstract class ExternalReferenceCustomizer<T extends Component>
         extends AbstractReferenceCustomizer<T>
-        implements ExplorerManager.Provider, PropertyChangeListener {
+        implements DocumentListener, ExplorerManager.Provider,
+        PropertyChangeListener {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
-    /** Determines if the prefix was editor or auto-generated. */
-    private transient DocumentListener prefixListener;
     /** If true, the prefix was generated and not edited by the user. */
     private transient boolean prefixGenerated;
     /** The file being modified (where the import will be added). */
@@ -244,12 +243,25 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
         // Note, do not place any code here, as there is no guarantee
         // that the subclasses will delegate to this method at all.
     }
+
+    public void changedUpdate(DocumentEvent e) {
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        prefixGenerated = false;
+        validateInput();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        prefixGenerated = false;
+        validateInput();
+    }
     
     protected void initializeUI() {
         // TODO select in panel
         if (mustNamespaceDiffer()) {
             namespaceTextField.setText(getNamespace());
-            prefixTextField.getDocument().removeDocumentListener(prefixListener);
+            prefixTextField.getDocument().removeDocumentListener(this);
             String prefix = getPrefix();
             if (prefix != null) {
                 prefixTextField.setText(prefix);
@@ -259,21 +271,7 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
                 prefix = generatePrefix();
                 prefixGenerated = true;
                 prefixTextField.setText(prefix);
-                if (prefixListener == null) {
-                    prefixListener = new DocumentListener() {
-                        public void changedUpdate(DocumentEvent e) {
-                        }
-                        public void insertUpdate(DocumentEvent e) {
-                            prefixGenerated = false;
-                            validateInput();
-                        }
-                        public void removeUpdate(DocumentEvent e) {
-                            prefixGenerated = false;
-                            validateInput();
-                        }
-                    };
-                }
-                prefixTextField.getDocument().addDocumentListener(prefixListener);
+                prefixTextField.getDocument().addDocumentListener(this);
             }
         } else {
             namespaceLabel.setVisible(false);

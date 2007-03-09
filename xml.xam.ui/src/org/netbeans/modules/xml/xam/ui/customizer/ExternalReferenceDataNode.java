@@ -53,8 +53,6 @@ public class ExternalReferenceDataNode extends FilterNode
     private boolean selected;
     /** The namespace prefix, if specified. */
     private String prefix;
-    /** True if the prefix is generated, false if user edited. */
-    private boolean prefixGenerated;
 
     /**
      * Creates a new instance of ExternalReferenceDataNode.
@@ -199,7 +197,6 @@ public class ExternalReferenceDataNode extends FilterNode
     public String getPrefix() {
         if (prefix == null) {
             prefix = decorator.generatePrefix(this);
-            prefixGenerated = true;
         }
         return prefix;
     }
@@ -220,15 +217,6 @@ public class ExternalReferenceDataNode extends FilterNode
         return false;
     }
 
-    /**
-     * Indicates if the prefix value was changed in the interface.
-     *
-     * @return  true if prefix was changed.
-     */
-    public boolean isPrefixChanged() {
-        return !prefixGenerated;
-    }
-
     public void setDisplayName(String s) {
         super.disableDelegation(DELEGATE_GET_DISPLAY_NAME|DELEGATE_SET_DISPLAY_NAME);
         super.setDisplayName(s);
@@ -242,7 +230,6 @@ public class ExternalReferenceDataNode extends FilterNode
     public void setPrefix(String prefix) {
         String old = this.prefix;
         this.prefix = prefix;
-        prefixGenerated = false;
         firePropertyChange(PROP_PREFIX, old, prefix);
     }
 
@@ -271,18 +258,12 @@ public class ExternalReferenceDataNode extends FilterNode
 
         protected Node[] createNodes(Node n) {
             DataObject dobj = (DataObject) n.getLookup().lookup(DataObject.class);
-            if(dobj!=null) {
+            if (dobj != null) {
                 FileObject fobj = dobj.getPrimaryFile();
-                if (fobj.isFolder() && fobj.getNameExt().equals("nbproject")) {
-                    // May be the NetBeans project folder, see if it contains a
-                    // project.xml file, in which case we can be fairly certain.
-                    FileObject[] files = fobj.getChildren();
-                    for (FileObject f : files) {
-                        if (f.getNameExt().equals("project.xml")) {
-                            // Ignore the nbproject folder.
-                            return new Node[0];
-                        }
-                    }
+                if (fobj.isFolder() && fobj.getNameExt().equals("nbproject") &&
+                        fobj.getFileObject("project.xml") != null) {
+                    // It is the NetBeans project folder, ignore it.
+                    return new Node[0];
                 }
                 ModelCookie cookie = (ModelCookie) dobj.getCookie(ModelCookie.class);
                 String fname = fobj.getNameExt();

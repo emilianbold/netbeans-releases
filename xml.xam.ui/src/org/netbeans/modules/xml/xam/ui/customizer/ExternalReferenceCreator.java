@@ -92,9 +92,27 @@ public abstract class ExternalReferenceCreator<T extends Component>
                 getLookup().lookup(FileObject.class);
         catalogSupport = DefaultProjectCatalogSupport.getInstance(sourceFO);
         init(component, model);
-        initializeUI();
-        Node root = createRootNode();
-        explorerManager.setRootContext(root);
+        // View for selecting an external reference.
+        TreeTableView locationView = new LocationView();
+        locationView.setDefaultActionAllowed(false);
+        locationView.setPopupAllowed(false);
+        locationView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        locationView.setRootVisible(false);
+        locationView.getAccessibleContext().setAccessibleName(locationLabel.getToolTipText());
+        locationView.getAccessibleContext().setAccessibleDescription(locationLabel.getToolTipText());
+        Node.Property[] columns = new Node.Property[] {
+            new Column(ExternalReferenceDataNode.PROP_NAME, String.class, true),
+            new ImportColumn(referenceTypeName()),
+            new Column(ExternalReferenceDataNode.PROP_PREFIX, String.class, false),
+        };
+        locationView.setProperties(columns);
+        locationView.setTreePreferredWidth(200);
+        locationView.setTableColumnPreferredWidth(0, 25);
+        locationView.setTableColumnPreferredWidth(1, 25);
+        locationPanel.add(locationView, BorderLayout.CENTER);
+        explorerManager = new ExplorerManager();
+        explorerManager.addPropertyChangeListener(this);
+        explorerManager.setRootContext(createRootNode());
     }
 
     public void applyChanges() throws IOException {
@@ -164,15 +182,16 @@ public abstract class ExternalReferenceCreator<T extends Component>
     private boolean isValidPrefix(ExternalReferenceDataNode node) {
         DataObject dobj = (DataObject) node.getLookup().lookup(DataObject.class);
         NodeSet nodeSet = registeredNodes.get(dobj);
-        List<Node> results = new LinkedList<Node>();
         Collection<NodeSet> sets = registeredNodes.values();
         for (NodeSet set : sets) {
-            // Ignore the set which contains the given node.
-            if (!set.equals(nodeSet)) {
-                for (ExternalReferenceDataNode n : set.getNodes()) {
-                    if (node.getPrefix().equals(n.getPrefix())) {
-                        return false;
-                    }
+            // Ignore the set which contains the given node, and those
+            // sets which are not selected.
+            if (!set.equals(nodeSet) && set.isSelected()) {
+                // Only need to check the first node, as all of them have
+                // the same prefix (or at least that is the idea).
+                ExternalReferenceDataNode other = set.getNodes().get(0);
+                if (node.getPrefix().equals(other.getPrefix())) {
+                    return false;
                 }
             }
         }
@@ -248,26 +267,6 @@ public abstract class ExternalReferenceCreator<T extends Component>
     }
 
     protected void initializeUI() {
-        // View for selecting an external reference.
-        TreeTableView locationView = new LocationView();
-        locationView.setDefaultActionAllowed(false);
-        locationView.setPopupAllowed(false);
-        locationView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        locationView.setRootVisible(false);
-        locationView.getAccessibleContext().setAccessibleName(locationLabel.getToolTipText());
-        locationView.getAccessibleContext().setAccessibleDescription(locationLabel.getToolTipText());
-        Node.Property[] columns = new Node.Property[] {
-            new Column(ExternalReferenceDataNode.PROP_NAME, String.class, true),
-            new ImportColumn(referenceTypeName()),
-            new Column(ExternalReferenceDataNode.PROP_PREFIX, String.class, false),
-        };
-        locationView.setProperties(columns);
-        locationView.setTreePreferredWidth(200);
-        locationView.setTableColumnPreferredWidth(0, 25);
-        locationView.setTableColumnPreferredWidth(1, 25);
-        locationPanel.add(locationView, BorderLayout.CENTER);
-        explorerManager = new ExplorerManager();
-        explorerManager.addPropertyChangeListener(this);
         if (!mustNamespaceDiffer()) {
             namespaceLabel.setVisible(false);
             namespaceTextField.setVisible(false);
@@ -292,6 +291,19 @@ public abstract class ExternalReferenceCreator<T extends Component>
     }
 
     /**
+     * Indicate if this creator allows the user to select no files at all.
+     * This is useful from the new file wizard which needs to allow the
+     * user to deselect what they had previously selected.
+     *
+     * @return  true if user may select no files and still be considered
+     *          as valid input, false to require one or more selections.
+     */
+    protected boolean allowEmptySelection() {
+        // By default we require the user to select at least one file.
+        return false;
+    }
+
+    /**
      * Determine if the user's input is valid or not. This will enable
      * or disable the save/reset controls based on the results, as well
      * as issue error messages.
@@ -304,8 +316,10 @@ public abstract class ExternalReferenceCreator<T extends Component>
             ExternalReferenceDataNode erdn = (ExternalReferenceDataNode) node;
             Map<String, String> prefixMap = getPrefixes(getModelComponent().getModel());
             String ep = erdn.getPrefix();
-            if (erdn.isPrefixChanged() && (ep.length() == 0 || 
-                    prefixMap.containsKey(ep) || !isValidPrefix(erdn))) {
+            // Must be a non-empty prefix, that is not already in use, and
+            // is unique among the selected nodes (and be selected itself).
+            if (ep.length() == 0 || prefixMap.containsKey(ep) ||
+                    (!isValidPrefix(erdn) && erdn.isSelected())) {
                 msg = NbBundle.getMessage(ExternalReferenceCreator.class,
                         "LBL_ExternalReferenceCreator_InvalidPrefix");
             }
@@ -322,8 +336,8 @@ public abstract class ExternalReferenceCreator<T extends Component>
             showMessage(msg);
         }
         int selected = countSelectedNodes();
-        // As long as there are (valid) nodes selected, save is enabled.
-        setSaveEnabled(selected > 0);
+        // Must have selected nodes, and no error messages.
+        setSaveEnabled((allowEmptySelection() || selected > 0) && msg == null);
     }
 
     protected void showMessage(String msg) {
@@ -597,7 +611,6 @@ public abstract class ExternalReferenceCreator<T extends Component>
             DataObject dobj = (DataObject) node.getLookup().
                     lookup(DataObject.class);
             if (dobj != null && dobj.isValid()) {
-                FileObject fileObj = dobj.getPrimaryFile();
                 ModelCookie cookie = (ModelCookie) dobj.getCookie(
                         ModelCookie.class);
                 Model model;

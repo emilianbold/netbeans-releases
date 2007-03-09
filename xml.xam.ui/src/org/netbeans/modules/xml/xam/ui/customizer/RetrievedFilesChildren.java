@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.xam.ui.customizer;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,7 +36,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.loaders.DataObject;
 
 /**
@@ -101,11 +101,16 @@ public class RetrievedFilesChildren extends Children.Keys {
 
     protected void addNotify() {
         setKeys(WaitNode.getKeys());
-        RequestProcessor.getDefault().post(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
                 setKeys(cwm.getCatalogEntries());
             }
         });
+    }
+
+    @Override
+    protected void removeNotify() {
+        setKeys(Collections.emptySet());
     }
 
     public static class RetrievedFileNode extends AbstractNode

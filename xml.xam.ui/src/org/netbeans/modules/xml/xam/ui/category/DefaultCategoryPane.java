@@ -81,7 +81,31 @@ public class DefaultCategoryPane extends AbstractCategoryPane {
         buttonGroup = new ButtonGroup();
 
         // Build our overall container.
-        visualComponent = new JPanel(new GridBagLayout());
+        visualComponent = new JPanel(new GridBagLayout()) {
+            /** silence compiler warnings */
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void requestFocus() {
+                super.requestFocus();
+                // Pass focus to category component to ease keyboard navigation.
+                Category cat = getCategory();
+                if (cat != null) {
+                    cat.getComponent().requestFocus();
+                }
+            }
+
+            @Override
+            public boolean requestFocusInWindow() {
+                boolean retVal = super.requestFocusInWindow();
+                // Pass focus to category component to ease keyboard navigation.
+                Category cat = getCategory();
+                if (cat != null) {
+                    return cat.getComponent().requestFocusInWindow();
+                }
+                return retVal;
+            }
+        };
 
         // Build the primary view component.
         GridBagConstraints gbc = new GridBagConstraints();
