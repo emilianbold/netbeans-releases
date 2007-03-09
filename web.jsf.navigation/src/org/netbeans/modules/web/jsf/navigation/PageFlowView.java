@@ -12,6 +12,7 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -59,6 +61,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
     PageFlowView(JSFConfigEditorContext context){
         init();
         pfc = new PageFlowController( context,  this );
+        
         //        this(context, new InstanceContent());
     }
     
@@ -109,7 +112,14 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         setLayout(new BorderLayout());
         
         scene = new PageFlowScene(this);
-        add(scene.createView());
+        
+        JScrollPane pane = new JScrollPane(scene.createView());
+        pane.setVisible(true);
+        
+//        Dimension viewDim = pane.getViewportBorderBounds().getSize();
+//        scene.setPreferredBounds(pane.getViewportBorderBounds());
+//        scene.setPreferredSize(pane.getViewportBorderBounds().getSize());
+        add(pane, BorderLayout.CENTER);
         
         try{
             Node node = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();

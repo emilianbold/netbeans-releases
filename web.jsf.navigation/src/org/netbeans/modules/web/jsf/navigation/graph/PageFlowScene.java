@@ -43,6 +43,8 @@ import java.util.Collections;
 import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
+import org.netbeans.api.visual.graph.layout.GridGraphLayout;
+import org.netbeans.api.visual.graph.layout.GridGraphLayout;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
@@ -95,6 +97,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
      */
     public PageFlowScene(TopComponent tc) {
         this.tc = tc;
+        
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
         
         addChild(backgroundLayer);
@@ -113,7 +116,11 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         actions.addAction(dragNdropAction);
         //        getActions ().addAction (deleteAction);
         
-        sceneLayout = LayoutFactory.createSceneGraphLayout(this, new GridGraphLayout<AbstractNode, NavigationCase> ().setChecker(true));
+        
+        GridGraphLayout gglayout = new GridGraphLayout<AbstractNode, NavigationCase> ();
+        gglayout.setChecker(true);
+        
+        sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
 
         getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             public void edit(Widget widget) {
