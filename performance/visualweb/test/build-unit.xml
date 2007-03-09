@@ -131,6 +131,8 @@ Microsystems, Inc. All Rights Reserved.
             
             <!-- Property for repeatedly used userdir with opened files -->
             <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
+
+            <property name="xtest.timeout" value="3000000" />
         </executeTests>
         
         <copy todir="${xtest.sketchpad}">
