@@ -288,7 +288,7 @@ public class TableResizer extends Interaction implements KeyListener {
 
             ImageIcon imgIcon =
                 new ImageIcon(TableResizer.class.getResource(
-                        "/org/netbeans/modules/visualweb/designer/drag_resize.gif"));
+                        "/org/netbeans/modules/visualweb/designer/resources/drag_resize.gif"));
 //            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
 
             e.consume();

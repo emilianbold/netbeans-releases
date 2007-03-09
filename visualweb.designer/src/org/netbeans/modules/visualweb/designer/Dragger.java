@@ -552,7 +552,7 @@ public class Dragger extends Interaction implements KeyListener {
             prevMouseY = p.y;
 
             ImageIcon imgIcon = // XXX Does this have any effect anymore?
-                new ImageIcon(Dragger.class.getResource("/org/netbeans/modules/visualweb/designer/drag_position.gif"));
+                new ImageIcon(Dragger.class.getResource("/org/netbeans/modules/visualweb/designer/resources/drag_position.gif"));
 //            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
 
             e.consume();

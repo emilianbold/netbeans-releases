@@ -218,7 +218,7 @@ public class Marquee extends Interaction {
             }
 
             ImageIcon imgIcon =
-                new ImageIcon(Marquee.class.getResource("/org/netbeans/modules/visualweb/designer/drag_select.gif")); // TODO get marquee icon
+                new ImageIcon(Marquee.class.getResource("/org/netbeans/modules/visualweb/designer/resources/drag_select.gif")); // TODO get marquee icon
 //            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
 
             e.consume();

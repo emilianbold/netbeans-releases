@@ -450,7 +450,7 @@ public class Resizer extends Interaction implements KeyListener {
             pane.setCursor(Cursor.getPredefinedCursor(direction));
 
             ImageIcon imgIcon =
-                new ImageIcon(Resizer.class.getResource("/org/netbeans/modules/visualweb/designer/drag_resize.gif"));
+                new ImageIcon(Resizer.class.getResource("/org/netbeans/modules/visualweb/designer/resources/drag_resize.gif"));
 //            StatusDisplayer_RAVE.getRaveDefault().setPositionLabelIcon(imgIcon);
 
             e.consume();
