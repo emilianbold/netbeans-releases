@@ -31,10 +31,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.util.*;
-import java.io.StringReader;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Handles interaction among Diff components: editor panes, scroll bars, action bars and the split pane.
@@ -53,12 +51,11 @@ class DiffViewManager implements ChangeListener {
      */ 
     private boolean myScrollEvent;
     
-    private int lastScrollOffset;
-
     private int                     cachedDiffSerial;
     private DecoratedDifference []  decorationsCached = new DecoratedDifference[0];
     private HighLight []            secondHilitesCached = new HighLight[0];
     private HighLight []            firstHilitesCached = new HighLight[0];
+    private final ScrollMapCached   scrollMap = new ScrollMapCached();    
     
     public DiffViewManager(EditableDiffView master) {
         this.master = master;
@@ -142,8 +139,8 @@ class DiffViewManager implements ChangeListener {
             if (dd.getBottomLeft() == -1) continue;
             int start = getRowStartFromLineOffset(doc, diff.getFirstStart() - 1);
             if (isOneLineChange(diff)) {
-                StringTokenizer firstSt = new StringTokenizer(diff.getFirstText(), "\n");
-                StringTokenizer secondSt = new StringTokenizer(diff.getSecondText(), "\n");
+                CorrectRowTokenizer firstSt = new CorrectRowTokenizer(diff.getFirstText());
+                CorrectRowTokenizer secondSt = new CorrectRowTokenizer(diff.getSecondText());
                 for (int i = diff.getSecondStart(); i <= diff.getSecondEnd(); i++) {
                     String firstRow = firstSt.nextToken();                 
                     String secondRow = secondSt.nextToken();                 
@@ -184,14 +181,18 @@ class DiffViewManager implements ChangeListener {
             if (dd.getBottomRight() == -1) continue;
             int start = getRowStartFromLineOffset(doc, diff.getSecondStart() - 1);
             if (isOneLineChange(diff)) {
-                StringTokenizer firstSt = new StringTokenizer(diff.getFirstText(), "\n");
-                StringTokenizer secondSt = new StringTokenizer(diff.getSecondText(), "\n");
+                CorrectRowTokenizer firstSt = new CorrectRowTokenizer(diff.getFirstText());
+                CorrectRowTokenizer secondSt = new CorrectRowTokenizer(diff.getSecondText());
                 for (int i = diff.getSecondStart(); i <= diff.getSecondEnd(); i++) {
-                    String firstRow = firstSt.nextToken();                 
-                    String secondRow = secondSt.nextToken();                 
-                    List<HighLight> rowhilites = computeSecondRowHilites(start, firstRow, secondRow);
-                    hilites.addAll(rowhilites);
-                    start += secondRow.length() + 1;
+                    try {
+                        String firstRow = firstSt.nextToken();
+                        String secondRow = secondSt.nextToken();
+                        List<HighLight> rowhilites = computeSecondRowHilites(start, firstRow, secondRow);
+                        hilites.addAll(rowhilites);
+                        start += secondRow.length() + 1;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             } else {
                 int end = getRowStartFromLineOffset(doc, diff.getSecondEnd());
@@ -347,88 +348,67 @@ class DiffViewManager implements ChangeListener {
      * 
      * 5. scroll the other document proportionally
      */ 
-    private void smartScroll() {
+    private synchronized void smartScroll() {
         DiffContentPanel rightPane = master.getEditorPane2();
         DiffContentPanel leftPane = master.getEditorPane1();        
-/*
-        if (rightPane.getScrollPane().getVerticalScrollBar().getModel().getValue() + rightPane.getScrollPane().getVerticalScrollBar().getModel().getExtent() >=
-                rightPane.getScrollPane().getVerticalScrollBar().getModel().getMaximum()) {
-            leftPane.getScrollPane().getVerticalScrollBar().getModel().setValue(leftPane.getScrollPane().getVerticalScrollBar().getModel().getMaximum());
-            return;
-        }
-*/
         
-        DifferencePosition toMatch = findDifferenceToMatch();
-        if (toMatch == null) {
-            int value = rightPane.getScrollPane().getVerticalScrollBar().getValue();
-//            value = (int) (initiator == rightEditorPane ? value * getScrollFactor() : value / getScrollFactor());
-            value += lastScrollOffset;
-            leftPane.getScrollPane().getVerticalScrollBar().setValue(value);
-        } else {
-            lastScrollOffset = scrollToMatchDifference(toMatch);
-        }
+        int [] map = scrollMap.getScrollMap(rightPane.getSize().height, master.getDiffSerial());
+        
+        int rightOffet = rightPane.getScrollPane().getVerticalScrollBar().getValue();
+        if (rightOffet >= map.length) return;
+        leftPane.getScrollPane().getVerticalScrollBar().setValue(map[rightOffet]);
     }
 
-    private int scrollToMatchDifference(DifferencePosition differenceMatchStart) {
+    private int computeLeftOffsetToMatchDifference(DifferencePosition differenceMatchStart, int lineHeight, int rightOffset) {
 
-        DiffContentPanel rightPane = master.getEditorPane2();
-        DiffContentPanel leftPane = master.getEditorPane1();
-        
         Difference diff = differenceMatchStart.getDiff();
         boolean matchStart = differenceMatchStart.isStart();
-        
-        EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(leftPane.getEditorPane());
         
         int value;
         int valueSecond;
         if (matchStart) {
-            value = diff.getFirstStart() * editorUI.getLineHeight();        // kde zacina prva, 180
-            valueSecond = diff.getSecondStart() * editorUI.getLineHeight(); // kde by zacinala druha, napr. 230
+            value = diff.getFirstStart() * lineHeight;        // kde zacina prva, 180
+            valueSecond = diff.getSecondStart() * lineHeight; // kde by zacinala druha, napr. 230
         } else {
             if (diff.getType() == Difference.ADD) {
-                value = diff.getFirstStart() * editorUI.getLineHeight();        // kde zacina prva, 180
-                value -= editorUI.getLineHeight();
-                valueSecond = diff.getSecondEnd() * editorUI.getLineHeight(); // kde by zacinala druha, napr. 230
+                value = diff.getFirstStart() * lineHeight;        // kde zacina prva, 180
+                value -= lineHeight;
+                valueSecond = diff.getSecondEnd() * lineHeight; // kde by zacinala druha, napr. 230
             } else {
-                value = diff.getFirstEnd() * editorUI.getLineHeight();        // kde zacina prva, 180
+                value = diff.getFirstEnd() * lineHeight;        // kde zacina prva, 180
                 if (diff.getType() == Difference.DELETE) {
-                    value += editorUI.getLineHeight();
-                    valueSecond = diff.getSecondStart() * editorUI.getLineHeight(); // kde by zacinala druha, napr. 230
+                    value += lineHeight;
+                    valueSecond = diff.getSecondStart() * lineHeight; // kde by zacinala druha, napr. 230
                 } else {
-                    valueSecond = diff.getSecondEnd() * editorUI.getLineHeight(); // kde by zacinala druha, napr. 230
+                    valueSecond = diff.getSecondEnd() * lineHeight; // kde by zacinala druha, napr. 230
                 }
             }
         }
 
         // druha je na 400
-        int currentSecond = rightPane.getScrollPane().getVerticalScrollBar().getValue();
-        int secondOffset = currentSecond - valueSecond;
+        int secondOffset = rightOffset - valueSecond;
         
         value += secondOffset;
-        if (diff.getType() == Difference.ADD) value += editorUI.getLineHeight();
-        if (diff.getType() == Difference.DELETE) value -= editorUI.getLineHeight();
+        if (diff.getType() == Difference.ADD) value += lineHeight;
+        if (diff.getType() == Difference.DELETE) value -= lineHeight;
         
-        leftPane.getScrollPane().getVerticalScrollBar().setValue(value);
-        return value - rightPane.getScrollPane().getVerticalScrollBar().getValue();
+        return value;
     }
-
-    private DifferencePosition findDifferenceToMatch() {
+    
+    private DifferencePosition findDifferenceToMatch(int rightOffset, int rightViewportHeight) {
         
-        DiffContentPanel rightPane = master.getEditorPane2();
-
         DecoratedDifference candidate = null;
-        Rectangle rightClip = rightPane.getScrollPane().getViewport().getViewRect();
         
         DecoratedDifference [] diffs = getDecorations();
         for (DecoratedDifference dd : diffs) {
-            if (dd.getTopRight() > rightClip.y + rightClip.height) break;
-            if (dd.getBottomRight() != -1 && dd.getBottomRight() <= rightClip.y) continue;
+            if (dd.getTopRight() > rightOffset + rightViewportHeight) break;
+            if (dd.getBottomRight() != -1 && dd.getBottomRight() <= rightOffset) continue;
             if (candidate != null) {
                 if (candidate.getDiff().getType() == Difference.DELETE) {
                     candidate = dd;
-                } else if (candidate.getTopRight() < rightClip.y) { 
+                } else if (candidate.getTopRight() < rightOffset) { 
                     candidate = dd;
-                } else if (dd.getTopRight() <= rightClip.y + rightClip.height / 2) { 
+                } else if (dd.getTopRight() <= rightOffset + rightViewportHeight / 2) { 
                     candidate = dd;
                 }
             } else {
@@ -436,7 +416,8 @@ class DiffViewManager implements ChangeListener {
             }
         }
         if (candidate == null) return null;
-        boolean matchStart = candidate.getTopRight() > rightClip.y + rightClip.height / 3; 
+        boolean matchStart = candidate.getTopRight() > rightOffset + rightViewportHeight / 2;
+        if (candidate.getDiff().getType() == Difference.DELETE && candidate == diffs[diffs.length -1]) matchStart = false;
         return new DifferencePosition(candidate.getDiff(), matchStart);
     }
 
@@ -539,4 +520,87 @@ class DiffViewManager implements ChangeListener {
             return attrs;
         }
     }
+
+    /**
+     * Java StringTokenizer does not work if the very first character is a delimiter.
+     */
+    private static class CorrectRowTokenizer {
+        
+        private final String s;
+        private int idx;
+
+        public CorrectRowTokenizer(String s) {
+            this.s = s;
+        }
+
+        public String nextToken() {
+            String token = null;
+            for (int end = idx; end < s.length(); end++) {
+                if (s.charAt(end) == '\n') {
+                    token = s.substring(idx, end);
+                    idx = end + 1;
+                    break;
+                }
+            }
+            return token;
+        }
+    }
+
+    private class ScrollMapCached {
+        
+        private int     rightPanelHeightCached;
+        private int []  scrollMapCached;
+        private int     diffSerialCached;
+
+        public synchronized int[] getScrollMap(int rightPanelHeight, int diffSerial) {
+            if (rightPanelHeight != rightPanelHeightCached || diffSerialCached != diffSerial || scrollMapCached == null) {
+                diffSerialCached = diffSerial;
+                rightPanelHeightCached = rightPanelHeight;
+                scrollMapCached = compute();
+            }
+            return scrollMapCached;
+        }
+
+        private int [] compute() {
+            DiffContentPanel rightPane = master.getEditorPane2();
+
+            int rightViewportHeight = rightPane.getScrollPane().getViewport().getViewRect().height; 
+            int rightHeight = rightPane.getEditorPane().getSize().height;
+        
+            EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(leftContentPanel.getEditorPane());
+            int lineHeight = editorUI.getLineHeight();
+        
+            int [] scrollMap = new int[rightHeight];
+            int lastOffset = 0;
+            for (int rightOffset = 0; rightOffset < rightHeight; rightOffset++) {
+                DifferencePosition dpos = findDifferenceToMatch(rightOffset, rightViewportHeight);
+                int leftOffset;
+                if (dpos == null) {
+                    leftOffset = lastOffset + rightOffset;
+                } else {
+                    leftOffset = computeLeftOffsetToMatchDifference(dpos, lineHeight, rightOffset);
+                    lastOffset = leftOffset - rightOffset;
+                }
+                scrollMap[rightOffset] = leftOffset;
+            }
+            scrollMap = smooth(scrollMap);
+            return scrollMap;
+        }
+
+        private int[] smooth(int[] map) {
+            int [] newMap = new int [map.length];
+            int leftShift = 0;
+            for (int i = 0; i < map.length; i++) {
+                int leftOffset = map[i];
+                int requestedShift = leftOffset - i; 
+                if (requestedShift > leftShift) {
+                    leftShift++;
+                } else if (requestedShift < leftShift) {
+                    leftShift--;
+                }
+                newMap[i] = i + leftShift;
+            }
+            return newMap;
+        }
+    }        
 }
