@@ -402,7 +402,11 @@ class DiffViewManager implements ChangeListener {
         DecoratedDifference [] diffs = getDecorations();
         for (DecoratedDifference dd : diffs) {
             if (dd.getTopRight() > rightOffset + rightViewportHeight) break;
-            if (dd.getBottomRight() != -1 && dd.getBottomRight() <= rightOffset) continue;
+            if (dd.getBottomRight() != -1) {
+                if (dd.getBottomRight() <= rightOffset) continue;
+            } else {
+                if (dd.getTopRight() <= rightOffset) continue;
+            }
             if (candidate != null) {
                 if (candidate.getDiff().getType() == Difference.DELETE) {
                     candidate = dd;
@@ -417,6 +421,7 @@ class DiffViewManager implements ChangeListener {
         }
         if (candidate == null) return null;
         boolean matchStart = candidate.getTopRight() > rightOffset + rightViewportHeight / 2;
+        if (candidate.getDiff().getType() == Difference.DELETE && candidate.getTopRight() < rightOffset + rightViewportHeight * 4 / 5) matchStart = false;
         if (candidate.getDiff().getType() == Difference.DELETE && candidate == diffs[diffs.length -1]) matchStart = false;
         return new DifferencePosition(candidate.getDiff(), matchStart);
     }
@@ -590,13 +595,18 @@ class DiffViewManager implements ChangeListener {
         private int[] smooth(int[] map) {
             int [] newMap = new int [map.length];
             int leftShift = 0;
+            float correction = 0.0f;
             for (int i = 0; i < map.length; i++) {
                 int leftOffset = map[i];
                 int requestedShift = leftOffset - i; 
                 if (requestedShift > leftShift) {
-                    leftShift++;
+                    if (correction > requestedShift - leftShift) correction = requestedShift - leftShift;
+                    leftShift += correction;
+                    correction += 0.02f;
                 } else if (requestedShift < leftShift) {
-                    leftShift--;
+                    leftShift -= 1;
+                } else {
+                    correction = 1.0f;
                 }
                 newMap[i] = i + leftShift;
             }
