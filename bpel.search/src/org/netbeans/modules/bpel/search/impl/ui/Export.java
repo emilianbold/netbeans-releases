@@ -105,9 +105,8 @@ class Export extends PrintUI {
     c.weighty = 1.0;
     c.gridwidth = 2;
     c.fill = GridBagConstraints.BOTH;
-    myTextArea = new JTextArea(TEXT_HEIGHT, TEXT_WIDTH);
-    JScrollPane scrollPanel = new JScrollPane(myTextArea);
-    panel.add(scrollPanel, c);
+    myTextArea = new JTextArea(TEXT_HEIGHT, 1);
+    panel.add(new JScrollPane(myTextArea), c);
 
     // []
     c.gridy++;
@@ -252,7 +251,7 @@ class Export extends PrintUI {
   protected DialogDescriptor createDescriptor()
   {
     myDescriptor = new DialogDescriptor(
-      getPanel(),
+      createMainPanel(),
       i18n("LBL_Export_Title") // NOI18N
     );
     return myDescriptor;
@@ -322,6 +321,6 @@ class Export extends PrintUI {
   private static final String HTML_EXT = ".html"; // NOI18N
   private static final String RESULT = "result.html"; // NOI18N
 
-  private static final int TEXT_HEIGHT = 5;
+  private static final int TEXT_HEIGHT = 10;
   private static final int TEXT_WIDTH = 30;
 }
