@@ -25,7 +25,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
@@ -57,7 +56,6 @@ import org.netbeans.modules.uml.ui.products.ad.compartments.IADNameCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.IADStereotypeCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.IConnectorsCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.ILifelineNameCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.IStereotypeCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.LifelineConnectorLocation;
 import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.lifelinepieces.ConnectorPiece;
 import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.lifelinepieces.LifelinePiecesKind;
@@ -65,7 +63,6 @@ import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.life
 import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.lifelinepieces.LifelinePiece;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.IADSequenceDiagEngine;
 import org.netbeans.modules.uml.ui.products.ad.drawengines.ETDrawEngine;
-import org.netbeans.modules.uml.ui.products.ad.drawengines.ETNodeDrawEngine;
 import org.netbeans.modules.uml.ui.products.ad.drawengines.MouseQuadrantEnum;
 import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETNode;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.IETGraphObjectUI;
@@ -75,47 +72,33 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.MoveToFlags;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchive;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveDefinitions;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveElement;
-import org.netbeans.modules.uml.ui.support.umltsconversions.RectConversions;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETRectEx;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.GDISupport;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETNode;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETNodeUI;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ILabelManager;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTargets;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IStickFigureCompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ITSGraphObject;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ModelElementChangedKind;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.PointConversions;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.PresentationHelper;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramEngine;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import org.netbeans.modules.uml.ui.swing.drawingarea.diagramtools.SmartDragTool;
-//import com.sun.corba.se.connection.GetEndPointInfoAgainException;
 import com.tomsawyer.drawing.TSConnector;
 import com.tomsawyer.drawing.TSDEdge;
 import com.tomsawyer.drawing.TSDNode;
-import com.tomsawyer.editor.TSEColor;
-import com.tomsawyer.editor.TSEConnector;
 import com.tomsawyer.editor.TSEEdge;
 import com.tomsawyer.editor.TSENode;
-//import com.tomsawyer.editor.state.TSEReconnectEdgeState;
 import com.tomsawyer.editor.tool.TSEReconnectEdgeTool;
 import com.tomsawyer.graph.TSEdge;
 import com.tomsawyer.graph.TSGraphObject;
 import com.tomsawyer.graph.TSNode;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSConstRect;
-import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSRect;
-import com.tomsawyer.drawing.geometry.TSRect;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
 import java.awt.GradientPaint;
 import org.netbeans.modules.uml.core.support.Debug;
@@ -483,10 +466,20 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
      */
     public void createCompartments() throws ETException
     {
+       // Fixed issue 82208, 82207
+       // get the flag which indicates if this lifeline is a actor lifeline.
+       // If the lifeline is an actor lifeline or representes an actor classifier,
+       // then add a stickFigureCompartment
+       boolean isActorLifeline = false;
+       ILifeline lifeline = getLifeline(); 
+       if (lifeline != null)
+       {
+          isActorLifeline = lifeline.getIsActorLifeline();
+       }
         String currentModelElementType = getRepresentsMetaType();
         
         // Process the stick figure compartment, if necessary
-        if(currentModelElementType.equals("Actor") == true)
+        if (currentModelElementType.equals("Actor") || isActorLifeline)
         {
             ICompartment compartment = createAndAddCompartment("StickFigureCompartment", 0);
             if (compartment instanceof IStickFigureCompartment)

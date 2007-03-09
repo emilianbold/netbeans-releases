@@ -21,7 +21,6 @@
 package org.netbeans.modules.uml.ui.products.ad.diagramengines;
 
 import java.awt.event.ActionEvent;
-
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IAutonomousElement;
@@ -54,9 +53,6 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTarge
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import com.tomsawyer.editor.TSEGraph;
-
-//import com.tomsawyer.layout.property.*;
-//import com.tomsawyer.layout.glt.property.*;
 
 /**
  * 
@@ -208,7 +204,6 @@ public class ADDiagramCollaborationEngine extends ADCoreEngine implements IADCol
 	{
 		boolean bCancelThisElement = false;
 		IElement pChangedElement = null;
-		
 		boolean establishImport = false;
 	
 		ICombinedFragment combinedFragment = null;
@@ -224,11 +219,11 @@ public class ADDiagramCollaborationEngine extends ADCoreEngine implements IADCol
 			attribute = (IAttribute)pElementBeingDropped;
 	
 		IClassifier classifier = null;
-		if (pElementBeingDropped instanceof IClassifier)
+		if (pElementBeingDropped instanceof IClassifier) 
 			classifier = (IClassifier)pElementBeingDropped;
                 
-		if(pElementBeingDropped instanceof ILifeline ||
-                        pElementBeingDropped instanceof Comment) 
+		if (pElementBeingDropped instanceof ILifeline ||
+                      pElementBeingDropped instanceof Comment) 
                 {
                     establishImport = true;
                 }

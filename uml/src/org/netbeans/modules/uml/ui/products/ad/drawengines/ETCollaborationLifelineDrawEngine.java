@@ -24,7 +24,6 @@ package org.netbeans.modules.uml.ui.products.ad.drawengines;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.util.Iterator;
-
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
@@ -88,71 +87,70 @@ public class ETCollaborationLifelineDrawEngine extends ETNodeDrawEngine
 	}
 	
 	public long readFromArchive(IProductArchive pProductArchive, IProductArchiveElement pParentElement)
-	{
-      long retVal = super.readFromArchive(pProductArchive, pParentElement);
-		updateNameCompartmentRepresentsMetaType();
-		return retVal;
-	}
+        {
+           long retVal = super.readFromArchive(pProductArchive, pParentElement);
+           updateNameCompartmentRepresentsMetaType();
+           return retVal;
+        }
 	
-   /**
-    * Initializes our compartments.
-    *
-    * @param pElement [in] The presentation element we are representing
-    */
-   public void initCompartments(IPresentationElement presEle)
-   {
-      // We may get here with no compartments.  This happens if we've been created
-      // by the user.  If we read from a file then the compartments have been pre-created and
-      // we just need to initialize them.
-      int count = getNumCompartments();
-      if (count == 0)
-      {
-         try
-         {
-            createCompartments();
-         }
-         catch (Exception e)
-         {
-            Log.stackTrace(e);
-         }
-      }
-      else
-      {
-         String modEleType = getRepresentsMetaType();
-         if (modEleType != null && modEleType.equals("Actor"))
-         {
-            IStickFigureCompartment sfComp = getCompartmentByKind(IStickFigureCompartment.class);
-            if (sfComp == null)
-            {
-               createAndAddCompartment("StickFigureCompartment", -1);
-            }
-         }
-      }
-      
-      // Enhancement W6120:  Process the stereotype compartment
-      IStereotypeCompartment stereoComp = getCompartmentByKind(IStereotypeCompartment.class);
-      if (stereoComp != null)
-      {
-         stereoComp.setEngine(this);
-      }
-      
-      updateStereotypeCompartment();
-      
-      ILifelineNameCompartment lifeComp = getCompartmentByKind(ILifelineNameCompartment.class);
-      if (lifeComp != null)
-      {
-         IElement modEle = presEle.getFirstSubject();
-         if (modEle != null)
-         {
-            // Attach the model element to the compartment
-            lifeComp.addModelElement(modEle, -1);
-         }
-         setDefaultCompartment(lifeComp);
-      }
-
-      // Fix W2987:  Make sure the representing metatype is updated properly
-      updateNameCompartmentRepresentsMetaType();
-   }
+        /**
+         * Initializes our compartments.
+         *
+         * @param pElement [in] The presentation element we are representing
+         */
+        public void initCompartments(IPresentationElement presEle)
+        {
+           // We may get here with no compartments.  This happens if we've been created
+           // by the user.  If we read from a file then the compartments have been pre-created and
+           // we just need to initialize them.
+           int count = getNumCompartments();
+           if (count == 0)
+           {
+              try
+              {
+                 createCompartments();
+              }
+              catch (Exception e)
+              {
+                 Log.stackTrace(e);
+              }
+           }
+           else
+           {
+              String modEleType = getRepresentsMetaType();
+              if (modEleType != null && modEleType.equals("Actor"))
+              {
+                 IStickFigureCompartment sfComp = getCompartmentByKind(IStickFigureCompartment.class);
+                 if (sfComp == null)
+                 {
+                    createAndAddCompartment("StickFigureCompartment", -1);
+                 }
+              }
+           }
+           
+           // Enhancement W6120:  Process the stereotype compartment
+           IStereotypeCompartment stereoComp = getCompartmentByKind(IStereotypeCompartment.class);
+           if (stereoComp != null)
+           {
+              stereoComp.setEngine(this);
+              updateStereotypeCompartment();
+           }
+           
+           ILifelineNameCompartment lifeComp = getCompartmentByKind(ILifelineNameCompartment.class);
+           if (lifeComp != null)
+           {
+              IElement modEle = presEle.getFirstSubject();
+              if (modEle != null)
+              {
+                 // Attach the model element to the compartment
+                 lifeComp.addModelElement(modEle, -1);
+              }
+              setDefaultCompartment(lifeComp);
+           }
+           
+           // Fix W2987:  Make sure the representing metatype is updated properly
+           updateNameCompartmentRepresentsMetaType();
+        }
    
 	public void initCompartments()
 	{
@@ -162,43 +160,56 @@ public class ETCollaborationLifelineDrawEngine extends ETNodeDrawEngine
 	}
 	
 	public void createCompartments() throws ETException
-	{
-		IETGraphObjectUI parentUI =  this.getParent();
-
-		if (parentUI.getOwner() != null) 
-		{
-			if (parentUI.getModelElement() != null)
-			{
-				IElement element = parentUI.getModelElement();
-				try 
-				{
-					String currentModelElementType = getRepresentsMetaType();
-					if(currentModelElementType.equals("Actor") == true)
-					{
-						createAndAddCompartment("StickFigureCompartment", 0);
-					}
-					else
-					{
-						createAndAddCompartment("StereotypeCompartment", 0);
-						updateStereotypeCompartment();
-					}
-
-					ICompartment pLifelineNameCompartment = createAndAddCompartment("LifelineNameCompartment", 0);
-					setDefaultCompartment(pLifelineNameCompartment);
-					
-					updateNameCompartment();
-					updateNameCompartmentRepresentsMetaType();
-				} catch (Exception e) 
-				{
-					throw new ETException(ETStrings.E_CMP_CREATE_FAILED, e.getMessage());
-				}
-			}
-			else 
-			{
-				this.initCompartments();
-			}
-		}
-	}
+        {
+           IETGraphObjectUI parentUI =  this.getParent();
+           boolean isActorLifeline = false;
+           
+           if (parentUI.getOwner() != null)
+           {
+              if (parentUI.getModelElement() != null)
+              {
+                 IElement element = parentUI.getModelElement();
+                 
+                 
+                 try
+                 {
+                    // Fixed issue 82208, 82207
+                    // get the flag which indicates if this lifeline is a actor lifeline.
+                    // If the lifeline is an actor lifeline or representes an actor classifier,
+                    // then add a stickFigureCompartment
+                    if (element instanceof ILifeline)
+                    {
+                       isActorLifeline = ((ILifeline)element).getIsActorLifeline();
+                    }
+                    
+                    String currentModelElementType = getRepresentsMetaType();
+                    if(currentModelElementType.equals("Actor") || isActorLifeline)
+                    {
+                       createAndAddCompartment("StickFigureCompartment", 0);
+                    }
+                    else
+                    {
+                       createAndAddCompartment("StereotypeCompartment", 0);
+                       updateStereotypeCompartment();
+                    }
+                    
+                    ICompartment pLifelineNameCompartment = createAndAddCompartment("LifelineNameCompartment", 0);
+                    setDefaultCompartment(pLifelineNameCompartment);
+                    
+                    updateNameCompartment();
+                    updateNameCompartmentRepresentsMetaType();
+                 }
+                 catch (Exception e)
+                 {
+                    throw new ETException(ETStrings.E_CMP_CREATE_FAILED, e.getMessage());
+                 }
+              }
+              else
+              {
+                 this.initCompartments();
+              }
+           }
+        }
 	
 	public void doDraw(IDrawInfo pDrawInfo)
 	{
@@ -295,13 +306,15 @@ public class ETCollaborationLifelineDrawEngine extends ETNodeDrawEngine
 	{
 		String retVal = "";
 
-		/*      
+		// Fixed issue 82208, 82207
+                // get the flag which indicates if this lifeline is a actor lifeline.
+                // If the lifeline is an actor lifeline or representes an actor classifier,
+                // then add a stickFigureCompartment to the lifeline      
 		IClassifier classifier = getRepresentingClassifier();
 		if(classifier != null)
 		{
 			retVal = classifier.getElementType();
 		}
-		*/
       
 		if((retVal == null) || (retVal.length() <= 0))
 		{
