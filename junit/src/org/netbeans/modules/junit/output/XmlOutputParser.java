@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -156,11 +156,7 @@ final class XmlOutputParser extends DefaultHandler {
                 }
                 if (state >= 0) {     //i.e. the element is "failure" or "error"
                     assert testcase != null;
-                    
-                    trouble = createTroubleReport(
-                            state == STATE_ERROR,
-                            attrs.getValue("type"),
-                            attrs.getValue("message"));
+                    trouble = new Report.Trouble(state == STATE_ERROR);
                 }
                 break;  //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="STATE_OUT_OF_SCOPE">
@@ -235,8 +231,8 @@ final class XmlOutputParser extends DefaultHandler {
                 assert testcase != null;
                 assert trouble != null;
                 if (charactersBuf != null) {
-                   trouble.stackTrace = getStackTrace(charactersBuf.toString());
-                   charactersBuf = null;
+                    parseTroubleReport(charactersBuf.toString(), trouble);
+                    charactersBuf = null;
                 }
                 testcase.trouble = trouble;
                 trouble = null;
@@ -339,18 +335,6 @@ final class XmlOutputParser extends DefaultHandler {
     
     /**
      */
-    private Report.Trouble createTroubleReport(boolean error,
-                                               String exceptionClsName,
-                                               String message) {
-        Report.Trouble trouble = new Report.Trouble(error);
-        trouble.exceptionClsName = exceptionClsName;
-        trouble.message = message;
-        
-        return trouble;
-    }
-    
-    /**
-     */
     public void characters(char[] ch,
                            int start,
                            int length) throws SAXException {
@@ -369,45 +353,16 @@ final class XmlOutputParser extends DefaultHandler {
     
     /**
      */
-    private String[] getStackTrace(String string) {
-        final String[] lines = string.split("[\\r\\n]+");               //NOI18N
-        
-        int startIndex = -1;
-        int endIndex = -1;
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            String trimmed = RegexpUtils.specialTrim(line);
-            if (trimmed.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX)
-                   && regexp.getCallstackLinePattern().matcher(line).matches()){
-                lines[i] = trimmed.substring(
-                        RegexpUtils.CALLSTACK_LINE_PREFIX.length());
-                if (startIndex == -1) {
-                    startIndex = i;
-                }
-            } else {
-                lines[i] = null;
-                if (startIndex != -1) {
-                    endIndex = i;
-                    break;
-                }
+    private void parseTroubleReport(String report, Report.Trouble trouble) {
+        final String[] lines = report.split("[\\r\\n]+");               //NOI18N
+
+        TroubleParser troubleParser = new TroubleParser(trouble, regexp);
+        for (String line : lines) {
+            if (troubleParser.processMessage(line)) {
+                return;
             }
         }
-        if (startIndex == -1) {                 //no callstack line
-            return null;
-        }
-        if (endIndex == -1) {
-            endIndex = lines.length;
-        }
-        
-        String[] stacktrace;
-        if ((startIndex == 0) && (endIndex == lines.length)) {
-            stacktrace = lines;
-        } else {
-            int count = endIndex - startIndex;
-            stacktrace = new String[count];
-            System.arraycopy(lines, startIndex, stacktrace, 0, count);
-        }
-        return stacktrace;
+        troubleParser.finishProcessing();
     }
     
     /**

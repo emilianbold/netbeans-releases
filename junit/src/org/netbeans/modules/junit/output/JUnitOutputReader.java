@@ -28,15 +28,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.Calendar.MILLISECOND;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import org.apache.tools.ant.module.spi.AntEvent;
@@ -53,6 +50,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
+import static java.util.Calendar.MILLISECOND;
+import static org.netbeans.modules.junit.output.RegexpUtils.NESTED_EXCEPTION_PREFIX;
+import static org.netbeans.modules.junit.output.RegexpUtils.OUTPUT_DELIMITER_PREFIX;
+import static org.netbeans.modules.junit.output.RegexpUtils.TESTCASE_PREFIX;
+import static org.netbeans.modules.junit.output.RegexpUtils.TESTSUITE_PREFIX;
+import static org.netbeans.modules.junit.output.RegexpUtils.TESTSUITE_STATS_PREFIX;
+import static org.netbeans.modules.junit.output.RegexpUtils.XML_DECL_PREFIX;
 
 /**
  * Obtains events from a single session of an Ant <code>junit</code> task
@@ -130,10 +134,9 @@ final class JUnitOutputReader {
     /** */
     private Report.Trouble trouble;
     /** */
-    private String suiteName;
-    
+    private TroubleParser troubleParser;
     /** */
-    private List<String> callstackBuffer;
+    private String suiteName;
     
     /** */
     private StringBuffer xmlOutputBuffer;
@@ -231,7 +234,7 @@ final class JUnitOutputReader {
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="if (readingOutputReport) ...">
         if (readingOutputReport) {
-            if (msg.startsWith(RegexpUtils.OUTPUT_DELIMITER_PREFIX)) {
+            if (msg.startsWith(OUTPUT_DELIMITER_PREFIX)) {
                 Matcher matcher = regexp.getOutputDelimPattern().matcher(msg);
                 if (matcher.matches() && (matcher.group(1) == null)) {
                     readingOutputReport = false;
@@ -241,66 +244,32 @@ final class JUnitOutputReader {
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="if (trouble != null) ...">
         if (trouble != null) {
-            Matcher matcher;
-            if (trouble.exceptionClsName == null) {
-                matcher = regexp.getTestcaseExceptionPattern().matcher(msg);
-                if (matcher.matches()) {
-                    trouble.exceptionClsName = matcher.group(1);
-                    String exceptionMsg = matcher.group(2);
-                    if (exceptionMsg != null) {
-                        trouble.message = exceptionMsg;
-                    }
-                }
-                return;     //ignore other texts until
-                            //we get exception class name
+            if (troubleParser == null) {
+                troubleParser = new TroubleParser(trouble, regexp);
             }
-            String trimmed = RegexpUtils.specialTrim(msg);
-            if (trimmed.length() == 0) {
-                if (callstackBuffer != null) {
-                    
-                    /* finalize the trouble and clear buffers: */
-                    trouble.stackTrace = callstackBuffer.toArray(
-                                            new String[callstackBuffer.size()]);
-                    callstackBuffer = null;
+            if (troubleParser.processMessage(msg)) {
+                troubleParser = null;
+                
+                if ((trouble.stackTrace != null) && (trouble.stackTrace.length != 0)) {
+                    setClasspathSourceRoots();
                 }
-                report.reportTest(testcase);
 
+                report.reportTest(testcase);
+                
                 trouble = null;
                 testcase = null;
-                return;
             }
-            if (trimmed.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX_CATCH)) {
-                trimmed = trimmed.substring(
-                              RegexpUtils.CALLSTACK_LINE_PREFIX_CATCH.length());
-            }
-            if (trimmed.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX)) {
-                matcher = regexp.getCallstackLinePattern().matcher(msg);
-                if (matcher.matches()) {
-                    if (callstackBuffer == null) {
-                        callstackBuffer = new ArrayList<String>(8);
-                    }
-                    callstackBuffer.add(
-                            trimmed.substring(
-                                   RegexpUtils.CALLSTACK_LINE_PREFIX.length()));
-                    setClasspathSourceRoots();
-                    return;
-                }
-            }
-            if ((callstackBuffer == null) && (trouble.message != null)) {
-                trouble.message = trouble.message + '\n' + msg;
-            }
-            /* else: just ignore the text */
             return;
         }//</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="TESTCASE_PREFIX">
-        if (msg.startsWith(RegexpUtils.TESTCASE_PREFIX)) {
+        if (msg.startsWith(TESTCASE_PREFIX)) {
 
             if (report == null) {
                 return;
             }
             
-            String header = msg.substring(RegexpUtils.TESTCASE_PREFIX.length());
+            String header = msg.substring(TESTCASE_PREFIX.length());
             
             boolean success =
                 lastHeaderBrief
@@ -313,7 +282,7 @@ final class JUnitOutputReader {
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="OUTPUT_DELIMITER_PREFIX">
-        else if (msg.startsWith(RegexpUtils.OUTPUT_DELIMITER_PREFIX)
+        else if (msg.startsWith(OUTPUT_DELIMITER_PREFIX)
                 && regexp.getOutputDelimPattern().matcher(msg).matches()) {
             if (report == null) {
                 return;
@@ -321,7 +290,7 @@ final class JUnitOutputReader {
             readingOutputReport = true;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="XML_DECL_PREFIX">
-        else if (expectXmlReport && msg.startsWith(RegexpUtils.XML_DECL_PREFIX)) {
+        else if (expectXmlReport && msg.startsWith(XML_DECL_PREFIX)) {
             Matcher matcher = regexp.getXmlDeclPattern().matcher(msg.trim());
             if (matcher.matches()) {
                 suiteStarted(null);
@@ -331,16 +300,15 @@ final class JUnitOutputReader {
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_PREFIX">
-        else if (msg.startsWith(RegexpUtils.TESTSUITE_PREFIX)) {
-            suiteName = msg.substring(RegexpUtils.TESTSUITE_PREFIX
-                                             .length());
+        else if (msg.startsWith(TESTSUITE_PREFIX)) {
+            suiteName = msg.substring(TESTSUITE_PREFIX.length());
             if (regexp.getFullJavaIdPattern().matcher(suiteName).matches()){
                 suiteStarted(suiteName);
                 report.resultsDir = determineResultsDir(event);
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_STATS_PREFIX">
-        else if (msg.startsWith(RegexpUtils.TESTSUITE_STATS_PREFIX)) {
+        else if (msg.startsWith(TESTSUITE_STATS_PREFIX)) {
 
             if (report == null) {
                 return;
@@ -826,6 +794,7 @@ final class JUnitOutputReader {
             testcase.timeMillis = timeMillis;
             
             trouble = null;
+            troubleParser = null;
             
             return true;
         } else {
@@ -917,11 +886,11 @@ final class JUnitOutputReader {
             suiteFinished(report);
         }
         
-        callstackBuffer = null;
         xmlOutputBuffer = null;
         readingOutputReport = false;
         testcase = null;
         trouble = null;
+        troubleParser = null;
         report = null;
         testsuiteStatsKnown = false;
     }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -88,6 +88,11 @@ final class RegexpUtils {
               + RegexpPatterns.JAVA_ID_REGEX + "(?:\\."                 //NOI18N
               + RegexpPatterns.JAVA_ID_REGEX + ")+"                     //NOI18N
               + "(?: ?\\([^()]+\\))?";                                  //NOI18N
+    /** */
+    static final String NESTED_EXCEPTION_PREFIX = "Caused by: ";        //NOI18N
+    /** */
+    static final String NESTED_EXCEPTION_REGEX
+            = "(" + RegexpPatterns.JAVA_ID_REGEX_FULL + ")(?:: (.*))?";//NOI18N
     static final String LOCATION_IN_FILE_REGEX
             = RegexpPatterns.JAVA_ID_REGEX_FULL + "(?:\\:[0-9]+)?";     //NOI18N
     /** */
@@ -159,6 +164,7 @@ final class RegexpUtils {
     private volatile Pattern fullJavaIdPattern, suiteStatsPattern, 
                              outputDelimPattern, testcaseIssuePattern,
                              testcaseExceptPattern, callstackLinePattern,
+                             nestedExceptPattern,
                              locationInFilePattern,
                              testcaseHeaderBriefPattern,
                              testcaseHeaderPlainPattern,
@@ -234,6 +240,15 @@ final class RegexpUtils {
             testcaseExceptPattern = Pattern.compile(TESTCASE_EXCEPTION_REGEX);
         }
         return testcaseExceptPattern;
+    }
+    
+    /**
+     */
+    Pattern getNestedExceptionPattern() {
+        if (nestedExceptPattern == null) {
+            nestedExceptPattern = Pattern.compile(NESTED_EXCEPTION_REGEX);
+        }
+        return nestedExceptPattern;
     }
     
     /** */
