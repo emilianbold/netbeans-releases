@@ -2011,6 +2011,7 @@ public class CasualDiff {
                         copyTo(localPointer, pos[0], printer);
                     }
                     copyTo(pos[0], localPointer = pos[1], printer);
+                    lastdel = null;
                     ++i;
                     break;
                 }

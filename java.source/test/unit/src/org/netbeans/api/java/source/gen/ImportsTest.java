@@ -45,28 +45,28 @@ public class ImportsTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(ImportsTest.class);
-        suite.addTest(new ImportsTest("testAddFirst"));
-        suite.addTest(new ImportsTest("testAddFirstAgain"));
-        suite.addTest(new ImportsTest("testAddSecondImport"));
-        suite.addTest(new ImportsTest("testAddSecondImportWithEndLineCmt"));
-        suite.addTest(new ImportsTest("testAddTwoImportsOrigWithComment"));
-        suite.addTest(new ImportsTest("testAddBetweenImports"));
-        suite.addTest(new ImportsTest("testRemoveBetweenImportsWithLineEndComment"));
-        suite.addTest(new ImportsTest("testRemoveAllImports"));
-        suite.addTest(new ImportsTest("testRemoveAllImports2"));
-        suite.addTest(new ImportsTest("testAddFirstTwo"));
-        suite.addTest(new ImportsTest("testAddFirstToExisting"));
-        suite.addTest(new ImportsTest("testRemoveInnerImport"));
-        suite.addTest(new ImportsTest("testEmptyLines"));
-        suite.addTest(new ImportsTest("testIndentedImport"));
-        suite.addTest(new ImportsTest("testIndentedImport2"));
+        suite.addTestSuite(ImportsTest.class);
+//        suite.addTest(new ImportsTest("testAddFirst"));
+//        suite.addTest(new ImportsTest("testAddFirstAgain"));
+//        suite.addTest(new ImportsTest("testAddSecondImport"));
+//        suite.addTest(new ImportsTest("testAddSecondImportWithEndLineCmt"));
+//        suite.addTest(new ImportsTest("testAddTwoImportsOrigWithComment"));
+//        suite.addTest(new ImportsTest("testAddBetweenImports"));
+//        suite.addTest(new ImportsTest("testRemoveBetweenImportsWithLineEndComment"));
+//        suite.addTest(new ImportsTest("testRemoveAllImports"));
+//        suite.addTest(new ImportsTest("testRemoveAllImports2"));
+//        suite.addTest(new ImportsTest("testAddFirstTwo"));
+//        suite.addTest(new ImportsTest("testAddFirstToExisting"));
+//        suite.addTest(new ImportsTest("testRemoveInnerImport"));
+//        suite.addTest(new ImportsTest("testEmptyLines"));
+//        suite.addTest(new ImportsTest("testIndentedImport"));
+//        suite.addTest(new ImportsTest("testIndentedImport2"));
 //        suite.addTest(new ImportsTest("testUnformatted"));
-        suite.addTest(new ImportsTest("testMissingNewLine"));
-        suite.addTest(new ImportsTest("testRemoveAllInDefault"));
-        suite.addTest(new ImportsTest("testRemoveAllInDefault2"));
-        suite.addTest(new ImportsTest("testRemoveAfterEmpty"));
-        suite.addTest(new ImportsTest("testRemoveBeforeEmpty"));
+//        suite.addTest(new ImportsTest("testMissingNewLine"));
+//        suite.addTest(new ImportsTest("testRemoveAllInDefault"));
+//        suite.addTest(new ImportsTest("testRemoveAllInDefault2"));
+//        suite.addTest(new ImportsTest("testRemoveAfterEmpty"));
+//        suite.addTest(new ImportsTest("testRemoveBeforeEmpty"));
         return suite;
     }
 
@@ -670,10 +670,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n");
         String golden =
-            "package hierbas.del.litoral;\n" +
+            "package hierbas.del.litoral;" +
             "import java.util.List; // yerba mate\n" +
-            "import java.util.Collections;\n" +
-            "import static java.util.Arrays;" +
+            "import java.util.Collections;" +
+            "import static java.util.Arrays;\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
