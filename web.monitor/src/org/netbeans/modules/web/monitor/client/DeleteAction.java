@@ -13,18 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /**
- * DeleteAction.java
- *
- *
- * Created: Wed Mar  1 16:59:21 2000
- *
  * @author Ana von Klopp
- * @version
  */
 
 package org.netbeans.modules.web.monitor.client;
@@ -49,12 +43,6 @@ public class DeleteAction extends NodeAction {
      */
     public HelpCtx getHelpCtx() {
 	return HelpCtx.DEFAULT_HELP;
-    }
-
-    public void performAction() { 
-	Node[] nodes = getActivatedNodes();
-	MonitorAction.getController().deleteTransaction(nodes);
-	TransactionView.getInstance().blank();
     }
 
     public void performAction(Node[] nodes) { 

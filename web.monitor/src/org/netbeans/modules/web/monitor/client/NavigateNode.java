@@ -38,7 +38,7 @@ public class NavigateNode extends AbstractNode {
 
     public NavigateNode(Children ch) {
 	super(ch);
-	setIconBase("org/netbeans/modules/web/monitor/client/icons/folder"); //NOI18N
+	setIconBaseWithExtension("org/netbeans/modules/web/monitor/client/icons/folder.gif"); //NOI18N
 	setName(NbBundle.getBundle(NavigateNode.class).getString("MON_All_transactions_2"));
 	//initialize();
     }

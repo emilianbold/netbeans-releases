@@ -13,30 +13,22 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /**
- * MonitorRequestWrapper.java
- *
- *
- * Created: Tue Feb 27 18:32:32 2001
- *
  * @author Ana von Klopp
  * @author Simran Gleason
- * @version
  */
 
 package org.netbeans.modules.web.monitor.server;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 import javax.servlet.http.Cookie;

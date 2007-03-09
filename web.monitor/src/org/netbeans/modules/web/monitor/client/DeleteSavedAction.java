@@ -51,10 +51,6 @@ public class DeleteSavedAction extends NodeAction {
 	return HelpCtx.DEFAULT_HELP;
     }
 
-    public void performAction() { 
-	MonitorAction.getController().deleteDirectory(Controller.saveDirStr);
-    }
-
     public void performAction(Node[] node) { 
 	MonitorAction.getController().deleteDirectory(Controller.saveDirStr);
     }

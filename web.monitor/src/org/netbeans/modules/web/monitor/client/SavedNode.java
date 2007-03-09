@@ -13,18 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /**
- * SavedNode.java
- *
- *
- * Created: Fri May 19 17:04:22 2000
- *
  * @author Ana von Klopp
- * @version
  */
 
 package org.netbeans.modules.web.monitor.client;
@@ -38,7 +32,7 @@ public class SavedNode extends AbstractNode {
 
     public SavedNode(Children ch) {
 	super(ch);
-	setIconBase("org/netbeans/modules/web/monitor/client/icons/folder"); //NOI18N
+	setIconBaseWithExtension("org/netbeans/modules/web/monitor/client/icons/folder.gif"); //NOI18N
 	setName(NbBundle.getBundle(SavedNode.class).getString("MON_Saved_Transactions_22"));
     }
     protected SystemAction[] createActions () {

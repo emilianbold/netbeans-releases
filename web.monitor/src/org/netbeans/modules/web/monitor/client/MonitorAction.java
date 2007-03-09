@@ -33,7 +33,6 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
-import org.openide.windows.Workspace;
 import org.openide.windows.WindowManager;
 
 

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,8 +34,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import javax.swing.ActionMap;
-import javax.swing.Icon;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;     
@@ -50,8 +50,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;     
 import javax.swing.event.ChangeListener;    
 import javax.swing.event.ChangeEvent;    
-import javax.swing.text.DefaultEditorKit;
-
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -62,7 +60,6 @@ import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
 import org.netbeans.modules.web.monitor.data.DataRecord;
 
 /**
@@ -87,9 +84,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
     private transient  Dimension dataD = new Dimension(500, 400);
     private transient  Dimension tabD = new Dimension(500,472);
     
-    // Are we debugging?
-    private transient  final static boolean debug = false;
-
     // Display stuff 
     private transient static ExplorerManager mgr = null;
     private transient JPanel logPanel = null; 
@@ -141,7 +135,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_monitorDesc"));
 	this.getAccessibleContext().setAccessibleName(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_monitorName"));
 
-	if (debug) log ("Calling opentransactions from constructor"); // NOI18N
     }
 
     static synchronized TransactionView getInstance() { 
@@ -188,10 +181,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	OpenTransactionNodesRequest req = new
 	    OpenTransactionNodesRequest();
 	
-	if(debug) 
-	    log("OpenTransactionNodesRequest:: " +  // NOI18N
-			       "posting request..."); // NOI18N
-				     
 	RequestProcessor.Task t = 
 	    RequestProcessor.postRequest(req, 500); // wait a sec...
     }
@@ -203,15 +192,10 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
     class OpenTransactionNodesRequest implements Runnable {
 	
 	public void run() {
-	    if(debug) 
-		log("OpenTransactionNodesRequest:: " + // NOI18N
-				   "running..."); // NOI18N
 	    openTransactionNodes();
 	}
 
 	void openTransactionNodes() {
-	    if (debug) 
-		log("TransactionView::openTransactionNodes"); // NOI18N
 	    NavigateNode root = controller.getRoot();
 	    Children ch = root.getChildren();
 	    Node [] nodes = ch.getNodes();
@@ -225,20 +209,16 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	    Children currCh = cn.getChildren();
 	    Node [] currChNodes = currCh.getNodes();
 	    int numCN = currChNodes.length;
-	    if(debug)
-		log("TransactionView::openTransactionNodes. currCHNodes.length = " + numCN); // NOI18N
 	    if (numCN > 0) {
 		int selectThisOne = 0;
 		if (timeAButton.isSelected()) {
 		    selectThisOne = numCN - 1;
 		}
-		if(debug) log("TransactionView::openTransactionNodes. selecting node " + currChNodes[selectThisOne] + "("+selectThisOne+")"); // NOI18N
 		selectNode(currChNodes[selectThisOne]);
 	    } else {
 		Children savedCh = sn.getChildren();
 		Node [] savedChNodes = savedCh.getNodes();
 		int numSN = savedChNodes.length;
-		if(debug) log("TransactionView::openTransactionNodes. savedChNodes.length = " + numSN); // NOI18N
 		if (numSN > 0) {
 		    selectNode(savedChNodes[0]);
 		}
@@ -252,10 +232,7 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	    mgr.setSelectedNodes(new Node[] {n});
 	    
 	} catch (Exception exc) {
-	    if (debug) {
-		log("TransactionView::caught exception selecting node. " + exc); // NOI18N
-		exc.printStackTrace();
-	    }
+            Logger.getLogger(TransactionView.class.getName()).log(Level.INFO, "selectNode", exc);
 	} // safely ignored
     }
     
@@ -263,7 +240,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
      * Loads the transactions into the monitor on opening. */
     private boolean openedOnceAlready = false;
     public void open() {
-	if(debug) log("::open()"); //NOI18N
 	super.open();
 	//setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));	
 	if (!openedOnceAlready) {
@@ -471,7 +447,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
      * PENDING - register this as a listener for the display action
      */
     void displayTransaction(Node node) {
-	if(debug) log("Displaying a transaction. Node: "  + (node == null ? "null" : node.getName())); //NOI18N
 	if (node == null)
 	    return;
 
@@ -490,20 +465,15 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	    selectNode(null);
 	}
 	
-	if(debug) log("Set the selected node to\n" + // NOI18N
-					 (selected == null ? "null" : selected.toString())); // NOI18N
 	showData(); 
-	if(debug) log("Finished displayTransaction())"); // NOI18N
     }
 
     void saveTransaction(Node[] nodes) {
-	if(debug) log("In saveTransaction())"); // NOI18N
 	if((nodes == null) || (nodes.length == 0)) return;
 	controller.saveTransaction(nodes);
 	selected = null;
 	selectNode(null);
 	showData(); 
-	if(debug) log("Finished saveTransaction())"); // NOI18N
     }
     
     /**
@@ -522,15 +492,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 
     void showData() {
 	 
-	if(selected == null) {
-	    // PENDING
-	    if(debug) 
-		log("No selected node, why is this?"); // NOI18N
-	    if(debug) log("  Probably because user selected a non-transaction node (i.e. one of the folders. So we clear the display."); // NOI18N
-	}
-	
-	if(debug) log("Now in showData()"); // NOI18N
-	    
 	DataRecord dr = null;	    
 	try {
 	    if (selected != null) {
@@ -538,15 +499,8 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	    }
 	}
 	catch(Exception ex) {
-	    if(debug) log(ex.getMessage());
 	    ex.printStackTrace();
 	}
-	
-	if(debug) {
-	    log("Got this far"); // NOI18N
-	    log("displayType:" + String.valueOf(displayType)); // NOI18N
-	}
-	
 	
 	if (displayType == 0)
 	    requestDisplay.setData(dr);
@@ -563,7 +517,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 
 	this.repaint();
 	
-	if(debug) log("Finished showData()"); // NOI18N
     }
 
     /**
@@ -587,19 +540,13 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 		}
 		// Do nothing, this was not a proper node
 		catch(Exception e) {
-		    if(debug) {
-			log(e.getMessage());
-			e.printStackTrace();
-		    }
+                    Logger.getLogger(TransactionView.class.getName()).log(Level.INFO, "", e);
 		    selected = null;
-		    if(debug) 
-			log("Set the selected node to null"); // NOI18N
 		    showData();
 		    return;
 		}
 	    }
 	}
-	if(debug) log("Finished propertyChange()"); // NOI18N
     }
 
     /**
@@ -657,11 +604,6 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	//super.paint(g);
 	return;
     }
-
-    private void log(String s) {
-	System.out.println("TransactionView::" + s); //NOI18N
-    }
-
 
     public static final class ResolvableHelper implements Serializable {
         static final long serialVersionUID = 1234546018839457544L;

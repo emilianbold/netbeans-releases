@@ -60,11 +60,6 @@ public class DisplayAction extends NodeAction {
 	else return false;
     }
     
-    public void performAction() { 
-	Node[] nodes = getActivatedNodes();
-	TransactionView.getInstance().displayTransaction(nodes[0]);
-    }
-
     public void performAction(Node[] nodes) { 
 	TransactionView.getInstance().displayTransaction(nodes[0]);
     }

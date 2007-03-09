@@ -13,16 +13,11 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /**
- * ReplayAction.java
- *
- *
- * Created: Wed Mar  1 16:59:21 2000
- *
  * @author Ana von Klopp
  * @version
  */
@@ -54,11 +49,6 @@ public class ReplayAction extends NodeAction {
      public boolean enable(Node[] nodes) {
 	if(nodes != null && nodes.length == 1) return true;
 	else return false;
-    }
-
-    public void performAction() { 
-	Node[] nodes = getActivatedNodes();
-	MonitorAction.getController().replayTransaction(nodes[0]);
     }
 
     public void performAction(Node[] nodes) { 

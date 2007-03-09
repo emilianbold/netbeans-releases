@@ -13,17 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /**
- * ReloadAction.java
- *
- * Created on June 23, 2004, 9:55 AM
- *
  * @author  Stepan Herold
- * @version
  */
 
 package org.netbeans.modules.web.monitor.client;
@@ -48,12 +43,8 @@ public class ReloadAction extends NodeAction {
         return NbBundle.getBundle(ReloadAction.class).getString("MON_Reload_all");
     }
     
-    public void performAction() {
-        MonitorAction.getController().getTransactions();
-    }
-    
     protected void performAction(Node[] activatedNodes) {
-        performAction();
+        MonitorAction.getController().getTransactions();
     }
 
     public boolean asynchronous() { 

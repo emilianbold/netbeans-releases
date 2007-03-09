@@ -13,18 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /**
- * EditPanel.java
- *
- *
- * Created: Mon Feb  5 13:34:46 2001
- *
  * @author Ana von Klopp
- * @version
  */
 
 /*
@@ -40,18 +34,11 @@
 
 package org.netbeans.modules.web.monitor.client;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.*;
 
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.io.IOException;
-import java.io.File; //debugging only
-import java.io.PrintWriter; // debugging only
 
 import java.net.*;
 import java.text.*;
@@ -65,8 +52,6 @@ import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileLock;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -76,9 +61,6 @@ import org.netbeans.modules.web.monitor.data.*;
 class EditPanel extends javax.swing.JPanel implements
     ActionListener, ChangeListener {
 
-    private final static boolean debug = false;
-
-    //
     // Code to get the displaying of the tabbed panels correct.
     //
     private int displayType = 0;
@@ -132,7 +114,6 @@ class EditPanel extends javax.swing.JPanel implements
     private static EditPanel instance = null; 
 
     static void displayEditPanel(TransactionNode node) { 
-	if(debug) log(":: displayEditPanel()"); 
 	MonitorData md = null;	    
         // We retrieve the data from the file system, not from the 
         // cache
@@ -163,8 +144,6 @@ class EditPanel extends javax.swing.JPanel implements
     } 
 
     private EditPanel() {
-
-	if(debug) log("::CONSTRUCTOR"); 
 
 	createDialogButtons();
 
@@ -198,12 +177,6 @@ class EditPanel extends javax.swing.JPanel implements
 
     void showDialog(MonitorData md) {
 
-	if(debug) { 
-	    log("::showDialog"); 
-	    log("\tMonitor data is:"); // NOI18N
-	    log("t" + md.dumpBeanNode()); // NOI18N
-	}
-
 	this.monitorData = md; 
 
 	queryPanel.setData(monitorData);
@@ -229,7 +202,7 @@ class EditPanel extends javax.swing.JPanel implements
         
 	dialog = DialogDisplayer.getDefault().createDialog(editDialog);
 	dialog.pack();
-	dialog.show();
+	dialog.setVisible(true);
     }
     
 
@@ -239,10 +212,6 @@ class EditPanel extends javax.swing.JPanel implements
 
     public void actionPerformed(ActionEvent e) {
 	
-	boolean debug = false;
-	
-	if(debug) log("actionPerformed()"); //NOI18N
-	 
 	String str = new String();
         Object value = editDialog.getValue();
         if (value == null)
@@ -253,28 +222,12 @@ class EditPanel extends javax.swing.JPanel implements
             str = value.toString();
 	if(str.equals(NbBundle.getBundle(EditPanel.class).getString("MON_Send"))) {
 	 
-	    if(debug) log(" got SEND"); //NOI18N
-
 	    String method =
 		monitorData.getRequestData().getAttributeValue(METHOD); 
 
 	    if(method.equals(GET)) 
 		Util.composeQueryString(monitorData.getRequestData());
 
-	    /*
-	    if(debug) {
-		log(" useBrowserCookie is " + //NOI18N
-		    String.valueOf(useBrowserCookie));
-	    }
-	    
-	    if(!useBrowserCookie) 
-		monitorData.getRequestData().setReplaceSessionCookie(true);
-
-	    if(debug) {
-		log(" md.getRD.getReplace is " + //NOI18N
-		    String.valueOf(monitorData.getRequestData().getReplaceSessionCookie()));				   
-	    }
-	    */
 	    try {
 		MonitorAction.getController().replayTransaction(monitorData);
 		dialog.dispose();
@@ -330,41 +283,14 @@ class EditPanel extends javax.swing.JPanel implements
      * categories of data accordingly. 
      */
     public void stateChanged(ChangeEvent e) {
-	if (debug) 
-	    log("stateChanged. e = " + e); //NOI18N
 	JTabbedPane p = (JTabbedPane)e.getSource();
 	displayType = p.getSelectedIndex();
 
-	if(debug) {
-	    log("stateChanged. displayType = " + displayType); //NOI18N
-	    try {
-		StringBuffer buf = new StringBuffer
-		    (System.getProperty("java.io.tmpdir")); // NOI18N
-		buf.append(System.getProperty("file.separator")); // NOI18N
-		buf.append("tab.xml"); // NOI18N
-		File file = new File(buf.toString()); 
-		FileOutputStream fout = new FileOutputStream(file);
-		PrintWriter pw2 = new PrintWriter(fout);
-		monitorData.write(pw2);
-		pw2.close();
-		fout.close();
-		log("Wrote replay data to " + // NOI18N 
-		    file.getAbsolutePath()); 
-	    }
-	    catch(Throwable t) {
-	    }
-	}
 	showData();
     }
     
 
     void showData() {
-
-	if(debug) { 
-	    log("Now in showData()"); //NOI18N
-	    log("displayType:" //NOI18N
-			       + String.valueOf(displayType));
-	}
 
 	if (displayType == DISPLAY_TYPE_QUERY)
 	    queryPanel.setData(monitorData);
@@ -376,8 +302,6 @@ class EditPanel extends javax.swing.JPanel implements
 	    serverPanel.setData(monitorData);
 	else if (displayType == DISPLAY_TYPE_HEADERS)
 	    headersPanel.setData(monitorData);
-
-	if(debug) log("Finished showData()"); //NOI18N
     }
 
 
@@ -396,63 +320,4 @@ class EditPanel extends javax.swing.JPanel implements
 	cancelButton.setMnemonic(NbBundle.getBundle(EditPanel.class).getString("MON_Cancel_Mnemonic").charAt(0));
 	cancelButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_CancelA11yDesc"));
     }
-    
-
-    // See comment for browserCookieButton above
-    /*
-    private JToolBar createSessionButtonPanel() { 
-
-	JToolBar buttonPanel = new JToolBar();
-	buttonPanel.setFloatable (false);
-
-	// Do we use the browser's cookie or the saved cookie? 
-	browserCookieButton = 
-	    new JToggleButton(TransactionView.browserCookieIcon,
-				    useBrowserCookie); 
-	browserCookieButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("MON_Browser_cookie"));
-	browserCookieButton.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    browserCookieButton.setSelected(true);
-		    savedCookieButton.setSelected(false);
-		    useBrowserCookie = true; 
-		}
-
-	    });
-
-	savedCookieButton = 
-	    new JToggleButton(TransactionView.savedCookieIcon,
-				    !useBrowserCookie); 
-	savedCookieButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("MON_Saved_cookie"));
-	savedCookieButton.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    savedCookieButton.setSelected(true);
-		    browserCookieButton.setSelected(false);
-		    useBrowserCookie = false; 
-		}
-	    });
-
-	buttonPanel.add(browserCookieButton);
-	buttonPanel.add(savedCookieButton);
-	buttonPanel.setSize(buttonPanel.getMinimumSize());
-	return buttonPanel;
-    }
-    */
-    
-    private Component createSeparator() { 
-	JPanel sep = new JPanel() {
-		public float getAlignmentX() {
-		    return 0;
-		}
-		public float getAlignmentY() {
-		    return 0;
-		}
-	    };
-	sep.setMinimumSize(new Dimension(10, 10));
-	return sep;
-    }
-
-    private static void log(String s) {
-	System.out.println("EditPanel::" + s); //NOI18N
-    }
-        
 } // EditPanel

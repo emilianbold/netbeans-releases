@@ -51,11 +51,6 @@ public class DeleteCurrentAction extends NodeAction {
 	return HelpCtx.DEFAULT_HELP;
     }
 
-    public void performAction() { 
-	// PENDING - this string... 
-	MonitorAction.getController().deleteDirectory(Controller.currDirStr); 
-    }
-
     public void performAction(Node[] node) { 
 	// PENDING - this string... 
 	MonitorAction.getController().deleteDirectory(Controller.currDirStr); 

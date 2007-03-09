@@ -13,29 +13,19 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /**
- * ParamEditor.java
- *
- *
- * Created: Thursday Feb  15
- *
  * @author Simran Gleason
  * @author Ana von Klopp
- * @version
  */
 
 
 package org.netbeans.modules.web.monitor.client;
 
-//import java.util.*;
-
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -48,7 +38,6 @@ import java.awt.event.FocusListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -56,12 +45,10 @@ import javax.swing.JTextField;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class ParamEditor extends javax.swing.JPanel {
 
-    private final static boolean debug = false;    
     private static final Dimension valueSize = new Dimension(400, 150);
 
     // Do we need this to close it?
@@ -83,13 +70,10 @@ public class ParamEditor extends javax.swing.JPanel {
 
     public ParamEditor(String name, String value, Editable e, Condition c, 
 		       String title) { 
-	if(debug) log("::CONSTRUCTOR"); 
 	this.name = name; 
 	this.value = value; 
 	this.editable = e; 
-	if(debug) log("\tEditable: " + e.toString()); 
 	this.condition = c; 
-	if(debug) log("\tCondition: " + c.toString()); 
 	this.title = title;
 	initialize();
     }
@@ -108,7 +92,6 @@ public class ParamEditor extends javax.swing.JPanel {
     
     public void initialize() {
 
-	if(debug) System.out.println("in (new) ParamEditor.initialize()"); //NOI18N
 	this.setLayout(new GridBagLayout());
 
 	// Entity covers entire row
@@ -224,7 +207,6 @@ public class ParamEditor extends javax.swing.JPanel {
     public void showDialog() {
 
 	if(editable == Editable.NEITHER) {
-	    if(debug) log("Non-modal dialog, OK option only"); 
 	    NotifyDescriptor d = 
 		new NotifyDescriptor(this, title, 
 				     NotifyDescriptor.DEFAULT_OPTION,
@@ -244,7 +226,7 @@ public class ParamEditor extends javax.swing.JPanel {
 		 }); 
 
 	    dialog = DialogDisplayer.getDefault().createDialog(editDialog);
-	    dialog.show();
+	    dialog.setVisible(true);
 	    this.repaint();
 	}
     }
@@ -255,26 +237,17 @@ public class ParamEditor extends javax.swing.JPanel {
 
     public void evaluateInput() {
 
-	if (debug) { 
-	    log("::evaluateInput()");//NOI18N
-	} 
-
 	if (editDialog.getValue().equals(NotifyDescriptor.CANCEL_OPTION)) { 
-	    if(debug) log("\tGot cancel"); //NOI18N
 	    dialog.dispose();
 	    dialogOK = false; 
 	    return; 
 	}
 
-	if(debug) log("\tGot OK"); //NOI18N
 	if(editable == Editable.NEITHER) {
-	    if(debug) log("\tNot editable"); //NOI18N
 	    dialog.dispose();
 	    dialogOK = false; 
 	    return;
 	}
-	if(debug) log("Name is " + name); 
-	if(debug) log("Value is " + value); 
 
 	errorMessage = null; 
 
@@ -293,8 +266,6 @@ public class ParamEditor extends javax.swing.JPanel {
 		 value.indexOf("JSESSIONID") > -1))
 	    errorMessage = NbBundle.getMessage(ParamEditor.class, 
 					       "MSG_no_jsession"); 
-
-	if(debug) log("ErrorMessage: " + errorMessage); 
 
 	if(errorMessage == null) { 
 	    dialog.dispose();
@@ -318,10 +289,6 @@ public class ParamEditor extends javax.swing.JPanel {
 	    repainting = false;
 	}
     }
-
-    private void log(String s) { 
-	System.out.println("ParamEditor" + s);
-    } 
 
     static class Editable { 
 	private String editable; 
