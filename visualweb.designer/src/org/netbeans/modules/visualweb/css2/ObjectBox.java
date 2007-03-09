@@ -127,7 +127,7 @@ public class ObjectBox extends ContainerBox {
 
     private static Image getAppletLogo() {
         if (appletlogo == null) {
-            appletlogo = org.openide.util.Utilities.loadImage("org/netbeans/modules/visualweb/css2/applet.gif");
+            appletlogo = org.openide.util.Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/applet.gif");
 
             // NOI18N
         }
