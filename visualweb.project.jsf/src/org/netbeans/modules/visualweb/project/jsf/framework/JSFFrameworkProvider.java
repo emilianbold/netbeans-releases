@@ -57,6 +57,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
+import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -364,7 +365,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             
             final FileObject documentBase = webModule.getDocumentBase();
             final Project project = FileOwnerQuery.getOwner(documentBase);
-            template.setBeanPackage(project.getProjectDirectory().getName());
+            template.setBeanPackage(deriveSafeName(project.getProjectDirectory().getName()));
             JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, template.getBeanPackage());
             JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "index.jsp"); // NOI18N
 
@@ -401,5 +402,35 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                }
            }); 
         }
+    }
+
+    /**
+     * Derive an identifier suitable for a java package name or context path
+     * @param sourceName Original name from which to derive the name
+     * @return An identifier suitable for a java package name or context path
+     */
+    public static String deriveSafeName(String sourceName) {
+        StringBuffer dest = new StringBuffer(sourceName.length());
+        int sourceLen = sourceName.length();
+        if (sourceLen > 0) {
+            int pos = 0;
+            while (pos < sourceLen) {
+                if (Character.isJavaIdentifierStart(sourceName.charAt(pos))) {
+                    dest.append(Character.toLowerCase(sourceName.charAt(pos)));
+                    pos++;
+                    break;
+                }
+                pos++;
+            }
+
+            for (int i = pos; i < sourceLen; i++) {
+                if (Character.isJavaIdentifierPart(sourceName.charAt(i)))
+                    dest.append(Character.toLowerCase(sourceName.charAt(i)));
+            }
+        }
+        if (dest.length() == 0 || !Utilities.isJavaIdentifier(dest.toString()))
+            return "untitled";  // NOI18N
+        else
+            return dest.toString();
     }
 }
