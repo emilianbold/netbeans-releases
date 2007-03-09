@@ -88,7 +88,7 @@ public class QueryImpl extends GenericExtensibilityElement implements Query {
         setAttribute( QUERY_LANGUAGE , BPELAttribute.QUERY_LANGUAGE , null );
     }
 
-    //@Override
+    @Override
     public boolean canBeAddedTo(Component target) {
         if (target instanceof PropertyAlias) {
             return true;

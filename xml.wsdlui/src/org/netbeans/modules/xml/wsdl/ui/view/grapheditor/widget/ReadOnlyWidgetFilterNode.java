@@ -100,8 +100,7 @@ public class ReadOnlyWidgetFilterNode extends FilterNode {
        }
        
        @Override
-       protected Node[] createNodes(Object key) {
-            Node n = (Node)key;
+       protected Node[] createNodes(Node n) {
             return new Node[] {new ReadOnlyWidgetFilterNode(n)};
        }
    } 

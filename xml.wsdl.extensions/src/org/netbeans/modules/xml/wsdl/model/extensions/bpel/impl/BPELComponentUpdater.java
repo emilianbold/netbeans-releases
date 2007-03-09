@@ -37,8 +37,8 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
  */
 public class BPELComponentUpdater implements
         BPELExtensibilityComponent.Visitor,
-        ComponentUpdater<BPELExtensibilityComponent>/*, 
-        ComponentUpdater.Query<BPELExtensibilityComponent>*/
+        ComponentUpdater<BPELExtensibilityComponent>, 
+        ComponentUpdater.Query<BPELExtensibilityComponent>
 {
 
     private BPELExtensibilityComponent parent;

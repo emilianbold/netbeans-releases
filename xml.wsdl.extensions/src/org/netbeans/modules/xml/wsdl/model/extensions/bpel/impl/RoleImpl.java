@@ -90,7 +90,7 @@ public class RoleImpl extends NamedExtensibilityElementBase implements Role {
         return getChildren(Documentation.class);
     }
 
-    //@Override
+    @Override
     public boolean canBeAddedTo(Component target) {
         if (target instanceof PartnerLinkType) {
             return true;
