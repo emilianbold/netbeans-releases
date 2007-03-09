@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.TreeSet;
 import java.awt.Image;
 import java.beans.*;
-
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -143,16 +143,11 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    private static Image icon, icon32;
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            if (icon == null)
-                icon = loadImage ("/org/netbeans/modules/junit/resources/JUnitSettingsIcon.gif");
-            return icon;
+            return Utilities.loadImage ("/org/netbeans/modules/junit/resources/JUnitSettingsIcon.gif");
         } else {
-            if (icon32 == null)
-                icon32 = loadImage ("/org/netbeans/modules/junit/resources/JUnitSettingsIcon32.gif");
-            return icon32;
+            return Utilities.loadImage ("/org/netbeans/modules/junit/resources/JUnitSettingsIcon32.gif");
         }
     }
 
