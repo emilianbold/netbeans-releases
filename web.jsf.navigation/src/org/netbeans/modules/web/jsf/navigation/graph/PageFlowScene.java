@@ -39,11 +39,13 @@ import org.netbeans.api.visual.widget.EventProcessingType;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collections;
+import javax.swing.border.Border;
 import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
@@ -120,7 +122,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         gglayout.setChecker(true);
         
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
-
+        
         getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             public void edit(Widget widget) {
                 sceneLayout.invokeLayout();
@@ -129,17 +131,17 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
     }
     
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public PageFlowView getPageFlowView(){
         return tc;
     }
     
-//    protected PageFlowController getPageFlowController() {
-//        return tc.getPageFlowController();
-//    }
-//    
+    //    protected PageFlowController getPageFlowController() {
+    //        return tc.getPageFlowController();
+    //    }
+    //
     private static final Image POINT_SHAPE_IMAGE = Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"); // NOI18N
     
     private static final int PAGE_WIDGET_INDEX = 0;
@@ -156,10 +158,13 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         VMDNodeWidget nodeWidget = new VMDNodeWidget(this);
         nodeWidget.setNodeName(node.getName());
         
-        Widget header = nodeWidget.getHeader();        
-        ImageWidget imageWidget = new ImageWidget(this, POINT_SHAPE_IMAGE);
+        Widget header = nodeWidget.getHeader();
+        ImageWidget imageWidget = new DefaultAnchorWidget(this, POINT_SHAPE_IMAGE);
         imageWidget.getActions().addAction(connectAction);
+        //        imageWidget.getActions().addAction(createSelectAction());
+        imageWidget.getActions().addAction(createWidgetHoverAction());
         header.addChild(imageWidget);
+        
         
         //        Widget widget = new Widget(this);
         //        ImageWidget imageWidget = new ImageWidget(this, POINT_SHAPE_IMAGE);
@@ -172,14 +177,35 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         
         
         //        nodeWidget.getActions().addAction(deleteAction);
-        nodeWidget.getHeader  ().getActions().addAction(createObjectHoverAction());
+        //        nodeWidget.getHeader  ().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
         //        nodeWidget.getActions().addAction(createSelectAction());
         //        nodeWidget.getActions ().addAction (popupGraphAction);
         nodeWidget.getActions().addAction(moveAction);
+        nodeWidget.setMinimized(true);
         //        imageWidget.getActions().addAction(connectAction);
         
         return nodeWidget;
+    }
+    
+    
+    private static class DefaultAnchorWidget extends ImageWidget{
+        
+        
+        public DefaultAnchorWidget( PageFlowScene scene, Image image ){
+            super(scene, image);
+        }
+        protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+            Border BORDER_HOVERED = (Border) javax.swing.BorderFactory.createLineBorder(java.awt.Color.BLACK);
+            Border BORDER = BorderFactory.createEmptyBorder();
+            if (previousState.isHovered()  == state.isHovered())
+                return;
+            if (state.isHovered())
+            setBorder(state.isHovered() ? BORDER_HOVERED : BORDER );
+            System.out.println("Hovering.");
+        }
+        
+        
     }
     
     /**
@@ -202,8 +228,8 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         nodeWidget.attachPinWidget(widget);
         
         //        widget.getActions().addAction(deleteAction);
-        //        widget.getActions().addAction(createObjectHoverAction());
-        //        widget.getActions().addAction(createSelectAction());
+        widget.getActions().addAction(createObjectHoverAction());
+        widget.getActions().addAction(createSelectAction());
         //        widget.getActions().addAction(connectAction);
         
         return widget;
@@ -292,50 +318,50 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         
     }
     
-//    private static class NodePinLayout implements Layout {
-//        int gap = 0;
-//        int displacepin = 0;
-//        
-//        public NodePinLayout(int gap ){
-//            this.gap = gap;
-//            this.displacepin = displacepin;
-//        }
-//        
-//        public void layout(Widget widget) {
-//            
-//            Collection<Widget> children = widget.getChildren();
-//            int pos = 0;
-//            for( Widget child : children ){
-//                Rectangle preferredBounds = child.getPreferredBounds();
-//                int x = preferredBounds.x;
-//                int y = preferredBounds.y;
-//                int width = preferredBounds.width;
-//                int height = preferredBounds.height;
-//                int lx = pos - x;
-//                int ly = - y;
-//                if ( child.isVisible() ) {
-//                    if(child instanceof VMDNodeWidget ) {
-//                        child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, width, height));
-//                    } else {
-//                        child.resolveBounds(new Point(lx , ly + 5), new Rectangle(x, y, width, height));
-//                    }
-//                    pos += width + gap;
-//                } else {
-//                    child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, 0, 0));
-//                }
-//            }
-//        }
-//        
-//        public boolean requiresJustification(Widget arg0) {
-//            return false;
-//        }
-//        
-//        public void justify(Widget arg0) {
-//            
-//        }
-//    }
+    //    private static class NodePinLayout implements Layout {
+    //        int gap = 0;
+    //        int displacepin = 0;
+    //
+    //        public NodePinLayout(int gap ){
+    //            this.gap = gap;
+    //            this.displacepin = displacepin;
+    //        }
+    //
+    //        public void layout(Widget widget) {
+    //
+    //            Collection<Widget> children = widget.getChildren();
+    //            int pos = 0;
+    //            for( Widget child : children ){
+    //                Rectangle preferredBounds = child.getPreferredBounds();
+    //                int x = preferredBounds.x;
+    //                int y = preferredBounds.y;
+    //                int width = preferredBounds.width;
+    //                int height = preferredBounds.height;
+    //                int lx = pos - x;
+    //                int ly = - y;
+    //                if ( child.isVisible() ) {
+    //                    if(child instanceof VMDNodeWidget ) {
+    //                        child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, width, height));
+    //                    } else {
+    //                        child.resolveBounds(new Point(lx , ly + 5), new Rectangle(x, y, width, height));
+    //                    }
+    //                    pos += width + gap;
+    //                } else {
+    //                    child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, 0, 0));
+    //                }
+    //            }
+    //        }
+    //
+    //        public boolean requiresJustification(Widget arg0) {
+    //            return false;
+    //        }
+    //
+    //        public void justify(Widget arg0) {
+    //
+    //        }
+    //    }
     
-
+    
     private final class PageFlowSelectProvider implements SelectProvider {
         
         public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
@@ -356,11 +382,6 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
                     return;
                 userSelectionSuggested(Collections.singleton(object), invertSelection);
                 tc.setActivatedNodes(new Node[]{(Node)object});
-                //                if ( object instanceof DataNode ){
-                //                    tc.setActivatedNodes(new DataNode[] {(DataNode)object});
-                //                } else if (object instanceof AbstractNode ){
-                //                    tc.setActivatedNodes(new AbstractNode[] {(AbstractNode)object});
-                //                }
             } else
                 userSelectionSuggested(Collections.emptySet(), invertSelection);
         }
