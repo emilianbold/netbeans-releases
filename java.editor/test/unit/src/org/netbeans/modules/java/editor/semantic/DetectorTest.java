@@ -300,9 +300,9 @@ public class DetectorTest extends TestBase {
         performRemoveUnusedImportTest("RemoveImportNotLine1");
     }
     
-    public void testRemoveImportNotLine2() throws Exception {
-        performRemoveUnusedImportTest("RemoveImportNotLine2");
-    }
+//    public void testRemoveImportNotLine2() throws Exception {
+//        performRemoveUnusedImportTest("RemoveImportNotLine2");
+//    }
     
     public void testRemoveImportDocStart() throws Exception {
         performRemoveUnusedImportTest("RemoveImportDocStart");

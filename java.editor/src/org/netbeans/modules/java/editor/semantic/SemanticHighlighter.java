@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.semantic;
@@ -80,6 +80,7 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.BaseDocument;
@@ -171,12 +172,12 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     private static class FixAllImportsFixList implements LazyFixList {
         private Fix removeImport;
         private Fix removeAllUnusedImports;
-        private List<Fix> allRemoveImportFixes;
+        private List<TreePathHandle> allUnusedImports;
         
-        public FixAllImportsFixList(Fix removeImport, Fix removeAllUnusedImports, List<Fix> allRemoveImportFixes) {
+        public FixAllImportsFixList(Fix removeImport, Fix removeAllUnusedImports, List<TreePathHandle> allUnusedImports) {
             this.removeImport = removeImport;
             this.removeAllUnusedImports = removeAllUnusedImports;
-            this.allRemoveImportFixes = allRemoveImportFixes;
+            this.allUnusedImports = allUnusedImports;
         }
         
         public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -195,7 +196,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             if (fixes != null)
                 return fixes;
             
-            if (allRemoveImportFixes.size() > 1) {
+            if (allUnusedImports.size() > 1) {
                 fixes = Arrays.asList(removeImport, removeAllUnusedImports);
             } else {
                 fixes = Collections.singletonList(removeImport);
@@ -224,30 +225,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         if (isCancelled())
             return Collections.emptySet();
         
-        final List<Fix> allRemoveImportFixes = new ArrayList<Fix>();
-        final Fix removeAllUnusedImports = new Fix() {
-            public String getText() {
-                return "Remove all unused imports.";
-            }
-
-            public ChangeInfo implement() {
-                BaseDocument bdoc = doc instanceof BaseDocument ? (BaseDocument) doc : null;
-                
-                if (bdoc != null)
-                    bdoc.atomicLock();
-                
-                try {
-                    for (Fix f : allRemoveImportFixes) {
-                        f.implement();
-                    }
-                } finally {
-                    if (bdoc != null)
-                        bdoc.atomicUnlock();
-                }
-                
-                return null;
-            }
-        };
+        final List<TreePathHandle> allUnusedImports = new ArrayList<TreePathHandle>();
+        final Fix removeAllUnusedImports = RemoveUnusedImportFix.create(file, allUnusedImports);
         
         for (Element el : v.type2Highlight.keySet()) {
             if (isCancelled())
@@ -264,43 +243,15 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 result.add(h);
             }
             
-            final int startPos = (int)info.getTrees().getSourcePositions().getStartPosition(cu, tree.getLeaf());
-            final int endPos   = (int)info.getTrees().getSourcePositions().getEndPosition(cu, tree.getLeaf());
-            int line     = NbDocument.findLineNumber((StyledDocument) doc, startPos) + 1;
+            final long startPos = info.getTrees().getSourcePositions().getStartPosition(cu, tree.getLeaf());
+            int line     = (int) info.getCompilationUnit().getLineMap().getLineNumber(startPos);
             
-            //XXX: will provide incorrect results if the document is already changed:
-            final Position[] removeRange = new Position[2];
-            final boolean[]  ignore = new boolean[1];
+            TreePathHandle handle = TreePathHandle.create(tree, info);
             
-            doc.render(new Runnable() {
-                public void run() {
-                    try {
-                        removeRange[0] = doc.createPosition(startPos);
-                        removeRange[1] = doc.createPosition(endPos);
-                    } catch (BadLocationException e) {
-                        ignore[0] = true;
-                    }
-                }
-            });
+            final Fix removeImport = RemoveUnusedImportFix.create(file, handle);
             
-            if (!ignore[0]) {
-                final Fix removeImport = new Fix() {
-                    public String getText() {
-                        return "Remove unused import";
-                    }
-                    public ChangeInfo implement() {
-                        NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
-                            public void run() {
-                                removeImport(doc, removeRange[0].getOffset(), removeRange[1].getOffset());
-                            }
-                        });
-                        return null;
-                    }
-                };
-                
-                allRemoveImportFixes.add(removeImport);
-                errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.VERIFIER, "Unused import", new FixAllImportsFixList(removeImport, removeAllUnusedImports, allRemoveImportFixes), doc, line));
-            }
+            allUnusedImports.add(handle);
+            errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.VERIFIER, "Unused import", new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports), doc, line));
         }
         
         for (Element decl : v.type2Uses.keySet()) {
