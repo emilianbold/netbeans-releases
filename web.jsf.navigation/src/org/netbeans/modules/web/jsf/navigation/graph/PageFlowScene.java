@@ -38,20 +38,17 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import javax.swing.*;
 import java.awt.*;
-import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
-import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
-import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
@@ -131,6 +128,10 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         }));
     }
     
+    /**
+     * 
+     * @return 
+     */
     public PageFlowView getPageFlowView(){
         return tc;
     }
@@ -155,8 +156,9 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         VMDNodeWidget nodeWidget = new VMDNodeWidget(this);
         nodeWidget.setNodeName(node.getName());
         
+        Widget header = nodeWidget.getHeader();        
         ImageWidget imageWidget = new ImageWidget(this, POINT_SHAPE_IMAGE);
-        Widget header = nodeWidget.getHeader();
+        imageWidget.getActions().addAction(connectAction);
         header.addChild(imageWidget);
         
         //        Widget widget = new Widget(this);

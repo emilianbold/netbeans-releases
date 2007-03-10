@@ -62,17 +62,19 @@ public class PageFlowController {
      */
     public NavigationCase createLink(AbstractNode source, AbstractNode target, String comp) {
         
+        String sourceName = source.getDisplayName();
+        
         configModel.startTransaction();
         org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase navCase = configModel.getFactory().createNavigationCase();
         
-        navCase.setToViewId(target.getName());
+        navCase.setToViewId(target.getDisplayName());
         org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig facesConfig = configModel.getRootComponent();
         org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule navRule = getRuleWithFromViewID(facesConfig,
-                source.getName());
+                source.getDisplayName());
         
         if (navRule == null) {
             navRule = configModel.getFactory().createNavigationRule();
-            navRule.setFromViewId(source.getName());
+            navRule.setFromViewId(source.getDisplayName());
             facesConfig.addNavigationRule(navRule);
         }
         navRule.addNavigationCase(navCase);
