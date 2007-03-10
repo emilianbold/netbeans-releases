@@ -1652,8 +1652,8 @@ public class WebForm implements Designer {
 //    DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
 //        return htmlDomProvider.pasteBeans(t, parent, pos, location, coordinateTranslator);
 //    }
-    Element[] pasteComponents(Transferable t, Element parentComponentRootElement, Point location, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
-        return htmlDomProvider.pasteComponents(t, parentComponentRootElement, location, coordinateTranslator);
+    Element[] pasteComponents(Transferable t, Element parentComponentRootElement, Point location) {
+        return htmlDomProvider.pasteComponents(t, parentComponentRootElement, location);
     }
 
 //    void importData(JComponent comp, Transferable t, Object transferData, Dimension dimension, HtmlDomProvider.Location location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {

@@ -195,7 +195,13 @@ public class DndHandler /*extends TransferHandler*/ {
                 Point location = selectionTopComp.getPastePosition();
 //                DesignBean[] beans = selectionTopComp.pasteBeans(webform, t, parent, pos, location);
 //                Element[] componentRootElements = SelectionTopComp.pasteComponents(webform, t, parentComponentRootElement, location);
-                Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location, webform.getGridHandler());
+                
+                if (location != null) {
+                    GridHandler gridHandler = webform.getGridHandler();
+                    location.x = gridHandler.snapX(location.x);
+                    location.y = gridHandler.snapY(location.y);
+                }
+                Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location);
 
 //                if ((beans != null) && (beans.length > 0)) {
 //                    selectionTopComp.selectBeans(beans);

@@ -108,8 +108,8 @@ class DndSupport {
 //    }
     
 
-    DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, HtmlDomProvider.CoordinateTranslator coordinateTranslator, FacesDnDSupport.UpdateSuspender updateSuspender) {
-        return getFacesModel().getDnDSupport().pasteBeans(t, parent, pos, location, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
+    DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, FacesDnDSupport.UpdateSuspender updateSuspender) {
+        return getFacesModel().getDnDSupport().pasteBeans(t, parent, pos, location, jsfForm.getUpdateSuspender());
     }
 
     int computeActions(DesignBean droppee, Transferable transferable) {
