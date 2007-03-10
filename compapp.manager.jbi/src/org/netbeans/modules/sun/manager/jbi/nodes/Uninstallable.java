@@ -26,12 +26,7 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
  */
 public interface Uninstallable {
 
-
-    /**
-     *
-     *
-     */
-    public void uninstall();
+    public void uninstall(boolean force);
 
     public boolean canUninstall();
 }

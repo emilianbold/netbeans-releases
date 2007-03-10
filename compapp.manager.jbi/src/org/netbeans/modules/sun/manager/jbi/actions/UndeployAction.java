@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.sun.manager.jbi.actions;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
@@ -29,17 +31,15 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author jqian
  */
-public class UndeployAction extends NodeAction {
+public abstract class UndeployAction extends NodeAction {
 
-    /**
-     *
-     *
-     */
     protected void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -57,7 +57,7 @@ public class UndeployAction extends NodeAction {
                                 parentNode = node.getParentNode();
                             }
                             Undeployable undeployable = (Undeployable)obj;
-                            undeployable.undeploy();
+                            undeployable.undeploy(isForceAction());
                         }
                     }
                     
@@ -79,11 +79,6 @@ public class UndeployAction extends NodeAction {
         });        
     }
     
-    
-    /**
-     *
-     *
-     */
     protected boolean enable(Node[] nodes) {
         boolean ret = false;
         
@@ -113,30 +108,51 @@ public class UndeployAction extends NodeAction {
         return ret;
     }
     
-    
-    /**
-     *
-     *
-     */
     protected boolean asynchronous() {
         return false;
     }
     
-    
-    /**
-     *
-     *
-     */
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
+        
+    protected abstract boolean isForceAction();
     
     
     /**
-     *
+     * Normal undeploy action.
      */
-    public String getName() {
-        return NbBundle.getMessage(UndeployAction.class, "LBL_UndeployAction"); // NOI18N
+    public static class Normal extends UndeployAction {
+        
+        protected boolean isForceAction() {
+            return false;
+        }
+        
+        public String getName() {
+            return NbBundle.getMessage(ShutdownAction.class, "LBL_UndeployAction");  // NOI18N
+        }
+    }
+    
+    /**
+     * Force undeploy action.
+     */
+    public static class Force extends UndeployAction implements Presenter.Popup {
+        
+        public String getName() {
+            return NbBundle.getMessage(ShutdownAction.class, "LBL_ForceUndeployAction");  // NOI18N
+        }
+        
+        public JMenuItem getPopupPresenter() {
+            JMenu result = new JMenu(
+                    NbBundle.getMessage(ShutdownAction.class, "LBL_Advanced"));  // NOI18N
+            result.add(new JMenuItem(SystemAction.get(ShutdownAction.Force.class)));
+            result.add(new JMenuItem(this));
+            return result;
+        }        
+                  
+        protected boolean isForceAction() {
+            return true;
+        }        
     }
     
 }

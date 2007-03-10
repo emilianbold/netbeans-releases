@@ -350,7 +350,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     /**
      *
      */
-    public void shutdown() {
+    public void shutdown(boolean force) {
         if (canStop()) {
             stop();
         }
@@ -374,7 +374,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 }
             });
             
-            final String result = adminService.shutdownComponent(componentName);
+            final String result = adminService.shutdownComponent(componentName, force);
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -402,9 +402,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     /**
      *
      */
-    public void uninstall() {
+    public void uninstall(boolean force) {
         if (canShutdown()) {
-            shutdown();
+            shutdown(force);
         }
         
         AdministrationService adminService =
@@ -433,7 +433,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 }
             });
             
-            final String result = uninstallComponent(adminService, componentName);
+            final String result = uninstallComponent(adminService, componentName, force);
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -462,7 +462,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     protected abstract String getUninstallProgressLabel();
     
     protected abstract String uninstallComponent(
-            AdministrationService adminService, String componentName);
+            AdministrationService adminService, String componentName, boolean force);
     
     protected abstract Map<Attribute, MBeanAttributeInfo> getIdentificationProperties(
             AppserverJBIMgmtController controller, boolean sort) throws Exception;
@@ -490,16 +490,20 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             return new SystemAction[] {
                 SystemAction.get(StartAction.class),
                 SystemAction.get(StopAction.class),
-                SystemAction.get(ShutdownAction.class),
-                SystemAction.get(UninstallAction.class),
+                SystemAction.get(ShutdownAction.Normal.class),
+                SystemAction.get(UninstallAction.Normal.class),
+                null,
+                //SystemAction.get(ShutdownAction.Force.class),
+                SystemAction.get(UninstallAction.Force.class),
                 null,
                 SystemAction.get(PropertiesAction.class),
             };
         }
         
         protected String uninstallComponent(
-                AdministrationService adminService, String componentName) {
-            return adminService.uninstallComponent(componentName);
+                AdministrationService adminService, String componentName,
+                boolean force) {
+            return adminService.uninstallComponent(componentName, force);
         }
         
         protected String getContainerType() {
@@ -551,16 +555,20 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             return new SystemAction[] {
                 SystemAction.get(StartAction.class),
                 SystemAction.get(StopAction.class),
-                SystemAction.get(ShutdownAction.class),
-                SystemAction.get(UninstallAction.class),
+                SystemAction.get(ShutdownAction.Normal.class),
+                SystemAction.get(UninstallAction.Normal.class),
                 null,
+                //SystemAction.get(ShutdownAction.Force.class),
+                SystemAction.get(UninstallAction.Force.class),
+                null,                
                 SystemAction.get(PropertiesAction.class),
             };
         }
         
         protected String uninstallComponent(
-                AdministrationService adminService, String componentName) {
-            return adminService.uninstallComponent(componentName);
+                AdministrationService adminService, String componentName,
+                boolean force) {
+            return adminService.uninstallComponent(componentName, force);
         }
         
         protected String getContainerType() {
@@ -617,7 +625,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
         
         protected String uninstallComponent(
-                AdministrationService adminService, String componentName) {
+                AdministrationService adminService, String componentName,
+                boolean force) { // ignore force
             return adminService.uninstallSharedLibrary(componentName);
         }
         

@@ -124,8 +124,11 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         return new SystemAction[] {
             SystemAction.get(StartAction.class),
             SystemAction.get(StopAction.class),
-            SystemAction.get(ShutdownAction.class),
-            SystemAction.get(UndeployAction.class),
+            SystemAction.get(ShutdownAction.Normal.class),
+            SystemAction.get(UndeployAction.Normal.class),
+            null,
+            //SystemAction.get(ShutdownAction.Force.class),
+            SystemAction.get(UndeployAction.Force.class),
             null,
             SystemAction.get(PropertiesAction.class),
         };
@@ -336,7 +339,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         return ret;
     }
     
-    public void shutdown() {
+    public void shutdown(boolean force) {
         
         if (canStop()) {
             stop();
@@ -361,7 +364,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             });
             
             final String result =
-                    adminService.shutdownServiceAssembly(assemblyName);
+                    adminService.shutdownServiceAssembly(assemblyName, force);
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -384,10 +387,10 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
                 !busy && JBIServiceAssemblyStatus.SHUTDOWN_STATUS.equals(assemblyStatus);
     }
     
-    public void undeploy() {
+    public void undeploy(boolean force) {
                  
         if (canShutdown()) {
-            shutdown();
+            shutdown(force);
         }
         
         AdministrationService adminService = getAdminService();
@@ -409,7 +412,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             });
             
             final String result =
-                    adminService.undeployServiceAssembly(assemblyName);
+                    adminService.undeployServiceAssembly(assemblyName, force);
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

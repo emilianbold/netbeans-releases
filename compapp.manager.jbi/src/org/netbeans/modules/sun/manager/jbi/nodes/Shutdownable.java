@@ -26,13 +26,7 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
  */
 public interface Shutdownable {
 
-
-    /**
-     *
-     *
-     */
-    public void shutdown();
-
+    public void shutdown(boolean force);
 
     public boolean canShutdown();
 }

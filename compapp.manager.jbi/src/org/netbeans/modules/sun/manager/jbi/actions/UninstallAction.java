@@ -22,6 +22,8 @@ package org.netbeans.modules.sun.manager.jbi.actions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
@@ -32,16 +34,15 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author jqian
  */
-public class UninstallAction extends NodeAction {
+public abstract class UninstallAction extends NodeAction {
     
-    /**
-     *
-     */
     protected void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -61,7 +62,7 @@ public class UninstallAction extends NodeAction {
                                 parentNodes.add(parentNode);
                             }
                             Uninstallable uninstallable = (Uninstallable)obj;
-                            uninstallable.uninstall();
+                            uninstallable.uninstall(isForceAction());
                         }
                     }
                     
@@ -105,7 +106,7 @@ public class UninstallAction extends NodeAction {
                             break;
                         }
                     }
-                } catch(java.lang.RuntimeException rex) {
+                } catch(RuntimeException rex) {
                     //gobble up exception
                 }
             }
@@ -114,29 +115,50 @@ public class UninstallAction extends NodeAction {
         return ret;
     }
     
-    /**
-     *
-     *
-     */
     protected boolean asynchronous() {
         return false;
     }
     
-    
-    /**
-     *
-     *
-     */
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-    }
+    }    
+    
+    protected abstract boolean isForceAction();
     
     
     /**
-     *
+     * Normal uninstall action.
      */
-    public String getName() {
-        return NbBundle.getMessage(UninstallAction.class, "LBL_UninstallAction"); // NOI18N
+    public static class Normal extends UninstallAction {
+                
+        public String getName() {
+            return NbBundle.getMessage(ShutdownAction.class, "LBL_UninstallAction");  // NOI18N
+        }
+        
+        protected boolean isForceAction() {
+            return false;
+        }
     }
     
+    /**
+     * Force uninstall action.
+     */
+    public static class Force extends UninstallAction  implements Presenter.Popup {
+                
+        public String getName() {
+            return NbBundle.getMessage(ShutdownAction.class, "LBL_ForceUninstallAction");  // NOI18N
+        }
+        
+        public JMenuItem getPopupPresenter() {
+            JMenu result = new JMenu(
+                    NbBundle.getMessage(ShutdownAction.class, "LBL_Advanced"));  // NOI18N
+            result.add(new JMenuItem(SystemAction.get(ShutdownAction.Force.class)));
+            result.add(new JMenuItem(this));
+            return result;
+        }        
+        
+        protected boolean isForceAction() {
+            return true;
+        }
+    }
 }

@@ -26,14 +26,7 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
  */
 public interface Undeployable {
 
-
-    /**
-     *
-     *
-     */
-    public void undeploy();
+    public void undeploy(boolean force);
 
     public boolean canUndeploy();
-
-
 }
