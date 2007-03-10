@@ -3143,25 +3143,25 @@ public class DndHandler /*extends TransferHandler*/ {
 //        return Util.setDesignProperty(bean, attribute, length);
 //    }
 
-    void customizeCreation(List beans) {
-//        int n = beans.size();
-//
-//        for (int i = 0; i < n; i++) {
-//            DesignBean lb = (DesignBean)beans.get(i);
-//            DesignInfo lbi = lb.getDesignInfo();
-//
-//            if (lbi != null) {
-//                Customizer2 customizer = null; //lbi.getCreateCustomizer(lb);
-//
-//                if (customizer != null) {
-//                    CustomizerDisplayer lcd =
-//                        new CustomizerDisplayer(lb, customizer, customizer.getHelpKey(),
-//                            webform.getModel());
-//                    lcd.show();
-//                }
-//            }
-//        }
-    }
+//    void customizeCreation(List beans) {
+////        int n = beans.size();
+////
+////        for (int i = 0; i < n; i++) {
+////            DesignBean lb = (DesignBean)beans.get(i);
+////            DesignInfo lbi = lb.getDesignInfo();
+////
+////            if (lbi != null) {
+////                Customizer2 customizer = null; //lbi.getCreateCustomizer(lb);
+////
+////                if (customizer != null) {
+////                    CustomizerDisplayer lcd =
+////                        new CustomizerDisplayer(lb, customizer, customizer.getHelpKey(),
+////                            webform.getModel());
+////                    lcd.show();
+////                }
+////            }
+////        }
+//    }
 
 
     /**
