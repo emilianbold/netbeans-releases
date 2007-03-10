@@ -63,6 +63,7 @@ public class PageFlowController {
     public NavigationCase createLink(AbstractNode source, AbstractNode target, String comp) {
         
         String sourceName = source.getDisplayName();
+        int caseNum = 1;
         
         configModel.startTransaction();
         org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase navCase = configModel.getFactory().createNavigationCase();
@@ -72,12 +73,18 @@ public class PageFlowController {
         org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule navRule = getRuleWithFromViewID(facesConfig,
                 source.getDisplayName());
         
+        
         if (navRule == null) {
             navRule = configModel.getFactory().createNavigationRule();
             navRule.setFromViewId(source.getDisplayName());
             facesConfig.addNavigationRule(navRule);
+        } else {
+            caseNum = getNewCaseNumber(navRule);
         }
+        
+        
         navRule.addNavigationCase(navCase);
+        navCase.setFromOutcome(CASE_STRING + Integer.toString(caseNum));
         configModel.endTransaction();
         try {
             configModel.sync();
@@ -87,6 +94,24 @@ public class PageFlowController {
         view.createEdge(navRule, navCase);
         return navCase;
         
+    }
+    
+    private final static String CASE_STRING = "case";
+    
+    private int getNewCaseNumber( NavigationRule navRule ) {
+            Collection<String> caseOutcomes = new HashSet<String>();
+            List<NavigationCase> navCases = navRule.getNavigationCases();
+            for( NavigationCase navCase : navCases ){
+                caseOutcomes.add(navCase.getFromOutcome());
+            }
+            
+            int caseNum = 1;
+            while( true ){
+                if( !caseOutcomes.contains(CASE_STRING + Integer.toString(caseNum)) ){
+                    return caseNum;
+                }
+                caseNum++;
+            }
     }
     
     /**
