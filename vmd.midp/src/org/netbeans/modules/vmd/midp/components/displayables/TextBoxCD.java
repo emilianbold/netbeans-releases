@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midp.components.displayables;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.*;
@@ -36,7 +37,10 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorConstraints;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
+import org.netbeans.modules.vmd.midp.screen.display.TextBoxDisplayPresenter;
 
 /**
  *
@@ -79,6 +83,11 @@ public class TextBoxCD extends ComponentDescriptor{
          );
     }
 
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -86,7 +95,6 @@ public class TextBoxCD extends ComponentDescriptor{
                 .addProperty("Maximum Size", PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE)
                 .addProperty("Input Constraints", PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS)
                 .addProperty("Initial Input Mode", PropertyEditorString.createInstance(), PROP_INITIAL_INPUT_MODE);
-
     }
 
     private static Presenter createSetterPresenter () {
@@ -107,7 +115,9 @@ public class TextBoxCD extends ComponentDescriptor{
             // inspector
             InspectorPositionPresenter.create(new DisplayablePC()),
             // code
-            createSetterPresenter ()
+            createSetterPresenter (),
+            // screen
+            new TextBoxDisplayPresenter()
         );
     }
 

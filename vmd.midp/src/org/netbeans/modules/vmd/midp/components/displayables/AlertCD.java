@@ -40,6 +40,8 @@ import org.netbeans.modules.vmd.midp.propertyeditors.*;
 import org.netbeans.modules.vmd.midp.flow.FlowAlertViaPinOrderPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.AlertDisplayPresenter;
 
 /**
  * @author Karol Harezlak
@@ -114,6 +116,7 @@ public final class AlertCD extends ComponentDescriptor {
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, AbstractEventHandlerCreatorPresenter.class);
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
     }
 
@@ -130,7 +133,9 @@ public final class AlertCD extends ComponentDescriptor {
             // delete
             DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_IMAGE),
             // flow
-            new FlowAlertViaPinOrderPresenter ()
+            new FlowAlertViaPinOrderPresenter (),
+            // screen
+            new AlertDisplayPresenter()
         );
     }
 

@@ -178,7 +178,7 @@
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
@@ -294,6 +294,7 @@
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.imagechooser</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.timezone</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.usercode</package>
+                <package>org.netbeans.modules.vmd.midp.screen.display</package>
             </public-packages>
         </data>
     </configuration>

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.components.displayables;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
@@ -37,9 +38,12 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midpnb.screen.display.AbstractInfoDisplayPresenter;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 
 /**
  *
@@ -49,9 +53,9 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.AbstractInfoScreen"); // NOI18N
 
-    private static final String PROP_IMAGE = "image"; //NOI18N
-    private static final String PROP_TEXT = "text"; //NOI18N
-    private static final String PROP_TEXT_FONT = "textFont"; //NOI18N
+    public static final String PROP_IMAGE = "image"; //NOI18N
+    public static final String PROP_TEXT = "text"; //NOI18N
+    public static final String PROP_TEXT_FONT = "textFont"; //NOI18N
 
     public static final String[] MIDP_NB_LIBRARY = {"NetBeans MIDP Components"}; //NOI18N
 
@@ -78,6 +82,11 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
         );
     }
 
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -100,7 +109,9 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // code
             createSetterPresenter (),
-            MidpCodePresenterSupport.createAddImportPresenter ()
+            MidpCodePresenterSupport.createAddImportPresenter (),
+            // screen
+            new AbstractInfoDisplayPresenter()
         );
     }
 

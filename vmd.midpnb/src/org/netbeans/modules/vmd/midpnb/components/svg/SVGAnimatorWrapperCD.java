@@ -44,8 +44,12 @@ import org.openide.util.NbBundle;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGAnimatorWrapperDisplayPresenter;
 
 /**
  *
@@ -92,6 +96,11 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 );
     }
     
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -126,7 +135,9 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                     }
                 },
                 // delete
-                DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE)
+                DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE),
+                // screen
+                new SVGAnimatorWrapperDisplayPresenter()
                 );
     }
     
