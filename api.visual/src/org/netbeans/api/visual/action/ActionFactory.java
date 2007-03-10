@@ -117,6 +117,8 @@ public final class ActionFactory {
 
     private static final ResizeControlPointResolver RESIZE_CONTROL_POINT_RESOLVER_DEFAULT = new ResizeCornersControlPointResolver ();
 
+    private static final ActionMapAction ACTION_MAP_ACTION = new ActionMapAction (null, null);
+
     private static final WidgetAction MOVE_CONTROL_POINT_ACTION_FREE = createMoveControlPointAction (createFreeMoveControlPointProvider ());
 
     private static final WidgetAction MOVE_CONTROL_POINT_ACTION_ORTHOGONAL = createMoveControlPointAction (createOrthogonalMoveControlPointProvider ());
@@ -138,6 +140,30 @@ public final class ActionFactory {
     public static WidgetAction createAcceptAction (AcceptProvider provider) {
         assert provider != null;
         return new AcceptAction (provider);
+    }
+
+    /**
+     * Creates an action which handles keys and popup menu.
+     * The key-to-action binding is obtained from the InputMap of a view JComponent of a scene.
+     * The actions for popup menu are obtained from the ActionMap of a view JComponent of a scene.
+     * @return the action-map action
+     * @deprecated experimental action
+     */
+    public static WidgetAction createActionMapAction () {
+        return ACTION_MAP_ACTION;
+    }
+
+    /**
+     * Creates an action which handles keys and popup menu.
+     * The key-to-action binding and popup menu items are obtained from specified ActionMap and InputMap.
+     * @param inputMap the input map
+     * @param actionMap the action map
+     * @return the action-map action
+     * @deprecated experimental action
+     */
+    public static WidgetAction createActionMapAction (InputMap inputMap, ActionMap actionMap) {
+        assert inputMap != null  &&  actionMap != null;
+        return new ActionMapAction (inputMap, actionMap);
     }
 
     /**

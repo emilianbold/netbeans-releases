@@ -188,8 +188,8 @@ public final class LayoutFactory {
      * Returns a fill layout where all children widgets has the boundary at the biggest one of them or
      * they are expanded to the parent widget boundaries during justification.
      * The instance can be shared by multiple widgets.
-     * @deprecated use createOverlayLayout method instead
      * @return the fill layout
+     * @deprecated use createOverlayLayout method instead
      */
     public static Layout createFillLayout () {
         GeomUtil.LOG.warning ("LayoutFactory.createFillLayout() method is deprecated. Use LayoutFactory.createOverlayLayout() method instead."); // NOI18N
