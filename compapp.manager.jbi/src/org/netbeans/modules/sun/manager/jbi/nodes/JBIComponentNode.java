@@ -618,7 +618,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         
         public Action[] getActions(boolean flag) {
             return new SystemAction[] {
-                SystemAction.get(UninstallAction.class),
+                SystemAction.get(UninstallAction.Normal.class),
                 null,
                 SystemAction.get(PropertiesAction.class),
             };
