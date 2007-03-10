@@ -26,7 +26,6 @@ import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
 import org.netbeans.modules.sun.manager.jbi.nodes.Shutdownable;
-import org.openide.awt.DynamicMenuContent;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
