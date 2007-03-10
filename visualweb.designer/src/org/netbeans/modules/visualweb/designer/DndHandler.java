@@ -2543,389 +2543,389 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //    }
 
-    /**
-     * Multi-function method dealing with link handling for components.
-     * I used to have separate methods which accomplished various aspects of link
-     * handling, but these would vary slightly in how they handled certain aspects
-     * and as a result inconsistent handling would result. Thus, all the logic is handled
-     * by the same method -- both "previewing" what links are available as well as actually
-     * handling the linking. The flags control the behaviors.
-     *
-     * @param origElement The first/innermost element to start with when searching
-     *    the bean hierarchy for DesignBean and MarkupMouseRegions willing to link
-     *    the given beans or bean classes.
-     * @param classes Array of classes to be checked for link eligibility. This is
-     *    separate from beans because we often want to check if linking is possible
-     *    before we actually have created beans -- such as when we're about to
-     *    drag &amp; drop. Obviously in this case we can't perform linking. This
-     *     parameter can be null but then beans must not be null.
-     * @param beans Can be null, but if not, should correspond exactly to the classes
-     *    parameter -- same length, same order, etc. This list must be specified
-     *    if handleLinks is true; you can't link on just class names.
-     * @param selectFirst If set, don't ask the user which target to use if there are multiple
-     *    possibilities; just pick the first one. If not set, all eligible link handlers
-     *    in the parent chain up from the original element will be checked, and if more than
-     *    one is willing to link, the user will be presented with a list and asked to choose.
-     * @param handleLinks If true, actually perform the linking.
-     * @param showLinkTarget If true, highlihght the link target and region. Also sets the
-     *    recentDropTarget field.
-     * @return DROP_DENIED if no beans/classes were linkable for any mouse regions or
-     *    DesignBeans; otherwise returns DROP_LINKED. If showLinkTarget is set, recentDropTarget
-     *    will be set to the most recent such eligible DesignBean.
-     */
-//    public int processLinks(Element origElement, Class[] classes, List beans,
-    public int processLinks(Element origElement, Class[] classes, Element componentRootElement,
-        boolean selectFirst, // if there are multiple hits; if not ask user
-        boolean handleLinks, // actually do linking
-        boolean showLinkTarget) {
-        
-//        ErrorManager.getDefault()
-//    .getInstance(DesignerUtils.class.getName()).isLoggable(ErrorManager.INFORMATIONAL);
-//        if(DesignerUtils.DEBUG) {
-//            DesignerUtils.debugLog(getClass().getName() + ".processLinks(Element, Class[], ArrayList, boolean, boolean, boolean)");
-//        }
-//        if((classes == null && beans == null) ||
-//                (classes != null && beans != null && beans.size() != classes.length)) {
-//            throw(new IllegalArgumentException("One of the classes array or beans list must not be null. If both are not null, than the length of them must be the same."));
-//        }
-//
-//        int dropType = DROP_DENIED;
-//        int n;
-//
-//        if (classes != null) {
-//            n = classes.length;
-//        } else {
-//            //the assert below would hide the NPE - better have NPE if not IllegalArgumentException
-//            //assert beans != null;
-//            n = beans.size();
-//        }
-//
-//        //the assertion below does not give anything (see the if above). 
-//        //assert (beans != null) || (classes != null);
-//        //the assertion below should be replaced by an if statement, so that the check happens even if
-//        //the asserions are turned off (see the if block above)
-//        //assert (beans == null) || (classes == null) || (beans.size() == classes.length);
-//
-//        for (int i = 0; i < n; i++) {
-//            ArrayList candidates = new ArrayList(n);
-//            Class clz;
-//            DesignBean lb = null;
-//
-//            if (beans != null) {
-//                lb = (DesignBean)beans.get(i);
-//            }
-//
-//            if (classes != null) {
-//                clz = classes[i];
-//            } else {
-//                clz = ((DesignBean)beans.get(i)).getInstance().getClass();
-//            }
-//
-//            try {
-//                // See if this new bean should be wired to the bean we
-//                // dropped on (or some container up the parent chain that
-//                // can handle the bean drop)
-//                DesignBean prev = null;
-//
-//                for (Element element = origElement; element != null; element = FacesSupport.getParent(element)) {
-////                    DesignBean droppee = element.getDesignBean();
-//                    DesignBean droppee = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//
-//                    if (droppee == null) {
-//                        continue;
-//                    }
-//
-////                    MarkupMouseRegion region = element.getMarkupMouseRegion();
-//                    MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
-//
-//                    if ((region != null) && region.acceptLink(droppee, lb, clz)) {
-//                        if (!candidates.contains(element)) {
-//                            candidates.add(element);
-//                        }
-//                    }
-//
-//                    if (prev == droppee) {
-//                        continue;
-//                    }
-//
-//                    prev = droppee;
-//
-//                    DesignInfo dbi = droppee.getDesignInfo();
-//
-//                    if ((dbi != null) && dbi.acceptLink(droppee, lb, clz)) {
-//                        if (!candidates.contains(droppee) &&
-//                                ((beans == null) || !beans.contains(droppee))) {
-//                            candidates.add(droppee);
-//                        }
-//                    }
-//                }
-//            } catch (Exception e) {
-//                ErrorManager.getDefault().notify(e);
-//            }
-//
-//            if (candidates.size() == 0) {
-//                continue;
-//            }
-//
-//            dropType = DROP_LINKED;
-//
-//            // Store either the chosen DesignBean, or the chosen MarkupMouseRegion.
-//            // However, we'll need both the region and the corresponding bean, so
-//            // store the element instead which will point to both.
-//            Object selected = null;
-//
-//            if (selectFirst || (candidates.size() == 1)) {
-//                selected = candidates.get(0);
-//            } else {
-//                // Gotta ask the user
-//                // Code originally emitted by the form builder:
-//                JPanel panel = new JPanel(new GridBagLayout());
-//                GridBagConstraints gridBagConstraints;
-//                String labelDesc = NbBundle.getMessage(DndHandler.class, "ChooseTargetLabel"); // NOI18N
-//                JLabel label = new JLabel(labelDesc);
-//                gridBagConstraints = new GridBagConstraints();
-//                gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-//                gridBagConstraints.insets = new Insets(12, 12, 11, 11);
-//                gridBagConstraints.anchor = GridBagConstraints.WEST;
-//                gridBagConstraints.weightx = 1.0;
-//                panel.add(label, gridBagConstraints);
-//
-//                ButtonGroup buttonGroup = new ButtonGroup();
-//
-//                // Iterate reverse order since list was generates from the leaf
-//                // up the parent chain, and I want to display outermost parents first
-//                for (int j = candidates.size() - 1; j >= 0; j--) {
-//                    String name = "";
-//                    Object next = candidates.get(j);
-//
-//                    if (next instanceof DesignBean) {
-//                        DesignBean dlb = (DesignBean)next;
-//                        name = dlb.getInstanceName();
-//
-//                        BeanInfo bi = dlb.getBeanInfo();
-//
-//                        if (bi != null) {
-//                            BeanDescriptor bd = bi.getBeanDescriptor();
-//
-//                            if (bd != null) {
-//                                String desc = bd.getShortDescription();
-//
-//                                if (desc == null) {
-//                                    desc = bd.getDisplayName();
-//
-//                                    if (desc == null) {
-//                                        desc = "";
-//                                    }
-//                                }
-//
-//                                name =
-//                                    NbBundle.getMessage(DndHandler.class, "TargetDescriptor", // NOI18N
-//                                        name, desc);
-//                            }
-//                        }
-//                    } else {
-////                        assert next instanceof RaveElement;
-//                        if (!(next instanceof Element)) {
-//                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                                    new IllegalStateException("Object is expected to be of Element type, object=" + next)); // NOI18N
-//                        }
-//
-////                        RaveElement element = (RaveElement)next;
-////                        MarkupMouseRegion region = element.getMarkupMouseRegion();
-//                        Element element = (Element)next;
-//                        MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
-//                        assert region != null;
-//
-//                        if ((region.getDescription() != null) &&
-//                                (region.getDescription().length() > 0)) {
-//                            name =
-//                                NbBundle.getMessage(DndHandler.class, "TargetDescriptor", // NOI18N
-//                                    region.getDisplayName(), region.getDescription());
-//                        } else {
-//                            name = region.getDisplayName();
-//                        }
-//                    }
-//
-//                    JRadioButton radioButton = new JRadioButton(name);
-//
-//                    if (j == (candidates.size() - 1)) {
-//                        radioButton.setSelected(true);
-//                    }
-//
-//                    radioButton.putClientProperty("liveBean", next); // NOI18N
-//                    buttonGroup.add(radioButton);
-//                    gridBagConstraints = new GridBagConstraints();
-//                    gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-//                    gridBagConstraints.insets = new Insets(0, 12, 0, 11);
-//                    gridBagConstraints.anchor = GridBagConstraints.WEST;
-//                    panel.add(radioButton, gridBagConstraints);
-//                }
-//
-//                JPanel filler = new JPanel();
-//                gridBagConstraints = new GridBagConstraints();
-//                gridBagConstraints.weighty = 1.0;
-//                panel.add(filler, gridBagConstraints);
-//
-//                String title = NbBundle.getMessage(DndHandler.class, "ChooseTarget"); // NOI18N
-//                DialogDescriptor dlg =
-//                    new DialogDescriptor(panel, title, true, DialogDescriptor.OK_CANCEL_OPTION,
-//                        DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, 
-//                    // DialogDescriptor.BOTTOM_ALIGN,
-//                    null, //new HelpCtx("choose_target"), // NOI18N
-//                        null);
-//
-//                Dialog dialog = DialogDisplayer.getDefault().createDialog(dlg);
-//                dialog.show();
-//
-//                if (dlg.getValue().equals(DialogDescriptor.OK_OPTION)) {
-//                    Enumeration enm = buttonGroup.getElements();
-//
-//                    while (enm.hasMoreElements()) {
-//                        JRadioButton button = (JRadioButton)enm.nextElement();
-//
-//                        if (button.isSelected()) {
-//                            selected = button.getClientProperty("liveBean"); // NOI18N
-//
-//                            break;
-//                        }
-//                    }
-//                } // else: Cancel, or Esc: do nothing; selected will stay null
-//            }
-//
-//            if (showLinkTarget) {
-//                if (selected instanceof DesignBean) {
-//                    DesignBean droppee = (DesignBean)selected;
-//
-//                    if (droppee instanceof MarkupDesignBean) {
-//                        recentDropTarget = (MarkupDesignBean)droppee;
-//                        showDropMatch(recentDropTarget, null, DROP_LINKED);
-//                    }
-//                } else {
-////                    assert selected instanceof RaveElement;
-//                    if (!(selected instanceof Element)) {
-//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                                new IllegalStateException("Object is expected to be of Element type, object=" + selected)); // NOI18N
-//                    }
-//                    
-//
-////                    RaveElement element = (RaveElement)selected;
-////                    DesignBean droppee = element.getDesignBean();
-//                    Element element = (Element)selected;
-//                    DesignBean droppee = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//
-//                    if (droppee instanceof MarkupDesignBean) {
-//                        recentDropTarget = (MarkupDesignBean)droppee;
-////                        showDropMatch(recentDropTarget, element.getMarkupMouseRegion(), DROP_LINKED);
-//                        showDropMatch(recentDropTarget,
-//                                InSyncService.getProvider().getMarkupMouseRegionForElement(element),
-//                                DROP_LINKED);
-//                    }
-//                }
-//            }
-//
-//            if ((selected == null) || !handleLinks || (beans == null)) {
-//                return dropType;
-//            }
-//
-////            Document document = webform.getDocument();
-//
-//            String description = NbBundle.getMessage(DndHandler.class, "LinkComponent"); // NOI18N
-//            UndoEvent undoEvent = webform.getModel().writeLock(description);
-//            try {
-////                String description = NbBundle.getMessage(DndHandler.class, "LinkComponent"); // NOI18N
-////                document.writeLock(description);
-//
-//                lb = (DesignBean)beans.get(i);
-//
-//                try {
-//                    // If you drop on an existing component, see if they
-//                    // can be wired together
-//                    // Try to bind the two together - for example, if you
-//                    // drop a RowSet on a bean that has a RowSet property,
-//                    // the RowSet property is bound to this particular
-//                    // RowSet.
-//                    if (selected instanceof DesignBean) {
-//                        DesignBean droppee = (DesignBean)selected;
-//                        assert droppee.getDesignInfo().acceptLink(droppee, lb,
-//                            lb.getInstance().getClass());
-//
-//                        MarkupDesignBean mbean = null;
-//
-//                        if (droppee instanceof MarkupDesignBean) {
-//                            // link beans might perform lots and lots of
-//                            // updates on the element - that's the case
-//                            // for the data grid when you bind a table
-//                            // to it for example.  So batch up all these
-//                            // modifications into a single change event
-//                            // on the top level element.
-//                            mbean = (MarkupDesignBean)droppee;
-////                            webform.getDomSynchronizer().setUpdatesSuspended(mbean, true);
-//                            webform.setUpdatesSuspended(mbean, true);
-//                        }
-//
-//                        try {
-//                            webform.getModel().linkBeans(droppee, lb);
-//                        } finally {
-//                            if (mbean != null) {
-//                                // Process queued up changes
-////                                webform.getDomSynchronizer().setUpdatesSuspended(mbean, false);
-//                                webform.setUpdatesSuspended(mbean, false);
-//                            }
-//                        }
-//
-//                        // The target bean should be selected instead of
-//                        // the droppee!
-//                        select = droppee;
-//                    } else {
-////                        assert selected instanceof RaveElement;
-//                        if (!(selected instanceof Element)) {
-//                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                                    new IllegalStateException("Object is expected to be of Element type, object=" + selected)); // NOI18N
-//                        }
-//
-////                        RaveElement element = (RaveElement)selected;
-////                        MarkupMouseRegion region = element.getMarkupMouseRegion();
-//                        Element element = (Element)selected;
-//                        MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
-//                        assert region != null;
-//
-////                        DesignBean droppee = element.getDesignBean();
-//                        DesignBean droppee = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-//                        assert droppee != null;
-//                        assert region.acceptLink(droppee, lb, clz);
-//
-//                        MarkupDesignBean mbean = null;
-//
-//                        if (droppee instanceof MarkupDesignBean) {
-//                            mbean = (MarkupDesignBean)droppee;
-////                            webform.getDomSynchronizer().setUpdatesSuspended(mbean, true);
-//                            webform.setUpdatesSuspended(mbean, true);
-//                        }
-//
-//                        try {
-//                            Result r = region.linkBeans(droppee, lb);
-//                            ResultHandler.handleResult(r, webform.getModel());
-//                        } finally {
-//                            if (mbean != null) {
-////                                webform.getDomSynchronizer().setUpdatesSuspended(mbean, false);
-//                                webform.setUpdatesSuspended(mbean, false);
-//                            }
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    ErrorManager.getDefault().notify(e);
-//                }
-//            } finally {
-////                document.writeUnlock();
-//                webform.getModel().writeUnlock(undoEvent);
-//            }
-//        }
-//
-//        return dropType;
-        
-//        return webform.processLinks(origElement, classes, beans, selectFirst, handleLinks, showLinkTarget);
-        return webform.processLinks(origElement, classes, componentRootElement, selectFirst, handleLinks, showLinkTarget);
-    }
+//    /**
+//     * Multi-function method dealing with link handling for components.
+//     * I used to have separate methods which accomplished various aspects of link
+//     * handling, but these would vary slightly in how they handled certain aspects
+//     * and as a result inconsistent handling would result. Thus, all the logic is handled
+//     * by the same method -- both "previewing" what links are available as well as actually
+//     * handling the linking. The flags control the behaviors.
+//     *
+//     * @param origElement The first/innermost element to start with when searching
+//     *    the bean hierarchy for DesignBean and MarkupMouseRegions willing to link
+//     *    the given beans or bean classes.
+//     * @param classes Array of classes to be checked for link eligibility. This is
+//     *    separate from beans because we often want to check if linking is possible
+//     *    before we actually have created beans -- such as when we're about to
+//     *    drag &amp; drop. Obviously in this case we can't perform linking. This
+//     *     parameter can be null but then beans must not be null.
+//     * @param beans Can be null, but if not, should correspond exactly to the classes
+//     *    parameter -- same length, same order, etc. This list must be specified
+//     *    if handleLinks is true; you can't link on just class names.
+//     * @param selectFirst If set, don't ask the user which target to use if there are multiple
+//     *    possibilities; just pick the first one. If not set, all eligible link handlers
+//     *    in the parent chain up from the original element will be checked, and if more than
+//     *    one is willing to link, the user will be presented with a list and asked to choose.
+//     * @param handleLinks If true, actually perform the linking.
+//     * @param showLinkTarget If true, highlihght the link target and region. Also sets the
+//     *    recentDropTarget field.
+//     * @return DROP_DENIED if no beans/classes were linkable for any mouse regions or
+//     *    DesignBeans; otherwise returns DROP_LINKED. If showLinkTarget is set, recentDropTarget
+//     *    will be set to the most recent such eligible DesignBean.
+//     */
+////    public int processLinks(Element origElement, Class[] classes, List beans,
+//    public int processLinks(Element origElement, Class[] classes, Element componentRootElement,
+//        boolean selectFirst, // if there are multiple hits; if not ask user
+//        boolean handleLinks, // actually do linking
+//        boolean showLinkTarget) {
+//        
+////        ErrorManager.getDefault()
+////    .getInstance(DesignerUtils.class.getName()).isLoggable(ErrorManager.INFORMATIONAL);
+////        if(DesignerUtils.DEBUG) {
+////            DesignerUtils.debugLog(getClass().getName() + ".processLinks(Element, Class[], ArrayList, boolean, boolean, boolean)");
+////        }
+////        if((classes == null && beans == null) ||
+////                (classes != null && beans != null && beans.size() != classes.length)) {
+////            throw(new IllegalArgumentException("One of the classes array or beans list must not be null. If both are not null, than the length of them must be the same."));
+////        }
+////
+////        int dropType = DROP_DENIED;
+////        int n;
+////
+////        if (classes != null) {
+////            n = classes.length;
+////        } else {
+////            //the assert below would hide the NPE - better have NPE if not IllegalArgumentException
+////            //assert beans != null;
+////            n = beans.size();
+////        }
+////
+////        //the assertion below does not give anything (see the if above). 
+////        //assert (beans != null) || (classes != null);
+////        //the assertion below should be replaced by an if statement, so that the check happens even if
+////        //the asserions are turned off (see the if block above)
+////        //assert (beans == null) || (classes == null) || (beans.size() == classes.length);
+////
+////        for (int i = 0; i < n; i++) {
+////            ArrayList candidates = new ArrayList(n);
+////            Class clz;
+////            DesignBean lb = null;
+////
+////            if (beans != null) {
+////                lb = (DesignBean)beans.get(i);
+////            }
+////
+////            if (classes != null) {
+////                clz = classes[i];
+////            } else {
+////                clz = ((DesignBean)beans.get(i)).getInstance().getClass();
+////            }
+////
+////            try {
+////                // See if this new bean should be wired to the bean we
+////                // dropped on (or some container up the parent chain that
+////                // can handle the bean drop)
+////                DesignBean prev = null;
+////
+////                for (Element element = origElement; element != null; element = FacesSupport.getParent(element)) {
+//////                    DesignBean droppee = element.getDesignBean();
+////                    DesignBean droppee = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
+////
+////                    if (droppee == null) {
+////                        continue;
+////                    }
+////
+//////                    MarkupMouseRegion region = element.getMarkupMouseRegion();
+////                    MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
+////
+////                    if ((region != null) && region.acceptLink(droppee, lb, clz)) {
+////                        if (!candidates.contains(element)) {
+////                            candidates.add(element);
+////                        }
+////                    }
+////
+////                    if (prev == droppee) {
+////                        continue;
+////                    }
+////
+////                    prev = droppee;
+////
+////                    DesignInfo dbi = droppee.getDesignInfo();
+////
+////                    if ((dbi != null) && dbi.acceptLink(droppee, lb, clz)) {
+////                        if (!candidates.contains(droppee) &&
+////                                ((beans == null) || !beans.contains(droppee))) {
+////                            candidates.add(droppee);
+////                        }
+////                    }
+////                }
+////            } catch (Exception e) {
+////                ErrorManager.getDefault().notify(e);
+////            }
+////
+////            if (candidates.size() == 0) {
+////                continue;
+////            }
+////
+////            dropType = DROP_LINKED;
+////
+////            // Store either the chosen DesignBean, or the chosen MarkupMouseRegion.
+////            // However, we'll need both the region and the corresponding bean, so
+////            // store the element instead which will point to both.
+////            Object selected = null;
+////
+////            if (selectFirst || (candidates.size() == 1)) {
+////                selected = candidates.get(0);
+////            } else {
+////                // Gotta ask the user
+////                // Code originally emitted by the form builder:
+////                JPanel panel = new JPanel(new GridBagLayout());
+////                GridBagConstraints gridBagConstraints;
+////                String labelDesc = NbBundle.getMessage(DndHandler.class, "ChooseTargetLabel"); // NOI18N
+////                JLabel label = new JLabel(labelDesc);
+////                gridBagConstraints = new GridBagConstraints();
+////                gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+////                gridBagConstraints.insets = new Insets(12, 12, 11, 11);
+////                gridBagConstraints.anchor = GridBagConstraints.WEST;
+////                gridBagConstraints.weightx = 1.0;
+////                panel.add(label, gridBagConstraints);
+////
+////                ButtonGroup buttonGroup = new ButtonGroup();
+////
+////                // Iterate reverse order since list was generates from the leaf
+////                // up the parent chain, and I want to display outermost parents first
+////                for (int j = candidates.size() - 1; j >= 0; j--) {
+////                    String name = "";
+////                    Object next = candidates.get(j);
+////
+////                    if (next instanceof DesignBean) {
+////                        DesignBean dlb = (DesignBean)next;
+////                        name = dlb.getInstanceName();
+////
+////                        BeanInfo bi = dlb.getBeanInfo();
+////
+////                        if (bi != null) {
+////                            BeanDescriptor bd = bi.getBeanDescriptor();
+////
+////                            if (bd != null) {
+////                                String desc = bd.getShortDescription();
+////
+////                                if (desc == null) {
+////                                    desc = bd.getDisplayName();
+////
+////                                    if (desc == null) {
+////                                        desc = "";
+////                                    }
+////                                }
+////
+////                                name =
+////                                    NbBundle.getMessage(DndHandler.class, "TargetDescriptor", // NOI18N
+////                                        name, desc);
+////                            }
+////                        }
+////                    } else {
+//////                        assert next instanceof RaveElement;
+////                        if (!(next instanceof Element)) {
+////                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                                    new IllegalStateException("Object is expected to be of Element type, object=" + next)); // NOI18N
+////                        }
+////
+//////                        RaveElement element = (RaveElement)next;
+//////                        MarkupMouseRegion region = element.getMarkupMouseRegion();
+////                        Element element = (Element)next;
+////                        MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
+////                        assert region != null;
+////
+////                        if ((region.getDescription() != null) &&
+////                                (region.getDescription().length() > 0)) {
+////                            name =
+////                                NbBundle.getMessage(DndHandler.class, "TargetDescriptor", // NOI18N
+////                                    region.getDisplayName(), region.getDescription());
+////                        } else {
+////                            name = region.getDisplayName();
+////                        }
+////                    }
+////
+////                    JRadioButton radioButton = new JRadioButton(name);
+////
+////                    if (j == (candidates.size() - 1)) {
+////                        radioButton.setSelected(true);
+////                    }
+////
+////                    radioButton.putClientProperty("liveBean", next); // NOI18N
+////                    buttonGroup.add(radioButton);
+////                    gridBagConstraints = new GridBagConstraints();
+////                    gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+////                    gridBagConstraints.insets = new Insets(0, 12, 0, 11);
+////                    gridBagConstraints.anchor = GridBagConstraints.WEST;
+////                    panel.add(radioButton, gridBagConstraints);
+////                }
+////
+////                JPanel filler = new JPanel();
+////                gridBagConstraints = new GridBagConstraints();
+////                gridBagConstraints.weighty = 1.0;
+////                panel.add(filler, gridBagConstraints);
+////
+////                String title = NbBundle.getMessage(DndHandler.class, "ChooseTarget"); // NOI18N
+////                DialogDescriptor dlg =
+////                    new DialogDescriptor(panel, title, true, DialogDescriptor.OK_CANCEL_OPTION,
+////                        DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, 
+////                    // DialogDescriptor.BOTTOM_ALIGN,
+////                    null, //new HelpCtx("choose_target"), // NOI18N
+////                        null);
+////
+////                Dialog dialog = DialogDisplayer.getDefault().createDialog(dlg);
+////                dialog.show();
+////
+////                if (dlg.getValue().equals(DialogDescriptor.OK_OPTION)) {
+////                    Enumeration enm = buttonGroup.getElements();
+////
+////                    while (enm.hasMoreElements()) {
+////                        JRadioButton button = (JRadioButton)enm.nextElement();
+////
+////                        if (button.isSelected()) {
+////                            selected = button.getClientProperty("liveBean"); // NOI18N
+////
+////                            break;
+////                        }
+////                    }
+////                } // else: Cancel, or Esc: do nothing; selected will stay null
+////            }
+////
+////            if (showLinkTarget) {
+////                if (selected instanceof DesignBean) {
+////                    DesignBean droppee = (DesignBean)selected;
+////
+////                    if (droppee instanceof MarkupDesignBean) {
+////                        recentDropTarget = (MarkupDesignBean)droppee;
+////                        showDropMatch(recentDropTarget, null, DROP_LINKED);
+////                    }
+////                } else {
+//////                    assert selected instanceof RaveElement;
+////                    if (!(selected instanceof Element)) {
+////                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                                new IllegalStateException("Object is expected to be of Element type, object=" + selected)); // NOI18N
+////                    }
+////                    
+////
+//////                    RaveElement element = (RaveElement)selected;
+//////                    DesignBean droppee = element.getDesignBean();
+////                    Element element = (Element)selected;
+////                    DesignBean droppee = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
+////
+////                    if (droppee instanceof MarkupDesignBean) {
+////                        recentDropTarget = (MarkupDesignBean)droppee;
+//////                        showDropMatch(recentDropTarget, element.getMarkupMouseRegion(), DROP_LINKED);
+////                        showDropMatch(recentDropTarget,
+////                                InSyncService.getProvider().getMarkupMouseRegionForElement(element),
+////                                DROP_LINKED);
+////                    }
+////                }
+////            }
+////
+////            if ((selected == null) || !handleLinks || (beans == null)) {
+////                return dropType;
+////            }
+////
+//////            Document document = webform.getDocument();
+////
+////            String description = NbBundle.getMessage(DndHandler.class, "LinkComponent"); // NOI18N
+////            UndoEvent undoEvent = webform.getModel().writeLock(description);
+////            try {
+//////                String description = NbBundle.getMessage(DndHandler.class, "LinkComponent"); // NOI18N
+//////                document.writeLock(description);
+////
+////                lb = (DesignBean)beans.get(i);
+////
+////                try {
+////                    // If you drop on an existing component, see if they
+////                    // can be wired together
+////                    // Try to bind the two together - for example, if you
+////                    // drop a RowSet on a bean that has a RowSet property,
+////                    // the RowSet property is bound to this particular
+////                    // RowSet.
+////                    if (selected instanceof DesignBean) {
+////                        DesignBean droppee = (DesignBean)selected;
+////                        assert droppee.getDesignInfo().acceptLink(droppee, lb,
+////                            lb.getInstance().getClass());
+////
+////                        MarkupDesignBean mbean = null;
+////
+////                        if (droppee instanceof MarkupDesignBean) {
+////                            // link beans might perform lots and lots of
+////                            // updates on the element - that's the case
+////                            // for the data grid when you bind a table
+////                            // to it for example.  So batch up all these
+////                            // modifications into a single change event
+////                            // on the top level element.
+////                            mbean = (MarkupDesignBean)droppee;
+//////                            webform.getDomSynchronizer().setUpdatesSuspended(mbean, true);
+////                            webform.setUpdatesSuspended(mbean, true);
+////                        }
+////
+////                        try {
+////                            webform.getModel().linkBeans(droppee, lb);
+////                        } finally {
+////                            if (mbean != null) {
+////                                // Process queued up changes
+//////                                webform.getDomSynchronizer().setUpdatesSuspended(mbean, false);
+////                                webform.setUpdatesSuspended(mbean, false);
+////                            }
+////                        }
+////
+////                        // The target bean should be selected instead of
+////                        // the droppee!
+////                        select = droppee;
+////                    } else {
+//////                        assert selected instanceof RaveElement;
+////                        if (!(selected instanceof Element)) {
+////                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                                    new IllegalStateException("Object is expected to be of Element type, object=" + selected)); // NOI18N
+////                        }
+////
+//////                        RaveElement element = (RaveElement)selected;
+//////                        MarkupMouseRegion region = element.getMarkupMouseRegion();
+////                        Element element = (Element)selected;
+////                        MarkupMouseRegion region = InSyncService.getProvider().getMarkupMouseRegionForElement(element);
+////                        assert region != null;
+////
+//////                        DesignBean droppee = element.getDesignBean();
+////                        DesignBean droppee = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
+////                        assert droppee != null;
+////                        assert region.acceptLink(droppee, lb, clz);
+////
+////                        MarkupDesignBean mbean = null;
+////
+////                        if (droppee instanceof MarkupDesignBean) {
+////                            mbean = (MarkupDesignBean)droppee;
+//////                            webform.getDomSynchronizer().setUpdatesSuspended(mbean, true);
+////                            webform.setUpdatesSuspended(mbean, true);
+////                        }
+////
+////                        try {
+////                            Result r = region.linkBeans(droppee, lb);
+////                            ResultHandler.handleResult(r, webform.getModel());
+////                        } finally {
+////                            if (mbean != null) {
+//////                                webform.getDomSynchronizer().setUpdatesSuspended(mbean, false);
+////                                webform.setUpdatesSuspended(mbean, false);
+////                            }
+////                        }
+////                    }
+////                } catch (Exception e) {
+////                    ErrorManager.getDefault().notify(e);
+////                }
+////            } finally {
+//////                document.writeUnlock();
+////                webform.getModel().writeUnlock(undoEvent);
+////            }
+////        }
+////
+////        return dropType;
+//        
+////        return webform.processLinks(origElement, classes, beans, selectFirst, handleLinks, showLinkTarget);
+//        return webform.processLinks(origElement, classes, componentRootElement, selectFirst, handleLinks, showLinkTarget);
+//    }
 
 //    /** Set the absolute position of the component. **/
 //    private void positionBean(MarkupDesignBean lb, DesignBean origParent, Element element,

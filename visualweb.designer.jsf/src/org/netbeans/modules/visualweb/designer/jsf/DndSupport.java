@@ -116,7 +116,11 @@ class DndSupport {
         return getFacesModel().getDnDSupport().computeActions(droppee, transferable);
     }
 
-    int processLinks(Element origElement, Class[] classes, List beans, boolean selectFirst, boolean handleLinks, boolean showLinkTarget) {
+    int processLinks(Element origElement, List<DesignBean> beans) {
+        return processLinks(origElement, null, beans, true, true, false);
+    }
+    
+    private int processLinks(Element origElement, Class[] classes, List<DesignBean> beans, boolean selectFirst, boolean handleLinks, boolean showLinkTarget) {
         return getFacesModel().getDnDSupport().processLinks(origElement, classes, beans, selectFirst, handleLinks, showLinkTarget, jsfForm.getUpdateSuspender());
     }
 

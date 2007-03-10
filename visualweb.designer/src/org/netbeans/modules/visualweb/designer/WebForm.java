@@ -1693,8 +1693,8 @@ public class WebForm implements Designer {
 //    }
 
 //    int processLinks(Element origElement, Class[] classes, List beans, boolean selectFirst, boolean handleLinks, boolean showLinkTarget) {
-    int processLinks(Element origElement, Class[] classes, Element componentRootElement, boolean selectFirst, boolean handleLinks, boolean showLinkTarget) {
-        return htmlDomProvider.processLinks(origElement, classes, componentRootElement, selectFirst, handleLinks, showLinkTarget);
+    int processLinks(Element origElement, Element componentRootElement) {
+        return htmlDomProvider.processLinks(origElement, componentRootElement);
     }
     // <<< DnD
 

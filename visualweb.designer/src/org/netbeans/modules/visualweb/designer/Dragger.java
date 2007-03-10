@@ -271,7 +271,8 @@ public class Dragger extends Interaction implements KeyListener {
 //                            candidates.add(candidate);
 //                                handler.processLinks(element, null, candidates, true,
 //                                    true, false);
-                            handler.processLinks(element, null, candidate, true, true, false);
+//                            handler.processLinks(element, null, candidate, true, true, false);
+                            webform.processLinks(element, candidate);
                         }
                     } else {
                         // Try reverse link
@@ -297,7 +298,8 @@ public class Dragger extends Interaction implements KeyListener {
 
 //                                    handler.processLinks(element, null, candidates, true,
 //                                        true, false);
-                                handler.processLinks(element, null, candidate, true, true, false);
+//                                handler.processLinks(element, null, candidate, true, true, false);
+                                webform.processLinks(element, candidate);
                             }
                         }
                     }
