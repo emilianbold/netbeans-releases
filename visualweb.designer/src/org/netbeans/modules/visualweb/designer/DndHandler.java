@@ -163,7 +163,8 @@ public class DndHandler /*extends TransferHandler*/ {
         Object transferData = null;
 
         try {
-            DataFlavor importFlavor = getImportFlavor(t.getTransferDataFlavors());
+//            DataFlavor importFlavor = getImportFlavor(t.getTransferDataFlavors());
+            DataFlavor importFlavor = webform.getImportFlavor(t.getTransferDataFlavors());
 
             if (importFlavor == null) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
@@ -3598,71 +3599,71 @@ public class DndHandler /*extends TransferHandler*/ {
 //        return DROP_DENIED;
 //    }
 
-    /**
-     * Try to find a flavor that can be used to import a Transferable.
-     * The set of usable flavors are tried in the following order:
-     * <ol>
-     *     <li>First, an attempt is made to find a flavor matching the content type
-     *         of the EditorKit for the component.
-     *     <li>Second, an attempt to find a text/plain flavor is made.
-     *     <li>Third, an attempt to find a flavor representing a String reference
-     *         in the same VM is made.
-     *     <li>Lastly, DataFlavor.stringFlavor is searched for.
-     * </ol>
-     */
-    public DataFlavor getImportFlavor(DataFlavor[] flavors) {
-//        DataFlavor plainFlavor = null;
-//        DataFlavor refFlavor = null;
-//        DataFlavor stringFlavor = null;
-//        DataFlavor listFlavor = null;
-//
-//        for (int i = 0; i < flavors.length; i++) {
-//            String mime = flavors[i].getMimeType();
-//            Class clz = flavors[i].getRepresentationClass();
-//
-//            if (clz.isAssignableFrom(DisplayItem.class)) {
-//                return flavors[i];
-//            }
-//
-//            if (clz == DesignBean.class) {
-//                return flavors[i];
-//            }
-//
-//            if (clz.isAssignableFrom(List.class)) {
-//                // We don't know what's in the list, and can't look until
-//                // we have a transferable... but it looks promising so
-//                // defer decision
-//                listFlavor = flavors[i];
-//            }
-//
-//            if (clz.isAssignableFrom(org.openide.nodes.Node.class)) {
-//                listFlavor = flavors[i];
-//            } // TODO: check for org.openide.util.datatransfer.MultiTransferObject
-//
-//            if ((plainFlavor == null) && mime.startsWith("text/plain")) {
-//                plainFlavor = flavors[i];
-//            } else if ((refFlavor == null) &&
-//                    mime.startsWith("application/x-java-jvm-local-objectref") &&
-//                    (flavors[i].getRepresentationClass() == java.lang.String.class)) {
-//                refFlavor = flavors[i];
-//            } else if ((stringFlavor == null) && flavors[i].equals(DataFlavor.stringFlavor)) {
-//                stringFlavor = flavors[i];
-//            }
-//        }
-//
-//        if (refFlavor != null) {
-//            return refFlavor;
-//        } else if (listFlavor != null) {
-//            return listFlavor;
-//        } else if (stringFlavor != null) {
-//            return stringFlavor;
-//        } else if (plainFlavor != null) {
-//            return plainFlavor;
-//        }
-//
-//        return null;
-        return webform.getImportFlavor(flavors);
-    }
+//    /**
+//     * Try to find a flavor that can be used to import a Transferable.
+//     * The set of usable flavors are tried in the following order:
+//     * <ol>
+//     *     <li>First, an attempt is made to find a flavor matching the content type
+//     *         of the EditorKit for the component.
+//     *     <li>Second, an attempt to find a text/plain flavor is made.
+//     *     <li>Third, an attempt to find a flavor representing a String reference
+//     *         in the same VM is made.
+//     *     <li>Lastly, DataFlavor.stringFlavor is searched for.
+//     * </ol>
+//     */
+//    public DataFlavor getImportFlavor(DataFlavor[] flavors) {
+////        DataFlavor plainFlavor = null;
+////        DataFlavor refFlavor = null;
+////        DataFlavor stringFlavor = null;
+////        DataFlavor listFlavor = null;
+////
+////        for (int i = 0; i < flavors.length; i++) {
+////            String mime = flavors[i].getMimeType();
+////            Class clz = flavors[i].getRepresentationClass();
+////
+////            if (clz.isAssignableFrom(DisplayItem.class)) {
+////                return flavors[i];
+////            }
+////
+////            if (clz == DesignBean.class) {
+////                return flavors[i];
+////            }
+////
+////            if (clz.isAssignableFrom(List.class)) {
+////                // We don't know what's in the list, and can't look until
+////                // we have a transferable... but it looks promising so
+////                // defer decision
+////                listFlavor = flavors[i];
+////            }
+////
+////            if (clz.isAssignableFrom(org.openide.nodes.Node.class)) {
+////                listFlavor = flavors[i];
+////            } // TODO: check for org.openide.util.datatransfer.MultiTransferObject
+////
+////            if ((plainFlavor == null) && mime.startsWith("text/plain")) {
+////                plainFlavor = flavors[i];
+////            } else if ((refFlavor == null) &&
+////                    mime.startsWith("application/x-java-jvm-local-objectref") &&
+////                    (flavors[i].getRepresentationClass() == java.lang.String.class)) {
+////                refFlavor = flavors[i];
+////            } else if ((stringFlavor == null) && flavors[i].equals(DataFlavor.stringFlavor)) {
+////                stringFlavor = flavors[i];
+////            }
+////        }
+////
+////        if (refFlavor != null) {
+////            return refFlavor;
+////        } else if (listFlavor != null) {
+////            return listFlavor;
+////        } else if (stringFlavor != null) {
+////            return stringFlavor;
+////        } else if (plainFlavor != null) {
+////            return plainFlavor;
+////        }
+////
+////        return null;
+//        return webform.getImportFlavor(flavors);
+//    }
 
 //    /**
 //     * This method indicates if a component would accept an import of the given
