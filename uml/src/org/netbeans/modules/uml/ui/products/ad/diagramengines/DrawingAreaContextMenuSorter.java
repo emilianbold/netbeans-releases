@@ -199,6 +199,16 @@ public class DrawingAreaContextMenuSorter extends SorterHelper implements IProdu
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_TOP", new Integer(IMenuKind.MK_BUTTON)));
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_VCENTER", new Integer(IMenuKind.MK_BUTTON)));
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_BOTTOM", new Integer(IMenuKind.MK_BUTTON)));
+
+                        // horizontal distribution
+			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_LEFT_EDGE", new Integer(IMenuKind.MK_BUTTON)));
+			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_HCENTER", new Integer(IMenuKind.MK_BUTTON)));
+			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_RIGHT_EDGE", new Integer(IMenuKind.MK_BUTTON)));
+
+                        // vertical distribution
+                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_TOP_EDGE", new Integer(IMenuKind.MK_BUTTON)));
+			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_VCENTER", new Integer(IMenuKind.MK_BUTTON)));
+                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_BOTTOM_EDGE", new Integer(IMenuKind.MK_BUTTON)));
                         
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_SYNCH_ELEMENT_WITH_DATA", new Integer(IMenuKind.MK_BUTTON)));
 			m_TopSortItems.add(new ETPairT<String, Integer>("", new Integer(IMenuKind.MK_SEPARATOR)));
@@ -229,7 +239,8 @@ public class DrawingAreaContextMenuSorter extends SorterHelper implements IProdu
 			// The Properties action is now just a generic NB Properties action
 			// and can't be identified by the "MBK" id
 			// String name = new org.openide.actions.PropertiesAction().getName();
-			// m_BottomSortItems.add(new ETPairT<String, Integer>(name, new Integer(IMenuKind.MK_BUTTON)));
+			// m_BottomSortItems.add(new ETPairT<String, Integer>(
+                        //       name, new Integer(IMenuKind.MK_BUTTON)));
 			// m_BottomSortItems.add(new ETPairT<String, Integer>(
 			//	"MBK_NODEPROPERTIES", new Integer(IMenuKind.MK_BUTTON)));
 			m_BottomSortItems.add(

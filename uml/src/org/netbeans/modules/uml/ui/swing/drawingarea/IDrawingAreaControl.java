@@ -1006,6 +1006,42 @@ public interface IDrawingAreaControl {
     public boolean alignBottom();
     
     /**
+     * Distribute selected elements horizontally based on the left edge position 
+     * of the left and right-most selected elements.
+     */
+    public boolean distributeLeftEdge();
+    
+    /**
+     * Distribute selected elements horizontally based on the center position 
+     * of the left and right-most selected elements.
+     */
+    public boolean distributeHorizontalCenter();
+    
+    /**
+     * Distribute selected elements horizontally based on the right edge position 
+     * of the left and right-most selected elements.
+     */
+    public boolean distributeRightEdge();
+    
+    /**
+     * Distribute selected elements vertically based on the top edge position 
+     * of the top and bottom-most selected elements.
+     */
+    public boolean distributeTopEdge();
+    
+    /**
+     * Distribute selected elements vertically based on the center position 
+     * of the top and bottom-most selected elements.
+     */
+    public boolean distributeVerticalCenter();
+    
+    /**
+     * Distribute selected elements vertically based on the bottom edge position 
+     * of the top and bottom-most selected elements.
+     */
+    public boolean distributeBottomEdge();
+        
+    /**
      * Resizes the elements (selected or all) to their contents.
      */
     public void sizeToContents( boolean bJustSelectedElements );
