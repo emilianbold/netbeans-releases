@@ -64,7 +64,7 @@ public class VisualWebProjectWorkflow extends MemoryFootprintTestCase {
         VWPFootprintUtilities.waitForPendingBackgroundTasks();
         VWPFootprintUtilities.openFile(webproject,webproject.toLowerCase(),"ApplicationBean1.java",true);
         VWPFootprintUtilities.buildproject(webproject);
-        VWPFootprintUtilities.deployProject(webproject);
+        //TODO this takes ages / minutes ;( VWPFootprintUtilities.deployProject(webproject);
         
         return null;
     }
