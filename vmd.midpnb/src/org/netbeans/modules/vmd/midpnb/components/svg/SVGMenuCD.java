@@ -83,7 +83,7 @@ public class SVGMenuCD extends ComponentDescriptor {
 
     private static Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
-            .addParameters (MidpParameter.create (PROP_ELEMENTS))
+            .addParameters (MidpCustomCodePresenterSupport.createSVGMenuElementParameter ())
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (SVGAnimatorWrapperCD.PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
             .addSetters (MidpSetter.createSetter ("addMenuElement", MidpVersionable.MIDP_2).setArrayParameter (MidpCustomCodePresenterSupport.PARAM_SVG_MENU_ELEMENT).addParameters (MidpCustomCodePresenterSupport.PARAM_SVG_MENU_ELEMENT));
     }
