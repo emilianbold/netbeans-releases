@@ -31,7 +31,7 @@ public class RegistryScene extends ObjectScene {
 
     public RegistryScene () {
         setOpaque (false);
-        setLayout (LayoutFactory.createVerticalLayout (LayoutFactory.SerialAlignment.LEFT_TOP, 10));
+        setLayout (LayoutFactory.createVerticalFlowLayout (LayoutFactory.SerialAlignment.LEFT_TOP, 10));
         getActions ().addAction (ActionFactory.createZoomAction ());
         getActions ().addAction (ActionFactory.createPanAction ());
     }

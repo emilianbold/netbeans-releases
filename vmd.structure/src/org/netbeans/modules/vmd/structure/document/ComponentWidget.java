@@ -28,18 +28,18 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.model.*;
+import org.openide.util.Utilities;
 
 import java.awt.*;
-import org.openide.util.Utilities;
 
 /**
  * @author David Kaspar
  */
 public class ComponentWidget extends Widget {
 
-    private static final Layout LAYOUT = LayoutFactory.createHorizontalLayout ();
-    private static final Layout LAYOUT_NODES = LayoutFactory.createVerticalLayout (LayoutFactory.SerialAlignment.JUSTIFY, 10);
-    private static final Layout LAYOUT_LABEL = LayoutFactory.createVerticalLayout ();
+    private static final Layout LAYOUT = LayoutFactory.createHorizontalFlowLayout ();
+    private static final Layout LAYOUT_NODES = LayoutFactory.createVerticalFlowLayout (LayoutFactory.SerialAlignment.JUSTIFY, 10);
+    private static final Layout LAYOUT_LABEL = LayoutFactory.createVerticalFlowLayout ();
 
     private static final Border BORDER_SEPARATOR = BorderFactory.createEmptyBorder (8, 0);
     private static final Border BORDER_IMAGE = BorderFactory.createEmptyBorder (4, 8, 4, 0);

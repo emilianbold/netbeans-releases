@@ -35,8 +35,8 @@ public class RegistryWidget extends Widget {
     private static final Border BORDER_SEPARATOR = BorderFactory.createEmptyBorder (8, 0);
     private static final Border BORDER_IMAGE = BorderFactory.createEmptyBorder (4, 8, 4, 0);
     private static final Border BORDER_LABEL = BorderFactory.createEmptyBorder (8, 4);
-    private static final Layout LAYOUT = LayoutFactory.createHorizontalLayout ();
-    private static final Layout LAYOUT_NODES = LayoutFactory.createVerticalLayout (LayoutFactory.SerialAlignment.JUSTIFY, 10);
+    private static final Layout LAYOUT = LayoutFactory.createHorizontalFlowLayout ();
+    private static final Layout LAYOUT_NODES = LayoutFactory.createVerticalFlowLayout (LayoutFactory.SerialAlignment.JUSTIFY, 10);
 
     private Widget nodes;
 
