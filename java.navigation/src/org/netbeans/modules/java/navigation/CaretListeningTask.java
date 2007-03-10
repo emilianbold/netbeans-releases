@@ -22,24 +22,14 @@ package org.netbeans.modules.java.navigation;
 import com.sun.javadoc.Doc;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.openide.filesystems.FileObject;
 
@@ -58,26 +48,26 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     private FileObject fileObject;
     private boolean canceled;
     
+    private ElementHandle<Element> lastEh;
     
     CaretListeningTask(CaretListeningFactory whichElementJavaSourceTaskFactory,FileObject fileObject) {
         this.caretListeningFactory = whichElementJavaSourceTaskFactory;
         this.fileObject = fileObject;
     }
     
-    private static final Collection<Modifier> NO_MODIFIERS = Collections.<Modifier>emptySet();
-    
     public void run(CompilationInfo compilationInfo) {
         
-        String declartion = "";
-        String javadoc = "";
+        boolean navigatorShouldUpdate = false;
+        boolean javadocShouldUpdate = JavadocTopComponent.shouldUpdate();
+        boolean declarationShouldUpdate = DeclarationTopComponent.shouldUpdate();
         
-        setDeclaration(declartion);
-        setJavadoc("", javadoc);
+        if ( isCancelled() || ( !navigatorShouldUpdate && !javadocShouldUpdate && !declarationShouldUpdate ) ) {
+            return;
+        }
         
         // Find the TreePath for the caret position
         TreePath tp =
-                compilationInfo.getTreeUtilities().pathFor(caretListeningFactory.getLastPosition(fileObject));
-        
+                compilationInfo.getTreeUtilities().pathFor(caretListeningFactory.getLastPosition(fileObject));        
         // if cancelled, return
         if (isCancelled()) {
             return;
@@ -85,73 +75,46 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         
         // Get Element
         Element element = compilationInfo.getTrees().getElement(tp);
-        
-        // if cancelled, return
-        if (isCancelled()) {
+                       
+        // if cancelled or no element, return
+        if (isCancelled() || element == null ) {
             return;
         }
         
-        if (element != null) {
-            if (element instanceof PackageElement) {
-                setDeclaration("package " + element.toString() + ";");
-            } else {
-                Doc doc = compilationInfo.getElementUtilities().javaDocFor(element);
-                if (doc != null) {
-                    setJavadoc(element.toString(), doc.getRawCommentText());
-                }
-                Tree tree = compilationInfo.getTrees().getTree(element);
-                if (tree == null) {
-                    FileObject fileObject = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
-                    if (fileObject != null) {
-                        switch (element.getKind()) {
-                        case PACKAGE:
-                        case CLASS:
-                        case INTERFACE:
-                        case ENUM:
-                        case METHOD:
-                        case CONSTRUCTOR:
-                        case INSTANCE_INIT:
-                        case STATIC_INIT:
-                        case FIELD:
-                        case ENUM_CONSTANT:
-                            final ElementHandle elementHandle = ElementHandle.create(element);
-                            JavaSource javaSource = JavaSource.forFileObject(fileObject);
-                            try {
-                                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                                    public void cancel() {}
-                                    public void run(CompilationController compilationController) throws IOException {
-                                        // Move to resolved phase
-                                        compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-                                        Element element = elementHandle.resolve(compilationController);
-                                        if (element != null) {
-                                            Tree tree = compilationController.getTrees().getTree(element);
-                                            if (tree != null) {
-                                                String declaration = tree.toString();
-                                                if (element.getKind() ==  ElementKind.CONSTRUCTOR) {
-                                                    String constructorName = element.getEnclosingElement().getSimpleName().toString();
-                                                    declaration = declaration.replaceAll(Pattern.quote("<init>"), Matcher.quoteReplacement(constructorName));
-                                                }
-                                                setDeclaration(declaration);
-                                            }
-                                        }
-                                    }
-                                }, true);
-                            } catch (IOException ex) {
-                                Logger.global.log(Level.WARNING, ex.getMessage(), ex);;
-                            }
-                            break;
-                        }
-                    }
-                } else {
-                    String declaration = tree.toString();
-                    if (element.getKind() ==  ElementKind.CONSTRUCTOR) {
-                        String constructorName = element.getEnclosingElement().getSimpleName().toString();
-                        declaration = declaration.replaceAll(Pattern.quote("<init>"), Matcher.quoteReplacement(constructorName));
-                    }                    
-                    setDeclaration(declaration);
-                }
-            }
+        // Update the navigator
+        if ( navigatorShouldUpdate ) {
+            updateNavigatorSelection(); 
         }
+                
+        if ( isCancelled() ) {            
+            return;
+        }
+        
+        // Don't update when element is the same
+        if ( lastEh != null && lastEh.signatureEquals(element) ) {
+            return;
+        }
+        else {
+            lastEh = ElementHandle.create(element);
+            // Diferent element clear data
+            setDeclaration(""); // NOI18N
+            setJavadoc("", ""); // NOI18N
+        }
+            
+        // Compute and set javadoc
+        if ( javadocShouldUpdate ) {
+            computeAndSetJavadoc(compilationInfo, element);
+        }
+        
+        if ( isCancelled() ) {
+            return;
+        }
+        
+        // Compute and set declaration
+        if ( declarationShouldUpdate ) {
+            computeAndSetDeclaration(compilationInfo, element);
+        }
+        
     }
     
     private void setDeclaration(final String declaration) {
@@ -187,4 +150,72 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     protected final synchronized boolean isCancelled() {
         return canceled;
     }
+    
+    
+    private void computeAndSetJavadoc(CompilationInfo compilationInfo, Element element) {
+        
+        String javadoc;
+        
+        if ( element.getKind() == ElementKind.PACKAGE ) {
+            javadoc = ""; // NOI18N
+        }
+        else {
+            Doc doc = compilationInfo.getElementUtilities().javaDocFor(element);
+            javadoc = doc == null ? "" : doc.getRawCommentText(); // NOI18N
+        }
+        
+        if (isCancelled()) {
+            return;
+        }
+                
+        setJavadoc(element.toString(), javadoc);
+    }
+    
+    private void computeAndSetDeclaration(CompilationInfo compilationInfo, Element element ) {
+            
+        if ( element.getKind() == ElementKind.PACKAGE ) { 
+            setDeclaration("package " + element.toString() + ";");
+            return;
+        }
+            
+        if ( isCancelled() ) {
+            return;
+        }
+        
+        Tree tree = compilationInfo.getTrees().getTree(element);
+
+        if ( isCancelled()) {
+            return;
+        }
+
+        if ( tree != null ) {
+            String declaration = tree.toString();
+            if (element.getKind() ==  ElementKind.CONSTRUCTOR) {
+                String constructorName = element.getEnclosingElement().getSimpleName().toString();
+                declaration = declaration.replaceAll(Pattern.quote("<init>"), Matcher.quoteReplacement(constructorName));
+            }                    
+            setDeclaration(declaration);
+            return;
+        }
+        
+        tree = SourceUtils.treeFor(compilationInfo, element);
+        
+        if ( isCancelled() || tree == null ) {
+            return;
+        }
+        
+        String declaration = tree.toString();
+        if (element.getKind() ==  ElementKind.CONSTRUCTOR) {
+            String constructorName = element.getEnclosingElement().getSimpleName().toString();
+            declaration = declaration.replaceAll(Pattern.quote("<init>"), Matcher.quoteReplacement(constructorName));
+        }
+        setDeclaration(declaration);
+                
+    }
+    
+    private void updateNavigatorSelection() {
+        // If navigator is visible ...
+        
+    }
+    
 }

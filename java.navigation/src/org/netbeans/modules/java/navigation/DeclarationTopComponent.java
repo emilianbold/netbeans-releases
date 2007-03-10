@@ -44,6 +44,8 @@ public final class DeclarationTopComponent extends TopComponent {
     
     private static final String PREFERRED_ID = "DeclarationTopComponent";
     
+    private static boolean shouldUpdate;
+    
     private DeclarationTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(DeclarationTopComponent.class, "CTL_DeclarationTopComponent"));
@@ -51,7 +53,7 @@ public final class DeclarationTopComponent extends TopComponent {
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
     
-    private static Rectangle zero = new Rectangle(0,0,1,1);
+    private static final Rectangle ZERO = new Rectangle(0,0,1,1);
     
     void setDeclaration(String declaration) {
         if (declaration == null) {
@@ -62,7 +64,7 @@ public final class DeclarationTopComponent extends TopComponent {
         declarationEditorPane.setCaretPosition(0);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                declarationEditorPane.scrollRectToVisible(zero);
+                declarationEditorPane.scrollRectToVisible(ZERO);
             }
         });
     }
@@ -132,6 +134,15 @@ public final class DeclarationTopComponent extends TopComponent {
         return getDefault();
     }
     
+    public static boolean shouldUpdate() {
+        if ( instance == null ) {
+            return false;
+        }
+        else  {
+            return instance.isShowing();
+        }
+    }
+    
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
@@ -141,7 +152,7 @@ public final class DeclarationTopComponent extends TopComponent {
     
     public void componentClosed() {
     }
-    
+         
     /** replaces this in object stream */
     public Object writeReplace() {
         return new ResolvableHelper();

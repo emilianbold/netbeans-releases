@@ -51,7 +51,7 @@ public final class JavadocTopComponent extends TopComponent {
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
     
-    private static Rectangle zero = new Rectangle(0,0,1,1);
+    private static final Rectangle ZERO = new Rectangle(0,0,1,1);
 
     void setJavadoc(String header, String javadoc){    
         if (javadoc == null) {
@@ -81,9 +81,18 @@ public final class JavadocTopComponent extends TopComponent {
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                javadocEditorPane.scrollRectToVisible(zero);
+                javadocEditorPane.scrollRectToVisible(ZERO);
             }
         });
+    }
+    
+    public static boolean shouldUpdate() {
+        if ( instance == null ) {
+            return false;
+        }
+        else  {
+            return instance.isShowing();
+        }
     }
     
     /** This method is called from within the constructor to

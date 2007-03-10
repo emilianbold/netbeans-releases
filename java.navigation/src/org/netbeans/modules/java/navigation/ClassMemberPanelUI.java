@@ -7,6 +7,7 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.BorderLayout;
+import java.awt.Rectangle;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.awt.Toolkit;
@@ -48,6 +49,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private ClassMemberFilters filters;
     
     private Action[] actions; // General actions for the panel
+    
+    private static final Rectangle ZERO = new Rectangle(0,0,1,1);
+
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI() {
