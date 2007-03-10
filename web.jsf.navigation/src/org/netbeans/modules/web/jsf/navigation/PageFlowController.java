@@ -54,11 +54,11 @@ public class PageFlowController {
     }
     
     /**
-     * 
-     * @param source 
-     * @param target 
-     * @param comp 
-     * @return 
+     *
+     * @param source
+     * @param target
+     * @param comp
+     * @return
      */
     public NavigationCase createLink(AbstractNode source, AbstractNode target, String comp) {
         
@@ -66,12 +66,11 @@ public class PageFlowController {
         int caseNum = 1;
         
         configModel.startTransaction();
-        org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase navCase = configModel.getFactory().createNavigationCase();
+        NavigationCase navCase = configModel.getFactory().createNavigationCase();
         
         navCase.setToViewId(target.getDisplayName());
-        org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig facesConfig = configModel.getRootComponent();
-        org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule navRule = getRuleWithFromViewID(facesConfig,
-                source.getDisplayName());
+        FacesConfig facesConfig = configModel.getRootComponent();
+        NavigationRule navRule = getRuleWithFromViewID(facesConfig, source.getDisplayName());
         
         
         if (navRule == null) {
@@ -80,11 +79,10 @@ public class PageFlowController {
             facesConfig.addNavigationRule(navRule);
         } else {
             caseNum = getNewCaseNumber(navRule);
-        }
+        }      
         
-        
-        navRule.addNavigationCase(navCase);
         navCase.setFromOutcome(CASE_STRING + Integer.toString(caseNum));
+        navRule.addNavigationCase(navCase);
         configModel.endTransaction();
         try {
             configModel.sync();
@@ -99,19 +97,19 @@ public class PageFlowController {
     private final static String CASE_STRING = "case";
     
     private int getNewCaseNumber( NavigationRule navRule ) {
-            Collection<String> caseOutcomes = new HashSet<String>();
-            List<NavigationCase> navCases = navRule.getNavigationCases();
-            for( NavigationCase navCase : navCases ){
-                caseOutcomes.add(navCase.getFromOutcome());
+        Collection<String> caseOutcomes = new HashSet<String>();
+        List<NavigationCase> navCases = navRule.getNavigationCases();
+        for( NavigationCase navCase : navCases ){
+            caseOutcomes.add(navCase.getFromOutcome());
+        }
+        
+        int caseNum = 1;
+        while( true ){
+            if( !caseOutcomes.contains(CASE_STRING + Integer.toString(caseNum)) ){
+                return caseNum;
             }
-            
-            int caseNum = 1;
-            while( true ){
-                if( !caseOutcomes.contains(CASE_STRING + Integer.toString(caseNum)) ){
-                    return caseNum;
-                }
-                caseNum++;
-            }
+            caseNum++;
+        }
     }
     
     /**
@@ -120,7 +118,10 @@ public class PageFlowController {
     private NavigationRule getRuleWithFromViewID(FacesConfig facesConfig, String fromViewId ){
         List<NavigationRule> rules = facesConfig.getNavigationRules();
         for( NavigationRule rule : rules ){
-            if( rule.FROM_VIEW_ID == fromViewId ){
+            System.out.println("\nDo these match?");
+            System.out.println(rule.getFromViewId() + " == " + fromViewId);
+            if( rule.getFromViewId().equals(fromViewId) ){
+                System.out.println("Match Found.");
                 return rule;
             }
         }
@@ -128,7 +129,7 @@ public class PageFlowController {
     }
     
     
-
+    
     
     private Collection<FileObject> getAllProjectRelevantFilesObjects() {
         FileObject parentFolder = project.getProjectDirectory();
