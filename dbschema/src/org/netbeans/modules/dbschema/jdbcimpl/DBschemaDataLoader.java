@@ -25,7 +25,6 @@ import java.util.ResourceBundle;
 import org.openide.actions.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
 public class DBschemaDataLoader extends UniFileLoader {
@@ -36,10 +35,6 @@ public class DBschemaDataLoader extends UniFileLoader {
         super("org.netbeans.modules.dbschema.jdbcimpl.DBschemaDataObject");
     }
 
-    public DBschemaDataLoader (Class recognizedObject) {
-        super (recognizedObject);
-    }
-  
     protected void initialize() {
         super.initialize();
         ExtensionList extensions = new ExtensionList ();
