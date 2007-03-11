@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,7 +22,6 @@ package org.netbeans.modules.web.core.jsploader;
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
@@ -92,11 +91,6 @@ public class JspLoader extends UniFileLoader {
         super ("org.netbeans.modules.web.core.jsploader.JspDataObject"); // NOI18N
     }
 
-    /** For subclasses. */
-    protected JspLoader(Class clazz) {
-        super (clazz);
-    }
-    
     /** For subclasses. */
     protected JspLoader(String str) {
         super (str);
