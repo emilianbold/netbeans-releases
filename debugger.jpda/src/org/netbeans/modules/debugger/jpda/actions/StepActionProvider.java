@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.actions;
@@ -26,7 +26,6 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.StepRequest;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,15 +40,13 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl.MethodExitBreakpointListener;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
-
-
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
-
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
@@ -72,6 +69,7 @@ implements Executor {
     private StepRequest             stepRequest;
     private ContextProvider         lookupProvider;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
+    private SingleThreadedStepWatch stepWatch;
 
     
     private static boolean ssverbose = 
@@ -130,8 +128,8 @@ implements Executor {
             try {
                 // 1) init info about current state & remove old
                 //    requests in the current thread
-                ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
-                    getCurrentThread ()).getThreadReference ();
+                JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
+                ThreadReference tr = resumeThread.getThreadReference ();
                 removeStepRequests (tr);
 
                 // 2) create new step request
@@ -144,11 +142,16 @@ implements Executor {
                     );
                 stepRequest.addCountFilter (1);
                 getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
-                stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
+                int suspendPolicy = getDebuggerImpl().getSuspend();
+                stepRequest.setSuspendPolicy(suspendPolicy);
                 try {
                     stepRequest.enable ();
                 } catch (IllegalThreadStateException itsex) {
                     // the thread named in the request has died.
+                    // Or suspend count > 1 !
+                    //itsex.printStackTrace();
+                    //System.err.println("Thread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
+                    logger.warning(itsex.getLocalizedMessage()+"\nThread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
                     getDebuggerImpl ().getOperator ().unregister(stepRequest);
                     return ;
                 }
@@ -158,7 +161,13 @@ implements Executor {
                 }
 
                 // 3) resume JVM
-                getDebuggerImpl ().resume ();
+                if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                    stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
+                    getDebuggerImpl().resumeCurrentThread();
+                    //resumeThread.resume();
+                } else {
+                    getDebuggerImpl ().resume ();
+                }
             } catch (VMDisconnectedException e) {
                 ErrorManager.getDefault().notify(ErrorManager.USER,
                     ErrorManager.getDefault().annotate(e,
@@ -212,6 +221,10 @@ implements Executor {
     public boolean exec (Event ev) {
         // TODO: fetch current engine from the Event
         // 1) init info about current state
+        if (stepWatch != null) {
+            stepWatch.done();
+            stepWatch = null;
+        }
         LocatableEvent event = (LocatableEvent) ev;
         String className = event.location ().declaringType ().name ();
         ThreadReference tr = event.thread ();
@@ -235,6 +248,8 @@ implements Executor {
                 return true; // resume debugging
             }
             
+            int suspendPolicy = getDebuggerImpl().getSuspend();
+            
             // 4) stop execution here?
             
             // Synthetic method?
@@ -255,7 +270,7 @@ implements Executor {
                     );
                     stepRequest.addCountFilter(1);
                     getDebuggerImpl ().getOperator ().register (stepRequest, this);
-                    stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
+                    stepRequest.setSuspendPolicy (suspendPolicy);
                     try {
                         stepRequest.enable ();
                     } catch (IllegalThreadStateException itsex) {

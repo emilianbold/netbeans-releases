@@ -20,19 +20,17 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
-
-
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 
 
@@ -100,9 +98,12 @@ public class StepOperationActionProvider extends ActionsProviderSupport
     public void doAction (Object action) {
         JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_OPERATION, JPDAStep.STEP_OVER);
         step.addStep(debugger.getCurrentThread());
-        session.getEngineForLanguage ("Java").getActionsManager ().doAction (
-            ActionsManager.ACTION_CONTINUE
-        );
+        if (debugger.getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
+            //debugger.getCurrentThread().resume();
+            ((JPDADebuggerImpl) debugger).resumeCurrentThread();
+        } else {
+            ((JPDADebuggerImpl) debugger).resume();
+        }
     }
 
     public void actionPerformed(Object action) {

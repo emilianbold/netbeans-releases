@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,10 +26,15 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +45,6 @@ import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.ThreadReference;
@@ -53,22 +57,28 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.actions.SmartSteppingFilterImpl;
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
-
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 public class JPDAStepImpl extends JPDAStep implements Executor {
@@ -84,6 +94,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
     private Set<BreakpointRequest> operationBreakpoints;
     private StepRequest boundaryStepRequest;
+    private SingleThreadedStepWatch stepWatch;
     
     private Session session;
     
@@ -101,7 +112,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         EventRequestManager erm = vm.eventRequestManager();
         //Remove all step requests -- TODO: Do we want it?
-        erm.deleteEventRequests(erm.stepRequests());
+        List<StepRequest> stepRequests = erm.stepRequests();
+        erm.deleteEventRequests(stepRequests);
+        for (StepRequest stepRequest : stepRequests) {
+            SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
+        }
         int size = getSize();
         boolean stepAdded = false;
         logger.log(Level.FINE, "Step "+((size == JPDAStep.STEP_OPERATION) ? "operation" : "line")
@@ -131,6 +146,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 // the thread named in the request has died.
                 debuggerImpl.getOperator().unregister(stepRequest);
                 stepRequest = null;
+            }
+            
+            if (stepRequest != null && stepRequest.suspendPolicy() == StepRequest.SUSPEND_EVENT_THREAD) {
+                stepWatch = new SingleThreadedStepWatch(debuggerImpl, stepRequest);
             }
         }
     }
@@ -267,6 +286,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     }
     
     public boolean exec (Event event) {
+        if (stepWatch != null) {
+            stepWatch.done();
+            stepWatch = null;
+        }
         // TODO: Check the location, follow the smart-stepping logic!
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl)debugger;
         JPDAThreadImpl tr = (JPDAThreadImpl)debuggerImpl.getCurrentThread();
@@ -303,7 +326,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         tr.setCurrentOperation(currentOperation);
         EventRequestManager erm = vm.eventRequestManager();
-        erm.deleteEventRequest(event.request());
+        EventRequest eventRequest = event.request();
+        erm.deleteEventRequest(eventRequest);
+        if (eventRequest instanceof StepRequest) {
+            SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
+        }
         if (operationBreakpoints != null) {
             for (Iterator<BreakpointRequest> it = operationBreakpoints.iterator(); it.hasNext(); ) {
                 erm.deleteEventRequest(it.next());
@@ -312,21 +339,27 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         if (boundaryStepRequest != null) {
             erm.deleteEventRequest(boundaryStepRequest);
+            SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
         }
+        int suspendPolicy = debugger.getSuspend();
         if (addExprStep) {
             if (addOperationStep(tr, true)) {
                 return true; // Resume
             }
         }
         if ((event.request() instanceof StepRequest) && shouldNotStopHere(event)) {
-            return true;
+            return true; // Resume
         }
         firePropertyChange(PROP_STATE_EXEC, null, null);
         if (! getHidden()) {
             DebuggerManager.getDebuggerManager().setCurrentSession(session);
             debuggerImpl.setStoppedState(tr.getThreadReference());
         }
-        return getHidden();
+        if (getHidden()) {
+            return true; // Resume
+        } else {
+            return false;
+        }
     }
     
     /**
@@ -424,4 +457,135 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         
     }
     
+    public static final class SingleThreadedStepWatch implements Runnable {
+        
+        private static final int DELAY = 5000;
+        
+        private static final RequestProcessor stepWatchRP = new RequestProcessor("Debugger Step Watch", 1);
+        
+        private static final Map<StepRequest, SingleThreadedStepWatch> STEP_WATCH_POOL = new HashMap<StepRequest, SingleThreadedStepWatch>();
+        
+        private RequestProcessor.Task watchTask;
+        private JPDADebuggerImpl debugger;
+        private StepRequest request;
+        private Dialog dialog;
+        private List<JPDAThread> resumedThreads;
+        
+        public SingleThreadedStepWatch(JPDADebuggerImpl debugger, StepRequest request) {
+            this.debugger = debugger;
+            this.request = request;
+            watchTask = stepWatchRP.post(this, DELAY);
+            synchronized (STEP_WATCH_POOL) {
+                STEP_WATCH_POOL.put(request, this);
+            }
+        }
+        
+        public static void stepRequestDeleted(StepRequest request) {
+            SingleThreadedStepWatch stepWatch;
+            synchronized (STEP_WATCH_POOL) {
+                stepWatch = STEP_WATCH_POOL.remove(request);
+            }
+            if (stepWatch != null) stepWatch.done();
+        }
+        
+        public void done() {
+            synchronized (this) {
+                watchTask.cancel();
+                watchTask = null;
+                if (dialog != null) {
+                    dialog.setVisible(false);
+                }
+                if (resumedThreads != null) {
+                    synchronized (debugger.LOCK) {
+                        suspendThreads(resumedThreads);
+                    }
+                    resumedThreads = null;
+                }
+            }
+            synchronized (STEP_WATCH_POOL) {
+                STEP_WATCH_POOL.remove(request);
+            }
+        }
+    
+        public void run() {
+            synchronized (this) {
+                if (watchTask == null) return ; // We're done
+                if (request.thread().isSuspended()) {
+                    watchTask.schedule(DELAY);
+                    return ;
+                }
+            }
+            String message = NbBundle.getMessage(JPDAStepImpl.class, "SingleThreadedStepBlocked");
+            final boolean[] yes = new boolean[] { true };
+            DialogDescriptor dd = new DialogDescriptor(
+                    message,
+                    new NotifyDescriptor.Confirmation(message, NotifyDescriptor.YES_NO_OPTION).getTitle(),
+                    true,
+                    NotifyDescriptor.YES_NO_OPTION,
+                    null,
+                    new ActionListener() {
+                        public void actionPerformed(ActionEvent evt) {
+                            synchronized (yes) {
+                                yes[0] = evt.getSource() == NotifyDescriptor.YES_OPTION;
+                            }
+                        }
+                    });
+            dd.setMessageType(NotifyDescriptor.QUESTION_MESSAGE);
+            Dialog theDialog;
+            synchronized (this) {
+                dialog = org.openide.DialogDisplayer.getDefault().createDialog(dd);
+                theDialog = dialog;
+            }
+            theDialog.setVisible(true);
+            boolean doResume;
+            synchronized (yes) {
+                doResume = yes[0];
+            }
+            synchronized (this) {
+                dialog = null;
+                if (watchTask == null) return ;
+                if (doResume) {
+                    synchronized (debugger.LOCK) {
+                        List<JPDAThread> suspendedThreads = new ArrayList<JPDAThread>();
+                        JPDAThreadGroup[] tgs = debugger.getTopLevelThreadGroups();
+                        for (JPDAThreadGroup tg: tgs) {
+                            fillSuspendedThreads(tg, suspendedThreads);
+                        }
+                        resumeThreads(suspendedThreads);
+                        resumedThreads = suspendedThreads;
+                    }
+                }
+            }
+            /*
+            Object option = org.openide.DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(message, NotifyDescriptor.YES_NO_OPTION));
+            if (NotifyDescriptor.YES_OPTION == option) {
+                debugger.resume();
+            }
+             */
+        }
+        
+        private static void fillSuspendedThreads(JPDAThreadGroup tg, List<JPDAThread> sts) {
+            for (JPDAThread t : tg.getThreads()) {
+                if (t.isSuspended()) sts.add(t);
+            }
+            for (JPDAThreadGroup tgg : tg.getThreadGroups()) {
+                fillSuspendedThreads(tgg, sts);
+            }
+        }
+        
+        private static void suspendThreads(List<JPDAThread> ts) {
+            for (JPDAThread t : ts) {
+                t.suspend();
+            }
+        }
+        
+        private static void resumeThreads(List<JPDAThread> ts) {
+            for (JPDAThread t : ts) {
+                t.resume();
+            }
+        }
+        
+    }
+
 }

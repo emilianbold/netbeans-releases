@@ -57,6 +57,7 @@ public final class JPDAThreadImpl implements JPDAThread {
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
     private boolean             suspended;
+    private int                 suspendCount;
     private Operation           currentOperation;
     private List<Operation>     lastOperations;
     private boolean             doKeepLastOperations;
@@ -74,6 +75,7 @@ public final class JPDAThreadImpl implements JPDAThread {
         this.threadReference = threadReference;
         this.debugger = debugger;
         suspended = threadReference.isSuspended();
+        suspendCount = threadReference.suspendCount();
     }
 
     /**
@@ -374,6 +376,7 @@ public final class JPDAThreadImpl implements JPDAThread {
                 if (!isSuspended ()) {
                     threadReference.suspend ();
                     suspendedToFire = Boolean.TRUE;
+                    suspendCount++;
                 }
                 suspended = true;
             } catch (ObjectCollectedException ex) {
@@ -391,6 +394,10 @@ public final class JPDAThreadImpl implements JPDAThread {
      * Unsuspends thread.
      */
     public void resume () {
+        if (this == debugger.getCurrentThread()) {
+            boolean can = debugger.currentThreadToBeResumed();
+            if (!can) return ;
+        }
         Boolean suspendedToFire = null;
         synchronized (this) {
             setReturnVariable(null); // Clear the return var on resume
@@ -408,6 +415,7 @@ public final class JPDAThreadImpl implements JPDAThread {
                     }
                     suspendedToFire = Boolean.FALSE;
                 }
+                suspendCount = 0;
                 suspended = false;
             } catch (ObjectCollectedException ex) {
             } catch (VMDisconnectedException ex) {
@@ -421,13 +429,15 @@ public final class JPDAThreadImpl implements JPDAThread {
         }
     }
     
-    public void notifyToBeRunning() {
-        notifyToBeRunning(true);
+    public void notifyToBeResumed() {
+        notifyToBeRunning(true, true);
     }
     
-    private void notifyToBeRunning(boolean clearVars) {
+    private void notifyToBeRunning(boolean clearVars, boolean resumed) {
         Boolean suspendedToFire = null;
         synchronized (this) {
+            if (resumed && (--suspendCount > 0)) return ;
+            suspendCount = 0;
             if (clearVars) {
                 setCurrentOperation(null);
                 setReturnVariable(null); // Clear the return var on resume
@@ -453,6 +463,7 @@ public final class JPDAThreadImpl implements JPDAThread {
     public void notifySuspended() {
         Boolean suspendedToFire = null;
         synchronized (this) {
+            suspendCount = threadReference.suspendCount();
             if (!suspended && isThreadSuspended()) {
                 suspended = true;
                 suspendedToFire = Boolean.TRUE;
@@ -466,7 +477,7 @@ public final class JPDAThreadImpl implements JPDAThread {
     }
     
     public void notifyMethodInvoking() {
-        notifyToBeRunning(false);
+        notifyToBeRunning(false, false);
     }
     
     public void notifyMethodInvokeDone() {

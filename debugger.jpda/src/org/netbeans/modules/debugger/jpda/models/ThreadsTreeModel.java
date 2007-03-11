@@ -164,6 +164,21 @@ public class ThreadsTreeModel implements TreeModel {
         return ch;
          */
         if (node.equals (ROOT)) {
+            
+            if (verbose) {
+                com.sun.jdi.VirtualMachine vm = debugger.getVirtualMachine();
+                if (vm == null) {
+                    System.err.println("\nThreadsTreeModel.computeChildren():\nVM is null!\n");
+                } else {
+                    List<ThreadReference> threads = vm.allThreads();
+                    System.err.println("\nThreadsTreeModel.computeChildren() ALL Threads:");
+                    for (ThreadReference t : threads) {
+                        System.err.println("  "+t.name()+" is suspended: "+t.isSuspended()+", suspend count = "+t.suspendCount());
+                    }
+                    System.err.println("");
+                }
+            }
+            
             return debugger.getTopLevelThreadGroups();
         } else if (node instanceof JPDAThreadGroup) {
             JPDAThreadGroup tg = (JPDAThreadGroup) node;

@@ -82,7 +82,7 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
         List threads = tgr.threads();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread((ThreadReference) it.next());
-            thread.notifyToBeRunning();
+            thread.notifyToBeResumed();
         }
         tgr.resume ();
     }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.actions;
@@ -25,26 +25,22 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.StepRequest;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-
-
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
-
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
@@ -71,6 +67,7 @@ implements Executor, PropertyChangeListener {
     private String position;
     private ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
+    private SingleThreadedStepWatch stepWatch;
 
     public StepIntoActionProvider (ContextProvider contextProvider) {
         super (
@@ -122,13 +119,20 @@ implements Executor, PropertyChangeListener {
                 smartLogger.finer("Can not step into! Thread "+t+" not suspended!");
                 return ;
             }
-            setStepRequest (StepRequest.STEP_INTO);
+            JPDAThread resumeThread = setStepRequest (StepRequest.STEP_INTO);
             position = t.getClassName () + '.' +
                        t.getMethodName () + ':' +
                        t.getLineNumber (null);
             logger.fine("JDI Request (action step into): " + stepRequest);
+            if (stepRequest == null) return ;
             try {
-                getDebuggerImpl ().resume ();
+                if (resumeThread == null) {
+                    getDebuggerImpl ().resume ();
+                } else {
+                    //resumeThread.resume();
+                    stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
+                    getDebuggerImpl().resumeCurrentThread();
+                }
             } catch (VMDisconnectedException e) {
                 ErrorManager.getDefault().notify(ErrorManager.USER,
                     ErrorManager.getDefault().annotate(e,
@@ -192,6 +196,11 @@ implements Executor, PropertyChangeListener {
      * Should be called from Operator only.
      */
     public boolean exec (Event event) {
+        if (stepWatch != null) {
+            stepWatch.done();
+            stepWatch = null;
+        }
+        JPDAThread resumeThread = null;
         synchronized (getDebuggerImpl ().LOCK) {
             if (stepRequest != null) {
                 stepRequest.disable ();
@@ -203,7 +212,7 @@ implements Executor, PropertyChangeListener {
             try {
                 if (tr.frame(0).location().method().isSynthetic()) {
                     //S ystem.out.println("In synthetic method -> STEP INTO again");
-                    setStepRequest (StepRequest.STEP_INTO);
+                    resumeThread = setStepRequest (StepRequest.STEP_INTO);
                     return true;
                 }
             } catch (IncompatibleThreadStateException e) {
@@ -221,8 +230,8 @@ implements Executor, PropertyChangeListener {
                 if (position.equals(stopPosition)) {
                     // We are where we started!
                     stop = false;
-                    setStepRequest (StepRequest.STEP_INTO);
-                    return true;
+                    resumeThread = setStepRequest (StepRequest.STEP_INTO);
+                    return true;//resumeThread == null;
                 }
             }
             if (stop) {
@@ -235,7 +244,7 @@ implements Executor, PropertyChangeListener {
             } else {
                 smartLogger.finer(" => do next step.");
                 if (smartSteppingStepOut) {
-                    setStepRequest (StepRequest.STEP_OUT);
+                    resumeThread = setStepRequest (StepRequest.STEP_OUT);
                 } else if (stepRequest != null) {
                     try {
                         stepRequest.enable ();
@@ -246,7 +255,7 @@ implements Executor, PropertyChangeListener {
                         return true;
                     }
                 } else {
-                    setStepRequest (StepRequest.STEP_INTO);
+                    resumeThread = setStepRequest (StepRequest.STEP_INTO);
                 }
             }
 
@@ -276,18 +285,18 @@ implements Executor, PropertyChangeListener {
 
     // other methods ...........................................................
     
-    void removeStepRequests (ThreadReference tr) {
+    protected void removeStepRequests (ThreadReference tr) {
         super.removeStepRequests (tr);
         stepRequest = null;
         smartLogger.finer("removing all patterns, all step requests.");
     }
     
-    private void setStepRequest (int step) {
-        ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
-            getCurrentThread ()).getThreadReference ();
+    private JPDAThreadImpl setStepRequest (int step) {
+        JPDAThreadImpl thread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
+        ThreadReference tr = thread.getThreadReference ();
         removeStepRequests (tr);
         VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
-        if (vm == null) return ;
+        if (vm == null) return null;
         stepRequest = vm.eventRequestManager ().createStepRequest (
             tr,
             StepRequest.STEP_LINE,
@@ -295,7 +304,8 @@ implements Executor, PropertyChangeListener {
         );
 
         getDebuggerImpl ().getOperator ().register (stepRequest, this);
-        stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
+        int suspendPolicy = getDebuggerImpl().getSuspend();
+        stepRequest.setSuspendPolicy (suspendPolicy);
         
         if (smartLogger.isLoggable(Level.FINER)) {
             smartLogger.finer("Set step request("+step+") and patterns: ");
@@ -309,7 +319,12 @@ implements Executor, PropertyChangeListener {
             // the thread named in the request has died.
             getDebuggerImpl ().getOperator ().unregister(stepRequest);
             stepRequest = null;
-            return ;
+            return null;
+        }
+        if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+            return thread;
+        } else {
+            return null;
         }
     }
 

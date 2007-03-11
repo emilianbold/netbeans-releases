@@ -106,6 +106,8 @@ import org.openide.ErrorManager;
 public class JPDADebuggerImpl extends JPDADebugger {
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda");
+    
+    private static final boolean SINGLE_THREAD_STEPPING = Boolean.getBoolean("netbeans.debugger.singleThreadStepping");
 
 
     // variables ...............................................................
@@ -118,7 +120,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private PropertyChangeSupport       pcs;
     private JPDAThreadImpl              currentThread;
     private CallStackFrame              currentCallStackFrame;
-    private int                         suspend = SUSPEND_ALL;
+    private int                         suspend = (SINGLE_THREAD_STEPPING) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
     public final Object                 LOCK = new Object ();
     private final Object                LOCK2 = new Object ();
     private boolean                     starting;
@@ -1004,6 +1006,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (vm != null) {
                 logger.fine("VM suspend");
                 vm.suspend ();
+                // Check the suspended count
+                List<ThreadReference> threads = vm.allThreads();
+                for (ThreadReference t : threads) {
+                    while (t.suspendCount() > 1) t.resume();
+                }
             }
             setState (STATE_STOPPED);
         }
@@ -1048,12 +1055,43 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
+    /** DO NOT CALL FROM ANYWHERE BUT JPDAThreadImpl.resume(). */
+    public boolean currentThreadToBeResumed() {
+        synchronized (LOCK) {
+            if (!doContinue) {
+                doContinue = true;
+                // Continue the next time and do nothing now.
+                return false;
+            }
+        }
+        if (operator.flushStaledEvents()) {
+            return false;
+        }
+        setState (STATE_RUNNING);
+        return true;
+    }
+    
+    public void resumeCurrentThread() {
+        synchronized (LOCK) {
+            if (!doContinue) {
+                doContinue = true;
+                // Continue the next time and do nothing now.
+                return ;
+            }
+        }
+        if (operator.flushStaledEvents()) {
+            return ;
+        }
+        setState (STATE_RUNNING);
+        currentThread.resume();
+    }
+    
     public void notifyToBeResumedAll() {
         Collection threads = threadsTranslation.getTranslated();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
             if (threadOrGroup instanceof JPDAThreadImpl) {
-                ((JPDAThreadImpl) threadOrGroup).notifyToBeRunning();
+                ((JPDAThreadImpl) threadOrGroup).notifyToBeResumed();
             }
         }
     }

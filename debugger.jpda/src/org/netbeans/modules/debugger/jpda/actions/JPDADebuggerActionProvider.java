@@ -25,17 +25,15 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.jdi.request.StepRequest;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
-
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 
@@ -88,7 +86,7 @@ implements PropertyChangeListener {
         return debugger;
     }
     
-    void removeStepRequests (ThreadReference tr) {
+    protected void removeStepRequests (ThreadReference tr) {
         //S ystem.out.println ("removeStepRequests");
         try {
             VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
@@ -101,6 +99,7 @@ implements PropertyChangeListener {
                 if (stepRequest.thread ().equals (tr)) {
                     //S ystem.out.println("  remove request " + stepRequest);
                     erm.deleteEventRequest (stepRequest);
+                    SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
                     break;
                 }
                 //S ystem.out.println("  do not remove " + stepRequest + " : " + stepRequest.thread ());

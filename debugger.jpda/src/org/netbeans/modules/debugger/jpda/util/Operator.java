@@ -258,13 +258,22 @@ public class Operator {
                      }
                      if (resume && (!startEventOnly)) {
                          if (suspendedAll) {
+                             //TODO: Not really all can be suspended!
                              debugger.notifyToBeResumedAll();
                          }
                          if (suspendedThread != null) {
-                             suspendedThread.notifyToBeRunning();
+                             suspendedThread.notifyToBeResumed();
                          }
                          synchronized (resumeLock) {
                             eventSet.resume ();
+                         }
+                     }
+                     if (!resume) { // Check for multiply-suspended threads
+                         synchronized (resumeLock) {
+                             List<ThreadReference> threads = eventSet.virtualMachine().allThreads();
+                             for (ThreadReference t : threads) {
+                                 while (t.suspendCount() > 1) t.resume();
+                             }
                          }
                      }
                  }// for
