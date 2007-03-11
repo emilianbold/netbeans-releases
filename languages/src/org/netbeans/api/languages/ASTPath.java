@@ -159,6 +159,8 @@ public abstract class ASTPath {
         Token2Path (List<ASTItem> path) {
             this.path = path;
             s = path.size ();
+            if (s < 1)
+                throw new IllegalArgumentException ();
         }
         
         public ASTItem getLeaf () {
