@@ -371,6 +371,8 @@ public class Language {
         if (o instanceof Map)
             o = ((Map) o).get (BLA);
         if (o == null) return null;
+        if (o instanceof Feature)
+            return (Feature) o;
         List<Feature> r = (List<Feature>) o;
         if (r.isEmpty ()) return null;
         if (r.size () == 1) return r.get (0);
