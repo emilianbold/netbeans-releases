@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
@@ -36,6 +37,9 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.StringItemDisplayPresenter;
 
 /**
  *
@@ -68,6 +72,11 @@ public class StringItemCD extends ComponentDescriptor {
         );
     }
 
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -93,7 +102,9 @@ public class StringItemCD extends ComponentDescriptor {
             // code
             createSetterPresenter(),
             // delete
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_FONT)
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_FONT),
+            // screen
+            new StringItemDisplayPresenter()
        );   
     }
     
