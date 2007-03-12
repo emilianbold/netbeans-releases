@@ -259,6 +259,9 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             }
             ts.moveNext ();
             e = ts.offset ();
+            sln = NbDocument.findLineNumber (doc, s);
+            eln = NbDocument.findLineNumber (doc, e);
+            if (eln - sln < 1) return;
                 
             if (fold.hasSingleValue ()) {
                 String foldName = (String) fold.getValue (SyntaxContext.create (doc, path));
