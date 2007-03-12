@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,12 +21,8 @@
 package org.netbeans.modules.i18n.form;
 
 
-import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.java.JavaI18nString;
-
-import org.netbeans.modules.properties.UtilConvert;
-
 
 /**
  * This class extends the capability of <code>JavaI18nString</code> to be
