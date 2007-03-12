@@ -122,7 +122,7 @@ public class ThumbnailViewImpl extends JPanel implements ThumbnailView {
                 if (myContent == null) {
                     return;
                 }
-                if ((e.getModifiers() & InputEvent.BUTTON1_DOWN_MASK) != 0) {
+                if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
                     dndMode = true;
                     processDrag(e);
                     repaint();
