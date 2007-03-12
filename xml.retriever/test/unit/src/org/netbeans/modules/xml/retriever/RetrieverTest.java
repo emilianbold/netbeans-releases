@@ -8,12 +8,11 @@
 package org.netbeans.modules.xml.retriever;
 
 import junit.framework.*;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.Map;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -60,6 +59,16 @@ public class RetrieverTest extends TestCase {
          **/
     }
     
+    /**
+     * Test of getDefault method, of class org.netbeans.modules.xml.retriever.Retriever.
+     */
+    public void testRelativize() throws Exception {
+        System.out.println("getDefault");
+        URI masterURI = new URI("A/B/C");
+        URI slaveURI = new URI("A/B/C/D/E");
+        String result = Utilities.relativize(masterURI, slaveURI);
+        assert(result.equals("D/E"));        
+    }
     
     
 }

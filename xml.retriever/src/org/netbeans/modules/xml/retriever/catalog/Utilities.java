@@ -223,9 +223,11 @@ public class Utilities {
         }
         pathPrefix = pathPrefixBuff.toString();
         //collect rest of slave tokens
-        StringBuilder slaveResult = new StringBuilder(slaveLast);
+        StringBuilder slaveResult = masterLast.equals(slaveLast)?
+            new StringBuilder():new StringBuilder(slaveLast);
         while(slaveTok.hasMoreTokens()) {
-            slaveResult.append('/');
+            if(slaveResult.length() != 0)
+                slaveResult.append('/');
             slaveResult.append(slaveTok.nextToken());
         }
         //add prefix to slaveStr
