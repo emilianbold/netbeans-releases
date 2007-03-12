@@ -265,7 +265,10 @@ public class ManagerBean implements Manager {
             RegistryNode parent;
             
             List<Product> parents = null;
-            if (!parentVersion.equals("null") && !parentPlatforms.equals("null")) {
+            if ((parentVersion != null) && 
+                    !parentVersion.equals("null") && 
+                    (parentPlatforms != null) && 
+                    !parentPlatforms.equals("null")) {
                 parents = localRegistry.getProducts(
                         parentUid,
                         Version.getVersion(parentVersion),

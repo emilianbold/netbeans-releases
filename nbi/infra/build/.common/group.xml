@@ -208,10 +208,10 @@
     -->
     <target name="-release">
         <release-package url="${release.url}"
-                      registry="${release.registry}"
-                      uid="${release.parent.uid}"
-                      version="${release.parent.version}"
-                      archive="${dist.dir}/${group.dist.file.name}"/>
+                         registry="${release.registry}"
+                         uid="${release.parent.uid}"
+                         version="${release.parent.version}"
+                         archive="${dist.dir}/${group.dist.file.name}"/>
     </target>
     
     <!-- ============================================================================
