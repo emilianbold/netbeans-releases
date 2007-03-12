@@ -50,16 +50,23 @@ public class BraceCompletionDeleteAction extends ExtDeleteCharAction {
     ) throws BadLocationException {
         try {
             String mimeType = (String) doc.getProperty ("mimeType");
-            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
             TokenHierarchy th = TokenHierarchy.get (doc);
             TokenSequence ts = th.tokenSequence ();
-            ts.move (caret.getDot ());
-            if (!ts.moveNext () && !ts.movePrevious ()) return;
-            Token token = ts.token ();
+            while (true) {
+                ts.move (caret.getDot ());
+                if (!ts.moveNext ()) return;
+                TokenSequence ts2 = ts.embedded ();
+                if (ts2 == null) break;
+                ts = ts2;
+            }
+            mimeType = ts.language ().mimeType ();
+            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
             List<Feature> completes = l.getFeatures ("COMPLETE");
             Iterator<Feature> it = completes.iterator ();
             while (it.hasNext ()) {
                 Feature complete = it.next ();
+                if (complete.getType () != Feature.Type.STRING)
+                    continue;
                 String s = (String) complete.getValue ();
                 int i = s.indexOf (':');
                 if (i != 1) continue;
