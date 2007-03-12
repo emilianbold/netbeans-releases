@@ -22,10 +22,13 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 import java.util.Arrays;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.RemoveFinalModifier;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -46,7 +49,8 @@ public class NonFinalClass extends JPAClassRule {
             return null;
         }
         
-        return new ErrorDescription[]{createProblem(subject, ctx)};
+        Fix fix = new RemoveFinalModifier(ctx.getFileObject(), ElementHandle.create(subject));
+        return new ErrorDescription[]{createProblem(subject, ctx, fix)};
     }
     
     @Override public String getDescription(){
