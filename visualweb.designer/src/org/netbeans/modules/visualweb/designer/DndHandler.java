@@ -19,7 +19,6 @@
 package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -363,7 +362,8 @@ public class DndHandler /*extends TransferHandler*/ {
         // Disambiguate drop position
         if (insertPos != Position.NONE) {
 //            if (insertPos.isRendered()) {
-            if (MarkupService.isRenderedNode(insertPos.getNode())) {
+//            if (MarkupService.isRenderedNode(insertPos.getNode())) {
+            if (insertPos.isRenderedPosition()) {
                 insertPos = insertPos.getSourcePosition();
             }
 
