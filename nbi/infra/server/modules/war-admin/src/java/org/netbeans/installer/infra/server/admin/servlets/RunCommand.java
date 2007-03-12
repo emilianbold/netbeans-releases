@@ -79,7 +79,7 @@ public class RunCommand extends HttpServlet {
             
             String getFilePrefix = null;
             if (registry != null) {
-                getFilePrefix = getHostUrl(request) + "/nbi/milestone13/get-file?registry=" +
+                getFilePrefix = getHostUrl(request) + "/nbi/dev/get-file?registry=" +
                         URLEncoder.encode(registry, "UTF-8") + "&file=";
             }
             

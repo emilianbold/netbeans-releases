@@ -15,44 +15,44 @@ import org.netbeans.installer.utils.helper.Platform;
 public interface Manager {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final File   ROOT            = new File("D:/temp/nbi-server");
-    public static final File   TEMP            = new File(ROOT, "temp");
-    public static final File   REGISTRIES      = new File(ROOT, "registries");
-    public static final File   UPLOADS         = new File(TEMP, "uploads");
-    public static final File   BUNDLES         = new File(TEMP, "bundles");
-    public static final File   EXPORTED        = new File(TEMP, "exported");
-    public static final File   NBI             = new File(TEMP, ".nbi");
+    public static final File ROOT = new File("D:/temp/nbi-server");
+    public static final File TEMP = new File(ROOT, "temp");
+    public static final File REGISTRIES = new File(ROOT, "registries");
+    public static final File UPLOADS = new File(TEMP, "uploads");
+    public static final File BUNDLES = new File(TEMP, "bundles");
+    public static final File EXPORTED = new File(TEMP, "exported");
+    public static final File NBI = new File(TEMP, ".nbi");
     
-    public static final File   REGISTRIES_LIST = new File(ROOT, "registries.list");
-    public static final File   ENGINE          = new File(ROOT, "nbi-engine.jar");
+    public static final File REGISTRIES_LIST = new File(ROOT, "registries.list");
+    public static final File ENGINE = new File(ROOT, "nbi-engine.jar");
     
-    public static final String PRODUCTS        = "products";
-    public static final String GROUPS          = "groups";
-    public static final String REGISTRY_XML    = "registry.xml";
+    public static final String PRODUCTS = "products";
+    public static final String GROUPS = "groups";
+    public static final String REGISTRY_XML = "registry.xml";
     
     public static final String JNLP_STUB =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
-            "<jnlp spec=\"1.0+\" codebase=\"{0}\" href=\"{1}\">\n" + 
-            "    <information>\n" + 
-            "        <title>NetBeans Installer</title>\n" + 
-            "        <vendor>Sun Microsystems, Inc.</vendor>\n" + 
-            "        <description>NetBeans Installer Engine</description>\n" + 
-            "        <description kind=\"short\">NetBeans Installer Engine</description>\n" + 
-            "    </information>\n" + 
-            "    <security>\n" + 
-            "        <all-permissions/>\n" + 
-            "    </security>\n" + 
-            "    <resources>\n" + 
-            "        <j2se version=\"1.5+\"/>\n" + 
-            "        <j2se version=\"1.6+\"/>\n" + 
-            "        <j2se version=\"1.6.0-rc\"/>\n" + 
-            "        <j2se version=\"1.6.0-ea\"/>\n" + 
-            "        <j2se version=\"1.6.0-beta\"/>\n" + 
-            "        <j2se version=\"1.6.0-beta2\"/>\n" + 
-            "        <jar href=\"{2}\"/>\n" + 
-            "        <property name=\"nbi.product.remote.registries\" value=\"{3}\"/>\n" + 
-            "    </resources>\n" + 
-            "    <application-desc main-class=\"org.netbeans.installer.Installer\"/>\n" + 
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<jnlp spec=\"1.0+\" codebase=\"{0}\" href=\"{1}\">\n" +
+            "    <information>\n" +
+            "        <title>NetBeans Installer</title>\n" +
+            "        <vendor>Sun Microsystems, Inc.</vendor>\n" +
+            "        <description>NetBeans Installer Engine</description>\n" +
+            "        <description kind=\"short\">NetBeans Installer Engine</description>\n" +
+            "    </information>\n" +
+            "    <security>\n" +
+            "        <all-permissions/>\n" +
+            "    </security>\n" +
+            "    <resources>\n" +
+            "        <j2se version=\"1.5+\"/>\n" +
+            "        <j2se version=\"1.6+\"/>\n" +
+            "        <j2se version=\"1.6.0-rc\"/>\n" +
+            "        <j2se version=\"1.6.0-ea\"/>\n" +
+            "        <j2se version=\"1.6.0-beta\"/>\n" +
+            "        <j2se version=\"1.6.0-beta2\"/>\n" +
+            "        <jar href=\"{2}\"/>\n" +
+            "        <property name=\"nbi.product.remote.registries\" value=\"{3}\"/>\n" +
+            "    </resources>\n" +
+            "    <application-desc main-class=\"org.netbeans.installer.Installer\"/>\n" +
             "</jnlp>";
     
     // registry operations //////////////////////////////////////////////////////////
