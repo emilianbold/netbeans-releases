@@ -29,6 +29,7 @@ import org.netbeans.modules.print.impl.util.Util;
  */
 public final class PageSetupAction extends CallableSystemAction {
 
+  /**{@inheritDoc}*/
   @Override
   public synchronized void performAction()
   {
@@ -41,12 +42,14 @@ public final class PageSetupAction extends CallableSystemAction {
     return false;
   }
 
+  /**{@inheritDoc}*/
   @Override
   public String getName()
   {
     return i18n(PageSetupAction.class, "CTL_PageSetup"); // NOI18N
   }
   
+  /**{@inheritDoc}*/
   @Override
   public HelpCtx getHelpCtx()
   {

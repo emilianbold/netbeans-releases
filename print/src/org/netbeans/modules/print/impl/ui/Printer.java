@@ -26,6 +26,7 @@ import java.awt.print.PrinterJob;
 import org.openide.ErrorManager;
 
 import static org.netbeans.modules.print.api.PrintUI.*;
+import org.netbeans.modules.print.impl.util.Util;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -33,19 +34,19 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  */
 final class Printer implements Printable {
 
-  void print(Paper [] papers, Option option) {
-    PrinterJob printerJob = PrinterJob.getPrinterJob();
+  void print(Paper [] papers) {
+    PrinterJob job = PrinterJob.getPrinterJob();
     myPapers = papers;
 //out("SET PAPER: " + myPapers);
 
-    if (printerJob == null) {
+    if (job == null) {
       return;
     }
-    printerJob.setPrintable(this, option.getPageFormat());
+    job.setPrintable(this, Util.getPageFormat());
     
     try {
-      if (printerJob.printDialog()) {
-        printerJob.print();
+      if (job.printDialog()) {
+        job.print();
       }
     }
     catch (PrinterException e) {

@@ -733,7 +733,7 @@ public class Preview extends PrintUI implements Percent.Listener {
   }
 
   private void print() {
-    myPrinter.print(myPapers, myOption);
+    myPrinter.print(myPapers);
   }
 
   private void option() {
