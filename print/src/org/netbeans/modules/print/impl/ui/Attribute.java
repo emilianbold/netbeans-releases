@@ -81,7 +81,7 @@ final class Attribute extends PrintUI
   protected DialogDescriptor createDescriptor()
   {
     myDescriptor = new DialogDescriptor(
-      getMainPanel(),
+      getResizable(createPanel()),
       i18n("LBL_Options"), // NOI18N
       true,
       getButtons(),
@@ -180,7 +180,7 @@ final class Attribute extends PrintUI
     myOption.setZoomHeight(zoomHeight);
     myOption.setZoomFactor(zoomFactor);
 //out("SAVE.zoom: " + myZoomFactor.getValue() + " " + zoomFactor);
-    myPreview.updateContent();
+    myPreview.updated();
 
     return true;
   }
@@ -205,9 +205,7 @@ final class Attribute extends PrintUI
     return true;
   }
 
-  @Override
-  protected JPanel createInnerPanel()
-  {
+  private JPanel createPanel() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.NORTHWEST;
