@@ -27,7 +27,7 @@ import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
-import java.util.Properties;
+import java.util.*;
 import org.netbeans.junit.Manager;
 
 /**
@@ -43,12 +43,16 @@ public class DbUtil {
     public static String USER="user";
     public static String PASSWORD="password";
     
-    public static Connection createConnection(Properties p,File f) throws Exception{
+    public static Connection createConnection(Properties p,File[] f) throws Exception{
         String driver_name=p.getProperty(DRIVER_CLASS_NAME);
         String url=p.getProperty(URL);
         String user=p.getProperty(USER);
         String passwd=p.getProperty(PASSWORD);
-        URL[] driverURLs = {f.toURI().toURL()};
+        ArrayList list=new java.util.ArrayList();
+        for(int i=0;i<f.length;i++){
+            list.add(f[i].toURI().toURL());
+        }
+        URL[] driverURLs=(URL[])list.toArray(new URL[0]);
         URLClassLoader l = new URLClassLoader(driverURLs);
         Class c = Class.forName(driver_name, true, l);
         Driver driver=(Driver)c.newInstance();
@@ -56,8 +60,8 @@ public class DbUtil {
         return con;
     }
     
-   
-
+    
+    
     
 }
 

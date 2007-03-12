@@ -107,8 +107,8 @@ public class DataTypeTest extends NbTestCase{
     protected void setUp() throws Exception {
         debug("setUp()");
         Properties prop=context.getProperties();
-        File jar=context.getJar();
-        conn = DbUtil.createConnection(prop,jar);
+        File[] jars=context.getJars();
+        conn = DbUtil.createConnection(prop,jars);
         String sql_create=context.getSqlCreate();
         String sql_select=context.getSqlSelect();
         debug("sql_select: "+sql_select);

@@ -38,7 +38,7 @@ public class TestCaseDataFactory {
     public static  String DB_TEXT= "dbdata.txt";
     public static  String DB_PROP= "dbprop.properties";
     public static String DB_SQLDEL="dbdel.sql";
-    public static String DB_JAR="jar";
+    public static String DB_JARS="jar";
     public static String[] FILES={DB_SQLCREATE,DB_PROP,DB_SQLDEL,DB_SQLSELECT,DB_TEXT};
     private List list=new ArrayList();
     private static  TestCaseDataFactory factory;
@@ -97,12 +97,17 @@ public class TestCaseDataFactory {
                 for(int iii=0;iii<s.length;iii++){
                     System.out.println(s[iii]);
                 }
-                if(s.length>1)
-                    throw new RuntimeException("one jar or zip file must existed in directory "+dir_name);
+            //    if(s.length>1)
+             //       throw new RuntimeException("one jar or zip file must existed in directory "+dir_name);
                 if(s.length==0)
                     throw new RuntimeException("the driver doesn't  extist for test case called: "+dir_name);
-                File jar=new File(path+File.separator+s[0]);
-                map.put(DB_JAR,jar);
+                ArrayList drivers=new ArrayList();
+                for(int myint=0;myint<s.length;myint++){
+                   File file=new File(path+File.separator+s[myint]);
+                   drivers.add(file);
+                   
+                }
+                map.put(DB_JARS,drivers.toArray(new File[0]));
                   
                 TestCaseContext context=new TestCaseContext(map,dir_name);
                 list.add(context);

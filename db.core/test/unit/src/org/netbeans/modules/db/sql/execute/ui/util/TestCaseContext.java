@@ -39,13 +39,13 @@ public class TestCaseContext {
     private String sql_select;
     private String sql_del;
     private Properties data=new Properties();
-    private File jar;
+    private File[] jars;
     private String name;
     
     public TestCaseContext(HashMap map,String name)  throws Exception{
         this.name=name;
         setProperties((File)map.get(TestCaseDataFactory.DB_PROP));
-        setJar((File)map.get(TestCaseDataFactory.DB_JAR));
+        setJars((File[])map.get(TestCaseDataFactory.DB_JARS));
         setSqlCreate((File)map.get(TestCaseDataFactory.DB_SQLCREATE));
         setSqlDel((File)map.get(TestCaseDataFactory.DB_SQLDEL));
         setSqlSelect((File)map.get(TestCaseDataFactory.DB_SQLSELECT));
@@ -96,12 +96,12 @@ public class TestCaseContext {
         data.load(new FileInputStream(f.getAbsolutePath()));
     }
     
-    public File getJar(){
-        return jar;
+    public File[] getJars(){
+        return jars;
     }
     
-    private void setJar(File f){
-        jar=f;
+    private void setJars(File[] f){
+        jars=f;
     }
     
     private String[] parseContent(File f) throws  Exception{
