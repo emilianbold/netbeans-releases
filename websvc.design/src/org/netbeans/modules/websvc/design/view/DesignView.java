@@ -55,7 +55,7 @@ public class DesignView extends JPanel  {
         scene.getActions().addAction(ActionFactory.createPanAction ());
         scene.getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
-            new AddOperationAction(implementationClass),
+            new AddOperationAction(service, implementationClass),
         })));
 
         //add operations widget
