@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.insync.java;
 
+import com.sun.source.tree.ImportTree;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -30,9 +31,9 @@ import java.util.Locale;
 import javax.swing.event.DocumentEvent;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.WorkingCopy;
 
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 
 import org.netbeans.modules.visualweb.insync.ParserAnnotation;
@@ -183,14 +184,70 @@ public class JavaUnit extends SourceUnit {
     }
 
     /**
-     * Ensure that a given import is in the list, if not add it
+     * Ensure that a given import is in the list, if not try to add it
      * @param ident
      * @return true if the import was added
      */
-    public boolean ensureImport(String fqn) {
-        return false;
+    public boolean ensureImport(final String fqn) {
+        boolean result = false;
+        result = (Boolean)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
+            public Object run(WorkingCopy wc) {
+                if(!isImportRequired(wc, fqn)) {
+                    return true;
+                }
+                TreeMakerUtils.createType(wc, fqn);
+                return false;
+            }
+        }, getFileObject()); 
+        //If import was required, check if the import was added successfully
+        return result ? true : isImported(fqn);
     }
-
+ 
+    /**
+     * @return true if the class has been imported
+     * 
+     */
+    private boolean isImported(final String fqn) {
+        return (Boolean)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {        
+                for (ImportTree importTree : cinfo.getCompilationUnit().getImports()) {
+                    String importName = importTree.getQualifiedIdentifier().toString();
+                    if (fqn.equals(importName)) {
+                        return true;
+                    } 
+                }
+                return false;
+            }
+        }, getFileObject());
+    }
+    
+    /**
+     * @return true if the import is required for the class
+     * Checks if the class is in same package, or if the class is already imported,
+     * or if the wild card imports exists for class's package
+     */
+    private boolean isImportRequired(CompilationInfo cinfo, String fqn) {
+        int index = fqn.lastIndexOf('.');
+        String pkgName = null;
+        if(index != -1) {
+            pkgName = fqn.substring(0, index);
+        }
+        if(pkgName == null || pkgName.equals(cinfo.getCompilationUnit().getPackageName().toString())) {
+            return false;
+        }
+        for (ImportTree importTree : cinfo.getCompilationUnit().getImports()) {
+            String importName = importTree.getQualifiedIdentifier().toString();
+            if(importName.equals(fqn)) {
+                return false;
+            }
+            String importPkgName = importName.substring(0, importName.indexOf('.'));
+            if (importPkgName.equals(pkgName)) {
+                return false;
+            }
+        }
+        return true;
+    }    
+    
     /**
      *
      */

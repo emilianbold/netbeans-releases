@@ -354,8 +354,11 @@ public class BeanStructureScanner {
        try {
            String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureXrefAccessor"); //NOI18N
            event = beansUnit.getModel().writeLock(eventName);
-           //NB6.0 TypeReference typeRef = beansUnit.getThisClass().resolveImportsForType(type);
-           String body = "return (" + type + ")getBean(\"" + bname + "\");"; //NOI18N
+           String simpleName = type;
+           if(beansUnit.getJavaUnit().ensureImport(type)) {
+               simpleName = type.substring(index+1);
+           }
+           String body = "return (" + simpleName + ")getBean(\"" + bname + "\");"; //NOI18N
            String comment = NbBundle.getMessage(BeanStructureScanner.class, "COMMENT_GetScopedBeanComment"); //NOI18N
            org.netbeans.modules.visualweb.insync.java.MethodInfo info =
                    new org.netbeans.modules.visualweb.insync.java.MethodInfo("get" + mname, //NOI18N
