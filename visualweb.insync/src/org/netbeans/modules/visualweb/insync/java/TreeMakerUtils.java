@@ -23,6 +23,7 @@ import com.sun.rave.designtime.ContextMethod;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -242,6 +243,15 @@ public class TreeMakerUtils {
         return make.QualIdent(typeElement);        
     }
    
+    
+    /*
+     * Returns a import tree for a given type in string format
+     *
+     */ 
+    public static ImportTree createImport(WorkingCopy wc, String typeName) {
+        Tree tree = createType(wc, typeName);
+        return wc.getTreeMaker().Import(tree, false);
+    }    
     
     public static ModifiersTree createModifiers(WorkingCopy wc) {
         return wc.getTreeMaker().Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());

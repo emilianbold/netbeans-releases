@@ -18,7 +18,9 @@
  */
 package org.netbeans.modules.visualweb.insync.java;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.Tree;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -175,17 +177,8 @@ public class JavaUnit extends SourceUnit {
     //------------------------------------------------------------------------------------- Mutators
 
     /**
-     * Add a new import after the given loc
-     * @param ident
-     * @return true if the import was added
-     */
-    public boolean addImport(String fqn) {
-        return false;
-    }
-
-    /**
      * Ensure that a given import is in the list, if not try to add it
-     * @param ident
+     * @param 
      * @return true if the import was added
      */
     public boolean ensureImport(final String fqn) {
@@ -195,7 +188,7 @@ public class JavaUnit extends SourceUnit {
                 if(!isImportRequired(wc, fqn)) {
                     return true;
                 }
-                TreeMakerUtils.createType(wc, fqn);
+                addImport(wc, fqn);
                 return false;
             }
         }, getFileObject()); 
@@ -203,6 +196,16 @@ public class JavaUnit extends SourceUnit {
         return result ? true : isImported(fqn);
     }
  
+   /**
+     * Add a new import 
+     *
+     */
+    private void addImport(WorkingCopy wc, String fqn) {
+        ImportTree imprt = TreeMakerUtils.createImport(wc, fqn);
+        CompilationUnitTree cunit = wc.getTreeMaker().addCompUnitImport(wc.getCompilationUnit(), imprt);
+        wc.rewrite(wc.getCompilationUnit(), cunit);
+    }
+    
     /**
      * @return true if the class has been imported
      * 
