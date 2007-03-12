@@ -210,7 +210,8 @@ public class RunCommand extends HttpServlet {
                 } else {
                     read(input, buffer);
                     
-                    File file = FileUtils.createTempFile(manager.UPLOADS);
+                    Manager.UPLOADS.mkdirs();
+                    File file = FileUtils.createTempFile(Manager.UPLOADS);
                     
                     parameters.put(name, file);
                     output = new FileOutputStream(file);

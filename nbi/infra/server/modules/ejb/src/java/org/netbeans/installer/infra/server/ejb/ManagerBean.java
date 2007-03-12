@@ -9,8 +9,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +40,6 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExecutionResults;
-import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
@@ -67,9 +64,14 @@ public class ManagerBean implements Manager {
     public ManagerBean() {
         try {
             ROOT.mkdirs();
+            System.out.println("mkdirs " + ROOT);
             
             TEMP.mkdirs();
+            System.out.println("mkdirs " + TEMP);
+            
             REGISTRIES.mkdirs();
+            System.out.println("mkdirs " + REGISTRIES);
+            
             UPLOADS.mkdirs();
             BUNDLES.mkdirs();
             NBI.mkdirs();
