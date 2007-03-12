@@ -248,6 +248,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             if (!ts.moveNext ()) return;
             while (!ts.language ().mimeType ().equals (mimeType)) {
                 ts = ts.embedded ();
+                if (ts == null) return;
                 ts.move (e - 1);
                 if (!ts.moveNext ()) return;
             }
