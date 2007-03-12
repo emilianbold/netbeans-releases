@@ -1040,92 +1040,93 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
     }
     
     // ---- DesignerPaneBaseUI methods -------------------------------------------
-    
-    /**
-     * Converts the given location in the model to a place in
-     * the view coordinate system.
-     * The component must have a non-zero positive size for
-     * this translation to be computed.
-     *
-     * @param tc the text component for which this UI is installed
-     * @param pos the local location in the model to translate >= 0
-     * @return the coordinates as a rectangle, null if the model is not painted
-     * @exception BadLocationException  if the given position does not
-     *   represent a valid location in the associated document
-     * @see DesignerPaneBaseUI#modelToView
-     */
-    public Rectangle modelToView(/*DesignerPaneBase tc,*/ Position pos) {
-        if(DesignerUtils.DEBUG) {
-            DesignerUtils.debugLog(getClass().getName() + ".modelToView(DesignerPaneBase, Position)");
-        }
-//        if(tc == null) {
-//            throw(new IllegalArgumentException("Null designer pane."));
+  
+    // XXX Moved to WebForm.
+//    /**
+//     * Converts the given location in the model to a place in
+//     * the view coordinate system.
+//     * The component must have a non-zero positive size for
+//     * this translation to be computed.
+//     *
+//     * @param tc the text component for which this UI is installed
+//     * @param pos the local location in the model to translate >= 0
+//     * @return the coordinates as a rectangle, null if the model is not painted
+//     * @exception BadLocationException  if the given position does not
+//     *   represent a valid location in the associated document
+//     * @see DesignerPaneBaseUI#modelToView
+//     */
+//    public Rectangle modelToView(/*DesignerPaneBase tc,*/ Position pos) {
+//        if(DesignerUtils.DEBUG) {
+//            DesignerUtils.debugLog(getClass().getName() + ".modelToView(DesignerPaneBase, Position)");
 //        }
-        if(pos == null) {
-            throw(new IllegalArgumentException("Null position."));
-        }
-        
-        WebForm webform = editor.getWebForm();
-        
-//        if (!webform.getModel().isValid()) {
-        if (!webform.isModelValid()) {
-            return null;
-        }
-        
+////        if(tc == null) {
+////            throw(new IllegalArgumentException("Null designer pane."));
+////        }
+//        if(pos == null) {
+//            throw(new IllegalArgumentException("Null position."));
+//        }
+//        
+//        WebForm webform = editor.getWebForm();
+//        
+////        if (!webform.getModel().isValid()) {
+//        if (!webform.isModelValid()) {
+//            return null;
+//        }
+//        
+////        Document doc = editor.getDocument();
+//        
+//        // XXX Lock insync
+////        doc.readLock();
+////        webform.getMarkup().readLock();
+//        webform.readLock();
+//        
+//        try {
+////            return pageBox.modelToView(pos);
+//            return ModelViewMapper.modelToView(pageBox, pos);
+//        } finally {
+//            // XXX Unlock insync
+////            doc.readUnlock();
+////            webform.getMarkup().readUnlock();
+//            webform.readUnlock();
+//        }
+//    }
+//    
+//    /**
+//     * Converts the given place in the view coordinate system
+//     * to the nearest representative location in the model.
+//     * The component must have a non-zero positive size for
+//     * this translation to be computed.
+//     *
+//     * @param tc the text component for which this UI is installed
+//     * @param pt the location in the view to translate.  This
+//     *  should be in the same coordinate system as the mouse events.
+//     * @return the offset from the start of the document >= 0,
+//     *   -1 if not painted
+//     * @see DesignerPaneBaseUI#viewToModel
+//     */
+//    public Position viewToModel(DesignerPaneBase tc, Point pt) {
+//        Position pos = Position.NONE;
 //        Document doc = editor.getDocument();
-        
-        // XXX Lock insync
-//        doc.readLock();
-//        webform.getMarkup().readLock();
-        webform.readLock();
-        
-        try {
-//            return pageBox.modelToView(pos);
-            return ModelViewMapper.modelToView(pageBox, pos);
-        } finally {
-            // XXX Unlock insync
-//            doc.readUnlock();
-//            webform.getMarkup().readUnlock();
-            webform.readUnlock();
-        }
-    }
-    
-    /**
-     * Converts the given place in the view coordinate system
-     * to the nearest representative location in the model.
-     * The component must have a non-zero positive size for
-     * this translation to be computed.
-     *
-     * @param tc the text component for which this UI is installed
-     * @param pt the location in the view to translate.  This
-     *  should be in the same coordinate system as the mouse events.
-     * @return the offset from the start of the document >= 0,
-     *   -1 if not painted
-     * @see DesignerPaneBaseUI#viewToModel
-     */
-    public Position viewToModel(DesignerPaneBase tc, Point pt) {
-        Position pos = Position.NONE;
-        Document doc = editor.getDocument();
-        
-        // XXX Lock insync
-//        doc.readLock();
-        WebForm webform = editor.getWebForm();
-//        webform.getMarkup().readLock();
-        webform.readLock();
-        
-        try {
-            pos = ModelViewMapper.viewToModel(doc.getWebForm(), pt.x, pt.y); //, alloc, biasReturn);
-            
-            // I'm now relying on clients to do this themselves!
-            //assert offs == Position.NONE || Position.isSourceNode(offs.getNode());
-        } finally {
-//            doc.readUnlock();
-//            webform.getMarkup().readUnlock();
-            webform.readUnlock();
-        }
-        
-        return pos;
-    }
+//        
+//        // XXX Lock insync
+////        doc.readLock();
+//        WebForm webform = editor.getWebForm();
+////        webform.getMarkup().readLock();
+//        webform.readLock();
+//        
+//        try {
+//            pos = ModelViewMapper.viewToModel(doc.getWebForm(), pt.x, pt.y); //, alloc, biasReturn);
+//            
+//            // I'm now relying on clients to do this themselves!
+//            //assert offs == Position.NONE || Position.isSourceNode(offs.getNode());
+//        } finally {
+////            doc.readUnlock();
+////            webform.getMarkup().readUnlock();
+//            webform.readUnlock();
+//        }
+//        
+//        return pos;
+//    }
     
     /**
      * Provides a way to determine the next visually represented model
@@ -1256,8 +1257,9 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
                 
                 if (!dot.equals(mark)) {
                     Point p = new Point(e.getX(), e.getY());
-                    Position pos = c.viewToModel(p);
+//                    Position pos = c.viewToModel(p);
                     WebForm webform = ((DesignerPane)c).getWebForm();
+                    Position pos = webform.viewToModel(p);
                     
                     if ((webform.getManager().getInlineEditor() == null) ||
                             !webform.getManager().getInlineEditor().isDocumentEditor()) {

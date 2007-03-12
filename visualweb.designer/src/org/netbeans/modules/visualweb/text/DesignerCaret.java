@@ -227,8 +227,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
     protected void positionCaret(MouseEvent e) { // XXX When is this used?
 
         Point pt = new Point(e.getX(), e.getY());
-        Position pos = component.getUI().viewToModel(component, pt);
+//        Position pos = component.getUI().viewToModel(component, pt);
         WebForm webform = component.getDocument().getWebForm();
+        Position pos = webform.viewToModel(pt);
 
         if ((webform.getManager().getInlineEditor() == null) ||
                 !webform.getManager().getInlineEditor().isDocumentEditor()) {
@@ -250,8 +251,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      */
     protected void moveCaret(MouseEvent e) {
         Point pt = new Point(e.getX(), e.getY());
-        Position pos = component.getUI().viewToModel(component, pt);
+//        Position pos = component.getUI().viewToModel(component, pt);
         WebForm webform = component.getDocument().getWebForm();
+        Position pos = webform.viewToModel(pt);
 
         if ((webform.getManager().getInlineEditor() == null) ||
                 !webform.getManager().getInlineEditor().isDocumentEditor()) {
@@ -518,7 +520,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             }
 
             Position dot = range.getDot();
-            Rectangle r = mapper.modelToView(/*component,*/ dot);
+//            Rectangle r = mapper.modelToView(/*component,*/ dot);
+            WebForm webForm = component.getDocument().getWebForm();
+            Rectangle r = webForm.modelToView(dot);
 
             if ((r == null) || ((r.width == 0) && (r.height == 0))) {
                 return;
@@ -664,7 +668,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
                 // repaint the caret
                 if (range != null) {
                     Position dot = range.getDot();
-                    Rectangle loc = mapper.modelToView(/*component,*/ dot);
+//                    Rectangle loc = mapper.modelToView(/*component,*/ dot);
+                    WebForm webForm = component.getDocument().getWebForm();
+                    Rectangle loc = webForm.modelToView(dot);
                     damage(loc);
                 }
             }
@@ -944,7 +950,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
                 // determine the new location and scroll if
                 // not visible.
                 Position dot = range.getDot();
-                Rectangle newLoc = mapper.modelToView(/*component,*/ dot);
+//                Rectangle newLoc = mapper.modelToView(/*component,*/ dot);
+                WebForm webForm = component.getDocument().getWebForm();
+                Rectangle newLoc = webForm.modelToView(dot);
 
                 if (newLoc != null) {
                     adjustVisibility(newLoc);
@@ -1345,7 +1353,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 
                     if (range != null) {
                         Position dot = range.getDot();
-                        Rectangle r = mapper.modelToView(/*component,*/ dot);
+//                        Rectangle r = mapper.modelToView(/*component,*/ dot);
+                        WebForm webForm = component.getDocument().getWebForm();
+                        Rectangle r = webForm.modelToView(dot);
 
                         if ((r != null) && (r.width != 0) && (r.height != 0)) {
                             damage(r);

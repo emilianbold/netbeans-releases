@@ -783,40 +783,40 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
         //return "";
     }
 
-    /**
-     * Converts the given location in the model to a place in the view coordinate system. The
-     * component must have a positive size for this translation to be computed (i.e. layout cannot
-     * be computed until the component has been sized). The component does not have to be visible or
-     * painted.
-     *
-     * @param pos
-     *            the position >= 0
-     * @return the coordinates as a rectangle, with (r.x, r.y) as the location in the coordinate
-     *         system, or null if the component does not yet have a positive size.
-     * @exception BadLocationException
-     *                if the given position does not represent a valid location in the associated
-     *                document
-     * @see DesignerPaneBaseUI#modelToView
-     */
-    public Rectangle modelToView(Position pos) {
-        return getUI().modelToView(/*this,*/ pos);
-    }
+//    /**
+//     * Converts the given location in the model to a place in the view coordinate system. The
+//     * component must have a positive size for this translation to be computed (i.e. layout cannot
+//     * be computed until the component has been sized). The component does not have to be visible or
+//     * painted.
+//     *
+//     * @param pos
+//     *            the position >= 0
+//     * @return the coordinates as a rectangle, with (r.x, r.y) as the location in the coordinate
+//     *         system, or null if the component does not yet have a positive size.
+//     * @exception BadLocationException
+//     *                if the given position does not represent a valid location in the associated
+//     *                document
+//     * @see DesignerPaneBaseUI#modelToView
+//     */
+//    public Rectangle modelToView(Position pos) {
+//        return getUI().modelToView(/*this,*/ pos);
+//    }
 
-    /**
-     * Converts the given place in the view coordinate system to the nearest representative location
-     * in the model. The component must have a positive size for this translation to be computed
-     * (i.e. layout cannot be computed until the component has been sized). The component does not
-     * have to be visible or painted.
-     *
-     * @param pt
-     *            the location in the view to translate
-     * @return the offset >= 0 from the start of the document, or -1 if the component does not yet
-     *         have a positive size.
-     * @see DesignerPaneBaseUI#viewToModel
-     */
-    public Position viewToModel(Point pt) {
-        return getUI().viewToModel(this, pt);
-    }
+//    /**
+//     * Converts the given place in the view coordinate system to the nearest representative location
+//     * in the model. The component must have a positive size for this translation to be computed
+//     * (i.e. layout cannot be computed until the component has been sized). The component does not
+//     * have to be visible or painted.
+//     *
+//     * @param pt
+//     *            the location in the view to translate
+//     * @return the offset >= 0 from the start of the document, or -1 if the component does not yet
+//     *         have a positive size.
+//     * @see DesignerPaneBaseUI#viewToModel
+//     */
+//    public Position viewToModel(Point pt) {
+//        return getUI().viewToModel(this, pt);
+//    }
 
     /**
      * Moves the caret to a new position, leaving behind a mark defined by the last time

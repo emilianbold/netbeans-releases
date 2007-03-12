@@ -31,27 +31,27 @@ import javax.swing.plaf.ComponentUI;
  * @version 1.31 01/23/03
  */
 public abstract class DesignerPaneBaseUI extends ComponentUI {
-    /**
-     * Converts the given location in the model to a place in
-     * the view coordinate system.
-     *
-     * @param pos  the local location in the model to translate >= 0
-     * @return the coordinates as a rectangle
-     * @exception BadLocationException  if the given position does not
-     *   represent a valid location in the associated document
-     */
-    public abstract Rectangle modelToView(/*DesignerPaneBase t,*/ Position pos);
-
-    /**
-     * Converts the given place in the view coordinate system
-     * to the nearest representative location in the model.
-     *
-     * @param pt  the location in the view to translate.  This
-     *   should be in the same coordinate system as the mouse
-     *   events.
-     * @return the offset from the start of the document >= 0
-     */
-    public abstract Position viewToModel(DesignerPaneBase t, Point pt);
+//    /**
+//     * Converts the given location in the model to a place in
+//     * the view coordinate system.
+//     *
+//     * @param pos  the local location in the model to translate >= 0
+//     * @return the coordinates as a rectangle
+//     * @exception BadLocationException  if the given position does not
+//     *   represent a valid location in the associated document
+//     */
+//    public abstract Rectangle modelToView(/*DesignerPaneBase t,*/ Position pos);
+//
+//    /**
+//     * Converts the given place in the view coordinate system
+//     * to the nearest representative location in the model.
+//     *
+//     * @param pt  the location in the view to translate.  This
+//     *   should be in the same coordinate system as the mouse
+//     *   events.
+//     * @return the offset from the start of the document >= 0
+//     */
+//    public abstract Position viewToModel(DesignerPaneBase t, Point pt);
 
     /**
      * Provides a way to determine the next visually represented model

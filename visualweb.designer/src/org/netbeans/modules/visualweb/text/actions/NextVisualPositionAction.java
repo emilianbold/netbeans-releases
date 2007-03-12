@@ -92,7 +92,9 @@ public class NextVisualPositionAction extends TextAction {
 
             if ((magicPosition == null) &&
                     ((direction == SwingConstants.NORTH) || (direction == SwingConstants.SOUTH))) {
-                Rectangle r = target.modelToView(dot);
+//                Rectangle r = target.modelToView(dot);
+                WebForm webForm = target.getDocument().getWebForm();
+                Rectangle r = webForm.modelToView(dot);
                 magicPosition = new Point(r.x, r.y);
             }
 

@@ -204,7 +204,8 @@ public class InteractionManager {
                 Position pos = Position.NONE;
 
                 if (event != null) {
-                    pos = pane.viewToModel(event.getPoint());
+//                    pos = pane.viewToModel(event.getPoint());
+                    pos = webform.viewToModel(event.getPoint());
 
                     if (pos != Position.NONE) {
 //                        pos = DesignerUtils.checkPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
@@ -672,7 +673,8 @@ public class InteractionManager {
         if (!box.isGrid() /* && (insertBox != null)*/) {
             finishInlineEditing(true);
             assert getInlineEditor() == null;
-            pos = pane.viewToModel(p);
+//            pos = pane.viewToModel(p);
+            pos = webform.viewToModel(p);
 
             //                if (getInlineEditor() == null ||
             //                        !webform.getSelection().getInlineEditor().isDocumentEditor()) {

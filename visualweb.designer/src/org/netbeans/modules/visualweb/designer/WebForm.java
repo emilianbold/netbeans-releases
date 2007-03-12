@@ -19,6 +19,7 @@
 package org.netbeans.modules.visualweb.designer;
 
 import java.awt.Image;
+import java.awt.Rectangle;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.CoordinateTranslator;
@@ -29,6 +30,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.css2.CssBox;
+import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.designer.DocumentCache;
 import org.netbeans.modules.visualweb.designer.ImageCache;
@@ -56,6 +58,7 @@ import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.visualweb.text.Position;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -2096,6 +2099,103 @@ public class WebForm implements Designer {
     public void align(Designer.Alignment alignment) {
         getGridHandler().align(alignment);
     }
+    // << Designer Implmenetation
+    
+    
+    // XXX Model <-> View mapping >>>
+    /**
+     * Converts the given location in the model to a place in
+     * the view coordinate system.
+     * The component must have a non-zero positive size for
+     * this translation to be computed.
+     *
+     * @param tc the text component for which this UI is installed
+     * @param pos the local location in the model to translate >= 0
+     * @return the coordinates as a rectangle, null if the model is not painted
+     * @exception BadLocationException  if the given position does not
+     *   represent a valid location in the associated document
+     * @see DesignerPaneBaseUI#modelToView
+     */
+    public Rectangle modelToView(/*DesignerPaneBase tc,*/ Position pos) {
+        if(DesignerUtils.DEBUG) {
+            DesignerUtils.debugLog(getClass().getName() + ".modelToView(DesignerPaneBase, Position)");
+        }
+//        if(tc == null) {
+//            throw(new IllegalArgumentException("Null designer pane."));
+//        }
+        if(pos == null) {
+            throw(new IllegalArgumentException("Null position."));
+        }
+        
+//        WebForm webform = editor.getWebForm();
+        
+//        if (!webform.getModel().isValid()) {
+//        if (!webform.isModelValid()) {
+        if (!isModelValid()) {
+            return null;
+        }
+        
+//        Document doc = editor.getDocument();
+        
+        // XXX Lock insync
+//        doc.readLock();
+//        webform.getMarkup().readLock();
+//        webform.readLock();
+        readLock();
+        
+        try {
+//            return pageBox.modelToView(pos);
+//            return ModelViewMapper.modelToView(pageBox, pos);
+            return ModelViewMapper.modelToView(getPane().getPageBox(), pos);
+        } finally {
+            // XXX Unlock insync
+//            doc.readUnlock();
+//            webform.getMarkup().readUnlock();
+//            webform.readUnlock();
+            readUnlock();
+        }
+    }
+    
+    /**
+     * Converts the given place in the view coordinate system
+     * to the nearest representative location in the model.
+     * The component must have a non-zero positive size for
+     * this translation to be computed.
+     *
+     * @param tc the text component for which this UI is installed
+     * @param pt the location in the view to translate.  This
+     *  should be in the same coordinate system as the mouse events.
+     * @return the offset from the start of the document >= 0,
+     *   -1 if not painted
+     * @see DesignerPaneBaseUI#viewToModel
+     */
+    public Position viewToModel(/*DesignerPaneBase tc,*/ Point pt) {
+//        Position pos = Position.NONE;
+//        Document doc = editor.getDocument();
+        
+        // XXX Lock insync
+//        doc.readLock();
+//        WebForm webform = editor.getWebForm();
+//        webform.getMarkup().readLock();
+//        webform.readLock();
+        readLock();
+        
+        try {
+//            pos = ModelViewMapper.viewToModel(doc.getWebForm(), pt.x, pt.y); //, alloc, biasReturn);
+            return ModelViewMapper.viewToModel(this, pt.x, pt.y); //, alloc, biasReturn);
+            
+            // I'm now relying on clients to do this themselves!
+            //assert offs == Position.NONE || Position.isSourceNode(offs.getNode());
+        } finally {
+//            doc.readUnlock();
+//            webform.getMarkup().readUnlock();
+//            webform.readUnlock();
+            readUnlock();
+        }
+        
+//        return pos;
+    }
+    // XXX Model <-> View mapping <<<
 
     
     private static class HtmlDomProviderListener implements HtmlDomProvider.HtmlDomProviderListener {
