@@ -113,7 +113,9 @@ public class SunResourcesTest extends NbTestCase implements WizardConstants{
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             
-            String[] command = new String[] {"delete-jdbc-connection-pool", "--user", "admin", "--password", "adminadmin", CONNECTION_POOL_NAME};
+            String password = System.getProperty("sjsas.server.password");
+            
+            String[] command = new String[] {"delete-jdbc-connection-pool", "--user", "admin", "--password", password, CONNECTION_POOL_NAME};
             Util.runAsadmin(command);
             Util.closeProject(Util.WEB_PROJECT_NAME);
             

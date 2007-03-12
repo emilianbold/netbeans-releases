@@ -80,7 +80,7 @@ public class Util {
     public static final String _HOST = "localhost";
     public static final String _PORT = getPort(new File(_INSTALL_LOCATION+_SEP+_DOMAIN+_SEP+"config"+_SEP+"domain.xml"));
     public static final String _USER_NAME = "admin";
-    public static final String _PASSWORD = "adminadmin";
+    public static final String _PASSWORD = System.getProperty("sjsas.server.password");
     public static final String _URL = "["+_PLATFORM_LOCATION+"]deployer:Sun:AppServer::"+_HOST+":"+_PORT;
     
     // SERVER PROPERTIES FOR APP SERVER REGISTRATION

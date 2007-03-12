@@ -33,7 +33,8 @@ Microsystems, Inc. All Rights Reserved.
         <condition property="sjsas.server.path" value="/space/appserver">
             <os family="unix"/>
         </condition>
-        <property name="xtest.ide.commandline.suffix" value="-J-Dsjsas.server.path=${sjsas.server.path} -J-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
+        <property name="sjsas.server.password" value="adminadmin"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dsjsas.server.password=${sjsas.server.password} -J-Dsjsas.server.path=${sjsas.server.path} -J-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
         <!--<property name="xtest.ide.commandline.suffix" value="-J-Dsjsas.server.path=${sjsas.server.path} -J-Dnetbeans.dest.dir=${netbeans.dest.dir} -J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8765"/>-->
         <property name="test.classpath" value=""/>
     </target>
