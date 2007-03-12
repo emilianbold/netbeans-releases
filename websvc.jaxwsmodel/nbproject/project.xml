@@ -195,7 +195,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.websvc.clientapi</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>
-                <friend>org.netbeans.modules.websvc.dev</friend>
+                <friend>org.netbeans.modules.websvc.design</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsapi</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
