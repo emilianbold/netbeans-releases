@@ -191,7 +191,7 @@ public class BpelproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.DEBUG_CLASSPATH, "${"+IcanproProjectProperties.JAVAC_CLASSPATH+"}:${"+IcanproProjectProperties.BUILD_CLASSES_DIR+"}");
 
         //============= Start of IcanPro========================================//
-        ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "com.sun.bpelse"); // NOI18N     //FIXME? REPACKAGING
+        ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "sun-bpel-engine"); // NOI18N     //FIXME? REPACKAGING
         ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, "This Assembly Unit"); // NOI18N
         ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, "Represents this Assembly Unit"); // NOI18N
         ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, "This Application Sub-Assembly"); // NOI18N

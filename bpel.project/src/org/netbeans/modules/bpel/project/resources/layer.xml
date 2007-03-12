@@ -47,8 +47,8 @@
 
     <folder name="SeeBeyondJbiComponents">
         <!-- JBI Component -->
-        <file name="com.sun.bpelse">
-            <attr name="id" stringvalue="com.sun.bpelse-1.0-2"/>
+        <file name="sun-bpel-engine">
+            <attr name="id" stringvalue="sun-bpel-engine"/>
             <attr name="description" stringvalue="This is a bpel service engine."/>
             <attr name="type" stringvalue="Engine"/>
         </file>
