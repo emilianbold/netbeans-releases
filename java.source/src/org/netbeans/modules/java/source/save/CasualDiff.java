@@ -1323,6 +1323,10 @@ public class CasualDiff {
           case JCTree.APPLY:
               return matchApply((JCMethodInvocation)t1, (JCMethodInvocation)t2);
           case JCTree.NEWCLASS:
+              // #97501: workaround. Not sure about comparing symbols and their
+              // copying in ImmutableTreeTranslator, making workaround with
+              // minimal impact - issue has to be fixed correctly in the future.
+              if (((JCNewClass)t2).def != null) ((JCNewClass)t2).def.sym = null;
               return matchNewClass((JCNewClass)t1, (JCNewClass)t2);
           case JCTree.NEWARRAY:
               return matchNewArray((JCNewArray)t1, (JCNewArray)t2);
