@@ -288,7 +288,7 @@ public class CollaborationsWidget extends Widget
         // Disable/hide buttons based on current widget availability.
         removeButtonWidget.setButtonEnabled(false);
         Collection<PortType> ports = getUnusedPortTypes();
-        //createButtonWidget.setVisible(ports.size() > 0);
+        createButtonWidget.setVisible(ports.size() > 0);
     }
 
     private boolean hasPartnerLinkTypes() {
