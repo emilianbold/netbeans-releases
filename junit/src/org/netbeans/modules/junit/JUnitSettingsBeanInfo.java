@@ -153,9 +153,9 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage ("/org/netbeans/modules/junit/resources/JUnitSettingsIcon.gif");
+            return Utilities.loadImage("org/netbeans/modules/junit/resources/JUnitSettingsIcon.gif");//NOI18N
         } else {
-            return Utilities.loadImage ("/org/netbeans/modules/junit/resources/JUnitSettingsIcon32.gif");
+            return Utilities.loadImage("org/netbeans/modules/junit/resources/JUnitSettingsIcon32.gif");//NOI18N
         }
     }
 
