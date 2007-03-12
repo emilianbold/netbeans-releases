@@ -789,7 +789,8 @@ final class DesignBeanNodeHelper {
             FacesModel facesModel = findFacesModel(designBean);
             if (facesModel != null) {
                 // XXX FacesModel should be able to fire events itself.
-                facesModel.getDnDSupport().fireRefreshNeeded(deep);
+//                facesModel.getDnDSupport().fireRefreshNeeded(deep);
+                facesModel.getJsfSupport().refresh(deep);
             }
         }
         

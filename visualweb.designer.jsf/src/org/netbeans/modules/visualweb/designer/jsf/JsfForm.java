@@ -31,7 +31,6 @@ import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupMouseRegion;
-import org.netbeans.modules.visualweb.insync.FacesDnDSupport;
 //NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
@@ -96,7 +95,7 @@ class JsfForm {
 
     private final HtmlDomProvider htmlDomProvider = new HtmlDomProviderImpl(this);
     
-    private final DndSupport dndSupport = new DndSupport(this);
+    private final DndSupport dndSupport;
 
     // XXX Bad (old style) error handling.
     private Exception renderFailureException;
@@ -114,6 +113,8 @@ class JsfForm {
         synchronized (facesModel2jsfForm) {
             this.facesModel = facesModel;
         }
+        
+        this.dndSupport = new DndSupport(this);
         
         this.paletteController = PaletteControllerFactory.getDefault().createJsfPaletteController(facesModel.getProject());
         
@@ -256,6 +257,10 @@ class JsfForm {
         if (facesModel == null) {
             return null;
         }
+        return getJsfForm(facesModel);
+    }
+    
+    static JsfForm findJsfForm(FacesModel facesModel) {
         return getJsfForm(facesModel);
     }
 
@@ -548,7 +553,7 @@ class JsfForm {
         return domSynchronizer;
     }
     
-    FacesDnDSupport.UpdateSuspender getUpdateSuspender() {
+    FacesDndSupport.UpdateSuspender getUpdateSuspender() {
         return getDomSynchronizer();
     }
     
@@ -1074,6 +1079,11 @@ class JsfForm {
 
     DndSupport getDndSupport() {
         return dndSupport;
+    }
+
+    FacesModel.JsfSupport getJsfSupport() {
+        // XXX 
+        return getDndSupport();
     }
     
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {

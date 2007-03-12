@@ -38,7 +38,6 @@ import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
-import org.netbeans.modules.visualweb.insync.FacesDnDSupport;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
@@ -54,11 +53,14 @@ import org.w3c.dom.Node;
 /**
  * Place for JSF specific DnD support.
  * Factored out the complicated stuff from the designer/DnDHandler.
+ * 
+ * XXX TODO Merge with FacesDndSupport.
+ * XXX TODO Separate FacesModel.JsfSupport impl.
  *
  * @author Peter Zavadsky
  * @author Tor Norbye (the original moved code)
  */
-class DndSupport {
+class DndSupport implements /*XXX*/FacesModel.JsfSupport {
     
     private final JsfForm jsfForm;
     /** XXX TEMP solution. Listener on DnD changes. */
@@ -66,10 +68,13 @@ class DndSupport {
     
 //    private MarkupDesignBean recentDropTarget;
     
+    private final FacesDndSupport facesDndSupport;
+    
     
     /** Creates a new instance of DndSupport */
     public DndSupport(JsfForm jsfForm) {
         this.jsfForm = jsfForm;
+        this.facesDndSupport = new FacesDndSupport(jsfForm.getFacesModel());
     }
 
     
@@ -78,16 +83,17 @@ class DndSupport {
     }
     
     DataFlavor getImportFlavor(DataFlavor[] flavors) {
-        return FacesDnDSupport.getImportFlavor(flavors);
+        return FacesDndSupport.getImportFlavor(flavors);
     }
 
 //    MarkupPosition getDefaultMarkupPositionUnderParent(DesignBean parent) {
-//        return FacesDnDSupport.getDefaultMarkupPositionUnderParent(parent, getFacesModel());
+//        return FacesDndSupport.getDefaultMarkupPositionUnderParent(parent, getFacesModel());
 //    }
 
 
     String[] getClassNames(DisplayItem[] displayItems) {
-        return getFacesModel().getDnDSupport().getClasses(displayItems);
+//        return getFacesModel().getDnDSupport().getClasses(displayItems);
+        return facesDndSupport.getClasses(displayItems);
     }
     
 //    boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos,
@@ -108,12 +114,14 @@ class DndSupport {
 //    }
     
 
-    DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, FacesDnDSupport.UpdateSuspender updateSuspender) {
-        return getFacesModel().getDnDSupport().pasteBeans(t, parent, pos, location, jsfForm.getUpdateSuspender());
+    DesignBean[] pasteBeans(Transferable t, DesignBean parent, MarkupPosition pos, Point location, FacesDndSupport.UpdateSuspender updateSuspender) {
+//        return getFacesModel().getDnDSupport().pasteBeans(t, parent, pos, location, jsfForm.getUpdateSuspender());
+        return facesDndSupport.pasteBeans(t, parent, pos, location, jsfForm.getUpdateSuspender());
     }
 
     int computeActions(DesignBean droppee, Transferable transferable) {
-        return getFacesModel().getDnDSupport().computeActions(droppee, transferable);
+//        return getFacesModel().getDnDSupport().computeActions(droppee, transferable);
+        return facesDndSupport.computeActions(droppee, transferable);
     }
 
     int processLinks(Element origElement, List<DesignBean> beans) {
@@ -121,13 +129,15 @@ class DndSupport {
     }
     
     private int processLinks(Element origElement, Class[] classes, List<DesignBean> beans, boolean selectFirst, boolean handleLinks, boolean showLinkTarget) {
-        return getFacesModel().getDnDSupport().processLinks(origElement, classes, beans, selectFirst, handleLinks, showLinkTarget, jsfForm.getUpdateSuspender());
+//        return getFacesModel().getDnDSupport().processLinks(origElement, classes, beans, selectFirst, handleLinks, showLinkTarget, jsfForm.getUpdateSuspender());
+        return facesDndSupport.processLinks(origElement, classes, beans, selectFirst, handleLinks, showLinkTarget, jsfForm.getUpdateSuspender());
     }
 
     void updateDndListening() {
         dndListener = new DnDListener(jsfForm);
         // XXX Listening on dnd support, it should be on model.
-        getFacesModel().getDnDSupport().addPropertyChangeListener(WeakListeners.propertyChange(dndListener, getFacesModel().getDnDSupport()));
+//        getFacesModel().getDnDSupport().addPropertyChangeListener(WeakListeners.propertyChange(dndListener, getFacesModel().getDnDSupport()));
+        facesDndSupport.addPropertyChangeListener(WeakListeners.propertyChange(dndListener, facesDndSupport));
     }
 
     int getDropType(DesignBean origDroppee, Element droppeeElement, Transferable t, boolean linkOnly) {
@@ -224,7 +234,7 @@ class DndSupport {
                     if (dobj != null) {
                         FileObject fo = dobj.getPrimaryFile();
 //                        if (isImage(fo.getExt())) {
-                        if (FacesDnDSupport.isImage(fo.getExt())) {
+                        if (FacesDndSupport.isImage(fo.getExt())) {
 //                            String className;
 //                            // XXX This should be decided by the parent bean.
 //                            // I.e. appropriate api is missing.
@@ -245,7 +255,7 @@ class DndSupport {
 
                             return getDropTypeForClassNames(origDroppee, droppeeElement, classNames, null, linkOnly);
 //                        } else if (isStylesheet(fo.getExt())) {
-                        } else if (FacesDnDSupport.isStylesheet(fo.getExt())) {
+                        } else if (FacesDndSupport.isStylesheet(fo.getExt())) {
                             return DROP_PARENTED;
                         }
                     }
@@ -480,19 +490,42 @@ class DndSupport {
 
     void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
             Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
-        getFacesModel().getDnDSupport().importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+//        getFacesModel().getDnDSupport().importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+//                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
+        facesDndSupport.importString(string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender());
     }
 
     void importData(JComponent comp, Transferable t, Object transferData, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
             Element droppeeElement, DesignBean droppeeBean, DesignBean defaultParent, HtmlDomProvider.CoordinateTranslator coordinateTranslator, int dropAction) {
-        getFacesModel().getDnDSupport().importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+//        getFacesModel().getDnDSupport().importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
+//                droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
+        facesDndSupport.importData(comp, t, transferData, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, droppeeBean, defaultParent, new CoordinateTranslatorImpl(coordinateTranslator), jsfForm.getUpdateSuspender(), dropAction);
+
     }
+
+    boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+        return facesDndSupport.canImport(comp, transferFlavors);
+    }
+
+    // XXX >>> JsfSupport
+    public void moveBeans(DesignBean[] designBeans, DesignBean liveBean) {
+        facesDndSupport.moveBeans(designBeans, liveBean, new MarkupPosition(-1), null);
+    }
+
+    public void selectAndInlineEdit(DesignBean[] beans, DesignBean bean) {
+        facesDndSupport.notifyBeansDesigner(beans, bean);
+    }
+
+    public void refresh(boolean deep) {
+        facesDndSupport.fireRefreshNeeded(deep);
+    }
+    // XXX <<< JsfSupport
 
     
     // XXX
-    private static class CoordinateTranslatorImpl implements FacesDnDSupport.CoordinateTranslator {
+    private static class CoordinateTranslatorImpl implements FacesDndSupport.CoordinateTranslator {
         private final HtmlDomProvider.CoordinateTranslator coordinateTranslator;
         
         public CoordinateTranslatorImpl(HtmlDomProvider.CoordinateTranslator coordinateTranslator) {
@@ -513,7 +546,7 @@ class DndSupport {
     } // End of CoordinateTranslatorImpl.
 
 //    // XXX
-//    private static class LocationImpl implements FacesDnDSupport.Location {
+//    private static class LocationImpl implements FacesDndSupport.Location {
 //        private final HtmlDomProvider.Location location;
 //        
 //        
@@ -557,20 +590,20 @@ class DndSupport {
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
-            if (FacesDnDSupport.PROPERTY_DROP_TARGET.equals(evt.getPropertyName())) {
-                FacesDnDSupport.DropInfo dropInfo = (FacesDnDSupport.DropInfo)evt.getNewValue();
+            if (FacesDndSupport.PROPERTY_DROP_TARGET.equals(evt.getPropertyName())) {
+                FacesDndSupport.DropInfo dropInfo = (FacesDndSupport.DropInfo)evt.getNewValue();
 //                jsfForm.designer.showDropMatch(dropInfo.getMarkupDesignBean(), dropInfo.getMarkupMouseRegion(), dropInfo.getDropType());
 //                jsfForm.fireShowDropMatch(dropInfo.getMarkupDesignBean(), dropInfo.getMarkupMouseRegion(), dropInfo.getDropType());
                 Element componentRootElement = HtmlDomProviderImpl.getComponentRootElementForMarkupDesignBean(dropInfo.getMarkupDesignBean());
                 jsfForm.fireShowDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
-            } else if (FacesDnDSupport.PROPERTY_SELECTED_DESIGN_BEAN.equals(evt.getPropertyName())) {
+            } else if (FacesDndSupport.PROPERTY_SELECTED_DESIGN_BEAN.equals(evt.getPropertyName())) {
 //                jsfForm.designer.select((DesignBean)evt.getNewValue());
                 jsfForm.fireSelect((DesignBean)evt.getNewValue());
-            } else if (FacesDnDSupport.PROPERTY_REFRESH.equals(evt.getPropertyName())) {
+            } else if (FacesDndSupport.PROPERTY_REFRESH.equals(evt.getPropertyName())) {
 //                jsfForm.designer.refreshForm(((Boolean)evt.getNewValue()).booleanValue());
 //                jsfForm.fireRefreshForm(((Boolean)evt.getNewValue()).booleanValue());
                 jsfForm.refreshModel(((Boolean)evt.getNewValue()).booleanValue());
-            } else if (FacesDnDSupport.PROPERTY_INLINE_EDIT.equals(evt.getPropertyName())) {
+            } else if (FacesDndSupport.PROPERTY_INLINE_EDIT.equals(evt.getPropertyName())) {
 //                jsfForm.designer.inlineEdit((DesignBean[])evt.getNewValue());
                 jsfForm.fireInlineEdit((DesignBean[])evt.getNewValue());
             }

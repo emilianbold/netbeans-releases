@@ -23,7 +23,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.insync.FacesDnDSupport;
 import org.netbeans.modules.visualweb.insync.InSyncServiceProvider;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
@@ -46,6 +45,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.w3c.dom.DocumentFragment;
@@ -333,7 +333,7 @@ public class FacesModel extends Model {
 
     protected LiveUnitWrapper liveUnitWrapper;
     
-    private final FacesDnDSupport dndSupport = new FacesDnDSupport(this);
+//    private final FacesDnDSupport dndSupport = new FacesDnDSupport(this);
     
 
     //--------------------------------------------------------------------------------- Construction
@@ -1660,11 +1660,40 @@ public class FacesModel extends Model {
 // </separation of models>
 
 
-    // >>> DnD
-    public FacesDnDSupport getDnDSupport() {
-        return dndSupport;
+    // >>> JSF support (DnD, refresh etc.)
+//    public FacesDnDSupport getDnDSupport() {
+//        return dndSupport;
+//    }
+    public JsfSupport getJsfSupport() {
+        JsfSupportProvider jsfSupportProvider = Lookup.getDefault().lookup(JsfSupportProvider.class);
+        if (jsfSupportProvider == null) {
+            return new DummyJsfSupport();
+        } else {
+            return jsfSupportProvider.getDndSupport(this);
+        }
     }
-    // <<< DnD
+            
+    public interface JsfSupport {
+        public void moveBeans(DesignBean[] designBean, DesignBean liveBean);
+        public void selectAndInlineEdit(DesignBean[] beans, DesignBean bean);
+        public void refresh(boolean deep);
+    } // End of JsfSupport.
+    
+    public interface JsfSupportProvider {
+        public JsfSupport getDndSupport(FacesModel facesModel);
+    } // End of JsfSupportProvider.
+    
+    public static class DummyJsfSupport implements JsfSupport {
+        public void moveBeans(DesignBean[] designBean, DesignBean liveBean) {
+        }
+
+        public void selectAndInlineEdit(DesignBean[] beans, DesignBean bean) {
+        }
+
+        public void refresh(boolean deep) {
+        }
+    } // End of DummyJsfSupport.
+    // <<< JSF support (DnD, refresh, etc.)
     
     
     /* Refresh and sync non page beans to update the outline

@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.designer.jsf;
 
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.CustomizerDisplayer;
-import org.netbeans.modules.visualweb.insync.FacesDnDSupport;
 import org.netbeans.modules.visualweb.insync.InSyncServiceProvider;
 import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
@@ -56,7 +55,7 @@ import org.openide.ErrorManager;
  * @author Tor Norbye
  */
 class DomSynchronizer implements /*DesignContextListener,*/ Runnable, org.w3c.dom.events.EventListener,
-FacesDnDSupport.UpdateSuspender {
+FacesDndSupport.UpdateSuspender {
 
     static {
         // XXX Very suspicious, why it is not more robust?

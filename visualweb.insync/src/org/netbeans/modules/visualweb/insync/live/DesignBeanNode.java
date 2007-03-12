@@ -657,7 +657,8 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
                 String description = NbBundle.getMessage(DesignBeanNode.class, "PasteBean");  //NOI18N
                 UndoEvent event = liveUnit.getModel().writeLock(description);
                 try {
-                    liveUnit.getModel().getDnDSupport().moveBeans(new DesignBean[] {designBeanNode.getDesignBean()}, liveBean, new MarkupPosition(-1), null);
+//                    liveUnit.getModel().getDnDSupport().moveBeans(new DesignBean[] {designBeanNode.getDesignBean()}, liveBean, new MarkupPosition(-1), null);
+                    liveUnit.getModel().getJsfSupport().moveBeans(new DesignBean[] {designBeanNode.getDesignBean()}, liveBean);
                 } finally {
                     liveUnit.getModel().writeUnlock(event);
                 }
@@ -1861,7 +1862,9 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
 //                webform.getSelection().selectBean(bean);
 ////                dnd.inlineEdit(beans);
 //                webform.getManager().inlineEdit(beans);
-                facesModel.getDnDSupport().notifyBeansDesigner(beans, bean);
+                
+//                facesModel.getDnDSupport().notifyBeansDesigner(beans, bean);
+                facesModel.getJsfSupport().selectAndInlineEdit(beans, bean);
             } finally {
 //                doc.writeUnlock();
                 facesModel.writeUnlock(undoEvent);
