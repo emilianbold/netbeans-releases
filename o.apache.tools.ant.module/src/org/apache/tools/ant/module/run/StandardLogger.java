@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -70,6 +72,19 @@ public final class StandardLogger extends AntLogger {
      * </ol>
      */
     private static final Pattern CWD_LEAVE = Pattern.compile(".*Leaving directory [`'\"]?([^`'\"]+)(['\"]|$|\\.\\.\\.$)"); // NOI18N
+    /**
+     * Regexp matching an output line which should (perhaps) be hyperlinked to a file.
+     * Captured groups:
+     * <ol>
+     * <li>file name (rel/abs path or URL)
+     * <li>line1
+     * <li>col1
+     * <li>line2
+     * <li>col2
+     * <li>message
+     * </ol>
+     */
+    private static final Pattern HYPERLINK = Pattern.compile("\"?(.+?)\"?(?::|, line )(?:(\\d+):(?:(\\d+):(?:(\\d+):(\\d+):)?)?)? +(.+)"); // NOI18N
     
     /**
      * Data stored in the session.
@@ -326,87 +341,62 @@ public final class StandardLogger extends AntLogger {
      * Possibly hyperlink a message logged event.
      */
     private OutputListener findHyperlink(AntSession session, String line) {
-        // #29246: handle new (Ant 1.5.1) URLifications:
-        // [PENDING] Could use new File(URI)... if Ant uses URI too (Jakarta BZ #8031)
-        // XXX so tweak that for Ant 1.6 support!
-        // XXX might be easier to use a regexp here
         Stack<File> cwd = getSessionData(session).currentDir;
-        if (line.startsWith("file:///")) { // NOI18N
-            line = line.substring(7);
-            ERR.fine("removing file:///");
-        } else if (line.startsWith("file:")) { // NOI18N
-            line = line.substring(5);
-            ERR.fine("removing file:");
-        } else if (line.length() > 0 && line.charAt(0) == '/') {
-            ERR.fine("result: looks like Unix file");
-        } else if (line.length() > 2 && line.charAt(1) == ':' && line.charAt(2) == '\\') {
-            ERR.fine("result: looks like Windows file");
-        } else if (cwd.empty()) {
-            // not a file -> nothing to parse (don't waste time checking disk filenames)
-            ERR.fine("result: not a file");
+        Matcher m = HYPERLINK.matcher(line);
+        if (!m.matches()) {
+            ERR.fine("does not look like a hyperlink");
             return null;
         }
-        
-        int colon = line.indexOf(':');
-        if (colon == -1) {
-            ERR.fine("result: no colon found");
-            return null;
-        }
-        if (colon == 1 && line.length() >= 4 && line.charAt(2) == '\\') {
-            ERR.fine("result: looks like a Windows filename");
-            colon = line.indexOf(':', 2);
-            if (colon == -1) {
-                ERR.fine("result: no colon found even still");
+        String path = m.group(1);
+        File file;
+        if (path.startsWith("file:")) {
+            try {
+                file = new File(new URI(path));
+            } catch (URISyntaxException e) {
+                ERR.log(Level.FINE, "invalid URI, skipping", e);
+                return null;
+            } catch (IllegalArgumentException e) {
+                ERR.log(Level.FINE, "invalid URI, skipping", e);
                 return null;
             }
-        }
-        String path = line.substring(0, colon);
-        File file = new File(path);
-        if (!file.exists()) {
-            ERR.log(Level.FINE, "result: no absolute file {0}", path);
-            if (!cwd.empty()) {
-                file = new File(cwd.peek(), path);
-                if (!file.exists()) {
-                    ERR.log(Level.FINE, "result: no file even relative to {0}", cwd);
+        } else {
+            file = new File(path);
+            if (!file.isAbsolute()) {
+                if (cwd.isEmpty()) {
+                    ERR.fine("Non-absolute path with no CWD, skipping");
+                    // don't waste time on File.exists!
                     return null;
+                } else {
+                    file = new File(cwd.peek(), path);
                 }
-            } else {
-                return null;
             }
+        }
+        if (!file.exists()) {
+            ERR.log(Level.FINE, "no such file {0}, skipping", file);
+            return null;
         }
 
         int line1 = -1, col1 = -1, line2 = -1, col2 = -1;
-        int start = colon + 1; // start of message
-        int colon2 = line.indexOf (':', colon + 1);
-        if (colon2 != -1) {
-            try {
-                line1 = Integer.parseInt (line.substring (colon + 1, colon2).trim ());
-                start = colon2 + 1;
-                int colon3 = line.indexOf (':', colon2 + 1);
-                if (colon3 != -1) {
-                    col1 = Integer.parseInt (line.substring (colon2 + 1, colon3).trim ());
-                    start = colon3 + 1;
-                    int colon4 = line.indexOf (':', colon3 + 1);
-                    if (colon4 != -1) {
-                        line2 = Integer.parseInt (line.substring (colon3 + 1, colon4).trim ());
-                        start = colon4 + 1;
-                        int colon5 = line.indexOf (':', colon4 + 1);
-                        if (colon5 != -1) {
-                            col2 = Integer.parseInt (line.substring (colon4 + 1, colon5).trim ());
-                            if (col2 == col1)
-                                col2 = -1;
-                            start = colon5 + 1;
-                        }
+        String num = m.group(2);
+        try {
+            if (num != null) {
+                line1 = Integer.parseInt(num);
+                num = m.group(3);
+                if (num != null) {
+                    col1 = Integer.parseInt(num);
+                    num = m.group(4);
+                    if (num != null) {
+                        line2 = Integer.parseInt(num);
+                        col2 = Integer.parseInt(m.group(5));
                     }
                 }
-            } catch (NumberFormatException nfe) {
-                // Fine, rest is part of the message.
             }
+        } catch (NumberFormatException e) {
+            ERR.log(Level.FINE, "bad line/col #", e);
+            return null;
         }
-        String message = line.substring (start).trim ();
-        if (message.length () == 0) {
-            message = null;
-        }
+
+        String message = m.group(6);
         
         file = FileUtil.normalizeFile(file); // do this late, after File.exists
         ERR.log(Level.FINE, "Hyperlink: {0} [{1}:{2}:{3}:{4}]: {5}", new Object[] {file, line1, col1, line2, col2, message});
