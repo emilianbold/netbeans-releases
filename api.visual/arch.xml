@@ -118,7 +118,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-      See <a href="http://graph.netbeans.org/documentation.html">http://graph.netbeans.org/documentation.html</a>
+      See documentation at <a href="">http://graph.netbeans.org/documentation.html</a>
       for complete documentation of all use cases.
   </p>
  </answer>
@@ -140,8 +140,8 @@ Microsystems, Inc. All Rights Reserved.
       The Visual Library 2.0 is the next generation of the original Graph Library 1.0.
       It is designed for a general visualization with a support for graph-oriented modeling.
       Its focus is to become a part of the NetBeans platform and unify the visualization (UI and API) used in NetBeans-Platform-based applications.
-      See <a href="http://graph.netbeans.org">http://graph.netbeans.org</a> for details.
-      Documentation is available at <a href="http://graph.netbeans.org/documentation.html">http://graph.netbeans.org/documentation.html</a>.
+      See <a href="">http://graph.netbeans.org/</a> for details.
+      Documentation is available at <a href="">http://graph.netbeans.org/documentation.html</a>.
   </p>
  </answer>
 
