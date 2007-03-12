@@ -45,6 +45,7 @@ import org.netbeans.modules.bpel.design.decoration.components.DiagramButton;
 import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.bpel.design.model.connections.Connection;
+import org.netbeans.modules.bpel.design.model.connections.Direction;
 import org.netbeans.modules.bpel.design.model.connections.MessageConnection;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
@@ -157,6 +158,11 @@ public class DebuggerDecorationProvider extends DecorationProvider
                     if (c instanceof MessageConnection) {
                         continue;
                     }
+                    
+                    if (c.getTargetDirection() != Direction.TOP) {
+                        continue;
+                    }
+                    
                     
                     Point center = DesignView.convertDiagramToScreen(
                             new FPoint(c.getEndPoint().x, bounds.y),
