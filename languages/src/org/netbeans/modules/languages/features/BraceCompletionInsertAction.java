@@ -51,14 +51,20 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
     ) throws BadLocationException {
         try {
             String mimeType = (String) doc.getProperty ("mimeType");
-            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
             TokenHierarchy th = TokenHierarchy.get (doc);
             TokenSequence ts = th.tokenSequence ();
-            ts.move (caret.getDot ());
-            if (!ts.moveNext() && !ts.movePrevious()) { // no tokens at all
-                super.insertString (doc, dotPos, caret, str, overwrite);
-                return;
+            while (true) {
+                ts.move (caret.getDot ());
+                if (!ts.moveNext ())  {
+                    super.insertString (doc, dotPos, caret, str, overwrite);
+                    return;
+                }
+                TokenSequence ts2 = ts.embedded ();
+                if (ts2 == null) break;
+                ts = ts2;
             }
+            mimeType = ts.language ().mimeType ();
+            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
             List<Feature> completes = l.getFeatures ("COMPLETE");
             if (completes == null) {
                 super.insertString (doc, dotPos, caret, str, overwrite);
@@ -88,8 +94,17 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
 
             super.insertString (doc, dotPos, caret, str, overwrite);
 
+            th = TokenHierarchy.get (doc);
             ts = th.tokenSequence ();
-            ts.move (caret.getDot ());
+            while (true) {
+                ts.move (caret.getDot ());
+                if (!ts.moveNext ())  {
+                    return;
+                }
+                TokenSequence ts2 = ts.embedded ();
+                if (ts2 == null) break;
+                ts = ts2;
+            }
             if (methodCall != null) {
                 if (caret.getDot () < doc.getLength ())
                     ts.movePrevious ();
@@ -100,7 +115,6 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
                     caret.setDot (pos);
                 }
             }
-            if (!ts.moveNext ()) return;
             if (!beg && 
                 ts.token ().id ().name ().indexOf ("whitespace") < 0
             ) return;
