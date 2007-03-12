@@ -84,12 +84,13 @@ public abstract class ASTPath {
     public abstract ASTPath                 subPath (int index);
 
     /**
-     * Creates new path from {@link javax.util.List}.
+     * Returns new path from {@link javax.util.List}, or null if the path is empty.
      * 
-     * @param path list of ASTItems
+     * @param path list of ASTItems or null, if the path is empty
      * @return new ASTPath
      */
     public static ASTPath create (List<ASTItem> path) {
+        if (path.isEmpty ()) return null;
         return new Token2Path (path);
     }
 
