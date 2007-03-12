@@ -619,17 +619,26 @@ public class TestCreator {
             return testMethods;
         }
 
+        private MethodTree generateOverrideTestMethod(WorkingCopy workingCopy, List<MethodTree> testMethods) {
+            final TreeMaker maker = workingCopy.getTreeMaker();
+
+            ModifiersTree modifiers = maker.Modifiers(TestUtils.createModifierSet(PUBLIC));
+            List<ExpressionTree> throwsList = Collections.<ExpressionTree>singletonList(
+                    maker.Identifier(NbBundle.getMessage(TestCreator.class,"PROP_generator_throwable")));
+
+            return null;
+        }
+
         private MethodTree generateTestMethod(WorkingCopy workingCopy, TypeElement srcClass, ExecutableElement srcMethod, boolean useNoArgConstructor) {
             final TreeMaker maker = workingCopy.getTreeMaker();
 
             String testMethodName = TestUtils.createTestMethodName(srcMethod.getSimpleName().toString());
             ModifiersTree modifiers = maker.Modifiers(TestUtils.createModifierSet(PUBLIC));
-            List<ExpressionTree> throwsList;
+            List<ExpressionTree> throwsList=new LinkedList();
+
+            throwsList.add(maker.Identifier(NbBundle.getMessage(TestCreator.class,"PROP_generator_test_method_exception")));//NOI18N
             if (throwsNonRuntimeExceptions(workingCopy, srcMethod)) {
-                throwsList = Collections.<ExpressionTree>singletonList(
-                        maker.Identifier("Exception")); //NOI18N
-            } else {
-                throwsList = Collections.<ExpressionTree>emptyList();
+                throwsList.add(maker.Identifier(NbBundle.getMessage(TestCreator.class,"PROP_generator_nonrte"))); //NOI18N
             }
 
             MethodTree method = maker.Method(

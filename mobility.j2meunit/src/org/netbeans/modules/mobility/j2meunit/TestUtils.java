@@ -208,11 +208,6 @@ public class TestUtils {
             map.put("MIDlet-" + a, name + ", " + icon + ", " + clazz);  //NOI18N
     }
 
-    public static boolean testClassExists(FileObject classFile) {
-        if (getTestFileObject(classFile) != null) return true;
-        return false;
-    }
-
     public static FileObject getTestFileObject(FileObject classFile) {
         String testClassName = TEST_CLASSNAME_PREFIX + classFile.getName() + TEST_CLASSNAME_SUFFIX;
         String absolutePath = FileUtil.toFile(classFile).getAbsolutePath();
@@ -332,13 +327,29 @@ public class TestUtils {
     }
 
     public static boolean hasSetUp(ClassTree tstClass) {
-        //TODO
-        return true;
+        assert tstClass.getKind() == Tree.Kind.CLASS;
+        List<? extends Tree> members = tstClass.getMembers();
+        for (Tree member : members) {
+            if (member instanceof MethodTree) {
+                MethodTree methodTree = (MethodTree) member;
+                if (methodTree.getName().toString().equals(NbBundle.getMessage(TestUtils.class, "PROP_generator_method_setup"))) //NOI18N
+                    return true;
+            }
+        }
+        return false;
     }
 
     public static boolean hasTearDown(ClassTree tstClass) {
-        //TODO
-        return true;
+        assert tstClass.getKind() == Tree.Kind.CLASS;
+        List<? extends Tree> members = tstClass.getMembers();
+        for (Tree member : members) {
+            if (member instanceof MethodTree) {
+                MethodTree methodTree = (MethodTree) member;
+                if (methodTree.getName().toString().equals(NbBundle.getMessage(TestUtils.class, "PROP_generator_method_teardown"))) //NOI18N
+                    return true;
+            }
+        }
+        return false;
     }
 
     private static class TopClassFinderTask implements CancellableTask<CompilationController> {
