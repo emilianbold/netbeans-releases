@@ -20,14 +20,18 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
+
 import java.io.File;
 import java.io.IOException;
+
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -67,6 +71,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ImportsTest("testRemoveAllInDefault2"));
 //        suite.addTest(new ImportsTest("testRemoveAfterEmpty"));
 //        suite.addTest(new ImportsTest("testRemoveBeforeEmpty"));
+//        suite.addTest(new ImportsTest("testRenameIdentifier"));
         return suite;
     }
 
@@ -1023,6 +1028,50 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.removeCompUnitImport(cut, 1);
                 workingCopy.rewrite(cut, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRenameIdentifier() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "import java.util.List;\n" +
+            "import java.util.ArrayList;\n" +
+            "\n" +
+            "import java.util.Collections; // test\n" +
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "import java.util.List;\n" +
+            "import java.util.ArrayList;\n" +
+            "\n" +
+            "import java.util.Jitko; // test\n" +
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ImportTree dovoz = cut.getImports().get(2);
+                MemberSelectTree mst = (MemberSelectTree) dovoz.getQualifiedIdentifier();
+                workingCopy.rewrite(mst, make.setLabel(mst, "Jitko"));
             }
 
             public void cancel() {
