@@ -48,17 +48,17 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="languageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="languageCombo" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="languageCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="countryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="countryCombo" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="countryCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="variantLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="variantCombo" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="variantCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
               <Component id="supportedLabel" min="-2" max="-2" attributes="0"/>
