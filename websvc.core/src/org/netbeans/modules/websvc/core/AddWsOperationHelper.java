@@ -192,7 +192,7 @@ public class AddWsOperationHelper {
                                     method.getTypeParameters(),
                                     newParameters,
                                     method.getThrows(),
-                                    "{"+getReturnValue(method.getReturnType())+"}", //NOI18N
+                                    getMethodBody(method.getReturnType()), //NOI18N
                                     (ExpressionTree)method.getDefaultValue());
                         Comment comment = Comment.create(NbBundle.getMessage(AddWsOperationHelper.class, "TXT_WSOperation"));                    
                         make.addComment(annotatedMethod, comment, true);
@@ -212,21 +212,23 @@ public class AddWsOperationHelper {
         }        
     }
     
-    private String getReturnValue(Tree returnType) {
+    private String getMethodBody(Tree returnType) {
+        String body = null;
         if (Kind.PRIMITIVE_TYPE == returnType.getKind()) {
             TypeKind type = ((PrimitiveTypeTree)returnType).getPrimitiveTypeKind();
-            if (TypeKind.VOID == type) return ""; //NOI18N
-            else if (TypeKind.BOOLEAN == type) return "return false;"; // NOI18N
-            else if (TypeKind.INT == type) return "return 0;"; // NOI18N
-            else if (TypeKind.LONG == type) return "return 0;"; // NOI18N
-            else if (TypeKind.FLOAT == type) return "return 0.0;"; // NOI18N
-            else if (TypeKind.DOUBLE == type) return "return 0.0;"; // NOI18N
-            else if (TypeKind.BYTE == type) return "return 0;"; // NOI18N
-            else if (TypeKind.SHORT == type) return "return 0;"; // NOI18N
-            else if (TypeKind.CHAR == type) return "return ' ';"; // NOI18N
-            else return "return null"; //NOI18N
+            if (TypeKind.VOID == type) body = ""; //NOI18N
+            else if (TypeKind.BOOLEAN == type) body = "return false;"; // NOI18N
+            else if (TypeKind.INT == type) body = "return 0;"; // NOI18N
+            else if (TypeKind.LONG == type) body = "return 0;"; // NOI18N
+            else if (TypeKind.FLOAT == type) body = "return 0.0;"; // NOI18N
+            else if (TypeKind.DOUBLE == type) body = "return 0.0;"; // NOI18N
+            else if (TypeKind.BYTE == type) body = "return 0;"; // NOI18N
+            else if (TypeKind.SHORT == type) body = "return 0;"; // NOI18N
+            else if (TypeKind.CHAR == type) body = "return ' ';"; // NOI18N
+            else body = "return null"; //NOI18N
         } else
-            return "return null"; //NOI18N
+            body = "return null"; //NOI18N
+        return "{\n"+NbBundle.getMessage(AddWsOperationHelper.class, "TXT_TodoComment")+"\n"+body+"\n}";
     }
     /*
     protected static MethodsNode getMethodsNode() {
