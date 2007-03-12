@@ -20,6 +20,8 @@
 package org.netbeans.modules.languages;
 
 import java.util.Collections;
+import java.util.Iterator;
+import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.modules.languages.parser.TokenInput;
@@ -218,7 +220,7 @@ public class NBSLanguageReader {
         String keyword = node.getTokenTypeIdentifier ("keyword");
         ASTNode classNode = node.getNode ("command0.class");
         Selector selector = classNode != null ?
-            Selector.create (classNode.getAsText ().trim ()):
+            Selector.create (readClass (classNode)):
             null;
         Feature feature = readFeature (keyword, selector, node);
         language.addFeature (feature);
@@ -237,7 +239,7 @@ public class NBSLanguageReader {
         
         ASTNode n = node.getNode ("command0.command1.command2.class");
         if (n != null)
-            return Feature.createMethodCallFeature (keyword, selector, n.getAsText ().trim ());
+            return Feature.createMethodCallFeature (keyword, selector, readClass (n));
         
         String s = node.getTokenTypeIdentifier ("command0.command1.command2.string");
         if (s != null) {
@@ -247,7 +249,7 @@ public class NBSLanguageReader {
         
         n = node.getNode ("command0.command2.class");
         if (n != null)
-            return Feature.createMethodCallFeature (keyword, selector, n.getAsText ().trim ());
+            return Feature.createMethodCallFeature (keyword, selector, readClass (n));
         
         s = node.getTokenTypeIdentifier ("command0.command2.string");
         if (s != null) {
@@ -278,7 +280,7 @@ public class NBSLanguageReader {
                 expressions.put (key, c (value));
             } else 
             if (n.getNode ("propertyValue.class") != null) {
-                value = n.getNode ("propertyValue.class").getAsText ().trim ();
+                value = readClass (n.getNode ("propertyValue.class"));
                 methods.put (key, value);
             } else {
                 value = n.getNode ("propertyValue.regularExpression").getAsText ().trim ();
@@ -287,6 +289,21 @@ public class NBSLanguageReader {
             }
         }
         return Feature.create (keyword, selector, expressions, methods, patterns);
+    }
+    
+    private static String readClass (ASTNode cls) {
+        StringBuilder sb = new StringBuilder ();
+        sb.append (cls.getTokenTypeIdentifier ("identifier"));
+        Iterator<ASTItem> it = cls.getNode ("class1").getChildren ().iterator ();
+        while (it.hasNext ()) {
+            ASTToken token = (ASTToken) it.next ();
+            if (token.getIdentifier ().equals ("."))
+                sb.append ('.');
+            else
+            if (token.getType ().equals ("identifier"))
+                sb.append (token.getIdentifier ());
+        }
+        return sb.toString ();
     }
     
     
