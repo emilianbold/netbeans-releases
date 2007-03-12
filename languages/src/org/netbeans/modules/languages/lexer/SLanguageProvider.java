@@ -58,7 +58,7 @@ public class SLanguageProvider extends LanguageProvider {
         InputAttributes inputAttributes
     ) {
         String mimeType = languagePath.innerLanguage ().mimeType ();
-        Language language = getTokenImport (mimeType, token);
+        Language<STokenId> language = getTokenImport (mimeType, token);
         if (language == null) 
             language = getPreprocessorImport (languagePath, token);
         if (language == null) return null;
@@ -76,9 +76,9 @@ public class SLanguageProvider extends LanguageProvider {
     
     // other methods ...........................................................
     
-    private static Map<String,Language> preprocessorImport = new HashMap<String,Language> ();
+    private static Map<String,Language<STokenId>> preprocessorImport = new HashMap<String,Language<STokenId>> ();
     
-    private static Language getPreprocessorImport (LanguagePath languagePath, Token token) {
+    private static Language<STokenId> getPreprocessorImport (LanguagePath languagePath, Token token) {
         String tokenType = token.id ().name ();
         if (!tokenType.equals ("PE")) return null;
         String mimeType = languagePath.topLanguage ().mimeType ();
@@ -92,7 +92,7 @@ public class SLanguageProvider extends LanguageProvider {
                     String innerMT = (String) properties.getValue ("mimeType");
                     preprocessorImport.put (
                         mimeType,
-                        Language.find (innerMT)
+                        (Language<STokenId>)Language.find (innerMT)
                     );
                 }
             } catch (ParseException ex) {
@@ -101,13 +101,13 @@ public class SLanguageProvider extends LanguageProvider {
         return preprocessorImport.get (mimeType);
     }
     
-    private static Map<String,Map<String,Language>> tokenImports = new HashMap ();
+    private static Map<String,Map<String,Language<STokenId>>> tokenImports = new HashMap<String,Map<String,Language<STokenId>>> ();
     
-    private static Language getTokenImport (String mimeType, Token token) {
+    private static Language<STokenId> getTokenImport (String mimeType, Token token) {
         String tokenType = token.id ().name ();
-        Map<String,Language> tokenTypeToLanguage = tokenImports.get (mimeType);
+        Map<String,Language<STokenId>> tokenTypeToLanguage = tokenImports.get (mimeType);
         if (tokenTypeToLanguage == null) {
-            tokenTypeToLanguage = new HashMap<String,Language> ();
+            tokenTypeToLanguage = new HashMap<String,Language<STokenId>> ();
             tokenImports.put (mimeType, tokenTypeToLanguage);
             try {
                 org.netbeans.modules.languages.Language language = 
@@ -122,7 +122,7 @@ public class SLanguageProvider extends LanguageProvider {
                         String innerMT = (String) properties.getValue ("mimeType");
                         tokenTypeToLanguage.put (
                             tokenType2,
-                            Language.find (innerMT)
+                            (Language<STokenId>) Language.find (innerMT)
                         );
                     }
                 }
