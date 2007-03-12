@@ -1898,9 +1898,9 @@ public class WebForm implements Designer {
 //        return htmlDomProvider.isFormBean(designBean);
 //    }
 
-    public Element getDefaultParentMarkupBeanElement() {
-        return htmlDomProvider.getDefaultParentMarkupBeanElement();
-    }
+//    public Element getDefaultParentMarkupBeanElement() {
+//        return htmlDomProvider.getDefaultParentMarkupBeanElement();
+//    }
 
 //    public boolean moveBean(DesignBean bean, Node parentNode, Node before) {
 //        return htmlDomProvider.moveBean(bean, parentNode, before);
@@ -1935,7 +1935,7 @@ public class WebForm implements Designer {
 //    DesignBean getDefaultParentBean() {
 //        return htmlDomProvider.getDefaultParentBean();
 //    }
-    Element getDefautlParentComponent() {
+    public Element getDefaultParentComponent() {
         return htmlDomProvider.getDefaultParentComponent();
     }
 

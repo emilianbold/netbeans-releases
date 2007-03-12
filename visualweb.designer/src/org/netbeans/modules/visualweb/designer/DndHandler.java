@@ -408,7 +408,7 @@ public class DndHandler /*extends TransferHandler*/ {
         Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);
         boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
 //        DesignBean defaultParentBean = webform.getDefaultParentBean();
-        Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
+        Element defaultParentComponentRootElement = webform.getDefaultParentComponent();
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
 //        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
@@ -767,7 +767,7 @@ public class DndHandler /*extends TransferHandler*/ {
         Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);
         boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
 //        DesignBean defaultParentBean = webform.getDefaultParentBean();
-        Element defaultParentComponentRootElement = webform.getDefautlParentComponent();
+        Element defaultParentComponentRootElement = webform.getDefaultParentComponent();
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
 //        HtmlDomProvider.Location location = WebForm.getHtmlDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
@@ -1238,7 +1238,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
         if (webform.isGridMode() && (origDropeeComponentRootElement == null)) {
 //            origDroppee = webform.getDefaultParentBean();
-            origDropeeComponentRootElement = webform.getDefautlParentComponent();
+            origDropeeComponentRootElement = webform.getDefaultParentComponent();
         }
 
 //        return origDroppee;

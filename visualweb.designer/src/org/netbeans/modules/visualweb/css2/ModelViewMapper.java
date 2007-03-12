@@ -79,7 +79,8 @@ public final class ModelViewMapper {
      */
     public static Position computeArrowLeft(WebForm webform, Position sourcePos) {
 //        assert !sourcePos.isRendered();
-        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+//        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+        if (sourcePos.isRenderedPosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
@@ -102,7 +103,8 @@ public final class ModelViewMapper {
 
         if (p != Position.NONE) {
 //            if (p.isRendered()) {
-            if (MarkupService.isRenderedNode(p.getNode())) {
+//            if (MarkupService.isRenderedNode(p.getNode())) {
+            if (p.isRenderedPosition()) {
                 p = p.getSourcePosition();
             }
         }
@@ -122,7 +124,8 @@ public final class ModelViewMapper {
      */
     public static Position computeArrowRight(WebForm webform, Position sourcePos) {
 //        assert !sourcePos.isRendered();
-        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+//        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+        if (sourcePos.isRenderedPosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
@@ -143,7 +146,8 @@ public final class ModelViewMapper {
 
         if (p != Position.NONE) {
 //            if (p.isRendered()) {
-            if (MarkupService.isRenderedNode(p.getNode())) {
+//            if (MarkupService.isRenderedNode(p.getNode())) {
+            if (p.isRenderedPosition()) {
                 p = p.getSourcePosition();
             }
         }
@@ -165,7 +169,8 @@ public final class ModelViewMapper {
         // cell root (e.g. skip spans) and use that. Otherwise (if we're outside of the table), 
         // use the table itself as an origin, then do the normal linebox search.
 //        assert !sourcePos.isRendered();
-        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+//        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+        if (sourcePos.isRenderedPosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                 new IllegalStateException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
@@ -200,7 +205,8 @@ public final class ModelViewMapper {
             if (isValidPosition(p, false, /*webform*/webform.getManager().getInlineEditor())) {
                 if (p != Position.NONE) {
 //                    if (p.isRendered()) {
-                    if (MarkupService.isRenderedNode(p.getNode())) {
+//                    if (MarkupService.isRenderedNode(p.getNode())) {
+                    if (p.isRenderedPosition()) {
                         p = p.getSourcePosition();
                     }
                 }
@@ -224,7 +230,8 @@ public final class ModelViewMapper {
         // cell root (e.g. skip spans) and use that. Otherwise (if we're outside of the table), 
         // use the table itself as an origin, then do the normal linebox search.
 //        assert !sourcePos.isRendered();
-        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+//        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+        if (sourcePos.isRenderedPosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
@@ -259,7 +266,8 @@ public final class ModelViewMapper {
             if (isValidPosition(p, false, /*webform*/webform.getManager().getInlineEditor())) {
                 if (p != Position.NONE) {
 //                    if (p.isRendered()) {
-                    if (MarkupService.isRenderedNode(p.getNode())) {
+//                    if (MarkupService.isRenderedNode(p.getNode())) {
+                    if (p.isRenderedPosition()) {
                         p = p.getSourcePosition();
                     }
                 }
@@ -276,7 +284,8 @@ public final class ModelViewMapper {
      */
     private static Position findNextPosition(LineBox lb, Position pos, InlineEditor inlineEditor) {
 //        assert pos.isRendered();
-        if (!MarkupService.isRenderedNode(pos.getNode())) {
+//        if (!MarkupService.isRenderedNode(pos.getNode())) {
+        if (pos.isSourcePosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("Node is expected to be rendered, node=" + pos.getNode())); // NOI18N
         }
@@ -484,7 +493,8 @@ public final class ModelViewMapper {
      */
     private static Position findPrevPosition(LineBox lb, Position pos, InlineEditor inlineEditor) {
 //        assert pos.isRendered();
-        if (!MarkupService.isRenderedNode(pos.getNode())) {
+//        if (!MarkupService.isRenderedNode(pos.getNode())) {
+        if (pos.isSourcePosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("Node is expected to be rendered, node=" + pos.getNode())); // NOI18N
         }
@@ -1422,7 +1432,8 @@ public final class ModelViewMapper {
         }
 
 //        assert !sourcePos.isRendered();
-        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+//        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+        if (sourcePos.isRenderedPosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
@@ -1831,7 +1842,8 @@ public final class ModelViewMapper {
 
 //            if ((pos != Position.NONE) && pos.isRendered()) {
             if ((pos != Position.NONE)
-            && MarkupService.isRenderedNode(pos.getNode())) {
+//            && MarkupService.isRenderedNode(pos.getNode())) {
+            && pos.isRenderedPosition()) {
                 return pos.getSourcePosition();
             } else {
                 return pos;
@@ -1902,7 +1914,8 @@ public final class ModelViewMapper {
 
             if (prevPos != Position.NONE) {
 //                if (prevPos.isRendered()) {
-                if (MarkupService.isRenderedNode(prevPos.getNode())) {
+//                if (MarkupService.isRenderedNode(prevPos.getNode())) {
+                if (prevPos.isRenderedPosition()) {
                     prevPos = prevPos.getSourcePosition();
                 }
 
@@ -1924,7 +1937,8 @@ public final class ModelViewMapper {
 
             if (nextPos != Position.NONE) {
 //                if (nextPos.isRendered()) {
-                if (MarkupService.isRenderedNode(nextPos.getNode())) {
+//                if (MarkupService.isRenderedNode(nextPos.getNode())) {
+                if (nextPos.isRenderedPosition()) {
                     nextPos = nextPos.getSourcePosition();
                 }
 
@@ -1997,7 +2011,8 @@ public final class ModelViewMapper {
     /** Return the position at the beginning of the line containing the given position */
     public static Position getLineBegin(WebForm webform, Position sourcePos) {
 //        assert !sourcePos.isRendered();
-        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+//        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+        if (sourcePos.isRenderedPosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
@@ -2020,7 +2035,8 @@ public final class ModelViewMapper {
     /** Return the position at the end of the line containing the given position */
     public static Position getLineEnd(WebForm webform, Position sourcePos) {
 //        assert !sourcePos.isRendered();
-        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+//        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+        if (sourcePos.isRenderedPosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
@@ -2043,7 +2059,8 @@ public final class ModelViewMapper {
     /** Find the beginning of the word from the given position */
     public static Position getWordStart(PageBox pageBox, Position sourcePos) {
 //        assert !sourcePos.isRendered();
-        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+//        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+        if (sourcePos.isRenderedPosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode()));
         }
@@ -2071,7 +2088,8 @@ public final class ModelViewMapper {
     /** Find the end of the word from the given position */
     public static Position getWordEnd(PageBox pageBox, Position sourcePos) {
 //        assert !sourcePos.isRendered();
-        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+//        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
+        if (sourcePos.isRenderedPosition()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode()));
         }
@@ -2119,8 +2137,9 @@ public final class ModelViewMapper {
 //            MarkupBean mb = unit.getDefaultParent();
 ////            RaveElement element = (RaveElement)mb.getElement();
 //            Element element = mb.getElement();
-        Element element = webform.getDefaultParentMarkupBeanElement();
-        if (element != null) {
+        
+//        Element element = webform.getDefaultParentMarkupBeanElement();
+//        if (element != null) {
 
 //            if (element.getDesignBean() != null) {
 ////                CssBox box = findBox(element.getDesignBean());
@@ -2129,7 +2148,9 @@ public final class ModelViewMapper {
 //            MarkupDesignBean markupDesignBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
 //            if (markupDesignBean != null) {
 //                CssBox box = findBox(webform.getPane().getPageBox(), markupDesignBean);
-            Element componentRootElement = MarkupService.getRenderedElementForElement(element);
+        
+//            Element componentRootElement = MarkupService.getRenderedElementForElement(element);
+            Element componentRootElement = webform.getDefaultParentComponent();
             if (componentRootElement != null) {
                 CssBox box = findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 
@@ -2141,7 +2162,8 @@ public final class ModelViewMapper {
 
                         if (pos != Position.NONE) {
 //                            if (pos.isRendered()) {
-                            if (MarkupService.isRenderedNode(pos.getNode())) {
+//                            if (MarkupService.isRenderedNode(pos.getNode())) {
+                            if (pos.isRenderedPosition()) {
                                 return pos.getSourcePosition();
                             } else {
                                 return pos;
@@ -2150,7 +2172,7 @@ public final class ModelViewMapper {
                     }
                 }
             }
-        }
+//        }
 
         if (webform.getPane().getPageBox() != null) {
             LineBox lb = findFirstLineBox(webform.getPane().getPageBox());
@@ -2160,7 +2182,8 @@ public final class ModelViewMapper {
 
                 if (pos != Position.NONE) {
 //                    if (pos.isRendered()) {
-                    if (MarkupService.isRenderedNode(pos.getNode())) {
+//                    if (MarkupService.isRenderedNode(pos.getNode())) {
+                    if (pos.isRenderedPosition()) {
                         return pos.getSourcePosition();
                     } else {
                         return pos;
@@ -2219,7 +2242,8 @@ public final class ModelViewMapper {
 
                 if (pos != Position.NONE) {
 //                    if (pos.isRendered()) {
-                    if (MarkupService.isRenderedNode(pos.getNode())) {
+//                    if (MarkupService.isRenderedNode(pos.getNode())) {
+                    if (pos.isRenderedPosition()) {
                         return pos.getSourcePosition();
                     } else {
                         return pos;
@@ -2411,7 +2435,8 @@ public final class ModelViewMapper {
         
         if (((pos != Position.NONE) && ((inline != null) && inline.checkPosition(pos))) ||
 //                !pos.isRendered()) {
-        !MarkupService.isRenderedNode(pos.getNode())) {
+//        !MarkupService.isRenderedNode(pos.getNode())) {
+        pos.isSourcePosition()) {
             return pos;
         } else if (adjust) {
             // Try to find the corresponding source
@@ -2517,7 +2542,8 @@ public final class ModelViewMapper {
         Position pos = Position.create(element, false);
 
 //        if (!pos.isRendered()) {
-        if (!MarkupService.isRenderedNode(pos.getNode())) {
+//        if (!MarkupService.isRenderedNode(pos.getNode())) {
+        if (pos.isSourcePosition()) {
             pos = pos.getRenderedPosition();
         }
 
