@@ -36,12 +36,15 @@ import com.sun.org.apache.bcel.internal.classfile.LineNumberTable;
 import com.sun.org.apache.bcel.internal.classfile.LocalVariableTable;
 import com.sun.org.apache.bcel.internal.classfile.Method;
 import com.sun.org.apache.bcel.internal.generic.Type;
+import java.lang.reflect.Constructor;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataLoaderPool;
 
 /**
  *
@@ -318,9 +321,9 @@ public class BytecodeTest extends NbTestCase {
                     || f.getName().endsWith("jaxb-xjc.jar")
                     || f.getName().endsWith("saaj-impl.jar")
                     || f.getName().endsWith("jh-2.0_04.jar")
+                    || f.getName().endsWith("xerces-2.8.0.jar")
                     || f.getName().endsWith("svnClientAdapter.jar")
                     || f.getName().endsWith("persistence-tool-support.jar")    // issue #96439
-                    || f.getName().endsWith("org-netbeans-modules-xml-wsdl-model.jar")    // issue #96456
                     || f.getName().endsWith("org-netbeans-modules-websvc-core.jar")    // issue #96453
                     || f.getName().endsWith("org-netbeans-modules-websvc-jaxrpc.jar")
                     || f.getName().endsWith("org-netbeans-modules-j2ee-sun-appsrv.jar")    // issue #96439
@@ -351,6 +354,7 @@ public class BytecodeTest extends NbTestCase {
                     if ("org/openide/explorer/view/VisualizerNode.class".equals(entry.getName()) // default node icon si OK
                             || "org/openide/awt/JInlineMenu.class".equals(entry.getName()) // empty icon si OK
                             || "org/openide/awt/DynaMenuModel.class".equals(entry.getName()) // empty icon si OK
+                            || "org/netbeans/swing/tabcontrol/TabData.class".equals(entry.getName()) // empty icon si OK
                             || "org/openide/explorer/propertysheet/PropertySheet.class".equals(entry.getName())) { // deprecated kept for compat
                         continue;
                     } else if (entry.getName().startsWith("org/netbeans/modules/editor/java/JavaCompletionItem")) { // #96442
@@ -376,6 +380,23 @@ public class BytecodeTest extends NbTestCase {
                 msg.append(v.entry).append(" in ").append(v.jarFile).append(v.comment).append('\n');
             }
             fail(msg.toString());
+        }
+    }
+    
+    /** Check that we are not loading classes hungrily. 
+     * DataLoader(String) is prefered to avoid loading of DataObject classes.
+     */
+    public void testDataLoaders() throws Exception {
+        Enumeration<DataLoader> loaders = DataLoaderPool.getDefault().allLoaders();
+        while (loaders.hasMoreElements()) {
+            DataLoader ldr = loaders.nextElement();
+            try { 
+                // XXX not enough better is to test that all ctors only call super(String)
+                Constructor ctor = ldr.getClass().getDeclaredConstructor(Class.class);
+                assertNull(ldr.getClass().getName()+".<init>(String) is better are usualy enough", ctor);
+            } catch (NoSuchMethodException ex) {
+                // expected path - OK
+            }
         }
     }
 }
