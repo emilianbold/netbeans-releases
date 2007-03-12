@@ -63,17 +63,15 @@ public class EditablePropertiesTest extends NbTestCase {
         
         EditableProperties ep = loadTestProperties();
         
-        Iterator it = content.keySet().iterator();
-        while (it.hasNext()) {
-            String key = (String)it.next();
-            String value = (String)content.get(key);
+        for (Map.Entry<String,String> entry : content.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
             String epValue = ep.getProperty(key);
             assertEquals("Expected value for key "+key+" is different", value, epValue);
         }
         int count = 0;
-        it = ep.entrySet().iterator();
-        while (it.hasNext()) {
-            if (((Map.Entry)it.next()).getKey() != null) {
+        for (Map.Entry<String,String> entry : ep.entrySet()) {
+            if (entry.getKey() != null) {
                 count++;
             }
         }
