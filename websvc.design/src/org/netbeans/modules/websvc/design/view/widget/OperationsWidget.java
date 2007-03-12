@@ -67,7 +67,7 @@ public class OperationsWidget extends LayerWidget {
         if (wsdlService==null) return;
         for(WsdlPort port:wsdlService.getPorts()) {
             for(WsdlOperation operation:port.getOperations()) {
-                addChild(new OperationWidget(getScene(),operation));
+                addChild(new OperationContentWidget(getScene(),operation));
             }
         }
     }

@@ -20,7 +20,6 @@
 package org.netbeans.modules.websvc.design.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -49,7 +48,6 @@ public class DesignView extends JPanel  {
 
         scene = new Scene();
         // initialize configuration
-        scene.setBackground(new Color(255, 255, 191));
         // add actions
         scene.getActions().addAction(ActionFactory.createZoomAction ());
         scene.getActions().addAction(ActionFactory.createPanAction ());
