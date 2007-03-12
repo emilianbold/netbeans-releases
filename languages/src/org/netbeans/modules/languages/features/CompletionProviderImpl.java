@@ -202,6 +202,12 @@ public class CompletionProviderImpl implements CompletionProvider {
             ASTPath path = node.findPath (offset - 1);
             if (path == null) return;
             ASTToken token = (ASTToken) path.getLeaf ();
+            if (token.getLength () != token.getIdentifier ().length ()) {
+                // [HACK]
+                // something like token.getRealIndex () + 
+                // add tokens for language borders...
+                return;
+            }
             String start = token.getIdentifier ().substring (
                 0, offset - token.getOffset ()
             ).trim ();
