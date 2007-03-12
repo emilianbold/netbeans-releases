@@ -30,9 +30,16 @@ public final class ProjectOp {
     private final int number;
 
     private ProjectOp(String name, String type, int number) {
-        this.name = name;
-        this.type = type;
+        this.name = fixName(name, true);
+        this.type = fixName(type, false);
         this.number = number;
+    }
+    
+    private static String fixName(String name, boolean nameOrType) {
+        if (nameOrType && name.indexOf("Maven") >= 0) {
+            return "Maven";
+        }
+        return name;
     }
     
     /** Human readable name of the project the operation happened on
