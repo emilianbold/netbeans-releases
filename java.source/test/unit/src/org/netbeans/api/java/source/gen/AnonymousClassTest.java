@@ -47,7 +47,8 @@ public class AnonymousClassTest extends GeneratorTestMDRCompat {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(AnonymousClassTest.class);
 //        suite.addTest(new AnonymousClassTest("testAddMethodToInvocParam"));
-        return suite;
+//        suite.addTest(new AnonymousClassTest("testAddInsideAnnWhenAnnInPar"));
+          return suite;
     }
     
     /**
@@ -108,6 +109,93 @@ public class AnonymousClassTest extends GeneratorTestMDRCompat {
                     null
                 );
                 workingCopy.rewrite(nct.getClassBody(), make.addClassMember(nct.getClassBody(), m));
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Deva issue.
+     * Example:
+     * 
+     * public class Main {
+     *     void m(Runnable r) {
+     *     }
+     *
+     *     void method() {
+     *         m(new Runnable() {
+     *             public void run() {
+     *                 Object o = null;
+     *                 String s = o;
+     *             }
+     *         });
+     *     }
+     * }
+     * 
+     * When statement is changed, e.g. 'String s = o;' is changed
+     * to 'String s = (String) o;', it is not replaced in the source.
+     */
+    public void testAddInsideAnnWhenAnnInPar() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "    void m(Runnable r) {\n" +
+            "    }\n" +
+            "    \n" +
+            "    void method() {\n" +
+            "        m(new Runnable() {\n" +
+            "            public void run() {\n" +
+            "                Object o = null;\n" +
+            "                String s = o;\n" +
+            "            }\n" +
+            "        });\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "    void m(Runnable r) {\n" +
+            "    }\n" +
+            "    \n" +
+            "    void method() {\n" +
+            "        m(new Runnable() {\n" +
+            "            public void run() {\n" +
+            "                Object o = null;\n" +
+            "                String s = (String) o;\n" +
+            "            }\n" +
+            "        });\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                ClassTree testClass = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) testClass.getMembers().get(2);
+                BlockTree block = method.getBody();
+                ExpressionStatementTree est = (ExpressionStatementTree) block.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                NewClassTree nct = (NewClassTree) mit.getArguments().get(0);
+                ClassTree clazzTree = nct.getClassBody();
+                method = (MethodTree) clazzTree.getMembers().get(1);
+                VariableTree vt = (VariableTree) method.getBody().getStatements().get(1);
+                ExpressionTree init = vt.getInitializer();
+                ExpressionTree cast = make.TypeCast(make.Identifier("String"), init);
+                workingCopy.rewrite(init, cast);
             }
             
             public void cancel() {
