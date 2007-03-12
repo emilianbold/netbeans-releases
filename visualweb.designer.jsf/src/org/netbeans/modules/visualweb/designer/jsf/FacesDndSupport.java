@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.visualweb.designer.jsf;
 
+import java.awt.EventQueue;
 import java.util.Arrays;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
@@ -1033,20 +1034,40 @@ class FacesDndSupport {
     
 //    private void fireDropTargetChanged(MarkupDesignBean markupDesignBean, MarkupMouseRegion markupMouseRegion, int dropType) {
 //        propertyChangeSupport.firePropertyChange(PROPERTY_DROP_TARGET, null, new DropInfo(markupDesignBean, markupMouseRegion, dropType)); // NOI18N
-    private void fireDropTargetChanged(MarkupDesignBean markupDesignBean, Element regionElement, int dropType) {
-        propertyChangeSupport.firePropertyChange(PROPERTY_DROP_TARGET, null, new DropInfo(markupDesignBean, regionElement, dropType)); // NOI18N
+    private void fireDropTargetChanged(final MarkupDesignBean markupDesignBean, final Element regionElement, final int dropType) {
+        // XXX It happens the model is not updated yet (source-rendered elements link)! (See scheduling in DomSynchronizer)
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                propertyChangeSupport.firePropertyChange(PROPERTY_DROP_TARGET, null, new DropInfo(markupDesignBean, regionElement, dropType)); // NOI18N
+            }
+        });
     }
     
-    private void fireSelectedDesignBeanChanged(DesignBean selected) {
-        propertyChangeSupport.firePropertyChange(PROPERTY_SELECTED_DESIGN_BEAN, null, selected);
+    private void fireSelectedDesignBeanChanged(final DesignBean selected) {
+        // XXX It happens the model is not updated yet (source-rendered elements link)! (See scheduling in DomSynchronizer)
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                propertyChangeSupport.firePropertyChange(PROPERTY_SELECTED_DESIGN_BEAN, null, selected);
+            }
+        });
     }
     
-    /*private*/public void fireRefreshNeeded(boolean refreshAll) {
-        propertyChangeSupport.firePropertyChange(PROPERTY_REFRESH, !refreshAll, refreshAll);
+    /*private*/public void fireRefreshNeeded(final boolean refreshAll) {
+        // XXX It happens the model is not updated yet (source-rendered elements link)! (See scheduling in DomSynchronizer)
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                propertyChangeSupport.firePropertyChange(PROPERTY_REFRESH, !refreshAll, refreshAll);
+            }
+        });
     }
 
-    private void fireInlineEdit(DesignBean[] designBeans) {
-        propertyChangeSupport.firePropertyChange(PROPERTY_INLINE_EDIT, null, designBeans);
+    private void fireInlineEdit(final DesignBean[] designBeans) {
+        // XXX It happens the model is not updated yet (source-rendered elements link)! (See scheduling in DomSynchronizer)
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                propertyChangeSupport.firePropertyChange(PROPERTY_INLINE_EDIT, null, designBeans);
+            }
+        });
     }
 
     
