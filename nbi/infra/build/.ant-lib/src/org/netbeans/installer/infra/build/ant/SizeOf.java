@@ -49,7 +49,7 @@ public class SizeOf extends Task {
      * @param path New value for the 'path' property.
      */
     public void setFile(final String path) {
-        File file = new File(path);
+        file = new File(path);
         if (!file.equals(file.getAbsoluteFile())) {
             file = new File(getProject().getBaseDir(), path);
         }
