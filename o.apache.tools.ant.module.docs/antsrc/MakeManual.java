@@ -57,6 +57,7 @@ import org.w3c.dom.Element;
 /**
  * Creates Ant manual in JavaHelp format.
  * @author Jesse Glick
+ * @see <a href="http://svn.apache.org/repos/asf/ant/sandbox/antlibs/manual4eclipse/src/main/org/apache/ant/manual4eclipse/Manual4EclipseTask.java">Eclipse version</a>
  */
 public class MakeManual extends Task {
 
