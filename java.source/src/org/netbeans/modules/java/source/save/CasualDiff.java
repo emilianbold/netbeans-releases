@@ -252,13 +252,22 @@ public class CasualDiff {
         return localPointer;
     }
     
-    protected void diffImport(JCImport oldT, JCImport newT) {
-        if (TreeInfo.fullName(oldT.qualid) != TreeInfo.fullName(newT.qualid))
-            append(Diff.modify(oldT, getOldPos(oldT), newT));  // includes possible staticImport change
-        else if (oldT.staticImport != newT.staticImport)
-            append(Diff.flags(oldT.pos, endPos(oldT), 
-                              oldT.staticImport ? Flags.STATIC : 0L,
-                              newT.staticImport ? Flags.STATIC : 0L));
+    protected int diffImport(JCImport oldT, JCImport newT, int[] bounds) {
+        int localPointer = bounds[0];
+        
+        int[] qualBounds = getBounds(oldT.getQualifiedIdentifier());
+        copyTo(localPointer, qualBounds[0]);
+        localPointer = diffTree(oldT.getQualifiedIdentifier(), newT.getQualifiedIdentifier(), qualBounds);
+//        if (TreeInfo.fullName(oldT.qualid) != TreeInfo.fullName(newT.qualid))
+//            append(Diff.modify(oldT, getOldPos(oldT), newT));  // includes possible staticImport change
+//        else if (oldT.staticImport != newT.staticImport)
+//            append(Diff.flags(oldT.pos, endPos(oldT), 
+//                              oldT.staticImport ? Flags.STATIC : 0L,
+//                              newT.staticImport ? Flags.STATIC : 0L));
+        
+        copyTo(localPointer, bounds[1]);
+        
+        return bounds[1];
     }
 
     // need by visitMethodDef - in case of renaming class, we do not know
@@ -2229,7 +2238,7 @@ public class CasualDiff {
               diffTopLevel((JCCompilationUnit)oldT, (JCCompilationUnit)newT);
               break;
           case JCTree.IMPORT:
-              diffImport((JCImport)oldT, (JCImport)newT);
+              retVal = diffImport((JCImport)oldT, (JCImport)newT, elementBounds);
               break;
           case JCTree.CLASSDEF:
               retVal = diffClassDef((JCClassDecl)oldT, (JCClassDecl)newT, elementBounds);
