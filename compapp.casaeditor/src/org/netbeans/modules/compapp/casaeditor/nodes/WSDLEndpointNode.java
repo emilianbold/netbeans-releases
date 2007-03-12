@@ -117,17 +117,6 @@ public class WSDLEndpointNode extends CasaNode {
                 "endpointName",            // NOI18N
                 NbBundle.getMessage(getClass(), "PROP_EndpointName"),       // NOI18N
                 NbBundle.getMessage(getClass(), "PROP_EndpointName"));      // NOI18N
-                
-        Node.Property nameSupport = new PropertySupport.ReadOnly(
-                "name", // NOI18N
-                String.class,
-                NbBundle.getMessage(getClass(), "PROP_EndpointName"),       // NOI18N
-                Constants.EMPTY_STRING) {
-            public String getValue() {
-                return ((CasaWrapperModel)casaPort.getModel()).getEndpointName(casaPort);
-            }
-        };
-        identificationProperties.put(nameSupport);
         
         Node.Property componentNameSupport = new PropertySupport.ReadOnly(
                 "componentName", // NOI18N
