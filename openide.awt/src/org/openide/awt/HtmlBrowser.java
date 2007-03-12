@@ -744,7 +744,7 @@ public class HtmlBrowser extends JPanel {
                 browserImpl.reloadDocument();
             } else
              if (e.getSource() == bHome) {
-                setURL(homePage);
+                setURL(getHomePage());
             } else
              if (e.getSource() == bStop) {
                 browserImpl.stopLoading();
