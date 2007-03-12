@@ -25,8 +25,8 @@ import java.lang.reflect.Method;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
-
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+import org.openide.util.Utilities;
 
 /**
  * BeanSupport is a utility class with various static methods supporting
@@ -270,8 +270,7 @@ public class BeanSupport
         if (img instanceof Image) {
             return (Image) img;
         } else {
-            Image image = java.awt.Toolkit.getDefaultToolkit().createImage(
-                                 BeanSupport.class.getResource((String)img));
+            Image image = Utilities.loadImage((String)img);
             icons.put(name, image);
             return image;
         }
@@ -280,27 +279,27 @@ public class BeanSupport
     private static Map<String, Object> createImageCache() {
         Map<String, Object> map = new HashMap<String, Object>();
         
-        map.put("java.awt.Label", "/org/netbeans/modules/form/beaninfo/awt/label.gif"); // NOI18N
-        map.put("java.awt.Button", "/org/netbeans/modules/form/beaninfo/awt/button.gif"); // NOI18N
-        map.put("java.awt.TextField", "/org/netbeans/modules/form/beaninfo/awt/textfield.gif"); // NOI18N
-        map.put("java.awt.TextArea", "/org/netbeans/modules/form/beaninfo/awt/textarea.gif"); // NOI18N
-        map.put("java.awt.Checkbox", "/org/netbeans/modules/form/beaninfo/awt/checkbox.gif"); // NOI18N
-        map.put("java.awt.Choice", "/org/netbeans/modules/form/beaninfo/awt/choice.gif"); // NOI18N
-        map.put("java.awt.List", "/org/netbeans/modules/form/beaninfo/awt/list.gif"); // NOI18N
-        map.put("java.awt.Scrollbar", "/org/netbeans/modules/form/beaninfo/awt/scrollbar.gif"); // NOI18N
-        map.put("java.awt.ScrollPane", "/org/netbeans/modules/form/beaninfo/awt/scrollpane.gif"); // NOI18N
-        map.put("java.awt.Panel", "/org/netbeans/modules/form/beaninfo/awt/panel.gif"); // NOI18N
-        map.put("java.awt.Canvas", "/org/netbeans/modules/form/beaninfo/awt/canvas.gif"); // NOI18N
-        map.put("java.awt.MenuBar", "/org/netbeans/modules/form/beaninfo/awt/menubar.gif"); // NOI18N
-        map.put("java.awt.PopupMenu", "/org/netbeans/modules/form/beaninfo/awt/popupmenu.gif"); // NOI18N
-        map.put("java.awt.Menu", "/org/netbeans/modules/form/resources/menu.gif"); // NOI18N
-        map.put("java.awt.MenuItem", "/org/netbeans/modules/form/resources/menuItem.gif"); // NOI18N
-        map.put("java.awt.CheckboxMenuItem", "/org/netbeans/modules/form/resources/menuItemCheckbox.gif"); // NOI18N
-        map.put("org.netbeans.modules.form.Separator", "/org/netbeans/modules/form/resources/menuSeparator.gif"); // NOI18N
+        map.put("java.awt.Label", "org/netbeans/modules/form/beaninfo/awt/label.gif"); // NOI18N
+        map.put("java.awt.Button", "org/netbeans/modules/form/beaninfo/awt/button.gif"); // NOI18N
+        map.put("java.awt.TextField", "org/netbeans/modules/form/beaninfo/awt/textfield.gif"); // NOI18N
+        map.put("java.awt.TextArea", "org/netbeans/modules/form/beaninfo/awt/textarea.gif"); // NOI18N
+        map.put("java.awt.Checkbox", "org/netbeans/modules/form/beaninfo/awt/checkbox.gif"); // NOI18N
+        map.put("java.awt.Choice", "org/netbeans/modules/form/beaninfo/awt/choice.gif"); // NOI18N
+        map.put("java.awt.List", "org/netbeans/modules/form/beaninfo/awt/list.gif"); // NOI18N
+        map.put("java.awt.Scrollbar", "org/netbeans/modules/form/beaninfo/awt/scrollbar.gif"); // NOI18N
+        map.put("java.awt.ScrollPane", "org/netbeans/modules/form/beaninfo/awt/scrollpane.gif"); // NOI18N
+        map.put("java.awt.Panel", "org/netbeans/modules/form/beaninfo/awt/panel.gif"); // NOI18N
+        map.put("java.awt.Canvas", "org/netbeans/modules/form/beaninfo/awt/canvas.gif"); // NOI18N
+        map.put("java.awt.MenuBar", "org/netbeans/modules/form/beaninfo/awt/menubar.gif"); // NOI18N
+        map.put("java.awt.PopupMenu", "org/netbeans/modules/form/beaninfo/awt/popupmenu.gif"); // NOI18N
+        map.put("java.awt.Menu", "org/netbeans/modules/form/resources/menu.gif"); // NOI18N
+        map.put("java.awt.MenuItem", "org/netbeans/modules/form/resources/menuItem.gif"); // NOI18N
+        map.put("java.awt.CheckboxMenuItem", "org/netbeans/modules/form/resources/menuItemCheckbox.gif"); // NOI18N
+        map.put("org.netbeans.modulres.form.Separator", "org/netbeans/modules/form/resources/menuSeparator.gif"); // NOI18N
 
-        map.put("java.applet.Applet", "/org/netbeans/modules/form/resources/applet.gif"); // NOI18N
-        map.put("java.awt.Dialog", "/org/netbeans/modules/form/resources/dialog.gif"); // NOI18N
-        map.put("java.awt.Frame", "/org/netbeans/modules/form/resources/frame.gif"); // NOI18N
+        map.put("java.applet.Applet", "org/netbeans/modules/form/resources/applet.gif"); // NOI18N
+        map.put("java.awt.Dialog", "org/netbeans/modules/form/resources/dialog.gif"); // NOI18N
+        map.put("java.awt.Frame", "org/netbeans/modules/form/resources/frame.gif"); // NOI18N
 
         return map;
     }
