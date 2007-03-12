@@ -82,15 +82,6 @@ public class IDESettings  {
     // ------------------------------------------
     // property access methods
     
-    /** A utility method to avoid unnecessary creation of second URL */
-    public static URL getRealHomeURL () {
-        try {
-            return new URL (NbBundle.getMessage (IDESettings.class, "URL_default_home_page"));
-        } catch (MalformedURLException e) {
-            throw new AssertionError (e);
-        }
-    }
-            
     /** Getter for ShowToolTipsInIDE
      * @return true if dialog will be shown*/
     public boolean getShowToolTipsInIDE () {
@@ -149,7 +140,6 @@ public class IDESettings  {
      * @param s whether to show them
      */
     public void setShowFileExtensions (boolean s) {
-        boolean old = getShowFileExtensions ();
         DataNode.setShowFileExtensions (s);
     }
     

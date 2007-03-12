@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,6 @@ package org.netbeans.core;
 
 import java.awt.Image;
 import java.beans.*;
-import java.util.ResourceBundle;
 import org.openide.util.Exceptions;
 
 import org.openide.util.NbBundle;
@@ -52,8 +51,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[0].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_CONFIRM_DELETE"));
             desc[0].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class, "HINT_CONFIRM_DELETE"));
 
-            desc[1].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_HOME_PAGE"));
-            desc[1].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class, "HINT_HOME_PAGE"));
+            desc[1].setHidden (true);
             
             desc[2].setHidden (true);
 

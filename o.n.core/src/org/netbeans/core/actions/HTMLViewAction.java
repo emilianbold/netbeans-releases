@@ -25,7 +25,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
-import org.netbeans.core.IDESettings;
+import org.openide.util.Exceptions;
 
 /** Activates last opened HTML browser or opens a HTML Browser on the home URL
  *  specified in IDESettings using HtmlBrowser.URLDisplayer.showURL().
@@ -50,19 +50,16 @@ public class HTMLViewAction extends CallableSystemAction {
                     new java.net.URL(HtmlBrowser.getHomePage ()
                     ));
         } catch (java.net.MalformedURLException e) {
-            if (!HtmlBrowser.getHomePage ().
-              startsWith ("http://") // NOI18N
-            ) {
-                try {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(
-                        new java.net.URL("http://" + HtmlBrowser.getHomePage () // NOI18N
-                    ));
-                } catch (java.net.MalformedURLException e1) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(
-                        IDESettings.getRealHomeURL ());
-                }
-            } else
-                HtmlBrowser.URLDisplayer.getDefault().showURL(IDESettings.getRealHomeURL ());
+            String home = HtmlBrowser.getHomePage ();
+            if (!home.startsWith ("http://")) { // NOI18N
+                home = "http://" + home; // NOI18N
+            }
+            try {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(
+                    new java.net.URL(home));
+            } catch (java.net.MalformedURLException e1) {
+                Exceptions.printStackTrace(e1);
+            }
         }
     }
     
