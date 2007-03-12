@@ -413,6 +413,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.earproject</friend>
                 <friend>org.netbeans.modules.j2ee.archive</friend>
+                <friend>org.netbeans.modules.visualweb.project.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
                 <package>org.netbeans.modules.web.project.api</package>
                 <package>org.netbeans.modules.web.project.spi</package>
