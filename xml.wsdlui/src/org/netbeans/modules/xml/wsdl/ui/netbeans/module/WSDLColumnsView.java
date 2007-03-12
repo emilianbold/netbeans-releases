@@ -40,7 +40,6 @@ import org.netbeans.modules.xml.xam.ui.column.LinkPanel;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 /**
@@ -55,7 +54,7 @@ import org.openide.util.Lookup;
  * @author Jeri Lockhart
  */
 public class WSDLColumnsView extends JPanel implements ColumnView,
-        HelpCtx.Provider, PropertyChangeListener {
+        /*HelpCtx.Provider,*/ PropertyChangeListener {
     /** silence compiler warnings */
     static final long serialVersionUID = 1L;
     /** Where the columns are shown. */
@@ -366,7 +365,8 @@ public class WSDLColumnsView extends JPanel implements ColumnView,
         columnView.scrollToColumn(column, synchronous);
     }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(WSDLColumnsView.class);
-    }
+// IZ 96828: suppress help for nodes, just use WSDL view help topic.
+//    public HelpCtx getHelpCtx() {
+//        return new HelpCtx(WSDLColumnsView.class);
+//    }
 }

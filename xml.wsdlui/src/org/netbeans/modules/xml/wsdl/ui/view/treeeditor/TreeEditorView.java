@@ -41,7 +41,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 /**
@@ -52,7 +51,7 @@ import org.openide.windows.TopComponent;
  */
 public class TreeEditorView extends JPanel
         implements ExplorerManager.Provider, Lookup.Provider,
-        PropertyChangeListener, HelpCtx.Provider {
+        PropertyChangeListener/*, HelpCtx.Provider*/ {
     
     /**
      * 
@@ -194,19 +193,19 @@ public class TreeEditorView extends JPanel
         }
     }
     
-
-    public HelpCtx getHelpCtx() {
-        HelpCtx ctx = new HelpCtx(TreeEditorView.class);
-        Node[] selNodes = getExplorerManager().getSelectedNodes();
-        if (selNodes != null && selNodes.length > 0) {
-            for (Node node : selNodes) {
-                if (node.getHelpCtx() != null) {
-                    return node.getHelpCtx();
-                }
-            }
-        }
-        return ctx;
-    }
+// IZ 96828: suppress help for nodes, just use WSDL view help topic.
+//    public HelpCtx getHelpCtx() {
+//        HelpCtx ctx = new HelpCtx(TreeEditorView.class);
+//        Node[] selNodes = getExplorerManager().getSelectedNodes();
+//        if (selNodes != null && selNodes.length > 0) {
+//            for (Node node : selNodes) {
+//                if (node.getHelpCtx() != null) {
+//                    return node.getHelpCtx();
+//                }
+//            }
+//        }
+//        return ctx;
+//    }
 
     @Override
     public void requestFocus() {
