@@ -112,11 +112,11 @@ prio = "!" "important";
 
 ########### color ##############################################################
  
-COLOR:selector {
+COLOR:selector: {
     default_coloring: "identifier";
 } 
  
-COLOR:key {
+COLOR:key: {
     default_coloring: "keyword";
     foreground_color:"#000099";
     font_type:"bold";
@@ -124,31 +124,31 @@ COLOR:key {
 
 ########### code folding #######################################################
 
-FOLD:body {
+FOLD:body: {
     expand_type_action_name:"Expand CSS Rulesets";
     collapse_type_action_name:"Collapse CSS Rulesets";
 }
-FOLD:mediaBody {
+FOLD:mediaBody: {
     expand_type_action_name:"Expand CSS Rulesets";
     collapse_type_action_name:"Collapse CSS Rulesets";
 }
 
 ########### navigator ##########################################################
 
-NAVIGATOR:media {
+NAVIGATOR:media: {
     display_name: "@media $mediaName$";
     icon: "/org/netbeans/modules/languages/resources/css.gif";
 }
 
-NAVIGATOR:ruleset {
+NAVIGATOR:ruleset: {
     display_name: "$selectors$";
     tooltip: org.netbeans.modules.languages.css.CSS.navigatorTooltip;
     icon: "/org/netbeans/modules/languages/resources/css.gif";
 }
 
-TOOLTIP:selectors:org.netbeans.modules.languages.css.CSS.tooltip
+TOOLTIP:selectors: org.netbeans.modules.languages.css.CSS.tooltip
  
-HYPERLINK:string:org.netbeans.modules.languages.css.CSS.hyperlink  
+HYPERLINK:string: org.netbeans.modules.languages.css.CSS.hyperlink  
 
 COMPLETE "(:)"
 COMPLETE "{:}"
@@ -167,7 +167,7 @@ REFORMAT:value:" "
 
 ########### completion #########################################################
 
-COMPLETION:key {
+COMPLETION:key: {
     recursive:    "true";
     text1: "azimuth";
     text2: "background-attachment";
@@ -286,7 +286,7 @@ COMPLETION:key {
     text115: "z-index"; 
 }
 
-MARK:ERROR {
+MARK:ERROR: {
     type:"Error";
     message:"Syntax error.";
 }

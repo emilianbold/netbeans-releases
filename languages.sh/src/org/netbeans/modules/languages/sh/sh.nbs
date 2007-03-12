@@ -83,6 +83,6 @@ TOKEN:string: (
 
 ########### navigator ##########################################################
 
-NAVIGATOR:label {
+NAVIGATOR:label: {
     display_name: "$label$";
 }

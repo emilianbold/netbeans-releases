@@ -38,21 +38,21 @@ TOKEN:plain:( [^ "\n" "\r"]* ["\n" "\r"]+ )
 
 ########### tokens #############################################################
  
-COLOR:added {
+COLOR:added: {
     foreground_color:"blue";
 }
-COLOR:removed {
+COLOR:removed: {
     foreground_color:"red";
 }
-COLOR:index {
+COLOR:index: {
     font_type:"bold";
     background_color:"#e0e0e0";
 }
-COLOR:header {
+COLOR:header: {
     font_type:"bold";
     background_color:"#e0e0e0";
 }
-COLOR:filename {
+COLOR:filename: {
     font_type:"bold+italic";
     background_color:"#e0e0e0";
 }
@@ -69,7 +69,7 @@ body1 = ;
 
 FOLD:body 
 
-NAVIGATOR:file { 
+NAVIGATOR:file: { 
     display_name:"$filename$";
     tooltip:"$filename$";
 }

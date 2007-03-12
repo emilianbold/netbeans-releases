@@ -19,8 +19,8 @@
 
 ########### tokens #############################################################
 
-TOKEN:js_comment:("/*" - "*/")
-TOKEN:js_comment:("<!--")
+TOKEN:js_comment: ("/*" - "*/")
+TOKEN:js_comment: ("<!--")
 TOKEN:js_line_comment: ("//"[^"\n""\r"]*)
 TOKEN:js_keyword: (
     "abstract" | 
@@ -123,7 +123,7 @@ TOKEN:js_string: (
 #    "/" ( [^ "\n" "\r"] )* "/" ['g' 'i' 'm']*
 #)
 
-TOKEN:js_regularExpression {
+TOKEN:js_regularExpression: {
     pattern:( "/" );
     call:org.netbeans.modules.languages.javascript.JavaScript.parseRegularExpression;
 }
@@ -290,35 +290,35 @@ RegularExpression = <js_regularExpression>;
 #PARSE:RegularExpression:org.netbeans.modules.languages.javascript.JavaScript.parseRegularExpression
 
 AST {
-    removeSimple:"!FunctionBody";
+    removeSimple:"!FunctionBody,Statement";
     process:org.netbeans.modules.languages.javascript.Semantic.process;
 }
 
 ########### colors #############################################################
 
-COLOR:js_separator {
+COLOR:js_separator: {
     color_name: "js_operator";
 }
 
-COLOR:FunctionName {
+COLOR:FunctionName: {
     color_name: "method";
     default_coloring: "default";
     font_type: "bold";
 }
 
-COLOR:js_regularExpression {
+COLOR:js_regularExpression: {
     font_type: "bold";
     foreground_color: "0x008000";
 }
 
-COLOR:js_identifier {
+COLOR:js_identifier: {
     color_name: "functionParameter";
     default_coloring: "default";
     condition:org.netbeans.modules.languages.javascript.JavaScript.isFunctionParameter;
     foreground_color: "0xA06001";
 }
 
-COLOR:js_identifier {
+COLOR:js_identifier: {
     color_name: "localVariable";
     default_coloring: "default";
     condition:org.netbeans.modules.languages.javascript.JavaScript.isLocalVariable;
@@ -330,91 +330,91 @@ COLOR:js_identifier {
 
 ########### code folding #######################################################
 
-FOLD:FunctionBody {
+FOLD:FunctionBody: {
     expand_type_action_name:"Expand Methods";
     collapse_type_action_name:"Collapse Methods";
 }
-FOLD:js_comment {
+FOLD:js_comment: {
     expand_type_action_name:"Expand Comments";
     collapse_type_action_name:"Collapse Comments";
 }
-FOLD:js_line_comment {
+FOLD:js_line_comment: {
     expand_type_action_name:"Expand Comments";
     collapse_type_action_name:"Collapse Comments";
 }
 
 ########### navigator ##########################################################
 
-NAVIGATOR:FunctionDeclaration {
+NAVIGATOR:FunctionDeclaration: {
     display_name: org.netbeans.modules.languages.javascript.JavaScript.functionName;
     icon: "/org/netbeans/modules/languages/resources/method.gif";
     isLeaf: "true";
 }
 
-NAVIGATOR:VariableDeclaration {
+NAVIGATOR:VariableDeclaration: {
     display_name: "$js_identifier$";
     tooltip: "$js_identifier$ $Initializer$";
     icon: "/org/netbeans/modules/languages/resources/variable.gif";
 }
 
-NAVIGATOR:ObjectLiteral {
+NAVIGATOR:ObjectLiteral: {
     display_name: org.netbeans.modules.languages.javascript.JavaScript.objectName;
     icon: "/org/netbeans/modules/languages/resources/class.gif";
 }
 
-NAVIGATOR:PropertyNameAndValue {
+NAVIGATOR:PropertyNameAndValue: {
     display_name: "$PropertyName$";
     icon: "/org/netbeans/modules/languages/resources/variable.gif";
 }
 
 
-MARK:ERROR {
+MARK:ERROR: {
     type:"Error";
     message:"Syntax error.";
 }
 
-MARK:error {
+MARK:error: {
     type:"Error";
     message:"Unexpected character.";
 }
 
-COMPLETION:js_identifier {
+COMPLETION:js_identifier: {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
 }
 
-COMPLETION:js_keyword {
+COMPLETION:js_keyword: {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
 }
 
-COMPLETION:js_whitespace {
+COMPLETION:js_whitespace: {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
 }
 
-COMPLETION:js_operator {
+COMPLETION:js_operator: {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
 }
 
-STORE:VariableDeclaration {
+STORE:VariableDeclaration: {
     context:"Folder,Block";
     name:"$js_identifier$";
 }
 
-STORE:FunctionDeclaration {
+STORE:FunctionDeclaration: {
     context:"Folder,Block";
     name:"$js_identifier$";
 }
 
-STORE:FormalParameterList {
+STORE:FormalParameterList: {
     context:"Folder,Block";
     name:"$js_identifier$";
 }
 
-STORE:PropertyNameAndValue {
+STORE:PropertyNameAndValue: {
     context:"Folder,Block";
     name:"$PropertyName$";
 }
 
-HYPERLINK:js_identifier:org.netbeans.modules.languages.javascript.JavaScript.hyperlink
+HYPERLINK:js_identifier: org.netbeans.modules.languages.javascript.JavaScript.hyperlink
 
 COMPLETE "(:)"
 COMPLETE "{:}"
@@ -427,6 +427,8 @@ INDENT "{:}"
 INDENT "[:]"
 INDENT "\\s*(((if|while)\\s*\\(|else\\s*|else\\s+if\\s*\\(|for\\s*\\(.*\\))[^{;]*)"
 
+FORMAT:Statement: "NewLine"
+
 PROPERTIES {
     #traceSteps:"true";
     #printRules:"true";
@@ -436,28 +438,28 @@ PROPERTIES {
 
 ########### actions ############################################################
 
-ACTION:delete_method {
+ACTION:delete_method: {
     name:"Delete Current Method";
     performer:org.netbeans.modules.languages.javascript.JavaScript.performDeleteCurrentMethod;
     enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledDeleteCurrentMethod;
     explorer:"false";
 }
 
-ACTION:run_script {
+ACTION:run_script: {
     name:"Run";
     performer:org.netbeans.modules.languages.javascript.JavaScript.performRun;
     enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledRun;
     explorer:"false";
 }
 
-ACTION:goto_declaration {
+ACTION:goto_declaration: {
     name:"Go To Declaration";
     performer:org.netbeans.modules.languages.javascript.JavaScript.performGoToDeclaration;
     enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledGoToDeclaration;
     explorer:"false";
 }
 
-IMPORT:js_string {
+IMPORT:js_string: {
     mimeType:"text/x-string";
     startSkipLength:"1";
     endSkipLength:"1";

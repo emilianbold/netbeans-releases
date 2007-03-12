@@ -214,49 +214,44 @@ public class NBSLanguageReader {
     }
     
     private static void readCommand (
-        ASTNode node, 
+        ASTNode commandNode, 
         Language language
     ) throws ParseException {
-        String keyword = node.getTokenTypeIdentifier ("keyword");
-        ASTNode classNode = node.getNode ("command0.class");
-        Selector selector = classNode != null ?
-            Selector.create (readClass (classNode)):
-            null;
-        Feature feature = readFeature (keyword, selector, node);
+        String keyword = commandNode.getTokenTypeIdentifier ("keyword");
+        ASTNode command0Node = commandNode.getNode ("command0");
+        ASTNode selectorNode = command0Node.getNode ("selector");
+        Selector selector = null;
+        Feature feature = null;
+        if (selectorNode != null) {
+            ASTNode classNode = selectorNode.getNode ("class");
+            selector = Selector.create (readClass (classNode));
+            ASTNode command1Node = command0Node.getNode ("command1");
+            ASTNode valueNode = command1Node.getNode ("value");
+            if (valueNode != null)
+                feature = readValue (keyword, selector, valueNode);
+            else
+                feature = Feature.create (keyword, selector);
+        } else {
+            ASTNode valueNode = command0Node.getNode ("value");
+            feature = readValue (keyword, selector, valueNode);
+        }
         language.addFeature (feature);
     }
     
-    private static Feature readFeature (
-        String keyword,
-        Selector selector,
-        ASTNode node
+    private static Feature readValue (
+        String      keyword,
+        Selector    selector,
+        ASTNode     valueNode
     ) throws ParseException {
-        Object value = node.getNode ("command0.properties");
-        if (value == null)
-            value = node.getNode ("command0.command1.properties");
-        if (value != null)
-            return readProperties (keyword, selector, (ASTNode) value);
-        
-        ASTNode n = node.getNode ("command0.command1.command2.class");
-        if (n != null)
-            return Feature.createMethodCallFeature (keyword, selector, readClass (n));
-        
-        String s = node.getTokenTypeIdentifier ("command0.command1.command2.string");
-        if (s != null) {
-            s = s.substring (1, s.length () - 1);
-            return Feature.createExpressionFeature (keyword, selector, c (s));
-        }
-        
-        n = node.getNode ("command0.command2.class");
-        if (n != null)
-            return Feature.createMethodCallFeature (keyword, selector, readClass (n));
-        
-        s = node.getTokenTypeIdentifier ("command0.command2.string");
-        if (s != null) {
-            s = s.substring (1, s.length () - 1);
-            return Feature.createExpressionFeature (keyword, selector, c (s));
-        }
-        return Feature.create (keyword, selector);
+        ASTNode propertiesNode = valueNode.getNode ("properties");
+        if (propertiesNode != null)
+            return readProperties (keyword, selector, propertiesNode);
+        ASTNode classNode = valueNode.getNode ("class");
+        if (classNode != null)
+            return Feature.createMethodCallFeature (keyword, selector, readClass (classNode));
+        String s = valueNode.getTokenTypeIdentifier ("string");
+        s = s.substring (1, s.length () - 1);
+        return Feature.createExpressionFeature (keyword, selector, c (s));
     }
     
     private static Feature readProperties (

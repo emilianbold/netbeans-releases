@@ -43,6 +43,7 @@ import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.ErrorManager;
 
@@ -59,13 +60,6 @@ public class FormatAction extends BaseAction {
     public void actionPerformed (ActionEvent e, JTextComponent component) {
         try {
             NbEditorDocument doc = (NbEditorDocument) component.getDocument ();
-            String mimeType = (String) doc.getProperty ("mimeType"); // NOI18N
-            
-            TokenHierarchy th = TokenHierarchy.get (doc);
-            System.out.println(th);
-            
-            Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-                getLanguage (mimeType);
             ASTNode root = ParserManagerImpl.get (doc).getAST ();
             if (root == null) return;
             StringBuilder sb = new StringBuilder ();
@@ -75,7 +69,6 @@ public class FormatAction extends BaseAction {
             indent (
                 root,
                 new ArrayList<ASTItem> (),
-                language,
                 sb,
                 indents,
                 null,
@@ -112,108 +105,63 @@ public class FormatAction extends BaseAction {
     private static void indent (
         ASTItem          item,
         List<ASTItem>    path,
-        Language         language,
         StringBuilder    sb,
         Map<String,String> indents,
         ASTToken         whitespace,
         boolean          firstIndented,
         NbEditorDocument document
     ) {
-        path.add (item);
-        ASTPath path2 = ASTPath.create (path);
-        Iterator<ASTItem> it = item.getChildren ().iterator ();
-        while (it.hasNext ()) {
-            ASTItem e = it.next ();
-            
-            // compute indent
-            String indent;
-            if (item instanceof ASTToken) {
-                ASTToken token = (ASTToken) e;
-                if (token.getType ().equals ("whitespace")) { // NOI18N
-                    whitespace = (ASTToken) e;
-                    firstIndented = false;
-                    continue;
+        try {
+            Language language = LanguagesManagerImpl.get ().getLanguage (item.getMimeType ());
+
+            path.add (item);
+            ASTPath path2 = ASTPath.create (path);
+            Iterator<ASTItem> it = item.getChildren ().iterator ();
+            while (it.hasNext ()) {
+                ASTItem e = it.next ();
+
+                // compute indent
+                String indent = null;
+                if (e instanceof ASTToken) {
+                    ASTToken token = (ASTToken) e;
+                    if (language.getSkipTokenTypes ().contains (token.getType ())) { // NOI18N
+                        whitespace = (ASTToken) e;
+                        firstIndented = false;
+                        continue;
+                    }
                 }
-            }
-            Feature indentProperties = language.getFeature (Language.INDENT, path2);
-            indent = (String) indentProperties.getValue ();
-            
-            // indent
-            if (e instanceof ASTNode)
-                System.out.println("indent " + indent + " " + firstIndented + " : " + ((ASTNode) e).getNT () + " wh:" + whitespace);
-            else
-                System.out.println("indent " + indent + " " + firstIndented + " : " + e + " wh:" + whitespace);
-            if (!firstIndented) {
+                Feature format = language.getFeature ("FORMAT", path2);
+                if (format != null)
+                    indent = (String) format.getValue ();
+
+                // indent
+//                if (e instanceof ASTNode)
+//                    System.out.println("indent " + indent + " " + firstIndented + " : " + ((ASTNode) e).getNT () + " wh:" + whitespace);
+//                else
+//                    System.out.println("indent " + indent + " " + firstIndented + " : " + e + " wh:" + whitespace);
+                
                 if (indent != null) {
-                    whitespace = null;
-                    String indentI = indents.get ("i");
-                    String indentII = indents.get ("ii");
-                    if (indent.startsWith (">b")) {
-                        int b = sb.length () - Math.max (
-                            sb.lastIndexOf ("\n"),
-                            sb.lastIndexOf ("\r")
-                        );
-                        indents.put ("b", chars (b));
-                        if (!indent.equals (">b"))
-                            indent = indent.substring (2);
-                    }
-                    if (indent != null) {
-                        if (indent.equals ("i")) 
-                            sb.append ('\n').append (indentI);
-                        else
-                        if (indent.equals ("b")) 
-                            sb.append ('\n').append (indents.get ("b"));
-                        else
-                        if (indent.equals ("++i")) {
-                            indentI += indentII;
-                            sb.append ('\n').append (indentI);
-                        } else
-                        if (indent.equals ("--i")) {
-                            indentI = indentI.substring (
-                                0, 
-                                Math.max (0, indentI.length () - indentII.length ())
-                            );
-                            sb.append ('\n').append (indentI);
-                        } else
-                        if (indent.equals ("i++")) {
-                            sb.append ('\n').append (indentI);
-                            indentI += indentII;
-                        } else
-                        if (indent.equals ("i--")) {
-                            sb.append ('\n').append (indentI);
-                            indentI = indentI.substring (
-                                0, 
-                                Math.max (0, indentI.length () - indentII.length ())
-                            );
-                        } else
-                            sb.append (indent);
-                    }
-                    indents.put ("i", indentI);
-                    indents.put ("ii", indentII);
-                } else // indent == null
-                if (whitespace != null && e instanceof ASTToken) {
-                    sb.append (whitespace.getIdentifier ());
-                    whitespace = null;
+                    if (indent.equals ("NewLine"))
+                        sb.append ("\n");
                 }
-            } // firstIndented
-            firstIndented = false;
-            
-            // add child
-            if (e instanceof ASTToken)
-                sb.append (((ASTToken) e).getIdentifier ());
-            else
-                indent (
-                    (ASTNode) e,
-                    path,
-                    language, 
-                    sb, 
-                    indents,
-                    whitespace,
-                    firstIndented || indent != null,
-                    null
-                );
-        }// for children
-        path.remove (path.size () - 1);
+                
+                // add child
+                if (e instanceof ASTToken)
+                    sb.append (((ASTToken) e).getIdentifier ());
+                else
+                    indent (
+                        (ASTNode) e,
+                        path,
+                        sb, 
+                        indents,
+                        whitespace,
+                        firstIndented || indent != null,
+                        null
+                    );
+            }// for children
+            path.remove (path.size () - 1);
+        } catch (ParseException ex) {
+        }
     }
     
     private static String chars (int length) {

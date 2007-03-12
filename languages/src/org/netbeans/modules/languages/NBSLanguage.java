@@ -83,6 +83,7 @@ public class NBSLanguage {
                 "'COMPLETE' |" +
                 "'COMPLETION' |" +
                 "'FOLD' |" +
+                "'FORMAT' |" +
                 "'HYPERLINK' |" +
                 "'IMPORT' |" +
                 "'INDENT' |" +
@@ -162,8 +163,8 @@ public class NBSLanguage {
         l.addRule (rule ("tokenState", new Object[] {"state", "tokenState1"}));
         l.addRule (rule ("tokenState1", new Object[] {COLON, "token"}));
         l.addRule (rule ("tokenState1", new Object[] {BRACE, "tokenGroup"}));
-        l.addRule (rule ("token", new Object[] {KEYWORD_TOKEN, COLON, IDENTIFIER, "token2"}));
-        l.addRule (rule ("token2", new Object[] {COLON, PARENTHESIS, "regularExpression", PARENTHESIS2, "token3"}));
+        l.addRule (rule ("token", new Object[] {KEYWORD_TOKEN, COLON, IDENTIFIER, COLON, "token2"}));
+        l.addRule (rule ("token2", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2, "token3"}));
         l.addRule (rule ("token2", new Object[] {BRACE, "properties", BRACE2}));
         l.addRule (rule ("token3", new Object[] {COLON, "state"}));
         l.addRule (rule ("token3", new Object[] {}));
@@ -217,21 +218,21 @@ public class NBSLanguage {
         l.addRule (rule ("tokenDef1", new Object[] {}));
         
         l.addRule (rule ("command", new Object[] {KEYWORD, "command0"}));
-        l.addRule (rule ("command0", new Object[] {BRACE, "properties", BRACE2}));
-        l.addRule (rule ("command0", new Object[] {COLON, "class", "command1"}));
-        l.addRule (rule ("command0", new Object[] {"command2"}));
-        l.addRule (rule ("command1", new Object[] {BRACE, "properties", BRACE2}));
-        l.addRule (rule ("command1", new Object[] {COLON, "command2"}));
+        l.addRule (rule ("command0", new Object[] {COLON, "selector", "command1"}));
+        l.addRule (rule ("command0", new Object[] {"value"}));
+        l.addRule (rule ("command1", new Object[] {COLON, "value"}));
         l.addRule (rule ("command1", new Object[] {}));
-        l.addRule (rule ("command2", new Object[] {"class"}));
-        l.addRule (rule ("command2", new Object[] {STRING}));
+        l.addRule (rule ("value", new Object[] {"class"}));
+        l.addRule (rule ("value", new Object[] {STRING}));
+        l.addRule (rule ("value", new Object[] {BRACE, "properties", BRACE2}));
+        l.addRule (rule ("value", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2}));
         l.addRule (rule ("properties", new Object[] {"property", "properties"}));
         l.addRule (rule ("properties", new Object[] {}));
         l.addRule (rule ("property", new Object[] {IDENTIFIER, COLON, "propertyValue", SEMICOLON}));
         l.addRule (rule ("propertyValue", new Object[] {STRING}));
         l.addRule (rule ("propertyValue", new Object[] {"class"}));
         l.addRule (rule ("propertyValue", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2}));
-        
+        l.addRule (rule ("selector", new Object[] {"class"}));
         l.addRule (rule ("class", new Object[] {IDENTIFIER, "class1"}));
         l.addRule (rule ("class1", new Object[] {DOT, IDENTIFIER, "class1"}));
         l.addRule (rule ("class1", new Object[] {}));
