@@ -150,6 +150,11 @@ public class CompletionProviderImpl implements CompletionProvider {
                 if (!tokenSequence.moveNext ()) return;
                 Token token = tokenSequence.token ();
                 start = token.text ().toString ();
+                if (tokenSequence.offset () > offset) {
+                    // border of embedded language
+                    // [HACK] borders should be represented by some tokens!!!
+                    return;
+                }
                 start = start.substring (0, offset - tokenSequence.offset ()).trim ();
                 if (start.equals ("."))
                     start = "";// [HACK]
