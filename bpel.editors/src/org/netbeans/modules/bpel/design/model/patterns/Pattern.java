@@ -37,7 +37,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
-import org.netbeans.modules.bpel.design.geometry.FRectangle;
 import org.netbeans.modules.bpel.design.model.DiagramModel;
 import org.netbeans.modules.bpel.design.model.connections.MessageConnection;
 
@@ -67,7 +66,6 @@ import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -286,6 +284,12 @@ public abstract class Pattern {
             Action actions[] = node.getActions(true);
             if (actions != null ){
                 for (Action a: actions){
+                    if (a instanceof BpelNodeAction) {
+                        // inforce action enable status 
+                        // It's required in case activated node haven't been changed but enable status changes
+                        a.setEnabled(((BpelNodeAction)a).enable(new Node[]{node}));
+                    }
+                    
                     //null Action indicates a separator
                     if (a instanceof NewAction) {
                         // vb todo add handler for NewAction and sub actions

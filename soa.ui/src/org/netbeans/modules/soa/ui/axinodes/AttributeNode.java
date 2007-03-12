@@ -19,10 +19,10 @@
 package org.netbeans.modules.soa.ui.axinodes;
 
 import java.awt.ComponentOrientation;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
-import org.netbeans.modules.xml.axi.AXIType;
+import java.awt.Image;
+import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.xml.axi.Attribute;
-import org.openide.nodes.Sheet;
+import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 
@@ -51,9 +51,20 @@ public class AttributeNode extends AxiomNode<Attribute> {
     }
     
     public synchronized String getHtmlDisplayName() {
+        return getReference().getName();
+    }
+    
+    public synchronized String getShortDescription() {
         Attribute attribute = getReference();
-        return AxiomUtils.getAttributeHtmlDisplayName(
-                attribute, ComponentOrientation.LEFT_TO_RIGHT);
+        return AxiomUtils.getAttributeTooltip(attribute);
+    }
+    
+    public Image getIcon(int type) {
+        Use attrUse = getReference().getUse();
+        if (attrUse == Use.OPTIONAL) {
+            return getNodeType().getImage(BadgeModificator.OPTIONAL);
+        }
+        return getNodeType().getImage(BadgeModificator.SINGLE);
     }
     
     public String getHelpId() {

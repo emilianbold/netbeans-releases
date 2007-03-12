@@ -31,6 +31,7 @@ import org.netbeans.modules.bpel.model.api.CompositeActivity;
 import org.netbeans.modules.bpel.model.api.Documentation;
 import org.netbeans.modules.bpel.nodes.actions.AddElseAction;
 import org.netbeans.modules.bpel.nodes.actions.AddFromPaletteAction;
+import org.netbeans.modules.bpel.nodes.actions.AddPartnerLinkAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToTypeSourceAction;
 import org.netbeans.modules.bpel.nodes.actions.MoveDownBpelEntityAction;
 import org.netbeans.modules.bpel.nodes.actions.MoveUpBpelEntityAction;
@@ -251,6 +252,8 @@ public abstract class BpelNode<T>
                 , SystemAction.get(AddPropertyToWsdlAction.class));
         ACTION_TYPE_MAP.put(ActionType.ADD_PROPERTY_ALIAS_TO_WSDL
                 , SystemAction.get(AddPropertyAliasToWsdlAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_PARTNER_LINK,
+                  SystemAction.get(AddPartnerLinkAction.class));
         ACTION_TYPE_MAP.put(ActionType.SHOW_BPEL_MAPPER
                 , SystemAction.get(ShowBpelMapperAction.class));
         ACTION_TYPE_MAP.put(ActionType.FIND_USAGES,

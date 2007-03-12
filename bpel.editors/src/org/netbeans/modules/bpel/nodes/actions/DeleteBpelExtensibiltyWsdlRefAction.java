@@ -24,6 +24,7 @@ import org.netbeans.modules.bpel.nodes.PartnerLinkTypeNode;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELExtensibilityComponent;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -100,8 +101,10 @@ public class DeleteBpelExtensibiltyWsdlRefAction  extends DeleteAction {
         if (wsdlModel == null) {
             return false;
         }
+        
 //        System.out.println("wsdlModel state: "+(wsdlModel.getState()));
-        isEnable = WSDLModel.State.VALID.equals(wsdlModel.getState());
+        isEnable = WSDLModel.State.VALID.equals(wsdlModel.getState()) 
+            && XAMUtils.isWritable(wsdlModel);
         return isEnable;
     }
 }

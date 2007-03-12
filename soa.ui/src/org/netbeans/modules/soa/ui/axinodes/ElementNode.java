@@ -19,6 +19,8 @@
 package org.netbeans.modules.soa.ui.axinodes;
 
 import java.awt.ComponentOrientation;
+import java.awt.Image;
+import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.xml.axi.Element;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -48,8 +50,16 @@ public class ElementNode extends AxiomNode<Element> {
     }
     
     public synchronized String getHtmlDisplayName() {
-        return AxiomUtils.getElementHtmlDisplayName(
-                getReference(), ComponentOrientation.LEFT_TO_RIGHT);
+        return getReference().getName();
+    }
+    
+    public Image getIcon(int type) {
+        BadgeModificator mult = AxiomUtils.getElementBadge(getReference());
+        return getNodeType().getImage(mult);
+    }
+    
+    public synchronized String getShortDescription() {
+        return AxiomUtils.getElementTooltip(getReference());
     }
     
     public String getHelpId() {

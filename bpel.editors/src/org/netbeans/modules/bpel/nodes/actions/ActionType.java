@@ -52,6 +52,7 @@ public enum ActionType {
     ADD_PROPERTY,
     
     ADD_INVOKE,
+    ADD_PARTNER_LINK,
     ADD_RECEIVE,
     ADD_REPLY,
     

@@ -158,6 +158,7 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
             ActionType.ADD_VARIABLE,
             ActionType.ADD_CORRELATION_SET,
             // ActionType.ADD_MESSAGE_EXCHANGE, // Issue 85553
+            ActionType.ADD_PARTNER_LINK,
             ActionType.ADD_EVENT_HANDLERS,
             ActionType.ADD_FAULT_HANDLERS 
         };

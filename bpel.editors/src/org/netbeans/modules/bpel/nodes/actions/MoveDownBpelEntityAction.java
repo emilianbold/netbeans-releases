@@ -92,15 +92,9 @@ public class MoveDownBpelEntityAction extends BpelNodeAction {
 //    
     protected boolean enable(BpelEntity[] bpelEntities) {
         boolean enabled = super.enable(bpelEntities);
-//        if (!super.enable(bpelEntities)) {
-//            return false;
-//        }
-//        
-//        return isMoveable(bpelEntities[0], bpelEntities[0].getParent());
         if (enabled) {
             enabled = isMoveable(bpelEntities[0], bpelEntities[0].getParent());
         }
-        setEnabled(enabled);
         return enabled;
     }
 

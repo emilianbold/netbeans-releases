@@ -159,8 +159,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
                 }
             });
             column.setCellEditor(new DefaultCellEditor(new JComboBox(initiateArr)));
-            column.setPreferredWidth(70);
-            column.setMaxWidth(70);
+            column.setPreferredWidth(40);
             this.addColumn(column);
             //
             column = new TableColumn(2);
@@ -183,8 +182,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
                 }
             });
             column.setCellEditor(new DefaultCellEditor(new JComboBox(patternsArr)));
-            column.setPreferredWidth(70);
-            column.setMaxWidth(70);
+            column.setPreferredWidth(40);
             this.addColumn(column);
         }
     }

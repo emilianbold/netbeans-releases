@@ -107,6 +107,7 @@
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.xpath</friend>
+                <friend>org.netbeans.modules.soa.mapper</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.mapper</friend>
                 <package>org.netbeans.modules.soa.ui</package>

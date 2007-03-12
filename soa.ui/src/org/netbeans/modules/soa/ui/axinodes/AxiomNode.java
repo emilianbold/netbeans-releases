@@ -19,6 +19,7 @@
 package org.netbeans.modules.soa.ui.axinodes;
 
 import java.awt.Image;
+import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.soa.ui.nodes.NodeTypeHolder;
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -64,7 +65,7 @@ public abstract class AxiomNode<T extends AXIComponent>
     }
     
     public Image getIcon(int type) {
-        return getNodeType().getImage();
+        return getNodeType().getImage(BadgeModificator.SINGLE);
     }
     
     public Image getOpenedIcon(int type) {

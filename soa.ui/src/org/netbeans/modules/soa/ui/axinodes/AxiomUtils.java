@@ -28,6 +28,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIContainer;
@@ -38,6 +39,7 @@ import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.datatype.NumberBase;
+import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -440,13 +442,42 @@ public class AxiomUtils {
         return null;
     }
     
-    public static String getAttributeHtmlDisplayName(
-            Attribute attribute, ComponentOrientation orientation) {
-        return getAttributeHtmlDisplayName(attribute, orientation, null);
+    public static BadgeModificator getElementBadge(Element element) {
+        if (element != null) {
+            String min = element.getMinOccurs();
+            String max = element.getMaxOccurs();
+            if (min.equals("1") && max.equals("1")) { // NOI18N
+                return BadgeModificator.SINGLE;
+            }
+            //
+            boolean isOptional = min.equals("0"); // NOI18N
+            //
+            boolean isRepeating = false;
+            if (NumberBase.UNBOUNDED_STRING.equals(max)) {
+                isRepeating = true;
+            } else {
+                try {
+                    int maxInt = Integer.parseInt(max);
+                    if (maxInt > 1) {
+                        isRepeating = true;
+                    }
+                } catch (NumberFormatException ex) {
+                    // DO NOTHING HERE
+                }
+            }
+            //
+            if (isOptional && isRepeating) {
+                return BadgeModificator.OPTIONAL_REPEATING;
+            } else if (isOptional) {
+                return BadgeModificator.OPTIONAL;
+            } else if (isRepeating) {
+                return BadgeModificator.REPEATING;
+            }
+        }
+        return BadgeModificator.SINGLE;
     }
     
-    public static String getAttributeHtmlDisplayName(Attribute attribute,
-            ComponentOrientation orientation, Color mainColor) {
+    public static String getAttributeTooltip(Attribute attribute) {
         if (attribute == null) {
             return null;
         }
@@ -454,35 +485,22 @@ public class AxiomUtils {
         String result;
         AXIType type = attribute.getType();
         String typeName = type != null ? type.getName() : null;
+        String isOptionalText = (attribute.getUse() == Use.OPTIONAL) ?
+            "OPTIONAL" : null;  // NOI18N
         //
         if (typeName == null) {
             result = attribute.getName(); // NOI18N
         } else {
-            if (ComponentOrientation.RIGHT_TO_LEFT.equals(orientation)) {
-                result = SoaUiUtil.getFormattedHtmlString(true,
-                        new SoaUiUtil.TextChunk(typeName, SoaUiUtil.HTML_GRAY),
-                        new SoaUiUtil.TextChunk(attribute.getName(), mainColor));
-//                result = SoaUiUtil.getGrayString(
-//                        "", typeName + " ", attribute.getName()); // NOI18N
-            } else {
-                result = SoaUiUtil.getFormattedHtmlString(true,
-                        new SoaUiUtil.TextChunk(attribute.getName(), mainColor),
-                        new SoaUiUtil.TextChunk(typeName, SoaUiUtil.HTML_GRAY));
-//                result = SoaUiUtil.getGrayString(
-//                        attribute.getName(), " " + typeName); // NOI18N
-            }
+            result = SoaUiUtil.getFormattedHtmlString(true,
+                    new SoaUiUtil.TextChunk(attribute.getName()),
+                    new SoaUiUtil.TextChunk(isOptionalText, SoaUiUtil.HTML_GRAY),
+                    new SoaUiUtil.TextChunk(typeName, SoaUiUtil.HTML_GRAY));
         }
         //
         return result;
     }
     
-    public static String getElementHtmlDisplayName(
-            Element element, ComponentOrientation orientation) {
-        return getElementHtmlDisplayName(element, orientation, null);
-    }
-    
-    public static String getElementHtmlDisplayName(
-            Element element, ComponentOrientation orientation, Color mainColor) {
+    public static String getElementTooltip(Element element) {
         if (element == null) {
             return null;
         }
@@ -492,34 +510,14 @@ public class AxiomUtils {
         String typeName = type != null ? type.getName() : null;
         String multiplisity = getElementMultiplicityStr(element);
         //
-        if (ComponentOrientation.RIGHT_TO_LEFT.equals(orientation)) {
-//            String infoText = typeName == null ? "" : typeName + " "; // NOI18N
-//            infoText = multiplisity == null ? infoText : infoText + multiplisity + " "; // NOI18N
-            //
-            result = SoaUiUtil.getFormattedHtmlString(true,
-                    new SoaUiUtil.TextChunk(typeName, SoaUiUtil.HTML_GRAY),
-                    new SoaUiUtil.TextChunk(multiplisity, SoaUiUtil.HTML_GRAY),
-                    new SoaUiUtil.TextChunk(element.getName(), mainColor));
-//            result = SoaUiUtil.getGrayString(
-//                    "",
-//                    infoText == null ? "" : " " + infoText,
-//                    element.getName()); // NOI18N
-        } else {
-//            String infoText = multiplisity == null ? "" : " " + multiplisity; // NOI18N
-//            infoText = typeName == null ? infoText : infoText + " " + typeName; // NOI18N
-            //
-            result = SoaUiUtil.getFormattedHtmlString(true,
-                    new SoaUiUtil.TextChunk(element.getName(), mainColor),
-                    new SoaUiUtil.TextChunk(multiplisity, SoaUiUtil.HTML_GRAY),
-                    new SoaUiUtil.TextChunk(typeName, SoaUiUtil.HTML_GRAY));
-            
-//            result = SoaUiUtil.getGrayString(
-//                    element.getName(),
-//                    infoText == null ? "" : " " + infoText); // NOI18N
-        }
+        result = SoaUiUtil.getFormattedHtmlString(true,
+                new SoaUiUtil.TextChunk(element.getName()),
+                new SoaUiUtil.TextChunk(multiplisity, SoaUiUtil.HTML_GRAY),
+                new SoaUiUtil.TextChunk(typeName, SoaUiUtil.HTML_GRAY));
         //
         return result;
     }
+    
     /**
      * this function TRIES to access
      * attributeFormDefault|elementFormDefault attribute in chema, defining the given element

@@ -150,8 +150,7 @@ public class CorrelationTablePanel extends BaseTablePanel
                 }
             });
             column.setCellEditor(new DefaultCellEditor(new JComboBox(initiateArr)));
-            column.setPreferredWidth(70);
-            column.setMaxWidth(70);
+            column.setPreferredWidth(40);
             this.addColumn(column);
         }
     }

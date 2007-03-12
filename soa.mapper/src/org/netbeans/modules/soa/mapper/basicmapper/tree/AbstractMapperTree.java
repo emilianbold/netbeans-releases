@@ -45,6 +45,7 @@ import javax.swing.tree.TreePath;
 import com.nwoods.jgo.JGoView;
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
+import javax.swing.ToolTipManager;
 import org.netbeans.modules.soa.mapper.basicmapper.BasicMapperView;
 import org.netbeans.modules.soa.mapper.basicmapper.MapperNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeNode;
@@ -54,6 +55,7 @@ import org.netbeans.modules.soa.mapper.common.IMapperNode;
 import org.netbeans.modules.soa.mapper.common.IMapperViewModel;
 import org.netbeans.modules.soa.mapper.common.basicmapper.canvas.gtk.ICanvasMapperLink;
 import org.netbeans.modules.soa.mapper.common.gtk.ICanvasLink;
+import org.netbeans.modules.soa.ui.TooltipTextProvider;
 
 /**
  * <p>
@@ -490,6 +492,11 @@ implements IMapperTreeView {
     protected class TreeView
          extends JTree implements Autoscroll {
 
+        public TreeView() {
+            super();
+            ToolTipManager.sharedInstance().registerComponent(this);
+        }
+        
 		// Java BUG ID: 4407536
         // DropTarget.DropTargetAutoScroller.updateRegion does not take
         // into account the scroller view, thus, its region calculations are off.
@@ -553,6 +560,22 @@ implements IMapperTreeView {
             mScrollToVisible++;
             super.scrollPathToVisible(path);
             mScrollToVisible--;
+        }
+        
+        public String getToolTipText(MouseEvent event) {
+            TreePath tPath = this.getPathForLocation(event.getX(), event.getY());
+            if (tPath != null) {
+                Object lastPathComp = tPath.getLastPathComponent();
+                if (lastPathComp != null && 
+                        lastPathComp instanceof TooltipTextProvider) {
+                    String txt = ((TooltipTextProvider)lastPathComp).getTooltipText();
+                    if (txt != null && txt.length() != 0) {
+                        return txt;
+                    }
+                }
+            }
+            //
+            return super.getToolTipText(event);
         }
     }
 
