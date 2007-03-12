@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ===========================================================================
-  The contents of this file are subject to the terms of the Common Development
-  and Distribution License (the License). You may not use this file except in
-  compliance with the License.
+<!--
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance
+  with the License.
   
-  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
-  or http://www.netbeans.org/cddl.txt.
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+  http://www.netbeans.org/cddl.txt.
   
-  When distributing Covered Code, include this CDDL Header Notice in each file
-  and include the License file at http://www.netbeans.org/cddl.txt.
-  If applicable, add the following below the CDDL Header, with the fields
-  enclosed by brackets [] replaced by your own identifying information:
-  "Portions Copyrighted [year] [name of copyright owner]"
+  When distributing Covered Code, include this CDDL Header Notice in each file and
+  include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+  the following below the CDDL Header, with the fields enclosed by brackets []
+  replaced by your own identifying information:
   
-  The Original Software is NetBeans. The Initial Developer of the Original
-  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-  Microsystems, Inc. All Rights Reserved.
+      "Portions Copyrighted [year] [name of copyright owner]"
   
-  $Id$
-============================================================================ -->
+  The Original Software is NetBeans. The Initial Developer of the Original Software
+  is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+  Rights Reserved.
+-->
 
 <!--
   This is the base build script for an nbi product package.
@@ -51,9 +50,9 @@
     <!-- import the common target library -->
     <import file="common.xml" optional="false"/>
     
-    <!-- =======================================================================
+    <!-- ============================================================================
       Initialization
-    ======================================================================== -->
+    ============================================================================= -->
     
     <!--
       Initializes the product package's build script.
@@ -120,9 +119,9 @@
             value="-Djavac.classpath=${engine.dist.file}"/>
     </target>
     
-    <!-- =======================================================================
+    <!-- ============================================================================
       Clean-up
-    ======================================================================== -->
+    ============================================================================= -->
     
     <!--
       Cleans the current working directory and the distributives directory.
@@ -172,9 +171,9 @@
         </exec>
     </target>
     
-    <!-- =======================================================================
+    <!-- ============================================================================
       Check-out
-    ======================================================================== -->
+    ============================================================================= -->
     
     <!--
       The functionality of the checkout procedure for the product package is 
@@ -183,9 +182,9 @@
       common.xml.
     -->
     
-    <!-- =======================================================================
+    <!-- ============================================================================
       Build
-    ======================================================================== -->
+    ============================================================================= -->
     
     <!--
       Builds the product package.
@@ -546,9 +545,9 @@
     -->
     <target name="-pre-package"/>
     
-    <!-- =======================================================================
+    <!-- ============================================================================
       Release
-    ======================================================================== -->
+    ============================================================================= -->
     
     <!--
       Releases the product package to the registries server.
@@ -573,9 +572,9 @@
                          archive="${product.dist.file}"/>
     </target>
     
-    <!-- =======================================================================
+    <!-- ============================================================================
       Default
-    ======================================================================== -->
+    ============================================================================= -->
     
     <!--
       The default target. 

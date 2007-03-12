@@ -1,22 +1,21 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance
+ * with the License.
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+ * http://www.netbeans.org/cddl.txt.
  *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * When distributing Covered Code, include this CDDL Header Notice in each file and
+ * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+ * the following below the CDDL Header, with the fields enclosed by brackets []
+ * replaced by your own identifying information:
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
+ *     "Portions Copyrighted [year] [name of copyright owner]"
  *
- * $Id$
+ * The Original Software is NetBeans. The Initial Developer of the Original Software
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * Rights Reserved.
  */
 package org.netbeans.installer.infra.build.ant;
 
@@ -31,98 +30,139 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.netbeans.installer.infra.build.ant.utils.AntUtils;
+import org.netbeans.installer.infra.build.ant.utils.Utils;
 import org.netbeans.installer.infra.build.ant.utils.FileEntry;
 
 /**
+ * This class is an ant task which is capable of properly packaging a directory into
+ * an archive. In addition to simply jarring the directory, it pack200-packages the
+ * jar files present in the source directory and composes a files list which
+ * contains some useful metadata about the files in the archive, such as the
+ * checksums, sizes, etc.
  *
  * @author Kirill Sorokin
  */
 public class Package extends Task {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    private static final String METAINF_ENTRY    = "META-INF/";
-    private static final String FILES_LIST_ENTRY = "META-INF/files.list";
-    private static final String MANIFEST_ENTRY   = "META-INF/manifest.mf";
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private String fileName;
-    private String directoryName;
+    /**
+     * The target archive file.
+     */
+    private File file;
     
-    private List<FileEntry> entries = new LinkedList<FileEntry>();
-    private int offset = 0;
+    /**
+     * The sources directory.
+     */
+    private File directory;
     
-    // setters //////////////////////////////////////////////////////////////////////
-    public void setFile(final String fileName) {
-        this.fileName = fileName;
+    /**
+     * List of {@link FileEntry} objects, which represent the metadata for the files
+     * which should be included into the archive.
+     */
+    private List<FileEntry> entries;
+    
+    // constructor //////////////////////////////////////////////////////////////////
+    /**
+     * Constructs a new instance of the {@link Package} task. It simply sets the
+     * default values for the attributes.
+     */
+    public Package() {
+        entries = new LinkedList<FileEntry>();
     }
     
-    public void setDirectory(final String directoryName) {
-        this.directoryName = directoryName;
+    // setters //////////////////////////////////////////////////////////////////////
+    /**
+     * Setter for the 'file' property.
+     *
+     * @param path New value for the 'file' property.
+     */
+    public void setFile(final String path) {
+        file = new File(path);
+        if (!file.equals(file.getAbsoluteFile())) {
+            file = new File(getProject().getBaseDir(), path);
+        }
+    }
+    
+    /**
+     * Setter for the 'directory' property.
+     *
+     * @param path New value for the 'directory' property.
+     */
+    public void setDirectory(final String path) {
+        directory = new File(path);
+        if (!directory.equals(directory.getAbsoluteFile())) {
+            directory = new File(getProject().getBaseDir(), path);
+        }
     }
     
     // execution ////////////////////////////////////////////////////////////////////
+    /**
+     * Executes the task. The source directory is recursively browsed, its files are
+     * examined, packaged and added to the archive; some additional metadata is
+     * calculated and then added to the files list.
+     *
+     * @throws org.apache.tools.ant.BuildException if an I/O error occurs.
+     */
     public void execute() throws BuildException {
-        AntUtils.setProject(getProject());
-        
-        File file = new File(fileName);
-        if (!file.equals(file.getAbsoluteFile())) {
-            file = new File(getProject().getBaseDir(), fileName);
-        }
-        
-        File directory = new File(directoryName);
-        if (!directory.equals(directory.getAbsoluteFile())) {
-            directory = new File(getProject().getBaseDir(), directoryName);
-        }
-        
-        String string = null;
+        Utils.setProject(getProject());
         
         JarOutputStream output = null;
         try {
             output = new JarOutputStream(new FileOutputStream(file));
             output.setLevel(9);
             
-            log("browsing, packing, archiving directory");
-            offset = directory.getCanonicalPath().length();
-            browse(directory.getCanonicalFile(), output);
+            log("browsing, packing, archiving directory");                  // NOI18N
+            browse(directory.getCanonicalFile(),
+                    output,
+                    directory.getCanonicalPath().length());
             
-            log("adding manifest and files list");
+            log("adding manifest and files list");                          // NOI18N
             output.putNextEntry(new JarEntry(METAINF_ENTRY));
             
             output.putNextEntry(new JarEntry(MANIFEST_ENTRY));
-            output.write("Manifest-Version: 1.0\n\n".getBytes("UTF-8"));
+            output.write("Manifest-Version: 1.0\n\n".getBytes("UTF-8"));    // NOI18N
             
             output.putNextEntry(new JarEntry(FILES_LIST_ENTRY));
-            OutputStreamWriter writer = new OutputStreamWriter(output, "UTF-8");
+            OutputStreamWriter writer =
+                    new OutputStreamWriter(output, "UTF-8");                // NOI18N
             
-            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-            writer.write("<files-list>\n");
+            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");   // NOI18N
+            writer.write("<files-list>\n");                                 // NOI18N
             for (FileEntry entry: entries) {
-                writer.write("    <entry ");
+                writer.write("    <entry ");                                // NOI18N
                 if (entry.isDirectory()) {
-                    writer.write("type=\"directory\" ");
-                    writer.write("empty=\"" + entry.isEmpty() + "\" ");
-                    writer.write("modified=\"" + entry.getLastModified() + "\" ");
-                    writer.write("permissions=\"" + entry.getPermissions() + "\"");
+                    writer.write("type=\"directory\" ");                    // NOI18N
+                    writer.write("empty=\"" +                               // NOI18N
+                            entry.isEmpty() + "\" ");                       // NOI18N
+                    writer.write("modified=\"" +                            // NOI18N
+                            entry.getLastModified() + "\" ");               // NOI18N
+                    writer.write("permissions=\"" +                         // NOI18N
+                            entry.getPermissions() + "\"");                 // NOI18N
                 } else {
-                    writer.write("type=\"file\" ");
-                    writer.write("size=\"" + entry.getSize() + "\" ");
-                    writer.write("md5=\"" + entry.getMd5() + "\" ");
-                    writer.write("jar=\"" + entry.isJarFile() + "\" ");
-                    writer.write("packed=\"" + entry.isPackedJarFile() + "\" ");
-                    writer.write("signed=\"" + entry.isSignedJarFile() + "\" ");
-                    writer.write("modified=\"" + entry.getLastModified() + "\" ");
-                    writer.write("permissions=\"" + entry.getPermissions() + "\"");
+                    writer.write("type=\"file\" ");                         // NOI18N
+                    writer.write("size=\"" +                                // NOI18N
+                            entry.getSize() + "\" ");                       // NOI18N
+                    writer.write("md5=\"" +                                 // NOI18N
+                            entry.getMd5() + "\" ");                        // NOI18N
+                    writer.write("jar=\"" +                                 // NOI18N
+                            entry.isJarFile() + "\" ");                     // NOI18N
+                    writer.write("packed=\"" +                              // NOI18N
+                            entry.isPackedJarFile() + "\" ");               // NOI18N
+                    writer.write("signed=\"" +                              // NOI18N
+                            entry.isSignedJarFile() + "\" ");               // NOI18N
+                    writer.write("modified=\"" +                            // NOI18N
+                            entry.getLastModified() + "\" ");               // NOI18N
+                    writer.write("permissions=\"" +                         // NOI18N
+                            entry.getPermissions() + "\"");                 // NOI18N
                 }
                 
-                writer.write(">" + entry.
+                writer.write(">" + entry.                                   // NOI18N
                         getName().
-                        replace("&", "&amp;").
-                        replace("<", "&lt;").
-                        replace(">", "&gt;") + "</entry>\n");
+                        replace("&", "&amp;").                              // NOI18N
+                        replace("<", "&lt;").                               // NOI18N
+                        replace(">", "&gt;") + "</entry>\n");               // NOI18N
             }
-            writer.write("</files-list>\n");
+            writer.write("</files-list>\n");                                // NOI18N
             
             writer.flush();
             writer.close();
@@ -134,59 +174,65 @@ public class Package extends Task {
         }
     }
     
-    private void browse(File parent, JarOutputStream output) throws IOException {
+    // private //////////////////////////////////////////////////////////////////////
+    private void browse(
+            final File parent,
+            final JarOutputStream output,
+            final int offset) throws IOException {
         FileInputStream fis = null;
-        List<File> toSkip = new LinkedList<File>();
+        final List<File> toSkip = new LinkedList<File>();
         
         for (File child: parent.listFiles()) {
             if (toSkip.contains(child)) {
-                log("    skipping " + child);
+                log("    skipping " + child);                               // NOI18N
                 continue;
             }
             
-            log("    visiting " + child);
+            log("    visiting " + child);                                   // NOI18N
             
-            String    path     = child.getAbsolutePath();
-            String    name     = path.substring(offset + 1).replace('\\', '/');
-            FileEntry entry    = null;
-            JarEntry  jarEntry = null;
+            final String path = child.getAbsolutePath();
+            String name = path.substring(offset + 1).replace('\\', '/');    // NOMAGI
+            
+            FileEntry entry;
+            JarEntry jarEntry;
             
             if (child.isDirectory()) {
-                log("        archiving directory: " + name);
+                log("        archiving directory: " + name);                // NOI18N
                 
-                name  = name + "/";
+                name  = name + "/";                                         // NOI18N
                 entry = new FileEntry(child, name);
                 
                 output.putNextEntry(new JarEntry(name));
                 
-                browse(child, output);
+                browse(child, output, offset);
             } else {
-                // if the source file comes in already packed, we need to unpack it 
+                // if the source file comes in already packed, we need to unpack it
                 // first and then process normally
-                if (child.getName().endsWith(".jar.pack.gz")) {
-                    log("        it is a packed jar - attempting unpacking");
+                if (child.getName().endsWith(".jar.pack.gz")) {             // NOI18N
+                    log("        it is a packed jar - unpacking");          // NOI18N
                     File unpacked = new File(child.getPath().substring(
-                            0, 
+                            0,
                             child.getPath().length() - 8));
                     File temp = null;
                     
                     if (unpacked.exists()) {
                         temp = File.createTempFile(
-                                "xxx", 
-                                null, 
+                                "xxx",                                      // NOI18N
+                                null,
                                 child.getParentFile());
                         temp.delete();
                         unpacked.renameTo(temp);
                     }
                     
-                    if (AntUtils.unpack(child, unpacked)) {
+                    if (Utils.unpack(child, unpacked)) {
                         child.delete();
                         if (temp != null) {
                             temp.delete();
                         }
                         child = unpacked.getAbsoluteFile();
                         
-                        log("        successfully unpacked - processing file: " + child);
+                        log("        successfully unpacked - processing " + // NOI18N
+                                "file: " + child);                          // NOI18N
                     } else {
                         unpacked.delete();
                         if (temp != null) {
@@ -198,24 +244,25 @@ public class Package extends Task {
                 entry = new FileEntry(child, name);
                 
                 if (entry.isJarFile() && !entry.isSignedJarFile()) {
-                    File backup = new File(child.getPath() + ".bak");
-                    File packed = new File(child.getPath() + ".pack.gz");
+                    File backup = new File(child.getPath() + ".bak");       // NOI18N
+                    File packed = new File(child.getPath() + ".pack.gz");   // NOI18N
                     
-                    // if the packed form of this jar already exists, we need to 
+                    // if the packed form of this jar already exists, we need to
                     // clean it up
                     if (packed.exists()) {
-                        log("        packed jar already exists - deleting it");
+                        log("        packed jar already exists - " +        // NOI18N
+                                "deleting it");                             // NOI18N
                         packed.delete();
                         toSkip.add(packed);
                     }
                     
-                    AntUtils.copy(child, backup);
+                    Utils.copy(child, backup);
                     
-                    if (AntUtils.pack(child, packed) &&
-                            AntUtils.unpack(packed, child) &&
-                            AntUtils.verify(child)) {
+                    if (Utils.pack(child, packed) &&
+                            Utils.unpack(packed, child) &&
+                            Utils.verify(child)) {
                         name  = packed.getPath().
-                                substring(offset + 1).replace('\\', '/');
+                                substring(offset + 1).replace('\\', '/');   // NOMAGI
                         
                         entry = new FileEntry(child, name);
                         entry.setJarFile(true);
@@ -227,25 +274,34 @@ public class Package extends Task {
                         
                         child = packed;
                     } else {
-                        AntUtils.copy(backup, child);
+                        Utils.copy(backup, child);
                         
                         packed.delete();
                         backup.delete();
                     }
                 }
                 
-                log("        archiving file: " + name);
+                log("        archiving file: " + name);                     // NOI18N
                 jarEntry = new JarEntry(name);
                 jarEntry.setTime(entry.getLastModified());
                 jarEntry.setSize(entry.getSize());
                 output.putNextEntry(jarEntry);
                 
                 fis = new FileInputStream(child);
-                AntUtils.copy(fis, output);
+                Utils.copy(fis, output);
                 fis.close();
             }
             
             entries.add(entry);
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    private static final String METAINF_ENTRY = 
+            "META-INF/";                                                    // NOI18N
+    private static final String FILES_LIST_ENTRY = 
+            "META-INF/files.list";                                          // NOI18N
+    private static final String MANIFEST_ENTRY = 
+            "META-INF/manifest.mf";                                         // NOI18N
 }

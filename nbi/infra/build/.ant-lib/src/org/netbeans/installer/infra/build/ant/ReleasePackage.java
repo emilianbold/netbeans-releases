@@ -1,20 +1,21 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance
+ * with the License.
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+ * http://www.netbeans.org/cddl.txt.
  *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * When distributing Covered Code, include this CDDL Header Notice in each file and
+ * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+ * the following below the CDDL Header, with the fields enclosed by brackets []
+ * replaced by your own identifying information:
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
+ *     "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original Software
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * Rights Reserved.
  */
 package org.netbeans.installer.infra.build.ant;
 
@@ -24,61 +25,123 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.netbeans.installer.infra.build.ant.utils.AntUtils;
+import org.netbeans.installer.infra.build.ant.utils.Utils;
 
+/**
+ * This class is an ant task that is capable or releasing an NBI package archive.
+ *
+ * @author Kirill Sorokin
+ */
 public class ReleasePackage extends Task {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private String url       = "";
+    /**
+     * URL of the registries server to which the package should be released.
+     */
+    private String url;
     
-    private String registry  = "";
-    private String uid       = "";
-    private String version   = "";
-    private String platforms = "";
-    private String archive   = "";
+    /**
+     * Name of the registry into which the package should be imported.
+     */
+    private String registry;
+    
+    /**
+     * Uid of the parent component for the package.
+     */
+    private String uid;
+    
+    /**
+     * Version of the parent component for the package.
+     */
+    private String version;
+    
+    /**
+     * Platforms of the parent component for the package.
+     */
+    private String platforms;
+    
+    /**
+     * The package archive.
+     */
+    private File archive;
     
     // setters //////////////////////////////////////////////////////////////////////
+    /**
+     * Setter for the 'url' property.
+     *
+     * @param url The new value of the 'url' property.
+     */
     public void setUrl(String url) {
         this.url = url;
     }
     
+    /**
+     * Setter for the 'registry' property.
+     *
+     * @param registry The new value of the 'registry' property.
+     */
     public void setRegistry(String registry) {
         this.registry = registry;
     }
     
+    /**
+     * Setter for the 'uid' property.
+     *
+     * @param uid The new value of the 'uid' property.
+     */
     public void setUid(String uid) {
         this.uid = uid;
     }
     
+    /**
+     * Setter for the 'version' property.
+     *
+     * @param version The new value of the 'version' property.
+     */
     public void setVersion(String version) {
         this.version = version;
     }
     
+    /**
+     * Setter for the 'platforms' property.
+     *
+     * @param platforms The new value of the 'platforms' property.
+     */
     public void setPlatforms(String platforms) {
         this.platforms = platforms;
     }
     
-    public void setArchive(String archive) {
-        this.archive = archive;
+    /**
+     * Setter for the 'archive' property.
+     *
+     * @param path The new value of the 'archive' property.
+     */
+    public void setArchive(String path) {
+        archive = new File(path);
+        if (!archive.equals(archive.getAbsoluteFile())) {
+            archive = new File(getProject().getBaseDir(), path);
+        }
     }
     
     // execution ////////////////////////////////////////////////////////////////////
+    /**
+     * Executes the task. This method sends an HTTP POST request to the server, 
+     * uploading the package archive.
+     * 
+     * @throws org.apache.tools.ant.BuildException if an I/O error occurs.
+     */
     public void execute() throws BuildException {
         try {
             final Map<String, Object> args = new HashMap<String, Object>();
             
-            File file = new File(archive);
-            if (!file.equals(file.getAbsoluteFile())) {
-                file = new File(getProject().getBaseDir(), archive);
-            }
             
-            args.put("registry", registry);
-            args.put("uid", uid);
-            args.put("version", version);
-            args.put("platforms", platforms);
-            args.put("archive", file);
+            args.put("registry", registry);                                 // NOI18N
+            args.put("uid", uid);                                           // NOI18N
+            args.put("version", version);                                   // NOI18N
+            args.put("platforms", platforms);                               // NOI18N
+            args.put("archive", archive);                                   // NOI18N
             
-            log(AntUtils.post(url + "/add-package", args));
+            log(Utils.post(url + "/add-package", args));                 // NOI18N
         } catch (IOException e) {
             throw new BuildException(e);
         }
