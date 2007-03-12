@@ -65,12 +65,12 @@ public class IndentAction extends InsertBreakAction {
             TokenHierarchy th = TokenHierarchy.get (doc);
             TokenSequence ts = th.tokenSequence ();
             ts.move (caret.getDot ());
-            ts.moveNext ();
-            while (ts.embedded () != null) {
-                ts = ts.embedded ();
-                ts.move (caret.getDot ());
-                if (!ts.moveNext ()) break;
-            }
+            if (ts.moveNext ())
+                while (ts.embedded () != null) {
+                    ts = ts.embedded ();
+                    ts.move (caret.getDot ());
+                    if (!ts.moveNext ()) break;
+                }
             Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (ts.language ().mimeType ());
             Token token = ts.token ();
             Object indentValue = getIndentProperties (l);
