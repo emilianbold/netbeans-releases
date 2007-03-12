@@ -29,8 +29,18 @@ import javax.tools.JavaFileObject;
 
 import java.util.List;
 import java.util.Set;
+import java.util.EnumSet;
+
 import org.netbeans.api.java.source.query.CommentHandler;
 import org.netbeans.api.java.source.query.CommentSet;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.Comment.Style;
+import org.netbeans.api.java.source.query.CommentHandler;
+import org.netbeans.api.java.source.query.Query;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
+
 import org.netbeans.modules.java.source.engine.TreeMakerInt;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 
@@ -2460,6 +2470,7 @@ public final class TreeMaker {
         assert Tree.Kind.BLOCK == body.getKind() : "Not a statement block!";
         Scope scope = copy.getTrees().getScope(TreePath.getPath(copy.getCompilationUnit(), method));
         treeUtils.attributeTree(body, scope);
+        mapComments((BlockTree) body, bodyText, copy, handler);
         return (BlockTree) body;
     }
 
@@ -2489,6 +2500,37 @@ public final class TreeMaker {
         SourcePositions[] positions = new SourcePositions[1];
         StatementTree body = copy.getTreeUtilities().parseStatement(bodyText, positions);
         assert Tree.Kind.BLOCK == body.getKind() : "Not a statement block!";
+        mapComments((BlockTree) body, bodyText, copy, handler);
         return delegate.Method(modifiers, name, returnType, typeParameters, parameters, throwsList, (BlockTree) body, defaultValue);
     }
+    
+    private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments) {
+        final EnumSet<JavaTokenId> nonRelevant = EnumSet.of(
+                JavaTokenId.LINE_COMMENT,
+                JavaTokenId.BLOCK_COMMENT,
+                JavaTokenId.JAVADOC_COMMENT,
+                JavaTokenId.WHITESPACE
+            );
+        TokenSequence<JavaTokenId> seq = TokenHierarchy.create(inputText, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+        List<? extends StatementTree> trees = block.getStatements();
+        SourcePositions pos = copy.getTrees().getSourcePositions();
+        for (StatementTree statement : trees) {
+            seq.move((int) pos.getStartPosition(null, statement));
+            seq.moveNext();
+            while (seq.movePrevious() && nonRelevant.contains(seq.token().id())) {
+                switch (seq.token().id()) {
+                    case LINE_COMMENT:
+                        comments.addComment(statement, Comment.create(Style.LINE, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                    case BLOCK_COMMENT:
+                        comments.addComment(statement, Comment.create(Style.BLOCK, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                    case JAVADOC_COMMENT:
+                        comments.addComment(statement, Comment.create(Style.JAVADOC, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                }
+            }
+        }
+    }
+    
 }

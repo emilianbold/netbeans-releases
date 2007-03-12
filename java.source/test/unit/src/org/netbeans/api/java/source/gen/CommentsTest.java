@@ -19,26 +19,17 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.SourcePositions;
 import java.io.*;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.Comment.Style;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.query.CommentHandler;
-import org.netbeans.api.java.source.query.CommentSet;
 import org.netbeans.api.java.source.query.Query;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -53,37 +44,45 @@ public class CommentsTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(CommentsTest.class);
+        suite.addTestSuite(CommentsTest.class);
 //        suite.addTest(new CommentsTest("testAddStatement"));
 //        suite.addTest(new CommentsTest("testAddJavaDocToMethod"));
 //        suite.addTest(new CommentsTest("testGetComment1"));
-        suite.addTest(new CommentsTest("testAddJavaDocToExistingMethod"));
+//        suite.addTest(new CommentsTest("testAddJavaDocToExistingMethod"));
         return suite;
     }
 
     public void testAddStatement() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.File;\n\n" +
-            "public class Test {\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
             "    void method() {\n" +
             "    }\n\n" +
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.File;\n\n" +
-            "public class Test {\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
             "    void method() {" +
             "        // test\n" +
-            "        int a;\n\n" +
+            "        int a;\n" +
+            "\n" +
             "        /**\n" +
             "         * becko\n" +
             "         */\n" +
             "        int b;\n" +
             "        // cecko\n" +
-            "        int c;\n\n" +
+            "        int c;\n" +
+            "\n" +
             "    }\n\n" +
             "}\n";
 
@@ -107,9 +106,7 @@ public class CommentsTest extends GeneratorTestMDRCompat {
                         "    int c; // trail\n" +
                         "}";
                 BlockTree block = make.createMethodBody(method, bodyText);
-//                CommentHandler comments = workingCopy.getCommentHandler();
-//                mapComments(block, bodyText, workingCopy, comments);
-//                workingCopy.rewrite(method.getBody(), block);
+                workingCopy.rewrite(method.getBody(), block);
             }
 
             public void cancel() {
@@ -124,14 +121,18 @@ public class CommentsTest extends GeneratorTestMDRCompat {
     public void testGetComment1() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.File;\n\n" +
-            "public class Test {\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
             "    void method() {\n" +
             "        // preceding comment\n" +
             "        int a; // trailing comment\n" +
             "        // what's up?" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "}\n"
             );
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
@@ -157,10 +158,12 @@ public class CommentsTest extends GeneratorTestMDRCompat {
     public void testAddJavaDocToMethod() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
             "    Test() {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "}\n"
             );
         
@@ -206,7 +209,8 @@ public class CommentsTest extends GeneratorTestMDRCompat {
     public void testAddJavaDocToExistingMethod() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
             "    public void test(int a) {\n" +
             "    }\n\n" +
@@ -258,33 +262,4 @@ public class CommentsTest extends GeneratorTestMDRCompat {
         return "";
     }
 
-    private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments) {
-        final EnumSet<JavaTokenId> nonRelevant = EnumSet.of(
-                LINE_COMMENT,
-                BLOCK_COMMENT,
-                JAVADOC_COMMENT,
-                WHITESPACE
-            );
-        TokenSequence<JavaTokenId> seq = TokenHierarchy.create(inputText, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-        List<? extends StatementTree> trees = block.getStatements();
-        SourcePositions pos = copy.getTrees().getSourcePositions();
-        for (StatementTree statement : trees) {
-            seq.move((int) pos.getStartPosition(null, statement));
-            seq.moveNext();
-            while (seq.movePrevious() && nonRelevant.contains(seq.token().id())) {
-                switch (seq.token().id()) {
-                    case LINE_COMMENT:
-                        comments.addComment(statement, Comment.create(Style.LINE, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
-                        break;
-                    case BLOCK_COMMENT:
-                        comments.addComment(statement, Comment.create(Style.BLOCK, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
-                        break;
-                    case JAVADOC_COMMENT:
-                        comments.addComment(statement, Comment.create(Style.JAVADOC, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
-                        break;
-                }
-            }
-        }
-    }
-    
 }
