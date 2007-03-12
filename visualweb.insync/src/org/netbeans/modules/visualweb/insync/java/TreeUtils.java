@@ -28,6 +28,7 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import static java.lang.reflect.Modifier.*;
+import javax.lang.model.element.TypeElement;
 
 /**
  *
@@ -54,7 +55,14 @@ public class TreeUtils {
      */
     static Element getElement(CompilationInfo cinfo, Tree tree) {
         return cinfo.getTrees().getElement(getTreePath(cinfo, tree));
-    }    
+    }
+    
+    /*
+     * Returns element for a given tree
+     */
+    static TypeElement getTypeElement(CompilationInfo cinfo, Tree tree) {
+        return (TypeElement)getElement(cinfo, tree);
+    }        
     
     /**
      * Returns the preceding immediate comment

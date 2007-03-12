@@ -21,6 +21,7 @@ package org.netbeans.modules.visualweb.insync.java;
 
 import com.sun.rave.designtime.ContextMethod;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -30,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -592,17 +592,24 @@ public class JavaClass {
         return false;
     }
     
-    /*
-     * Returns the TypeElement wrapper for public class in the given file
+    /**
+     * Returns the JavaClass(TypeElement wrapper) for public class in the given file
      */
     public static JavaClass getJavaClass(final FileObject fObj) {
         return (JavaClass)ReadTaskWrapper.execute(new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
-                String pkgName = JsfProjectUtils.getProjectProperty(FileOwnerQuery.getOwner(fObj), 
-                        JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
-                TypeElement element = cinfo.getElements().getTypeElement(pkgName + "." + fObj.getName());
-                if(element != null) {
-                    return new JavaClass(element, fObj);
+                CompilationUnitTree cunit = cinfo.getCompilationUnit();
+                for(Tree tree : cunit.getTypeDecls()) {
+                    if(tree.getKind() == Tree.Kind.CLASS) {
+                        ClassTree clazz = (ClassTree)tree;
+                        if(clazz.getSimpleName().toString().equals(fObj.getName()) &&
+                                clazz.getModifiers().getFlags().contains(Modifier.PUBLIC)) {
+                            TypeElement element = TreeUtils.getTypeElement(cinfo, clazz);
+                            if(element != null) {
+                                return new JavaClass(element, fObj);
+                            }                   
+                        }
+                    }
                 }
                 return null;
             }

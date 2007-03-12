@@ -53,6 +53,9 @@ public class JavaUnit extends SourceUnit {
 
     URLClassLoader classLoader;
     private boolean markSourceDirty = true;
+    private enum ImportStatus {
+        needed, not_needed, exists, not_allowed
+    }
     ParserAnnotation[] errors = ParserAnnotation.EMPTY_ARRAY;
 
     //--------------------------------------------------------------------------------- Construction
@@ -179,21 +182,27 @@ public class JavaUnit extends SourceUnit {
     /**
      * Ensure that a given import is in the list, if not try to add it
      * @param 
-     * @return true if the import was added
+     * @return true if the import was added if required or if the import is not
+     * required to be added
      */
     public boolean ensureImport(final String fqn) {
-        boolean result = false;
-        result = (Boolean)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
+        ImportStatus result = (ImportStatus)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
-                if(!isImportRequired(wc, fqn)) {
-                    return true;
+                ImportStatus status = checkImportStatus(wc, fqn);
+                if(status.equals(ImportStatus.needed)) {
+                    addImport(wc, fqn);
                 }
-                addImport(wc, fqn);
-                return false;
+                return status;
             }
         }, getFileObject()); 
-        //If import was required, check if the import was added successfully
-        return result ? true : isImported(fqn);
+        //Check if the import is successfully added
+        if(result.equals(ImportStatus.needed)) {
+            return isImported(fqn);
+        }else if(result.equals(ImportStatus.not_needed)){
+            return true;
+        }
+        
+        return false;
     }
  
    /**
@@ -225,30 +234,58 @@ public class JavaUnit extends SourceUnit {
     }
     
     /**
-     * @return true if the import is required for the class
+     * @return needed if the import is required for the class
+     *         not_needed if the import is not required
+     *         exists if the import exists
+     *         not_allowed if the import is not allowed
      * Checks if the class is in same package, or if the class is already imported,
-     * or if the wild card imports exists for class's package
+     * or if the wild card imports exists for class's package and if a different
+     * class by same name but in different package has been imported
      */
-    private boolean isImportRequired(CompilationInfo cinfo, String fqn) {
+    private ImportStatus checkImportStatus(CompilationInfo cinfo, String fqn) {
         int index = fqn.lastIndexOf('.');
         String pkgName = null;
+        String className = null;
         if(index != -1) {
             pkgName = fqn.substring(0, index);
+            className = fqn.substring(index+1);
         }
-        if(pkgName == null || pkgName.equals(cinfo.getCompilationUnit().getPackageName().toString())) {
-            return false;
+        //check if they belong to same package
+        String currentPkgName = cinfo.getCompilationUnit().getPackageName().toString();
+        if(pkgName == null || pkgName.equals(currentPkgName)) {
+            return ImportStatus.not_needed;
         }
+        
+        //check if the class by same name exists in the package
+        if(cinfo.getElements().getTypeElement(currentPkgName + "." + className) != null) {
+            return ImportStatus.not_allowed;
+        }
+        
         for (ImportTree importTree : cinfo.getCompilationUnit().getImports()) {
             String importName = importTree.getQualifiedIdentifier().toString();
+            //FQN match
             if(importName.equals(fqn)) {
-                return false;
+                return ImportStatus.exists;
             }
-            String importPkgName = importName.substring(0, importName.indexOf('.'));
-            if (importPkgName.equals(pkgName)) {
-                return false;
+            
+            index = importName.indexOf(".");
+            if(index != -1) {
+                //Check for wild card imports
+                if(importName.substring(index+1).equals("*")) {
+                    String importPkgName = importName.substring(0, index);
+                    if (importPkgName.equals(pkgName)) {
+                        return ImportStatus.exists;
+                    }
+                }else {
+                    //Check if the import is not allowed because of name clash
+                    String importClassName = fqn.substring(index+1);
+                    if(importClassName.equals(className)){
+                        return ImportStatus.not_allowed;
+                    }
+                }
             }
         }
-        return true;
+        return ImportStatus.needed;
     }    
     
     /**
