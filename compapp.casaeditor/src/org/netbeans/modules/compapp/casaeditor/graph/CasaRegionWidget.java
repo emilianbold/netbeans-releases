@@ -218,13 +218,24 @@ public class CasaRegionWidget extends LayerWidget {
     protected void paintWidget() {
         super.paintWidget();
         
-        if (mIsHighlighted) {
+        if (mIsHighlighted && getScene().getView() != null) {
+            
+            // If our bounds is larger than the visible rect, our border
+            // will be limited to the visible rect.
+            Rectangle rect = getScene().getView().getVisibleRect();
+            rect = rect.intersection(new Rectangle(
+                    getLocation(),
+                    getBounds().getSize()));
+            rect.x -= getLocation().x;
+            rect.y -= getLocation().y;
+            
             InnerGlowBorderDrawer.paintInnerGlowBorder(
                     getGraphics(), 
-                    getBounds(), 
+                    rect, 
                     CasaFactory.getCasaCustomizer().getCOLOR_SELECTION(), 
                     0.3f,
                     15);
         }
+        
     }
 }
