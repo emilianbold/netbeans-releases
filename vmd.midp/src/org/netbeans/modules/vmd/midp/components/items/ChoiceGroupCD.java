@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
 import org.netbeans.modules.vmd.api.model.*;
@@ -36,10 +37,13 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
+import org.netbeans.modules.vmd.midp.screen.display.ChoiceGroupDisplayPresenter;
 
 /**
  *
@@ -72,6 +76,11 @@ public class ChoiceGroupCD extends ComponentDescriptor {
         );
     }
     
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters(presenters);
+    }
+
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -117,8 +126,10 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                             List<PropertyValue> list = value.getArray ();
                             choiceElement.writeProperty (ChoiceElementCD.PROP_STRING, MidpTypes.createStringValue ("Choice Element " + list.size())); //NOI18N
                         }
-                }
-            }
+                    }
+                },
+                // screen
+                new ChoiceGroupDisplayPresenter()
         );
     }
      

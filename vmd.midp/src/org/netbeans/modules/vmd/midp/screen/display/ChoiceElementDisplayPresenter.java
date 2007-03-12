@@ -24,41 +24,38 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontFace;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontSize;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
-import org.netbeans.modules.vmd.midp.components.resources.FontCD;
-import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Anton Chechel
+ * @version 1.0
  */
-public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresenter {
+public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     
     private JPanel panel;
-    private JLabel label;
-    private JComponent contentComponent;
+    private JCheckBox checkBox;
     
-    public ListElementEventSourceDisplayPresenter() {
+    public ChoiceElementDisplayPresenter() {
         panel = new JPanel() {
             public JPopupMenu getComponentPopupMenu() {
                 return Utilities.actionsToPopup(ActionsSupport.createActionsArray(getRelatedComponent()), this);
             }
         };
         panel.setLayout(new BorderLayout());
-        label = new JLabel();
-        panel.add(label, BorderLayout.NORTH);
+        checkBox = new JCheckBox();
+        panel.add(checkBox, BorderLayout.NORTH);
     }
     
     public boolean isTopLevelDisplay() {
@@ -73,27 +70,13 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
         return panel;
     }
     
-    protected JPanel getPanel() {
-        return panel;
-    }
-    
-    protected void setContentComponent(JComponent contentComponent) {
-        if (this.contentComponent != null) {
-            panel.remove(this.contentComponent);
-        }
-        this.contentComponent = contentComponent;
-        if (contentComponent != null) {
-            panel.add(contentComponent, BorderLayout.CENTER);
-        }
-    }
-    
     public void reload(ScreenDeviceInfo deviceInfo) {
         panel.setBorder(deviceInfo.getDeviceTheme().getBorder(getComponent().getDocument().getSelectedComponents().contains(getComponent())));
-        label.setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING)));
-        
-        DesignComponent font = getComponent().readProperty(ListElementEventSourceCD.PROP_FONT).getComponent();
+        checkBox.setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING)));
+        checkBox.setSelected(MidpTypes.getBoolean(getComponent().readProperty(ChoiceElementCD.PROP_SELECTED)));
+        DesignComponent font = getComponent().readProperty(ChoiceElementCD.PROP_FONT).getComponent();
         if (font != null) {
-            label.setFont(ScreenSupport.getFont(deviceInfo, font));
+            checkBox.setFont(ScreenSupport.getFont(deviceInfo, font));
         }
     }
     

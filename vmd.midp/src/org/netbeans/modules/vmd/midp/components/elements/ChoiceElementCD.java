@@ -36,13 +36,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.screen.display.ChoiceElementDisplayPresenter;
 
 /**
  * @author David Kaspar
@@ -92,6 +95,7 @@ public final class ChoiceElementCD extends ComponentDescriptor {
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters(presenters, true, true, false, true, true);
         MidpActionsSupport.addMoveActionPresenter(presenters, ChoiceGroupCD.PROP_ELEMENTS);
+        DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
     }
 
@@ -114,8 +118,9 @@ public final class ChoiceElementCD extends ComponentDescriptor {
                     DesignComponent list = component.getParentComponent ();
                     ArraySupport.remove (list, ChoiceGroupCD.PROP_ELEMENTS, component);
                 }
-            }
-        
+            },
+            // screen
+            new ChoiceElementDisplayPresenter()
         );
     }
 
