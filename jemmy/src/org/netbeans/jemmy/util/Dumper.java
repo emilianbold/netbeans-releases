@@ -28,6 +28,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import org.netbeans.jemmy.*;
+import org.netbeans.jemmy.QueueTool.QueueAction;
 import org.netbeans.jemmy.operators.*;
 
 /**
@@ -72,7 +73,7 @@ public class Dumper {
      * @param comp a component to get information from.
      * @param writer a writer to write to.
      */
-    public static void dumpComponent(Component comp, PrintWriter writer, DumpController listener) {
+    public static void dumpComponent(Component comp, final PrintWriter writer, final DumpController listener) {
         QueueTool qt = new QueueTool();
         Component[] comps;
         if(comp != null) {
@@ -81,14 +82,15 @@ public class Dumper {
         } else {
             comps = Frame.getFrames();
         }
-        try {
-            qt.lock();
-            printHeader(writer);
-            dumpSome("dump", comps, writer, "", listener);
-            writer.flush();
-        } finally {
-            qt.unlock();
-        }
+        final Component[] comps_final = comps;
+        qt.invokeAndWait(new QueueAction("dumpComponent") {
+            public Object launch() throws Exception {
+                printHeader(writer);
+                dumpSome("dump", comps_final, writer, "", listener);
+                writer.flush();
+                return null;
+            }
+        });
     }
     
     public static void dumpComponent(Component comp, PrintWriter writer) {
