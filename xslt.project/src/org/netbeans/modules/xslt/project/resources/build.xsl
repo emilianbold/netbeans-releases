@@ -96,6 +96,30 @@ Microsystems, Inc. All Rights Reserved.
 
     ]]></xsl:comment>
 
+            <target name="-check-netbeans-home">
+                <condition property="no.netbeans.home">
+                    <not>
+                        <isset property="netbeans.home"/>
+                    </not>
+                </condition>
+            </target>
+
+            <target name="-init-caps" if="no.netbeans.home">
+                <xsl:attribute name="if">no.netbeans.home</xsl:attribute>
+
+                <property file="${{basedir}}/nbproject/private/private.properties"/>
+                <property name="netbeans.home" value="${{caps.netbeans.home}}/platform6"/>
+                <property name="netbeans.user" value="${{caps.netbeans.user}}"/>
+                <property name="from.commandline" value="true"/>
+            </target>
+
+            <target name="pre-init">
+                <xsl:attribute name="depends">-check-netbeans-home,-init-caps</xsl:attribute>
+
+                <echo>netbeans.home: ${netbeans.home}</echo>
+                <echo>netbeans.user: ${netbeans.user}</echo>
+            </target>
+        
         </project>
 
     </xsl:template>

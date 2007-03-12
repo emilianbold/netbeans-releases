@@ -195,7 +195,7 @@ public class XsltproProjectGenerator {
         ep.setProperty(DEBUG_CLASSPATH, "${"+JAVAC_CLASSPATH+"}:${"+BUILD_CLASSES_DIR+"}");
 
         //============= Start of IcanPro========================================//
-        ep.setProperty(JBI_SETYPE_PREFIX, "com.sun.xsltse"); // NOI18N
+        ep.setProperty(JBI_SETYPE_PREFIX, "sun-xslt-engine"); // NOI18N
         ep.setProperty(ASSEMBLY_UNIT_ALIAS, "This Assembly Unit"); // NOI18N
         ep.setProperty(ASSEMBLY_UNIT_DESCRIPTION, "Represents this Assembly Unit"); // NOI18N
         ep.setProperty(APPLICATION_SUB_ASSEMBLY_ALIAS, "This Application Sub-Assembly"); // NOI18N
@@ -215,7 +215,7 @@ public class XsltproProjectGenerator {
         ep.setProperty(JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
         ep.setProperty(JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N
 
-        ep.setProperty(NETBEANS_HOME, System.getProperty(NETBEANS_HOME)); // NOI18N
+//        ep.setProperty(NETBEANS_HOME, System.getProperty(NETBEANS_HOME)); // NOI18N
         //============= End of IcanPro========================================//
 
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

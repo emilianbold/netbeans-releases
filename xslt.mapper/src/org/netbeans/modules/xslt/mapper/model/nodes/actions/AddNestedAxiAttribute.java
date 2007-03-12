@@ -24,6 +24,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.ui.axinodes.NodeType;
+import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
@@ -54,7 +55,7 @@ public class AddNestedAxiAttribute extends XsltNodeAction {
     }
     
     public Icon getIcon() {
-        Icon icon = new ImageIcon(NodeType.ATTRIBUTE.getImage());
+        Icon icon = new ImageIcon(NodeType.ATTRIBUTE.getImage(BadgeModificator.SINGLE));
         return icon;
     }
     

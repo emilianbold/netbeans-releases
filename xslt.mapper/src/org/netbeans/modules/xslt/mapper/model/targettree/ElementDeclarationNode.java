@@ -28,8 +28,10 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.TooltipTextProvider;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.soa.ui.axinodes.NodeType;
+import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xslt.mapper.model.nodes.NodeFactory;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
@@ -50,7 +52,8 @@ import org.openide.util.NbBundle;
  *
  * @author Alexey
  */
-public class ElementDeclarationNode extends DeclarationNode{
+public class ElementDeclarationNode extends DeclarationNode 
+        implements TooltipTextProvider {
     
     
     public ElementDeclarationNode(XslComponent component, XsltMapper mapper) {
@@ -139,16 +142,42 @@ public class ElementDeclarationNode extends DeclarationNode{
     }
     
     public Image getIcon() {
-        
-        return NodeType.ELEMENT.getImage();
+        AXIComponent axiComponent = getType();
+        if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
+            BadgeModificator bm = AxiomUtils.getElementBadge(
+                    (org.netbeans.modules.xml.axi.Element)axiComponent);
+            return NodeType.ELEMENT.getImage(bm);
+        }
+        //
+        return NodeType.ELEMENT.getImage(BadgeModificator.SINGLE);
     }
     
     public String getName() {
         AXIComponent axiComponent = getType();
         if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
-            return AxiomUtils.getElementHtmlDisplayName(
-                    (org.netbeans.modules.xml.axi.Element)axiComponent,
-                    ComponentOrientation.RIGHT_TO_LEFT);
+            return ((org.netbeans.modules.xml.axi.Element)axiComponent).getName();
+        } else {
+            return toString();
+        }
+    }
+    
+    public String getName(boolean selected) {
+        AXIComponent axiComponent = getType();
+        if (selected) {
+            return getName();
+        } else if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
+            return getName();
+        } else {
+            return SoaUiUtil.getFormattedHtmlString(true,
+                    new SoaUiUtil.TextChunk(getName(), SoaUiUtil.MISTAKE_RED));
+        }
+    }
+    
+    public String getTooltipText() {
+        AXIComponent axiComponent = getType();
+        if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
+            return AxiomUtils.getElementTooltip(
+                    (org.netbeans.modules.xml.axi.Element)axiComponent);
         } else {
             return SoaUiUtil.getFormattedHtmlString(true,
                     new SoaUiUtil.TextChunk(toString(), SoaUiUtil.MISTAKE_RED));

@@ -140,7 +140,7 @@ is divided into following sections:
                 <fail unless="dist.jar">Must set dist.jar</fail>
             </target>
   
-            <target name="init-taskdefs">
+            <target name="init-taskdefs" if="from.commandline">
                 <path id="ant.task.classpath.models">          
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-xslt-project.jar"/>

@@ -48,7 +48,7 @@ public class XsltNodesTreeRenderer extends DefaultTreeCellRenderer {
         if (value instanceof TreeNode) {
             TreeNode node = (TreeNode)value;
             //
-            String name = node.getName();
+            String name = node.getName(sel);
             if (name != null && name.length() != 0) {
                 this.setText(name);
             }

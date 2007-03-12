@@ -25,6 +25,7 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.soa.mapper.basicmapper.BasicMapper;
 import org.netbeans.modules.soa.mapper.basicmapper.util.MapperUtilities;
 import org.netbeans.modules.soa.mapper.common.IMapperEvent;
@@ -125,13 +126,17 @@ public class XsltMapper extends BasicMapper {
         sourceTree.setModel(new SourceTreeModel(this));
         sourceTree.setRootVisible(true);
         sourceTree.setShowsRootHandles(true);
+        sourceTree.getSelectionModel().setSelectionMode(
+                TreeSelectionModel.SINGLE_TREE_SELECTION);
         sourceTree.expandRow(0);
         sourceTree.setCellRenderer(new XsltNodesTreeRenderer());
-        
+        //
         final JTree targetTree = getMapperViewManager().getDestView().getTree();
         targetTree.setModel(new TargetTreeModel(this));
         targetTree.setRootVisible(false);
         targetTree.setShowsRootHandles(true);
+        targetTree.getSelectionModel().setSelectionMode(
+                TreeSelectionModel.SINGLE_TREE_SELECTION);
         targetTree.expandRow(0);
         targetTree.setCellRenderer(new XsltNodesTreeRenderer());
         //

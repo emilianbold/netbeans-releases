@@ -54,8 +54,8 @@
     </folder>
 
     <folder name="SeeBeyondJbiComponents">
-        <file name="com.sun.xsltse">
-            <attr name="id" stringvalue="com.sun.xsltse-1.0-2"/>
+        <file name="sun-xslt-engine">
+            <attr name="id" stringvalue="sun-xslt-engine"/>
             <attr name="description" stringvalue="This is a xslt service engine."/>
             <attr name="type" stringvalue="Engine"/>
         </file>

@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -42,7 +42,6 @@ import org.netbeans.modules.xml.xpath.XPathExpression;
 import org.netbeans.modules.xml.xpath.XPathModel;
 import org.netbeans.modules.soa.ui.axinodes.AxiomTreeNodeFactory;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
-import org.netbeans.modules.soa.ui.form.CustomNodeEditor.EditingMode;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeModel;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeRenderer;
@@ -160,7 +159,12 @@ public class ExpressionEditor extends JPanel
         //
         btnCheckSyntax.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                checkSyntax();
+                boolean isOk = checkSyntax();
+                if (isOk) {
+                    String msg = NbBundle.getMessage(
+                            ExpressionEditor.class, "MSG_ValidXPath"); // NOI18N
+                    UserNotification.showMessage(msg);
+                }
             }
         });
     }
@@ -196,21 +200,31 @@ public class ExpressionEditor extends JPanel
         return paletteFolder;
     }
     
-    
     private void addXPath(AxiomNode node) {
         XslModel model = myMapper.getContext().getXSLModel();
-        AbstractDocumentComponent adc = (AbstractDocumentComponent)
-        model.getStylesheet();
-        String text = AxiomUtils.calculateSimpleXPath(node, adc);
+        AbstractDocumentComponent adc =
+                (AbstractDocumentComponent)model.getStylesheet();
         //
+        String oldText = txtExpression.getText();
         int oldSelectionStart = txtExpression.getSelectionStart();
+        int oldSelectionEnd = txtExpression.getSelectionEnd();
+        //
+        StringBuilder text = new StringBuilder();
+        if (needWhitespaceBefore(oldText, oldSelectionStart)) {
+            text.append(" "); // NOI18N
+        }
+        text.append(AxiomUtils.calculateSimpleXPath(node, adc));
+        if (needWhitespaceAfter(oldText, oldSelectionEnd)) {
+            text.append(" "); // NOI18N
+        }
+        //
         int selectionStart = oldSelectionStart;
         int selectionEnd = oldSelectionStart + text.length();
         //
-        txtExpression.replaceSelection(text);
+        txtExpression.replaceSelection(text.toString());
         txtExpression.setCaretPosition(selectionEnd);
-        txtExpression.setSelectionStart(selectionStart);
-        txtExpression.setSelectionEnd(selectionEnd);
+//        txtExpression.setSelectionStart(selectionStart);
+//        txtExpression.setSelectionEnd(selectionEnd);
         txtExpression.requestFocus();
     }
     
@@ -218,67 +232,81 @@ public class ExpressionEditor extends JPanel
         XpathPaletteItemInfo info = funcItemNode.getItemInfo();
         //
         if (info != null) {
+            String oldText = txtExpression.getText();
             int oldSelectionStart = txtExpression.getSelectionStart();
+            int oldSelectionEnd = txtExpression.getSelectionEnd();
             int selectionStart = oldSelectionStart;
             int selectionEnd = oldSelectionStart;
             //
-            String text = null;
+            StringBuilder text = new StringBuilder();
             if (info.isOperator()) {
-                text = " " + info.getOperation() + " "; // NOI18N
+                if (needWhitespaceBefore(oldText, oldSelectionStart)) {
+                    text.append(" "); // NOI18N
+                }
+                text.append(info.getOperation()); // NOI18N
+                if (needWhitespaceAfter(oldText, oldSelectionEnd)) {
+                    text.append(" "); // NOI18N
+                }
                 selectionStart = oldSelectionStart + text.length();
                 selectionEnd = selectionStart;
             } else if (info.isFunction()) {
+                if (needWhitespaceBefore(oldText, oldSelectionStart)) {
+                    text.append(" "); // NOI18N
+                }
                 int maxInput = info.getMaxInput();
                 String inp1, inp2, inp3, inp4;
                 switch (maxInput) {
                     case 1:
                         inp1 = (String)info.getItemAttribute(INPUT_PARAM + "1"); // NOI18N
-                        text = info.getOperation() + "("; // NOI18N
+                        text.append(info.getOperation()).append("("); // NOI18N
                         selectionStart = oldSelectionStart + text.length();
-                        text = text + inp1; // NOI18N
+                        text.append(inp1); // NOI18N
                         selectionEnd = oldSelectionStart + text.length();
-                        text = text + ")"; // NOI18N
+                        text.append(")"); // NOI18N
                         break;
                     case 2:
                         inp1 = (String)info.getItemAttribute(INPUT_PARAM + "1"); // NOI18N
-                        text = info.getOperation() + "("; // NOI18N
+                        text.append(info.getOperation()).append("("); // NOI18N
                         selectionStart = oldSelectionStart + text.length();
-                        text = text + inp1; // NOI18N
+                        text.append(inp1); // NOI18N
                         selectionEnd = oldSelectionStart + text.length();
                         //
                         inp2 = (String)info.getItemAttribute(INPUT_PARAM + "2"); // NOI18N
-                        text = text + ", " + inp2; // NOI18N
+                        text.append(", ").append(inp2); // NOI18N
                         //
-                        text = text + ")"; // NOI18N
+                        text.append(")"); // NOI18N
                         break;
                     case 3:
                         inp1 = (String)info.getItemAttribute(INPUT_PARAM + "1"); // NOI18N
-                        text = info.getOperation() + "("; // NOI18N
+                        text.append(info.getOperation()).append("("); // NOI18N
                         selectionStart = oldSelectionStart + text.length();
-                        text = text + inp1; // NOI18N
+                        text.append(inp1); // NOI18N
                         selectionEnd = oldSelectionStart + text.length();
                         //
                         inp2 = (String)info.getItemAttribute(INPUT_PARAM + "2"); // NOI18N
-                        text = text + ", " + inp2; // NOI18N
+                        text.append(", ").append(inp2); // NOI18N
                         //
                         inp3 = (String)info.getItemAttribute(INPUT_PARAM + "3"); // NOI18N
-                        text = text + ", " + inp3; // NOI18N
+                        text.append(", ").append(inp3); // NOI18N
                         //
-                        text = text + ")"; // NOI18N
+                        text.append(")"); // NOI18N
                         break;
                     case 0:
                     default:
                         inp1 = (String)info.getItemAttribute(INPUT_PARAM + "1"); // NOI18N
-                        text = info.getOperation() + "("; // NOI18N
+                        text.append(info.getOperation()).append("("); // NOI18N
                         selectionStart = oldSelectionStart + text.length();
                         selectionEnd = selectionStart;
-                        text = text + ")"; // NOI18N
+                        text.append(")"); // NOI18N
                         break;
+                }
+                if (needWhitespaceAfter(oldText, oldSelectionEnd)) {
+                    text.append(" "); // NOI18N
                 }
             }
             //
             if (text != null && text.length() > 0) {
-                txtExpression.replaceSelection(text);
+                txtExpression.replaceSelection(text.toString());
                 txtExpression.setCaretPosition(selectionStart);
                 txtExpression.setSelectionStart(selectionStart);
                 txtExpression.setSelectionEnd(selectionEnd);
@@ -288,6 +316,26 @@ public class ExpressionEditor extends JPanel
             // TODO set focus to the expression field
             // TODO set cursor to appropriate place!!!
         }
+    }
+    
+    private boolean needWhitespaceBefore(final String text, final int position) {
+        //
+        if (text.length() == 0 || position == 0) {
+            return false;
+        }
+        //
+        char prevChar = text.charAt(position - 1);
+        return !Character.isWhitespace(prevChar) && "(".indexOf(prevChar) < 0;
+    }
+    
+    private boolean needWhitespaceAfter(final String text, final int position) {
+        //
+        if (text.length() == 0 || position == text.length()) {
+            return false;
+        }
+        //
+        char charAt = text.charAt(position);
+        return !Character.isWhitespace(charAt) && ",)".indexOf(charAt) < 0;
     }
     
     private boolean checkSyntax() {
@@ -314,7 +362,6 @@ public class ExpressionEditor extends JPanel
             //
             UserNotification.showMessage(errorMessage);
             result = false;
-            // ErrorManager.getDefault().notify(xpe);
         }
         return result;
     }

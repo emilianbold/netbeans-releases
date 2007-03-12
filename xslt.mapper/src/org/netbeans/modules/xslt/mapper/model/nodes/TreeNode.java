@@ -142,6 +142,14 @@ public abstract class TreeNode extends Node {
         return toString();
     }
     
+    /**
+     * Does quite the same like the getName() method does. 
+     * It is intended to provide different HTML text depend on the parameter value.
+     */
+    public String getName(boolean selected) {
+        return getName();
+    }
+    
     public static TreeNode getNode(IMapperTreeNode node){
         return (TreeNode) node.getPath().getLastPathComponent();
     }

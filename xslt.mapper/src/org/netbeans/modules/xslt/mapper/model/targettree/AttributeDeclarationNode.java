@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -26,10 +26,13 @@ import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.TooltipTextProvider;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.soa.ui.axinodes.NodeType;
+import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.netbeans.modules.xslt.mapper.model.nodes.NodeFactory;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.DeleteAction;
@@ -43,7 +46,8 @@ import org.netbeans.modules.xslt.model.XslComponent;
  *
  * @author Alexey
  */
-public class AttributeDeclarationNode extends DeclarationNode {
+public class AttributeDeclarationNode extends DeclarationNode 
+        implements TooltipTextProvider {
     
     /** Creates a new instance of AttributeDeclarationNode */
     public AttributeDeclarationNode(XslComponent component, XsltMapper mapper) {
@@ -99,10 +103,21 @@ public class AttributeDeclarationNode extends DeclarationNode {
         }
         return null;
     }
+    
     public Image getIcon() {
-        
-        return NodeType.ATTRIBUTE.getImage();
+        AXIComponent axiComponent = getType();
+        if (axiComponent instanceof org.netbeans.modules.xml.axi.Attribute) {
+            Use attrUse = ((org.netbeans.modules.xml.axi.Attribute)axiComponent).getUse();
+            if (attrUse == Use.OPTIONAL) {
+                return NodeType.ATTRIBUTE.getImage(BadgeModificator.OPTIONAL);
+            } else {
+                return NodeType.ATTRIBUTE.getImage(BadgeModificator.SINGLE);
+            }
+        }
+        //
+        return NodeType.ATTRIBUTE.getImage(BadgeModificator.SINGLE);
     }
+    
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);
     }
@@ -110,9 +125,31 @@ public class AttributeDeclarationNode extends DeclarationNode {
     public String getName(){
         AXIComponent axiComponent = getType();
         if (axiComponent instanceof org.netbeans.modules.xml.axi.Attribute) {
-            return AxiomUtils.getAttributeHtmlDisplayName(
-                    (org.netbeans.modules.xml.axi.Attribute) axiComponent,
-                    ComponentOrientation.RIGHT_TO_LEFT);
+            return ((org.netbeans.modules.xml.axi.Attribute)axiComponent).getName();
+        } else {
+            Attribute myself = (Attribute) getDataObject();
+            return myself.getName().toString();
+        }
+    }
+    
+    public String getName(boolean selected){
+        AXIComponent axiComponent = getType();
+        if (selected) {
+            return getName();
+        } else if (axiComponent instanceof org.netbeans.modules.xml.axi.Attribute) {
+            return getName();
+        } else {
+            String name = getName();
+            return SoaUiUtil.getFormattedHtmlString(true,
+                    new SoaUiUtil.TextChunk(name, SoaUiUtil.MISTAKE_RED));
+        }
+    }
+    
+    public String getTooltipText() {
+        AXIComponent axiComponent = getType();
+        if (axiComponent instanceof org.netbeans.modules.xml.axi.Attribute) {
+            return AxiomUtils.getAttributeTooltip(
+                    (org.netbeans.modules.xml.axi.Attribute) axiComponent);
         } else {
             Attribute myself = (Attribute) getDataObject();
             String name = myself.getName().toString();

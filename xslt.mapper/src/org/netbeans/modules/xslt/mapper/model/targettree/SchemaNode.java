@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -27,18 +27,20 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.TooltipTextProvider;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.soa.ui.axinodes.NodeType;
+import org.netbeans.modules.soa.ui.axinodes.NodeType.BadgeModificator;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.netbeans.modules.xslt.mapper.model.nodes.NodeFactory;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.ActionConst;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.AddNestedRulesGroup;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.AddThisAxiComponentAction;
-import org.netbeans.modules.xslt.mapper.model.nodes.actions.DeleteAction;
 import org.netbeans.modules.xslt.mapper.model.nodes.visitor.NodeVisitor;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 import org.openide.util.NbBundle;
@@ -47,7 +49,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexey
  */
-public class SchemaNode extends TreeNode {
+public class SchemaNode extends TreeNode implements TooltipTextProvider {
     
 //    private transient Boolean isSourceViewNode = null;
     
@@ -94,9 +96,14 @@ public class SchemaNode extends TreeNode {
     public Image getIcon() {
         Object dataObject = getDataObject();
         if (dataObject instanceof Element) {
-            return NodeType.ELEMENT.getImage();
+            BadgeModificator mult = AxiomUtils.getElementBadge((Element)dataObject);
+            return NodeType.ELEMENT.getImage(mult);
         } else if (dataObject instanceof Attribute) {
-            return NodeType.ATTRIBUTE.getImage();
+            Use attrUse = ((Attribute)dataObject).getUse();
+            if (attrUse == Use.OPTIONAL) {
+                return NodeType.ATTRIBUTE.getImage(BadgeModificator.OPTIONAL);
+            }
+            return NodeType.ATTRIBUTE.getImage(BadgeModificator.SINGLE);
         } else {
             return null;
         }
@@ -104,27 +111,35 @@ public class SchemaNode extends TreeNode {
     
     public String getName() {
         Object dataObject = getDataObject();
-        boolean isSourceViewNode = isSourceViewNode();
         //
-        if (isSourceViewNode) {
-            if (dataObject instanceof Element) {
-                return AxiomUtils.getElementHtmlDisplayName(
-                        (Element)dataObject, ComponentOrientation.LEFT_TO_RIGHT);
-            } else if (dataObject instanceof Attribute) {
-                return AxiomUtils.getAttributeHtmlDisplayName(
-                        (Attribute)dataObject, ComponentOrientation.LEFT_TO_RIGHT);
-            }
-        } else {
-            if (dataObject instanceof Element) {
-                return AxiomUtils.getElementHtmlDisplayName((Element)dataObject, 
-                        ComponentOrientation.RIGHT_TO_LEFT, 
-                        SoaUiUtil.INACTIVE_BLUE);
-            } else if (dataObject instanceof Attribute) {
-                return AxiomUtils.getAttributeHtmlDisplayName(
-                        (Attribute)dataObject, 
-                        ComponentOrientation.RIGHT_TO_LEFT, 
-                        SoaUiUtil.INACTIVE_BLUE);
-            }
+        String result = null;
+        if (dataObject instanceof Element) {
+            result = ((Element)dataObject).getName();
+        } else if (dataObject instanceof Attribute) {
+            result = ((Attribute)dataObject).getName();
+        }
+        //
+        return result;
+    }
+    
+    public String getName(boolean selected) {
+        String result = getName();
+        //
+        if (!selected && !isSourceViewNode()) {
+            result = SoaUiUtil.getFormattedHtmlString(true,
+                    new SoaUiUtil.TextChunk(result, SoaUiUtil.INACTIVE_BLUE));
+        }
+        //
+        return result;
+    }
+    
+    public String getTooltipText() {
+        Object dataObject = getDataObject();
+        //
+        if (dataObject instanceof Element) {
+            return AxiomUtils.getElementTooltip((Element)dataObject);
+        } else if (dataObject instanceof Attribute) {
+            return AxiomUtils.getAttributeTooltip((Attribute)dataObject);
         }
         //
         return null;
@@ -157,9 +172,6 @@ public class SchemaNode extends TreeNode {
         if (addMenu.getMenuComponentCount() != 0) {
             rootMenu.add(addMenu);
         }
-        //
-        newAction = new DeleteAction(getMapper(), this);
-        rootMenu.add(newAction);
         //
         return rootMenu;
     }
