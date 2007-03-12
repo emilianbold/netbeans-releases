@@ -291,7 +291,7 @@ public class CasualDiff {
         insertHint = TokenUtilities.moveNext(tokenSequence, tokenSequence.offset());
         localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
         if (nameChanged(oldT.name, newT.name)) {
-            printer.print(origText.substring(localPointer, insertHint));
+            copyTo(localPointer, insertHint);
             printer.print(newT.name);
             diffInfo.put(insertHint, "Change class name");
             localPointer = insertHint += oldT.name.length();
@@ -311,7 +311,7 @@ public class CasualDiff {
         switch (getChangeKind(oldT.extending, newT.extending)) {
             case NOCHANGE:
                 insertHint = oldT.extending != null ? endPos(oldT.extending) : insertHint;
-                printer.print(origText.substring(localPointer, localPointer = insertHint));
+                copyTo(localPointer, localPointer = insertHint);
                 break;
             case MODIFY:
                 copyTo(localPointer, getOldPos(oldT.extending));
@@ -319,13 +319,13 @@ public class CasualDiff {
                 break;
                 
             case INSERT:
-                printer.print(origText.substring(localPointer, insertHint));
+                copyTo(localPointer, insertHint);
                 printer.print(" extends ");
                 printer.print(newT.extending);
                 localPointer = insertHint;
                 break;
             case DELETE:
-                printer.print(origText.substring(localPointer, insertHint));
+                copyTo(localPointer, insertHint);
                 localPointer = endPos(oldT.extending);
                 break;
         }
@@ -354,7 +354,7 @@ public class CasualDiff {
             EstimatorFactory.implementz(((ClassTree) oldT).getImplementsClause(), ((ClassTree) newT).getImplementsClause(), workingCopy) : 
             EstimatorFactory.extendz(((ClassTree) oldT).getImplementsClause(), ((ClassTree) newT).getImplementsClause(), workingCopy);
         if (!newT.implementing.isEmpty())
-            printer.print(origText.substring(localPointer, insertHint));
+            copyTo(localPointer, insertHint);
         localPointer = diffList2(oldT.implementing, newT.implementing, insertHint, estimator);
         insertHint = endPos(oldT) - 1;
 
@@ -385,12 +385,12 @@ public class CasualDiff {
         PositionEstimator est = EstimatorFactory.members(filterHidden(oldT.defs), filterHidden(newT.defs), workingCopy);
         int[] pos = diffList(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.DEFAULT, mujPrinter);
         if (localPointer < pos[0])
-            printer.print(origText.substring(localPointer, pos[0]));
+            copyTo(localPointer, pos[0]);
         printer.print(mujPrinter.toString());
         if (pos[1] != -1)
-            printer.print(origText.substring(pos[1], bounds[1]));
+            copyTo(pos[1], bounds[1]);
         else
-            printer.print(origText.substring(localPointer, bounds[1]));
+            copyTo(localPointer, bounds[1]);
         //pointer = bounds[1];
         oldParent = opar;
         newParent = npar;
@@ -417,7 +417,7 @@ public class CasualDiff {
                 // space. Go to return type in case of method, in case of
                 // constructor use whole tree start.
                 int oldPos = getOldPos(oldT.mods);
-                printer.print(origText.substring(localPointer, oldPos));
+                copyTo(localPointer, oldPos);
                 localPointer = oldT.restype != null ? getOldPos(oldT.restype) : oldT.pos;
             }
         }
@@ -461,7 +461,7 @@ public class CasualDiff {
         }
         if (!oldT.sym.isConstructor() || origClassName != null) {
             if (nameChanged(oldT.name, newT.name)) {
-                printer.print(origText.substring(localPointer, oldT.pos));
+                copyTo(localPointer, oldT.pos);
                 // use orig class name in case of constructor
                 if (oldT.sym.isConstructor() && (origClassName != null)) {
                     printer.print(newT.name);
@@ -473,7 +473,7 @@ public class CasualDiff {
                     localPointer = oldT.pos + oldT.name.length();
                 }
             } else {
-                printer.print(origText.substring(localPointer, localPointer = (oldT.pos + oldT.name.length())));
+                copyTo(localPointer, localPointer = (oldT.pos + oldT.name.length()));
             }
         }
         if (oldT.params.isEmpty()) {
@@ -499,7 +499,7 @@ public class CasualDiff {
         tokenSequence.moveNext();
         posHint = tokenSequence.offset();
         if (localPointer < posHint)
-            printer.print(origText.substring(localPointer, localPointer = posHint));
+            copyTo(localPointer, localPointer = posHint);
         // if abstract, hint is before ending semi-colon, otherwise before method body
         if (oldT.thrown.isEmpty()) {
             posHint = (oldT.body == null ? endPos(oldT) : oldT.body.pos) - 1;
@@ -513,8 +513,7 @@ public class CasualDiff {
         } else {
             posHint = oldT.thrown.iterator().next().getStartPosition();
         }
-        //if (!newT.thrown.isEmpty())
-            printer.print(origText.substring(localPointer, localPointer = posHint));
+        copyTo(localPointer, localPointer = posHint);
         PositionEstimator est = EstimatorFactory.throwz(((MethodTree) oldT).getThrows(), ((MethodTree) newT).getThrows(), workingCopy);
         localPointer = diffList2(oldT.thrown, newT.thrown, posHint, est);
         posHint = endPos(oldT) - 1;
@@ -540,7 +539,7 @@ public class CasualDiff {
         copyTo(localPointer, vartypeBounds[0]);
         localPointer = diffTree(oldT.vartype, newT.vartype, vartypeBounds);
         if (nameChanged(oldT.name, newT.name)) {
-            printer.print(origText.substring(localPointer, oldT.pos));
+            copyTo(localPointer, oldT.pos);
             printer.print(newT.name);
             diffInfo.put(oldT.pos, "Rename variable " + oldT.name);
             localPointer = oldT.pos + oldT.name.length();
@@ -587,12 +586,12 @@ public class CasualDiff {
         PositionEstimator est = EstimatorFactory.members(((BlockTree) oldT).getStatements(), ((BlockTree) newT).getStatements(), workingCopy); 
         int[] pos = diffList(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.DEFAULT, bodyPrinter); // hint after open brace
         if (localPointer < pos[0]) {
-            printer.print(origText.substring(localPointer, pos[0]));
+            copyTo(localPointer, pos[0]);
         }
         localPointer = pos[1];
         printer.print(bodyPrinter.toString());
         if (localPointer < endPos(oldT)) {
-            printer.print(origText.substring(localPointer, localPointer = endPos(oldT)));
+            copyTo(localPointer, localPointer = endPos(oldT));
         }
         printer.undent(oldIndent);
         return localPointer;
@@ -1508,7 +1507,7 @@ public class CasualDiff {
         Iterator<? extends JCTree> newIter = newList.iterator();
         while (oldIter.hasNext() && newIter.hasNext()) {
             JCTree oldT = oldIter.next();
-            printer.print(origText.substring(localPointer, localPointer = getOldPos(oldT)));
+            copyTo(localPointer, localPointer = getOldPos(oldT));
             localPointer = diffTree(oldT, newIter.next(), new int[] { localPointer, endPos(oldT) });
             if (oldTopLevel != null)
                 lastOldPos = model.getEndPos(oldT, oldTopLevel);
@@ -1577,7 +1576,7 @@ public class CasualDiff {
                     if (estimator.getIndentString() != null && !estimator.getIndentString().equals(" ")) {
                         prec += estimator.getIndentString();
                     }
-                    printer.print(origText.substring(lastOldPos, testPos));
+                    copyTo(lastOldPos, testPos);
                     printer.print(prec);
                     printer.print(item.element);
                     printer.print(tail);
@@ -1624,7 +1623,7 @@ public class CasualDiff {
                             testPos += JavaTokenId.COMMA.fixedText().length();
                     }
                     oldT = oldIter.next(); ++i;
-                    printer.print(origText.substring(lastOldPos, lastOldPos = endPos(oldT)));
+                    copyTo(lastOldPos, lastOldPos = endPos(oldT));
                     break;
                 }
             }
@@ -1856,7 +1855,7 @@ public class CasualDiff {
                     if (ret[0] < 0) {
                         ret[0] = pos[0];
                     }
-                    printer.print(origText.substring(pos[0], pos[1]));
+                    copyTo(pos[0], pos[1], printer);
                     ret[1] = pos[1];
                     ++i;
                     break;
