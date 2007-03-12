@@ -76,11 +76,11 @@ public class MessagePanel extends javax.swing.JPanel implements MessageDisplayer
 		{
 			case ERROR:
 				messageLabel.setIcon(new ImageIcon(Utilities.loadImage(
-						"org/openide/resources/error.gif"))); // NOI18N
+						"org/netbeans/modules/xml/xam/ui/resources/error.gif"))); // NOI18N
 				break;
 			case WARNING:
 				messageLabel.setIcon(new ImageIcon(Utilities.loadImage(
-						"org/openide/resources/warning.gif"))); // NOI18N
+						"org/netbeans/modules/xml/xam/ui/resources/warning.gif"))); // NOI18N
 				break;
 			case INFO:
 			default:
