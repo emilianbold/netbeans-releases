@@ -24,18 +24,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.IOException;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core._RetoucheUtil;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,43 +61,45 @@ public class AddOperationAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent arg0) {
         
-        String wsdlUrl = service.getWsdlUrl();
+        String localWsdlUrl = service.getLocalWsdlFile();
         AddOperationFromSchemaPanel panel = null;
-        if (wsdlUrl!=null) {
-            
-            try {
-                URL wsdlURL = new URL(wsdlUrl);
-                File wsdlFile = new File(wsdlURL.toURI());
-                panel = new AddOperationFromSchemaPanel(wsdlFile);
-            } catch (MalformedURLException ex) {
-                panel = new AddOperationFromSchemaPanel();
-            } catch (URISyntaxException ex) {
-                panel = new AddOperationFromSchemaPanel();
-            }
-        } else {
-            panel = new AddOperationFromSchemaPanel();
-        }
-        DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(AddOperationAction.class, "TTL_AddWsOperation"));
-        desc.setButtonListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                if (evt.getSource() == DialogDescriptor.OK_OPTION) {
-
+        if (localWsdlUrl!=null) { //WS from e
+            JAXWSSupport support = JAXWSSupport.getJAXWSSupport(implementationClass);
+            if (support!=null) {
+                FileObject localWsdlFolder = support.getLocalWsdlFolderForService(service.getName(),false);
+                if (localWsdlFolder!=null) {
+                    File wsdlFolder = FileUtil.toFile(localWsdlFolder);
+                    File wsdlFile = new File(wsdlFolder.getAbsolutePath()+File.separator+localWsdlUrl);
+                    if (wsdlFile!=null && wsdlFile.exists()) {
+                        panel = new AddOperationFromSchemaPanel(wsdlFile);
+                    }
                 }
             }
-        });
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-        dialog.setVisible(true);
-        /*
-        AddWsOperationHelper strategy = new AddWsOperationHelper(getName());
-        try {
-            String className = _RetoucheUtil.getMainClassName(implementationClass);
-            if (className != null) {
-                strategy.addMethod(implementationClass, className);
+        }
+        if (panel!=null) {
+            DialogDescriptor desc = new DialogDescriptor(panel, 
+                    NbBundle.getMessage(AddOperationAction.class, "TTL_AddWsOperation"));
+            desc.setButtonListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    if (evt.getSource() == DialogDescriptor.OK_OPTION) {
+                        //TODO implement the action
+                    }
+                }
+            });
+
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+            dialog.setVisible(true);
+        } else { // WS from Java
+            AddWsOperationHelper strategy = new AddWsOperationHelper(getName());
+            try {
+                String className = _RetoucheUtil.getMainClassName(implementationClass);
+                if (className != null) {
+                    strategy.addMethod(implementationClass, className);
+                }
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }*/
+        }
     }
 
 }
