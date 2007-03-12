@@ -245,11 +245,11 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             TokenHierarchy th = TokenHierarchy.get (doc);
             TokenSequence ts = th.tokenSequence ();
             ts.move (e - 1);
-            ts.moveNext ();
+            if (!ts.moveNext ()) return;
             while (!ts.language ().mimeType ().equals (mimeType)) {
                 ts = ts.embedded ();
                 ts.move (e - 1);
-                ts.moveNext ();
+                if (!ts.moveNext ()) return;
             }
             Token t = ts.token ();
             Set<String> skip = language.getSkipTokenTypes ();
