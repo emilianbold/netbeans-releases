@@ -42,13 +42,13 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     private BeanTreeView elementView;
     
     /** Creates new form ElementSelectorPanel */
-    public ElementSelectorPanel(ElementNode.Description elementDescription) {        
+    public ElementSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection ) {        
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
         elementView.setRootVisible(false);
         elementView.setBorder(BorderFactory.createLineBorder(Color.gray));        
         add(elementView, BorderLayout.CENTER);
-        setRootElement(elementDescription);
+        setRootElement(elementDescription, singleSelection);
     }
     
     public List<ElementHandle<? extends Element>> getTreeSelectedElements() {
@@ -74,8 +74,19 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         return handles;
     }
     
-    public void setRootElement(ElementNode.Description elementDescription) {
-        manager.setRootContext(elementDescription != null ? new ElementNode(elementDescription) : Node.EMPTY);
+    public void setRootElement(ElementNode.Description elementDescription, boolean singleSelection) {  
+        
+        Node n;
+        if ( elementDescription != null ) {
+            ElementNode en = new ElementNode(elementDescription);
+            en.setSingleSelection(singleSelection);
+            n = en;        
+        }
+        else {
+            n = Node.EMPTY;
+        }
+        manager.setRootContext(n);
+        
     }
     
     public void doInitialExpansion( int howMuch ) {

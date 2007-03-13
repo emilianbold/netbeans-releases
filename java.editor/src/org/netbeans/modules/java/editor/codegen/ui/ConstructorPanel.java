@@ -52,7 +52,7 @@ public class ConstructorPanel extends JPanel {
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
             add(constructorSelectorLabel, gridBagConstraints);
-            constructorSelector = new ElementSelectorPanel(constructorDescription);
+            constructorSelector = new ElementSelectorPanel(constructorDescription, true);
             gridBagConstraints.gridy = 1;
             gridBagConstraints.weightx = 0.5;
             gridBagConstraints.weighty = 1.0;
@@ -71,7 +71,7 @@ public class ConstructorPanel extends JPanel {
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets =new java.awt.Insets(12, constructorDescription != null ? 0 : 12, 6, 12);
             add(fieldSelectorLabel, gridBagConstraints);
-            fieldSelector = new ElementSelectorPanel(fieldsDescription);
+            fieldSelector = new ElementSelectorPanel(fieldsDescription, false);
             gridBagConstraints.gridy = 1;
             gridBagConstraints.weightx = 0.5;
             gridBagConstraints.weighty = 1.0;

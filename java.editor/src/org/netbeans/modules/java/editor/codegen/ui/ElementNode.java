@@ -56,7 +56,8 @@ import org.openide.util.lookup.Lookups;
 public class ElementNode extends AbstractNode {
     
     private Description description;
-           
+    private boolean singleSelection;       
+    
     /** Creates a new instance of TreeNode */
     public ElementNode(Description description) {
         super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs), Lookups.singleton(description));
@@ -65,6 +66,10 @@ public class ElementNode extends AbstractNode {
         setDisplayName(description.name); 
     }
         
+    public void setSingleSelection( boolean singleSelection ) {
+        this.singleSelection = singleSelection;
+    }
+    
     @Override
     public Image getIcon(int type) {
         if (description.elementHandle == null)
@@ -85,6 +90,19 @@ public class ElementNode extends AbstractNode {
     @Override
     public String getHtmlDisplayName() {
         return description.htmlHeader;
+    }
+    
+    public void assureSingleSelection() {
+        Node pn = getParentNode();
+        if (pn == null && singleSelection ) {
+            description.deepSetSelected( false );
+        }
+        else if ( pn != null ) {
+            Description d = pn.getLookup().lookup(Description.class);
+            if ( d != null ) {
+                d.node.assureSingleSelection();
+            }
+        }
     }
     
     private static final class ElementChilren extends Children.Keys<Description> {
@@ -168,9 +186,27 @@ public class ElementNode extends AbstractNode {
         }
         
         public void setSelected( boolean selected ) {
+            
+            if ( selected == true && node != null) {
+                node.assureSingleSelection();
+            }
+            
             this.isSelected = selected;
-            if ( node != null ) {       // notity the node
-                node.fireDisplayNameChange(null, null);
+            if ( node != null ) {       // notity the node                
+                node.fireDisplayNameChange(null, null);                
+            }
+        }
+        
+        public void deepSetSelected( boolean value ) {
+         
+            if ( isSelectable() && value != isSelected() ) {
+                setSelected(value);
+            }
+            
+            if ( subs != null ) {
+                for( Description s : subs ) {
+                    s.deepSetSelected(value);
+                }
             }
         }
         
@@ -202,7 +238,7 @@ public class ElementNode extends AbstractNode {
             hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
             hash = 29 * hash + (this.elementHandle != null ? this.elementHandle.getKind().hashCode() : 0);
             return hash;
-        }
+        }                       
         
         public static Description deepCopy( Description d ) {
          
@@ -222,6 +258,8 @@ public class ElementNode extends AbstractNode {
                                     d.htmlHeader, d.isSelectable, d.isSelected );
             
         }
+        
+        
         
         private static String createHtmlHeader(ExecutableElement e) {
             StringBuilder sb = new StringBuilder();

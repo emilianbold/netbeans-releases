@@ -42,7 +42,7 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
     public DelegatePanel(JTextComponent component, ElementNode.Description description) {
         this.component = component;
         initComponents();
-        delegateSelector = new ElementSelectorPanel(description);
+        delegateSelector = new ElementSelectorPanel(description, false);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -53,7 +53,7 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
         add(delegateSelector, gridBagConstraints);
         delegateSelector.getExplorerManager().addPropertyChangeListener(this);
         
-        methodSelector = new ElementSelectorPanel(null);
+        methodSelector = new ElementSelectorPanel(null, false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -115,7 +115,7 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
     public void propertyChange(PropertyChangeEvent evt) {
         if ( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
             ElementHandle<? extends Element> handle = getDelegateField();
-            methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle));
+            methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle), false);
             methodSelector.doInitialExpansion(-1);
         }
     }
