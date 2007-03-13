@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
@@ -23,6 +23,26 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="Line.SHOW_REUSE">
+        <api name="text"/>
+        <summary>Adding Line.SHOW_REUSE and Line.SHOW_REUSE_NEW constants for Line.show method</summary>
+        <version major="6" minor="14"/>
+        <date day="5" month="3" year="2007"/>
+        <author login="pnejedly"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            <p>The <code>Line.show()</code> method accepts show mode constant,
+            that influences the way the Line is displayed on the request.
+            These additional constants provide new modes for opening the line
+            in a shared editor window that can be replaced by subsequent calls of
+            <code>Line.show(SHOW_REUSE)</code> on <code>Line</code>s from different
+            <code>Document</code>. This is useful for quick source browsing without
+            cluttering the UI with too many opened editors.
+            </p>
+        </description>
+        <class package="org.openide.text" name="Line"/>
+        <issue number="94607"/>
+    </change>
     <change id="CloneableEditorSupportRedirector">
         <api name="text"/>
         <summary>CloneableEditorSupportRedirector</summary>

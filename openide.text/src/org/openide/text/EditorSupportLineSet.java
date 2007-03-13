@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.text;
@@ -81,14 +81,15 @@ final class EditorSupportLineSet extends DocumentLine.Set {
                 return;
             }
 
-            CloneableEditorSupport.Pane editor = support.openAt(pos, column);
-
-            if (kind == SHOW_GOTO) {
-                editor.getComponent().requestActive();
-            } else if (kind == SHOW_TOFRONT) {
-                editor.getComponent().toFront();
-                editor.getComponent().requestActive();
+            CloneableEditorSupport.Pane editor;
+            
+            if (kind == SHOW_REUSE || kind == SHOW_REUSE_NEW) {
+                editor = support.openReuse(pos, column, kind);
+            } else {
+                editor = support.openAt(pos, column);
+                if (kind == SHOW_TOFRONT) editor.getComponent().toFront();
             }
+            editor.getComponent().requestActive();
         }
 
         /** This method will be used for annotation of part of the text on the line.*/

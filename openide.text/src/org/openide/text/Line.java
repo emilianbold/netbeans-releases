@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.text;
@@ -68,6 +68,22 @@ public abstract class Line extends Annotatable implements Serializable {
      * @since 5.8
      */
     public final static int SHOW_TOFRONT = 3;
+
+    /** Takes the focus in case the editor is already opened and shows the line.
+     * Replaces (closes) the last editor opened using SHOW_REUSE in case 
+     * the user haven't interacted with it much (e.g. haven't modified it).
+     * Opens a new editor in case there is no such reusable editor
+     * and marks it for editor reusal. 
+     * @see #show(int) <code>show</code>
+     */
+    public final static int SHOW_REUSE = 4;
+
+    /** Focuses or opens given editor, marking it as reusable editor if it
+     * was not opened before. Similar to {@link #SHOW_REUSE) but ignores
+     * currently reusable editor.
+     * @see #show(int) <code>show</code>
+     */
+    public final static int SHOW_REUSE_NEW = 5;
 
     /** Instance of null implementation of Line.Part */
     static final private Line.Part nullPart = new Line.NullPart();
@@ -151,7 +167,8 @@ public abstract class Line extends Annotatable implements Serializable {
     public abstract void show(int kind, int column);
 
     /** Shows the line (at the first column).
-    * @param kind one of {@link #SHOW_TRY_SHOW}, {@link #SHOW_SHOW}, or {@link #SHOW_GOTO}
+    * @param kind one of {@link #SHOW_TRY_SHOW}, {@link #SHOW_SHOW}, {@link #SHOW_GOTO},
+    * {@link #SHOW_REUSE} or {@link #SHOW_REUSE_NEW}
     * @see #show(int, int)
     */
     public void show(int kind) {

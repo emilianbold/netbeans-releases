@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.text;
@@ -1657,6 +1657,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return false;
         }
 
+        // source modified, remove it from tab-reusing slot
+        lastReusable.clear();
         updateTitles();
 
         return true;
@@ -2023,11 +2025,19 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
     }
 
+    private static Reference<CloneableTopComponent> lastReusable = new WeakReference(null);
+    
+    // temporal - should be replaced by better impl in winsys
+    private static void replaceTc(TopComponent orig, TopComponent open) {
+        orig.close();
+        open.open();
+    }
+
     // #18981. There could happen a thing also another class type
     // of CloneableTopCoponent then CloneableEditor could be in allEditors.
 
     /** Opens a <code>CloneableEditor</code> component. */
-    private Pane openPane() {
+    private Pane openPane(boolean reuse) {
         Pane ce = null;
         boolean displayMsgOpened = false;
 
@@ -2054,8 +2064,19 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         // #36601 - open moved outside getLock() synchronization
-        ce.getComponent().open();
-
+        CloneableTopComponent ctc = ce.getComponent();
+        if (reuse && displayMsgOpened) {
+            CloneableTopComponent last = lastReusable.get();
+            if (last != null) {
+                replaceTc(last, ctc);
+            } else {
+                ctc.open();
+            }
+            lastReusable = new WeakReference(ctc);
+        } else {
+            ctc.open();
+        }
+        
         if (displayMsgOpened) {
             String msg = messageOpened();
 
@@ -2109,19 +2130,36 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return null;
         }
     }
-
+   
+    final Pane openReuse(final PositionRef pos, final int column, int mode) {
+        if (mode == Line.SHOW_REUSE_NEW) lastReusable.clear();
+        return openAtImpl(pos, column, true);
+    }
+    
     /** Forcibly create one editor component. Then set the caret
     * to the given position.
     * @param pos where to place the caret
+    * @param column where to place the caret
     * @return always non-<code>null</code> editor
     * @since 5.2
     */
     protected final Pane openAt(final PositionRef pos, final int column) {
+        return openAtImpl(pos, column, false);
+    }
+    /** Forcibly create one editor component. Then set the caret
+    * to the given position.
+    * @param pos where to place the caret
+    * @param column where to place the caret
+    * @param reuse if true, the infrastructure tries to reuse other, already opened editor
+     * for the purpose of opening this file/line. 
+    * @return always non-<code>null</code> editor
+    */
+    private final Pane openAtImpl(final PositionRef pos, final int column, boolean reuse) {
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
-            return redirect.openAt(pos, column);
+            return redirect.openAtImpl(pos, column, reuse);
         }
-        final Pane e = openPane();
+        final Pane e = openPane(reuse);
         final Task t = prepareDocument();
         e.ensureVisible();
         class Selector implements TaskListener, Runnable {
