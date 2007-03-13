@@ -705,10 +705,12 @@ public class CasualDiff {
             localPointer = diffTree(oldT.pat, newT.pat, patBounds);
         }
         int pos = oldT.stats.head.pos;
-        copyTo(localPointer, pos);
         PositionEstimator est = EstimatorFactory.members(oldT.getStatements(), newT.getStatements(), workingCopy);
-        localPointer = diffList(oldT.stats, newT.stats, pos, est, Measure.DEFAULT, printer)[1];
-        copyTo(localPointer, bounds[1]);
+        VeryPretty localPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
+        int[] stmtPos = diffList(oldT.stats, newT.stats, pos, est, Measure.DEFAULT, localPrinter);
+        if (localPointer < stmtPos[0]) copyTo(localPointer, stmtPos[0]);
+        printer.print(localPrinter.toString());
+        copyTo(stmtPos[1], bounds[1]);
         
         return bounds[1];
     }
