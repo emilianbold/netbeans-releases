@@ -181,7 +181,7 @@ public class MessageWidget extends AbstractWidget<Message>
     
     private void createContent() {
         header = createHeader(getScene(), getWSDLComponent());
-        addChild(header);
+        addChild(0, header);
 
         table = createPartsTable(getScene(), getWSDLComponent());
         if (table != null) {
