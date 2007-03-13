@@ -102,7 +102,7 @@ public abstract class XhtmlDesignInfo implements DesignInfo {
     }
 
     public DisplayAction[] getContextItems(DesignBean bean) {
-        return null;
+        return DisplayAction.EMPTY_ARRAY;
     }
 
     public boolean acceptLink(DesignBean targetBean, DesignBean sourceBean, Class sourceClass) {
