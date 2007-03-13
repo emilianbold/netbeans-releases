@@ -699,7 +699,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         if (n == end.getNode()) {
             // XXX hack Don't do this, I should have Positions be
             // immutable.
-            end.setOffset(n.getNodeValue().length());
+//            end.setOffset(n.getNodeValue().length());
+            end = new Position(end.getNode(), n.getNodeValue().length(), end.getBias());
         }
 
 //        //        /*
