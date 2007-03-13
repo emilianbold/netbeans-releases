@@ -121,14 +121,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Commit.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.instance"/>
                 </file>
-                <file name="CommitAllFiles.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitProjectsAction.instance"/>
-                </file>
                 <file name="Diff.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-diff-DiffAction.instance"/>
-                </file>
-                <file name="DiffAllFiles.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.instance"/>
                 </file>
                 <file name="ExportDiffPatch.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.instance"/>
@@ -149,9 +143,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="SearchHistory.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.instance"/>
                 </file>
-                <file name="ShowAllChanges.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusProjectsAction.instance"/>
-                </file>
                 <file name="ShowFileAnnotations.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.instance"/>
                 </file>
@@ -163,9 +154,6 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 <file name="Update.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.instance"/>
-                </file>
-                <file name="UpdateAllFiles.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.instance"/>
                 </file>
                 <file name="UpdateProjectWithDependencies.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.instance"/>
