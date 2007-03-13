@@ -18,11 +18,9 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
-import javax.swing.KeyStroke;
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.openide.util.NbBundle;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -30,19 +28,24 @@ import org.openide.util.NbBundle;
  */
 public class FindUsagesAction extends org.netbeans.modules.xml.refactoring.actions.FindUsagesAction {
     private static final long serialVersionUID = 1L;
-    public static final String FINDUSAGES_KEYSTROKE = 
-            NbBundle.getMessage(FindUsagesAction.class,"ACT_FindUsagesAction");// NOI18N
+//    public static final String FINDUSAGES_KEYSTROKE = 
+//            NbBundle.getMessage(FindUsagesAction.class,"ACT_FindUsagesAction");// NOI18N
 
     public FindUsagesAction() {
         super();
-        putValue(FindUsagesAction.ACCELERATOR_KEY, 
-                KeyStroke.getKeyStroke(FINDUSAGES_KEYSTROKE));
+//        putValue(FindUsagesAction.ACCELERATOR_KEY, 
+//                KeyStroke.getKeyStroke(FINDUSAGES_KEYSTROKE));
     }
 
     public void performAction(Node[] nodes) {
         super.performAction(nodes);
     }
     
+    @Override
+    public boolean enable(Node[] nodes) {
+        return super.enable(nodes);
+    }
+
   protected Referenceable getReferenceable(Node[] nodes) {
     if (nodes.length != 1) {
       return null;

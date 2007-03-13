@@ -73,11 +73,11 @@ public class BpelNavigatorVisualPanel extends JPanel
             KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0); // NOI18N
     private static final String GOTOSOURCE = "gotosource"; // NOI18N
     private static final String GOTODIAGRAMM = "gotodiagramm"; // NOI18N
-    private static final String FINDUSAGES = "findusages"; // NOI18N
+////    private static final String FINDUSAGES = "findusages"; // NOI18N
     private static final KeyStroke GOTOSOURCE_KEYSTROKE =
             KeyStroke.getKeyStroke(GoToSourceAction.GOTOSOURCE_KEYSTROKE);
-    private static final KeyStroke GOTODIAGRAMM_KEYSTROKE =
-            KeyStroke.getKeyStroke(GoToDiagrammAction.GOTODIAGRAMM_KEYSTROKE);
+//    private static final KeyStroke GOTODIAGRAMM_KEYSTROKE =
+//            KeyStroke.getKeyStroke(GoToDiagrammAction.GOTODIAGRAMM_KEYSTROKE);
     
     private JLabel myMsgLabel;
     //context Lookup - should contains current
@@ -114,10 +114,10 @@ public class BpelNavigatorVisualPanel extends JPanel
 ////        actionMap.put(DefaultEditorKit.pasteAction,
 ////            ExplorerUtils.actionPaste(myExplorerManager));
         actionMap.put(GOTOSOURCE,SystemAction.get(GoToSourceAction.class));
-        actionMap.put(GOTODIAGRAMM,SystemAction.get(GoToDiagrammAction.class));
+//        actionMap.put(GOTODIAGRAMM,SystemAction.get(GoToDiagrammAction.class));
         actionMap.put(DELETE, // NOI18N
                 ExplorerUtils.actionDelete(myExplorerManager, true));
-        actionMap.put(FINDUSAGES, SystemAction.get(FindUsagesAction.class));
+//////        actionMap.put(FINDUSAGES, SystemAction.get(FindUsagesAction.class));
 ////
         InputMap keys = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 ////        keys.put(KeyStroke.getKeyStroke("control C"), DefaultEditorKit.copyAction);// NOI18N
@@ -125,9 +125,9 @@ public class BpelNavigatorVisualPanel extends JPanel
 ////        keys.put(KeyStroke.getKeyStroke("control V"), DefaultEditorKit.pasteAction);// NOI18N
         keys.put(DELETE_KEYSTROKE, DELETE); // NOI18N
         keys.put(GOTOSOURCE_KEYSTROKE, GOTOSOURCE); // NOI18N
-        keys.put(GOTODIAGRAMM_KEYSTROKE, GOTODIAGRAMM); // NOI18N
-        keys.put((KeyStroke) SystemAction.get(FindUsagesAction.class)
-            .getValue(FindUsagesAction.ACCELERATOR_KEY), FINDUSAGES); // NOI18N
+//        keys.put(GOTODIAGRAMM_KEYSTROKE, GOTODIAGRAMM); // NOI18N
+//////        keys.put((KeyStroke) SystemAction.get(FindUsagesAction.class)
+//////            .getValue(FindUsagesAction.ACCELERATOR_KEY), FINDUSAGES); // NOI18N
         
         // ...and initialization of lookup variable
         myLookup = ExplorerUtils.createLookup(myExplorerManager, actionMap);

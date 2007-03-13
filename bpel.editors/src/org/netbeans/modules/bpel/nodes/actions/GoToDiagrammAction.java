@@ -60,8 +60,8 @@ public class GoToDiagrammAction extends BpelNodeAction {
     
     public GoToDiagrammAction() {
         super();
-        putValue(GoToDiagrammAction.ACCELERATOR_KEY,
-                KeyStroke.getKeyStroke(GOTODIAGRAMM_KEYSTROKE));
+//        putValue(GoToDiagrammAction.ACCELERATOR_KEY,
+//                KeyStroke.getKeyStroke(GOTODIAGRAMM_KEYSTROKE));
     }
     
     protected String getBundleName() {

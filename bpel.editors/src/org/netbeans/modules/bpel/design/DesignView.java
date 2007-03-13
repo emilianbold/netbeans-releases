@@ -231,7 +231,6 @@ public class DesignView extends JPanel implements
         return navigationTools;
     }
     
-    
     public RightStripe getRightStripe() {
         return rightStripe;
     }
@@ -547,7 +546,7 @@ public class DesignView extends JPanel implements
         return lookup;
     }
     
-    
+
     private void registerActions() {
         InputMap im1 = getInputMap(WHEN_FOCUSED);
         InputMap im2 = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -557,7 +556,7 @@ public class DesignView extends JPanel implements
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotosource-something"); // NOI18N
-        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.ALT_DOWN_MASK), "findusages-something"); // NOI18N
+//        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.ALT_DOWN_MASK), "findusages-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK), "find_next_mex_peer"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show_context_menu"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), "show_context_menu"); // NOI18N
@@ -571,7 +570,7 @@ public class DesignView extends JPanel implements
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotosource-something"); // NOI18N
-        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.ALT_DOWN_MASK), "findusages-something"); // NOI18N
+//        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.ALT_DOWN_MASK), "findusages-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK), "find_next_mex_peer"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show_context_menu"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), "show_context_menu"); // NOI18N
@@ -598,7 +597,7 @@ public class DesignView extends JPanel implements
         am.put("delete-something", new DeleteAction()); // NOI18N
         am.put("cancel-something", new CancelAction()); // NOI18N
         am.put("gotosource-something", new GoToSourceAction()); // NOI18N
-        am.put("findusages-something", new FindUsagesAction()); // NOI18N
+//        am.put("findusages-something", new FindUsagesAction()); // NOI18N
         am.put("find_next_mex_peer", new CycleMexAction()); // NOI18N
         am.put("show_context_menu", new ShowContextMenu()); // NOI18N
         am.put("go_next_hierarchy_component", new GoNextHieComponentAction()); // NOI18N
@@ -612,6 +611,7 @@ public class DesignView extends JPanel implements
         am.put("expand-current-pattern", new ExpandCurrentPatternAction()); // NOI18N
         am.put("collapse-current-pattern", new CollapseCurrentPatternAction()); // NOI18N
         am.put("expand-all-patterns", new ExpandAllPatternsAction());
+        
     }
     
     

@@ -104,6 +104,7 @@ import org.netbeans.modules.bpel.nodes.dnd.BpelNodeTransferable;
 import org.netbeans.modules.bpel.nodes.dnd.Util;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.xml.xam.Component;
@@ -257,6 +258,7 @@ public abstract class BpelNode<T>
         ACTION_TYPE_MAP.put(ActionType.SHOW_BPEL_MAPPER
                 , SystemAction.get(ShowBpelMapperAction.class));
         ACTION_TYPE_MAP.put(ActionType.FIND_USAGES,
+//                  RefactoringActionsFactory.whereUsedAction());
                   SystemAction.get(FindUsagesAction.class));
         ACTION_TYPE_MAP.put(ActionType.WRAP,
                   SystemAction.get(WrapAction.class));
