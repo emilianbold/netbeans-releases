@@ -50,7 +50,7 @@ import org.w3c.dom.Document;
  *
  * @author Kirill Sorokin
  */
-@Stateless(name="Manager")
+@Stateless
 public class ManagerBean implements Manager {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -260,9 +260,9 @@ public class ManagerBean implements Manager {
             RegistryNode parent;
             
             List<Product> parents = null;
-            if ((parentVersion != null) && 
-                    !parentVersion.equals("null") && 
-                    (parentPlatforms != null) && 
+            if ((parentVersion != null) &&
+                    !parentVersion.equals("null") &&
+                    (parentPlatforms != null) &&
                     !parentPlatforms.equals("null")) {
                 parents = localRegistry.getProducts(
                         parentUid,
@@ -696,10 +696,11 @@ public class ManagerBean implements Manager {
                         "--userdir",
                         userDir.getAbsolutePath());
                 
+                System.out.println(results.getErrorCode());
+                System.out.println(results.getStdOut());
+                System.out.println(results.getStdErr());
+                
                 if (results.getErrorCode() != 0) {
-                    System.out.println(results.getErrorCode());
-                    System.out.println(results.getStdOut());
-                    System.out.println(results.getStdErr());
                     throw new ManagerException("Could not create bundle - error in running the engine");
                 }
                 
