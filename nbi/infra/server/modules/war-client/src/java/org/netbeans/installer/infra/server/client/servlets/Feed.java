@@ -37,7 +37,7 @@ public class Feed extends HttpServlet {
             if ((registries == null) || (registries.length == 0)) {
                 components = new ArrayList<Product>();
             } else {
-                components = manager.getProducts(SystemUtils.getCurrentPlatform(), registries);
+                components = manager.getProducts(registries);
             }
             
             feedType = request.getParameter("feed-type");

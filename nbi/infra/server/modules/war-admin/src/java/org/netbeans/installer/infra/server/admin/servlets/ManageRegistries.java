@@ -113,7 +113,7 @@ public class ManageRegistries extends HttpServlet {
                 for (String registry: registries) {
                     out.println("        <div class=\"registry\" id=\"registry-" + registry + "\">");
                     
-                    buildRegistryTable(out, registry, manager.loadRegistries(platform, registry), platform);
+                    buildRegistryTable(out, registry, manager.loadRegistry(registry).getRegistryRoot(), platform);
                     
                     out.println("        </div>");
                 }

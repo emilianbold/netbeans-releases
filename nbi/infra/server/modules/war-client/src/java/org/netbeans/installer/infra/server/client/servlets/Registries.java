@@ -18,7 +18,7 @@ import org.netbeans.installer.infra.server.ejb.ManagerException;
  */
 public class Registries extends HttpServlet {
     @EJB
-    private Manager registryManager;
+    private Manager manager;
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html; encoding=UTF-8");
@@ -27,7 +27,7 @@ public class Registries extends HttpServlet {
         
         try {
             
-            List<String> registries = registryManager.getRegistries();
+            List<String> registries = manager.getRegistries();
             
             
             out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");

@@ -28,6 +28,10 @@
         <servlet-name>feed</servlet-name>
         <servlet-class>org.netbeans.installer.infra.server.client.servlets.Feed</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>Components</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.client.servlets.Components</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>get-registry</servlet-name>
         <url-pattern>/get-registry</url-pattern>
@@ -56,12 +60,17 @@
         <servlet-name>feed</servlet-name>
         <url-pattern>/feed</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Components</servlet-name>
+        <url-pattern>/js/components.js</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
     <welcome-file-list>
+        <welcome-file>download.jsp</welcome-file>
         <welcome-file>registries</welcome-file>
         </welcome-file-list>
 </web-app>

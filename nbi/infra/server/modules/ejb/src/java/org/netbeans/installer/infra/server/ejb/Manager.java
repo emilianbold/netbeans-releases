@@ -4,8 +4,8 @@ package org.netbeans.installer.infra.server.ejb;
 import java.io.File;
 import java.util.List;
 import javax.ejb.Local;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.utils.helper.Platform;
 
 /**
@@ -15,7 +15,7 @@ import org.netbeans.installer.utils.helper.Platform;
 public interface Manager {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final File ROOT = new File("D:/temp/nbi-server");
+    public static final File ROOT = new File("D:/temp/nbi-server/dev");
     public static final File TEMP = new File(ROOT, "temp");
     public static final File REGISTRIES = new File(ROOT, "registries");
     public static final File UPLOADS = new File(TEMP, "uploads");
@@ -83,9 +83,9 @@ public interface Manager {
     
     File getFile(String name, String file) throws ManagerException;
     
-    RegistryNode loadRegistries(Platform platform, String... names) throws ManagerException;
+    Registry loadRegistry(String... names) throws ManagerException;
     
-    List<Product> getProducts(Platform platform, String... names) throws ManagerException;
+    List<Product> getProducts(String... names) throws ManagerException;
     
     File createBundle(Platform platform, String[] names, String[] components) throws ManagerException;
     

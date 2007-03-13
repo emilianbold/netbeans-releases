@@ -10,11 +10,13 @@ import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.naming.InitialContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
+import org.netbeans.installer.infra.server.ejb.ManagerBean;
 import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.Group;
@@ -108,7 +110,7 @@ public class CreateBundle extends HttpServlet {
             out.println("        </select>");
             
             out.println("        <div class=\"registry\">");
-            buildRegistryTable(out, manager.loadRegistries(platform, registries), platform);
+            buildRegistryTable(out, manager.loadRegistry(registries).getRegistryRoot(), platform);
             out.println("        </div>");
             
             out.println("            <input type=\"submit\" value=\"Create Bundle\"/>");

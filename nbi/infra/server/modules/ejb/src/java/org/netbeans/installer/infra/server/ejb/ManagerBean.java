@@ -50,7 +50,7 @@ import org.w3c.dom.Document;
  *
  * @author Kirill Sorokin
  */
-@Stateless
+@Stateless(name="Manager")
 public class ManagerBean implements Manager {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -559,7 +559,7 @@ public class ManagerBean implements Manager {
         return new File(registryDir, file);
     }
     
-    public RegistryNode loadRegistries(Platform platform, String... registryNames) throws ManagerException {
+    public Registry loadRegistry(String... registryNames) throws ManagerException {
         if (registryNames.length > 0) {
             List<File> files = new LinkedList<File>();
             
@@ -580,7 +580,7 @@ public class ManagerBean implements Manager {
                     registry.loadProductRegistry(file);
                 }
                 
-                return registry.getRegistryRoot();
+                return registry;
             } catch (InitializationException e) {
                 e.printStackTrace();
                 throw new ManagerException("Could not load registry", e);
@@ -590,7 +590,7 @@ public class ManagerBean implements Manager {
         return null;
     }
     
-    public List<Product> getProducts(Platform platform, String... registryNames) throws ManagerException {
+    public List<Product> getProducts(String... registryNames) throws ManagerException {
         List<Product> components = new LinkedList<Product>();
         
         if (registryNames.length > 0) {
