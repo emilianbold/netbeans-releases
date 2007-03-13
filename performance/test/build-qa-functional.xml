@@ -132,7 +132,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path location="${test.qa-functional.run.cp.extra}"/>
             </classpath>
             
-            <property name="xtest.ide.commandline.suffix" value="-J-Dperformance.footprint.jedit.location=${xtest.tmpdir}/jEdit41 -J-Dorg.netbeans.performance.memory.repeat=1 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.memory.repeat=1 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.timeout" value="3600000" />
             <property name="xtest.test.duration" value="60min" />

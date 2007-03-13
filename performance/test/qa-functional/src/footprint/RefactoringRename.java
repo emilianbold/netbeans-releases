@@ -81,7 +81,7 @@ public class RefactoringRename extends MemoryFootprintTestCase {
         // jEdit project
         log("Opening project jEdit");
         ProjectsTabOperator.invoke();
-        ProjectSupport.openProject(System.getProperty("performance.footprint.jedit.location"));
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41);
         
         // find existing node
         Node packagenode = new Node(new SourcePackagesNode("jEdit"), "org.gjt.sp.jedit");

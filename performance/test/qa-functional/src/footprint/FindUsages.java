@@ -72,7 +72,7 @@ public class FindUsages extends MemoryFootprintTestCase {
         // jEdit project
         log("Opening project jEdit");
         ProjectsTabOperator.invoke();
-        ProjectSupport.openProject(System.getProperty("performance.footprint.jedit.location"));
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
         
         // invoke Find Usages
         Node filenode = new Node(new SourcePackagesNode("jEdit"), "org.gjt.sp.jedit" + "|" + "jEdit.java");
