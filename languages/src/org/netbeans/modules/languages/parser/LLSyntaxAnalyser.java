@@ -191,9 +191,8 @@ public class LLSyntaxAnalyser {
                 }
             }
         } while (true);
-        if (!skipErrors && !input.eof ()) {
-                throw new ParseException ("Unexpected token " + input.next (1) + " in " + input, root.createASTNode ());
-        }
+        if (!skipErrors && !input.eof ())
+            throw new ParseException ("Unexpected token " + input.next (1) + " in " + input, root.createASTNode ());
         while (
             !input.eof () //&& 
             //input.next (1).getMimeType () == mimeType

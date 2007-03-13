@@ -225,8 +225,8 @@ public class ParserManagerImpl extends ParserManager {
                 ASTNode ast = process (ex.getASTNode ());
                 ex = new ParseException (ex, ast);
             }
-            ex.printStackTrace ();
             setChange (ex);
+            ErrorManager.getDefault ().notify (ex);
         }
     }
     
