@@ -593,22 +593,25 @@ public class ComplibServiceProvider implements ComplibService {
         String description = projectName + " " + prjCompLib.getVersionedTitle();
 
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
-        if (libDef != null) {
-            // Assume the definition is correct, if not the user can manually
-            // remove it and it will be recreated when the project is re-opened
-            return;
+        if (libDef == null) {
+            /*
+             * If we don't find a lib def create one, else assume the lib def is
+             * correct. If it is not the user can manually remove it and it will
+             * be recreated when the project is re-opened.
+             */
+
+            // Use the name of the library as a key for the description
+            LibraryLocalizationBundle.add(libName, description);
+
+            List<URL> rtPath = fileListToUrlList(prjCompLib.getRuntimePath());
+            List<URL> dtPath = fileListToUrlList(prjCompLib.getDesignTimePath());
+            List<URL> javadocPath = fileListToUrlList(prjCompLib
+                    .getJavadocPath());
+            List<URL> sourcePath = fileListToUrlList(prjCompLib.getSourcePath());
+            libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
+                    localizingBundle, LibraryDefinition.LIBRARY_DOMAIN_PROJECT,
+                    rtPath, sourcePath, javadocPath, dtPath);
         }
-
-        // Use the name of the library as a key for the description
-        LibraryLocalizationBundle.add(libName, description);
-
-        List<URL> rtPath = fileListToUrlList(prjCompLib.getRuntimePath());
-        List<URL> dtPath = fileListToUrlList(prjCompLib.getDesignTimePath());
-        List<URL> javadocPath = fileListToUrlList(prjCompLib.getJavadocPath());
-        List<URL> sourcePath = fileListToUrlList(prjCompLib.getSourcePath());
-        libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
-                localizingBundle, LibraryDefinition.LIBRARY_DOMAIN_PROJECT,
-                rtPath, sourcePath, javadocPath, dtPath);
 
         // If needed, create new compile-time Library Ref
         if (!JsfProjectUtils.hasLibraryReference(project, libDef,
