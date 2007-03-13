@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.api.model.presenters.actions;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -28,6 +29,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
@@ -63,7 +65,10 @@ public abstract class AddActionItem extends AbstractAction {
     }
     
     private AddActionItem(TypeID typeID, DesignComponent component, ComponentProducer producer) {
-        icon = new ImageIcon(Utilities.loadImage(producer.getPaletteDescriptor().getSmallIcon()));
+        Image image = Utilities.loadImage(producer.getPaletteDescriptor().getSmallIcon());
+        if (image == null)
+            Debug.warning("Could not find image: " + producer.getPaletteDescriptor().getSmallIcon()); //NOI18N
+        icon = new ImageIcon(image);
         putValue(TYPEID_KEY, typeID);
         putValue(Action.NAME, producer.getPaletteDescriptor().getDisplayName());
         putValue(Action.SMALL_ICON, icon);

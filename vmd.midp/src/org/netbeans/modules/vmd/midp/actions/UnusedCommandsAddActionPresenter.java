@@ -22,8 +22,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;

@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCode;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.commands.*;
+import org.netbeans.modules.vmd.midpnb.components.displayables.PIMBrowserCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
@@ -51,6 +52,7 @@ public final class MidpCustomCodePresenterSupport {
     public static final String PARAM_TIMEOUT = "timeout"; // NOI18N
     public static final String PARAM_SVG_TIMEOUT = "timeout"; // NOI18N
     public static final String PARAM_SVG_MENU_ELEMENT = "menuElement"; // NOI18N
+    public static final String PARAM_PIM_LIST_TYPE = "pimListType"; //NOI18N
 
     private static final String SVG_MENU_ACTION_METHOD_SUFFIX = "Action"; // NOI18N
 
@@ -62,6 +64,7 @@ public final class MidpCustomCodePresenterSupport {
     private static final Parameter PARAMETER_SVG_WAITSCREEN_COMMAND = new SVGWaitScreenCommandParameter ();
     private static final Parameter PARAMETER_SVG_SPLASHSCREEN_COMMAND = new SVGSplashScreenCommandParameter ();
     private static final Parameter PARAMETER_SVG_MENU_ELEMENT = new SVGMenuElementParameter ();
+    private static final Parameter PARAMETER_PIM_LIST_TYPES = new PIMListTypesParameter();
 
     private MidpCustomCodePresenterSupport () {
     }
@@ -69,7 +72,11 @@ public final class MidpCustomCodePresenterSupport {
     public static Parameter createDisplayParameter () {
         return PARAMETER_DISPLAY;
     }
-
+    
+    public static Parameter createPIMListTypesParameter() {
+        return PARAMETER_PIM_LIST_TYPES;
+    }
+    
     public static Parameter createTimeoutParameter () {
         return PARAMETER_TIMEOUT;
     }
@@ -139,7 +146,50 @@ public final class MidpCustomCodePresenterSupport {
         }
 
     }
+    
+    private static class PIMListTypesParameter implements Parameter {
 
+        public String getParameterName () {
+            return PARAM_PIM_LIST_TYPE;
+        }
+
+        public int getParameterPriority () {
+            return 0;
+        }
+
+        public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
+            Integer pimListType = (Integer) component.readProperty(PIMBrowserCD.PROP_PIM_LIST_TYPE).getPrimitiveValue();
+            String listTypeParameter = null;  
+            switch (pimListType) {
+                case PIMBrowserCD.VALUE_CONTACT_LIST:  
+                    listTypeParameter = "PIM.CONTACT_LIST"; //NOI18N
+                    break;
+                case PIMBrowserCD.VALUE_EVENT_LIST:
+                    listTypeParameter = "PIM.EVENT_LIST"; //NOI18N
+                    break;
+                case PIMBrowserCD.VALUE_TODO_LIST :
+                    listTypeParameter = "PIM.TODO_LIST" ; //NOI18N
+                    break;
+                default:
+                    throw new IllegalStateException("Illegal value of pimListParameter");
+            } 
+            
+            section.getWriter().write(listTypeParameter); // NOI18N
+        }
+
+        public boolean isRequiredToBeSet (DesignComponent component) {
+            return true;
+        }
+
+        public int getCount (DesignComponent component) {
+            return 1;
+        }
+
+        public boolean isRequiredToBeSet (DesignComponent component, int index) {
+            return true;
+        }
+    }
+    
     private static class TimeoutParameter extends MidpParameter {
 
         protected TimeoutParameter () {

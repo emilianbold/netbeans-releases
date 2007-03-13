@@ -235,7 +235,6 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         return decodeValue[0];
     }
     
-    
     private DesignComponent getCommandEvenSource(final String name) {
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
         document.getTransactionManager().writeAccess( new Runnable() {

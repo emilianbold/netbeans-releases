@@ -53,6 +53,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ListDisplayPresenter;
 /**
  * @author Karol Harezlak
  */
+
 public final class ListCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.List"); // NOI18N
@@ -121,7 +122,7 @@ public final class ListCD extends ComponentDescriptor {
                 .addSetters(MidpSetter.createSetter("setFont", MidpVersionable.MIDP_2).setArrayParameter(ListCode.PARAM_FONT).addParameters(Parameter.PARAM_INDEX, ListCode.PARAM_FONT))
                 .addSetters(MidpSetter.createSetter("setSelectedFlags", MidpVersionable.MIDP).addParameters(ListCode.PARAM_SELECTED_ARRAY));
     }
-
+    
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // accept

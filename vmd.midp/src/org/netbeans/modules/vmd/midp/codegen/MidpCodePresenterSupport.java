@@ -21,6 +21,9 @@
 package org.netbeans.modules.vmd.midp.codegen;
 
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
@@ -28,7 +31,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.vmd.api.codegen.CodeGlobalLevelPresenter;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.openide.util.Exceptions;
-
 import javax.swing.text.StyledDocument;
 import java.io.IOException;
 
@@ -36,28 +38,34 @@ import java.io.IOException;
  * @author David Kaspar
  */
 public class MidpCodePresenterSupport {
-
-    public static Presenter createAddImportPresenter () {
+    
+    public static Presenter createAddImportPresenter(final String...fullyNames) {
+        final List<String> fullyNamesList = new ArrayList(Arrays.asList(fullyNames));  
+        
         return new CodeGlobalLevelPresenter() {
-            protected void performGlobalGeneration (StyledDocument styledDocument) {
+            protected void performGlobalGeneration(StyledDocument styledDocument) {
                 try {
-                    JavaSource.forDocument (styledDocument).runModificationTask (new CancellableTask<WorkingCopy>() {
-                        public void cancel () {
+                    JavaSource.forDocument(styledDocument).runModificationTask(new CancellableTask<WorkingCopy>() {
+                        public void cancel() {
                         }
-
-                        public void run (WorkingCopy parameter) throws Exception {
-                            String fqn = getComponent ().getType ().getString ();
-                            parameter.toPhase (JavaSource.Phase.PARSED);
-                            SourceUtils.resolveImport (parameter, new TreePath (parameter.getCompilationUnit ()), fqn);
+                        
+                        public void run(WorkingCopy parameter) throws Exception {
+                            parameter.toPhase(JavaSource.Phase.PARSED);
+                            String typeFqn = getComponent().getType().getString();
+                            if (! fullyNamesList.contains(typeFqn))
+                                fullyNamesList.add(typeFqn);
+                            for (String fqn : fullyNamesList) {
+                                SourceUtils.resolveImport(parameter, new TreePath(parameter.getCompilationUnit()), fqn);
+                            }
                         }
-                    }).commit ();
+                    }).commit();
                 } catch (IOException e) {
-                    Exceptions.printStackTrace (e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         };
-
+        
     }
-
-
+    
+    
 }

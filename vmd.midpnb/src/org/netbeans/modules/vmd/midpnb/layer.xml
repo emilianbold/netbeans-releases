@@ -25,6 +25,10 @@
             <file name="org-netbeans-modules-vmd-midpnb-components-displayables-AbstractInfoScreenCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-displayables-WaitScreenCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-displayables-SplashScreenCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-displayables-FileBrowserCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-displayables-LoginScreenCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-displayables-SMSComposerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-displayables-PIMBrowserCD.instance"/>
             
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGSplashScreenCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGWaitScreenCD.instance"/>
@@ -44,6 +48,10 @@
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGWaitScreenSuccessCommandCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGSplashScreenDismissCommandCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGMenuSelectCommandCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-FileBrowserOpenCommandCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-LoginScreenLoginCommandCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-SMSComposerSendCommandCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-PIMBrowserOpenCommandCD.instance"/>
 
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-WaitScreenFailureCommandEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-WaitScreenSuccessCommandEventSourceCD.instance"/>
@@ -53,13 +61,22 @@
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGSplashScreenDismissCommandEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGMenuSelectCommandEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGMenuElementEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-FileBrowserOpenCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-LoginScreenLoginCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-SMSComposerSendCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-PIMBrowserOpenCommandEventSourceCD.instance"/>
             
             <file name="org-netbeans-modules-vmd-midpnb-components-handlers-SVGMenuEventHandlerCD.instance"/>
+
         </folder>
         
         <folder name="producers">
             <file name="org-netbeans-modules-vmd-midpnb-producers-WaitScreenProducer.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-SplashScreenProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-FileBrowserProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-LoginScreenProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-SMSComposerProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-PIMBrowserProducer.instance"/>
             
             <file name="org-netbeans-modules-vmd-midpnb-producers-SVGWaitScreenProducer.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-SVGSplashScreenProducer.instance"/>
