@@ -26,6 +26,7 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
 
 /**
  *
@@ -38,31 +39,32 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
     
     private static String openNodeName;
     
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Open");
+    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     
     /** Creates a new instance of OpenNavigationPage */
     public OpenNavigationPage(String testName) {
         super(testName);
-        expectedTime = 25000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=20000;
     }
     
     public OpenNavigationPage(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 25000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=20000;
     }
     
     protected void initialize() {
         log("::initialize::");
         EditorOperator.closeDiscardAll();
+        repaintManager().setRegionFilter(NAVIGATION_FILTER);
     }
     
     public void prepare() {
         log("::prepare::");
         //openNodeName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualwebproject.jsfproject.ui.Bundle", "NODENAME_Navigation_xml"); // Navigation Page
         
-        openNodeName = "Page Navigation";
+        openNodeName = "Page Navigation"; // NOI18N
         openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"), openNodeName);
         openNode.select();
         
@@ -93,11 +95,24 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
     
     protected void shutdown() {
         log("::shutdwown");
+        repaintManager().setRegionFilter(null);
         super.shutdown();
     }
     
     public static void main(String[] args) {
         junit.textui.TestRunner.run(new OpenNavigationPage("measureTime"));
     }
+    
+    private static final RegionFilter NAVIGATION_FILTER =
+            new RegionFilter() {
+        
+        public boolean accept(javax.swing.JComponent c) {
+            return c.getClass().getName().equals("org.netbeans.api.visual.widget.SceneComponent");
+        }
+        
+        public String getFilterName() {
+            return "Accept paints from org.netbeans.api.visual.widget.SceneComponent";
+        }
+    };
     
 }
