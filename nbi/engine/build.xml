@@ -27,7 +27,7 @@
         Target overrides
     ======================================================================== -->
     <target name="-post-clean" depends="native-clean"/>
-    <target name="-pre-jar" depends="native-build,copy-launchers,create-jar-contents-list"/>
+    <target name="-post-compile" depends="native-build,copy-launchers,create-jar-contents-list"/>
     
     <!-- =======================================================================
         NetBeans Installer engine specific targets
