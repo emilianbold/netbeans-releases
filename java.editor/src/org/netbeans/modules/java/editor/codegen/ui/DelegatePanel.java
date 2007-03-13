@@ -25,6 +25,7 @@ import javax.lang.model.element.Element;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.editor.codegen.DelegateMethodGenerator;
+import org.openide.explorer.ExplorerManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,6 +68,7 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
         methodLabel.setText(NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_delegate_method_select")); //NOI18N
         methodLabel.setLabelFor(methodSelector);
         
+        
         delegateSelector.doInitialExpansion(1);
     }
 
@@ -91,6 +93,7 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
         delegateLabel = new javax.swing.JLabel();
         methodLabel = new javax.swing.JLabel();
 
+        setFocusable(false);
         setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -110,9 +113,11 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
     }// </editor-fold>//GEN-END:initComponents
 
     public void propertyChange(PropertyChangeEvent evt) {
-        ElementHandle<? extends Element> handle = getDelegateField();
-        methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle));
-        methodSelector.doInitialExpansion(-1);
+        if ( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
+            ElementHandle<? extends Element> handle = getDelegateField();
+            methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle));
+            methodSelector.doInitialExpansion(-1);
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

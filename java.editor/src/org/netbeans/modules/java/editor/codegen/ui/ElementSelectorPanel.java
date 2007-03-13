@@ -31,7 +31,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -50,13 +49,6 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         elementView.setBorder(BorderFactory.createLineBorder(Color.gray));        
         add(elementView, BorderLayout.CENTER);
         setRootElement(elementDescription);
-    }
-
-    @Override
-    public boolean requestFocusInWindow() {
-        boolean result = super.requestFocusInWindow();
-        elementView.requestFocusInWindow();
-        return result;
     }
     
     public List<ElementHandle<? extends Element>> getTreeSelectedElements() {
@@ -84,7 +76,6 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     
     public void setRootElement(ElementNode.Description elementDescription) {
         manager.setRootContext(elementDescription != null ? new ElementNode(elementDescription) : Node.EMPTY);
-        elementView.expandAll();
     }
     
     public void doInitialExpansion( int howMuch ) {

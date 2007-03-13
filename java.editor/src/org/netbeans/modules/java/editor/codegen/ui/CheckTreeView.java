@@ -46,6 +46,8 @@ public class CheckTreeView extends BeanTreeView  {
     /** Creates a new instance of CheckTreeView */
     public CheckTreeView() {
         
+        setFocusable( false );
+        
         setBorder(FOR_BORDER.getBorder());
         setViewportBorder(FOR_BORDER.getViewportBorder());
         
@@ -65,13 +67,8 @@ public class CheckTreeView extends BeanTreeView  {
         // MouseListener -------------------------------------------------------
         
         public void mouseClicked(MouseEvent e) {
-//            JTree tree = (JTree) e.getSource();
             Point p = e.getPoint();
-//            int x = e.getX();
-//            int y = e.getY();
-//            int row = tree.getRowForLocation(x, y);
             TreePath path = tree.getPathForLocation(e.getPoint().x, e.getPoint().y);
-
             toggle( path );            
         }
 
