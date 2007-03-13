@@ -164,6 +164,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         //        imageWidget.getActions().addAction(createSelectAction());
         imageWidget.getActions().addAction(createWidgetHoverAction());
         header.addChild(imageWidget);
+        header.getActions().addAction(createWidgetHoverAction());
         
         
         //        Widget widget = new Widget(this);
@@ -200,9 +201,8 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
             Border BORDER = BorderFactory.createEmptyBorder();
             if (previousState.isHovered()  == state.isHovered())
                 return;
-            if (state.isHovered())
             setBorder(state.isHovered() ? BORDER_HOVERED : BORDER );
-            System.out.println("Hovering.");
+
         }
         
         
