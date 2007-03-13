@@ -26,16 +26,6 @@
     </folder>
     <folder name="Templates">
    <folder name="WebServices">
-<!--     <attr name="WebService/CallbackHandler" boolvalue="true"/>
-     <file name="UsernameCallbackHandler.java" url="UsernameCallbackHandler.template">
-         <attr name="template" boolvalue="true"/>
-         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsitconf/resources/UsernameCallbackHandler.html"/>
-         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.websvc.wsitconf.wizard.UsernameCallbackHandlerWizard.create"/>
-         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsitconf.wizard.Bundle"/>
-         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsitconf/resources/XMLServiceDataIcon.png"/> 
-         <attr name="templateCategory" stringvalue="web-services"/>
-     </file>
-     -->
      <attr name="WebService/STSWizard" boolvalue="true"/>
      <file name="STSWizard.java">
          <attr name="template" boolvalue="true"/>
@@ -43,7 +33,7 @@
          <attr name="templateCategory" stringvalue="web-services"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsitconf/resources/STSWizard.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsitconf.wizard.Bundle"/>
-         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/dev/resources/XMLServiceDataIcon.png"/> 
+         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsitconf/resources/XMLServiceDataIcon.png"/> 
      </file>
      
    </folder>
