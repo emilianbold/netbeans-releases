@@ -21,6 +21,7 @@ package org.netbeans.modules.java.editor.codegen.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -30,6 +31,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -83,6 +85,29 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     public void setRootElement(ElementNode.Description elementDescription) {
         manager.setRootContext(elementDescription != null ? new ElementNode(elementDescription) : Node.EMPTY);
         elementView.expandAll();
+    }
+    
+    public void doInitialExpansion( int howMuch ) {
+        Node root = getExplorerManager().getRootContext();
+        Node[] subNodes = root.getChildren().getNodes(true);
+        
+        boolean someNodeSelected = false;
+        
+        for( int i = 0; subNodes != null && i < (howMuch == - 1 ? subNodes.length : howMuch) ; i++ ) {            
+            elementView.expandNode(subNodes[i]);
+            if ( !someNodeSelected ) {
+                Node[] ssn = subNodes[i].getChildren().getNodes( true );
+                if ( ssn != null && ssn.length > 0 ) {
+                    try                 {
+                        getExplorerManager().setSelectedNodes(new org.openide.nodes.Node[]{ssn[0]});
+                        someNodeSelected = true;
+                    }
+                    catch (PropertyVetoException ex) {
+                        // Ignore
+                    }
+                }
+            }
+        }
     }
     
     // ExplorerManager.Provider imlementation ----------------------------------

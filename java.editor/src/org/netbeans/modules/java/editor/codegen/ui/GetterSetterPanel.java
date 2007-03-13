@@ -52,6 +52,8 @@ public class GetterSetterPanel extends JPanel {
         else
             selectorLabel.setText(NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter_and_setter_field_select")); //NOI18N
         selectorLabel.setLabelFor(elementSelector);
+        
+        elementSelector.doInitialExpansion(1);
     }
     
     public List<ElementHandle<? extends Element>> getVariables() {

@@ -46,6 +46,8 @@ public class ImplementOverridePanel extends JPanel {
         add(elementSelector, gridBagConstraints);
         selectorLabel.setText(NbBundle.getMessage(ImplementOverrideMethodGenerator.class, isImplement ? "LBL_implement_method_select" : "LBL_override_method_select")); //NOI18N
         selectorLabel.setLabelFor(elementSelector);
+        
+        elementSelector.doInitialExpansion(isImplement ? -1 : 1);
     }
     
     public List<ElementHandle<? extends Element>> getSelectedMethods() {

@@ -66,6 +66,8 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
         delegateLabel.setLabelFor(delegateSelector);
         methodLabel.setText(NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_delegate_method_select")); //NOI18N
         methodLabel.setLabelFor(methodSelector);
+        
+        delegateSelector.doInitialExpansion(1);
     }
 
     public ElementHandle<? extends Element> getDelegateField() {
@@ -110,6 +112,7 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
     public void propertyChange(PropertyChangeEvent evt) {
         ElementHandle<? extends Element> handle = getDelegateField();
         methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle));
+        methodSelector.doInitialExpansion(-1);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
