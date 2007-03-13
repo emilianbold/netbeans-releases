@@ -107,6 +107,8 @@ class UpdateResultNode extends AbstractNode {
         } else if (isUpdated()) {
             htmlDisplayName = updatedFormat.format(new Object [] { getName() });            
             statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Updated"); // NOI18N
+        } else {
+            throw new IllegalStateException("Unhandled update type: " + info.getType()); // NOI18N
         }
         fireDisplayNameChange(htmlDisplayName, htmlDisplayName);
     }
@@ -116,7 +118,7 @@ class UpdateResultNode extends AbstractNode {
     }
 
     private boolean isUpdated() {
-        return "UP".indexOf(info.getType()) != -1; // NOI18N
+        return "UPG".indexOf(info.getType()) != -1; // NOI18N
     }
 
     private boolean isRemoved() {
