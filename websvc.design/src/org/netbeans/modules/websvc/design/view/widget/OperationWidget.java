@@ -20,7 +20,9 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -34,7 +36,8 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
  */
 public class OperationWidget extends Widget{
     
-    private static final Color FILL_COLOR = new Color(204,255,255);
+    private static final Color FILL_COLOR_DARK = new Color(102,255,255);
+    private static final Color FILL_COLOR_LIGHT = new Color(204,255,255);
     private static final Color BORDER_COLOR = new Color(153,204,255);
     private LabelWidget label;
 
@@ -69,10 +72,13 @@ public class OperationWidget extends Widget{
         polygon.addPoint(bounds.x+bounds.height/2, bounds.y+bounds.height);
         polygon.addPoint(bounds.x, bounds.y+bounds.height/2);
         Graphics2D g = getGraphics();
-        g.setColor(FILL_COLOR);
+        Paint oldPaint = g.getPaint();
+        g.setPaint(new GradientPaint(bounds.x, bounds.y, FILL_COLOR_DARK,
+                bounds.x, bounds.y + bounds.height, FILL_COLOR_LIGHT));
         g.fillPolygon(polygon);
-        g.setColor(BORDER_COLOR);
+        g.setPaint(BORDER_COLOR);
         g.drawPolygon(polygon);
+        g.setPaint(oldPaint);
     }
     
 }
