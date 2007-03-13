@@ -226,11 +226,14 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
                 JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms (activePlatform, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
                 if (platforms.length != 0){
                     CDCPlatform cdcplatform = (CDCPlatform)platforms[0];
-                    String templateType = createMainClass(mainClass, src, cdcplatform.getType());
                     final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS, mainClass);
-                    if (templateType != null) {
-                        ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS, templateType);
+                    if (mainClass != null)
+                    {
+                        String templateType = createMainClass(mainClass, src, cdcplatform.getType());
+                        ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS, mainClass);
+                        if (templateType != null) {
+                            ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS, templateType);
+                        }
                     }
                     ep.setProperty(CDCPropertiesDescriptor.APPLICATION_NAME, project.getProjectDirectory().getNameExt());
                     ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE, cdcplatform.getAntName()); // NOI18N        
