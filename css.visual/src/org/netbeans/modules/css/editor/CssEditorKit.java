@@ -31,13 +31,8 @@ import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.TextAction;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
-import org.netbeans.modules.languages.features.MyFirstDrawLayer;
-import org.netbeans.modules.languages.features.MySecondDrawLayer;
 
 /**
  * Editor kit implementation for a document of content type "text/css"
