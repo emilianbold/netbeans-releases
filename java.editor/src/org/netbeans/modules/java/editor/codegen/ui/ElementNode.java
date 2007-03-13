@@ -20,6 +20,8 @@ package org.netbeans.modules.java.editor.codegen.ui;
 
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +38,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode.Description;
@@ -43,6 +47,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /** Node representing an Element
  *
@@ -54,8 +59,9 @@ public class ElementNode extends AbstractNode {
            
     /** Creates a new instance of TreeNode */
     public ElementNode(Description description) {
-        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs));
+        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs), Lookups.singleton(description));
         this.description = description;
+        description.node = this;
         setDisplayName(description.name); 
     }
         
@@ -81,10 +87,6 @@ public class ElementNode extends AbstractNode {
         return description.htmlHeader;
     }
     
-    public ElementHandle getElementHandle() {
-        return description.elementHandle;
-    }
-    
     private static final class ElementChilren extends Children.Keys<Description> {
             
         public ElementChilren(List<Description> descriptions) {
@@ -100,17 +102,21 @@ public class ElementNode extends AbstractNode {
      */    
     public static class Description {
         
+        private ElementNode node;
+        
         private String name;
         private ElementHandle<? extends Element> elementHandle;
         private Set<Modifier> modifiers;        
         private List<Description> subs; 
         private String htmlHeader;
+        private boolean isSelected;
+        private boolean isSelectable;
         
         public static Description create(List<Description> subs) {
-            return new Description("<root>", null, null, subs, null); // NOI18N
+            return new Description("<root>", null, null, subs, null, false, false); // NOI18N
         }
         
-        public static Description create(Element element, List<Description> subs) {
+        public static Description create(Element element, List<Description> subs, boolean isSelectable, boolean isSelected ) {
             String htmlHeader = null;
             switch (element.getKind()) {
                 case ANNOTATION_TYPE:
@@ -128,16 +134,48 @@ public class ElementNode extends AbstractNode {
                     htmlHeader = createHtmlHeader((ExecutableElement)element);
                     break;                    
             }
-            return new Description(element.getSimpleName().toString(), ElementHandle.create(element), element.getModifiers(), subs, htmlHeader);
+            return new Description(element.getSimpleName().toString(), 
+                                   ElementHandle.create(element), 
+                                   element.getModifiers(), 
+                                   subs, 
+                                   htmlHeader,
+                                   isSelectable,
+                                   isSelected);
         }
 
         private Description(String name, ElementHandle<? extends Element> elementHandle,
-                Set<Modifier> modifiers, List<Description> subs, String htmlHeader) {
+                Set<Modifier> modifiers, List<Description> subs, String htmlHeader,
+                boolean isSelectable, boolean isSelected ) {
             this.name = name;
             this.elementHandle = elementHandle;
             this.modifiers = modifiers;
             this.subs = subs;
             this.htmlHeader = htmlHeader;
+            this.isSelectable = isSelectable;
+            this.isSelected = isSelected;
+        }
+        
+        public boolean isSelectable() {
+            return isSelectable;
+        }
+        
+        public boolean isSelected() {
+            return isSelected;
+        }
+        
+        public List<Description> getSubs() {
+            return subs;
+        }
+        
+        public void setSelected( boolean selected ) {
+            this.isSelected = selected;
+            if ( node != null ) {       // notity the node
+                node.fireDisplayNameChange(null, null);
+            }
+        }
+        
+        public ElementHandle<? extends Element> getElementHandle() {
+            return elementHandle;
         }
 
         @Override
@@ -158,11 +196,31 @@ public class ElementNode extends AbstractNode {
             return true;
         }
         
+        @Override
         public int hashCode() {
             int hash = 7;
             hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
             hash = 29 * hash + (this.elementHandle != null ? this.elementHandle.getKind().hashCode() : 0);
             return hash;
+        }
+        
+        public static Description deepCopy( Description d ) {
+         
+            List<Description> subsCopy;
+                    
+            if ( d.subs == null ) {
+                subsCopy = null;
+            }
+            else {            
+                subsCopy = new ArrayList<Description>( d.subs.size() );
+                for( Description s : d.subs ) {
+                    subsCopy.add( deepCopy(s) );
+                }
+            }
+            
+            return new Description( d.name, d.elementHandle, d.modifiers, subsCopy, 
+                                    d.htmlHeader, d.isSelectable, d.isSelected );
+            
         }
         
         private static String createHtmlHeader(ExecutableElement e) {
@@ -288,5 +346,6 @@ public class ElementNode extends AbstractNode {
                     return tm.toString();
             }
         }
+            
     }
 }

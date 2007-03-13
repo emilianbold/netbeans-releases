@@ -25,6 +25,7 @@ import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -85,7 +86,7 @@ public class GetterSetterGenerator implements CodeGenerator {
             Map<Element, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
             Map<Element, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
             for (VariableElement variableElement : ElementFilter.fieldsIn(elements.getAllMembers(typeElement))) {
-                ElementNode.Description description = ElementNode.Description.create(variableElement, null);
+                ElementNode.Description description = ElementNode.Description.create(variableElement, null, true, false);
                 boolean hasGetter = GeneratorUtils.hasGetter(controller, variableElement, methods);
                 boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods);
                 if (!hasGetter) {
@@ -116,20 +117,23 @@ public class GetterSetterGenerator implements CodeGenerator {
             if (!gDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : gDescriptions.entrySet())
-                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
-                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions), GeneratorUtils.GETTERS_ONLY));
+                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                Collections.reverse(descriptions);
+                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY));
             }
             if (!sDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : sDescriptions.entrySet())
-                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
-                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions), GeneratorUtils.SETTERS_ONLY));
+                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                Collections.reverse(descriptions);
+                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY));
             }
             if (!gsDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : gsDescriptions.entrySet())
-                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
-                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions), 0));
+                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                Collections.reverse(descriptions);
+                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions, false, false), 0));
             }
             return ret;
         }

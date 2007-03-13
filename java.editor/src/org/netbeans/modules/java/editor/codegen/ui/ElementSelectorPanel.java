@@ -43,9 +43,9 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     /** Creates new form ElementSelectorPanel */
     public ElementSelectorPanel(ElementNode.Description elementDescription) {        
         setLayout(new BorderLayout());
-        elementView = new BeanTreeView();
+        elementView = new CheckTreeView();
         elementView.setRootVisible(false);
-        elementView.setBorder(BorderFactory.createLineBorder(Color.gray));
+        elementView.setBorder(BorderFactory.createLineBorder(Color.gray));        
         add(elementView, BorderLayout.CENTER);
         setRootElement(elementDescription);
     }
@@ -57,12 +57,26 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         return result;
     }
     
+    public List<ElementHandle<? extends Element>> getTreeSelectedElements() {
+        ArrayList<ElementHandle<? extends Element>> handles = new ArrayList<ElementHandle<? extends Element>>();
+                
+        for (Node node : manager.getSelectedNodes()) {
+            if (node instanceof ElementNode) {
+                ElementNode.Description description = node.getLookup().lookup(ElementNode.Description.class);
+                handles.add(description.getElementHandle());
+            }
+        }
+     
+        return handles;
+    }    
+        
     public List<ElementHandle<? extends Element>> getSelectedElements() {
         ArrayList<ElementHandle<? extends Element>> handles = new ArrayList<ElementHandle<? extends Element>>();
-        for (Node node : manager.getSelectedNodes()) {
-            if (node instanceof ElementNode)
-                handles.add(((ElementNode)node).getElementHandle());
-        }
+            
+        Node n = manager.getRootContext();        
+        ElementNode.Description description = n.getLookup().lookup(ElementNode.Description.class);
+        getSelectedHandles( description, handles );
+       
         return handles;
     }
     
@@ -76,4 +90,24 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     public ExplorerManager getExplorerManager() {
         return manager;
     }
+    
+    private void getSelectedHandles( ElementNode.Description description,
+                                     ArrayList<ElementHandle<? extends Element>> target) {
+        
+        List<ElementNode.Description> subs = description.getSubs();
+        
+        if ( subs == null ) {
+            return;
+        }
+        
+        for( ElementNode.Description d : subs ) {
+            if ( d.isSelectable() && d.isSelected() ) {
+                target.add(d.getElementHandle() );
+            }
+            else {
+                getSelectedHandles( d, target );
+            }
+        }
+    }
+       
 }

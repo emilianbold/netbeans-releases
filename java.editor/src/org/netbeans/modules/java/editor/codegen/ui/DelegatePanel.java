@@ -69,7 +69,7 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
     }
 
     public ElementHandle<? extends Element> getDelegateField() {
-        List<ElementHandle<? extends Element>> handles = delegateSelector.getSelectedElements();
+        List<ElementHandle<? extends Element>> handles = delegateSelector.getTreeSelectedElements();
         return handles.size() == 1 ? handles.get(0) : null;
     }
 

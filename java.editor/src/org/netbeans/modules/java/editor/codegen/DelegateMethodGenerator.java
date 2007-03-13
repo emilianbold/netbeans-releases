@@ -99,16 +99,17 @@ public class DelegateMethodGenerator implements CodeGenerator {
                             descriptions = new ArrayList<ElementNode.Description>();
                             map.put(field.getEnclosingElement(), descriptions);
                         }
-                        descriptions.add(ElementNode.Description.create(field, null));
+                        descriptions.add(ElementNode.Description.create(field, null, false, false));
                     }
                 }
                 scope = scope.getEnclosingScope();
             }
             List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
             for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
-                descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
+                descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));           
             if (descriptions.isEmpty())
                 return Collections.emptySet();
+            Collections.reverse(descriptions);
             return Collections.singleton(new DelegateMethodGenerator(ElementNode.Description.create(descriptions)));
         }
     }
@@ -188,13 +189,14 @@ public class DelegateMethodGenerator implements CodeGenerator {
                                             descriptions = new ArrayList<ElementNode.Description>();
                                             map.put(method.getEnclosingElement(), descriptions);
                                         }
-                                        descriptions.add(ElementNode.Description.create(method, null));
+                                        descriptions.add(ElementNode.Description.create(method, null, true, false));
                                     }
                                 }
                                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                                 for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
-                                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
+                                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
                                 if (!descriptions.isEmpty())
+                                    Collections.reverse(descriptions);
                                     description[0] = ElementNode.Description.create(descriptions);
                             }
                         }

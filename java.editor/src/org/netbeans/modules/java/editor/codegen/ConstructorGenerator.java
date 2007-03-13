@@ -85,15 +85,15 @@ public class ConstructorGenerator implements CodeGenerator {
             } else if (inheritedConstructors.size() > 1) {
                 List<ElementNode.Description> constructorDescriptions = new ArrayList<ElementNode.Description>();
                 for (ExecutableElement constructorElement : inheritedConstructors)
-                    constructorDescriptions.add(ElementNode.Description.create(constructorElement, null));
-                constructorDescription = ElementNode.Description.create(superClass, constructorDescriptions);
+                    constructorDescriptions.add(ElementNode.Description.create(constructorElement, null, true, false));
+                constructorDescription = ElementNode.Description.create(superClass, constructorDescriptions, false, false);
             }
             ElementNode.Description fieldsDescription = null;
             if (!uninitializedFields.isEmpty()) {
                 List<ElementNode.Description> fieldDescriptions = new ArrayList<ElementNode.Description>();
                 for (VariableElement variableElement : uninitializedFields)
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null));
-                fieldsDescription = ElementNode.Description.create(typeElement, fieldDescriptions);
+                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, false));
+                fieldsDescription = ElementNode.Description.create(typeElement, fieldDescriptions, false, false);
             }
             if (constructorHandle == null && constructorDescription == null && fieldsDescription == null)
                 return Collections.emptySet();

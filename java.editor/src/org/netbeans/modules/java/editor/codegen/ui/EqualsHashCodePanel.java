@@ -48,7 +48,7 @@ public class EqualsHashCodePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(equalsSelector, gridBagConstraints);
         
-        hashCodeSelector = new ElementSelectorPanel(description);
+        hashCodeSelector = new ElementSelectorPanel( ElementNode.Description.deepCopy(description));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

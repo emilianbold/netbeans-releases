@@ -80,10 +80,10 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                 return Collections.emptySet();
             List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
             for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements()))
-                descriptions.add(ElementNode.Description.create(variableElement, null));
+                descriptions.add(ElementNode.Description.create(variableElement, null, true, false));
             if (descriptions.isEmpty())
                 return Collections.emptySet();
-            return Collections.singleton(new EqualsHashCodeGenerator(ElementNode.Description.create(typeElement, descriptions)));
+            return Collections.singleton(new EqualsHashCodeGenerator(ElementNode.Description.create(typeElement, descriptions, false, false)));
         }
     }
 

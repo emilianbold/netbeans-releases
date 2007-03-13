@@ -74,11 +74,11 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                     descriptions = new ArrayList<ElementNode.Description>();
                     map.put(method.getEnclosingElement(), descriptions);
                 }
-                descriptions.add(ElementNode.Description.create(method, null));
+                descriptions.add(ElementNode.Description.create(method, null, true, false));
             }
             List<ElementNode.Description> implementDescriptions = new ArrayList<ElementNode.Description>();
             for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
-                implementDescriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
+                implementDescriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
             if (!implementDescriptions.isEmpty())
                 ret.add(new ImplementOverrideMethodGenerator(ElementNode.Description.create(implementDescriptions), true));
             map = new LinkedHashMap<Element, List<ElementNode.Description>>();
@@ -88,11 +88,11 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                     descriptions = new ArrayList<ElementNode.Description>();
                     map.put(method.getEnclosingElement(), descriptions);
                 }
-                descriptions.add(ElementNode.Description.create(method, null));
+                descriptions.add(ElementNode.Description.create(method, null, true, false));
             }
             List<ElementNode.Description> overrideDescriptions = new ArrayList<ElementNode.Description>();
             for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
-                overrideDescriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
+                overrideDescriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
             if (!overrideDescriptions.isEmpty())
                 ret.add(new ImplementOverrideMethodGenerator(ElementNode.Description.create(overrideDescriptions), false));
             return ret;
