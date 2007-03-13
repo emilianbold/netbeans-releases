@@ -151,21 +151,21 @@ class1 = "." <identifier> class1;
 class1 = ;
 
 
-NAVIGATOR:token {
+NAVIGATOR:token: {
     display_name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
 }
 
-NAVIGATOR:groupToken {
+NAVIGATOR:groupToken: {
     display_name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
 }
 
-NAVIGATOR:command {
+NAVIGATOR:command: {
     display_name: "<html><b><font color=000099>$keyword$</font></b>: $command0.class$</html>";
 }
 
-HYPERLINK:value:org.netbeans.modules.languages.NBS.hyperlink  
+HYPERLINK:value: org.netbeans.modules.languages.NBS.hyperlink  
 
-COMPLETION:S {
+COMPLETION:S: {
     text1:        "TOKEN";
     description1: "<html><b><font color=blue>TOKEN</font></b> <font color=#aaaaaa> Regular expression defining one token.</font></html>";
     text2:        "COLOR";
@@ -186,7 +186,7 @@ COMPLETION:S {
     description9: "<html><b><font color=blue>HYPERLINK</font></b> <font color=#aaaaaa> Define hyperlink for given token.</font></html>";
 }
 
-COMPLETION:colorKey {
+COMPLETION:colorKey: {
     text1:        "color_name";
     description1: "<html><b><font color=blue>color_name</font></b> <font color=#aaaaaa> The name of coloring.</font></html>";
     text2:        "default_coloring";
@@ -207,7 +207,7 @@ COMPLETION:colorKey {
     description9: "<html><b><font color=blue>font_type</font></b> <font color=#aaaaaa> Font type like bold and italic.</font></html>";
 }
 
-COMPLETION:completionKey {
+COMPLETION:completionKey: {
     text1:        "recursive";
     description1: "<html><b><font color=blue>recursive</font></b> <font color=#aaaaaa> Set true if this completion should be defined for all embeded grammar rules.</font></html>";
     text2:        "text";
@@ -218,7 +218,7 @@ COMPLETION:completionKey {
     description4: "<html><b><font color=blue>icon</font></b> <font color=#aaaaaa> Icon.</font></html>";
 }
 
-COMPLETION:navigatorKey {
+COMPLETION:navigatorKey: {
     text1:        "display_name";
     description1: "<html><b><font color=blue>display_name</font></b> <font color=#aaaaaa> text to be displayed in Navigator.</font></html>";
     text2:        "tooltip";
@@ -227,7 +227,7 @@ COMPLETION:navigatorKey {
     description3: "<html><b><font color=blue>icon</font></b> <font color=#aaaaaa> Icon.</font></html>";
 }
 
-COMPLETION:importKey {
+COMPLETION:importKey: {
     text1:        "state";
     description1: "<html><b><font color=blue>state</font></b> <font color=#aaaaaa> text to be displayed in Navigator.</font></html>";
     text2:        "tooltip";
