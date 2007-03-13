@@ -211,7 +211,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     boolean valid(WizardDescriptor wizardDescriptor) {
         // <RAVE> Checking default Bean Package
         String beanPkg = beanPackageTextField.getText();
-        if (!isValidPkg(beanPkg)) {
+        if (wizardDescriptor != null && !isValidPkg(beanPkg)) {
             String errMsg = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_InvalidPackage");
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
             return false;
