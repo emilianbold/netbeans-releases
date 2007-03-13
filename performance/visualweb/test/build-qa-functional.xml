@@ -97,7 +97,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="init-cp,copy_unzip_jedit_project,copy_unzip_j2ee_project,check-appserver">
+    <target name="runidesetup" depends="init-cp,copy_unzip_j2ee_project,check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <executeTests pluginName="ide">
@@ -109,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.timeout" value="2400000" />
             
             <!-- Opens project at specified location -->
-            <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
+            <property name="xtest.ide.open.project" location="${xtest.tmpdir}/HugeApp"/>
             <property name="xtest.ide.commandline.suffix" value="-J-Dperf.refactoring.test=true -J-Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot;"/>
         </executeTests>
         
@@ -154,7 +154,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     
-    <target name="runidetest_scan" depends="init-cp,copy_unzip_jedit_project,copy_unzip_j2ee_project,check-appserver">
+    <target name="runidetest_scan" depends="copy_unzip_j2ee_project,check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <executeTests pluginName="ide">
@@ -186,7 +186,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path location="${test.qa-functional.run.cp.extra}"/>
             </classpath>
             
-            <property name="xtest.ide.commandline.suffix" value="-J-Dperformance.footprint.jedit.location=${xtest.tmpdir}/jEdit41 -J-Dorg.netbeans.performance.memory.repeat=1 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.memory.repeat=1 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.timeout" value="3600000" />
             <property name="xtest.test.duration" value="60min" />

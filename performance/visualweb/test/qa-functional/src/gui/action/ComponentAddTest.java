@@ -22,8 +22,6 @@ package gui.action;
 import gui.window.PaletteComponentOperator;
 import gui.window.WebFormDesignerOperator;
 
-import org.netbeans.jellytools.actions.Action;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbTestSuite;
@@ -43,13 +41,13 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
      */
     public ComponentAddTest(String testName) {
         super(testName);
-        expectedTime = 10000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=4000;
     }
     
     public ComponentAddTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 10000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=4000;
     }
     

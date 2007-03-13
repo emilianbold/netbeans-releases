@@ -24,12 +24,9 @@ import gui.VWPUtilities;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.Timeouts;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -75,30 +72,13 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
     public ComponentOperator open() {
         projectMenu.pushMenu(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.project.jsfproject.ui.Bundle", "LBL_RedeployAction_Name"));
 
-        MainWindowOperator.StatusTextTracer stat = MainWindowOperator.getDefault().getStatusTextTracer();
-        stat.clear();
-        try {
-            stat.waitText("Finished building "+targetProject+" (run-deploy)", true); // NOI18N
-        } finally {
-            stat.stop();
-        } 
-        
-        
+        VWPUtilities.waitForPendingBackgroundTasks();
+        MainWindowOperator.getDefault().waitStatusText("Finished building " + targetProject + " (run-deploy)"); // NOI18N
+
         return null;
     }
     
     public void close() {
        //Undeploy?  
-    }
-    
-    public void initialize() {
-        log(":: initialize");
-        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +targetProject);
-        VWPUtilities.waitForPendingBackgroundTasks();
-    }
-    
-    protected void shutdown() {
-        log(":: shutdown");
-        ProjectSupport.closeProject(targetProject);
     }
 }

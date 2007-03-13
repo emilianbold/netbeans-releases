@@ -72,7 +72,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     }  
     
     public void testCreateJSPPage(){
-        expectedTime = 1000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=15000;
         docname = "JSFPage"; //NOI18N
         doccategory = "Visual Web"; //NOI18N
@@ -85,7 +85,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     }
     
     public void testCreateJSPFragment(){
-        expectedTime = 1000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=15000;
         docname = "JSFFragment"; //NOI18N
         doccategory = "Visual Web"; //NOI18N

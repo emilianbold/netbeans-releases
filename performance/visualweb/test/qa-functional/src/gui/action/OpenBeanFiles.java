@@ -43,13 +43,13 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     /** Creates a new instance of OpenBeanFiles */
     public OpenBeanFiles(String testName) {
         super(testName);
-        expectedTime = 10000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;
     }
     
     public OpenBeanFiles(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = 10000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;
     }
     
