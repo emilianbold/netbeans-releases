@@ -1,269 +1,257 @@
-0 6 /*
- */
+0 6
     default comment
-    foreground java.awt.Color[r=115,g=115,b=115]
     display name Comment
+    foreground java.awt.Color[r=115,g=115,b=115]
     name comment
-6 7 
-
+6 7
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-7 14 package
-    default keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    display name Keyword
-    name keyword
+7 14
     bold true
-    italic false
-14 15  
-    default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
-    display name Whitespace
-    name whitespace
-15 18 org
-    default identifier
-    display name Identifier
-    name identifier
-18 19 .
-19 27 netbeans
-    default identifier
-    display name Identifier
-    name identifier
-27 28 .
-28 32 test
-    default identifier
-    display name Identifier
-    name identifier
-32 33 .
-33 39 editor
-    default identifier
-    display name Identifier
-    name identifier
-39 40 .
-40 49 highlight
-    default identifier
-    display name Identifier
-    name identifier
-49 50 ;
-50 52 
-
-
-    default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
-    display name Whitespace
-    name whitespace
-52 58 public
     default keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
     display name Keyword
-    name keyword
-    bold true
-    italic false
-58 59  
-    default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
-    display name Whitespace
-    name whitespace
-59 64 class
-    default keyword
     foreground java.awt.Color[r=0,g=0,b=153]
-    display name Keyword
-    name keyword
-    bold true
     italic false
-64 65  
+    name keyword
+14 15
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-65 74 testColor
+15 18
     default identifier
     display name Identifier
     name identifier
-74 75  
-    default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
-    display name Whitespace
-    name whitespace
-75 76 {
-76 83   
-    
-    default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
-    display name Whitespace
-    name whitespace
-83 86 int
-    default keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    display name Keyword
-    name keyword
-    bold true
-    italic false
-86 87  
-    default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
-    display name Whitespace
-    name whitespace
-87 88 a
+18 19
+19 27
     default identifier
     display name Identifier
     name identifier
-88 89  
+27 28
+28 32
+    default identifier
+    display name Identifier
+    name identifier
+32 33
+33 39
+    default identifier
+    display name Identifier
+    name identifier
+39 40
+40 49
+    default identifier
+    display name Identifier
+    name identifier
+49 50
+50 52
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-89 90 =
+52 58
+    bold true
+    default keyword
+    display name Keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    italic false
+    name keyword
+58 59
+    default whitespace
+    display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    name whitespace
+59 64
+    bold true
+    default keyword
+    display name Keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    italic false
+    name keyword
+64 65
+    default whitespace
+    display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    name whitespace
+65 74
+    default identifier
+    display name Identifier
+    name identifier
+74 75
+    default whitespace
+    display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    name whitespace
+75 76
+76 83
+    default whitespace
+    display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    name whitespace
+83 86
+    bold true
+    default keyword
+    display name Keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    italic false
+    name keyword
+86 87
+    default whitespace
+    display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    name whitespace
+87 88
+    default identifier
+    display name Identifier
+    name identifier
+88 89
+    default whitespace
+    display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    name whitespace
+89 90
     default operator
     display name Operator
     name operator
-90 91  
+90 91
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-91 92 3
+91 92
     default number
-    foreground java.awt.Color[r=120,g=0,b=0]
     display name Number
+    foreground java.awt.Color[r=120,g=0,b=0]
     name number
-92 93 ;
-93 98 
-    
+92 93
+93 98
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-98 104 static
-    default keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    display name Keyword
-    name keyword
+98 104
     bold true
-    italic false
-104 105  
-    default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
-    display name Whitespace
-    name whitespace
-105 108 int
     default keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
     display name Keyword
-    name keyword
-    bold true
+    foreground java.awt.Color[r=0,g=0,b=153]
     italic false
-108 109  
+    name keyword
+104 105
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-109 114 color
+105 108
+    bold true
+    default keyword
+    display name Keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    italic false
+    name keyword
+108 109
+    default whitespace
+    display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    name whitespace
+109 114
     default identifier
     display name Identifier
     name identifier
-114 115 ;
-115 124     
-    
+114 115
+115 124
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-124 131 private
-    default keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    display name Keyword
-    name keyword
+124 131
     bold true
-    italic false
-131 132  
-    default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
-    display name Whitespace
-    name whitespace
-132 135 int
     default keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
     display name Keyword
-    name keyword
-    bold true
+    foreground java.awt.Color[r=0,g=0,b=153]
     italic false
-135 136  
+    name keyword
+131 132
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-136 142 unused
+132 135
+    bold true
+    default keyword
+    display name Keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    italic false
+    name keyword
+135 136
+    default whitespace
+    display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    name whitespace
+136 142
     default identifier
     display name Identifier
     name identifier
-142 143 ;
-143 149  
-    
+142 143
+143 149
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-149 155 public
-    default keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    display name Keyword
-    name keyword
+149 155
     bold true
+    default keyword
+    display name Keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
     italic false
-155 156  
+    name keyword
+155 156
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-156 165 testColor
+156 165
     default identifier
     display name Identifier
     name identifier
-165 166 (
-166 169 int
-    default keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    display name Keyword
-    name keyword
+165 166
+166 169
     bold true
+    default keyword
+    display name Keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
     italic false
-169 170  
+    name keyword
+169 170
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-170 171 x
+170 171
     default identifier
     display name Identifier
     name identifier
-171 172 )
-172 173  
+171 172
+172 173
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-173 174 {
-174 198                    
-    
+173 174
+174 198
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-198 199 }
-199 213         
-    
-
+198 199
+199 213
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
-213 214 }
-214 215 
-
+213 214
+214 215
     default whitespace
-    foreground java.awt.Color[r=0,g=0,b=0]
     display name Whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace

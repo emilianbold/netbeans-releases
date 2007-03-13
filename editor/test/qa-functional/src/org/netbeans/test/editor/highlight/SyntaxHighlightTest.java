@@ -25,7 +25,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
@@ -44,15 +47,15 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 
 /**
- *
+ * Tests for editor highlighting
  * @author Jiri Prox
  */
 public class SyntaxHighlightTest extends EditorTestCase{
     
     /** Creates a new instance of SyntaxHighlightTest */
     public SyntaxHighlightTest(String name) {
-        super(name);
-        curPackage = getClass().getPackage().getName();
+	super(name);
+	curPackage = getClass().getPackage().getName();
     }
     
     private boolean generateGoldenFiles = false;
@@ -65,93 +68,100 @@ public class SyntaxHighlightTest extends EditorTestCase{
     
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(SyntaxHighlightTest.class);
-        return suite;
+	NbTestSuite suite = new NbTestSuite(SyntaxHighlightTest.class);
+	return suite;
     }
     
     public File getGoldenFile() {
-        String fileName = "goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass";
-        File f = new java.io.File(getDataDir(),fileName);
-        if(!f.exists()) fail("Golden file "+f.getAbsolutePath()+ " does not exist");
-        return f;
+	String fileName = "goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass";
+	File f = new java.io.File(getDataDir(),fileName);
+	if(!f.exists()) fail("Golden file "+f.getAbsolutePath()+ " does not exist");
+	return f;
     }
     
     public File getNewGoldenFile() {
-        String fileName = "data/goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass";
-        File f = new File(getDataDir().getParentFile().getParentFile().getParentFile(),fileName);
-        f.getParentFile().mkdirs();
-        return f;
+	String fileName = "data/goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass";
+	File f = new File(getDataDir().getParentFile().getParentFile().getParentFile(),fileName);
+	f.getParentFile().mkdirs();
+	return f;
     }
     
     public void compareGoldenFile() throws IOException {
-        File fGolden = null;
-        if(!generateGoldenFiles) {
-            fGolden = getGoldenFile();
-        } else {
-            fGolden = getNewGoldenFile();
-        }
-        String refFileName = getName()+".ref";
-        String diffFileName = getName()+".diff";
-        File fRef = new File(getWorkDir(),refFileName);
-        //FileWriter fw = new FileWriter(fRef);
-        //fw.write(oper.getText());
-        //fw.close();
-        LineDiff diff = new LineDiff(false);
-        if(!generateGoldenFiles) {
-            File fDiff = new File(getWorkDir(),diffFileName);
-            if(diff.diff(fGolden, fRef, fDiff)) fail("Golden files differ");
-        } else {
-            FileWriter fwgolden = new FileWriter(fGolden);
-            BufferedReader br = new BufferedReader(new FileReader(fRef));
-            String line;
-            while((line=br.readLine())!=null) {
-                fwgolden.write(line+"\n");
-            }            
-            fwgolden.close();
-            fail("Golden file generated");
-        }
+	File fGolden = null;
+	if(!generateGoldenFiles) {
+	    fGolden = getGoldenFile();
+	} else {
+	    fGolden = getNewGoldenFile();
+	}
+	String refFileName = getName()+".ref";
+	String diffFileName = getName()+".diff";
+	File fRef = new File(getWorkDir(),refFileName);
+	//FileWriter fw = new FileWriter(fRef);
+	//fw.write(oper.getText());
+	//fw.close();
+	LineDiff diff = new LineDiff(false);
+	if(!generateGoldenFiles) {
+	    File fDiff = new File(getWorkDir(),diffFileName);
+	    if(diff.diff(fGolden, fRef, fDiff)) fail("Golden files differ");
+	} else {
+	    FileWriter fwgolden = new FileWriter(fGolden);
+	    BufferedReader br = new BufferedReader(new FileReader(fRef));
+	    String line;
+	    while((line=br.readLine())!=null) {
+		fwgolden.write(line+"\n");
+	    }
+	    fwgolden.close();
+	    fail("Golden file generated");
+	}
     }
     
     public void testColor() throws DataObjectNotFoundException, IOException, InterruptedException, InvocationTargetException, BadLocationException {
-        String path  = "/projects/editor_test/src/"+curPackage.replace('.','/')+"/"+testClass+".java";
-        //System.out.println(path);
-        File testFile = new File(getDataDir(),path);
-        FileObject fo = FileUtil.toFileObject(testFile);
-        DataObject d = DataObject.find(fo);
-        final EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
-        ec.open();
-        StyledDocument doc = ec.openDocument();
-        SyntaxHighlighting layer = new SyntaxHighlighting(doc);
-        HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);                
-        while(hs.moveNext()) {
-            AttributeSet as  = hs.getAttributes();
-            Enumeration en = as.getAttributeNames();
-            getRef().println(hs.getStartOffset()+ " "+hs.getEndOffset()+" "+doc.getText(hs.getStartOffset(),hs.getEndOffset()-hs.getStartOffset()));
-//            getRef().println(as);
-            while(en.hasMoreElements()) {
-                Object s = en.nextElement();
-                getRef().println("    "+s+" "+as.getAttribute(s));
-            }            
-        }                                
+	String path  = "/projects/editor_test/src/"+curPackage.replace('.','/')+"/"+testClass+".java";
+	//System.out.println(path);
+	File testFile = new File(getDataDir(),path);
+	FileObject fo = FileUtil.toFileObject(testFile);
+	DataObject d = DataObject.find(fo);
+	final EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
+	ec.open();
+	StyledDocument doc = ec.openDocument();
+	SyntaxHighlighting layer = new SyntaxHighlighting(doc);
+	HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
+	while(hs.moveNext()) {
+	    AttributeSet as  = hs.getAttributes();
+	    Enumeration en = as.getAttributeNames();//produces elements in random order!
+	    getRef().println(hs.getStartOffset()+ " "+hs.getEndOffset()  /* +" "+doc.getText(hs.getStartOffset(),hs.getEndOffset()-hs.getStartOffset()) */);
+	    //            getRef().println(as);
+	    ArrayList<String> tmpEnumContent = new ArrayList<String>();
+	    while(en.hasMoreElements()) {
+		Object s = en.nextElement();
+		tmpEnumContent.add("    "+s+" "+as.getAttribute(s));
+	    }
+	    Collections.sort(tmpEnumContent); //sort the output
+	    Iterator<String> it = tmpEnumContent.iterator();
+	    while(it.hasNext()) {
+		String s = it.next();
+		getRef().println(s);
+	    }
+	}
     }
     
     
     
     protected void setUp() throws Exception {
-        super.setUp();
-        openDefaultProject();
-        testClass = getName();
-        openSourceFile(curPackage, testClass);
-        oper =  new EditorOperator(testClass);
+	super.setUp();
+	openDefaultProject();
+	testClass = getName();
+	openSourceFile(curPackage, testClass);
+	oper =  new EditorOperator(testClass);
     }
     
     protected void tearDown() throws Exception {
-        compareGoldenFile();
-        super.tearDown();
+	compareGoldenFile();
+	super.tearDown();
     }
     
     public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(SyntaxHighlightTest.class));
+	TestRunner.run(new NbTestSuite(SyntaxHighlightTest.class));
     }
     
 }
