@@ -34,11 +34,8 @@ import org.netbeans.modules.uml.ui.controls.newdialog.AddElementWizardIterator;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageWizardIterator;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-
 import org.openide.awt.HtmlBrowser;
-
 import org.openide.windows.WindowManager;
-
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
@@ -49,6 +46,9 @@ import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogElementDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogPackageDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogResultProcessor;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
+import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -230,15 +230,13 @@ public class UMLUserInterface implements IProxyUserInterface
                 dialog.toFront();
                 boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
                 if (!cancelled) {
-                    // do something
-                    Object results = wizardDescriptor.getProperty(AddPackageWizardIterator.PACKAGE_DETAILS);
-                                        
-//		INewDialogTabDetails results = diag.getResult();
+                    Object results = wizardDescriptor.getProperty(AddPackageWizardIterator.PACKAGE_DETAILS);                                        
                     
-                    if( results != null && results instanceof INewDialogPackageDetails) {
-                        INewDialogPackageDetails packResults = (INewDialogPackageDetails)results;
+                    if( results != null && results instanceof NewDialogPackageDetails) {
+                        NewDialogPackageDetails packResults = (NewDialogPackageDetails)results;
+
                         INewDialogResultProcessor processor = new NewDialogResultProcessor();
-                        return processor.handleResult( packResults );
+                        return processor.handleResult( packResults );         
                     }
                 }
                 return null;

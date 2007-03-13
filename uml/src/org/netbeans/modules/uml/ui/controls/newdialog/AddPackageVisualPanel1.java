@@ -1,17 +1,45 @@
 package org.netbeans.modules.uml.ui.controls.newdialog;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
+import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
+import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
+import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
-public final class AddPackageVisualPanel1 extends JPanel {
+public final class AddPackageVisualPanel1 extends JPanel implements DocumentListener, ItemListener
+{
+    private boolean valid = true;
+    private AddPackageWizardPanel1 panel;
+    private int errorType = -1;
+    public static final int INVALID_PACKAGE_NAME = 0;
+    public static final int PACKAGE_NAME_CONFLICT = 1;
+    public static final int INVALID_DIAGRAME_NAME = 2;
+    private String invalid = NbBundle.getMessage(NewUMLDiagVisualPanel1.class,
+                "IDS_INVALID_CHARS");
+
+    
     
     /** Creates new form AddPackageVisualPanel1 */
-    public AddPackageVisualPanel1(INewDialogPackageDetails details) {
+    public AddPackageVisualPanel1(AddPackageWizardPanel1 panel, INewDialogPackageDetails details)
+    {
         m_Details = details;
+        this.panel = panel;
         initComponents();
+        jTextField1.getDocument().addDocumentListener(this);
+        jTextField2.getDocument().addDocumentListener(this);
+        jCheckBox1.addItemListener(this);
     }
     
-    public String getName() {
+    public String getName()
+    {
         return org.openide.util.NbBundle.getBundle(AddPackageVisualPanel1.class).getString("IDS_CREATEPACKAGE");
     }
     
@@ -173,15 +201,17 @@ public final class AddPackageVisualPanel1 extends JPanel {
                 .addContainerGap(21, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
         performCheckBoxToggleAction();
         
     }//GEN-LAST:event_jCheckBox1ActionPerformed
-
     
-    private void performCheckBoxToggleAction() {
-        if (jCheckBox1.isSelected()) {
+    
+    private void performCheckBoxToggleAction()
+    {
+        if (jCheckBox1.isSelected())
+        {
             jLabel3.setEnabled(true);
             jLabel4.setEnabled(true);
             jTextField2.setEditable(true);
@@ -191,11 +221,14 @@ public final class AddPackageVisualPanel1 extends JPanel {
             jComboBox2.setEnabled(true);
             // now default the text in the text box to what the package name is
             String defaultName = jTextField1.getText().trim();
-            if (defaultName != null && defaultName.length() > 0) {
+            if (defaultName != null && defaultName.length() > 0)
+            {
                 jTextField2.setText(defaultName);
                 jTextField2.selectAll();
             }
-        } else {
+        }
+        else
+        {
             jLabel3.setEnabled(false);
             jLabel4.setEnabled(false);
             jTextField2.setEditable(false);
@@ -203,23 +236,28 @@ public final class AddPackageVisualPanel1 extends JPanel {
             jComboBox2.setEnabled(false);
         }
     }
-
-
-    private void populateNamespaceCombobox() {
+    
+    
+    private void populateNamespaceCombobox()
+    {
         //load namespaces
-        if (jComboBox1 != null) {
+        if (jComboBox1 != null)
+        {
             
             INamespace space = null;
-            if(m_Details != null) {
+            if(m_Details != null)
+            {
                 space = m_Details.getNamespace();
             }
             NewDialogUtilities.loadNamespace(jComboBox1, space);
         }
     }
-
-    private void populateDiagramTypeCombobox() {
+    
+    private void populateDiagramTypeCombobox()
+    {
         //load diagram types
-        if (jComboBox2 != null) {
+        if (jComboBox2 != null)
+        {
             NewDialogUtilities.loadDiagramTypes(jComboBox2);
             // default to "Class Diagram"
             jComboBox2.setSelectedIndex(1);
@@ -227,30 +265,169 @@ public final class AddPackageVisualPanel1 extends JPanel {
         
     }
     
-     protected String getPackageName() {
+    protected String getPackageName()
+    {
         return jTextField1.getText().trim();
     }
     
-    protected Object getPackageNamespace() {
+    protected Object getPackageNamespace()
+    {
         return jComboBox1.getSelectedItem();
     }
     
-    protected Object getScopedDiagramName() {
+    protected Object getScopedDiagramName()
+    {
         return jTextField2.getText().trim();
     }
     
-    protected Object getScopedDiagramKind() {
-        return jComboBox2.getSelectedItem();        
+    protected Object getScopedDiagramKind()
+    {
+        return jComboBox2.getSelectedItem();
     }
     
-    protected int getScopedDiagramType() {
+    protected int getScopedDiagramType()
+    {
         return jComboBox2.getSelectedIndex();
     }
     
-    protected boolean isCheckboxSelected() {
+    protected boolean isCheckboxSelected()
+    {
         return jCheckBox1.isSelected();
     }
     
+    public boolean isValid()
+    {
+        return valid;
+    }
+    
+    public void itemStateChanged(ItemEvent event)
+    {
+        if (!jCheckBox1.isSelected() && !isDiagramNameValid())
+            validatePackageName();
+            
+        panel.fireChangeEvent();
+    }
+    
+    
+    public void changedUpdate(DocumentEvent event)
+    {
+        update(event);
+    }
+    
+    public void insertUpdate( DocumentEvent event )
+    {
+        update(event);
+    }
+    
+    public void removeUpdate(DocumentEvent event)
+    {
+        update(event);
+    }
+    
+    private void update(DocumentEvent event)
+    {
+        if (event.getDocument() == jTextField1.getDocument() )
+            validatePackageName();
+        else
+            validateDiagramName();
+        panel.fireChangeEvent();
+    }
+    
+    
+    private void validatePackageName()
+    {
+        valid = true;
+        
+        if (getPackageName().length() == 0)
+        {
+            errorType = INVALID_PACKAGE_NAME;
+            valid = false;
+        }
+        else
+        {
+            IElementLocator pElementLocator = new ElementLocator();
+            String ns = (String)getPackageNamespace();
+            INamespace namespace = NewDialogUtilities.getNamespace(ns);
+            ETList<INamedElement> pFoundElements =
+                    pElementLocator.findByName(namespace, getPackageName());
+            
+            if (pFoundElements != null)
+            {
+                int count = pFoundElements.getCount();
+                for (int i = 0 ; i < count ; i++)
+                {
+                    INamedElement pFoundElement = pFoundElements.get(i);
+                    
+                    if (pFoundElement != null)
+                    {
+                        if (pFoundElement.getElementType().equals("Package"))
+                        {
+                            errorType = PACKAGE_NAME_CONFLICT;
+                            valid = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    private void validateDiagramName()
+    {
+        valid = true;
+        if (!isDiagramNameValid())
+        {
+            valid = false;
+            errorType = INVALID_DIAGRAME_NAME;
+        }
+    }
+    
+    
+    private boolean isDiagramNameValid()
+    {
+        String diagramName = jTextField2.getText().trim();
+        if (diagramName.length() == 0)
+            return false;
+        
+        String[] badCharArray = invalid.split(" ");
+        for (String c : badCharArray)
+        {     
+            if ( diagramName.indexOf(c) != -1)  
+                return false;
+        }
+        return true;
+    }
+    
+    public boolean isValid(WizardDescriptor descriptor)
+    {
+        String errorMsg = "";
+        
+        if (valid)
+        {
+            descriptor.putProperty(
+                    "WizardPanel_errorMessage", errorMsg);
+            
+            return true;
+        }
+        
+        switch(errorType)
+        {
+            case INVALID_PACKAGE_NAME:
+                errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,
+                        "MSG_Invalid_Package_Name");
+                break;
+            case PACKAGE_NAME_CONFLICT:
+                errorMsg = NbBundle.getMessage(
+                        DiagramEngine.class, "IDS_NAMESPACECOLLISION");
+                break;
+            case AddPackageVisualPanel1.INVALID_DIAGRAME_NAME:
+                errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,
+                        "MSG_Invalid_Diagram_Name", invalid);
+                break;
+        }
+        descriptor.putProperty("WizardPanel_errorMessage", errorMsg);
+        return false;
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBox1;
