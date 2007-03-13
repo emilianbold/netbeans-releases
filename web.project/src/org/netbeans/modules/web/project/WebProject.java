@@ -769,16 +769,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 BrokenReferencesSupport.showAlert();
             }
             webPagesFileWatch.init();
-            
-            if (getWebProjectProperties().get("jsf.pagebean.package") != null) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(NbBundle.getMessage(WebProject.class,
-                                "MSG_Creator_Project"), NotifyDescriptor.WARNING_MESSAGE));
-                    }
-                });
-            }
         }
 
         protected void projectClosed() {
