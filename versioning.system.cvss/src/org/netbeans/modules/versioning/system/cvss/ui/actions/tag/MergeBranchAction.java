@@ -96,7 +96,7 @@ public class MergeBranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
        
-        RequestProcessor.getDefault().post(new MergeBranchExecutor(context, settings, getRunningName(nodes)));
+        RequestProcessor.getDefault().post(new MergeBranchExecutor(context, settings, getRunningName(nodes), getContextDisplayName(nodes)));
     }
 
     protected boolean asynchronous() {
@@ -110,13 +110,15 @@ public class MergeBranchAction extends AbstractSystemAction {
 
         private final Context context;
         private final MergePanel settings;
+        private final String contextName;
         private String temporaryTag;
         private String name;
 
-        public MergeBranchExecutor(Context context, MergePanel settings, String name) {
+        public MergeBranchExecutor(Context context, MergePanel settings, String name, String contextName) {
             this.context = context;
             this.settings = settings;
             this.name = name;
+            this.contextName = contextName;
         }
 
         public void run() {
@@ -178,7 +180,7 @@ public class MergeBranchAction extends AbstractSystemAction {
             cmd.setBuildDirectories(true);
             cmd.setPruneDirectories(true);
         
-            return UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options);
+            return UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, contextName);
         }
 
         /**

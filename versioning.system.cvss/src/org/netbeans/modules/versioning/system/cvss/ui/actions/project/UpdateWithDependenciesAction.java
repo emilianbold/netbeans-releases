@@ -30,6 +30,7 @@ import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.api.project.Project;
@@ -91,7 +92,7 @@ public final class UpdateWithDependenciesAction extends SystemAction {
 
                 GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
                 gtx.setExclusions((File[]) context.getExclusions().toArray(new File[0]));
-                group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx));
+                group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx, org.netbeans.modules.versioning.util.Utils.getContextDisplayName(VCSContext.forNodes(nodes))));
 
                 group.execute();
             }

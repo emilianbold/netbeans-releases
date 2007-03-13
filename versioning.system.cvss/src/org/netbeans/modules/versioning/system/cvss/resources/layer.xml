@@ -28,21 +28,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.ShowTextAnnotationsAction"/>
             </file>
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusProjectsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusProjectsAction"/>
-            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.status.OpenVersioningAction"/>
             </file>
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffProjectsAction"/>
-            </file>                                    
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateProjectsAction"/>
-            </file>                                    
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitProjectsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitProjectsAction"/>
-            </file>                                    
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutAction"/>
             </file>                                    
@@ -107,6 +95,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Window">
             <folder name="Versioning">            
+                <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/SeparatorVersioningOutput.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.instance"/>
                 </file>

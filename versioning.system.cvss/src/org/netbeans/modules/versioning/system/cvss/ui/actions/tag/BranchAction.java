@@ -142,7 +142,7 @@ public class BranchAction extends AbstractSystemAction {
             cmd.setUpdateByRevision(revision);
             cmd.setFiles(context.getRootFiles());
         
-            return UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options);
+            return UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, null);
         }
 
         private ExecutorSupport[] branch(File[] roots, String branchName) {

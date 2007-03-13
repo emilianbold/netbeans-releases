@@ -386,7 +386,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         // TODO: javacvs library fails to obey the -P flag when -q is specified
 //        options.setModeratelyQuiet(true);
         refreshCommandGroup = new ExecutorGroup(msg);
-        refreshCommandGroup.addExecutors(UpdateExecutor.splitCommand(cmd, cvs, options));
+        refreshCommandGroup.addExecutors(UpdateExecutor.splitCommand(cmd, cvs, options, parentTopComponent.getContentTitle()));
         refreshCommandGroup.execute();
         // XXX should not be there barrier?
         parentTopComponent.contentRefreshed();

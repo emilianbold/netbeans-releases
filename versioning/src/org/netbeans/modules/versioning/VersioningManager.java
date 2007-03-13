@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.versioning;
@@ -54,6 +54,11 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     private final FilesystemInterceptor filesystemInterceptor;
 
     /**
+     * Manager of Versioning Output components.
+     */
+    private final VersioningOutputManager outputManager = new VersioningOutputManager();
+    
+    /**
      * Holds all registered versioning systems.
      */
     private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(2);
@@ -61,7 +66,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     /**
      * What folder is versioned by what versioning system. 
      */
-    private Map<File, VersioningSystem> folderOwners = new WeakHashMap<File, VersioningSystem>(100);
+    private final Map<File, VersioningSystem> folderOwners = new WeakHashMap<File, VersioningSystem>(100);
 
     /**
      * Holds registered local history system.
@@ -216,7 +221,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         
         Boolean isManagedByLocalHistory = localHistoryFolders.get(folder);
         if (isManagedByLocalHistory != null) {
-            return isManagedByLocalHistory.booleanValue() ? localHistory : null;
+            return isManagedByLocalHistory ? localHistory : null;
         }
                 
         boolean isManaged = localHistory.getTopmostManagedParent(folder) != null;            
@@ -229,6 +234,10 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }        
     }
     
+    public VersioningOutputManager getOutputManager() {
+        return outputManager;
+    }
+
     public void resultChanged(LookupEvent ev) {
         Lookup.Result<VersioningSystem> result = (Lookup.Result<VersioningSystem>) ev.getSource();
         refreshVersioningSystems(result.allInstances());

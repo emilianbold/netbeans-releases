@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -71,7 +71,7 @@ public class UpdateAction extends AbstractSystemAction {
             cmd.setPruneDirectories(false);
             cmd.setRecursive(false);
             cmd.setFiles(flatRecursive[0]);
-            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
+            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, getContextDisplayName(nodes)));
         }
         if (flatRecursive[1].length > 0) {
             UpdateCommand cmd = new UpdateCommand();
@@ -79,7 +79,7 @@ public class UpdateAction extends AbstractSystemAction {
             cmd.setBuildDirectories(true);
             cmd.setPruneDirectories(true);
             cmd.setFiles(flatRecursive[1]);
-            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
+            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, getContextDisplayName(nodes)));
         }
         group.execute();
     }

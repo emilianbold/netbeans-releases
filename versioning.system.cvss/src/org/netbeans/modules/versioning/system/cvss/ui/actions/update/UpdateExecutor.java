@@ -13,13 +13,15 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.update;
 
 import org.netbeans.modules.versioning.system.cvss.*;
+import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.VersioningOutputManager;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.DefaultFileInfoContainer;
@@ -31,6 +33,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -50,6 +53,11 @@ public class UpdateExecutor extends ExecutorSupport {
     private Set<File>   refreshedFiles = Collections.synchronizedSet(new HashSet<File>());
     private boolean rwUpdate;
     private boolean mergeUpdate;
+
+    /**
+     * Display name of the context on which update operates, eg "3 Projects". 
+     */
+    private final String contextDisplayName;
     
     /**
      * Files modified afterwards will not be cosidered up-to-date even if server says so.
@@ -65,9 +73,11 @@ public class UpdateExecutor extends ExecutorSupport {
      * @param cmd command to execute
      * @param cvs CVS engine to use
      * @param options global option for the command
+     * @param contextDisplayName context name for the Update Results output tab (eg. "3 Projects"). If null, the output tab
+     * will not open
      * @return array of executors that will execute the command (or array of splitted commands)
      */
-    public static UpdateExecutor [] splitCommand(UpdateCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
+    public static UpdateExecutor [] splitCommand(UpdateCommand cmd, CvsVersioningSystem cvs, GlobalOptions options, String contextDisplayName) {
         Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
         if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateExecutor_CmdDisplayName"));
         try {
@@ -79,13 +89,14 @@ public class UpdateExecutor extends ExecutorSupport {
         UpdateExecutor [] executors = new UpdateExecutor[cmds.length];
         for (int i = 0; i < cmds.length; i++) {
             Command command = cmds[i];
-            executors[i] = new UpdateExecutor(cvs, (UpdateCommand) command, options);
+            executors[i] = new UpdateExecutor(cvs, (UpdateCommand) command, options, contextDisplayName);
         }
         return executors;
     }
 
-    private UpdateExecutor(CvsVersioningSystem cvs, UpdateCommand cmd, GlobalOptions options) {
+    private UpdateExecutor(CvsVersioningSystem cvs, UpdateCommand cmd, GlobalOptions options, String contextDisplayName) {
         super(cvs, cmd, options);
+        this.contextDisplayName = contextDisplayName;
         rwUpdate = options == null || !options.isDoNoChanges();
         mergeUpdate = cmd.getMergeRevision1() != null;
     }
@@ -123,6 +134,10 @@ public class UpdateExecutor extends ExecutorSupport {
         
         for (int i = 0; i < files.length; i++) {
             cache.clearVirtualDirectoryContents(files[i], ucmd.isRecursive(), ucmd.getGlobalOptions().getExclusions());
+        }
+        
+        if (rwUpdate && contextDisplayName != null) {
+            openOutputResults();
         }
         
         Set<FileSystem> filesystems = new HashSet<FileSystem>(2);
@@ -184,6 +199,16 @@ public class UpdateExecutor extends ExecutorSupport {
         if (ucmd.getUpdateByRevision() != null || ucmd.isResetStickyOnes()) {
             CvsVersioningSystem.getInstance().refreshAllAnnotations();
         }        
+    }
+
+    private void openOutputResults() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                UpdateResults results = new UpdateResults(toRefresh, cmd.getGlobalOptions().getCVSRoot(), contextDisplayName);
+                VersioningOutputManager vom = VersioningManager.getInstance().getOutputManager();
+                vom.addComponent(cmd.getGlobalOptions().getCVSRoot() + "-UpdateExecutor", results); // NOI18N
+            }
+        });
     }
 
     private void addFileSystem(Set<FileSystem> filesystems, File file) {

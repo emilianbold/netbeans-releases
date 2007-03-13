@@ -424,7 +424,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         cmd.setFiles(new File [] { change.getLogInfoHeader().getFile() });
         cmd.setMergeRevision1(change.getNumber());
         cmd.setMergeRevision2(Utils.previousRevision(change.getNumber()));
-        group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null));
+        group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null, null));
     }
 
     static void rollbackChanges(LogInformation.Revision [] changes) {

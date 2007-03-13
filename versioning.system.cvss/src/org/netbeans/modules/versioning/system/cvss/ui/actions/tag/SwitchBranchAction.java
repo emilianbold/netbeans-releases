@@ -130,7 +130,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
                 options.setExclusions(context.getExclusions().toArray(new File[context.getExclusions().size()]));
             }
 
-            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
+            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, getContextDisplayName(nodes)));
 
         }
         if (flatRecursive[1].length > 0) {
@@ -184,7 +184,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
                     options.setExclusions(context.getExclusions().toArray(new File[context.getExclusions().size()]));
                 }
 
-                group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
+                group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, getContextDisplayName(nodes)));
             }
         }
         group.execute();
