@@ -28,9 +28,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph;
 
-import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget.AnchorScheme;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
 
 /**

@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.visual.action.RectangularSelectDecorator;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.*;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaConnectAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPaletteAcceptProvider;
@@ -140,6 +141,8 @@ implements PropertyChangeListener {
         TopComponent.getRegistry().addPropertyChangeListener(this);
         
         initializeSceneActions();
+
+        ToolTipManager.sharedInstance().setInitialDelay(Constants.TOOLTIP_INITIAL_DELAY);
     }
 
     

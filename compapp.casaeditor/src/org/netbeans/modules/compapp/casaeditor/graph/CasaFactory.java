@@ -30,7 +30,6 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteAcceptAction;
 
@@ -48,11 +47,6 @@ public class CasaFactory {
     public CasaFactory() {
     }
     
-    /*
-    public static void createCasaCustomizer(CasaModelGraphScene scene) {
-        msCasaCustomizer = new CasaCustomizer(scene);
-    } */
-
     public static CasaCustomizer getCasaCustomizer() {
         return msCasaCustomizer;
     }
