@@ -63,7 +63,8 @@ class Export extends PrintUI {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.NORTHWEST;
-    c.insets = new Insets(MEDIUM_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
+    c.insets =
+      new Insets(MEDIUM_INSET + TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
 
     // file name
     panel.add(createLabel(i18n("LBL_File_Name")), c); // NOI18N
@@ -186,7 +187,7 @@ class Export extends PrintUI {
     }
     if (text.size() > 0) {
       html.append("<p><b>" + // NOI18N
-        i18n("LBL_Description") + "</b>"); // NOI18N
+        i18n("LBL_Description") + "</b> "); // NOI18N
     
       for (String item : text) {
         html.append(item + LS);
