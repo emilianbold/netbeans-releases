@@ -29,8 +29,36 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-    
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Popup">                    
+                    <attr name="SeparatorAfterGoToHelp.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.shadow/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.shadow/SeparatorJavaTools.instance" boolvalue="true"/>
+                    <file name="SeparatorJavaTools.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="SeparatorJavaTools.instance/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
     <folder name="Actions">
+        <folder name="Edit">
+            <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+            <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.instance"/>
+            <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
+            <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
+        </folder>
         <folder name="Window">
             <file name="org-netbeans-modules-java-navigation-actions-DeclarationAction.instance"/>
             <file name="org-netbeans-modules-java-navigation-actions-JavadocAction.instance"/>
@@ -38,6 +66,21 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Menu">
+        <folder name="GoTo">
+            <attr name="org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance/SeparatorBeforeInspectMembersAction.instance" boolvalue="true"/>
+            <file name="SeparatorBeforeInspectMembersAction.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="SeparatorBeforeInspectMembersAction.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow/SeparatorBeforeJumpBack.instance" boolvalue="true"/>
+        </folder>
         <folder name="Window">
             <attr name="InspectorAction.shadow/DeclarationAction.shadow" boolvalue="true"/>
             <file name="DeclarationAction.shadow">
