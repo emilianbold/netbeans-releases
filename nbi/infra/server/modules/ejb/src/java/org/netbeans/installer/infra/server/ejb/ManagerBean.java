@@ -701,12 +701,12 @@ public class ManagerBean implements Manager {
                         "--userdir",
                         userDir.getAbsolutePath());
                 
-                FileUtils.deleteFile(statefile);
-                FileUtils.deleteFile(userDir, true);
-                
                 if (results.getErrorCode() != 0) {
                     throw new ManagerException("Could not create bundle - error in running the engine");
                 }
+                
+                FileUtils.deleteFile(statefile);
+                FileUtils.deleteFile(userDir, true);
                 
                 if (platform == Platform.WINDOWS) {
                     bundle = new File(
