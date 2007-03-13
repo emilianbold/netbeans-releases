@@ -183,6 +183,8 @@ implements PropertyChangeListener {
         getActions().addAction(mPopupMenuAction);
         getActions().addAction(new CasaRemoveAction(this, mModel));
         getActions().addAction(CasaFactory.createAcceptAction(new CasaPaletteAcceptProvider(this, mModel)));
+        
+        addSceneListener(new BannerSceneListener(this));
     }
     
     public void registerController(CasaDesignController controller) {

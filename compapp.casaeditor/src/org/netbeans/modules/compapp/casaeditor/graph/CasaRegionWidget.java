@@ -17,18 +17,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
-* CasaRegion.java
-*
-* Created on November 7, 2006, 4:38 PM
-*
-* To change this template, choose Tools | Template Manager
-* and open the template in the editor.
-*/
-
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Point;
@@ -53,19 +45,26 @@ public class CasaRegionWidget extends LayerWidget {
     
     private static final int    BORDER_WIDTH  = 1;
     
-    private static final Color  LABEL_COLOR   = new Color(168, 168, 168);
-    private static final Font   LABEL_FONT    = new Font("Dialog", Font.BOLD, 18);  // NOI18N
-    private static final int    LABEL_Y_POS   = 20;
+    private static final Color  TITLE_COLOR   = new Color(168, 168, 168);
+    private static final Font   TITLE_FONT    = new Font("Dialog", Font.BOLD, 18);  // NOI18N
+    private static final int    TITLE_Y_POS   = 20;
+    
+    private static final Color  BANNER_COLOR  = new Color(160, 135, 230);
+    private static final Font   BANNER_FONT   = new Font("Dialog", Font.BOLD, 28);  // NOI18N
+    
     private static final String LABEL_TRUNCATED = NbBundle.getMessage(CasaRegionWidget.class, "LBL_Truncated"); // NOI18N
     
     private static int mTruncatedStringWidth = -1;
     
-    private LabelWidget mLabelWidget;
-    private int mRegionPreferredWidth;
-    private String mLabelText;
-    private int mFullStringWidth = -1;
+    private Dimension mRegionPreferredSize = new Dimension();
     private boolean mIsHighlighted;
     private Widget mBorderWidget;
+    
+    private LabelWidget mTitleWidget;
+    private String mTitleText;
+    private int mFullTitleStringWidth = -1;
+    
+    private MultiLabelWidget mBannerWidget;
     
     
     /** Creates a new instance of CasaRegion */
@@ -81,12 +80,12 @@ public class CasaRegionWidget extends LayerWidget {
         addChild(mBorderWidget);
         
         // Each region has a title label at the top.
-        mLabelText = label;
-        mLabelWidget = new LabelWidget(scene, label);
-        mLabelWidget.setForeground(titleColor);
-        mLabelWidget.setFont(titleFont);
-        mLabelWidget.setPreferredLocation(new Point(20, LABEL_Y_POS));
-        addChild(mLabelWidget);
+        mTitleText = label;
+        mTitleWidget = new LabelWidget(scene, label);
+        mTitleWidget.setForeground(titleColor);
+        mTitleWidget.setFont(titleFont);
+        mTitleWidget.setPreferredLocation(new Point(20, TITLE_Y_POS));
+        addChild(mTitleWidget);
         
         addDependency(new Widget.Dependency() {
             public void revalidateDependency() {
@@ -100,45 +99,55 @@ public class CasaRegionWidget extends LayerWidget {
                 // Calculate label string widths if necessary.
                 if (mTruncatedStringWidth < 0) {
                     // cache the truncated width
-                    FontMetrics metrics = scene.getGraphics().getFontMetrics(mLabelWidget.getFont());
+                    FontMetrics metrics = scene.getGraphics().getFontMetrics(mTitleWidget.getFont());
                     mTruncatedStringWidth = (int) metrics.getStringBounds(
                             LABEL_TRUNCATED, 
                             scene.getGraphics()).getWidth();
                 }
-                if (mFullStringWidth < 0) {
-                    // cache the label width
-                    FontMetrics metrics = scene.getGraphics().getFontMetrics(mLabelWidget.getFont());
-                    mFullStringWidth = (int) metrics.getStringBounds(
-                            mLabelText, 
+                if (mFullTitleStringWidth < 0) {
+                    // cache the title text width
+                    FontMetrics metrics = scene.getGraphics().getFontMetrics(mTitleWidget.getFont());
+                    mFullTitleStringWidth = (int) metrics.getStringBounds(
+                            mTitleText, 
                             scene.getGraphics()).getWidth();
                 }
                 
-                // Adjust the label position if necessary.
-                if (mRegionPreferredWidth != CasaRegionWidget.this.getPreferredBounds().width) {
+                // Adjust the label positions if necessary.
+                Dimension currentSize = CasaRegionWidget.this.getPreferredBounds().getSize();
+                if (!mRegionPreferredSize.equals(currentSize)) {
+                    mRegionPreferredSize = currentSize;
                     
-                    mRegionPreferredWidth = CasaRegionWidget.this.getPreferredBounds().width;
-                    
-                    // Adjust the title label.
-                    if (mRegionPreferredWidth < mFullStringWidth) {
-                        if (!mLabelWidget.getLabel().equals(LABEL_TRUNCATED)) {
-                            mLabelWidget.setLabel(LABEL_TRUNCATED);
-                        }
-                        mLabelWidget.setPreferredLocation(new Point(
-                                (mRegionPreferredWidth - mTruncatedStringWidth) / 2, 
-                                LABEL_Y_POS));
+                    if (mRegionPreferredSize.width < mFullTitleStringWidth) {
+                        updateTitleLabel(mTitleWidget, LABEL_TRUNCATED, mTruncatedStringWidth, TITLE_Y_POS);
                     } else {
-                        if (!mLabelWidget.getLabel().equals(mLabelText)) {
-                            mLabelWidget.setLabel(mLabelText);
-                        }
-                        mLabelWidget.setPreferredLocation(new Point(
-                                (mRegionPreferredWidth - mFullStringWidth) / 2, 
-                                LABEL_Y_POS));
+                        updateTitleLabel(mTitleWidget, mTitleText, mFullTitleStringWidth, TITLE_Y_POS);
+                    }
+                    
+                    if (mBannerWidget != null) {
+                        updateBannerLabel();
                     }
                 }
             }
         });
     }
     
+    
+    private void updateBannerLabel() {
+        if (mBannerWidget.getBounds() != null) {
+            mBannerWidget.setPreferredLocation(new Point(
+                    (mRegionPreferredSize.width - mBannerWidget.getStringLength()) / 2,
+                    (CasaRegionWidget.this.getPreferredBounds().height - mBannerWidget.getBounds().height) / 2));
+        }
+    }
+    
+    private void updateTitleLabel(LabelWidget widget, String text, int stringWidth, int yPos) {
+        if (!widget.getLabel().equals(text)) {
+            widget.setLabel(text);
+        }
+        widget.setPreferredLocation(new Point(
+                (mRegionPreferredSize.width - stringWidth) / 2,
+                yPos));
+    }
     
     private void updateBorder() {
         if (getPreferredBounds() != null) {
@@ -151,8 +160,31 @@ public class CasaRegionWidget extends LayerWidget {
         }
     }
     
+    public boolean hasBanner() {
+        return mBannerWidget != null;
+    }
+    
+    public void setBanner(String[] bannerText) {
+        if (bannerText == null) {
+            removeChild(mBannerWidget);
+            mBannerWidget = null;
+            getScene().validate();
+        } else {
+            mBannerWidget = new MultiLabelWidget(
+                    getScene(), 
+                    bannerText,
+                    (Color) getBackground(),
+                    BANNER_FONT);
+            addChild(mBannerWidget);
+            getScene().validate();
+            updateBannerLabel();
+            mBannerWidget.animateVisible(BANNER_COLOR);
+        }
+        getScene().repaint();
+    }
+    
     public int getLabelYOffset() {
-        return mLabelWidget.getPreferredLocation().y + mLabelWidget.getPreferredBounds().height;
+        return mTitleWidget.getPreferredLocation().y + mTitleWidget.getPreferredBounds().height;
     }
     
     public void persistWidth() {
@@ -169,11 +201,11 @@ public class CasaRegionWidget extends LayerWidget {
     }
     
     public void setCOLOR_REGION_TITLE(Color color) {
-        mLabelWidget.setForeground(color);
+        mTitleWidget.setForeground(color);
     }
     
     public void setFONT_REGION_TITLE(Font font) {
-        mLabelWidget.setFont(font);
+        mTitleWidget.setFont(font);
     }
 
     public void setHighlighted(boolean isHighlighted) {
@@ -236,6 +268,5 @@ public class CasaRegionWidget extends LayerWidget {
                     0.3f,
                     15);
         }
-        
     }
 }

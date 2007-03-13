@@ -25,8 +25,11 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.router.RouterFactory;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.Widget.Dependency;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
@@ -81,7 +84,7 @@ public class CasaModelGraphUtilities {
         }
         
         // add JBIComponent objects to scene
-
+        
         // add regions
         createRegions(model, scene);
         
@@ -127,6 +130,10 @@ public class CasaModelGraphUtilities {
         CasaRegionWidget bindingRegionWidget  = (CasaRegionWidget) scene.addRegion(bindingRegion);
         CasaRegionWidget engineRegionWidget   = (CasaRegionWidget) scene.addRegion(engineRegion);
         CasaRegionWidget externalRegionWidget = (CasaRegionWidget) scene.addRegion(externalRegion);
+        
+        // Ensure the engine region is on top so that its banner, if displayed,
+        // won't get hidden by the other regions.
+        engineRegionWidget.bringToFront();
         
         bindingRegionWidget.setPreferredLocation(new Point(  0, 0));
         int bindingWidth = bindingRegion.getWidth();
