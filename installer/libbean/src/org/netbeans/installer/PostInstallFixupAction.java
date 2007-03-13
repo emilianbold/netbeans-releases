@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -53,7 +53,8 @@ public class PostInstallFixupAction extends ProductAction {
     private String psep;
     private String sep;
     
-    
+    private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
+
     public void build(ProductBuilderSupport support) {
         try {
             support.putClass(Util.class.getName());
@@ -77,7 +78,7 @@ public class PostInstallFixupAction extends ProductAction {
             rootInstallDir = (String) pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation");
             if (Util.isMacOSX()) {
                 nbInstallDir = rootInstallDir + sep 
-                + resolveString("$L(org.netbeans.installer.Bundle,Product.nbLocationBelowInstallRoot)");
+                + resolveString(BUNDLE + "Product.nbLocationBelowInstallRoot)");
             } else {
                 nbInstallDir = rootInstallDir;
             }
@@ -90,8 +91,7 @@ public class PostInstallFixupAction extends ProductAction {
         binDir = nbInstallDir + sep + "bin";
         configDir = nbInstallDir + sep + "etc";
         uninstallDir = rootInstallDir + sep + "_uninst";
-        nbClusterDir = resolveString
-        ("$L(org.netbeans.installer.Bundle,NetBeans.nbClusterDir)");
+        nbClusterDir = resolveString(BUNDLE + "NetBeans.nbClusterDir)");
     }
     
     public void install(ProductActionSupport support) throws ProductException {
@@ -415,24 +415,13 @@ public class PostInstallFixupAction extends ProductAction {
                 binFiles[++i] = "nb.exe";
                 binFiles[++i] = "netbeans.exe";
             }
-            if (!Util.isOS2OS()) {// XXX gone anyway
-                binFiles[++i] = "netbeans.cmd";
-            }
-            if (!Util.isOpenVMSOS())
-                binFiles[++i] = "runideopenvms.com";
             if (!Util.isMacOSX())
                 binFiles[++i] = "macosx_launcher.dmg";
-            if (!Util.isOS2OS())// XXX gone anyway
-                binFiles[++i] = "runideos2.cmd";
-            if (Util.isWindowsOS() || Util.isOpenVMSOS() || Util.isOS2OS()) {
+            if (Util.isWindowsOS()) {
                 binFiles[++i] = "netbeans";
             }
             binFiles[++i] = null;
             deleteFiles(binDir, binFiles);
-            
-            if (Util.isWindowsOS()) {
-                deleteFiles(nbInstallDir + sep + "_uninst", new String[] {"nb-uninstall.template"});
-            }
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
         }
@@ -460,71 +449,102 @@ public class PostInstallFixupAction extends ProductAction {
     
     private static final String GNOMEAPPDIR = "/usr/share/applications";
     
-    void installGnomeIcon() {
-        java.io.File appdir = new java.io.File(GNOMEAPPDIR);
+    private void installGnomeIcon() {
+        java.io.File appDir = new java.io.File(GNOMEAPPDIR);
         
-        if (!appdir.exists()) {
+        if (!appDir.exists()) {
             return;
         }
         
         try {
-            String icondir = null;
+            String iconDir = null;
+            String menuDir = null;
             
-            if (appdir.canWrite()) {
-                icondir = GNOMEAPPDIR;
+            if (appDir.canWrite()) {
+                iconDir = GNOMEAPPDIR;
             } else {
-                String desktopdir = resolveString("$D(home)$J(file.separator)Desktop");
-                if (! fileService.fileExists(desktopdir)) {
-                    fileService.createDirectory(desktopdir);
+                String desktopDir;
+                desktopDir = resolveString("$D(home)$J(file.separator)Desktop");
+                if (! fileService.fileExists(desktopDir)) {
+                    fileService.createDirectory(desktopDir);
                 }
-                icondir = desktopdir;
+                iconDir = desktopDir;
+                
+                desktopDir = resolveString
+                ("$D(home)$J(file.separator).local$J(file.separator)share$J(file.separator)applications");
+                if (! fileService.fileExists(desktopDir)) {
+                    fileService.createDirectory(desktopDir);
+                }
+                menuDir = desktopDir;
             }
             
-            String iconfile = icondir + sep
-            + resolveString("$L(org.netbeans.installer.Bundle,Product.desktopFileName)");
+            //Icon file in install dir
+            String iconFileOrig = nbInstallDir + sep + "netbeans.desktop";
             
-            fileService.copyFile(nbInstallDir + sep + "netbeans.desktop", iconfile, true);
-            
-            String[] content = fileService.readAsciiFile(iconfile);
+            //Patch desktop file, replace templates with actual values
+            logEvent(this, Log.DBG,"Patch desktop file: " + iconFileOrig);
+            String[] content = fileService.readAsciiFile(iconFileOrig);
             if (content == null) {
                 return;
             }
-            String desktopIconName = resolveString("$L(org.netbeans.installer.Bundle,Product.desktopIconName)");
-            String productName = resolveString("$L(org.netbeans.installer.Bundle,Product.displayName)");
+            String desktopIconName = resolveString(BUNDLE + "Product.desktopIconName)");
+            String productName = resolveString(BUNDLE + "Product.displayName)");
             for (int i = 0; i < content.length; i++) {
                 content[i] = content[i].replaceAll("@absoluteInstallLocation@", nbInstallDir);
                 content[i] = content[i].replaceAll("@desktopIconName@", desktopIconName);
                 content[i] = content[i].replaceAll("@productName@", productName);
                 content[i] = content[i].replaceAll("@nbClusterDir@", nbClusterDir);
             }
+            fileService.updateAsciiFile(iconFileOrig, content, 0);
             
-            fileService.updateAsciiFile(iconfile, content, 0);
+            String iconFileDest;
+            iconFileDest = iconDir + sep
+            + resolveString(BUNDLE + "Product.desktopFileName)");
+            logEvent(this, Log.DBG,"Copy desktop file to: " + iconFileDest);
+            fileService.copyFile(iconFileOrig, iconFileDest, true);
+            if (menuDir != null) {
+                iconFileDest = menuDir + sep
+                + resolveString(BUNDLE + "Product.desktopFileName)");
+                logEvent(this, Log.DBG,"Copy desktop file to: " + iconFileDest);
+                fileService.copyFile(iconFileOrig, iconFileDest, true);
+            }
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
         }
     }
     
-    void uninstallGnomeIcon() {
-        java.io.File appdir = new java.io.File(GNOMEAPPDIR);
+    private void uninstallGnomeIcon() {
+        java.io.File appDir = new java.io.File(GNOMEAPPDIR);
         
-        if (!appdir.exists()) {
+        if (!appDir.exists()) {
             return;
         }
         
         try {
-            String icondir = null;
-            
-            if (appdir.canWrite()) {
-                icondir = GNOMEAPPDIR;
+            String iconDir = null;
+            String menuDir = null;
+            if (appDir.canWrite()) {
+                iconDir = GNOMEAPPDIR;
             } else {
-                icondir = resolveString("$D(home)$J(file.separator)Desktop");
+                iconDir = resolveString("$D(home)$J(file.separator)Desktop");
+                menuDir = resolveString
+                ("$D(home)$J(file.separator).local$J(file.separator)share$J(file.separator)applications");
             }
             
-            String iconfile = icondir + sep
-            + resolveString("$L(org.netbeans.installer.Bundle,Product.desktopFileName)");
-            
-            if (fileService.fileExists(iconfile)) {
-                fileService.deleteFile(iconfile);
+            String iconFile;
+            iconFile = iconDir + sep
+            + resolveString(BUNDLE + "Product.desktopFileName)");
+            if (fileService.fileExists(iconFile)) {
+                logEvent(this, Log.DBG,"Delete desktop file: " + iconFile);
+                fileService.deleteFile(iconFile);
+            }
+            if (menuDir != null) {
+                iconFile = menuDir + sep
+                + resolveString(BUNDLE + "Product.desktopFileName)");
+                if (fileService.fileExists(iconFile)) {
+                    logEvent(this, Log.DBG,"Delete desktop file: " + iconFile);
+                    fileService.deleteFile(iconFile);
+                }
             }
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
