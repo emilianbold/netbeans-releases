@@ -91,7 +91,6 @@ public final class FileBrowserCD extends ComponentDescriptor {
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
             .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
-            //.addParameters (MidpCustomCodePresenterSupport.createWaitScreenCommandParameter ())
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY));
     }
 

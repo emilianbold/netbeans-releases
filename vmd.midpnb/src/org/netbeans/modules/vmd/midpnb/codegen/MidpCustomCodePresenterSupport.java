@@ -158,7 +158,7 @@ public final class MidpCustomCodePresenterSupport {
         }
 
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
-            Integer pimListType = (Integer) component.readProperty(PIMBrowserCD.PROP_PIM_LIST_TYPE).getPrimitiveValue();
+            Integer pimListType = (Integer) component.readProperty(PIMBrowserCD.PROP_PIM_TYPE).getPrimitiveValue();
             String listTypeParameter = null;  
             switch (pimListType) {
                 case PIMBrowserCD.VALUE_CONTACT_LIST:  

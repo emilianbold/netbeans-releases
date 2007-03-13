@@ -71,7 +71,7 @@ public final class PIMBrowserCD extends ComponentDescriptor {
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/PIM_browser_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = null;
     
-    public static final String PROP_PIM_LIST_TYPE = "pimListType"; //NOI18N
+    public static final String PROP_PIM_TYPE = "pimType"; //NOI18N
 
     private static Map listTypes;
     private static Map accessTypes;
@@ -90,21 +90,20 @@ public final class PIMBrowserCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_PIM_LIST_TYPE, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(VALUE_CONTACT_LIST), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_PIM_TYPE, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(VALUE_CONTACT_LIST), true, true, MidpVersionable.MIDP_2)
         );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                   .addProperty("PIM List Type", PropertyEditorComboBox.createInstance(getListTypes(), TYPEID), PROP_PIM_LIST_TYPE);
+                   .addProperty("PIM Type", PropertyEditorComboBox.createInstance(getListTypes(), TYPEID), PROP_PIM_TYPE);
     }
     
     private Presenter createSetterPresenter() {
         return new CodeSetterPresenter()
         .addParameters(MidpCustomCodePresenterSupport.createDisplayParameter())
         .addParameters(MidpCustomCodePresenterSupport.createPIMListTypesParameter())
-        //.addParameters (MidpCustomCodePresenterSupport.createWaitScreenCommandParameter ())
         .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(MidpCustomCodePresenterSupport.PARAM_DISPLAY, MidpCustomCodePresenterSupport.PARAM_PIM_LIST_TYPE));
     }
     
@@ -114,13 +113,11 @@ public final class PIMBrowserCD extends ComponentDescriptor {
                 createPropertiesPresenter(),
                 // code
                 createSetterPresenter(),
-                // delete
-                //DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK)
+                MidpCodePresenterSupport.createAddImportPresenter("javax.microedition.pim.PIM"), //NOI18N
                 // actions
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
                 //inspector
-                InspectorPositionPresenter.create(new DisplayablePC()),
-                MidpCodePresenterSupport.createAddImportPresenter("javax.microedition.pim.PIM") //NOI18N
+                InspectorPositionPresenter.create(new DisplayablePC())
                 );
     }
     
