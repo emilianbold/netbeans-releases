@@ -66,11 +66,13 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
             
         if ( isSelected ) {
             label.setForeground(LIST_FOR_COLORS.getSelectionForeground());
+            setOpaque(true);
             setBackground(LIST_FOR_COLORS.getSelectionBackground());
         }
         else {
             label.setForeground(tree.getForeground());
-            setBackground(tree.getBackground());
+            setOpaque(false);
+            //setBackground(tree.getBackground());
         }
         
         label.setText( n.getHtmlDisplayName() );
