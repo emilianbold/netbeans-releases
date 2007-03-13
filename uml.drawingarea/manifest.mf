@@ -3,7 +3,7 @@ OpenIDE-Module-Install: org/netbeans/modules/uml/drawingarea/DrawingAreaModule.c
 OpenIDE-Module: org.netbeans.modules.uml.drawingarea/1
 OpenIDE-Module-Layer: org/netbeans/modules/uml/drawingarea/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/uml/drawingarea/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1.14
+OpenIDE-Module-Specification-Version: 1.2.0
 
 Name: org/netbeans/modules/uml/drawingarea/dataobject/DiagramXmlDataLoader.class
 OpenIDE-Module-Class: Loader
