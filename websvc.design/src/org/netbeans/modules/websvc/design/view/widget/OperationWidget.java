@@ -21,8 +21,8 @@ package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.awt.geom.GeneralPath;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -34,6 +34,8 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
  */
 public class OperationWidget extends Widget{
     
+    private static final Color FILL_COLOR = new Color(204,255,255);
+    private static final Color BORDER_COLOR = new Color(153,204,255);
     private LabelWidget label;
 
     /**
@@ -59,36 +61,18 @@ public class OperationWidget extends Widget{
     
     protected void paintWidget() {
         Rectangle bounds = getBounds();
+        Polygon polygon = new Polygon();
+        polygon.addPoint(bounds.x+bounds.height/2, bounds.y);
+        polygon.addPoint(bounds.x+bounds.width-bounds.height/2, bounds.y);
+        polygon.addPoint(bounds.x+bounds.width, bounds.y+bounds.height/2);
+        polygon.addPoint(bounds.x+bounds.width-bounds.height/2, bounds.y+bounds.height);
+        polygon.addPoint(bounds.x+bounds.height/2, bounds.y+bounds.height);
+        polygon.addPoint(bounds.x, bounds.y+bounds.height/2);
         Graphics2D g = getGraphics();
-        g.setColor(new Color(204,255,255));
-        GeneralPath gp = new GeneralPath();
-        gp.moveTo(bounds.x+bounds.height/2, bounds.y);
-        gp.lineTo(bounds.x+bounds.width-bounds.height/2, bounds.y);
-        gp.lineTo(bounds.x+bounds.width, bounds.y+bounds.height/2);
-        gp.lineTo(bounds.x+bounds.width-bounds.height/2, bounds.y+bounds.height);
-        gp.lineTo(bounds.x+bounds.height/2, bounds.y+bounds.height);
-        gp.lineTo(bounds.x, bounds.y+bounds.height/2);
-        gp.closePath();
-        g.fill(gp);
-        g.setColor(new Color(153,204,255));
-        g.drawPolyline(new int [] {
-            bounds.x+bounds.height/2,
-            bounds.x+bounds.width-bounds.height/2,
-            bounds.x+bounds.width,
-            bounds.x+bounds.width-bounds.height/2,
-            bounds.x+bounds.height/2,
-            bounds.x,
-            bounds.x+bounds.height/2,
-        }, new int [] {
-        bounds.y,
-        bounds.y,
-        bounds.y+bounds.height/2,
-        bounds.y+bounds.height,
-        bounds.y+bounds.height,
-        bounds.y+bounds.height/2,
-        bounds.y,
-        }, 7
-        );
+        g.setColor(FILL_COLOR);
+        g.fillPolygon(polygon);
+        g.setColor(BORDER_COLOR);
+        g.drawPolygon(polygon);
     }
     
 }
