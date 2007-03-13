@@ -224,7 +224,7 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      * @param e
      *            the mouse event
      */
-    protected void positionCaret(MouseEvent e) { // XXX When is this used?
+    private /*protected*/ void positionCaret(MouseEvent e) { // XXX When is this used?
 
         Point pt = new Point(e.getX(), e.getY());
 //        Position pos = component.getUI().viewToModel(component, pt);
@@ -249,7 +249,7 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      * @param e
      *            the mouse event
      */
-    protected void moveCaret(MouseEvent e) {
+    private /*protected*/ void moveCaret(MouseEvent e) {
         Point pt = new Point(e.getX(), e.getY());
 //        Position pos = component.getUI().viewToModel(component, pt);
         WebForm webform = component.getDocument().getWebForm();
@@ -408,7 +408,7 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         }
     }
 
-    void adjustCaretAndFocus(MouseEvent e) {
+    private void adjustCaretAndFocus(MouseEvent e) {
         adjustCaret(e);
         adjustFocus(false);
     }
