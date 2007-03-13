@@ -328,7 +328,8 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      * @see #readObject
      */
     private static final String uiClassID = "EditorPaneUI";
-    private Document model = null;
+//    private Document model = null;
+    private final Document model;
 
     // --- member variables ----------------------------------
 
