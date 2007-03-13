@@ -147,7 +147,6 @@ public final class ActionFactory {
      * The key-to-action binding is obtained from the InputMap of a view JComponent of a scene.
      * The actions for popup menu are obtained from the ActionMap of a view JComponent of a scene.
      * @return the action-map action
-     * @deprecated experimental action
      */
     public static WidgetAction createActionMapAction () {
         return ACTION_MAP_ACTION;
@@ -159,7 +158,6 @@ public final class ActionFactory {
      * @param inputMap the input map
      * @param actionMap the action map
      * @return the action-map action
-     * @deprecated experimental action
      */
     public static WidgetAction createActionMapAction (InputMap inputMap, ActionMap actionMap) {
         assert inputMap != null  &&  actionMap != null;
