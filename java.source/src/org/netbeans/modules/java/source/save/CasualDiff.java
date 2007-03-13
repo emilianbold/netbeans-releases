@@ -689,15 +689,28 @@ public class CasualDiff {
         localPointer = diffTree(oldT.selector, newT.selector, selectorBounds);
         
         int castListHint = oldT.cases.size() > 0 ? oldT.cases.head.pos : Query.NOPOS;
-        diffList(oldT.cases, newT.cases, LineInsertionType.BEFORE, castListHint);
+        PositionEstimator est = EstimatorFactory.members(oldT.getCases(), newT.getCases(), workingCopy);
+        copyTo(localPointer, castListHint);
+        int[] pos = diffList(oldT.cases, newT.cases, castListHint, est, Measure.DEFAULT, printer);
         
-        copyTo(localPointer, bounds[1]);
+        copyTo(pos[1], bounds[1]);
         return bounds[1];
     }
 
-    protected void diffCase(JCCase oldT, JCCase newT) {
-        diffTree(oldT.pat, newT.pat, getBounds(oldT.pat));
-        diffList(oldT.stats, newT.stats, LineInsertionType.BEFORE, endPos(oldT) + 1); // after colon
+    protected int diffCase(JCCase oldT, JCCase newT, int[] bounds) {
+        int localPointer = bounds[0];
+        if (oldT.pat != null) {
+            int[] patBounds = getBounds(oldT.pat);
+            copyTo(localPointer, patBounds[0]);
+            localPointer = diffTree(oldT.pat, newT.pat, patBounds);
+        }
+        int pos = oldT.stats.head.pos;
+        copyTo(localPointer, pos);
+        PositionEstimator est = EstimatorFactory.members(oldT.getStatements(), newT.getStatements(), workingCopy);
+        localPointer = diffList(oldT.stats, newT.stats, pos, est, Measure.DEFAULT, printer)[1];
+        copyTo(localPointer, bounds[1]);
+        
+        return bounds[1];
     }
 
     protected int diffSynchronized(JCSynchronized oldT, JCSynchronized newT, int[] bounds) {
@@ -2271,7 +2284,7 @@ public class CasualDiff {
               retVal = diffSwitch((JCSwitch)oldT, (JCSwitch)newT, elementBounds);
               break;
           case JCTree.CASE:
-              diffCase((JCCase)oldT, (JCCase)newT);
+              retVal = diffCase((JCCase)oldT, (JCCase)newT, elementBounds);
               break;
           case JCTree.SYNCHRONIZED:
               retVal = diffSynchronized((JCSynchronized)oldT, (JCSynchronized)newT, elementBounds);
