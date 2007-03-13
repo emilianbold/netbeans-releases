@@ -33,6 +33,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
+import org.netbeans.jemmy.operators.Operator;
 
 
 /**
@@ -52,6 +53,14 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
         super(topComponentName,Index);
+    }
+    
+    public static WebFormDesignerOperator findWebFormDesignerOperator(String topComponentName){
+        StringComparator oldOperator = Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(new DefaultStringComparator(true, true));
+        WebFormDesignerOperator webFormDesignerOperator =  new WebFormDesignerOperator(topComponentName);
+        Operator.setDefaultStringComparator(oldOperator);
+        return webFormDesignerOperator;
     }
     
     public void switchToDesignView() {

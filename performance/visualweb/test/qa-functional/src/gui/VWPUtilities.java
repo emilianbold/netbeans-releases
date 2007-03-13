@@ -42,7 +42,7 @@ public class VWPUtilities extends gui.Utilities{
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(projectName),WEB_PAGES + "|" +jspFileName + ".jsp");
         new OpenAction().performPopup(openFile);
         
-        WebFormDesignerOperator surface = new WebFormDesignerOperator(jspFileName);
+        WebFormDesignerOperator surface = WebFormDesignerOperator.findWebFormDesignerOperator(jspFileName);
         surface.switchToDesignView();
 
         return surface;

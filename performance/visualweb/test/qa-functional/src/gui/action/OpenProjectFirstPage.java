@@ -19,16 +19,13 @@
 
 package gui.action;
 
-import gui.VWPUtilities;
 import gui.window.WebFormDesignerOperator;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -39,19 +36,20 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     
     private Node openNode;
     private String targetProject;
-    private boolean projectwasopened = true;
+    
+    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     
     /** Creates a new instance of OpenProjectFirstPage */
     public OpenProjectFirstPage(String testName) {
         super(testName);
-        expectedTime = 18000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=20000;
     }
     
     /** Creates a new instance of OpenProjectFirstPage */
     public OpenProjectFirstPage(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 18000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=20000;
     }
     
@@ -68,22 +66,10 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     
     public void initialize(){
         log("::initialize::");
-        Node pNode = null;
-        try {
-            pNode = new ProjectsTabOperator().getProjectRootNode(targetProject);
-        } catch(TimeoutExpiredException te) {
-            projectwasopened = false;  
-        }
-        if(projectwasopened) {
-            ProjectSupport.closeProject(targetProject);
-        }
     }
     
     public void prepare(){
         log("::prepare");
-        
-        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +targetProject);
-        VWPUtilities.waitForPendingBackgroundTasks(); 
         
         openNode = new Node(new ProjectsTabOperator().getProjectRootNode(targetProject), gui.VWPUtilities.WEB_PAGES + '|' + "Page1.jsp");
         
@@ -101,29 +87,27 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
         }
         log("------------------------- after popup invocation ------------");
         try {
-            popup.pushMenu("Open");
+            popup.pushMenu(OPEN);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
             throw new Error("Cannot push menu item ");
         }
         
-        return new WebFormDesignerOperator("Page1");
+        return WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
     }
     
     public void close(){
         log("::close");
-        if(testedComponentOperator != null) { ((WebFormDesignerOperator)testedComponentOperator).close(); }
-        ProjectSupport.closeProject(targetProject);
+        super.close();
+        if(testedComponentOperator != null) { 
+            ((WebFormDesignerOperator)testedComponentOperator).close(); 
+        }
     }
     
     protected void shutdown() {
         log("::shutdown");
-        if(projectwasopened) {
-            VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +targetProject);
-            VWPUtilities.waitForPendingBackgroundTasks();             
-        }       
     }
     
     public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new OpenProjectFirstPage("testOpenProjectFirstPage"));
+        junit.textui.TestRunner.run(new OpenProjectFirstPage("testOpenLargeProjectFirstPage"));
     }
 }
