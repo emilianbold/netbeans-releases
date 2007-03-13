@@ -84,6 +84,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("testChangeLiteral"));
 //        suite.addTest(new BodyStatementTest("testRenameInArrInit"));
 //        suite.addTest(new BodyStatementTest("testRenameClazz"));
+//        suite.addTest(new BodyStatementTest("testRenameInCase"));
         return suite;
     }
     
@@ -2033,6 +2034,86 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    /**
+     * Rename in case
+     */
+    public void testRenameInCase() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    void method() {\n" +
+            "        int i = 10;\n" +
+            "        switch (i) {\n" +
+            "            case 0: {\n" +
+            "                System.err.println(i);\n" +
+            "            }\n" +
+            "            case 1:\n" +
+            "                i = 12;\n" +
+            "            default:\n" +
+            "                i += 7;\n" +
+            "                break;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    void method() {\n" +
+            "        int ycko = 10;\n" +
+            "        switch (ycko) {\n" +
+            "            case 0: {\n" +
+            "                System.err.println(ycko);\n" +
+            "            }\n" +
+            "            case 1:\n" +
+            "                ycko = 12;\n" +
+            "            default:\n" +
+            "                ycko += 7;\n" +
+            "                break;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                BlockTree bt = method.getBody();
+                VariableTree vt = (VariableTree) bt.getStatements().get(0);
+                workingCopy.rewrite(vt, make.setLabel(vt, "ycko"));
+                SwitchTree st = (SwitchTree) bt.getStatements().get(1);
+                ParenthesizedTree pt = (ParenthesizedTree) st.getExpression();
+                workingCopy.rewrite(pt.getExpression(), make.setLabel(pt.getExpression(), "ycko"));
+                CaseTree kejs = st.getCases().get(0);
+                bt = (BlockTree) kejs.getStatements().get(0);
+                ExpressionStatementTree est = (ExpressionStatementTree) bt.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                workingCopy.rewrite(mit.getArguments().get(0), make.Identifier("ycko"));
+                kejs = st.getCases().get(1);
+                est = (ExpressionStatementTree) kejs.getStatements().get(0);
+                AssignmentTree at = (AssignmentTree) est.getExpression();
+                workingCopy.rewrite(at.getVariable(), make.setLabel(at.getVariable(), "ycko"));
+                kejs = st.getCases().get(2);
+                est = (ExpressionStatementTree) kejs.getStatements().get(0);
+                CompoundAssignmentTree cat = (CompoundAssignmentTree) est.getExpression();
+                workingCopy.rewrite(cat.getVariable(), make.setLabel(cat.getVariable(), "ycko"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     // methods not used in this test.
     String getGoldenPckg() {
         return "";
