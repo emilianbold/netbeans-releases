@@ -19,9 +19,12 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 
+import java.text.NumberFormat;
 import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.NumberFormatter;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
@@ -47,6 +50,8 @@ public class STSConfigServicePanel extends JPanel {
 
     private boolean inSync = false;
     
+    private DefaultFormatterFactory lifeTimeDff = null;
+    
     /**
      * Creates new form STSConfigServicePanel
      */
@@ -54,6 +59,16 @@ public class STSConfigServicePanel extends JPanel {
         this.model = model;
         this.project = p;
         this.binding = binding;
+
+        lifeTimeDff = new DefaultFormatterFactory();
+        NumberFormat lifetimeFormat = NumberFormat.getIntegerInstance();
+        lifetimeFormat.setGroupingUsed(false);
+        lifetimeFormat.setParseIntegerOnly(true);
+        lifetimeFormat.setMaximumFractionDigits(0);
+        NumberFormatter lifetimeFormatter = new NumberFormatter(lifetimeFormat);
+        lifetimeFormatter.setCommitsOnValidEdit(true);
+        lifetimeFormatter.setMinimum(0);
+        lifeTimeDff.setDefaultFormatter(lifetimeFormatter);
 
         initComponents();
 
@@ -210,9 +225,9 @@ public class STSConfigServicePanel extends JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         serviceProvidersPanel = new javax.swing.JPanel();
         lifeTimeLabel = new javax.swing.JLabel();
-        lifeTimeTextField = new javax.swing.JTextField();
         contractLabel = new javax.swing.JLabel();
         contractTextField = new javax.swing.JTextField();
         contractButton = new javax.swing.JButton();
@@ -220,27 +235,24 @@ public class STSConfigServicePanel extends JPanel {
         issuerField = new javax.swing.JTextField();
         encryptKeyChBox = new javax.swing.JCheckBox();
         encryptTokenChBox = new javax.swing.JCheckBox();
+        lifeTimeTextField = new javax.swing.JFormattedTextField();
+
+        serviceProvidersPanel.setAutoscrolls(true);
 
         org.jdesktop.layout.GroupLayout serviceProvidersPanelLayout = new org.jdesktop.layout.GroupLayout(serviceProvidersPanel);
         serviceProvidersPanel.setLayout(serviceProvidersPanelLayout);
         serviceProvidersPanelLayout.setHorizontalGroup(
             serviceProvidersPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 604, Short.MAX_VALUE)
+            .add(0, 648, Short.MAX_VALUE)
         );
         serviceProvidersPanelLayout.setVerticalGroup(
             serviceProvidersPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(0, 90, Short.MAX_VALUE)
         );
 
-        lifeTimeLabel.setText(org.openide.util.NbBundle.getMessage(STSConfigServicePanel.class, "LBL_STSConfig_Lifetime"));
+        lifeTimeLabel.setText(org.openide.util.NbBundle.getMessage(STSConfigServicePanel.class, "LBL_STSConfig_Lifetime")); // NOI18N
 
-        lifeTimeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                lifeTimeTextFieldKeyReleased(evt);
-            }
-        });
-
-        contractLabel.setText(org.openide.util.NbBundle.getMessage(STSConfigServicePanel.class, "LBL_STSConfig_Contract"));
+        contractLabel.setText(org.openide.util.NbBundle.getMessage(STSConfigServicePanel.class, "LBL_STSConfig_Contract")); // NOI18N
 
         contractTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -248,14 +260,14 @@ public class STSConfigServicePanel extends JPanel {
             }
         });
 
-        contractButton.setText(org.openide.util.NbBundle.getMessage(STSConfigServicePanel.class, "LBL_STSConfig_Browse"));
+        contractButton.setText(org.openide.util.NbBundle.getMessage(STSConfigServicePanel.class, "LBL_STSConfig_Browse")); // NOI18N
         contractButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 contractButtonActionPerformed(evt);
             }
         });
 
-        issuerLabel.setText(org.openide.util.NbBundle.getMessage(STSConfigServicePanel.class, "LBL_STSConfig_Issuer"));
+        issuerLabel.setText(org.openide.util.NbBundle.getMessage(STSConfigServicePanel.class, "LBL_STSConfig_Issuer")); // NOI18N
 
         issuerField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -263,7 +275,8 @@ public class STSConfigServicePanel extends JPanel {
             }
         });
 
-        encryptKeyChBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/wsitconf/ui/service/subpanels/Bundle").getString("LBL_STSConfig_EncryptKey"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/wsitconf/ui/service/subpanels/Bundle"); // NOI18N
+        encryptKeyChBox.setText(bundle.getString("LBL_STSConfig_EncryptKey")); // NOI18N
         encryptKeyChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptKeyChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         encryptKeyChBox.addActionListener(new java.awt.event.ActionListener() {
@@ -272,12 +285,19 @@ public class STSConfigServicePanel extends JPanel {
             }
         });
 
-        encryptTokenChBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/wsitconf/ui/service/subpanels/Bundle").getString("LBL_STSConfig_EncryptToken"));
+        encryptTokenChBox.setText(bundle.getString("LBL_STSConfig_EncryptToken")); // NOI18N
         encryptTokenChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptTokenChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         encryptTokenChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 encryptTokenChBoxActionPerformed(evt);
+            }
+        });
+
+        lifeTimeTextField.setFormatterFactory(lifeTimeDff);
+        lifeTimeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                lifeTimeTextFieldKeyReleased(evt);
             }
         });
 
@@ -298,20 +318,22 @@ public class STSConfigServicePanel extends JPanel {
                             .add(issuerLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lifeTimeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                            .add(issuerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(contractTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(contractButton))
-                            .add(issuerField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(lifeTimeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 95, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(layout.createSequentialGroup()
+                                        .add(contractTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(contractButton)))))
                         .add(10, 10, 10))
                     .add(layout.createSequentialGroup()
                         .add(encryptKeyChBox)
-                        .addContainerGap(493, Short.MAX_VALUE))
+                        .addContainerGap(523, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(encryptTokenChBox)
-                        .addContainerGap(483, Short.MAX_VALUE))))
+                        .addContainerGap(509, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -339,6 +361,14 @@ public class STSConfigServicePanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void lifeTimeTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_lifeTimeTextFieldKeyReleased
+        Object o = lifeTimeTextField.getValue();
+        if (o instanceof Integer) {
+            String ltime = o.toString();
+            ProprietarySecurityPolicyModelHelper.setSTSLifeTime(binding, ltime);
+        }
+}//GEN-LAST:event_lifeTimeTextFieldKeyReleased
+
     private void encryptTokenChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptTokenChBoxActionPerformed
         ProprietarySecurityPolicyModelHelper.setSTSEncryptKey(binding, encryptTokenChBox.isSelected());
     }//GEN-LAST:event_encryptTokenChBoxActionPerformed
@@ -356,11 +386,6 @@ public class STSConfigServicePanel extends JPanel {
         String issuer = issuerField.getText();
         ProprietarySecurityPolicyModelHelper.setSTSIssuer(binding, issuer);
     }//GEN-LAST:event_issuerFieldKeyReleased
-
-    private void lifeTimeTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_lifeTimeTextFieldKeyReleased
-        String ltime = lifeTimeTextField.getText();
-        ProprietarySecurityPolicyModelHelper.setSTSLifeTime(binding, ltime);
-    }//GEN-LAST:event_lifeTimeTextFieldKeyReleased
 
     private void contractButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contractButtonActionPerformed
         if (project != null) {
@@ -387,7 +412,7 @@ public class STSConfigServicePanel extends JPanel {
     private javax.swing.JTextField issuerField;
     private javax.swing.JLabel issuerLabel;
     private javax.swing.JLabel lifeTimeLabel;
-    private javax.swing.JTextField lifeTimeTextField;
+    private javax.swing.JFormattedTextField lifeTimeTextField;
     private javax.swing.JPanel serviceProvidersPanel;
     // End of variables declaration//GEN-END:variables
     

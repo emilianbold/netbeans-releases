@@ -108,6 +108,7 @@ public class ServiceProviderSelectorPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         spUrlLabel = new javax.swing.JLabel();
         certAliasLabel = new javax.swing.JLabel();
         tokenTypeLabel = new javax.swing.JLabel();
@@ -117,13 +118,13 @@ public class ServiceProviderSelectorPanel extends javax.swing.JPanel {
         keyTypeLabel = new javax.swing.JLabel();
         keyTypeCombo = new javax.swing.JComboBox();
 
-        spUrlLabel.setText(org.openide.util.NbBundle.getMessage(ServiceProviderSelectorPanel.class, "LBL_STSConfig_ProviderURL"));
+        spUrlLabel.setText(org.openide.util.NbBundle.getMessage(ServiceProviderSelectorPanel.class, "LBL_STSConfig_ProviderURL")); // NOI18N
 
-        certAliasLabel.setText(org.openide.util.NbBundle.getMessage(ServiceProviderSelectorPanel.class, "LBL_STSConfig_Alias"));
+        certAliasLabel.setText(org.openide.util.NbBundle.getMessage(ServiceProviderSelectorPanel.class, "LBL_STSConfig_Alias")); // NOI18N
 
-        tokenTypeLabel.setText(org.openide.util.NbBundle.getMessage(ServiceProviderSelectorPanel.class, "LBL_STSConfig_TokenType"));
+        tokenTypeLabel.setText(org.openide.util.NbBundle.getMessage(ServiceProviderSelectorPanel.class, "LBL_STSConfig_TokenType")); // NOI18N
 
-        keyTypeLabel.setText(org.openide.util.NbBundle.getMessage(ServiceProviderSelectorPanel.class, "LBL_STSConfig_KeyType"));
+        keyTypeLabel.setText(org.openide.util.NbBundle.getMessage(ServiceProviderSelectorPanel.class, "LBL_STSConfig_KeyType")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

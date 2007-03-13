@@ -231,7 +231,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                     }
                 }
             } catch (Exception e){
-                ErrorManager.getDefault().notify(e);
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getMessage());
             }
             FileObject fo = org.netbeans.modules.xml.retriever.catalog.Utilities.getFileObject(model.getModelSource());
             DataObject dO = null;

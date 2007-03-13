@@ -194,7 +194,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     public void setValue(javax.swing.JComponent source, Object value) {
         if (!inSync) {
             if (source.equals(lifeTimeTextField)) {
-                String lifeTime = lifeTimeTextField.getText();
+                String lifeTime = ((Integer) lifeTimeTextField.getValue()).toString();
                 if ((lifeTime == null) || (lifeTime.length() == 0) || (DEFAULT_LIFETIME.equals(lifeTime))) {
                     ProprietarySecurityPolicyModelHelper.setLifeTime(binding, null, true);
                 } else {
@@ -212,7 +212,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
 //            }
             
             if (source.equals(rmResendField)) {
-                String resendInt = rmResendField.getText();
+                String resendInt = ((Integer)rmResendField.getValue()).toString();
                 if ((resendInt == null) || (resendInt.length() == 0) || (DEFAULT_RMRESENDINTERVAL.equals(resendInt))) {
                     RMSunModelHelper.setResendInterval(binding, null);
                 } else {
@@ -221,7 +221,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
             }
 
             if (source.equals(rmCloseTimeoutField)) {
-                String closeTimeout = rmCloseTimeoutField.getText();
+                String closeTimeout = ((Integer)rmCloseTimeoutField.getValue()).toString();
                 if ((closeTimeout == null) || (closeTimeout.length() == 0) || (DEFAULT_RMCLOSETIMEOUT.equals(closeTimeout))) {
                     RMSunModelHelper.setCloseTimeout(binding, null);
                 } else {
@@ -230,7 +230,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
             }
             
             if (source.equals(rmAckRequestField)) {
-                String ackRequestInt = rmAckRequestField.getText();
+                String ackRequestInt = ((Integer)rmAckRequestField.getValue()).toString();
                 if ((ackRequestInt == null) || (ackRequestInt.length() == 0) || (DEFAULT_RMREQUESTACKINTERVAL.equals(ackRequestInt))) {
                     RMSunModelHelper.setAckRequestInterval(binding, null);
                 } else {

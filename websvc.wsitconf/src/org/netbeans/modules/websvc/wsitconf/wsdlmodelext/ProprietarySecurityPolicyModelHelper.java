@@ -839,12 +839,13 @@ public class ProprietarySecurityPolicyModelHelper {
             model.startTransaction();
         }
         try {
-            WSDLComponentFactory wcf = model.getFactory();
             List<ServiceProvider> spList = getSTSServiceProviders(stsConfig);
             for (ServiceProvider sp : spList) {
                 String ep = spe.getEndpoint();
                 if (ep.equals(sp.getEndpoint())) {
-                    stsConfig.removeExtensibilityElement(sp);
+                    if (sp.isInDocumentModel()) {
+                        sp.getParent().removeExtensibilityElement(sp);
+                    }
                     break;
                 }
             }
