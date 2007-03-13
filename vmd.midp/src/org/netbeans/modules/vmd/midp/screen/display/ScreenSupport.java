@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontFace;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontSize;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontStyle;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 
@@ -46,6 +47,14 @@ public final class ScreenSupport {
             face = FontFace.PROPORTIONAL;
         }
         
+        int styleCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_STYLE));
+        FontStyle style = FontStyle.PLAIN;
+        if (styleCode == FontCD.VALUE_STYLE_BOLD) {
+            style = FontStyle.BOLD;
+        } else if (styleCode == FontCD.VALUE_STYLE_ITALIC) {
+            style = FontStyle.ITALIC;
+        }
+
         int sizeCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_SIZE));
         FontSize size = FontSize.MEDIUM;
         if (sizeCode == FontCD.VALUE_SIZE_SMALL) {
@@ -53,7 +62,8 @@ public final class ScreenSupport {
         } else if (sizeCode == FontCD.VALUE_SIZE_LARGE) {
             size = FontSize.LARGE;
         }
-        return deviceInfo.getDeviceTheme().getFont(face, size);
+        
+        return deviceInfo.getDeviceTheme().getFont(face, style, size);
     }
     
 }

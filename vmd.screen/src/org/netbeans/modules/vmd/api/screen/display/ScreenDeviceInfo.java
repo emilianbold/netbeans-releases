@@ -22,36 +22,36 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Main class hodling bas device info for the device.  
- * 
+ * Main class hodling bas device info for the device.
+ *
  * TODO this class should be made abstract and the implementation
  * should be moved either to the MIDP module or to a completely
  * separate module defining L&F of the view
- * 
+ *
  * @author breh
  *
  */
 public class ScreenDeviceInfo {
-
-    private static final Border NORMAL_BORDER = BorderFactory.createEmptyBorder (3, 3, 3, 3);
+    
+    private static final Border NORMAL_BORDER = BorderFactory.createEmptyBorder(3, 3, 3, 3);
     private static final Border SELECTED_BORDER = BorderFactory.createLineBorder(Color.BLUE, 3);
-
+    
     public enum Edge {
         TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT
-    }    
+    }
     
     protected DeviceBorder[] deviceBorders;
     
     private static final String IMAGE_BASE = "org/netbeans/modules/vmd/screen/resources/display/"; // NOI18N
     private static final String[] IMAGE_NAMES = new String[] {
-            "top.png", "top_right.png", "right.png", "bottom_right.png", "bottom.png", "bottom_left.png", "left.png", "top_left.png" // NOI18N
+        "top.png", "top_right.png", "right.png", "bottom_right.png", "bottom.png", "bottom_left.png", "left.png", "top_left.png" // NOI18N
     };
     
     private Dimension currentScreenSize;
     private ArrayList<Dimension> customScreenSizes = new ArrayList<Dimension>();
     private DeviceTheme deviceTheme;
     
-    public ScreenDeviceInfo () {
+    public ScreenDeviceInfo() {
         loadImages();
         customScreenSizes.add(new Dimension(240,320));
         customScreenSizes.add(new Dimension(128,160));
@@ -59,31 +59,31 @@ public class ScreenDeviceInfo {
     }
     
     /**
-     * Gets device info ID. Used to identify the device info. 
+     * Gets device info ID. Used to identify the device info.
      * @return
      */
     public String getDeviceInfoID() {
         return "DefaultDevice"; // NOI18N
     }
-
+    
     /**
      * Gets device view resource (e.g. colors, images, fonts  ...)
      * @return
      */
-    public DeviceTheme getDeviceTheme () {
+    public DeviceTheme getDeviceTheme() {
         if (deviceTheme == null) {
-            deviceTheme = new DeviceTheme ();
+            deviceTheme = new DeviceTheme();
         }
         return deviceTheme;
     }
-        
+    
     /**
      * Gets current screen size
      * @return
      */
     public Dimension getCurrentScreenSize() {
         // TODO somehow obtain the screen size from the project
-        return currentScreenSize; 
+        return currentScreenSize;
     }
     
     /**
@@ -127,32 +127,32 @@ public class ScreenDeviceInfo {
         return deviceBorders[edge.ordinal()];
     }
     
-    protected void loadImages() {        
-        deviceBorders = new DeviceBorder[IMAGE_NAMES.length];        
-        for (int i=0; i < IMAGE_NAMES.length; i++) { 
+    protected void loadImages() {
+        deviceBorders = new DeviceBorder[IMAGE_NAMES.length];
+        for (int i=0; i < IMAGE_NAMES.length; i++) {
             deviceBorders[i] = new DeviceBorder(Utilities.loadImage(IMAGE_BASE + IMAGE_NAMES[i]));
         }
     }
-        
+    
     /**
      * Helper class implementing for showing one piece of device border
      * @author breh
      */
     public static class DeviceBorder extends JComponent {
-
+        
         private Image borderImage;
-
+        
         public DeviceBorder(Image borderImage) {
             this.setBorderImage(borderImage);
         }
-
+        
         /**
          * @return Returns the borderImage.
          */
         public Image getBorderImage() {
             return borderImage;
         }
-
+        
         /**
          * @param borderImage The borderImage to set.
          */
@@ -160,19 +160,19 @@ public class ScreenDeviceInfo {
             if (borderImage == null) throw new NullPointerException("borderImage parameter cannot be null"); // NOI18N
             this.borderImage = borderImage;
         }
-
+        
         /**
          * @return Returns the borderSize.
          */
         public Dimension getBorderSize() {
             return new Dimension(borderImage.getWidth(null), borderImage.getHeight(null));
-
+            
         }
-
+        
         public Dimension getPreferredSize() {
             return getBorderSize();
         }
-
+        
         protected void paintComponent(Graphics g) {
             if (borderImage != null) {
                 Dimension componentSize = getSize();
@@ -184,90 +184,83 @@ public class ScreenDeviceInfo {
     /**
      * Describes basic device resource. This class should be redesigned
      * to allow more independence on the actual implementation. Current
-     * version is too MIDP2 specific. 
+     * version is too MIDP2 specific.
      *
      * TODO this should be redesigned so it is not MIDP2 specific here !!!
-     *  
+     *
      * @author breh
+     * @author Anton Chechel
      */
     public static class DeviceTheme {
         
         public enum FontFace {MONOSPACE, PROPORTIONAL, SYSTEM}
         public enum FontSize {SMALL, MEDIUM, LARGE}
+        public enum FontStyle {PLAIN, BOLD, ITALIC}
+        // TODO add UNDERLINED style support
         public enum FontType {DEFAULT, INPUT_TEXT, STATIC_TEXT}
         
-        // fonts declaration
-        private static final Font FONT_MONOSPACE_PLAIN_SMALL  = new Font("Monospaced",Font.PLAIN,10);
-        private static final Font FONT_MONOSPACE_PLAIN_MEDIUM = new Font("Monospaced",Font.PLAIN,12);
-        private static final Font FONT_MONOSPACE_PLAIN_LARGE =  new Font("Monospaced",Font.PLAIN,16);
-
-        private static final Font FONT_PROPORTIONAL_PLAIN_SMALL = new Font("Dialog",Font.PLAIN,10);
-        private static final Font FONT_PROPORTIONAL_PLAIN_MEDIUM = new Font("Dialog",Font.PLAIN,12);
-        private static final Font FONT_PROPORTIONAL_PLAIN_LARGE = new Font("Dialog",Font.PLAIN,16);
+        private static final int FONT_SIZE_SMALL = 10;
+        private static final int FONT_SIZE_MEDIUM = 12;
+        private static final int FONT_SIZE_LARGE = 16;
         
-        private static final Font FONT_SYSTEM_PLAIN_SMALL = new Font("Dialog",Font.PLAIN,10);
-        private static final Font FONT_SYSTEM_PLAIN_MEDIUM = new Font("Dialog",Font.PLAIN,12);
-        private static final Font FONT_SYSTEM_PLAIN_LARGE = new Font("Dialog",Font.PLAIN,16);
-        
-        private static final Font FONT_DEFAULT = new Font("Dialog",Font.PLAIN,12);
-        private static final Font FONT_INPUT_TEXT = new Font("Dialog",Font.PLAIN,12);
-        private static final Font FONT_STATIC_TEXT = new Font("Dialog",Font.PLAIN,12);
+        private static final String FONT_FACE_MONOSPACE = "Monospaced"; // NOI18N
+        private static final String FONT_FACE_PROPORTIONAL = "Dialog"; // NOI18N
+        private static final String FONT_FACE_SYSTEM = "Dialog"; // NOI18N
         
         public static final int COLOR_BACKGROUND = 1;
         public static final int COLOR_FOREGROUND = 2;
         public static final int COLOR_HIGHLIGHTED = 3;
         
+        private static final Font FONT_DEFAULT = new Font(FONT_FACE_PROPORTIONAL, Font.PLAIN, FONT_SIZE_MEDIUM);
+        private static final Font FONT_INPUT_TEXT = new Font(FONT_FACE_PROPORTIONAL, Font.PLAIN, FONT_SIZE_MEDIUM);
+        private static final Font FONT_STATIC_TEXT = new Font(FONT_FACE_PROPORTIONAL, Font.PLAIN, FONT_SIZE_MEDIUM);
         
         public Font getFont(FontType type) {
             switch (type) {
-                case DEFAULT: return FONT_DEFAULT;
                 case INPUT_TEXT: return FONT_INPUT_TEXT;
                 case STATIC_TEXT: return FONT_STATIC_TEXT;
                 default: return FONT_DEFAULT;
             }
         }
         
-        public Font getFont(FontFace face, FontSize size) {
-            switch (face) {
-                case MONOSPACE: 
-                    switch (size) {
-                        case SMALL: return FONT_MONOSPACE_PLAIN_SMALL; 
-                        case MEDIUM: return FONT_MONOSPACE_PLAIN_MEDIUM;
-                        case LARGE: return FONT_MONOSPACE_PLAIN_LARGE;
-                    }
-                    break;
-                case PROPORTIONAL:
-                    switch (size) {
-                        case SMALL: return FONT_PROPORTIONAL_PLAIN_SMALL; 
-                        case MEDIUM: return FONT_PROPORTIONAL_PLAIN_MEDIUM;
-                        case LARGE: return FONT_PROPORTIONAL_PLAIN_LARGE;
-                    }
-                    break;
-                case SYSTEM: 
-                    switch (size) {
-                        case SMALL: return FONT_SYSTEM_PLAIN_SMALL; 
-                        case MEDIUM: return FONT_SYSTEM_PLAIN_MEDIUM;
-                        case LARGE: return FONT_SYSTEM_PLAIN_LARGE;
-                    }
-                    break;                    
+        public Font getFont(FontFace face, FontStyle style, FontSize size) {
+            String name = FONT_FACE_SYSTEM;
+            if (face == FontFace.MONOSPACE) {
+                name = FONT_FACE_MONOSPACE;
+            } else if (face == FontFace.PROPORTIONAL) {
+                name = FONT_FACE_PROPORTIONAL;
             }
             
-            return FONT_DEFAULT;
+            int styleInt = Font.PLAIN;
+            if (style == FontStyle.BOLD) {
+                styleInt = Font.BOLD;
+            } else if (style == FontStyle.ITALIC) {
+                styleInt = Font.ITALIC;
+            }
+            
+            int sizeInt = FONT_SIZE_MEDIUM;
+            if (size == FontSize.LARGE) {
+                sizeInt = FONT_SIZE_LARGE;
+            } else if (size == FontSize.SMALL) {
+                sizeInt = FONT_SIZE_SMALL;
+            }
+            
+            return new Font(name, styleInt, sizeInt);
         }
         
         public Color getColor(int colorType) {
             switch (colorType) {
-                case COLOR_BACKGROUND : return Color.WHITE;
-                case COLOR_FOREGROUND : return Color.BLACK;
-                case COLOR_HIGHLIGHTED : return Color.RED;
-                default: return null;
+            case COLOR_BACKGROUND : return Color.WHITE;
+            case COLOR_FOREGROUND : return Color.BLACK;
+            case COLOR_HIGHLIGHTED : return Color.RED;
+            default: return null;
             }
         }
-                
-        public Border getBorder (boolean selected) {
+        
+        public Border getBorder(boolean selected) {
             return selected ? SELECTED_BORDER : NORMAL_BORDER;
         }
-
+        
     }
     
 }
