@@ -19,16 +19,12 @@
 
 package org.netbeans.modules.subversion;
 
-import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.ui.copy.*;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.subversion.ui.status.StatusAction;
-import org.netbeans.modules.subversion.ui.status.ShowAllChangesAction;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
-import org.netbeans.modules.subversion.ui.commit.CommitAllAction;
 import org.netbeans.modules.subversion.ui.update.*;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
-import org.netbeans.modules.subversion.ui.diff.DiffAllAction;
 import org.netbeans.modules.subversion.ui.diff.ExportDiffAction;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
@@ -569,7 +565,7 @@ public class Annotator {
         boolean modified = false;
 
         Map map = cache.getAllModifiedFiles();
-        Map modifiedFiles = new HashMap();
+        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
         for (Iterator i = map.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) map.get(file);

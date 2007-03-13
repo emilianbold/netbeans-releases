@@ -29,18 +29,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.OpenVersioningAction"/>
             </file>
-            <file name="org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.ShowAllChangesAction"/>
-            </file>
-            <file name="org-netbeans-modules-subversion-ui-diff-DiffAllAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.diff.DiffAllAction"/>
-            </file>
-            <file name="org-netbeans-modules-subversion-ui-update-UpdateAllAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.update.UpdateAllAction"/>
-            </file>
-            <file name="org-netbeans-modules-subversion-ui-commit-CommitAllAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.commit.CommitAllAction"/>
-            </file>
 
             <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.checkout.CheckoutAction"/>
@@ -114,6 +102,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Window">
             <folder name="Versioning">            
+                <attr name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow/SeparatorVersioningOutput.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance"/>
                 </file>
