@@ -21,6 +21,7 @@ package org.netbeans.modules.languages.features;
 
 import java.util.Set;
 import org.netbeans.api.languages.ASTEvaluator;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
@@ -192,10 +193,10 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
 
 
     private static FoldType defaultFoldType = new FoldType ("default");
-    private List<F> folds;
+    private List<FoldItem> folds;
     
     public void beforeEvaluation (State state, ASTNode root) {
-        folds = new ArrayList<F> ();
+        folds = new ArrayList<FoldItem> ();
     }
 
     public void afterEvaluation (State state, ASTNode root) {
@@ -211,9 +212,9 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                         l.add (fold.getFold (i));
                     for (i = 0; i < k; i++)
                         operation.removeFromHierarchy (l.get (i), transaction);
-                    Iterator<F> it = folds.iterator ();
+                    Iterator<FoldItem> it = folds.iterator ();
                     while (it.hasNext ()) {
-                        F f = it.next ();
+                        FoldItem f = it.next ();
                         operation.addToHierarchy (
                             f.type, f.foldName, false, f.start, f.end, 0, 0, 
                             hierarchy, transaction
@@ -239,41 +240,47 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             String mimeType = item.getMimeType ();
             Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                 getLanguage (mimeType);
-            Feature fold = language.getFeature (Language.FOLD, path);
-            if (fold == null) return;
-            
-            TokenHierarchy th = TokenHierarchy.get (doc);
-            TokenSequence ts = th.tokenSequence ();
-            ts.move (e - 1);
-            if (!ts.moveNext ()) return;
-            while (!ts.language ().mimeType ().equals (mimeType)) {
-                ts = ts.embedded ();
-                if (ts == null) return;
+            List<Feature> fls = language.getFeatures (Language.FOLD, path);
+            if (fls == null || fls.isEmpty()) {
+                return;
+            }
+            Feature fold = fls.get(0);
+            boolean isTokenFold = (fls.size() == 1 && (item instanceof ASTToken) && 
+                        fold == language.getFeature(Language.FOLD, ((ASTToken) item).getType()));
+            if (!isTokenFold) {
+                TokenHierarchy th = TokenHierarchy.get (doc);
+                TokenSequence ts = th.tokenSequence ();
                 ts.move (e - 1);
                 if (!ts.moveNext ()) return;
+                while (!ts.language ().mimeType ().equals (mimeType)) {
+                    ts = ts.embedded ();
+                    if (ts == null) return;
+                    ts.move (e - 1);
+                    if (!ts.moveNext ()) return;
+                }
+                Token t = ts.token ();
+                Set<String> skip = language.getSkipTokenTypes ();
+                while (skip.contains (t.id ().name ())) {
+                    if (!ts.movePrevious ()) break;
+                    t = ts.token ();
+                }
+                ts.moveNext ();
+                e = ts.offset ();
+                sln = NbDocument.findLineNumber (doc, s);
+                eln = NbDocument.findLineNumber (doc, e);
+                if (eln - sln < 1) return;
             }
-            Token t = ts.token ();
-            Set<String> skip = language.getSkipTokenTypes ();
-            while (skip.contains (t.id ().name ())) {
-                if (!ts.movePrevious ()) break;
-                t = ts.token ();
-            }
-            ts.moveNext ();
-            e = ts.offset ();
-            sln = NbDocument.findLineNumber (doc, s);
-            eln = NbDocument.findLineNumber (doc, e);
-            if (eln - sln < 1) return;
                 
             if (fold.hasSingleValue ()) {
                 String foldName = (String) fold.getValue (SyntaxContext.create (doc, path));
                 if (foldName == null) return;            
-                folds.add (new F(foldName, s, e, defaultFoldType));
+                folds.add (new FoldItem(foldName, s, e, defaultFoldType));
                 return;
             }
             String foldName = (String) fold.getValue ("fold_display_name", SyntaxContext.create (doc, path));
             if (foldName == null) foldName = "...";
             String foldType = (String) fold.getValue ("collapse_type_action_name");
-            folds.add (new F (foldName, s, e, Folds.getFoldType (foldType)));
+            folds.add (new FoldItem (foldName, s, e, Folds.getFoldType (foldType)));
         } catch (ParseException ex) {
         }
     }
@@ -281,20 +288,20 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     
     // innerclasses ............................................................
     
-    private static final class F {
+    private static final class FoldItem {
         String foldName;
         int start;
         int end;
         FoldType type;
         
-        F (String foldName, int start, int end, FoldType type) {
+        FoldItem (String foldName, int start, int end, FoldType type) {
             this.foldName = foldName;
             this.start = start;
             this.end = end;
             this.type = type;
         }
     } 
-        
+
     public static final class Factory implements FoldManagerFactory {
         
         public FoldManager createFoldManager () {
