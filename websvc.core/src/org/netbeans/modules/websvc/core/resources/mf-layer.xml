@@ -237,8 +237,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="org-netbeans-modules-web-project">
             <folder name="Nodes">
-                <attr name="org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance/org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance" boolvalue="true"/>
+                <attr name="org-netbeans-modules-web-project-ui-DocBaseNodeFactory.instance/org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance"/>
+                <attr name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance/org-netbeans-modules-web-project-ui-ConfFilesNodeFactory.instance" boolvalue="true"/>
             </folder>
         </folder>
     </folder>
