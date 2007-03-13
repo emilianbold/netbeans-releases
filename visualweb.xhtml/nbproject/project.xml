@@ -130,7 +130,6 @@
                         <specification-version>1.9</specification-version>
                     </run-dependency>
                 </dependency>
-                
                 <!-- Included in org.netbeans.modules.visualweb.libs.javaee5
                 <dependency>
                     <code-name-base>org.netbeans.modules.servletjspapi</code-name-base>
@@ -142,7 +141,6 @@
                     </run-dependency>
                 </dependency>
                 -->
-
                 <dependency>
                     <code-name-base>org.openide.dialogs</code-name-base>
                     <build-prerequisite/>
@@ -186,12 +184,13 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.complib</friend>
-                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.designer</friend>
+                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
+                <friend>org.netbeans.modules.visualweb.navigation</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <package>org.netbeans.modules.visualweb.xhtml</package>

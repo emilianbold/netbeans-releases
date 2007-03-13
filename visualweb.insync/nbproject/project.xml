@@ -374,6 +374,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
                 <friend>org.netbeans.modules.visualweb.designer.decoration</friend>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.navigation</friend>
                 <friend>org.netbeans.modules.visualweb.outline</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
@@ -381,7 +382,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.visualweb.insync.beans</package>
                 <package>org.netbeans.modules.visualweb.insync.faces</package>
                 <package>org.netbeans.modules.visualweb.insync.faces.config</package>
-                <package>org.netbeans.modules.visualweb.insync.faces.refactoring</package>
                 <package>org.netbeans.modules.visualweb.insync.java</package>
                 <package>org.netbeans.modules.visualweb.insync.live</package>
                 <package>org.netbeans.modules.visualweb.insync.markup</package>

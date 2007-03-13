@@ -57,6 +57,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_1</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime_1_2</friend>
+                <friend>org.netbeans.modules.visualweb.navigation</friend>
                 <friend>org.netbeans.modules.visualweb.outline</friend>
                 <friend>org.netbeans.modules.visualweb.palette</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
