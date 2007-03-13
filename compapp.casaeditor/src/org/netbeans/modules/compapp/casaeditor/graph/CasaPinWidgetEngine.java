@@ -61,28 +61,20 @@ public class CasaPinWidgetEngine extends CasaPinWidget {
         mNameWidget = new LabelWidget(scene);
         mNameWidget.setOpaque(false);
         
-        Widget holderWidget = new Widget(scene);
         switch(getDirection()) {
             case LEFT :
-                holderWidget.setLayout(LayoutFactory.createHorizontalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 5));
-                holderWidget.addChild(mImageWidget);
-                holderWidget.addChild(mNameWidget);
-                holderWidget.addChild(mEmptyWidget);
+                setLayout(LayoutFactory.createHorizontalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 5));
+                addChild(mImageWidget);
+                addChild(mNameWidget);
+                addChild(mEmptyWidget);
                 break;
             case RIGHT :
-                holderWidget.setLayout(RegionUtilities.createHorizontalLayoutWithJustifications(LayoutFactory.SerialAlignment.RIGHT_BOTTOM, 5));
-                holderWidget.addChild(mEmptyWidget);
-                holderWidget.addChild(mNameWidget);
-                holderWidget.addChild(mImageWidget);
+                setLayout(RegionUtilities.createHorizontalLayoutWithJustifications(LayoutFactory.SerialAlignment.RIGHT_BOTTOM, 5));
+                addChild(mEmptyWidget);
+                addChild(mNameWidget);
+                addChild(mImageWidget);
                 break;
         }
-        
-        setLayout(LayoutFactory.createVerticalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, VERTICAL_GAP));
-        Widget topVerticalGap = new Widget(scene);
-        addChild(topVerticalGap);
-        addChild(holderWidget);
-        Widget verticalGap = new Widget(scene);
-        addChild(verticalGap);
     }
     
     protected void setSelected(boolean isSelected) {

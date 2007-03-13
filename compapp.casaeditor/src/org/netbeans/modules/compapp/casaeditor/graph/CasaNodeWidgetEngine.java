@@ -42,7 +42,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     public static final int ARROW_PIN_WIDTH           = 25;
     public static final int MARGIN_SE_ROUNDED_RECTANGLE = ARROW_PIN_WIDTH * 77 / 100;
     
-    private static final int PIN_VERTICAL_GAP         = 0;
+    private static final int PIN_VERTICAL_GAP         = 5;
     
     private static final int INVISIBLE_WRAPPER_OFFSET = 10;
     private static final int MINIMUM_SE_NODE_HEIGHT   = 20;
@@ -320,9 +320,23 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         setPinColor(getPinColor());
         mPinsHolderWidget.setPreferredBounds(null);
     }
-    
+
+    /*
+     * mPinsHolderWidget is having a mTitleWidget followed by Provide and Consume pin widgets, will be ended by cushioning 
+     * widget. CasaPinWidets need to be from 2nd position to the last but one position.
+     * 
+     * Provide need to be added at the last of provide pins and same is true for consume pins.
+     * 
+     * CshioningWidget will be added only when there is a CasaPinWidget, to avoid an empty space when there are no pins.
+     *  
+     */
     private void addPinWithOrdering(CasaPinWidget widget) {
-        int insertionIndex = 0;
+        if(mPinsHolderWidget.getChildren().size() <= 1) {       //Add cushoningWidget only once!
+            Widget cushioningWidget = new Widget(getScene());   //mTitlewidget is already present and thus checking the size with "1"
+            cushioningWidget.setPreferredBounds(new Rectangle(0,PIN_VERTICAL_GAP));
+            mPinsHolderWidget.addChild(cushioningWidget);
+        }
+        int insertionIndex = 1;    //TitleWidget is already there
         boolean isProvides = false;
         if (widget instanceof CasaPinWidgetEngineProvides) {
             isProvides = true;
@@ -338,14 +352,10 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                     insertionIndex++;
                 }
             } else {
-                insertionIndex++;
+                //insertionIndex++;
             }
         }
-        if (insertionIndex > mPinsHolderWidget.getChildren().size()) {
-            mPinsHolderWidget.addChild(widget);
-        } else {
-            mPinsHolderWidget.addChild(insertionIndex, widget);
-        }
+        mPinsHolderWidget.addChild(insertionIndex, widget);
     }
     
     /**
