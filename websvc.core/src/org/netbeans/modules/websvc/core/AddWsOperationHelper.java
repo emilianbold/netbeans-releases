@@ -42,6 +42,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
@@ -194,7 +195,7 @@ public class AddWsOperationHelper {
                                     method.getThrows(),
                                     getMethodBody(method.getReturnType()), //NOI18N
                                     (ExpressionTree)method.getDefaultValue());
-                        Comment comment = Comment.create(NbBundle.getMessage(AddWsOperationHelper.class, "TXT_WSOperation"));                    
+                        Comment comment = Comment.create(Style.JAVADOC, 0,0,0,NbBundle.getMessage(AddWsOperationHelper.class, "TXT_WSOperation"));                    
                         make.addComment(annotatedMethod, comment, true);
                         
                         handle.progress(90);
