@@ -64,14 +64,9 @@ public class ManagerBean implements Manager {
     public ManagerBean() {
         try {
             ROOT.mkdirs();
-            System.out.println("mkdirs " + ROOT);
             
             TEMP.mkdirs();
-            System.out.println("mkdirs " + TEMP);
-            
             REGISTRIES.mkdirs();
-            System.out.println("mkdirs " + REGISTRIES);
-            
             UPLOADS.mkdirs();
             BUNDLES.mkdirs();
             NBI.mkdirs();
@@ -702,6 +697,9 @@ public class ManagerBean implements Manager {
                         userDir.getAbsolutePath());
                 
                 if (results.getErrorCode() != 0) {
+                    System.out.println(results.getErrorCode());
+                    System.out.println(results.getStdOut());
+                    System.out.println(results.getStdErr());
                     throw new ManagerException("Could not create bundle - error in running the engine");
                 }
                 
