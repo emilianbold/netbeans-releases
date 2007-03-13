@@ -4,8 +4,9 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.visualweb.navigation</code-name-base>
+            <suite-component/>
             <module-dependencies>
-                <!--
+                
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
@@ -123,7 +124,7 @@
                     <run-dependency>
                         <specification-version>7.7.0.1</specification-version>
                     </run-dependency>
-                </dependency>-->
+                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>
