@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<schema targetNamespace="http://example.com/stockquote.xsd"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+    <element name="GetLastTradePrice">
+        <complexType>
+            <sequence>
+                <element name="tickerSymbol" type="xsd:string"/>
+            </sequence>
+        </complexType>
+    </element>
+    <element name="GetLastTradePriceResponse">
+        <complexType>
+            <sequence>
+                <element name="price" type="xsd:float"/>
+            </sequence>
+        </complexType>
+    </element>
+</schema>
+
