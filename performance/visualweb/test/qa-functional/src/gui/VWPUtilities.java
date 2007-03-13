@@ -40,7 +40,7 @@ public class VWPUtilities extends gui.Utilities{
      */
     public static WebFormDesignerOperator openedWebDesignerForJspFile(String projectName, String jspFileName){
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(projectName),WEB_PAGES + "|" +jspFileName + ".jsp");
-        new OpenAction().performAPI(openFile);
+        new OpenAction().performPopup(openFile);
         
         WebFormDesignerOperator surface = new WebFormDesignerOperator(jspFileName);
         surface.switchToDesignView();
