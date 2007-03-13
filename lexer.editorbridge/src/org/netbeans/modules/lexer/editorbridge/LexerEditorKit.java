@@ -20,16 +20,29 @@
 package org.netbeans.modules.lexer.editorbridge;
 
 import java.awt.event.ActionEvent;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.KeyStroke;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseTextUI;
+import org.netbeans.editor.MultiKeyBinding;
+import org.netbeans.editor.MultiKeymap;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
@@ -119,5 +132,84 @@ public class LexerEditorKit extends NbEditorKit {
         return coloringName;
     }
 
+    public MultiKeymap getKeymap() {
+        MultiKeymap km = new MultiKeymap("Keymap for " + mimeType);
+        Map actionsMap = getActionMapHack();
+        
+        // Load mime type's keybindings
+        KeyBindingSettings kbs = (KeyBindingSettings) MimeLookup.getMimeLookup(mimeType).lookup(KeyBindingSettings.class);
+        if (kbs != null) {
+            List keybindings = kbs.getKeyBindings();
+            JTextComponent.KeyBinding [] bindings = transform(keybindings);
+            km.load(bindings, actionsMap);
+        }
+        
+        // Load text/base keybindings
+        KeyBindingSettings textBaseKbs = (KeyBindingSettings) MimeLookup.getMimeLookup("text/base").lookup(KeyBindingSettings.class); //NOI18N
+        if (textBaseKbs != null) {
+            List keybindings = textBaseKbs.getKeyBindings();
+            JTextComponent.KeyBinding [] bindings = transform(keybindings);
+            km.load(bindings, actionsMap);
+        }
+        
+        // Load 'all editors' keybindings
+        KeyBindingSettings allKbs = (KeyBindingSettings) MimeLookup.getMimeLookup("").lookup(KeyBindingSettings.class);
+        if (allKbs != null) {
+            List keybindings = allKbs.getKeyBindings();
+            JTextComponent.KeyBinding [] bindings = transform(keybindings);
+            km.load(bindings, actionsMap);
+        }
+
+        // Load the IDE global keybindings using the old settings
+        synchronized (Settings.class) {
+            Settings.KitAndValue kv[] = Settings.getValueHierarchy(
+                                            this.getClass(), SettingsNames.KEY_BINDING_LIST);
+            // go through all levels and collect key bindings
+            for (int i = kv.length - 1; i >= 0; i--) {
+                List keyList = (List)kv[i].value;
+                JTextComponent.KeyBinding[] keys = new JTextComponent.KeyBinding[keyList.size()];
+                keyList.toArray(keys);
+                km.load(keys, actionsMap);
+            }
+        }
+        
+        // Set the default action
+        km.setDefaultAction((Action)actionsMap.get(defaultKeyTypedAction));
+        
+        return km;
+    }
+
+    private JTextComponent.KeyBinding [] transform(List/*<o.n.api.e.s.MultiKeybinding>*/ keybindings) {
+        ArrayList<JTextComponent.KeyBinding> jtcKeyBindings = new ArrayList<JTextComponent.KeyBinding>(keybindings.size());
+        
+        for(Iterator i = keybindings.iterator(); i.hasNext(); ) {
+            org.netbeans.api.editor.settings.MultiKeyBinding esMkb = (org.netbeans.api.editor.settings.MultiKeyBinding) i.next();
+            MultiKeyBinding editorMkb;
+            
+            if (0 == esMkb.getKeyStrokeCount()) {
+                continue;
+            } else if (1 == esMkb.getKeyStrokeCount()) {
+                editorMkb = new MultiKeyBinding(esMkb.getKeyStroke(0), esMkb.getActionName());
+            } else {
+                KeyStroke [] keyStrokes = (KeyStroke []) esMkb.getKeyStrokeList().toArray(new KeyStroke [esMkb.getKeyStrokeList().size()]);
+                editorMkb = new MultiKeyBinding(keyStrokes, esMkb.getActionName());
+            }
+            
+            jtcKeyBindings.add(editorMkb);
+        }
+        
+        return jtcKeyBindings.toArray(new JTextComponent.KeyBinding[jtcKeyBindings.size()]);
+    }
+    
+    private Map getActionMapHack() {
+        try {
+            Method m = BaseKit.class.getDeclaredMethod("getActionMap");
+            m.setAccessible(true);
+            return (Map) m.invoke(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
 

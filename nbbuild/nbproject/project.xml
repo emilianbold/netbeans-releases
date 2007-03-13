@@ -299,6 +299,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../javawebstart</project>
                 <project>../junit</project>
                 <project>../lexer</project>
+                <project>../lexer/editorbridge</project>
                 <project>../lexer/nbbridge</project>
                 <project>../libs/commons_logging</project>
                 <project>../libs/freemarker</project>
