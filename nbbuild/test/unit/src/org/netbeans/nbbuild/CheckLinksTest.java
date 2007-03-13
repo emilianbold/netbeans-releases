@@ -175,6 +175,58 @@ public class CheckLinksTest extends NbTestCase {
     }
     
     
+    public void testDocFilesRelativeLinks () throws Exception {
+        java.io.File html = extractHTMLFile (
+            "<head></head><body>\n" +
+            "<a href=\"#RelativeLink\">This link should pass the checking</a>\n" +
+	    "<a name=\"RelativeLink\"/>\n" + 
+            "</body>"
+        );
+      
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <checklinks checkexternal='false' failonerror='true' basedir='" + html.getParent() + "' >" +
+            "    <include name=\"" + html.getName () + "\" />" +
+            "  </checklinks>" +
+            "</target>" +
+            "</project>"
+        );
+        // success
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+    }
+    
+    
+    public void testDocFilesInvalidLinks () throws Exception {
+        java.io.File html = extractHTMLFile (
+            "<head></head><body>\n" +
+            "<a href=\"#InvalidLink\">This link should NOT pass the checking</a>\n" +
+            "</body>"
+        );
+      
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <checklinks checkexternal='false' failonerror='true' basedir='" + html.getParent() + "' >" +
+            "    <include name=\"" + html.getName () + "\" />" +
+            "  </checklinks>" +
+            "</target>" +
+            "</project>"
+        );
+        // failure
+        try {
+            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+            fail ("This should fail as the link is broken");
+        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+            // ok, this should fail on exit code
+        }
+    }
+    
+    
     private static File extractHTMLFile (String s) throws Exception {
         File f = PublicPackagesInProjectizedXMLTest.extractString (s);
         File n = new File (f.getParentFile (), f.getName () + ".html");
