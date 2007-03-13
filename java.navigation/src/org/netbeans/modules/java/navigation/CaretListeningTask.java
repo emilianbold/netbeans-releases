@@ -56,6 +56,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     }
     
     public void run(CompilationInfo compilationInfo) {
+        resume();
         
         boolean navigatorShouldUpdate = false;
         boolean javadocShouldUpdate = JavadocTopComponent.shouldUpdate();
@@ -149,6 +150,10 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     
     protected final synchronized boolean isCancelled() {
         return canceled;
+    }
+    
+    protected final synchronized void resume() {
+        canceled = false;
     }
     
     
