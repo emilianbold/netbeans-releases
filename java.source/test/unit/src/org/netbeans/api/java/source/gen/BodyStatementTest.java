@@ -2067,8 +2067,8 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "        switch (ycko) {\n" +
             "            case 0: {\n" +
             "                System.err.println(ycko);\n" +
-            "            }\n" +
-            "            case 1:\n" +
+            "            }" +
+            "case 1:\n" +
             "                ycko = 12;\n" +
             "            default:\n" +
             "                ycko += 7;\n" +
