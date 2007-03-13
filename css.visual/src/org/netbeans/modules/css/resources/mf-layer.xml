@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    
+    <!--<folder name="Windows2">
+        <folder name="Modes">
+            <file name="csspreview.wsmode" url="csspreview.wsmode"/>
+            <file name="cssEV.wsmode" url="cssEV.wsmode"/>
+            <folder name="navigator">
+                <file name="csspreviewTC.wstcref" url="csspreviewTC.wstcref"/>
+                <file name="cssEVTC.wstcref" url="cssEVTC.wstcref"/>
+            </folder>
+        </folder>
+        <folder name="Components">
+            <file name="csspreviewTC.settings" url="csspreviewTC.xml"/>
+            <file name="cssEVTC.settings" url="cssEVTC.xml"/>
+        </folder>
+    </folder>-->
+    
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="CssResolver.xml" url="CssResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-css">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-css">
+                
+                <file name="Settings.settings" url="EditorOptions.xml"/>
+                
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.editor.CssEditorKit"/>
+                </file>
+                
+                <folder name="Popup">
+                    <file name="CssSeparator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="org-openide-actions-PasteAction.instance/CssSeparator1.instance" boolvalue="true"/>
+                    <file name="create-rule"/>
+                    <attr name="CssSeparator1.instance/create-rule" boolvalue="true"/>
+                    <file name="SeparatorFolding.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    
+                    <attr name="create-rule/SeparatorFolding.instance" boolvalue="true"/>
+                    
+                    <file name="generate-fold-popup"/>
+                    <attr name="SeparatorFolding.instance/generate-fold-popup" boolvalue="true"/>
+                    <file name="format"/>
+                    <attr name="generate-fold-popup/format" boolvalue="true"/>
+                </folder>
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="create-rule"/>
+                        <file name="org-netbeans-modules-css-actions-CssStyleBuilderViewAction.instance"/>
+                        <attr name="create-rule/org-netbeans-modules-css-actions-CssStyleBuilderViewAction.instance" boolvalue="true"/>
+                        <attr name="org-netbeans-modules-css-actions-CssStyleBuilderViewAction.instance/Separator1.instance" boolvalue="true"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+        <!-- Lines annotated as highlighs -->
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-css-highlight.xml" url="highlight-annotation.xml"/>
+            <file name="org-netbeans-modules-css-syntax-error.xml" url="syntax-error-annotation.xml"/>
+        </folder>
+    </folder>
+    
+</filesystem>
