@@ -7,7 +7,7 @@
     </target>
     
     <target name="compile" depends="-pre-compile">
-        <javac destdir="classes" debug="true">
+        <javac destdir="classes" debug="true" source="1.5" target="1.5">
             <src path="src1"/>
             <src path="src2"/>
         </javac>
