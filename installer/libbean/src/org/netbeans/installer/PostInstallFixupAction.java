@@ -415,8 +415,6 @@ public class PostInstallFixupAction extends ProductAction {
                 binFiles[++i] = "nb.exe";
                 binFiles[++i] = "netbeans.exe";
             }
-            if (!Util.isMacOSX())
-                binFiles[++i] = "macosx_launcher.dmg";
             if (Util.isWindowsOS()) {
                 binFiles[++i] = "netbeans";
             }
