@@ -74,12 +74,27 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Description"));       //NOI18N
     }
 
-    public Set extend (WebModule webModule) {
+    public Set extend (final WebModule webModule) {
+        Set result = new HashSet();
         FileObject fileObject = webModule.getDocumentBase();;
-        Project project = FileOwnerQuery.getOwner(fileObject);
+        final Project project = FileOwnerQuery.getOwner(fileObject);
+        final ProjectTemplate template = new JsfProjectTemplateJakarta();
+
+        template.setBeanPackage(panel.getBeanPackage());
+        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, template.getBeanPackage());
+        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "Page1.jsp"); // NOI18N
+
+        ProjectManager.mutex().postReadRequest(new Runnable() {
+            public void run() {
+                try{ 
+                    template.create(project, webModule.getJ2eePlatformVersion());
+                } catch (IOException ioe){
+                    ErrorManager.getDefault().notify(ioe);
+                }
+           }
+        }); 
 
         // <RAVE> Add the VWP libraries to the project
-        ProjectTemplate template = new JsfProjectTemplateJakarta();
         try {
             template.addLibrary(project);
 
@@ -115,12 +130,22 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, template));
+
+            FileObject pagejsp = fileObject.getFileObject("Page1.jsp"); //NOI18N
+            if (pagejsp != null) {
+                FileObject indexjsp = fileObject.getFileObject("index.jsp"); //NOI18N
+                if (indexjsp != null){
+                    changeIndexJSP(indexjsp);
+                }
+	        result.add(pagejsp);
+            }
         } catch (FileNotFoundException exc) {
             ErrorManager.getDefault().notify(exc);
         } catch (IOException exc) {
             ErrorManager.getDefault().notify(exc);
         }
-        return null;
+
+        return result;
     }
 
     public static String readResource(InputStream is, String encoding) throws IOException {
@@ -369,45 +394,56 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ErrorManager.getDefault().notify(cnfe);
                 }
             }
-            
-            final FileObject documentBase = webModule.getDocumentBase();
-            final Project project = FileOwnerQuery.getOwner(documentBase);
-            template.setBeanPackage(panel.getBeanPackage());
-            JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, template.getBeanPackage());
-            JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "index.jsp"); // NOI18N
-
-            ProjectManager.mutex().postReadRequest(new Runnable() {
-                public void run() {
-                    try{ 
-                        template.create(project, webModule.getJ2eePlatformVersion());
-
-                        /* Replace index.jsp and index.java with Page1.jsp and Page.java.
-                         * The reason to do this is web project always produces a welcome file index.jsp and open it as default.
-                         * Creator cannot just delete it and use jsp/java template to create the pair because the 'FileObject'
-                         * is 'baked' from the web project. Creator needs to replace the contents of index.jsp and also creates
-                         * its paired index.java.
-                         */
-                        FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
-                        FileObject pagejsp = documentBase.getFileObject("Page1.jsp"); //NOI18N
-                        if (indexjsp != null && pagejsp != null) {
-                            String content = readResource(pagejsp.getInputStream(), "UTF-8"); //NOI18N
-                            createFile(indexjsp, content.replaceAll("\\bPage1\\b", "index"), "UTF-8"); //NOI18N
-                            pagejsp.delete();
-                        }
-
-                        FileObject beanBase = JsfProjectUtils.getPageBeanRoot(project);
-                        FileObject pagejava = beanBase.getFileObject("Page1.java"); //NOI18N
-                        if (pagejava != null) {
-                            FileObject indexjava = FileUtil.moveFile(pagejava, beanBase, "index"); //NOI18N
-                            String content = readResource(indexjava.getInputStream(), "UTF-8"); //NOI18N
-                            createFile(indexjava, content.replaceAll("\\bPage1\\b", "index"), "UTF-8"); //NOI18N
-                        }
-                   }
-                   catch (IOException ioe){
-                       ErrorManager.getDefault().notify(ioe);
-                   }
-               }
-           }); 
         }
+    }
+        
+    /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.
+     */
+    private void changeIndexJSP(FileObject indexjsp) throws IOException {
+        
+        String content = readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
+        
+        // what find
+        String find = "<h1>JSP Page</h1>"; // NOI18N
+        String endLine = System.getProperty("line.separator"); //NOI18N
+        if ( content.indexOf(find) > 0){
+            StringBuffer replace = new StringBuffer();
+            replace.append(find);
+            replace.append(endLine);
+            replace.append("    <br/>");                        //NOI18N
+            replace.append(endLine);
+            replace.append("    <a href=\".");                  //NOI18N
+            replace.append(translateURI(panel == null ? "/faces/*" : panel.getURLPattern(),"/Page1.jsp")); //NOI18N
+            replace.append("\">");                              //NOI18N
+            replace.append(NbBundle.getMessage(JSFFrameworkProvider.class,"LBL_JSF_WELCOME_PAGE"));
+            replace.append("</a>");                             //NOI18N
+            content = content.replaceFirst(find, new String(replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
+            createFile(indexjsp, content, "UTF-8"); //NOI18N
+        }
+    }
+    
+    /**
+     * Translates an URI to be executed with faces serlvet with the given mapping.
+     * For example, the servlet has mapping <i>*.jsf</i> then uri <i>/hello.jps</i> will be
+     * translated to <i>/hello.jsf</i>. In the case where the mapping is <i>/faces/*</i>
+     * will be translated to <i>/faces/hello.jsp<i>.
+     *
+     * @param mapping The servlet mapping
+     * @param uri The original URI
+     * @return The translated URI
+     */
+    public static String translateURI(String mapping, String uri){
+        String resource = "";
+        if (mapping != null && mapping.length()>0){
+            if (mapping.startsWith("*.")){
+                if (uri.indexOf('.') > 0)
+                    resource = uri.substring(0, uri.lastIndexOf('.'))+mapping.substring(1);
+                else
+                    resource = uri + mapping.substring(1);
+            } else
+                if (mapping.endsWith("/*"))
+                    resource = mapping.substring(0,mapping.length()-2) + uri;
+        }
+        return resource;
     }
 }
