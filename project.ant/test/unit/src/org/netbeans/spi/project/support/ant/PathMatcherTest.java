@@ -109,13 +109,16 @@ public class PathMatcherTest extends NbTestCase {
     private PathMatcher assertIncludedRoots(String includes, String excludes, String files, String... roots) throws Exception {
         clearWorkDir();
         File d = getWorkDir();
-        for (String f : files.split(",")) {
-            File create = new File(d, f);
-            if (f.endsWith("/")) {
-                create.mkdirs();
-            } else {
-                create.getParentFile().mkdirs();
-                create.createNewFile();
+        if (files != null) {
+            assert files.length() > 0;
+            for (String f : files.split(",")) {
+                File create = new File(d, f);
+                if (f.endsWith("/")) {
+                    create.mkdirs();
+                } else {
+                    create.getParentFile().mkdirs();
+                    create.createNewFile();
+                }
             }
         }
         PathMatcher m = new PathMatcher(includes, excludes, d);
@@ -145,13 +148,13 @@ public class PathMatcherTest extends NbTestCase {
         assertTrue(m.matches("foo/bar/", false));
         assertIncludedRoots("foo/,**/bar/", null, "foo/bar/baz", "foo/");
         assertIncludedRoots("foo/bar/baz", null, "foo/bar/baz", "foo/bar/");
-        assertIncludedRoots(null, null, "", "");
+        assertIncludedRoots(null, null, null, "");
         assertIncludedRoots("f,foo/", null, "f,foo/", "", "foo/");
         assertIncludedRoots("foo/", "foo/", "foo/"/*, nothing*/);
-        assertIncludedRoots("foo/bar", null, ""/*, nothing*/);
+        assertIncludedRoots("foo/bar", null, null/*, nothing*/);
         assertIncludedRoots("foo/bar", null, "foo/bar", "foo/");
         assertIncludedRoots("foo/,bar/,baz", null, "foo/,bar/,baz", "foo/", "bar/", "");
-        assertIncludedRoots("**", null, "", "");
+        assertIncludedRoots("**", null, null, "");
         new PathMatcher(null, null, new File("nonexistent")).findIncludedRoots(); // should not fail
         assertIncludedRoots("java/awt/ sun/awt/", null, "java/lang/Object.java,sun/awt/Mutex.java", "sun/awt/");
     }
