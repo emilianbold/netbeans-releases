@@ -1711,31 +1711,12 @@ public class UMLParsingIntegrator
         public void actionPerformed(ActionEvent actionEvent)
         {
             if (actionEvent.getActionCommand().equalsIgnoreCase(NbBundle
-                .getMessage(UMLParsingIntegrator.class, "LBL_YesButton"))) // NOI18N
-            {
-                supervisor.log(ITaskSupervisor.VERBOSE, NbBundle.getMessage(
-                    UMLParsingIntegrator.class, "MSG_ApprovedElementOverwrite")); // NOI18N
-                
-                result = DialogDescriptor.YES_OPTION;
-            }
-            
-            else if (actionEvent.getActionCommand().equalsIgnoreCase(NbBundle
-                .getMessage(UMLParsingIntegrator.class, "LBL_NoButton"))) // NOI18N
-            {
-                supervisor.log(ITaskSupervisor.VERBOSE, NbBundle.getMessage(
-                    UMLParsingIntegrator.class, "MSG_DeniedElementOverwrite")); // NOI18N;
-                
-                result = DialogDescriptor.NO_OPTION;                
-            }
-            
-            else if (actionEvent.getActionCommand().equalsIgnoreCase(NbBundle
                 .getMessage(UMLParsingIntegrator.class, "LBL_YesToAllButton"))) // NOI18N
             {
                 supervisor.log(ITaskSupervisor.VERBOSE, NbBundle.getMessage(
                     UMLParsingIntegrator.class, 
                     "MSG_DismissedOverwritePrompt_YesToAll")); // NOI18N
                 
-                result = DialogDescriptor.YES_OPTION;
                 promptStatus = PROMPT_YES_TO_ALL;
             }
             
@@ -1746,17 +1727,7 @@ public class UMLParsingIntegrator
                     UMLParsingIntegrator.class, 
                     "MSG_DismissedOverwritePrompt_NoToAll")); // NOI18N
                 
-                result = DialogDescriptor.NO_OPTION;
                 promptStatus = PROMPT_NO_TO_ALL;
-            }
-            
-            else // CLOSED or CANCELLED
-            {
-                supervisor.log(ITaskSupervisor.VERBOSE, NbBundle.getMessage(
-                    UMLParsingIntegrator.class, 
-                    "MSG_OverwriteElementDialogCancled")); // NOI18N
-                
-                result = DialogDescriptor.CANCEL_OPTION;
             }
             
             dialog.setVisible(false);
@@ -1765,6 +1736,12 @@ public class UMLParsingIntegrator
         
         public Object getResult()
         {
+	    result = dialogDesc.getValue();
+	    if (result == yesToAllBtn) {
+                result = DialogDescriptor.YES_OPTION;
+	    } else if (result == noToAllBtn) {
+                result = DialogDescriptor.NO_OPTION;
+	    }
             return result;
         }
 
