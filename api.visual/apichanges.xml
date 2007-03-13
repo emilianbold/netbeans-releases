@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
             <description>
                 The library API becomes stable.
             </description>
-            <package name="org.netbeans.api.visual" link="yes"/>
+            <package name="org.netbeans.api.visual" link="no"/>
             <issue number="95110"/>
         </change>
 
