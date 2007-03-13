@@ -588,7 +588,7 @@ Microsystems, Inc. All Rights Reserved.
                     <mkdir dir="${{build.generated.dir}}/wsimport/client"/>
                     <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-                        <classpath path="${{libs.jaxws20.classpath}}"/>
+                        <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}"/>
                     </taskdef>
                 </target>
             </xsl:if>
