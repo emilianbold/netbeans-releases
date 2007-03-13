@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,13 +22,20 @@ package org.netbeans.modules.websvc.wsitconf.ui;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
+import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,11 +70,29 @@ public class ClassDialog {
         Set<String> selectedClasses = new HashSet<String>();
         Node[] nodes = sPanel.getSelectedNodes();
         for(int i = 0; i < nodes.length; i++){
-            // TODO - retouche
-//            JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[i]);
-//            selectedClasses.add(jc.getName());
+            String name = getClassNameFromNode(nodes[i]);
+            selectedClasses.add(name);
         }
         return selectedClasses;
+    }
+
+    private String getClassNameFromNode(Node node) {
+        final String[] name = new String[1];
+
+        FileObject classElement = (FileObject) node.getLookup().lookup(FileObject.class);            
+        JavaSource js = JavaSource.forFileObject(classElement);
+        try {
+            js.runUserActionTask(new AbstractTask<CompilationController>() {
+                 public void run(CompilationController controller) throws java.io.IOException {
+                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                     name[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                 }
+             }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return name[0];
     }
     
     class SelectClassDialogDesc extends DialogDescriptor{
@@ -102,20 +127,20 @@ public class ClassDialog {
                     Node[] selectedNodes = sPanel.getSelectedNodes();
                     for(int i = 0; i < selectedNodes.length; i++){
                         Node node = selectedNodes[i];
-            // TODO - retouche
-//                        JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
-//                        if(classElement == null){
-//                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotJavaClass_msg");    //NOI18N
-//                            accepted = false;
-//                            break;
-//                        }
-//                        
-//                        if(!isWantedClass(classElement)) {
-//                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotWantedClass_msg",   //NOI18N
-//                                    classElement.getName(), extendingClass);
-//                            accepted = false;
-//                            break;
-//                        }
+                        FileObject classElement = (FileObject) node.getLookup().lookup(FileObject.class);
+                        JavaSource js = JavaSource.forFileObject(classElement);
+                        if (js == null) {
+                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotJavaClass_msg");    //NOI18N
+                            accepted = false;
+                            break;
+                        }
+                                                
+                        if (!isWantedClass(js)) {
+                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotWantedClass_msg",   //NOI18N
+                                    classElement.getName(), extendingClass);
+                            accepted = false;
+                            break;
+                        }
                     }
                     if (!accepted) {
                         NotifyDescriptor.Message notifyDescr =
@@ -130,13 +155,22 @@ public class ClassDialog {
                 }
             }
         }
-            // TODO - retouche
-//        private boolean isWantedClass(JavaClass ce) {
-//            if (ce != null) {
-//                JavaClass wantedClass = JMIUtils.findClass(extendingClass);
-//                return ce.isSubTypeOf(wantedClass);
-//            }
-//            return false;
-//        }
+
+        private boolean isWantedClass(JavaSource js) {
+            final Boolean[] subType = new Boolean[1];
+            subType[0] = false;
+            try {
+                js.runUserActionTask(new AbstractTask<CompilationController>() {
+                     public void run(CompilationController controller) throws java.io.IOException {
+                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                         SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                         subType[0] = Boolean.valueOf(sourceUtils.isSubtype(extendingClass));
+                     }
+                 }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return subType[0];
+        }
     }
 }
