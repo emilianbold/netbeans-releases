@@ -83,6 +83,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         template.setBeanPackage(panel.getBeanPackage());
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, template.getBeanPackage());
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "Page1.jsp"); // NOI18N
+        JsfProjectUtils.setProjectVersion(project, "4.0"); // NOI18N
 
         ProjectManager.mutex().postReadRequest(new Runnable() {
             public void run() {
@@ -200,7 +201,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     }
     
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule wm) {
-        return JSFConfigUtilities.getActionServlet(wm.getDeploymentDescriptor()) == null ? false : true;
+        FileObject documentBase = wm.getDocumentBase();
+        Project project = FileOwnerQuery.getOwner(documentBase);
+        String version = JsfProjectUtils.getProjectVersion(project);
+        return version != null && version.length() > 0;
     }
     
     public static void createFile(FileObject target, String content, String encoding) throws IOException{

@@ -160,6 +160,14 @@ public class JsfProjectUtils {
         */
     }
 
+    public static String getProjectVersion(Project project) {
+        return getProjectProperty(project, JsfProjectConstants.PROP_JSF_PROJECT_VERSION);
+    }
+
+    public static void setProjectVersion(Project project, String version) {
+        createProjectProperty(project, JsfProjectConstants.PROP_JSF_PROJECT_VERSION, version);
+    }
+
     public static String getProjectProperty(Project project, String propName) {
         if (isJsfProject(project)) {
             AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
