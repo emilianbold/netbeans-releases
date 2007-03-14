@@ -133,7 +133,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
             }
             
             String selectedItem = (String)schemaCombo.getItemAt(0);
-            populateWithElements(selectedItem);
+            if (selectedItem!=null)
+                populateWithElements(selectedItem);
         }
         
         
