@@ -84,6 +84,7 @@ import org.netbeans.modules.bpel.nodes.actions.AddOnAlarmAction;
 import org.netbeans.modules.bpel.nodes.actions.AddOnEventAction;
 import org.netbeans.modules.bpel.nodes.actions.AddPropertyAction;
 import org.netbeans.modules.bpel.nodes.actions.AddPropertyAliasToWsdlAction;
+import org.netbeans.modules.bpel.nodes.actions.AddSchemaImportAction;
 import org.netbeans.modules.bpel.nodes.actions.AddTerminationHandlerAction;
 import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.nodes.actions.BpelNodeNewType;
@@ -93,6 +94,7 @@ import org.netbeans.modules.bpel.nodes.actions.InsertElseIfBeforeAction;
 import org.netbeans.modules.bpel.nodes.actions.MoveElseIfLeftAction;
 import org.netbeans.modules.bpel.nodes.actions.MoveElseIfRightAction;
 import org.netbeans.modules.bpel.nodes.actions.AddVariableAction;
+import org.netbeans.modules.bpel.nodes.actions.AddWsdlImportAction;
 import org.netbeans.modules.bpel.nodes.actions.DeleteAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToCorrelationSetContainerSourceAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToVariableContainerSourceAction;
@@ -104,7 +106,6 @@ import org.netbeans.modules.bpel.nodes.dnd.BpelNodeTransferable;
 import org.netbeans.modules.bpel.nodes.dnd.Util;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.xml.xam.Component;
@@ -268,6 +269,10 @@ public abstract class BpelNode<T>
                   SystemAction.get(GoToDiagrammAction.class));
         ACTION_TYPE_MAP.put(ActionType.CHANGE_ORDER_ACTION,
                   SystemAction.get(ReorderAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_WSDL_IMPORT,
+                  SystemAction.get(AddWsdlImportAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_SCHEMA_IMPORT,
+                  SystemAction.get(AddSchemaImportAction.class));
     }
     
     private Object reference;

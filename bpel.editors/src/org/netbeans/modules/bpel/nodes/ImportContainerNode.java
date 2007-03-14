@@ -25,7 +25,9 @@ import org.netbeans.modules.bpel.editors.api.nodes.images.FolderIcon;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.nodes.actions.AddSchemaImportAction;
+import org.netbeans.modules.bpel.nodes.actions.AddSchemaImportAddAction;
 import org.netbeans.modules.bpel.nodes.actions.AddWsdlImportAction;
+import org.netbeans.modules.bpel.nodes.actions.AddWsdlImportAddAction;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
@@ -70,15 +72,16 @@ public class ImportContainerNode extends BpelNode<Process> {
             ActionType.ADD_SCHEMA_IMPORT
         };
     }
-
+    
+    @Override
     public Action createAction(ActionType actionType) {
         Action action = null;
         switch (actionType) {
             case ADD_WSDL_IMPORT : 
-                action = SystemAction.get(AddWsdlImportAction.class);
+                action = SystemAction.get(AddWsdlImportAddAction.class);
                 break;
             case ADD_SCHEMA_IMPORT:
-                action = SystemAction.get(AddSchemaImportAction.class);
+                action = SystemAction.get(AddSchemaImportAddAction.class);
                 break;
             default 
                 : action = super.createAction(actionType);
