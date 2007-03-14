@@ -296,7 +296,7 @@
                 file="${current.file}" 
                 property="product.logic.${i}.md5"/>
             <set 
-                property="product.logic.${i}.uri"
+                property="product.logic.${i}.correct.uri"
                 value="resource:${product.logic.path}/${product.logic.file.name}"/>
         </for-each>
         
@@ -447,7 +447,7 @@
                 file="${current.file}" 
                 property="product.data.${i}.md5"/>
             <set 
-                property="product.data.${i}.uri"
+                property="product.data.${i}.correct.uri"
                 value="resource:${product.data.path}/${product.data.file.name}"/>
         </for-each>
         
@@ -465,9 +465,6 @@
         <md5 
             file="${product.icon.file}" 
             property="product.icon.md5"/>
-        <set 
-            property="product.icon.uri"
-            value="resource:${product.icon.path}"/>
         
         <!-- load product's localizing bundle and generate descriptor -->
         <load-locales 

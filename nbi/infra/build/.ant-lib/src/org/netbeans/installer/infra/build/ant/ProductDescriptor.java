@@ -126,7 +126,7 @@ public class ProductDescriptor extends Task {
         // icon /////////////////////////////////////////////////////////////////////
         String size = get("product.icon.size");                             // NOI18N
         String md5 = get("product.icon.md5");                               // NOI18N
-        String uri = get("product.icon.uri");                               // NOI18N
+        String uri = get("product.icon.correct.uri");                       // NOI18N
         
         xml.append("            <icon " +                                   // NOI18N
                 "size=\"" + size + "\" " +                                  // NOI18N
@@ -153,7 +153,7 @@ public class ProductDescriptor extends Task {
         for (int i = 1; i <= getInt("product.logic.length"); i++) {         // NOI18N
             size  = get("product.logic." + i + ".size");                    // NOI18N
             md5   = get("product.logic." + i + ".md5");                     // NOI18N
-            uri   = get("product.logic." + i + ".uri");                     // NOI18N
+            uri   = get("product.logic." + i + ".correct.uri");             // NOI18N
             
             xml.append("                <file " +                           // NOI18N
                     "size=\"" + size + "\" " +                              // NOI18N
@@ -172,7 +172,7 @@ public class ProductDescriptor extends Task {
         for (int i = 1; i <= getInt("product.data.length"); i++) {          // NOI18N
             size  = get("product.data." + i + ".size");                     // NOI18N
             md5   = get("product.data." + i + ".md5");                      // NOI18N
-            uri   = get("product.data." + i + ".uri");                      // NOI18N
+            uri   = get("product.data." + i + ".correct.uri");              // NOI18N
             
             xml.append("                <file " +                           // NOI18N
                     "size=\"" + size + "\" " +                              // NOI18N

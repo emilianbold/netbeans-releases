@@ -131,7 +131,7 @@ public class GroupDescriptor extends Task {
         // icon /////////////////////////////////////////////////////////////////////
         final String size = project.getProperty("group.icon.size");         // NOI18N
         final String md5 = project.getProperty("group.icon.md5");           // NOI18N
-        final String uri = project.getProperty("group.icon.uri");           // NOI18N
+        final String uri = project.getProperty("group.icon.correct.uri");   // NOI18N
         
         xml.append("            <icon " +                                   // NOI18N
                 "size=\"" + size + "\" " +                                  // NOI18N
