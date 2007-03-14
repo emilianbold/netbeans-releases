@@ -102,16 +102,16 @@ public final class PropertyEditorResolverImpl implements PropertyEditorResolver 
     }
     
     
-    private final static Package[] exportedPropertyEditorPackages = new Package[] {
-        Package.getPackage("com.sun.rave.propertyeditors"),
-        Package.getPackage("com.sun.rave.propertyeditors.css"),
-        Package.getPackage("com.sun.rave.propertyeditors.binding"),
-        Package.getPackage("com.sun.jsfcl.std.css")
+    private final static String[] exportedPropertyEditorPackageNames = new String[] {
+        "com.sun.rave.propertyeditors",
+        "com.sun.rave.propertyeditors.css",
+        "com.sun.rave.propertyeditors.binding",
+        "com.sun.jsfcl.std.css"
     };
     
     private static boolean isExportedPropertyEditorClass(Class propertyEditorClass) {
-        for (Package p : exportedPropertyEditorPackages) {
-            if (p == propertyEditorClass.getPackage())
+        for (String name : exportedPropertyEditorPackageNames) {
+            if (name.equals(propertyEditorClass.getPackage().getName()))
                 return true;
         }
         return false;
