@@ -108,9 +108,9 @@ public class CorrelationNode extends BpelNode<Correlation> {
         return new ActionType[] {
             ActionType.GO_TO_SOURCE,
             ActionType.SEPARATOR,
-            ActionType.TOGGLE_BREAKPOINT,
+            ActionType.REMOVE,
             ActionType.SEPARATOR,
-            ActionType.REMOVE
-};
+            ActionType.PROPERTIES
+        };
     }
 }
