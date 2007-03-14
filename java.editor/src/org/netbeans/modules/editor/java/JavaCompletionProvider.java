@@ -152,6 +152,9 @@ public class JavaCompletionProvider implements CompletionProvider {
         private static final String VOLATILE_KEYWORD = "volatile"; //NOI18N
         private static final String WHILE_KEYWORD = "while"; //NOI18N
         
+        private static final String JAVA_LANG_OBJECT = "java.lang.Object"; //NOI18N
+        private static final String JAVA_LANG_ITERABLE = "java.lang.Iterable"; //NOI18N
+
         private static final String[] PRIM_KEYWORDS = new String[] {
             BOOLEAN_KEYWORD, BYTE_KEYWORD, CHAR_KEYWORD, DOUBLE_KEYWORD,
             FLOAT_KEYWORD, INT_KEYWORD, LONG_KEYWORD, SHORT_KEYWORD
@@ -2524,6 +2527,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void addSubtypesOf(Env env, DeclaredType baseType, boolean smartTypes) throws IOException {
+            if (((TypeElement)baseType.asElement()).getQualifiedName().contentEquals(JAVA_LANG_OBJECT))
+                return;
             int offset = env.getOffset();
             String prefix = env.getPrefix();
             CompilationController controller = env.getController();
@@ -3031,10 +3036,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                 } else if (type.getKind() == TypeKind.DECLARED) {
                     Elements elements = env.getController().getElements();
                     Types types = env.getController().getTypes();
-                    DeclaredType iterable = types.getDeclaredType(elements.getTypeElement("java.lang.Iterable")); //NOI18N
+                    DeclaredType iterable = types.getDeclaredType(elements.getTypeElement(JAVA_LANG_ITERABLE)); //NOI18N
                     if (types.isSubtype(type, iterable)) {
                         Iterator<? extends TypeMirror> it = ((DeclaredType)type).getTypeArguments().iterator();
-                        type = it.hasNext() ? it.next() : elements.getTypeElement("java.lang.Object").asType(); //NOI18N
+                        type = it.hasNext() ? it.next() : elements.getTypeElement(JAVA_LANG_OBJECT).asType(); //NOI18N
                     } else {
                         return false;
                     }
