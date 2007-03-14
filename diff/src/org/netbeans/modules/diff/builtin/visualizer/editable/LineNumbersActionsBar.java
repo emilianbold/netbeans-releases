@@ -349,6 +349,10 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
         int yOffset = lineNumber * lineHeight;
         yOffset -= lineHeight / 4; // baseline correction
         int linesDrawn = clip.height / lineHeight + 3;  // draw past clipping rectangle to avoid partially drawn numbers
+        int docLines = Utilities.getRowCount((BaseDocument) master.getEditorPane().getDocument());
+        if (lineNumber + linesDrawn - 1 > docLines) {
+            linesDrawn = docLines - lineNumber + 1;
+        }
         for (int i = 0; i < linesDrawn; i++) {
             g.drawString(formatLineNumber(lineNumber), linesXOffset, yOffset);
             lineNumber++;
