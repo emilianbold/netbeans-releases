@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -21,7 +21,22 @@ package org.netbeans.modules.websvc.design.view.actions;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.websvc.design.util.Util;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.Import;
+import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Types;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -37,38 +52,79 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
     public AddOperationFromSchemaPanel(File wsdlFile) {
         this();
         this.wsdlFile=wsdlFile;
-        jTextField2.setText(NbBundle.getMessage(AddOperationFromSchemaPanel.class, "TXT_DefaultSchmas", wsdlFile.getName()));
-        jTextField2.setEditable(false);
+        //jTextField2.setText(NbBundle.getMessage(AddOperationFromSchemaPanel.class, "TXT_DefaultSchmas", wsdlFile.getName()));
+        //jTextField2.setEditable(false);
         browseButton.setEnabled(false);
+        try{
+            populate();
+        }catch(CatalogModelException e){
+            ErrorManager.getDefault().notify(e);
+        }
     }
     
-     /** Creates new form NewJPanel */
+    /** Creates new form NewJPanel */
     public AddOperationFromSchemaPanel() {
         initComponents();
-        jTextField1.setText(NbBundle.getMessage(AddOperationFromSchemaPanel.class, "TXT_DefaultOperationName"));
+        opNameTxt.setText(NbBundle.getMessage(AddOperationFromSchemaPanel.class, "TXT_DefaultOperationName"));
     }
     
     public File getWsdlFile() {
         return wsdlFile;
     }
     
+    public String getOperationName(){
+        return opNameTxt.getText();
+    }
+    
     public List<URL> getSchemaFiles() {
         return schemaFiles;
     }
     
-    public String getParameterType() {
-        return parameterType;
+    public String[] getParameterTypes() {
+        List<String> list = new ArrayList<String>(); 
+        Object[] objs = parmCombo.getSelectedObjects();
+        for(int i = 0; i < objs.length; i++){
+            list.add((String)objs[i]);
+        }    
+        return list.<String>toArray(new String[list.size()]);
     }
     
     public String getReturnType() {
-        return returnType;
+        return (String)returnCombo.getSelectedItem();
     }
     
     public String getFaultType() {
-        return faultType;
+        return (String)faultCombo.getSelectedItem();
     }
     
-
+    private void populate()throws CatalogModelException {
+        Map<String, Import> map = new HashMap<String, Import>();
+        WSDLModel model = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), false);
+        Definitions definitions = model.getDefinitions();
+        Types types = definitions.getTypes();
+        Collection<Schema> schemas = types.getSchemas();
+        for(Schema schema : schemas){
+            Collection<Import> importedSchemas = schema.getImports();
+            for(Import importedSchema : importedSchemas){
+                String schemaLocation = importedSchema.getSchemaLocation();
+                map.put(schemaLocation, importedSchema);
+                schemaCombo.addItem(schemaLocation);
+            }
+        }
+        String selectedSchema = (String)schemaCombo.getSelectedItem();
+        Import importedSchema = map.get(selectedSchema);
+        String namespace = importedSchema.getNamespace();
+        SchemaModel schemaModel = importedSchema.resolveReferencedModel();        
+        Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
+        for(GlobalElement element : elements){
+            String elementName = element.getName();
+            parmCombo.addItem(namespace + " " + elementName);
+            returnCombo.addItem(namespace + " " + elementName);
+            faultCombo.addItem(namespace + " " +elementName);
+        }
+    }
+    
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -83,31 +139,30 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
+        opNameTxt = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
-        jComboBox1 = new javax.swing.JComboBox();
-        jComboBox2 = new javax.swing.JComboBox();
-        jComboBox3 = new javax.swing.JComboBox();
+        parmCombo = new javax.swing.JComboBox();
+        returnCombo = new javax.swing.JComboBox();
+        faultCombo = new javax.swing.JComboBox();
+        schemaCombo = new javax.swing.JComboBox();
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("LBL_OperationName_mnem").charAt(0));
-        jLabel1.setLabelFor(jTextField1);
+        jLabel1.setLabelFor(opNameTxt);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "LBL_OperationName")); // NOI18N
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("LBL_SchemaFiles_mnem").charAt(0));
-        jLabel2.setLabelFor(jTextField2);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "LBL_SchemaFiles")); // NOI18N
 
         jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("LBL_ParameterTypes_mnem").charAt(0));
-        jLabel3.setLabelFor(jComboBox1);
+        jLabel3.setLabelFor(parmCombo);
         jLabel3.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "LBL_ParameterTypes")); // NOI18N
 
         jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("LBL_ReturnType_mnem").charAt(0));
-        jLabel4.setLabelFor(jComboBox2);
+        jLabel4.setLabelFor(returnCombo);
         jLabel4.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "LBL_ReturnType")); // NOI18N
 
         jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("LBL_FaultType_mnem").charAt(0));
-        jLabel5.setLabelFor(jComboBox3);
+        jLabel5.setLabelFor(faultCombo);
         jLabel5.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "LBL_FaultType")); // NOI18N
 
         browseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("LBL_Browse_mnem").charAt(0));
@@ -130,11 +185,11 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                             .add(jLabel5))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jComboBox1, 0, 469, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jComboBox3, 0, 469, Short.MAX_VALUE)
-                            .add(jComboBox2, 0, 469, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, opNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, parmCombo, 0, 469, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, faultCombo, 0, 469, Short.MAX_VALUE)
+                            .add(returnCombo, 0, 469, Short.MAX_VALUE)
+                            .add(schemaCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 459, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -143,42 +198,42 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(opNameTxt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(schemaCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseButton)
                 .add(46, 46, 46)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
-                    .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(parmCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
-                    .add(jComboBox2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(returnCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jComboBox3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(faultCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(71, Short.MAX_VALUE))
+                .addContainerGap(68, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
-    private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JComboBox jComboBox2;
-    private javax.swing.JComboBox jComboBox3;
+    private javax.swing.JComboBox faultCombo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField opNameTxt;
+    private javax.swing.JComboBox parmCombo;
+    private javax.swing.JComboBox returnCombo;
+    private javax.swing.JComboBox schemaCombo;
     // End of variables declaration//GEN-END:variables
     
 }
