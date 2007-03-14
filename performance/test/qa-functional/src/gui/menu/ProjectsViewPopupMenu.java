@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,7 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class ProjectsViewPopupMenu extends ValidatePopupMenuOnNodes {
 
-    private static ProjectsTabOperator projectsTab = null;
+    protected static ProjectsTabOperator projectsTab = null;
 
     /** Creates a new instance of ProjectsViewPopupMenu */
     public ProjectsViewPopupMenu(String testName) {
@@ -109,7 +109,7 @@ public class ProjectsViewPopupMenu extends ValidatePopupMenuOnNodes {
         doMeasurement();
     }
     
-    private Node getProjectNode(String projectName) {
+    protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = new ProjectsTabOperator();
         
