@@ -18,8 +18,11 @@ import org.openide.util.Utilities;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.font.TextAttribute;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Main class hodling bas device info for the device.
@@ -195,8 +198,7 @@ public class ScreenDeviceInfo {
         
         public enum FontFace {MONOSPACE, PROPORTIONAL, SYSTEM}
         public enum FontSize {SMALL, MEDIUM, LARGE}
-        public enum FontStyle {PLAIN, BOLD, ITALIC}
-        // TODO add UNDERLINED style support
+        public enum FontStyle {PLAIN, BOLD, ITALIC, UNDERLINED}
         public enum FontType {DEFAULT, INPUT_TEXT, STATIC_TEXT}
         
         private static final int FONT_SIZE_SMALL = 10;
@@ -214,6 +216,12 @@ public class ScreenDeviceInfo {
         private static final Font FONT_DEFAULT = new Font(FONT_FACE_PROPORTIONAL, Font.PLAIN, FONT_SIZE_MEDIUM);
         private static final Font FONT_INPUT_TEXT = new Font(FONT_FACE_PROPORTIONAL, Font.PLAIN, FONT_SIZE_MEDIUM);
         private static final Font FONT_STATIC_TEXT = new Font(FONT_FACE_PROPORTIONAL, Font.PLAIN, FONT_SIZE_MEDIUM);
+        
+        private static final Map ATTR_MAP = new HashMap(1);
+        
+        static {
+            ATTR_MAP.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+        }
         
         public Font getFont(FontType type) {
             switch (type) {
@@ -233,9 +241,10 @@ public class ScreenDeviceInfo {
             
             int styleInt = Font.PLAIN;
             if (style == FontStyle.BOLD) {
-                styleInt = Font.BOLD;
-            } else if (style == FontStyle.ITALIC) {
-                styleInt = Font.ITALIC;
+                styleInt |= Font.BOLD;
+            }
+            if (style == FontStyle.ITALIC) {
+                styleInt |= Font.ITALIC;
             }
             
             int sizeInt = FONT_SIZE_MEDIUM;
@@ -245,7 +254,12 @@ public class ScreenDeviceInfo {
                 sizeInt = FONT_SIZE_SMALL;
             }
             
-            return new Font(name, styleInt, sizeInt);
+            Font font = new Font(name, styleInt, sizeInt);
+            if (style == FontStyle.UNDERLINED) {
+                font = font.deriveFont(ATTR_MAP);
+            }
+            
+            return font;
         }
         
         public Color getColor(int colorType) {

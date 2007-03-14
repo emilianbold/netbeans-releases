@@ -20,11 +20,10 @@
 package org.netbeans.modules.vmd.midp.screen.display;
 
 import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -40,13 +39,10 @@ import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
 public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
     
     private JPanel panel;
-    private JPanel fillPanel;
     
     public ChoiceGroupDisplayPresenter() {
-        fillPanel = new JPanel();
-        fillPanel.setOpaque(false);
         panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         getPanel().add(panel, BorderLayout.CENTER);
     }
     
@@ -61,23 +57,15 @@ public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
         super.reload(deviceInfo);
         
         panel.removeAll();
-        
-        int y = 0;
         for (DesignComponent item : getChildren()) {
             ChoiceElementDisplayPresenter presenter = item.getPresenter(ChoiceElementDisplayPresenter.class);
             if (presenter == null) {
                 continue;
             }
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = y ++;
-            gbc.weightx = 1.0;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.fill = GridBagConstraints.BOTH;
-            panel.add(presenter.getView(), gbc);
+            panel.add(presenter.getView());
             presenter.reload(deviceInfo);
         }
-        panel.add(fillPanel, new GridBagConstraints(0, y, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+        panel.add(Box.createVerticalGlue());
     }
     
 }

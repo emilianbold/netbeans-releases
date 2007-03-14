@@ -53,6 +53,8 @@ public final class ScreenSupport {
             style = FontStyle.BOLD;
         } else if (styleCode == FontCD.VALUE_STYLE_ITALIC) {
             style = FontStyle.ITALIC;
+        } else if (styleCode == FontCD.VALUE_STYLE_UNDERLINED) {
+            style = FontStyle.UNDERLINED;
         }
 
         int sizeCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_SIZE));

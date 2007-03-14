@@ -19,13 +19,16 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.Collection;
 import java.util.Collections;
-import javax.swing.JCheckBox;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -44,18 +47,26 @@ import org.openide.util.Utilities;
  */
 public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     
+    public static final String ICON_EMPTY_ELEMENT_PATH = "org/netbeans/modules/vmd/midp/resources/components/empty_element_16.png"; // NOI18N
+    public static final String ICON_ELEMENT_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
+
+    private static final Icon ICON_EMPTY_ELEMENT = new ImageIcon(Utilities.loadImage(ICON_EMPTY_ELEMENT_PATH));
+    private static final Icon ICON_ELEMENT = new ImageIcon(Utilities.loadImage(ICON_ELEMENT_PATH));
+    
     private JPanel panel;
-    private JCheckBox checkBox;
+    private JLabel label;
     
     public ChoiceElementDisplayPresenter() {
+        label = new JLabel();
+        
         panel = new JPanel() {
             public JPopupMenu getComponentPopupMenu() {
                 return Utilities.actionsToPopup(ActionsSupport.createActionsArray(getRelatedComponent()), this);
             }
         };
-        panel.setLayout(new BorderLayout());
-        checkBox = new JCheckBox();
-        panel.add(checkBox, BorderLayout.NORTH);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.add(label);
+        panel.add(Box.createHorizontalGlue());
     }
     
     public boolean isTopLevelDisplay() {
@@ -72,11 +83,14 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         panel.setBorder(deviceInfo.getDeviceTheme().getBorder(getComponent().getDocument().getSelectedComponents().contains(getComponent())));
-        checkBox.setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING)));
-        checkBox.setSelected(MidpTypes.getBoolean(getComponent().readProperty(ChoiceElementCD.PROP_SELECTED)));
+        label.setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING)));
+        
+        boolean isSelected = MidpTypes.getBoolean(getComponent().readProperty(ChoiceElementCD.PROP_SELECTED));
+        label.setIcon(isSelected ? ICON_ELEMENT : ICON_EMPTY_ELEMENT);
+        
         DesignComponent font = getComponent().readProperty(ChoiceElementCD.PROP_FONT).getComponent();
         if (font != null) {
-            checkBox.setFont(ScreenSupport.getFont(deviceInfo, font));
+            label.setFont(ScreenSupport.getFont(deviceInfo, font));
         }
     }
     

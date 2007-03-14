@@ -20,9 +20,15 @@
 package org.netbeans.modules.vmd.midp.screen.display;
 
 import java.awt.BorderLayout;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
+import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
 
 /**
@@ -32,15 +38,30 @@ import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
  */
 public class StringItemDisplayPresenter extends ItemDisplayPresenter {
     
+    private JPanel panel;
     private JLabel label;
-
+    
     public StringItemDisplayPresenter() {
-        label = new JLabel ();
-        getPanel().add(label, BorderLayout.SOUTH);
+        label = new JLabel();
+
+        panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.add(label);
+        panel.add(Box.createHorizontalGlue());
+        getPanel().add(panel, BorderLayout.SOUTH);
     }
     
-    public void reload (ScreenDeviceInfo deviceInfo) {
+    public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        label.setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT)));
+        
+        label.setBorder(null);
+        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
+        int appearanceMode = MidpTypes.getInteger(getComponent().readProperty(StringItemCD.PROP_APPEARANCE_MODE));
+        if (appearanceMode == ItemCD.VALUE_HYPERLINK) {
+            text = "<html><a href='null'>" + text + "</a></html>"; // NOI18N
+        } else if (appearanceMode == ItemCD.VALUE_BUTTON) {
+            label.setBorder(BorderFactory.createRaisedBevelBorder());
+        }
+        label.setText(text);
     }
 }
