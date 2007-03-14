@@ -27,6 +27,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.project.WebProject.ProjectOpenedHookImpl;
+import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -68,6 +69,15 @@ public class WebProjectTest extends NbTestCase {
         assertGC("project cannot be garbage collected", wr);
     }
     
+    public void testWebPropertiesEvaluator() throws Exception {
+        File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
+        FileObject projdir = FileUtil.toFileObject(f);
+        Project webProject = ProjectManager.getDefault().findProject(projdir);
+        WebPropertyEvaluator evaluator = webProject.getLookup().lookup(WebPropertyEvaluator.class);
+        assertNotNull("Property evaluatero is null", evaluator);
+        String property = evaluator.evaluator().getProperty("war.ear.name");
+        assertEquals("war.ear.name property ", "WebApplication1.war", property);
+    }
     /**
      * Accessor method for those who wish to simulate open of a project and in
      * case of suite for example generate the build.xml.
