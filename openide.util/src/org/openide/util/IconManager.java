@@ -28,13 +28,16 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageObserver;
+import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /** Registers all loaded images into the AbstractNode, so nothing is loaded twice.
 *
@@ -235,9 +238,15 @@ final class IconManager extends Object {
             java.net.URL url = (loader != null) ? loader.getResource(n)
                                                 : IconManager.class.getClassLoader().getResource(n);
 
-            img = (url == null) ? null : Toolkit.getDefaultToolkit().createImage(url);
+//            img = (url == null) ? null : Toolkit.getDefaultToolkit().createImage(url);
+            Image result = null;
+            try {
+                result = url!=null? ImageIO.read(url): null;
+            } catch (IOException ioe) {
+                ERR.log(Level.WARNING, "Cannot load image", ioe);
+            }
 
-            if (img != null) {
+            if (result != null) {
                 if (warn && extraInitialSlashes.add(name)) {
                     ERR.warning(
                         "Initial slashes in Utilities.loadImage deprecated (cf. #20072): " +
@@ -245,14 +254,15 @@ final class IconManager extends Object {
                     ); // NOI18N
                 }
 
-                Image img2 = toBufferedImage(img);
+//                Image img2 = toBufferedImage(result);
 
-                //System.err.println("loading icon " + n + " = " + img2);
+                ERR.log(Level.FINE, 
+                        "loading icon {0} = {1}", new Object[] {n, result});
                 name = new String(name).intern(); // NOPMD
 
-                cache.put(name, new ActiveRef<String>(img2, cache, name));
+                cache.put(name, new ActiveRef<String>(result, cache, name));
 
-                return img2;
+                return result;
             } else { // no icon found
 
                 if (!localizedQuery) {

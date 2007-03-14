@@ -29,6 +29,9 @@ import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -369,9 +372,10 @@ class TabControlButtonFactory {
     private static Image loadImage(String path) {
         try {
             URL url = TabControlButtonFactory.class.getResource("/"+path);
-            return Toolkit.getDefaultToolkit().createImage(url);
+            return ImageIO.read(url);
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(TabControlButtonFactory.class.getName()).
+                    log(Level.WARNING, "Cannot load image", e);
             return null;
         }
     }
