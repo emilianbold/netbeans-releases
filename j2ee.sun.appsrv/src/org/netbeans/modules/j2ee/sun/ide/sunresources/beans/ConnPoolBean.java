@@ -32,6 +32,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.IsolationLevelEditor;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.util.NbBundle;
 /**
  *
@@ -60,7 +61,11 @@ public class ConnPoolBean extends JdbcCP implements java.io.Serializable{
         bean.setMaxWaitTimeMilli(pool.getMaxWaitTimeInMillis());
         bean.setPoolResizeQty(pool.getPoolResizeQuantity());
         bean.setIdleIimeoutSecond(pool.getIdleTimeoutInSeconds());
-        bean.setTranxIsoLevel(pool.getTransactionIsolationLevel());
+        String tranxIsolation = pool.getTransactionIsolationLevel();
+        if(tranxIsolation == null){
+            tranxIsolation = WizardConstants.__IsolationLevelDefault;
+        }
+        bean.setTranxIsoLevel(tranxIsolation);
         bean.setIsIsoLevGuaranteed(pool.getIsIsolationLevelGuaranteed());
         bean.setIsConnValidReq(pool.getIsConnectionValidationRequired());
         bean.setConnValidMethod(pool.getConnectionValidationMethod());
@@ -98,7 +103,7 @@ public class ConnPoolBean extends JdbcCP implements java.io.Serializable{
         connPool.setPoolResizeQuantity(getPoolResizeQty());
         connPool.setIdleTimeoutInSeconds(getIdleIimeoutSecond());
         String isolation = getTranxIsoLevel();
-        if (isolation != null && (isolation.length() == 0 || isolation.equals(NbBundle.getMessage(IsolationLevelEditor.class, "LBL_driver_default")))) {  //NOI18N
+        if (isolation != null && (isolation.length() == 0 || isolation.equals(WizardConstants.__IsolationLevelDefault))) {  
             isolation = null;
         }
         connPool.setTransactionIsolationLevel(isolation);

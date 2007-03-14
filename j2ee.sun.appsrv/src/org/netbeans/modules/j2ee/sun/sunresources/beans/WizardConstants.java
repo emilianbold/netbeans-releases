@@ -194,4 +194,7 @@ public interface WizardConstants {
     public static final String __CreateAdmObj = "createAdminObjectResource"; 
     public static final String __CreateConnector = "createConnectorResource";
     public static final String __CreateConnPool = "createConnectorConnectionPool";
+    
+    //match to isolation level default value in CPWizard.xml
+    public static final String __IsolationLevelDefault = "JDBC Driver Default";
 }

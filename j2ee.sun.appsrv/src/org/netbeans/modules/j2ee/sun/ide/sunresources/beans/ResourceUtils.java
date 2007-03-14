@@ -63,7 +63,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
-import org.netbeans.modules.j2ee.sun.ide.editors.IsolationLevelEditor;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -391,7 +390,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__PoolResizeQuantity, connPool.getPoolResizeQuantity()));
         attrs.add(new Attribute(__IdleTimeoutInSeconds, connPool.getIdleTimeoutInSeconds()));
         String isolation = connPool.getTransactionIsolationLevel();
-        if (isolation != null && (isolation.length() == 0 || isolation.equals(NbBundle.getMessage(IsolationLevelEditor.class, "LBL_driver_default"))) ){  //NOI18N
+        if (isolation != null && (isolation.length() == 0 || isolation.equals(WizardConstants.__IsolationLevelDefault)) ){  
             isolation = null;
         }
         attrs.add(new Attribute(__TransactionIsolationLevel, isolation));
@@ -548,7 +547,7 @@ public class ResourceUtils implements WizardConstants{
                     else if (key.equals(__IdleTimeoutInSeconds))
                         connPool.setIdleTimeoutInSeconds(value);
                     else if (key.equals(__TransactionIsolationLevel)){
-                        if (value.equals(NbBundle.getMessage(IsolationLevelEditor.class, "LBL_driver_default"))){  //NOI18N
+                        if (value.equals(WizardConstants.__IsolationLevelDefault)){  
                             value = null;
                         }
                         connPool.setTransactionIsolationLevel(value);

@@ -18,21 +18,19 @@
  */
 package org.netbeans.modules.j2ee.sun.ide.editors;
 
-import java.util.ResourceBundle;
 import org.netbeans.modules.j2ee.sun.ide.editors.*;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 
 public class IsolationLevelEditor extends BooleanEditor {
 
     private boolean isRuntime = false;
-
-    ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle");
 
     public String[] choices = {
             "read-uncommitted",  //NOI18N
             "read-committed",    //NOI18N
             "repeatable-read",   //NOI18N
             "serializable",       //NOI18N
-            bundle.getString("LBL_driver_default"),     //NOI18N
+            WizardConstants.__IsolationLevelDefault,     //NOI18N
     }; 
     
     public String[] choicesRuntime = { 
