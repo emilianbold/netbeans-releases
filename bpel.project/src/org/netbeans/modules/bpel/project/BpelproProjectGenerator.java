@@ -44,6 +44,7 @@ import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -192,10 +193,14 @@ public class BpelproProjectGenerator {
 
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "sun-bpel-engine"); // NOI18N     //FIXME? REPACKAGING
-        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, "This Assembly Unit"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, "Represents this Assembly Unit"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, "This Application Sub-Assembly"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, "This represents the Application Sub-Assembly"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, 
+                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Assembly_Unit_Alias")); // NOI18N
+        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, 
+                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Assembly_Unit_Description")); // NOI18N
+        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, 
+                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Application_Sub_Assembly_Alias")); // NOI18N
+        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, 
+                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Application_Sub_Assembly_Description")); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
 

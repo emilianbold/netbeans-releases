@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-//import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -33,6 +32,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -196,10 +196,14 @@ public class XsltproProjectGenerator {
 
         //============= Start of IcanPro========================================//
         ep.setProperty(JBI_SETYPE_PREFIX, "sun-xslt-engine"); // NOI18N
-        ep.setProperty(ASSEMBLY_UNIT_ALIAS, "This Assembly Unit"); // NOI18N
-        ep.setProperty(ASSEMBLY_UNIT_DESCRIPTION, "Represents this Assembly Unit"); // NOI18N
-        ep.setProperty(APPLICATION_SUB_ASSEMBLY_ALIAS, "This Application Sub-Assembly"); // NOI18N
-        ep.setProperty(APPLICATION_SUB_ASSEMBLY_DESCRIPTION, "This represents the Application Sub-Assembly"); // NOI18N
+        ep.setProperty(ASSEMBLY_UNIT_ALIAS, 
+                NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Assembly_Unit_Alias")); // NOI18N
+        ep.setProperty(ASSEMBLY_UNIT_DESCRIPTION, 
+                NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Assembly_Unit_Description")); // NOI18N
+        ep.setProperty(APPLICATION_SUB_ASSEMBLY_ALIAS, 
+                NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Application_Sub_Assembly_Alias")); // NOI18N
+        ep.setProperty(APPLICATION_SUB_ASSEMBLY_DESCRIPTION, 
+                NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Application_Sub_Assembly_Description")); // NOI18N
         ep.setProperty(JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
         ep.setProperty(JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
 
