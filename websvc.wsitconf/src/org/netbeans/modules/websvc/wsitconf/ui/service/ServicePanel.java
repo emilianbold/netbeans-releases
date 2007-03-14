@@ -54,6 +54,9 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -252,7 +255,7 @@ public class ServicePanel extends SectionInnerPanel {
         }
         
         if (source.equals(tcpChBox)) {
-            boolean jsr109 = ((jaxwsmodel.getJsr109() == null) || (jaxwsmodel.getJsr109().equals(Boolean.TRUE)));
+            boolean jsr109 = isJsr109Supported();
             if (tcpChBox.isSelected()) {
                 if (!(TransportModelHelper.isTCPEnabled(binding))) {
                     TransportModelHelper.enableTCP(service, isFromJava, binding, project, true, jsr109);
@@ -375,7 +378,7 @@ public class ServicePanel extends SectionInnerPanel {
         // everything is ok, disable security
         if (!amSec) {
 
-            boolean jsr109 = ((jaxwsmodel.getJsr109() == null) || (jaxwsmodel.getJsr109().equals(Boolean.TRUE)));
+            boolean jsr109 = isJsr109Supported();
 
             securityChBox.setEnabled(true);
             profileInfoField.setForeground(REGULAR);
@@ -420,6 +423,25 @@ public class ServicePanel extends SectionInnerPanel {
             profileInfoField.setText(NbBundle.getMessage(ServicePanel.class, "TXT_AMSecSelected"));
         }
     }
+
+    private J2eePlatform getJ2eePlatform(){
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if(provider != null){
+            String serverInstanceID = provider.getServerInstanceID();
+            if(serverInstanceID != null && serverInstanceID.length() > 0) {
+                return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            }
+        }
+        return null;
+    }
+    
+    private boolean isJsr109Supported(){
+        J2eePlatform j2eePlatform = getJ2eePlatform();
+        if(j2eePlatform != null){
+            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+        }
+        return false;
+    }    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -685,7 +707,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_stsConfigButtonActionPerformed
 
     private void trustButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustButtonActionPerformed
-        boolean jsr109 = ((jaxwsmodel.getJsr109() == null) || (jaxwsmodel.getJsr109().equals(Boolean.TRUE)));
+        boolean jsr109 = isJsr109Supported();
         TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109);
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
@@ -698,7 +720,8 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_trustButtonActionPerformed
 
     private void keyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyButtonActionPerformed
-        boolean jsr109 = ((jaxwsmodel.getJsr109() == null) || (jaxwsmodel.getJsr109().equals(Boolean.TRUE)));
+
+        boolean jsr109 = isJsr109Supported();
         KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109);
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
