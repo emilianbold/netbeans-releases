@@ -65,8 +65,8 @@ public class Pump implements Process {
     private boolean initPumping() {
         int attemptCount = 0;
         while (attemptCount < MAX_ATTEMPT_COUNT) {
-            pumping.changeState(org.netbeans.installer.downloader.Pumping.State.CONNECTING);
-try {
+            pumping.changeState(Pumping.State.CONNECTING);
+            try {
                 final URL url = pumping.declaredURL();
                 URLConnection connection = connector.establishConnection(url);
                 in = connection.getInputStream();
@@ -109,7 +109,7 @@ try {
         int attemptCount = 0;
         while (attemptCount < MAX_ATTEMPT_COUNT) {
             pumping.changeState(org.netbeans.installer.downloader.Pumping.State.CONNECTING);
-try {
+            try {
                 final SectionImpl section = pumping.getSection();
                 final URL connectingUrl = pumping.realURL();
                 URLConnection connection = connector.establishConnection(connectingUrl, section.headers());
