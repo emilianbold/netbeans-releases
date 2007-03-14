@@ -284,7 +284,7 @@ public abstract class FileSystem implements Serializable {
     }
 
     /** Returns <code>true</code> if the filesystem is default.
-     * @see Repository#getDefaultFileSystem
+     * @return true if this is {@link Repository#getDefaultFileSystem}
     */
     public final boolean isDefault() {
         return this == ExternalUtil.getRepository().getDefaultFileSystem();
@@ -366,6 +366,12 @@ public abstract class FileSystem implements Serializable {
     */
     public abstract SystemAction[] getActions();
 
+    /**
+     * Get actions appropriate to a certain file selection.
+     * By default, returns the same list as {@link #getActions()}.
+     * @param foSet one or more files which may be selected
+     * @return zero or more actions appropriate to those files
+     */
     public SystemAction[] getActions(Set<FileObject> foSet) {
         return this.getActions();
     }
