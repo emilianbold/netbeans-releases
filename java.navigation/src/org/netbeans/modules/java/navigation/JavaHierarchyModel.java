@@ -22,14 +22,13 @@ package org.netbeans.modules.java.navigation;
 import com.sun.javadoc.Doc;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.Element;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -37,6 +36,8 @@ import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -45,11 +46,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * The tree model for hierarchy pop up window.
- * 
+ *
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public final class JavaHierarchyModel extends DefaultTreeModel {
@@ -168,7 +171,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                     TypeElement typeElement = ((TypeElement) element);
                     List<TypeElement> superClasses = new ArrayList<TypeElement>();
                     superClasses.add(typeElement);
-                    
+
                     TypeElement superClass = (TypeElement) types.asElement(typeElement.getSuperclass());
                     while (superClass != null) {
                         superClasses.add(0, superClass);
@@ -177,7 +180,10 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                     DefaultMutableTreeNode parent = root;
                     for(TypeElement superTypeElement:superClasses) {
                         FileObject fileObject = SourceUtils.getFile(superTypeElement, compilationInfo.getClasspathInfo());
-                        DefaultMutableTreeNode child = new SimpleTypeTreeNode(fileObject, superTypeElement, compilationInfo, typeElement != superTypeElement);
+                        DefaultMutableTreeNode child = new SimpleTypeTreeNode(fileObject, superTypeElement, compilationInfo, typeElement != superTypeElement || typeElement.getQualifiedName().equals(Object.class.getName()));
+                        if (typeElement.getQualifiedName().toString().equals(Object.class.getName())) {
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_WontShowSubTypesOfObject", Object.class.getName())); // TODO
+                        }
                         parent.insert(child, 0);
                         parent = child;
                     }
@@ -204,8 +210,15 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         private Icon icon = null;
         private String javaDoc = "";
 
+        private boolean loaded = false;
+
         AbstractHierarchyTreeNode(FileObject fileObject,
             Element element, CompilationInfo compilationInfo) {
+            this( fileObject, element, compilationInfo, false);
+        }
+
+        AbstractHierarchyTreeNode(FileObject fileObject,
+            Element element, CompilationInfo compilationInfo, boolean lazyLoadChildren) {
             this.fileObject = fileObject;
             this.elementHandle = ElementHandle.create(element);
             this.elementKind = element.getKind();
@@ -221,7 +234,30 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                 StringBuilder stringBuilder = new StringBuilder();
                 setJavaDoc(doc.getRawCommentText());
             }
-            loadChildren(element, compilationInfo);
+            // prevent showing sub classes of java.lang.Object
+            if (element instanceof TypeElement && ((TypeElement)element).getQualifiedName().toString().equals(Object.class.getName())) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_WontShowSubTypesOfObject", Object.class.getName())); // TODO
+            } else {
+                if (!lazyLoadChildren) {
+                    try {
+                        loadChildren(element, compilationInfo);
+                    } finally {
+                        loaded = true;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public int getChildCount() {
+            if (!loaded) {
+                try {
+                    loadChildren();
+                } finally {
+                    loaded = true;
+                }
+            }
+            return super.getChildCount();
         }
 
         public FileObject getFileObject() {
@@ -285,6 +321,34 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             openElementHandle();
         }
 
+        protected void loadChildren() {
+            JavaSource javaSource = JavaSource.forFileObject(fileObject);
+
+            if (javaSource != null) {
+                try {
+                    javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+                            public void cancel() {
+                            }
+
+                            public void run(CompilationController compilationController)
+                                throws Exception {
+                                compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+
+                                Element element = elementHandle.resolve(compilationController);
+                                if (element instanceof TypeElement && ((TypeElement)element).getQualifiedName().toString().equals(Object.class.getName())) {
+                                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_WontShowSubTypesOfObject", Object.class.getName())); // TODO
+                                }
+                                loadChildren(element, compilationController);
+                            }
+                        }, false);
+
+                    return;
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
+                }
+            }
+        }
+
         protected abstract void loadChildren(Element element,
             CompilationInfo compilationInfo);
 
@@ -327,10 +391,10 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         protected int loadChildren(Element element,
             CompilationInfo compilationInfo, int index) {
             Types types = compilationInfo.getTypes();
-            
+
             TypeElement typeElement = (TypeElement) element;
-            
-            TypeElement superClass = (TypeElement) types.asElement(typeElement.getSuperclass());            
+
+            TypeElement superClass = (TypeElement) types.asElement(typeElement.getSuperclass());
             if (superClass != null && !superClass.getQualifiedName().toString().equals(Object.class.getName())) {
                 FileObject fileObject = SourceUtils.getFile(superClass, compilationInfo.getClasspathInfo());
                 insert(new TypeTreeNode(fileObject, superClass, compilationInfo, true), index++);
@@ -343,7 +407,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                     insert(new TypeTreeNode(fileObject, (TypeElement)interfaceElement, compilationInfo, true), index++);
                 }
             }
-            
+
             if (JavaMembersAndHierarchyOptions.isShowInner()) {
                 if (!inSuperClassRole) {
                     for (Element childElement:typeElement.getEnclosedElements()) {
@@ -371,7 +435,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
         SimpleTypeTreeNode(FileObject fileObject, TypeElement typeElement,
             CompilationInfo compilationInfo, boolean inSuperClassRole) {
-            super(fileObject, typeElement, compilationInfo);
+            super(fileObject, typeElement, compilationInfo, inSuperClassRole);
             this.inSuperClassRole = inSuperClassRole;
         }
 
@@ -380,23 +444,34 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         }
 
         protected void loadChildren(Element element,
-            CompilationInfo compilationInfo) {           
-            TypeElement typeElement = (TypeElement) element;
+                    CompilationInfo compilationInfo) {
             if (inSuperClassRole) {
                 return;
             }
-            // TODO Get the sub types.
-//            int index = 0;
-//            Collection subClasses = typeElement.isInterface() ? javaClass.getImplementors() : javaClass.getSubClasses();
-//            Iterator iterator = subClasses.iterator();
-//            while (iterator.hasNext()) {
-//                Element element = (Element) iterator.next();
-//                AbstractJavaHierarchyTreeNode node = null;
-//                if (element instanceof JavaClass) {
-//                    node = new SimpleTypeTreeNode((JavaClass)element, false);
-//                    insert(node, index++);
-//                }
-//            }
+
+            TypeElement typeElement = (TypeElement) element;
+            // prevent showing sub classes of java.lang.Object
+            if (typeElement.getQualifiedName().toString().equals(Object.class.getName())) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_WontShowSubTypesOfObject", Object.class.getName())); // TODO
+                return;
+            }
+
+            ClassIndex classIndex = ClasspathInfo.create(getFileObject()).getClassIndex();
+            Set<ElementHandle<TypeElement>> implementors = classIndex.getElements(ElementHandle.create(typeElement),
+                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+                    EnumSet.of(ClassIndex.SearchScope.SOURCE
+                    , ClassIndex.SearchScope.DEPENDENCIES
+                    ));
+            int index = 0;
+            for (ElementHandle<TypeElement> implementorElementHandle: implementors) {
+                Element implementor = implementorElementHandle.resolve(compilationInfo);
+                if (implementor instanceof TypeElement) {
+                    FileObject fileObject = SourceUtils.getFile(implementor, compilationInfo.getClasspathInfo());
+                    if (fileObject != null) {
+                        insert(new SimpleTypeTreeNode(fileObject, (TypeElement) implementor, compilationInfo), index++);
+                    }
+                }
+            }
         }
     }
 

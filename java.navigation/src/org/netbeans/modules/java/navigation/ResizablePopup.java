@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.java.navigation;
 
+import javax.swing.JPanel;
 import org.openide.windows.WindowManager;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -32,6 +33,8 @@ import javax.swing.JDialog;
  */
 final class ResizablePopup {
     private static JDialog dialog;
+    
+    static final JPanel blank = new JPanel();
 
     static JDialog getDialog() {
         if (dialog == null) {

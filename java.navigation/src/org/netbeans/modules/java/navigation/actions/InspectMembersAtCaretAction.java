@@ -121,7 +121,7 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                         compilationController.getClasspathInfo());
 
                                 if (elementFileObject != null) {
-                                    JavaMembers.show(elementFileObject);
+                                    JavaMembers.show(elementFileObject, new Element[] {element}, compilationController);
                                 }
 
                             } else if (element instanceof VariableElement) {
@@ -136,7 +136,7 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                                 compilationController.getClasspathInfo());
 
                                         if (elementFileObject != null) {
-                                            JavaMembers.show(elementFileObject);
+                                            JavaMembers.show(elementFileObject, new Element[] {element}, compilationController);
                                         }
                                     }
                                 }
@@ -154,7 +154,7 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                                     compilationController.getClasspathInfo());
 
                                             if (elementFileObject != null) {
-                                                JavaMembers.show(elementFileObject);
+                                                JavaMembers.show(elementFileObject, new Element[] {element}, compilationController);
                                             }
                                         }
                                     }
@@ -167,7 +167,7 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                                 compilationController.getClasspathInfo());
 
                                         if (elementFileObject != null) {
-                                            JavaMembers.show(elementFileObject);
+                                            JavaMembers.show(elementFileObject, new Element[] {element}, compilationController);
                                         }
                                     }
                                 }

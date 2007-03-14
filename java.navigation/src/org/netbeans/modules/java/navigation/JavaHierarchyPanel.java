@@ -36,6 +36,7 @@ import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
+import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -213,7 +214,10 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         caseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                if (filterTextField.getText().trim().length() > 0) {
+                    // apply filters again only if there is some filter text
+                    applyFilter();
+                }
             }
         });
 
@@ -427,8 +431,13 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     }
 
     private void close() {
+        // Reset the hierarchy mode
+        JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(true);
         Window window = SwingUtilities.getWindowAncestor(JavaHierarchyPanel.this);
         if (window != null) {
+            if (window instanceof RootPaneContainer) {
+                ((RootPaneContainer)window).setContentPane(ResizablePopup.blank);
+            }
             window.setVisible(false);
         }
     }

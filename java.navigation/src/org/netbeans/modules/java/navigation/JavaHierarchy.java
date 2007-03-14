@@ -89,7 +89,7 @@ public final class JavaHierarchy {
         }
     }
 
-    static void show(FileObject fileObject, Element[] elements,
+    public static void show(FileObject fileObject, Element[] elements,
         CompilationController compilationController) {
         if (fileObject != null) {
             JDialog dialog = ResizablePopup.getDialog();
@@ -97,6 +97,5 @@ public final class JavaHierarchy {
             dialog.setContentPane(new JavaHierarchyPanel(fileObject, elements, compilationController));
             dialog.setVisible(true);
         }
-    }
-
+    }    
 }

@@ -122,7 +122,7 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                         compilationController.getClasspathInfo());
 
                                 if (elementFileObject != null) {
-                                    JavaHierarchy.show(elementFileObject);
+                                    JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
                                 }
 
                             } else if (element instanceof VariableElement) {
@@ -137,7 +137,7 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                                 compilationController.getClasspathInfo());
 
                                         if (elementFileObject != null) {
-                                            JavaHierarchy.show(elementFileObject);
+                                            JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
                                         }
                                     }
                                 }
@@ -155,7 +155,7 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                                     compilationController.getClasspathInfo());
 
                                             if (elementFileObject != null) {
-                                                JavaHierarchy.show(elementFileObject);
+                                                JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
                                             }
                                         }
                                     }
@@ -168,7 +168,7 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                                 compilationController.getClasspathInfo());
 
                                         if (elementFileObject != null) {
-                                            JavaHierarchy.show(elementFileObject);
+                                            JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
                                         }
                                     }
                                 }

@@ -102,7 +102,7 @@ public final class JavaMembers {
         }
     }
 
-    static void show(FileObject fileObject, Element[] elements, CompilationController compilationController) {
+    public static void show(FileObject fileObject, Element[] elements, CompilationController compilationController) {
         if (fileObject != null) {
             JDialog dialog = ResizablePopup.getDialog();
             dialog.setTitle(NbBundle.getMessage(JavaMembers.class, "TITLE_Members")); // NOI18N

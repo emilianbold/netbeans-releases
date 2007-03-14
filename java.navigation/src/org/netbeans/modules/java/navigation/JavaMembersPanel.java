@@ -37,6 +37,7 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
+import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
@@ -218,7 +219,10 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         caseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                if (filterTextField.getText().trim().length() > 0) {
+                    // apply filters again only if there is some filter text
+                    applyFilter();
+                }
             }
         });
 
@@ -486,6 +490,9 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     private void close() {
         Window window = SwingUtilities.getWindowAncestor(JavaMembersPanel.this);
         if (window != null) {
+            if (window instanceof RootPaneContainer) {
+                ((RootPaneContainer)window).setContentPane(ResizablePopup.blank);
+            }
             window.setVisible(false);
         }
     }
