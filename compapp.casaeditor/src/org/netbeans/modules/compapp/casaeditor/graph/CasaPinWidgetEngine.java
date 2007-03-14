@@ -91,7 +91,6 @@ public class CasaPinWidgetEngine extends CasaPinWidget {
     }
     
     protected void setPinName(String name) {
-        mImageWidget.setToolTipText(name);
         String displayedText = name;
         if (displayedText.length() > LABEL_MAX_CHAR) {
             displayedText = displayedText.substring(0, LABEL_MAX_CHAR) + NbBundle.getMessage(getClass(), "ELLIPSIS");   // NOI18N

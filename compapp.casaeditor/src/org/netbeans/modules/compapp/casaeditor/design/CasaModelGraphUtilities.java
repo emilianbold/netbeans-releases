@@ -40,6 +40,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
@@ -322,7 +323,7 @@ public class CasaModelGraphUtilities {
         return new Point(suggestedX, suggestedY);
     }
     
-    public static Widget createPin (
+    public static CasaPinWidget createPin (
             CasaComponent node, 
             CasaComponent pin, 
             String name, 
@@ -330,7 +331,12 @@ public class CasaModelGraphUtilities {
             boolean doUpdate)
     {
         CasaPinWidget pinWidget = (CasaPinWidget) scene.addPin(node, pin);
+        
         pinWidget.setProperties(name);
+        
+        CasaEndpointRef endPointRef = (CasaEndpointRef) pin;
+        pinWidget.setToolTip(endPointRef.getEndpoint().getQName().toString());
+
         if (doUpdate) {
             scene.validate();
             CasaNodeWidget nodeWidget = (CasaNodeWidget) scene.findWidget(node);
