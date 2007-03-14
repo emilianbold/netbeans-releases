@@ -97,7 +97,7 @@ public final class Product extends RegistryNode {
     
     private FilesList installedFiles;
     
-    private InstallationPhase installationPhase = null;
+    private InstallationPhase installationPhase;
     
     // constructor //////////////////////////////////////////////////////////////////
     public Product() {

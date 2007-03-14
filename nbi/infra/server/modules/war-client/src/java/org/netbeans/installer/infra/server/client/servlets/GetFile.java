@@ -1,9 +1,7 @@
 package org.netbeans.installer.infra.server.client.servlets;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Date;
@@ -14,7 +12,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.swing.JOptionPane;
 import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.utils.StreamUtils;
@@ -27,7 +24,7 @@ import org.netbeans.installer.utils.StringUtils;
  */
 public class GetFile extends HttpServlet {
     @EJB
-    private Manager registryManager;
+    private Manager manager;
     
     @Override
     protected void doGet(
@@ -37,7 +34,7 @@ public class GetFile extends HttpServlet {
             final String registry = request.getParameter("registry");
             final String path = request.getParameter("file");
             
-            final File file = registryManager.getFile(registry, path);
+            final File file = manager.getFile(registry, path);
             
             response.setContentType(
                     "application/octet-stream");

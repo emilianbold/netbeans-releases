@@ -395,16 +395,16 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     0, 0));                           // padx, pady - ???
             
             // debugging plug ///////////////////////////////////////////////////////
-            KeyboardFocusManager.getCurrentKeyboardFocusManager().
-                    addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent event) {
-                    if (event.getPropertyName().equals("focusOwner")) {
-                        if (event.getNewValue() != null) {
-                            System.out.println(event.getNewValue());
-                        }
-                    }
-                }
-            });
+            //KeyboardFocusManager.getCurrentKeyboardFocusManager().
+            //        addPropertyChangeListener(new PropertyChangeListener() {
+            //    public void propertyChange(PropertyChangeEvent event) {
+            //        if (event.getPropertyName().equals("focusOwner")) {
+            //            if (event.getNewValue() != null) {
+            //                System.out.println(event.getNewValue());
+            //            }
+            //        }
+            //    }
+            //});
         }
     }
 }
