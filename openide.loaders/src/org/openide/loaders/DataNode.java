@@ -714,6 +714,9 @@ public class DataNode extends AbstractNode {
     }
 
     /** Set whether file extensions should be shown by default.
+     * 
+     * <p>Note that this method affects all <code>DataNode</code>s.</p>
+     * 
     * @param s <code>true</code> if so
     */
     public static void setShowFileExtensions (boolean s) {
