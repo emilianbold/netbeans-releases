@@ -29,8 +29,11 @@ import java.io.NotSerializableException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -42,13 +45,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** The system FileSystem - represents system files under $NETBEANS_HOME/system.
 *
 * @author Jan Jancura, Ian Formanek, Petr Hamernik
 */
-public final class SystemFileSystem extends MultiFileSystem implements FileSystem.Status {
+public final class SystemFileSystem extends MultiFileSystem 
+implements FileSystem.Status, org.openide.util.LookupListener {
     // Must be public for BeanInfo to work: #11186.
 
     /** generated Serialized Version UID */
@@ -65,6 +70,11 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
     /** name of file attribute with URL to 32x32 color icon */
     private static final String ATTR_ICON_32 = "SystemFileSystem.icon32"; // NOI18N
 
+    /** lookup result we listen on */
+    private static Lookup.Result<FileSystem> result = Lookup.getDefault().lookupResult(FileSystem.class);
+    /** the set of layers provided by the system */
+    private static FileSystem[] layers;
+
     /** user fs */
     private ModuleLayeredFileSystem user;
     /** home fs */
@@ -73,13 +83,16 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
     /** @param fss list of file systems to delegate to
     */
     @SuppressWarnings("deprecation")
-    private SystemFileSystem (FileSystem[] fss) throws PropertyVetoException {
-        super (fss);
-        user = (ModuleLayeredFileSystem) fss[0];
-        home = fss.length > 2 ? (ModuleLayeredFileSystem) fss[1] : null;
-
-        setSystemName (SYSTEM_NAME);
-        setHidden (true);
+    private SystemFileSystem() throws PropertyVetoException {
+        super(computeLayers());
+        user = (ModuleLayeredFileSystem) layers[0];
+        home = layers.length > 2 ? (ModuleLayeredFileSystem) layers[1] : null;
+        
+        setSystemName(SYSTEM_NAME);
+        setHidden(true);
+        
+        result.addLookupListener(this);
+        resultChanged(null);
     }
 
 
@@ -113,8 +126,9 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
             else
                 s.add (arr[i]);
 
+        layers = (FileSystem[])arr.clone();
         // create own internal copy of passed filesystems
-        setDelegates(arr.clone());
+        setDelegates(computeLayers());
         firePropertyChange ("layers", null, null); // NOI18N
     }
     
@@ -126,6 +140,20 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
     public FileSystem[] getLayers() {
         // don't return reference to internal buffer
         return getDelegates().clone();
+    }
+    
+    private synchronized static FileSystem[] computeLayers () {
+        FileSystem[] fromLookup = result.allInstances ().toArray (new FileSystem[0]);
+        
+        if (fromLookup.length > 0) {
+            ArrayList<FileSystem> arr = new ArrayList<FileSystem>(layers.length + fromLookup.length);
+            arr.addAll (Arrays.asList (layers));
+            List<FileSystem> lkpBased = Arrays.asList(fromLookup);
+            arr.addAll(lkpBased);
+            return arr.toArray (new FileSystem[0]);
+        }
+        
+        return layers;
     }
 
     protected FileSystem createWritableOnForRename (String oldName, String newName) throws IOException {        
@@ -280,7 +308,8 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
             ("org.netbeans.core.projects.FixedFileSystem", "Automatic Manifest Installation"); // NOI18N
         arr[home == null ? 1 : 2] = FixedFileSystem.deflt;
 
-        return new SystemFileSystem (arr);
+        layers = arr;
+        return new SystemFileSystem ();
     }
 
     /** Notification that a file has migrated from one file system
@@ -297,9 +326,14 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
     }
 
     // --- SAFETY ---
-    private Object writeReplace () throws ObjectStreamException {
-        new NotSerializableException ("WARNING - SystemFileSystem is not designed to be serialized").printStackTrace (); // NOI18N
-        return new SingletonSerializer ();
+    private Object writeReplace() throws ObjectStreamException {
+        new NotSerializableException("WARNING - SystemFileSystem is not designed to be serialized").printStackTrace(); // NOI18N
+        return new SingletonSerializer();
+    }
+    
+    /** Refresh layers */
+    public synchronized void resultChanged(org.openide.util.LookupEvent ev) {
+        setDelegates(computeLayers());
     }
     
     private static final class SingletonSerializer extends Object implements Serializable {

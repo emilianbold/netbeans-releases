@@ -23,6 +23,28 @@ Microsystems, Inc. All Rights Reserved.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="add-content-to-sfs">
+            <api name="filesystems"/>
+            <summary>Allow modules to dynamically add/remove layer content</summary>
+            <version major="7" minor="1"/>
+            <date day="12" month="3" year="2007"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    Repository.getDefaultFileSystem's content can now be 
+                    influenced by adding own 
+                    <a href="@TOP@/org/openide/filesystems/FileSystem.html">FileSystem</a>s
+                    into global 
+                    <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup.getDefault()</a>.
+                    This is supposed to work in a standalone mode as well 
+                    as inside NetBeans Platform. The tutorial is available
+                    in the <a href="@TOP@/architecture-summary.html#answer-arch-usecases">usecases section</a> of achitecture description.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="Repository"/>
+            <issue number="26338"/>
+        </change>
         <change id="createData-and-createFolder-take-File-as-parameter">
             <api name="filesystems"/>
             <summary>Added additional methods <code>FileUtil.createData</code>

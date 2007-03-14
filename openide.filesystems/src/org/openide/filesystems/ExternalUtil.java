@@ -18,10 +18,14 @@
  */
 package org.openide.filesystems;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 
 /** Contains utility methods to deal with repository and error manager,
@@ -120,7 +124,30 @@ final class ExternalUtil extends Object {
 
         if (repository == null) {
             // if not provided use default one
-            repository = new Repository(FileUtil.createMemoryFileSystem());
+            repository = new Repository(new MainFS());
         }
     }
+    
+    private static final class MainFS extends MultiFileSystem implements LookupListener {
+        private static final Lookup.Result<FileSystem> ALL = Lookup.getDefault().lookupResult(FileSystem.class);
+        private static final FileSystem MEMORY = FileUtil.createMemoryFileSystem();
+        
+        public MainFS() {
+            super(computeDelegates());
+            ALL.addLookupListener(this);
+            resultChanged(null);
+        }
+        
+        private static FileSystem[] computeDelegates() {
+            List<FileSystem> arr = new ArrayList<FileSystem>();
+            arr.add(MEMORY);
+            arr.addAll(ALL.allInstances());
+            return arr.toArray(new FileSystem[0]);
+        }
+        
+    
+        public void resultChanged(LookupEvent ev) {
+            setDelegates(computeDelegates());
+        }
+    } // end of MainFS
 }
