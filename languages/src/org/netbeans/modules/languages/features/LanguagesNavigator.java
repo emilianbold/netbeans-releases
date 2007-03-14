@@ -164,10 +164,13 @@ public class LanguagesNavigator implements NavigatorPanel {
                 try {
                     NbEditorDocument document = (NbEditorDocument) ec.openDocument ();
                     ASTNode ast = null;
-                    try {
-                        ast = ParserManagerImpl.get (document).getAST ();
-                    } catch (ParseException ex) {
-                        ast = ex.getASTNode ();
+                    ParserManager parserManager = ParserManagerImpl.get(document);
+                    if (parserManager != null) {
+                        try {
+                            ast = parserManager.getAST ();
+                        } catch (ParseException ex) {
+                            ast = ex.getASTNode ();
+                        }
                     }
                     if (parserListener == null)
                         parserListener = new DocumentListener ();
@@ -181,10 +184,14 @@ public class LanguagesNavigator implements NavigatorPanel {
                     } else
                         lastEditor = null;
                     if (lastDocument != document) {
-                        if (lastDocument != null)
-                            ParserManagerImpl.get (lastDocument).removeListener (parserListener);
-                        if (document != null)
-                            ParserManagerImpl.get (document).addListener (parserListener);
+                        if (lastDocument != null) {
+                            ParserManager lastPM = ParserManagerImpl.get (lastDocument);
+                            if (lastPM != null) {
+                                lastPM.removeListener (parserListener);
+                            }
+                        }
+                        if (parserManager != null)
+                            parserManager.addListener (parserListener);
                         lastDocument = document;
                     }
                     List data = new ArrayList ();
@@ -193,9 +200,11 @@ public class LanguagesNavigator implements NavigatorPanel {
                         Model model = new Model ();
                         model.setContext (ast, lc.getLineSet (), document);
                         tree.setModel (model);
+                    } else if (parserManager == null) {
+                        tree.setModel (new DefaultTreeModel (new DefaultMutableTreeNode ()));
                     } else {
                         DefaultMutableTreeNode root = new DefaultMutableTreeNode ();
-                        State state = ParserManagerImpl.get (document).getState ();
+                        State state = parserManager.getState ();
                         if (state == State.PARSING) {
                             root.add (new DefaultMutableTreeNode ("Parsing ..."));
                         } else 

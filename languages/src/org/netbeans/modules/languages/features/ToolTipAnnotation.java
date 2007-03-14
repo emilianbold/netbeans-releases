@@ -23,6 +23,7 @@ import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.SyntaxContext;
 import javax.swing.JEditorPane;
 import org.netbeans.api.lexer.Token;
@@ -80,7 +81,11 @@ public class ToolTipAnnotation extends Annotation {
             }
             ASTNode ast = null;
             try {
-                ast = ParserManagerImpl.get (doc).getAST ();
+                ParserManager parserManager = ParserManagerImpl.get(doc);
+                if (parserManager == null) {
+                    return null;
+                }
+                ast = parserManager.getAST ();
             } catch (ParseException ex) {
                 ast = ex.getASTNode ();
             }

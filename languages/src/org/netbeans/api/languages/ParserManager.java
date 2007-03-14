@@ -22,7 +22,10 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.text.Document;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.languages.parser.LanguageDefinitionNotFoundException;
+import org.openide.ErrorManager;
 
 
 /**
@@ -59,6 +62,15 @@ public abstract class ParserManager {
         WeakReference<ParserManager> wr = managers.get (doc);
         ParserManager pm = wr != null ? wr.get () : null;
         if (pm == null) {
+            String mimeType = (String) doc.getProperty("mimeType");
+            try {
+                ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage(mimeType);
+            } catch (LanguageDefinitionNotFoundException e) {
+                return null;
+            } catch (ParseException e) {
+                ErrorManager.getDefault().notify(e);
+                return null;
+            }
             pm = new ParserManagerImpl (doc);
             managers.put (doc, new WeakReference<ParserManager> (pm));
             //Utils.startTest ("ParserManager.managers", managers);
