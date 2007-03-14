@@ -107,14 +107,14 @@ public class CopyTest extends JellyTestCase {
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
 
             rso.next();
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
             WorkDirStepOperator wdso = new WorkDirStepOperator();
             wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+//            oto.clear();            
             //open project
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
@@ -184,14 +184,14 @@ public class CopyTest extends JellyTestCase {
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
 
             rso.next();
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             WorkDirStepOperator wdso = new WorkDirStepOperator();
             wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
             //open project
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+//            oto.clear();            
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");

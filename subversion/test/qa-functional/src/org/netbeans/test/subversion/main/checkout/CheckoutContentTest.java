@@ -83,6 +83,7 @@ public class CheckoutContentTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
+            OutputOperator.invoke();
             TestKit.closeProject(PROJECT_NAME);
             OutputTabOperator oto;
             OutputOperator oo = OutputOperator.invoke();
@@ -105,14 +106,14 @@ public class CheckoutContentTest extends JellyTestCase {
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             
             rso.next();
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             WorkDirStepOperator wdso = new WorkDirStepOperator();
             wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
             //open project
+            oto = new OutputTabOperator("file:///tmp/repo");
+//            oto.clear();            
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
@@ -155,13 +156,13 @@ public class CheckoutContentTest extends JellyTestCase {
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             
             rso.next();
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             WorkDirStepOperator wdso = new WorkDirStepOperator();
             wdso.setRepositoryFolder("trunk/JavaApp/src");
             wdso.checkCheckoutContentOnly(true);
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.finish();
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+//            oto.clear();            
             //open project
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");

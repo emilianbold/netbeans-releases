@@ -104,9 +104,9 @@ public class SearchRevisionsTest extends JellyTestCase {
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
 
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.clear();
             SearchRevisionsOperator sro = wdso.search();
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+//            oto.clear();            
             sro.setFrom("");
             sro.list();
             oto.waitText("Searching revisions finished.");
