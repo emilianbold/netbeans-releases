@@ -27,11 +27,9 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
-import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularProvider;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.Painter;
-import org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget;
 
 /**
  *
@@ -48,11 +46,8 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     private static final int MINIMUM_SE_NODE_HEIGHT   = 20;
     private static final int MINIMUM_SE_NODE_WIDTH    = 120;
     
-    private Widget mTopWidgetHolder;
-    private Widget mPinsHolderWidget;
     private CasaEngineTitleWidget mTitleWidget;
     private String mNodeType;
-    private Widget mMinimizedMoveCleanerWidget;
     
     private Dimension mPreviousHolderSize = new Dimension();
     private StateModel mStateModel = new StateModel(2);
@@ -72,11 +67,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         
         mStateModel = new StateModel();
         mStateModel.addListener(this);
-        
-        mHeader = new Widget(scene);
-        mHeader.setOpaque(false);
-        mHeader.setLayout(LayoutFactory.createVerticalLayout(LayoutFactory.SerialAlignment.CENTER, 0));
-        addChild(mHeader);
         
         mTitleWidget = new CasaEngineTitleWidget(scene, mStateModel);
         
@@ -101,7 +91,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                 return CasaFactory.getCasaCustomizer().getCOLOR_BC_TITLE_BACKGROUND();
             }
             public Rectangle getClipRect() {
-                Rectangle clientArea = mPinsHolderWidget.getClientArea();
+                Rectangle clientArea = mHeader.getClientArea();
                 Rectangle gradientRect = new Rectangle();
 
                 gradientRect.x = clientArea.x + MARGIN_SE_ROUNDED_RECTANGLE;
@@ -140,19 +130,15 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
             }
         };
 
-        mPinsHolderWidget = new PainterWidget(scene, new BorderedRectangularPainter(provider, customWidgetPainter));
-        mPinsHolderWidget.setOpaque(false);
+        mHeader = new org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget(scene,
+                                                                                      new org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter(provider,
+                                                                                                                                                                       customWidgetPainter));
+        mHeader.setOpaque(false);
+        mHeader.addChild(mTitleWidget);
         
-        mPinsHolderWidget.addChild(mTitleWidget);
-        mPinsHolderWidget.setLayout(LayoutFactory.createVerticalLayout(
-                LayoutFactory.SerialAlignment.LEFT_TOP, 
-                PIN_VERTICAL_GAP));
-        
-        mTopWidgetHolder = new Widget(scene);
-        mTopWidgetHolder.setOpaque(false);
-        mTopWidgetHolder.addChild(mPinsHolderWidget);
-        
-        mHeader.addChild(mTopWidgetHolder);
+        mHeader.setLayout(org.netbeans.api.visual.layout.LayoutFactory.createVerticalLayout(org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment.LEFT_TOP,
+                                                                  PIN_VERTICAL_GAP));
+        addChild(mHeader);
         
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
         
@@ -166,7 +152,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                     return;
                 }
                 
-                Rectangle bounds = mPinsHolderWidget.getClientArea().getBounds();
+                Rectangle bounds = mHeader.getClientArea().getBounds();
                 if (!bounds.getSize().equals(mPreviousHolderSize))
                 {
                     mPreviousHolderSize = bounds.getSize();
@@ -180,11 +166,11 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                         bounds.height = MINIMUM_SE_NODE_HEIGHT;
                     }
                     
-                    mPinsHolderWidget.setPreferredBounds(bounds);
+                    mHeader.setPreferredBounds(bounds);
 
                     /* All pins bounds need to be set so that the Anchor will be calculated correctly */
                     Rectangle childBounds;
-                    for (Widget child : mPinsHolderWidget.getChildren ()) {
+                    for (Widget child : mHeader.getChildren ()) {
                         if (child.getBounds() != null) {
                             childBounds = child.getPreferredBounds();
                             childBounds.width = bounds.width;
@@ -225,13 +211,15 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     
     public void readjustBounds() {
         boolean isMinimized = mStateModel.getBooleanState();
-        for (Widget child : mPinsHolderWidget.getChildren()) {
+        for (Widget child : mHeader.getChildren()) {
             if (child instanceof CasaPinWidget) {
                 ((CasaPinWidget) child).updateBounds(isMinimized);
             }
         }
         mTitleWidget.updateBounds(isMinimized);
-        mPinsHolderWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
+        mHeader.setPreferredBounds(null);
+        setPreferredBounds(null);
+        mHeader.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
         mPreviousHolderSize = new Dimension();
         getScene().revalidate();
         getScene().validate();
@@ -262,44 +250,12 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         mTitleWidget.setTitleColor(color);
     }
 
+    
     public void initializeGlassLayer(LayerWidget layer) {
-        mMinimizedMoveCleanerWidget = new Widget(getScene());
-        mMinimizedMoveCleanerWidget.setOpaque(false);
-        layer.addChild(mMinimizedMoveCleanerWidget);
-        
-        // The minimized move cleaner has the magical ability to 
-        // remove painting artifacts created when widget is moved.
-        // It ensures that the area around the top/bottom edges 
-        // of the widget will need to be repainted.
-        // This is somewhat of a temporary hack until enough
-        // time exists to determine the exact reason for the glitch.
-        Widget.Dependency minimizedMoveCleaner = new Widget.Dependency() {
-            public void revalidateDependency() {
-                if (
-                        getScene().getGraphics() == null || 
-                        getBounds() == null ||
-                        getParentWidget() == null) {
-                    return;
-                }
-                Rectangle myRect = getBounds();
-                mMinimizedMoveCleanerWidget.setPreferredBounds(new Rectangle(
-                        0, 
-                        0, 
-                        myRect.width  + INVISIBLE_WRAPPER_OFFSET * 2, 
-                        myRect.height + INVISIBLE_WRAPPER_OFFSET * 2));
-                Point point = convertLocalToScene(new Point(
-                        -INVISIBLE_WRAPPER_OFFSET,
-                        -INVISIBLE_WRAPPER_OFFSET));
-                mMinimizedMoveCleanerWidget.setPreferredLocation(point);
-            }
-        };
-        mDependencies.add(minimizedMoveCleaner);
-        addDependency(minimizedMoveCleaner);
     }
 
     public void removeAllDependencies() {
         super.removeAllDependencies();
-        mMinimizedMoveCleanerWidget.removeFromParent();
     }
     
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
@@ -318,7 +274,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         addPinWithOrdering(widget);
         setPinFont(getPinFont());
         setPinColor(getPinColor());
-        mPinsHolderWidget.setPreferredBounds(null);
+        mHeader.setPreferredBounds(null);
     }
 
     /*
@@ -331,17 +287,17 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
      *  
      */
     private void addPinWithOrdering(CasaPinWidget widget) {
-        if(mPinsHolderWidget.getChildren().size() <= 1) {       //Add cushoningWidget only once!
+        if(mHeader.getChildren().size() <= 1) {       //Add cushoningWidget only once!
             Widget cushioningWidget = new Widget(getScene());   //mTitlewidget is already present and thus checking the size with "1"
             cushioningWidget.setPreferredBounds(new Rectangle(0,PIN_VERTICAL_GAP));
-            mPinsHolderWidget.addChild(cushioningWidget);
+            mHeader.addChild(cushioningWidget);
         }
         int insertionIndex = 1;    //TitleWidget is already there
         boolean isProvides = false;
         if (widget instanceof CasaPinWidgetEngineProvides) {
             isProvides = true;
         }
-        for (Widget child : mPinsHolderWidget.getChildren()) {
+        for (Widget child : mHeader.getChildren()) {
             if (child instanceof CasaPinWidget) {
                 if (child instanceof CasaPinWidgetEngineProvides) {
                     insertionIndex++;
@@ -355,7 +311,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                 //insertionIndex++;
             }
         }
-        mPinsHolderWidget.addChild(insertionIndex, widget);
+        mHeader.addChild(insertionIndex, widget);
     }
     
     /**
@@ -398,14 +354,14 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         return null;
     }
     public void setPinFont(Font font) {
-        for (Widget child : mPinsHolderWidget.getChildren()) {
+        for (Widget child : mHeader.getChildren()) {
             if (child instanceof CasaPinWidgetEngine) {
                 ((CasaPinWidgetEngine)child).setLabelFont(font);
             }
         }
     }
     public void setPinColor(Color color) {
-        for (Widget child : mPinsHolderWidget.getChildren()) {
+        for (Widget child : mHeader.getChildren()) {
             if (child instanceof CasaPinWidgetEngine) {
                 ((CasaPinWidgetEngine)child).setLabelColor(color);
             }
