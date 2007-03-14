@@ -92,6 +92,7 @@ public class TomcatProperties {
     private static final String PROP_HOST          = "host";            // NOI18N
     public  static final String PROP_RUNNING_CHECK_TIMEOUT = "runningCheckTimeout"; // NOI18N
     private static final String PROP_INSTANCE_ID   = "instance_id";     // NOI18N
+    public  static final String PROP_AUTOREGISTERED = "autoregistered"; // NOI18N
     
     
     // default values

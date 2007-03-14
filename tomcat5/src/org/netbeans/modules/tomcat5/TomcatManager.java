@@ -75,7 +75,7 @@ public class TomcatManager implements DeploymentManager {
     /** Enum value for get*Modules methods. */
     static final int ENUM_NONRUNNING = 2;
     
-    private static final String PROP_BUNDLED_TOMCAT = "is_it_bundled_tomcat";       // NOI18N
+    public static final String PROP_BUNDLED_TOMCAT = "is_it_bundled_tomcat";       // NOI18N
     
     /** Manager state. */
     private boolean connected;
@@ -117,13 +117,6 @@ public class TomcatManager implements DeploymentManager {
         this.tomcatVersion = tomcatVersion;
         this.uri = uri;
         ip = InstanceProperties.getInstanceProperties(getUri());
-        if (isBundledTomcat()) {
-            // this allows to localize and update Bundled Tomcat display name
-            String displayName = NbBundle.getMessage(TomcatManager.class, "LBL_BundledTomcat");
-            if (!displayName.equals(ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR))) {
-                ip.setProperty(InstanceProperties.DISPLAY_NAME_ATTR, displayName);
-            }
-        }
         if (ip != null) {
             tp = new TomcatProperties(this);
         }
@@ -767,8 +760,12 @@ public class TomcatManager implements DeploymentManager {
             };
             String passwd = null;
             if (isBundledTomcat()) {
-                passwd = TomcatInstallUtil.generatePassword(8);
-                tp.setPassword(passwd);
+                passwd = tp.getPassword();
+                if ("ide_manager".equals(passwd)) { // NOI18N
+                    // change the default password that comes from the bundled Tomcat module
+                    passwd = TomcatInstallUtil.generatePassword(8);
+                    tp.setPassword(passwd);
+                }
             }
             String [] patternTo = new String [] { 
                 null, 
