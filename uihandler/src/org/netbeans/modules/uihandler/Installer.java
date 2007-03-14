@@ -75,6 +75,7 @@ import org.openide.modules.ModuleInstall;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -406,8 +407,8 @@ public class Installer extends ModuleInstall {
         }
         is.close();
         
-        LOG.fine("Reply from uploadLogs:");
-        LOG.fine(redir.toString());
+        LOG.info("Reply from uploadLogs:");
+        LOG.info(redir.toString());
         
         Pattern p = Pattern.compile("<meta\\s*http-equiv=.Refresh.\\s*content.*url=['\"]?([^'\" ]*)\\s*['\"]", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
         Matcher m = p.matcher(redir);
@@ -439,7 +440,7 @@ public class Installer extends ModuleInstall {
         }
     }
     
-    private static final class Submit implements ActionListener, Mutex.Action<Void> {
+    private static final class Submit implements ActionListener, Runnable {
         private String msg;
         boolean okToExit;
         private DialogDescriptor dd;
@@ -506,20 +507,35 @@ public class Installer extends ModuleInstall {
             } else {
                 dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
             }
-
+            
             exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
+            
+            synchronized (this) {
+                RequestProcessor.getDefault().post(this);
+                while (d == null) {
+                    try {
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            
+            
             for (;;) {
                 try {
                     if (url == null) {
                         String uri = NbBundle.getMessage(Installer.class, msg);
                         if (uri == null || uri.length() == 0) {
                             okToExit = true;
+                            closeDialog();
                             return;
                         }
                         url = new URL(uri); // NOI18N
                     }
                     
                     URLConnection conn = url.openConnection();
+                    conn.setConnectTimeout(5000);
                     File tmp = File.createTempFile("uigesture", ".html");
                     tmp.deleteOnExit();
                     FileOutputStream os = new FileOutputStream(tmp);
@@ -554,10 +570,24 @@ public class Installer extends ModuleInstall {
                 }
                 break;
             }
-            Mutex.EVENT.readAccess(this);
+            
+            if (browser != null) {
+                browser.setURL(url);
+            }
+            
+            synchronized (this) {
+                while (d != null) {
+                    try {
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            
         }
         
-        public Void run() {
+        public void run() {
             if ("ERROR_URL".equals(msg)){   // NOI18N
                 if (reportPanel==null) reportPanel = new ReportPanel();
                 Throwable t = getThrown();
@@ -570,7 +600,7 @@ public class Installer extends ModuleInstall {
                 dd.setMessage(reportPanel);
             }else{
                 browser = new HtmlBrowser();
-                browser.setURL(url);
+                browser.setURL(Installer.class.getResource("Connecting.html")); // NOI18N
                 browser.setEnableLocation(false);
                 browser.setEnableHome(false);
                 browser.setStatusLineVisible(false);
@@ -589,10 +619,16 @@ public class Installer extends ModuleInstall {
                 //        panel.getExplorerManager().setRootContext(root);
                 
             }
-            dd.setClosingOptions(new Object[] { exitMsg });
+            Object[] arr = new Object[] { exitMsg };
+            dd.setOptions(arr);
+            dd.setClosingOptions(arr);
             dd.setButtonListener(this);
             dd.setModal(true);
             d = DialogDisplayer.getDefault().createDialog(dd);
+            synchronized (this) {
+                // dialog created let the code go on
+                notify();
+            }
             d.setVisible(true);
             
             Object res = dd.getValue();
@@ -600,8 +636,10 @@ public class Installer extends ModuleInstall {
             if (res == exitMsg) {
                 okToExit = true;
             }
-            
-            return null;
+            synchronized (this) {
+                d = null;
+                notifyAll();
+            }
         }
         
         private void uploadAndPost(List<LogRecord> recs, URL u) {
@@ -633,7 +671,7 @@ public class Installer extends ModuleInstall {
                 okToExit = false;
                 // this should close the descriptor
                 dd.setValue(DialogDescriptor.CLOSED_OPTION);
-                d.setVisible(false);
+                closeDialog();
                 return;
             }
             
@@ -687,17 +725,24 @@ public class Installer extends ModuleInstall {
                 okToExit = true;
                 // this should close the descriptor
                 dd.setValue(DialogDescriptor.CLOSED_OPTION);
-                d.setVisible(false);
+                closeDialog();
                 return;
             }
             
             if ("exit".equals(e.getActionCommand())) {
                 // this should close the descriptor
                 dd.setValue(DialogDescriptor.CLOSED_OPTION);
-                d.setVisible(false);
+                closeDialog();
                 return;
             }
-            
+        }
+        
+        private void closeDialog() {
+            d.setVisible(false);
+            synchronized (this) {
+                d = null;
+                notifyAll();
+            }
         }
     } // end Submit
 }

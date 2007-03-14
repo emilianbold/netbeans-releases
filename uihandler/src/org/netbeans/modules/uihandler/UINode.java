@@ -84,11 +84,11 @@ final class UINode extends AbstractNode implements VisualData {
         
         if ("UI_ACTION_BUTTON_PRESS".equals(r.getMessage())) { // NOI18N
             setDisplayName(Actions.cutAmpersand(getParam(r, 4)));
-            String thru = (String)r.getParameters()[1];
-            if (thru.contains("Toolbar") || r.getParameters()[0] instanceof JButton) {
+            String thru = getParam(r, 1, String.class);
+            if ((thru != null && thru.contains("Toolbar")) || getParam(r, 0, Object.class) instanceof JButton) {
                 setIconBaseWithExtension("org/netbeans/modules/uihandler/toolbars.gif");
                 htmlKey = "HTML_toolbar";
-            } else if (thru.contains("MenuItem")) {
+            } else if (thru != null && thru.contains("MenuItem")) {
                 setIconBaseWithExtension("org/netbeans/modules/uihandler/menus.gif");
                 htmlKey = "HTML_menu";
             }
@@ -125,7 +125,7 @@ final class UINode extends AbstractNode implements VisualData {
             paramSheet.setName("parameters"); // NOI18N
             paramSheet.setDisplayName(NbBundle.getMessage(UINode.class, "MSG_DisplayNameParameters"));
             for (int i = 0; i < r.getParameters().length; i++) {
-                paramSheet.put(createProperty(i, r.getParameters()[i]));
+                paramSheet.put(createProperty(i, getParam(r, i, Object.class)));
             }
             getSheet().put(paramSheet);
         }
@@ -350,6 +350,12 @@ final class UINode extends AbstractNode implements VisualData {
         return s.substring(index + 1);
     }
 
-    
+    private static <T> T getParam(LogRecord r, int index, Class<T> type) {
+        if (r == null || r.getParameters() == null || r.getParameters().length <= index) {
+            return null;
+        }
+        Object o = r.getParameters()[index];
+        return type.isInstance(o) ? type.cast(o) : null;
+    }
 
 }

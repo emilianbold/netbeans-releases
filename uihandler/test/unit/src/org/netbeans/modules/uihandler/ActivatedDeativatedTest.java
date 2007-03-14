@@ -23,6 +23,7 @@ import java.awt.Dialog;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -89,8 +90,10 @@ public class ActivatedDeativatedTest extends NbTestCase {
         }
 
         public Dialog createDialog(DialogDescriptor descriptor) {
-            fail("Not implemented");
-            return null;
+            return new JDialog() {
+                public void setVisible(boolean v) {
+                }
+            };
         }
         
     }
