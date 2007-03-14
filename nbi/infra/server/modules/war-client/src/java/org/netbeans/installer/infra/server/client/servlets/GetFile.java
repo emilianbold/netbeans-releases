@@ -125,21 +125,26 @@ public class GetFile extends HttpServlet {
                             System.out.println("transferring partial");
                             StreamUtils.transferData(input, output, finish - start + 1);
                         }
+                        System.out.println("finished transferring");
                     }
                 }
             } catch (IOException e) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                e.printStackTrace();
                 e.printStackTrace(response.getWriter());
             } finally {
                 if (input != null) {
+                    System.out.println("closing input");
                     input.close();
                 }
                 if (output != null) {
+                    System.out.println("closing output");
                     output.close();
                 }
             }
         } catch (ManagerException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
             e.printStackTrace(response.getWriter());
         }
     }
