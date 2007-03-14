@@ -35,6 +35,11 @@ import javax.swing.text.StyledDocument;
 import junit.textui.TestRunner;
 import lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -58,7 +63,7 @@ public class SyntaxHighlightTest extends EditorTestCase{
 	curPackage = getClass().getPackage().getName();
     }
     
-    private boolean generateGoldenFiles = false;
+    private boolean generateGoldenFiles = true;
     
     private String curPackage;
     
@@ -115,7 +120,40 @@ public class SyntaxHighlightTest extends EditorTestCase{
 	}
     }
     
+    /**
+     * Check default settings 
+     */ 
     public void testColor() throws DataObjectNotFoundException, IOException, InterruptedException, InvocationTargetException, BadLocationException {
+	checkCurrentColorSettings();
+    }
+    
+    /**
+     * Change java comment settings and verify changes took effect
+     * @throws java.io.IOException problems with accessing goldenfile
+     * This does not work properly due to:
+     * http://www.netbeans.org/issues/show_bug.cgi?id=93969
+     */ 
+    public void testCommentColor() throws IOException {
+	OptionsOperator odop = OptionsOperator.invoke();
+	odop.selectFontAndColors();
+	JTabbedPaneOperator jtpo = new JTabbedPaneOperator(odop, "Syntax");
+	jtpo.selectPage(0);
+	JListOperator jlo = new JListOperator(jtpo, 0);
+	jlo.selectItem(2); //select 'Comment'
+	JComboBoxOperator jcbo = new JComboBoxOperator(jtpo, 1); //change FG
+	jcbo.selectItem(2); //select 'cyan'
+	JButtonOperator okOperator = new JButtonOperator(odop, "OK");
+	okOperator.push(); //confirm OD
+	new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+	checkCurrentColorSettings();
+    }
+    
+    /**
+     * Creates/compares goldenfile with all current highlighting settings
+     * The name of the testedfile & goldenfile depends on test method
+     * from which this method is called from
+     */ 
+    private void checkCurrentColorSettings() throws DataObjectNotFoundException, IOException {
 	String path  = "/projects/editor_test/src/"+curPackage.replace('.','/')+"/"+testClass+".java";
 	//System.out.println(path);
 	File testFile = new File(getDataDir(),path);
@@ -145,11 +183,10 @@ public class SyntaxHighlightTest extends EditorTestCase{
 	}
     }
     
-    
-    
     protected void setUp() throws Exception {
 	super.setUp();
 	openDefaultProject();
+	//sets the testClass name to current test name (ie. for proper goldenfile)
 	testClass = getName();
 	openSourceFile(curPackage, testClass);
 	oper =  new EditorOperator(testClass);
