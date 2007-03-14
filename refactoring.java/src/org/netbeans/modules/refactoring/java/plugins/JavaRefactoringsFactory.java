@@ -46,7 +46,7 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new JavaWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
             }
         } else if (refactoring instanceof RenameRefactoring) {
-            if (handle!=null || RetoucheUtils.isJavaFile(file)) {
+            if (handle!=null || ((file!=null) && RetoucheUtils.isJavaFile(file))) {
                 //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
             } else if (file!=null && RetoucheUtils.isOnSourceClasspath(file) && file.isFolder()) {
