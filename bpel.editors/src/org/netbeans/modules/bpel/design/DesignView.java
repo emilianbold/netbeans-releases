@@ -804,9 +804,9 @@ public class DesignView extends JPanel implements
         Pattern root = diagramModel.getRootPattern();
         if (root != null) {
             VisualElement result = findElementInPattern(root, x, y);
-            if (result == null) {
-                return ((CompositePattern) root).getBorder();
-            }
+//            if (result == null) {
+//                return ((CompositePattern) root).getBorder();
+//            }
             return result;
         }
         return null;
