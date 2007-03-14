@@ -38,8 +38,12 @@ import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -131,27 +135,45 @@ public class AddOperationAction extends AbstractAction {
                         String partNameBase = "parameter";
                         String partName = partNameBase;
                         wsdlModel.startTransaction();
-                        for(int i = 0; i < inputParms.length; i++){
-                            Message inputMessage = factory.createMessage();
-                            inputMessage.setName(messageName);
-                            Part part = factory.createPart();
-                            part.setName(partName);
-                            NamedComponentReference<GlobalElement> ref = part.createSchemaReference(inputParms[i], GlobalElement.class);
-                            part.setElement(ref);
-                            inputMessage.addPart(part);
-                            definitions.addMessage(inputMessage);
-                            messageName = messageNameBase + "_" + ++counter;
-                            partName = partNameBase + "_" + counter;
-                        }
+                        //for(int i = 0; i < inputParms.length; i++){
+                        //assume one parameter for now
+                        GlobalElement inputParameter = inputParms[0];
+                        Message inputMessage = factory.createMessage();
+                        inputMessage.setName(messageName);
+                        Part part = factory.createPart();
+                        part.setName(partName);
+                        NamedComponentReference<GlobalElement> ref = part.createSchemaReference(inputParameter, GlobalElement.class);
+                        part.setElement(ref);
+                        inputMessage.addPart(part);
+                        definitions.addMessage(inputMessage);
+                        messageName = messageNameBase + "_" + ++counter;
+                        partName = partNameBase + "_" + counter;
+                        //}
                         Message outputMessage = factory.createMessage();
                         outputMessage.setName(operationName + "Response");
-                        Part part = factory.createPart();
-                        part.setName("result");
-                        NamedComponentReference<GlobalElement> ref = part.createSchemaReference(outputParm, GlobalElement.class);
-                        part.setElement(ref);
-                        outputMessage.addPart(part);
+                        Part outpart = factory.createPart();
+                        outpart.setName("result");
+                        NamedComponentReference<GlobalElement> outref = part.createSchemaReference(outputParm, GlobalElement.class);
+                        part.setElement(outref);
+                        outputMessage.addPart(outpart);
                         definitions.addMessage(outputMessage);
                         
+                        RequestResponseOperation operation = factory.createRequestResponseOperation();
+                        operation.setName(operationName);
+                        Input input = factory.createInput();
+                        NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
+                        input.setName(operationName);
+                        input.setMessage(inputRef);
+                        operation.setInput(input);
+                        
+                        Output output = factory.createOutput();
+                        NamedComponentReference<Message> outputRef = input.createReferenceTo(outputMessage, Message.class);
+                        output.setName(operationName + "Response");
+                        output.setMessage(outputRef);
+                        operation.setOutput(output);
+                        //this is bogus: need to get the correct porttype
+                        PortType portType = definitions.getPortTypes().iterator().next();
+                        portType.addOperation(operation);
                         wsdlModel.endTransaction();
                     }
                 }
