@@ -51,6 +51,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
     private File wsdlFile;
     private List<URL> schemaFiles;
     private String parameterType, returnType, faultType;
+    private Map<String, Import> map = new HashMap<String, Import>();
+    private Map<String, Schema> map1 = new HashMap<String, Schema>();
     
     /** Creates new form NewJPanel */
     public AddOperationFromSchemaPanel(File wsdlFile) {
@@ -64,6 +66,11 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         }catch(CatalogModelException e){
             ErrorManager.getDefault().notify(e);
         }
+        schemaCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                schemaComboChanged(evt);
+            }
+        });
         SchemaPanelListCellRenderer renderer = new SchemaPanelListCellRenderer();
         parmCombo.setRenderer(renderer);
         returnCombo.setRenderer(renderer);
@@ -105,12 +112,18 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         }
         
         private void populate()throws CatalogModelException {
-            Map<String, Import> map = new HashMap<String, Import>();
             WSDLModel model = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
             Definitions definitions = model.getDefinitions();
             Types types = definitions.getTypes();
             Collection<Schema> schemas = types.getSchemas();
-            for(Schema schema : schemas){
+            for(Schema schema : schemas) {
+                // populate with internal schema
+                Collection<GlobalElement> elements = schema.getElements();
+                if (elements.size()>0) {
+                    schemaCombo.addItem(schema.getTargetNamespace());
+                    map1.put(schema.getTargetNamespace(), schema);
+                }
+                // populate with imported schemas
                 Collection<Import> importedSchemas = schema.getImports();
                 for(Import importedSchema : importedSchemas){
                     String schemaLocation = importedSchema.getSchemaLocation();
@@ -118,18 +131,9 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                     schemaCombo.addItem(schemaLocation);
                 }
             }
-            String selectedSchema = (String)schemaCombo.getSelectedItem();
-            Import importedSchema = map.get(selectedSchema);
-            String namespace = importedSchema.getNamespace();
-            SchemaModel schemaModel = importedSchema.resolveReferencedModel();
-            Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
-            for(GlobalElement element : elements){
-                String elementName = element.getName();
-                
-                parmCombo.addItem(element);
-                returnCombo.addItem(element);
-                faultCombo.addItem(element);
-            }
+            
+            String selectedItem = (String)schemaCombo.getItemAt(0);
+            populateWithElements(selectedItem);
         }
         
         
@@ -139,8 +143,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                     int index,
                     boolean isSelected,
                     boolean cellHasFocus){
-                String text = ((GlobalElement)value).getName();
-                setText(text);
+                    String text = ((GlobalElement)value).getName();
+                    setText(text);
                 return this;
             }
         }
@@ -240,7 +244,46 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                 .addContainerGap(68, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
+
+private void schemaComboChanged(java.awt.event.ItemEvent evt) {
+    // TODO add your handling code here:
+    parmCombo.removeAllItems();
+    returnCombo.removeAllItems();
+    faultCombo.removeAllItems();
+    String selectedItem = (String)schemaCombo.getSelectedItem();
+    populateWithElements(selectedItem);
+}
+
+
+private void populateWithElements(String selectedItem) {
+    Import importedSchema = map.get(selectedItem);
+    if (importedSchema!=null) {
+        String namespace = importedSchema.getNamespace();
+        try {
+            SchemaModel schemaModel = importedSchema.resolveReferencedModel();
+            Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
+            for(GlobalElement element : elements){
+                String elementName = element.getName();
+                parmCombo.addItem(element);
+                returnCombo.addItem(element);
+                faultCombo.addItem(element);
+            }
+        } catch (CatalogModelException ex) {
+            ex.printStackTrace();
+        }
+    } else {
+        Schema schema = map1.get(selectedItem);
+        if (schema!=null) {
+            Collection<GlobalElement> elements = schema.getElements();
+            for(GlobalElement element : elements){
+                String elementName = element.getName();
+                parmCombo.addItem(element);
+                returnCombo.addItem(element);
+                faultCombo.addItem(element);
+            }
+        }
+    }
+}
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
