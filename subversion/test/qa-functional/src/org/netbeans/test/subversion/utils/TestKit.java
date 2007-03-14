@@ -25,6 +25,7 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -66,8 +67,12 @@ public final class TestKit {
         //new JTextFieldOperator(npnlso, 2).setText(folder); // NOI18N
         new NewProjectWizardOperator().finish();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
+        
         // wait classpath scanning finished
         ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
+        
         return file;
     }
     
