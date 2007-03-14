@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # The contents of this file are subject to the terms of the Common Development
 # and Distribution License (the License). You may not use this file except in
 # compliance with the License.
@@ -35,7 +35,7 @@
 # (default "no").
 #
 # verifyupdate=yes
-# If yes, cvs update output is checked for unknown files and conflicts, and
+# If yes (default), cvs update output is checked for unknown files and conflicts, and
 # the build is stopped if any are found.
 #
 # nbjdk=/opt/java/j2se/1.5.0_11
@@ -47,7 +47,7 @@
 # different VM.
 #
 # ant=/opt/ant-1.6.5/bin/ant
-# Ant 1.6.5 installation directory.
+# Ant 1.6.5 binary.
 #
 # testant=/opt/ant-1.6.5/bin/ant
 # By default, same as ant.
@@ -75,7 +75,7 @@
 # often helpful, esp. for GUI tests which pop up a lot of windows
 #
 # spawndisplaytype=vnc
-# may be "X", "Xnest", or "vnc"; default "X"
+# may be "X", "Xnest", "vnc" (raw Xvnc), or "vncserver"; default "X"
 # vnc seems stablest; sometimes other servers have bugs
 #
 # vncdisplayargs="-SecurityTypes=none"
@@ -195,12 +195,12 @@ export CLASSPATH=
 
 CVSLOG="/tmp/cvs-update.log.$$"
 origdisplay=$DISPLAY
-if [ $spawndisplay = yes ]
+origxauthority=$XAUTHORITY
+if [ $spawndisplay = yes -a $spawndisplaytype \!= vncserver ]
 then
     # Use a separate display.
     display=:69
     xauthority=/tmp/.Xauthority-$display
-    origxauthority=$XAUTHORITY
     export XAUTHORITY=$xauthority
     if [ $spawndisplaytype = Xnest ]
     then
@@ -245,16 +245,37 @@ then
         echo "Sample X client failed with status $status! Try 'xhost +local:' if you disallow remote logins" 1>&2
         exit 2
     fi
+elif [ $spawndisplay = yes -a $spawndisplaytype = vncserver ]
+then
+    display=:69
+    vncserver $display -desktop 'NetBeans test display' -geometry 1024x768 -depth 16
+    trap "vncserver -kill $display; rm -f $CVSLOG" EXIT
+    vncviewer -passwd ~/.vnc/passwd $display &
+    export DISPLAY=$display
+    $spawnwm &
+    xmessage -timeout 3 "Close/minimize this window if you want. [vncviewer $display]"
+    status=$?
+    if [ $status != 0 ]
+    then
+        echo "Sample X client failed with status $status!" 1>&2
+        exit 2
+    fi
 else
     trap "rm -f $CVSLOG" EXIT
 fi
 
 antcmd="nice $ant -emacs"
 
-if [ $doclean = yes -a \! \( $update = yes -a $verifyupdate = yes \) ]
+if [ $doclean = yes ]
 then
     echo "----------CLEANING SOURCES----------" 1>&2
-    $antcmd -f $sources/nbbuild/build.xml real-clean
+    if [ -d $sources/nbbuild/CVS ]
+    then
+        cleantarget=cvs-clean
+    else
+        cleantarget=real-clean
+    fi
+    $antcmd -f $sources/nbbuild/build.xml $cleantarget
 fi
 
 if [ $update = yes ]
@@ -281,12 +302,6 @@ then
             exit 1
         fi
     fi
-fi
-
-if [ $doclean = yes -a $update = yes -a $verifyupdate = yes ]
-then
-    echo "----------CLEANING SOURCES----------" 1>&2
-    $antcmd -f $sources/nbbuild/build.xml cvs-clean
 fi
 
 if [ $dobuild = yes ]
