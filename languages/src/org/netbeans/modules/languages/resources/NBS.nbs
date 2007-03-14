@@ -21,6 +21,7 @@ TOKEN:keyword:(
     "ACTION" |
     "AST" | 
     "BRACE" |
+    "BUNDLE" |
     "COLOR" | 
     "COMPLETE" |  
     "COMPLETION" | 

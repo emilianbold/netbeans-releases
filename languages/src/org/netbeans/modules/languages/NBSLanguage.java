@@ -79,6 +79,7 @@ public class NBSLanguage {
                 "'ACTION' |" +
                 "'AST' |" +
                 "'BRACE' |" +
+                "'BUNDLE' |" +
                 "'COLOR' |" +
                 "'COMPLETE' |" +
                 "'COMPLETION' |" +

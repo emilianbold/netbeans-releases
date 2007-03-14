@@ -331,16 +331,12 @@ COLOR:js_identifier: {
 ########### code folding #######################################################
 
 FOLD:FunctionBody: {
-    expand_type_action_name:"Expand Methods";
-    collapse_type_action_name:"Collapse Methods";
+    expand_type_action_name:"LBL_ExpandMethods";
+    collapse_type_action_name:"LBL_CollapseMethods";
 }
 FOLD:js_comment: {
-    expand_type_action_name:"Expand Comments";
-    collapse_type_action_name:"Collapse Comments";
-}
-FOLD:js_line_comment: {
-    expand_type_action_name:"Expand Comments";
-    collapse_type_action_name:"Collapse Comments";
+    expand_type_action_name:"LBL_ExpandComments";
+    collapse_type_action_name:"LBL_CollapseComments";
 }
 
 ########### navigator ##########################################################
@@ -436,24 +432,26 @@ PROPERTIES {
     projectsViewIcon:"org/netbeans/modules/languages/javascript/JavaScript.jpg";
 }
 
+BUNDLE "org.netbeans.modules.languages.javascript.JavaScript"
+
 ########### actions ############################################################
 
-ACTION:delete_method: {
-    name:"Delete Current Method";
-    performer:org.netbeans.modules.languages.javascript.JavaScript.performDeleteCurrentMethod;
-    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledDeleteCurrentMethod;
-    explorer:"false";
-}
+#ACTION:delete_method: {
+#    name:"LBL_DeleteCurrentMethod";
+#    performer:org.netbeans.modules.languages.javascript.JavaScript.performDeleteCurrentMethod;
+#    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledDeleteCurrentMethod;
+#    explorer:"false";
+#}
 
 ACTION:run_script: {
-    name:"Run";
+    name:"LBL_Run";
     performer:org.netbeans.modules.languages.javascript.JavaScript.performRun;
     enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledRun;
     explorer:"false";
 }
 
 ACTION:goto_declaration: {
-    name:"Go To Declaration";
+    name:"LBL_GoToDeclaration";
     performer:org.netbeans.modules.languages.javascript.JavaScript.performGoToDeclaration;
     enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledGoToDeclaration;
     explorer:"false";

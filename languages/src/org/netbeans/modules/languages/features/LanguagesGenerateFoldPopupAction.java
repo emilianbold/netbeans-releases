@@ -59,12 +59,12 @@ public class LanguagesGenerateFoldPopupAction extends GenerateFoldPopupAction {
         Iterator<Feature> it = features.iterator ();
         while (it.hasNext ()) {
             Feature fold = it.next ();
-            String expand = (String) fold.getValue ("expand_type_action_name");
+            String expand = l.localize((String) fold.getValue ("expand_type_action_name"));
             if (expand == null) continue;
             if (expands.contains (expand))
                 continue;
             expands.add (expand);
-            String collapse = (String) fold.getValue ("collapse_type_action_name");
+            String collapse = l.localize((String) fold.getValue ("collapse_type_action_name"));
             if (collapse == null) continue;
             addAction (target, menu, expand);
             addAction (target, menu, collapse);

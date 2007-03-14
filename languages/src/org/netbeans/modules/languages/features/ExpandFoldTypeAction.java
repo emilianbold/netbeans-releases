@@ -70,11 +70,11 @@ public class ExpandFoldTypeAction extends BaseAction {
         Iterator<Feature> it = folds.iterator ();
         while (it.hasNext ()) {
             Feature fold = it.next ();
-            String expand = (String) fold.getValue ("expand_type_action_name");;
+            String expand = l.localize((String) fold.getValue ("expand_type_action_name"));
             if (expand == null) continue;
             if (!expand.equals (getValue (NAME)))
                 continue;
-            String collapse = (String) fold.getValue ("collapse_type_action_name");;
+            String collapse = l.localize((String) fold.getValue ("collapse_type_action_name"));
             if (collapse == null) continue;
             List<FoldType> types = new ArrayList<FoldType> ();
             types.add (Folds.getFoldType (collapse));

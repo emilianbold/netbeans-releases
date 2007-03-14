@@ -33,6 +33,8 @@ import java.util.List;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -45,6 +47,7 @@ public class Language {
     public static final String ACTION = "ACTION";
     public static final String AST = "AST";
     public static final String BRACE = "BRACE";
+    public static final String BUNDLE = "BUNDLE";
     public static final String COLOR = "COLOR";
     public static final String COMPLETE = "COMPLETE";
     public static final String COMPLETION = "COMPLETION";
@@ -70,6 +73,8 @@ public class Language {
     private List<ASTNode>       grammarASTNodes = new ArrayList<ASTNode> ();
     private List<Rule>          grammarRules;
     private List<Language>      importedLangauges = new ArrayList<Language> ();
+    private boolean             bundleResolved = false;
+    private ResourceBundle      bundle;
 
     
     /** Creates a new instance of Language */
@@ -142,6 +147,37 @@ public class Language {
         );
     }
 
+    public String localize(String str) {
+        if (!bundleResolved) {
+            Feature bundleFeature = getFeature(BUNDLE);
+            if (bundleFeature != null) {
+                String clsName = (String)bundleFeature.getValue();
+                if (clsName != null) {
+                    ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                    Class clazz = null;
+                    try {
+                        clazz = cl.loadClass (clsName);
+                    } catch (ClassNotFoundException ex) {
+                        ErrorManager.getDefault ().notify (ex);
+                    }
+                    if (clazz != null) {
+                        bundle = NbBundle.getBundle(clazz);
+                    }
+                }
+            }
+            bundleResolved = true;
+        }
+        if (str == null) {
+            return null;
+        }
+        if (bundle != null) {
+            try {
+                return bundle.getString(str);
+            } catch (MissingResourceException e) {
+            }
+        }
+        return str;
+    }
     
     // package private interface ...............................................
 

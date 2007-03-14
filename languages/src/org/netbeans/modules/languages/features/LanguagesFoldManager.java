@@ -273,14 +273,16 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             }
                 
             if (fold.hasSingleValue ()) {
-                String foldName = (String) fold.getValue (SyntaxContext.create (doc, path));
+                String foldName = language.localize((String) fold.getValue (SyntaxContext.create (doc, path)));
                 if (foldName == null) return;            
                 folds.add (new FoldItem(foldName, s, e, defaultFoldType));
                 return;
             }
-            String foldName = (String) fold.getValue ("fold_display_name", SyntaxContext.create (doc, path));
-            if (foldName == null) foldName = "...";
-            String foldType = (String) fold.getValue ("collapse_type_action_name");
+            String foldName = language.localize((String) fold.getValue ("fold_display_name", SyntaxContext.create (doc, path)));
+            if (foldName == null) {
+                foldName = "..."; // NOI18N
+            }
+            String foldType = language.localize((String) fold.getValue ("collapse_type_action_name"));
             folds.add (new FoldItem (foldName, s, e, Folds.getFoldType (foldType)));
         } catch (ParseException ex) {
         }
