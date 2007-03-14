@@ -32,6 +32,7 @@ public class GetFile extends HttpServlet {
             final HttpServletRequest request,
             final HttpServletResponse response) throws ServletException, IOException {
         try {
+            System.out.println("request headers:");
             Enumeration en = request.getHeaderNames();
             while (en.hasMoreElements()) {
                 Object name = en.nextElement();
@@ -63,6 +64,7 @@ public class GetFile extends HttpServlet {
                 
                 final String range = request.getHeader("Range");
                 if (range == null) {
+                    System.out.println("range NOT specified");
                     response.setStatus(HttpServletResponse.SC_OK);
                     
                     input.seek(0);
@@ -76,6 +78,7 @@ public class GetFile extends HttpServlet {
                     Matcher matcher = Pattern.compile("^bytes=([0-9]*)-([0-9]*)$").matcher(range);
                     
                     if (!matcher.find()) {
+                        System.out.println("range specified but INVALID");
                         response.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
                         return;
                     } else {
@@ -90,7 +93,10 @@ public class GetFile extends HttpServlet {
                             finish = Long.parseLong(matcher.group(2));
                         }
                         
-                        if ((start != -1) && (finish != -1) && ((start > finish) || (finish > file.length()))) {
+                        if ((start != -1) && 
+                                (finish != -1) && 
+                                ((start > finish) || (finish > file.length()))) {
+                            System.out.println("range specified but is not CORRECT");
                             response.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
                             return;
                         }
@@ -102,6 +108,9 @@ public class GetFile extends HttpServlet {
                             finish = -1;
                         }
                         
+                        System.out.println("range start: " + start);
+                        System.out.println("range end: " + finish);
+                        
                         input.seek(start);
                         
                         long length = (finish == -1 ? file.length() - start : finish - start) + 1;
@@ -110,8 +119,10 @@ public class GetFile extends HttpServlet {
                         response.setHeader("Content-Range", "bytes " + start + "-" + (finish == -1 ? file.length() - 1 : finish) + "/" + file.length());
                         
                         if (finish == -1) {
+                            System.out.println("transferring fully");
                             StreamUtils.transferData(input, output);
                         } else {
+                            System.out.println("transferring partial");
                             StreamUtils.transferData(input, output, finish - start + 1);
                         }
                     }
