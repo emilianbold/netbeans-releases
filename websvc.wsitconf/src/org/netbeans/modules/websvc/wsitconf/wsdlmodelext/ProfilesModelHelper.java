@@ -699,6 +699,7 @@ public class ProfilesModelHelper {
                 WSDLComponent bType = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
                 SecureConversationToken tType = (SecureConversationToken) SecurityTokensModelHelper.setTokenType(
                         bType, ComboConstants.PROTECTION, ComboConstants.SECURECONVERSATION);                    
+                SecurityTokensModelHelper.setTokenInclusionLevel(tType, ComboConstants.ALWAYSRECIPIENT);
                 p = PolicyModelHelper.createElement(tType, PolicyQName.POLICY.getQName(), Policy.class, false);
                 ExtensibilityElement bpcopy = (ExtensibilityElement) bp.copy(p);
                 p.addExtensibilityElement(bpcopy);
