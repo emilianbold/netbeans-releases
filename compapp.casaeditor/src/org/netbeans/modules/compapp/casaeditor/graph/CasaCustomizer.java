@@ -657,7 +657,7 @@ public class CasaCustomizer {
         
         // CONNECTIONS
         
-        colorsMap.put(S_COLOR_CONNECTION_NORMAL, new Integer((new Color(204, 204, 204)).getRGB()).toString());
+        colorsMap.put(S_COLOR_CONNECTION_NORMAL, new Integer((new Color(204, 204, 255)).getRGB()).toString());
         colorsMap.put(S_COLOR_CONNECTION_HOVERED, new Integer((new Color(38,  85,  185)).getRGB()).toString());
         
         return colorsMap;
