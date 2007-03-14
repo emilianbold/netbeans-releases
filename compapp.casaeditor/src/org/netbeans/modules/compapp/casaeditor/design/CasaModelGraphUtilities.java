@@ -337,7 +337,11 @@ public class CasaModelGraphUtilities {
         CasaWrapperModel model = scene.getModel();
         CasaEndpointRef endPointRef = (CasaEndpointRef) pin;
         String toolTip =model.getServiceQName(endPointRef).toString() + Constants.PERIOD;
-        toolTip += model.getEndpointName(endPointRef);
+        if(node instanceof CasaServiceEngineServiceUnit) {
+            toolTip += model.getEndpointName(endPointRef);
+        } else {
+            toolTip += endPointRef.getEndpoint().getQName().getLocalPart().toString();
+        }
         pinWidget.setToolTip(toolTip);
         
         if (doUpdate) {
