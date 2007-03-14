@@ -28,16 +28,12 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
-
-import sun.security.x509.IssuerAlternativeNameExtension;
-
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.support.umlsupport.IETSize;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
@@ -656,14 +652,12 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
            //Jyothi: A hack to fix Bug#6258627
            IDrawingAreaControl pDrawingArea = getDrawingArea();
            if (pDrawingArea != null) {
-//               Debug.out.println("########## Jyothi: ETEditableCompartment : save--firing select event.. ");
                if (pDrawingArea instanceof ADDrawingAreaControl) {
                    ETList selectedList = ((ADDrawingAreaControl)pDrawingArea).getSelectedNodesAndEdges();
-                   printSelectedObjects(selectedList);
+//                   printSelectedObjects(selectedList);
                    getDrawingArea().fireSelectEvent(selectedList);
                    getDrawingArea().refresh(true);
                }
-//               Debug.out.println("########## Jyothi: ETEditableCompartment : save--firing select event.. DONE!! ");
            }
            
            m_EditControl = null;

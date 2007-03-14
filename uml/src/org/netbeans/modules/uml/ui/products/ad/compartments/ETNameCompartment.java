@@ -22,11 +22,9 @@
 package org.netbeans.modules.uml.ui.products.ad.compartments;
 
 import java.awt.Font;
-import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
-
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
@@ -44,16 +42,11 @@ import com.tomsawyer.editor.graphics.TSEGraphics;
 import com.tomsawyer.editor.ui.TSEAnnotatedUI;
 import com.tomsawyer.util.TSProperty;
 import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
 
 public class ETNameCompartment extends ETEditableCompartment implements IADNameCompartment {
 
-	// the edit control
-	//	private CAxEditWindow     m_editWnd;
-
-
-	boolean drawInsertionPoint = false;
+        boolean drawInsertionPoint = false;
 
 	public ETNameCompartment() {
 		super();
