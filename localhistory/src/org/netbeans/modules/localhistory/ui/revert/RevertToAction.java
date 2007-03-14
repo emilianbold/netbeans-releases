@@ -57,12 +57,12 @@ public class RevertToAction extends NodeAction {
         final Set<File> rootSet = ctx.getRootFiles();        
         File[] roots = rootSet.toArray(new File[rootSet.size()]);
 
-        RevertChanges revertChanges;
-        if(roots[0].isFile())  {
+        RevertChanges revertChanges = new RevertFileChanges();
+        /* if(roots[0].isFile())  {
             revertChanges = new RevertFileChanges();
         } else {
             revertChanges = new RevertFolderChanges();
-        }        
+        } */     
         revertChanges.show(roots[0]);        
     }
        
@@ -73,7 +73,11 @@ public class RevertToAction extends NodeAction {
         }        
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
         Set<File> rootSet = ctx.getRootFiles();        
-        return rootSet != null && rootSet.size() > 0;
+        if(rootSet == null) {
+            return false;
+        }
+        File[] roots = rootSet.toArray(new File[rootSet.size()]);
+        return roots.length == 1 && roots[0].isFile();
     }
 
     public String getName() {
