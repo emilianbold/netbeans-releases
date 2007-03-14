@@ -60,15 +60,20 @@ public class StreamUtils {
         out.flush();
     }
     
-    public static void transferData(RandomAccessFile in, OutputStream out, long maxLength) throws IOException {
+    public static void transferData(RandomAccessFile in, OutputStream out, long max) throws IOException {
         final byte[] buffer = new byte[BUFFER_SIZE];
         
-        long totalLength = 0;
-        int  length = 0;
-        while (((length = in.read(buffer)) != -1) && (totalLength < maxLength)) {
-            totalLength += length;
-            out.write(buffer, 0, (int) (totalLength > maxLength ? length : totalLength - maxLength));
+        long total = 0;
+        int length = 0;
+        
+        while (((length = in.read(buffer)) != -1) && (total < max)) {
+            total += length;
+            out.write(
+                    buffer, 
+                    0, 
+                    (int) (total < max ? length : length - (max - total)));
         }
+        
         out.flush();
     }
     
