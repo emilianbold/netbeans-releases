@@ -139,7 +139,7 @@ public class MultiFileSystem extends FileSystem {
     *
     * @param fileSystems array of filesystems
     */
-    protected final void setDelegates(FileSystem[] fileSystems) {
+    protected final void setDelegates(FileSystem... fileSystems) {
         // save for notification
         FileSystem[] oldSystems = systems;
 
