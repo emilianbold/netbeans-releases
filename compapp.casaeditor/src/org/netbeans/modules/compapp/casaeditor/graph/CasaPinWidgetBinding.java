@@ -55,4 +55,9 @@ public class CasaPinWidgetBinding extends CasaPinWidget {
     protected void setPinName(String name) {
         // do nothing
     }
+    
+    public void setToolTip(String strValue) {
+        mImageWidget.setToolTipText(strValue);
+    }
+
 }

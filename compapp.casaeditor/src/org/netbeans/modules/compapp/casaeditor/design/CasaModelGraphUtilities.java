@@ -222,7 +222,6 @@ public class CasaModelGraphUtilities {
     {
         CasaNodeWidget widget = (CasaNodeWidget) scene.addNode(su);
         updateNodeProperties(model, su, widget);
-        
         for (CasaProvides provides : su.getProvides()) {
             createPin(su, provides, model.getEndpointName(provides), scene, false);
         }
@@ -331,12 +330,16 @@ public class CasaModelGraphUtilities {
             boolean doUpdate)
     {
         CasaPinWidget pinWidget = (CasaPinWidget) scene.addPin(node, pin);
-        
         pinWidget.setProperties(name);
         
-        CasaEndpointRef endPointRef = (CasaEndpointRef) pin;
-        pinWidget.setToolTip(endPointRef.getEndpoint().getQName().toString());
 
+        CasaWrapperModel model = scene.getModel();
+        CasaEndpointRef endPointRef = (CasaEndpointRef) pin;
+        String toolTip =model.getServiceQName(endPointRef).toString() + "." ;
+        toolTip += model.getEndpointName(endPointRef);
+        //pinWidget.setToolTip(endPointRef.getEndpoint().getQName().toString());
+        pinWidget.setToolTip(toolTip);
+        
         if (doUpdate) {
             scene.validate();
             CasaNodeWidget nodeWidget = (CasaNodeWidget) scene.findWidget(node);

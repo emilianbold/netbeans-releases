@@ -135,4 +135,8 @@ public class CasaPinWidgetEngine extends CasaPinWidget {
         mNameWidget.setForeground(color);
     }
 
+    public void setToolTip(String strValue) {
+        mImageWidget.setToolTipText(strValue);
+    }
+
 }
