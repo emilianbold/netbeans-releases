@@ -27,23 +27,23 @@ package org.netbeans.installer.utils.helper;
 public class Dependency {
     private DependencyType type;
     
-    private String         uid;
-    private Version        versionLower;
-    private Version        versionUpper;
-    private Version        versionPreferred;
+    private String uid;
+    private Version versionLower;
+    private Version versionUpper;
+    private Version versionResolved;
     
     public Dependency(
             final DependencyType type,
             final String uid,
             final Version versionLower,
             final Version versionUpper,
-            final Version versionPreferred) {
+            final Version versionResolved) {
         this.type             = type;
         
         this.uid              = uid;
         this.versionLower     = versionLower;
         this.versionUpper     = versionUpper;
-        this.versionPreferred = versionPreferred;
+        this.versionResolved = versionResolved;
     }
     
     public DependencyType getType() {
@@ -63,6 +63,10 @@ public class Dependency {
     }
     
     public Version getVersionResolved() {
-        return versionPreferred;
+        return versionResolved;
+    }
+    
+    public void setVersionResolved(final Version version) {
+        this.versionResolved = version;
     }
 }

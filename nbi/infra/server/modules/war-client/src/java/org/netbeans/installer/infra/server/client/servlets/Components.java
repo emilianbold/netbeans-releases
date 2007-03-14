@@ -137,17 +137,24 @@ public class Components extends HttpServlet {
                 groups_display_names.add(group.getDisplayName());
             }
             
-            out.println("groups_components = new Array(");
-            out.println("    new Array(" + StringUtils.asString(default_group_components, ", ") + "),");
-            for (int i = 0; i < groups_components.size(); i++) {
-                List<Integer> components = groups_components.get(i);
-                
-                out.println("    new Array(" + StringUtils.asString(components, ", ") + ")" + (i < groups_components.size() - 1 ? "," : ""));
+            if (groups_components.size() > 0) {
+                out.println("groups_components = new Array(");
+                out.println("    new Array(\n    " + StringUtils.asString(default_group_components, ", ") + "),");
+                for (int i = 0; i < groups_components.size(); i++) {
+                    List<Integer> components = groups_components.get(i);
+                    
+                    out.println("    new Array(" + StringUtils.asString(components, ", ") + ")" + (i < groups_components.size() - 1 ? "," : ""));
+                }
+                out.println(");");
+                out.println();
+                out.println("groups_display_names = new Array(\n    \"\", \n    \"" + StringUtils.asString(groups_display_names, "\", \n    \"") + "\");");
+                out.println();
+            } else {
+                out.println("groups_components = new Array(\n    new Array(" + StringUtils.asString(default_group_components, ", ") + ")\n);");
+                out.println();
+                out.println("groups_display_names = new Array(\n    \"\"\n);");
+                out.println();
             }
-            out.println(");");
-            out.println();
-            out.println("groups_display_names = new Array(\n    \"\", \n    \"" + StringUtils.asString(groups_display_names, "\", \n    \"") + "\");");
-            out.println();
             
             out.close();
         } catch (ManagerException e) {

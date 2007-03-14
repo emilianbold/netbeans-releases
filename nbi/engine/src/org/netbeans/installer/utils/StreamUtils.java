@@ -40,7 +40,7 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
  * @author Kirill Sorokin
  */
 public class StreamUtils {
-    private static final int BUFFER_SIZE = 4096;
+    private static final int BUFFER_SIZE = 128 * 1024; // 128 kilobytes
     
     public static void transferData(InputStream in, OutputStream out) throws IOException {
         final byte[] buffer = new byte[BUFFER_SIZE];

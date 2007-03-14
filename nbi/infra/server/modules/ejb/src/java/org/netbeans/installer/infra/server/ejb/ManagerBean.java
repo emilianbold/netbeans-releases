@@ -636,13 +636,8 @@ public class ManagerBean implements Manager {
             try {
                 File statefile = FileUtils.createTempFile(TEMP, false);
                 File userDir = FileUtils.createTempFile(TEMP, false);
-                
-                File bundle = new File(BUNDLES,
-                        StringUtils.asString(registryNames) + "/" +
-                        "nbi_" +
-                        StringUtils.asString(components, "_").replace(",", "_") +
-                        "_" +
-                        platform +
+                File bundle = new File(
+                        FileUtils.createTempFile(BUNDLES, false).getAbsolutePath() + 
                         ".jar");
                 
                 File javaHome  = new File(System.getProperty("java.home"));

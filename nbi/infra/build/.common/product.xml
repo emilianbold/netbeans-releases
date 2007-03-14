@@ -101,6 +101,10 @@
             name="absolutize"
             classname="org.netbeans.installer.infra.build.ant.Absolutize"
             classpath="${custom.tasks.cls}"/>
+        <taskdef
+            name="uri-to-path"
+            classname="org.netbeans.installer.infra.build.ant.UriToPath"
+            classpath="${custom.tasks.cls}"/>
         
         <!-- check whether the engine should be built -->
         <condition property="do.build.engine">
@@ -304,16 +308,21 @@
         <for-each from="1" to="${product.data.length}" property="i">
             <!-- define the path to the current working file and the temporary
                  directory which should be used for repackaging -->
-                 <echo message="${product.data.1.uri}"/>
             <set 
                 property="current.uri" 
                 source="product.data.${i}.uri"/>
+            <uri-to-path 
+                property="current.downloaded.path" 
+                uri="${current.uri}"/>
+            <set 
+                property="current.zip" 
+                source="product.data.${i}.zip"/>
             <set 
                 property="current.file" 
                 value="${product.data.dir}/${product.data.file.name}"/>
             <set 
                 property="current.download" 
-                value="${product.downloaded.data.file}"/>
+                value="${downloads.cache.dir}/${current.downloaded.path}"/>
             <set 
                 property="current.temp.dir" 
                 value="${package.dir}/${product.data.path}/tmpdir"/>
@@ -360,24 +369,36 @@
             
             <!-- if the data needs to be packaged -->
             <if property="do.package.data" value="true">
-                <get src="${current.uri}" 
-                     dest="${current.download}"
-                     usetimestamp="true"/>
+                <dirname 
+                    property="current.download.dir" 
+                    file="${current.download}"/>
+                <mkdir 
+                    dir="${current.download.dir}"/>
+                <get 
+                    src="${current.uri}" 
+                    dest="${current.download}"
+                    usetimestamp="true"/>
                 
-                <copy file="${current.download}"
-                      tofile="${current.file}"/>
-                
-                <!-- extract the zip file to a temporary directory -->
+                <!-- extract the zip file to a temporary directory, if it's a 
+                     zip file, or simply move it there if it is the data we 
+                     need -->
                 <mkdir 
                     dir="${current.temp.dir}"/>
-                <unzip 
-                    src="${current.file}" 
-                    dest="${current.temp.dir}"/>
+                <if property="current.zip" value="true">
+                    <unzip
+                        src="${current.download}" 
+                        dest="${current.temp.dir}"/>
+                </if>
+                <if property="current.zip" value="false">
+                    <copy file="${current.download}"
+                          todir="${current.temp.dir}"/>
+                </if>
                 
                 <!-- call the pre-package hook, to allow derivative scripts to 
                      perform any required operations on the data if they 
                      like -->
                 <antcall target="-pre-package">
+                    <param name="i" value="${i}"/>
                     <param name="data.directory" value="${current.temp.dir}"/>
                 </antcall>
                 

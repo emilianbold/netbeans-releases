@@ -136,12 +136,18 @@ public class CreateBundle extends HttpServlet {
             
             File bundle = manager.createBundle(platform, registries, components);
             
+            String filename = "";
+            for (String name: components) {
+                filename += name.substring(0, name.indexOf(",")) + "_";
+            }
+            filename += platform.toString() + (platform == Platform.WINDOWS ? ".exe" : ".sh");
+            
             final InputStream  input  = new FileInputStream(bundle);
             final OutputStream output = response.getOutputStream();
             
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Length", Long.toString(bundle.length()));
-            response.setHeader("Content-Disposition", "attachment; filename=" + bundle.getName());
+            response.setHeader("Content-Disposition", "attachment; filename=" + filename);
             response.setHeader("Last-Modified", StringUtils.httpFormat(new Date(bundle.lastModified())));
             
             StreamUtils.transferData(input, output);
