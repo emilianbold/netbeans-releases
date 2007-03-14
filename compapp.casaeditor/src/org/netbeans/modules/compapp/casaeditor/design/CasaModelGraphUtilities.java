@@ -332,18 +332,8 @@ public class CasaModelGraphUtilities {
     {
         CasaPinWidget pinWidget = (CasaPinWidget) scene.addPin(node, pin);
         pinWidget.setProperties(name);
-        
+        pinWidget.setToolTip(getToolTipName(node, pin, scene.getModel()));
 
-        CasaWrapperModel model = scene.getModel();
-        CasaEndpointRef endPointRef = (CasaEndpointRef) pin;
-        String toolTip =model.getServiceQName(endPointRef).toString() + Constants.PERIOD;
-        if(node instanceof CasaServiceEngineServiceUnit) {
-            toolTip += model.getEndpointName(endPointRef);
-        } else {
-            toolTip += endPointRef.getEndpoint().getQName().getLocalPart().toString();
-        }
-        pinWidget.setToolTip(toolTip);
-        
         if (doUpdate) {
             scene.validate();
             CasaNodeWidget nodeWidget = (CasaNodeWidget) scene.findWidget(node);
@@ -452,5 +442,23 @@ public class CasaModelGraphUtilities {
             parentWidget = parentWidget.getParentWidget();
         }
         return nodeWidget;
+    }
+    
+    public static String getToolTipName(CasaComponent node, CasaComponent pin, CasaWrapperModel model) {
+        String toolTip = "";
+        if(pin instanceof CasaEndpointRef) {
+            CasaEndpointRef endPointRef = (CasaEndpointRef) pin;
+            toolTip = model.getServiceQName(endPointRef).toString();
+
+            if(toolTip != null && toolTip.trim().length() > 0) {
+                toolTip += Constants.PERIOD;
+            }
+            if(node instanceof CasaServiceEngineServiceUnit) {
+                toolTip += model.getEndpointName(endPointRef);
+            } else {
+                toolTip += endPointRef.getEndpoint().getQName().getLocalPart().toString();
+            }
+        }
+        return toolTip;
     }
 }
