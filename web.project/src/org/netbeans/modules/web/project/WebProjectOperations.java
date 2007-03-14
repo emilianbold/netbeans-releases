@@ -27,7 +27,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
+import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
@@ -133,8 +133,8 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
         
-        WebProjectClassPathExtender extender = (WebProjectClassPathExtender)project.getLookup().lookup(WebProjectClassPathExtender.class);
-        extender.notifyDeleting();
+        WebProjectClassPathModifier cpMod = (WebProjectClassPathModifier) project.getLookup().lookup(WebProjectClassPathModifier.class);
+        cpMod.notifyDeleting();
     }
     
     public void notifyDeleted() throws IOException {

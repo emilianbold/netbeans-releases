@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -47,7 +48,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private final SourceRoots testSourceRoots;
     private final ClassPath[] cache = new ClassPath[10];
 
-    private final Map/*<String,FileObject>*/ dirCache = new HashMap();
+    private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testSourceRoots) {
         this.helper = helper;
@@ -321,5 +322,39 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     public void propertyChange(PropertyChangeEvent evt) {
         dirCache.remove(evt.getPropertyName());
     }
+    
+    public String getPropertyName (SourceGroup sg, String type) {
+        FileObject root = sg.getRootFolder();
+        FileObject[] path = getPrimarySrcPath();
+        for (int i=0; i<path.length; i++) {
+            if (root.equals(path[i])) {
+                if (ClassPath.COMPILE.equals(type)) {
+                    return WebProjectProperties.JAVAC_CLASSPATH;
+                }
+//                else if (ClassPath.EXECUTE.equals(type)) {
+//                    return RUN_CLASSPATH;
+//                }
+                else {
+                    return null;
+                }
+            }
+        }
+        path = getTestSrcDir();
+        for (int i=0; i<path.length; i++) {
+            if (root.equals(path[i])) {
+                if (ClassPath.COMPILE.equals(type)) {
+                    return WebProjectProperties.JAVAC_TEST_CLASSPATH;
+                }
+//                else if (ClassPath.EXECUTE.equals(type)) {
+//                    return RUN_TEST_CLASSPATH;
+//                }
+                else {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
 }
 
