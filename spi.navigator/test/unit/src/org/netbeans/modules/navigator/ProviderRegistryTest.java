@@ -19,15 +19,12 @@
 
 package org.netbeans.modules.navigator;
 
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
 import javax.swing.JComponent;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 
@@ -71,10 +68,11 @@ public class ProviderRegistryTest extends NbTestCase {
         assertEquals(0, providerReg.getProviders("text/plain").size());
         
         System.out.println("Asking for valid type and provider...");
-        List result = providerReg.getProviders(MARVELOUS_DATA_TYPE);
+        Collection<? extends NavigatorPanel> result = providerReg.getProviders(MARVELOUS_DATA_TYPE);
         assertEquals(1, result.size());
-        assertTrue(result.get(0) instanceof MarvelousDataTypeProvider);
-        MarvelousDataTypeProvider provider = (MarvelousDataTypeProvider)result.get(0);
+        NavigatorPanel np = result.iterator().next();
+        assertTrue(np instanceof MarvelousDataTypeProvider);
+        MarvelousDataTypeProvider provider = (MarvelousDataTypeProvider)np;
         assertEquals(MARVELOUS_DATA_TYPE_NAME, provider.getDisplayName());
     }
     

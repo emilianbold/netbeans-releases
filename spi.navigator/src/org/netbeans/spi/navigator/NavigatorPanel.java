@@ -82,7 +82,7 @@ public interface NavigatorPanel {
      * 
      * Method may return null, signalizing that default mechanism should be enabled.
      * Default mechanism chooses first Node from Utilities.actionsGlobalContext()
-     * as activated Node for Navigator's TopComponent.  
+     * (current system-wide activated Node) as activated Node for Navigator's TopComponent.  
      *   
      * @return Lookup instance or null
      */

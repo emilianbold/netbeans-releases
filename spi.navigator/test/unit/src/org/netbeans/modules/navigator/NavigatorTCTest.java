@@ -19,16 +19,22 @@
 
 package org.netbeans.modules.navigator;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.Timer;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.navigator.NavigatorHandler;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -151,6 +157,9 @@ public class NavigatorTCTest extends NbTestCase {
         selPanel = navTC.getSelectedPanel();
         assertNotNull("Selected panel is null", selPanel);
         assertTrue("Panel class not expected", selPanel instanceof OstravskiGyzdProvider);
+
+        // cleanup
+        navTC.componentClosed();
     }
     
     public void testBugfix93123_RefreshCombo () throws Exception {
@@ -196,7 +205,66 @@ public class NavigatorTCTest extends NbTestCase {
         assertTrue("Expected the same selection in combo, sel panel index: "
                 + selIdx + ", sel in combo index: " + 
                 combo.getSelectedIndex(), selIdx == combo.getSelectedIndex());
+
+        // cleanup
+        ic.remove(ostravskiHint);
+        ic.remove(prazskyHint);
+        ic.remove(prazskyHint2);
+        navTC.componentClosed();
+    }
+    
+    /** Test for IZ feature #93711. It tests ability of NavigatorPanel implementors
+     * to provide activated nodes for whole navigator panel TopComponent.
+     * 
+     * See inner class ActNodeLookupProvider, especially getLookup method to get
+     * inspiration how to write providers that provide also activated nodes.
+     */
+    public void testFeature93711_ActivatedNodes () throws Exception {
+        System.out.println("Testing feature #93711, providing activated nodes...");
+
+        InstanceContent ic = getInstanceContent();
         
+        TestLookupHint actNodesHint = new TestLookupHint("actNodes/tester");
+        ic.add(actNodesHint);
+            
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        navTC.componentOpened();
+
+        List<NavigatorPanel> panels = navTC.getPanels();
+        assertTrue("Expected 1 provider panel, but got " + panels.size(), panels.size() == 1);
+        assertTrue("Panel class not expected", panels.get(0) instanceof ActNodeLookupProvider);
+        ActNodeLookupProvider provider = (ActNodeLookupProvider)panels.get(0);
+        
+        // wait for selected node change to be applied, because changes are
+        // reflected with little delay
+        waitForChange();
+
+        // test if lookup content from provider propagated correctly to the
+        // activated nodes of navigator TopComponent
+        Node[] actNodes = navTC.getActivatedNodes();
+        Node realContent = provider.getCurLookupContent();
+        
+        assertNotNull("Activated nodes musn't be null", actNodes);
+        assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
+System.out.println("realContent: " + realContent);        
+System.out.println("act node: " + actNodes[0]);
+        assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
+        
+        // change provider's lookup content and check again, to test infrastructure
+        // ability to listen to client's lookup content change
+        provider.changeLookup();
+        actNodes = navTC.getActivatedNodes();
+        realContent = provider.getCurLookupContent();
+        
+        assertNotNull("Activated nodes musn't be null", actNodes);
+        assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
+System.out.println("realContent: " + realContent);        
+System.out.println("act node: " + actNodes[0]);
+        assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
+        
+        // cleanup
+        ic.remove(actNodesHint);
+        navTC.componentClosed();
     }
     
     /** Singleton global lookup. Lookup change notification won't come
@@ -325,11 +393,74 @@ public class NavigatorTCTest extends NbTestCase {
         }
     
     }
+    
+    /** NavigatorPanel implementation that affects activated nodes of whole
+     * navigator area TopComponent. See javadoc of NavigatorPanel.getLookup()
+     * for details.
+     * 
+     * This test class defines method changeLookup to test infrastructure
+     * ability to listen to lookup changes.
+     */
+    public static final class ActNodeLookupProvider implements NavigatorPanel {
+        
+        private Lookup lookup;
+        private Node node1, node2;
+        private boolean flag = false;
+        private InstanceContent ic;
+                
+        public ActNodeLookupProvider () {
+            this.node1 = new AbstractNode(Children.LEAF);
+            this.node2 = new AbstractNode(Children.LEAF);
+            
+            ic = new InstanceContent();
+            ic.add(node1);
+            lookup = new AbstractLookup(ic);
+        }
+        
+        public Lookup getLookup () {
+            return lookup;
+        }
+        
+        public Node getCurLookupContent () {
+            return flag ? node2 : node1;
+        }
+        
+        public void changeLookup () {
+            flag = !flag;
+            if (flag) {
+                ic.remove(node1);
+                ic.add(node2);
+            } else {
+                ic.remove(node2);
+                ic.add(node1);
+            }
+        }
+    
+        public String getDisplayName() {
+            return "Activated Node provider";
+        }
+
+        public String getDisplayHint() {
+            return null;
+        }
+
+        public JComponent getComponent() {
+            return new JLabel(getDisplayName());
+        }
+
+        public void panelActivated(Lookup context) {
+            // no operation
+        }
+
+        public void panelDeactivated() {
+            // no operation
+        }
+    }
 
     /** Envelope for textual (mime-type like) content type to be used in 
      * global lookup
      */
-    private static final class TestLookupHint implements NavigatorLookupHint {
+    private static class TestLookupHint implements NavigatorLookupHint {
         
         private final String contentType; 
                 

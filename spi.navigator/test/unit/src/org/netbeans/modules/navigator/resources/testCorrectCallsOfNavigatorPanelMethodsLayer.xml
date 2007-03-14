@@ -43,5 +43,16 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+    <!-- provider for testing activated nodes setting through Lookup -->
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="actNodes">
+                <folder name="tester">
+                    <file name="org-netbeans-modules-navigator-NavigatorTCTest$ActNodeLookupProvider.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>
 

@@ -300,7 +300,67 @@ Microsystems, Inc. All Rights Reserved.
            
    </usecase>
    
-   
+   <usecase id="activatedNode" name="Setting activated node of Navigator window" >
+        <p>Sometimes clients need to alter activated Nodes of Navigator window,
+            to better represent Navigator area content within the whole application.
+            See <a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getActivatedNodes()">TopComponent.getActivatedNodes()</a>
+            and <a href="@org-openide-windows@/org/openide/windows/TopComponent.Registry.html#getActivatedNodes()">TopComponent.Registry.html#getActivatedNodes()</a>
+            to find out what activated nodes of TopComponent and whole system mean.
+        </p>
+        <b>Use Case Example:</b>
+            NavigatorPanel implementation shows list or tree of some <code>Node</code>s
+            in Navigator area. When user selects a Node in the list or tree,
+            it is desirable to show selected Node's properties in Properties
+            window and enable proper actions in main menu. Exactly this can be done
+            by presenting Node selected in the list/tree as activated Node of 
+            Navigator window.
+            <p></p>
+         
+        <b>Steps to specify activated Nodes of Navigator window:</b>
+         
+        <ul>
+            <li>In your implementation of <code>NavigatorPanel</code>, implement
+                method <code>getLookup()</code> to return Lookup instance filled
+                with Node(s) that you want to set as activated Nodes of Navigator window.
+                <p></p>
+            </li>
+            
+            <li>Be sure to update Lookup content properly, for example using
+                <a href="@org-openide-util@/org/openide/util/lookup/InstanceContent.html">InstanceContent</a> as follows:
+             <pre>
+        class MyNavigatorPanel implements NavigatorPanel {
+        
+            /** Dynamic Lookup content */
+            private final InstanceContent ic;
+            /** Lookup instance */
+            private final Lookup lookup;
+            
+            public MyNavigatorPanel () {
+                this.ic = new InstanceContent();
+                this.lookup = new AbstractLookup(ic);
+            }
+        
+            public Lookup getLookup () {
+                return lookup;
+            }
+
+            /** Call this method when activated Nodes change is needed, 
+            * for example when selection changes in your NavigatorPanel's Component
+            */
+            private void selectionChanged (Node oldSel, Node newSel) {
+                ic.remove(oldSel);
+                ic.add(newSel);
+            }
+            
+            ... impl of rest of your NavigatorPanel
+            
+        }
+             </pre>
+            </li>
+             
+        </ul>
+           
+   </usecase>
             
  </answer>
 
@@ -877,6 +937,7 @@ Microsystems, Inc. All Rights Reserved.
    No
   </p>
  </answer>
+
 
 
 
