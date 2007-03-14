@@ -165,6 +165,9 @@ public class SourcePathImplementationTest extends NbTestCase {
         assertTrue(cp.contains(doc));
         assertTrue(cp.contains(doc.getParent()));
         TestListener tl = new TestListener();
+        // XXX #97391: sometimes, unpredictably, fired:
+        tl.forbid(ClassPath.PROP_ENTRIES);
+        tl.forbid(ClassPath.PROP_ROOTS);
         cp.addPropertyChangeListener(tl);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty(J2SEProjectProperties.INCLUDES, "javax/swing/");
@@ -229,10 +232,12 @@ public class SourcePathImplementationTest extends NbTestCase {
 
     private static class TestListener implements PropertyChangeListener {
         private Set<String> events = new HashSet<String>();
+        private Set<String> forbiddenEvents = new HashSet<String>();
 
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if (propName != null) {
+                assertFalse("Not supposed to have received " + propName, forbiddenEvents.contains(propName));
                 this.events.add (propName);
             }
         }
@@ -240,5 +245,10 @@ public class SourcePathImplementationTest extends NbTestCase {
         public Set<String> getEvents () {
             return Collections.unmodifiableSet(this.events);
         }
+
+        public void forbid(String prop) {
+            forbiddenEvents.add(prop);
+        }
+
     }
 }
