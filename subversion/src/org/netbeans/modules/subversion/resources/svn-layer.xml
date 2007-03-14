@@ -164,19 +164,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="OpenVersioning.shadow">
                     <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance"/>
                 </file>
-<!--                <file name="ShowAllChanges.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance"/>
-                </file>
-                <file name="DiffAllAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-diff-DiffAllAction.instance"/>
-                </file>
-                <file name="UpdateAllAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-update-UpdateAllAction.instance"/>
-                </file>
-                <file name="CommitAllAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-commit-CommitAllAction.instance"/>
-                </file>-->
-
                 <file name="CheckoutAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance"/>
                 </file>
