@@ -291,6 +291,11 @@ public final class EarProjectProperties {
     }
     
     /** <strong>Package private for unit test only</strong>. */
+    ReferenceHelper getReferenceHelper() {
+        return refHelper;
+    }
+    
+    /** <strong>Package private for unit test only</strong>. */
     void updateContentDependency(Set<VisualClassPathItem> oldContent, Set<VisualClassPathItem> newContent) {
         Application app = null;
         try {
@@ -1291,12 +1296,13 @@ public final class EarProjectProperties {
                 for (int i=0; i < allPaths.length; i++) {
                     PropertyInfo pi = (PropertyInfo)properties.get( allPaths[i] );
                     @SuppressWarnings("unchecked")
-                    List<VisualClassPathItem> values = (List) pi.getOldValue();
+                    List<VisualClassPathItem> values = (List) pi.getValue();
                     if (values == null) {
                         break;
                     }
                     for (VisualClassPathItem valcpi : values) {
-                        if (valcpi.getRaw().indexOf(vcpi.getRaw()) > -1) {
+                        if (valcpi.getRaw() != null
+                                && valcpi.getRaw().indexOf(vcpi.getRaw()) > -1) {
                             used = true;
                             break;
                         }
