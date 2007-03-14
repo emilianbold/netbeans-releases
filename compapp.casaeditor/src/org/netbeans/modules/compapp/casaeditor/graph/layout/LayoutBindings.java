@@ -32,7 +32,10 @@ import org.netbeans.modules.compapp.casaeditor.graph.*;
  */
 public final class LayoutBindings extends CustomizablePersistLayout {
     
-    private static final int Y_SPACING = 20;
+    
+    public LayoutBindings() {
+        setYSpacing(20);
+    }
     
     
     public void layout (Widget widget) {
@@ -53,12 +56,11 @@ public final class LayoutBindings extends CustomizablePersistLayout {
         
         final int parentWidth  = (int) widget.getBounds().getWidth();
 
-        int nextYStart = ((CasaRegionWidget) widget).getLabelYOffset() + Y_SPACING;
+        int nextYStart = ((CasaRegionWidget) widget).getLabelYOffset() + getYSpacing();
         for (CasaNodeWidget child : orderedNodeList) {
             int x = parentWidth - child.getBounds().width;
             int y = nextYStart;
-            nextYStart += child.getEntireBounds().height + Y_SPACING;
-            moveWidget(child, new Point(x, y));
+            nextYStart = moveWidget(child, new Point(x, y), nextYStart);
         }
         
         widget.getScene().validate();

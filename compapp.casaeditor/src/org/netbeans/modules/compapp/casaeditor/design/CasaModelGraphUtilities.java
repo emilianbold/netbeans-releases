@@ -61,7 +61,7 @@ public class CasaModelGraphUtilities {
         try {
             safeRenderModel(model, scene);
         } catch (Throwable t) {
-            scene.autoLayout(false);
+            scene.autoLayout(false, false);
             ErrorManager.getDefault().notify(t);
         }
     }
@@ -113,7 +113,7 @@ public class CasaModelGraphUtilities {
         if (modelRestoreInfoMap == null) {
             // We have no previously set view positions, so persist the
             // new locations once the auto-layout determines them.
-            scene.autoLayout(true);
+            scene.autoLayout(true, false);
         } else {
             scene.modelLoadLayout(modelRestoreInfoMap);
         }

@@ -222,11 +222,17 @@ implements PropertyChangeListener {
         mRouter = router;
     }
     
-    public void autoLayout(boolean isPersistingLocations) {
+    public void autoLayout(boolean isPersistingLocations, boolean isAnimating) {
         if (
                 mBindingAutoLayout  != null &&
                 mEngineAutoLayout   != null &&
                 mExternalAutoLayout != null) {
+            mBindingAutoLayout.setIsAdjustingForOverlapOnly(false);
+            mEngineAutoLayout.setIsAdjustingForOverlapOnly(false);
+            mExternalAutoLayout.setIsAdjustingForOverlapOnly(false);
+            mBindingAutoLayout.setIsAnimating(isAnimating);
+            mEngineAutoLayout.setIsAnimating(isAnimating);
+            mExternalAutoLayout.setIsAnimating(isAnimating);
             mBindingAutoLayout.setIsPersisting(isPersistingLocations);
             mEngineAutoLayout.setIsPersisting(isPersistingLocations);
             mExternalAutoLayout.setIsPersisting(isPersistingLocations);
@@ -238,7 +244,14 @@ implements PropertyChangeListener {
         validate();
     }
     
-    public void invokeRegionLayout(CasaRegionWidget regionWidget, boolean isPersistingLocations) {
+    /**
+     * Performs an autolayout in only the specified region.
+     * Specifying isPreserving to be false performs a instant autolayout from scratch.
+     * Specifying isPreserving to be true only adjusts widgets (with animation) if an overlap occurs.
+     * @param regionWidget  the region to perform the layout in
+     * @param isPreserving  whether current widget locations should be preserved as best as possible
+     */
+    public void invokeRegionLayout(CasaRegionWidget regionWidget, boolean isPreserving) {
         CustomizableDevolveLayout layout = null;
         if        (regionWidget == mBindingRegion) {
             layout = mBindingAutoLayout;
@@ -248,7 +261,9 @@ implements PropertyChangeListener {
             layout = mExternalAutoLayout;
         }
         if (layout != null) {
-            layout.setIsPersisting(isPersistingLocations);
+            layout.setIsAnimating(isPreserving);
+            layout.setIsAdjustingForOverlapOnly(isPreserving);
+            layout.setIsPersisting(isPreserving);
             layout.invokeLayout();
             // trigger the layout to actually occur
             validate();
@@ -274,21 +289,18 @@ implements PropertyChangeListener {
             mBindingAutoLayout = new CustomizableDevolveLayout(
                     mBindingRegion,
                     new LayoutBindings());
-            mBindingAutoLayout.setIsAnimating(true);
         } else if (CasaRegion.Name.JBI_MODULES.getName().equals(regionName)) {
             regionWidget = CasaRegionWidget.createEngineRegion(this);
             mEngineRegion = regionWidget;
             mEngineAutoLayout = new CustomizableDevolveLayout(
                     mEngineRegion,
                     new LayoutEngines());
-            mEngineAutoLayout.setIsAnimating(true);
         } else if (CasaRegion.Name.EXTERNAL_MODULES.getName().equals(regionName)) {
             regionWidget = CasaRegionWidget.createExternalRegion(this);
             mExternalRegion = regionWidget;
             mExternalAutoLayout = new CustomizableDevolveLayout(
                     mExternalRegion, 
                     new LayoutEngines());
-            mExternalAutoLayout.setIsAnimating(true);
         }
         
         if (regionWidget != null) {

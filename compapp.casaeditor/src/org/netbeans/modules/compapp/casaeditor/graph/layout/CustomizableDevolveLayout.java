@@ -51,6 +51,10 @@ public class CustomizableDevolveLayout extends SceneLayout {
     }
 
     
+    public void setIsAdjustingForOverlapOnly(boolean isOverlapOnly) {
+        this.devolveLayout.setIsAdjustingForOverlapOnly(isOverlapOnly);
+    }
+    
     public void setIsAnimating(boolean isAnimating) {
         this.devolveLayout.setIsAnimating(isAnimating);
     }

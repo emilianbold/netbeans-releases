@@ -51,7 +51,7 @@ public class AutoLayoutAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         CasaModelGraphScene scene = (CasaModelGraphScene) mReference.get();
         if (scene != null) {
-            scene.autoLayout(true);
+            scene.autoLayout(true, true);
         }
     }
 }

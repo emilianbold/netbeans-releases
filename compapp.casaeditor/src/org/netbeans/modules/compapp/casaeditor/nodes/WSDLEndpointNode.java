@@ -38,6 +38,8 @@ import org.openide.util.Utilities;
 import javax.swing.Action;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortNode;
+import org.openide.nodes.Children;
 
 /**
  *
@@ -128,6 +130,28 @@ public class WSDLEndpointNode extends CasaNode {
             }
         };
         identificationProperties.put(componentNameSupport);
+        
+        // Add all concrete child properties, as a convenience to the user.
+        addPortChildrenProperties(sheet, getChildren());
+    }
+    
+    private static void addPortChildrenProperties(Sheet sheet, Children children) {
+        if (children == null) {
+            return;
+        }
+        for (Node child : children.getNodes()) {
+            Sheet.Set portProperties = new Sheet.Set();
+            portProperties.setName(child.getDisplayName());
+            sheet.put(portProperties);
+
+            PropertySet[] propertySets = child.getPropertySets();
+            if (propertySets != null) {
+                for (PropertySet propertySet : propertySets) {
+                    portProperties.put(propertySet.getProperties());
+                }
+            }
+            addPortChildrenProperties(sheet, child.getChildren());
+        }
     }
     
     
