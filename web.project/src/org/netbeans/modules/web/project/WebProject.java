@@ -30,6 +30,7 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebJAXWSMetadataFinder;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
@@ -349,6 +350,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
+            new WebPropertyEvaluatorImpl(evaluator()),
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
@@ -1274,6 +1276,16 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 });
                 
             } catch (IOException ex) {}
+        }
+    }
+    
+    private static final class WebPropertyEvaluatorImpl implements WebPropertyEvaluator {
+        private PropertyEvaluator evaluator;
+        public WebPropertyEvaluatorImpl (PropertyEvaluator eval) {
+            evaluator = eval;
+        }
+        public PropertyEvaluator evaluator() {
+            return evaluator;
         }
     }
 }
