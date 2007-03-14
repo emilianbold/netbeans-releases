@@ -327,9 +327,8 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
             messageLabel.setIcon(null);
         } else {
             messageLabel.setText(msg);
-            // Image is in openide/dialogs module.
             messageLabel.setIcon(new ImageIcon(Utilities.loadImage(
-                    "org/openide/resources/error.gif"))); // NOI18N
+                    "org/netbeans/modules/xml/xam/ui/resources/error.gif"))); // NOI18N
         }
     }
 

@@ -42,7 +42,7 @@ public class WaitNode extends AbstractNode {
     public WaitNode() {
         super(Children.LEAF);
         setName(NbBundle.getMessage(WaitNode.class, "LBL_WaitNode_Wait"));
-        setIconBaseWithExtension("org/openide/src/resources/wait.gif");
+        setIconBaseWithExtension("org/netbeans/modules/xml/xam/ui/resources/wait.gif");
     }
 
     /**
