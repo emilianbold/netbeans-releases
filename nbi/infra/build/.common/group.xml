@@ -158,6 +158,9 @@
                 property="group.icon.size"/>
         <md5 file="${package.dir}/${group.icon.path}" 
              property="group.icon.md5"/>
+        <set 
+            property="group.icon.correct.uri" 
+            value="${group.icon.uri}"/>
         
         <!-- load the group's localizing bundle and store the locales list to 
              ${group.locales.list} -->

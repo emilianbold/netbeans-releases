@@ -85,10 +85,13 @@ public class SetProperty extends Task {
         final Project project = getProject();
         
         if (source != null) {
+            log("setting " + property + " to " + 
+                    project.replaceProperties(project.getProperty(source)));
             project.setProperty(
                     property, 
                     project.replaceProperties(project.getProperty(source)));
         } else {
+            log("setting " + property + " to " + project.replaceProperties(value));
             project.setProperty(
                     property, 
                     project.replaceProperties(value));

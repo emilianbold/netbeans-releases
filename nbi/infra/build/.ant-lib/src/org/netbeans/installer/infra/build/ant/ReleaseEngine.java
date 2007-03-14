@@ -81,7 +81,13 @@ public class ReleaseEngine extends Task {
             
             args.put("archive", archive);                                   // NOI18N
             
-            log(Utils.post(url + "/update-engine", args));               // NOI18N
+            
+            String response = Utils.post(url + "/update-engine", args);     // NOI18N
+            
+            log(response);
+            if (!response.startsWith("200")) {                              // NOI18N
+                throw new BuildException("Failed to release the engine.");  // NOI18N
+            }
         } catch (IOException e) {
             throw new BuildException(e);
         }

@@ -125,9 +125,9 @@ public class ReleasePackage extends Task {
     
     // execution ////////////////////////////////////////////////////////////////////
     /**
-     * Executes the task. This method sends an HTTP POST request to the server, 
+     * Executes the task. This method sends an HTTP POST request to the server,
      * uploading the package archive.
-     * 
+     *
      * @throws org.apache.tools.ant.BuildException if an I/O error occurs.
      */
     public void execute() throws BuildException {
@@ -141,7 +141,12 @@ public class ReleasePackage extends Task {
             args.put("platforms", platforms);                               // NOI18N
             args.put("archive", archive);                                   // NOI18N
             
-            log(Utils.post(url + "/add-package", args));                 // NOI18N
+            String response = Utils.post(url + "/add-package", args);       // NOI18N
+            
+            log(response);
+            if (!response.startsWith("200")) {                              // NOI18N
+                throw new BuildException("Failed to release the package."); // NOI18N
+            }
         } catch (IOException e) {
             throw new BuildException(e);
         }

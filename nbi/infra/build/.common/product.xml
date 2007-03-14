@@ -255,7 +255,7 @@
             <!-- calculate the metadata for the file -->
             <sizeof file="${current.file}" property="product.logic.${i}.size"/>
             <md5 file="${current.file}" property="product.logic.${i}.md5"/>
-            <set property="product.logic.${i}.uri"
+            <set property="product.logic.${i}.correct.uri"
                  value="resource:${product.logic.path}/${product.logic.file.name}"/>
             
             <property 
@@ -465,6 +465,9 @@
         <md5 
             file="${product.icon.file}" 
             property="product.icon.md5"/>
+        <set 
+            property="product.icon.correct.uri" 
+            value="${product.icon.uri}"/>
         
         <!-- load product's localizing bundle and generate descriptor -->
         <load-locales 
