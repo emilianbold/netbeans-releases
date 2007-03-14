@@ -238,6 +238,23 @@ implements PropertyChangeListener {
         validate();
     }
     
+    public void invokeRegionLayout(CasaRegionWidget regionWidget, boolean isPersistingLocations) {
+        CustomizableDevolveLayout layout = null;
+        if        (regionWidget == mBindingRegion) {
+            layout = mBindingAutoLayout;
+        } else if (regionWidget == mEngineRegion) {
+            layout = mEngineAutoLayout;
+        } else if (regionWidget == mExternalRegion) {
+            layout = mExternalAutoLayout;
+        }
+        if (layout != null) {
+            layout.setIsPersisting(isPersistingLocations);
+            layout.invokeLayout();
+            // trigger the layout to actually occur
+            validate();
+        }
+    }
+
     public void modelLoadLayout(Map<Widget, ModelLoadLayoutInfo> modelRestoreInfoMap) {
         LayoutFactory.createDevolveWidgetLayout(
                 this,
@@ -257,18 +274,21 @@ implements PropertyChangeListener {
             mBindingAutoLayout = new CustomizableDevolveLayout(
                     mBindingRegion,
                     new LayoutBindings());
+            mBindingAutoLayout.setIsAnimating(true);
         } else if (CasaRegion.Name.JBI_MODULES.getName().equals(regionName)) {
             regionWidget = CasaRegionWidget.createEngineRegion(this);
             mEngineRegion = regionWidget;
             mEngineAutoLayout = new CustomizableDevolveLayout(
                     mEngineRegion,
                     new LayoutEngines());
+            mEngineAutoLayout.setIsAnimating(true);
         } else if (CasaRegion.Name.EXTERNAL_MODULES.getName().equals(regionName)) {
             regionWidget = CasaRegionWidget.createExternalRegion(this);
             mExternalRegion = regionWidget;
             mExternalAutoLayout = new CustomizableDevolveLayout(
                     mExternalRegion, 
                     new LayoutEngines());
+            mExternalAutoLayout.setIsAnimating(true);
         }
         
         if (regionWidget != null) {
@@ -565,14 +585,6 @@ implements PropertyChangeListener {
     
     public CasaRegionWidget getExternalRegion() {
         return mExternalRegion;
-    }
-    
-    public CustomizableDevolveLayout getBindingLayOut() {
-        return mBindingAutoLayout;
-    }
-
-    public CustomizableDevolveLayout getEngineLayOut() {
-        return mEngineAutoLayout;
     }
     
     public void setCasaLocation(CasaServiceEngineServiceUnit su, int x, int y) {

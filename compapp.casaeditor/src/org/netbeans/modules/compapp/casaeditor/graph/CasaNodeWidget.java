@@ -62,12 +62,16 @@ public abstract class CasaNodeWidget extends Widget {
     }
     
     public void persistLocation() {
-        CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
-        CasaComponent component = (CasaComponent) scene.findObject(CasaNodeWidget.this);
         Point location = getPreferredLocation();
         if (location == null) {
             location = getLocation();
         }
+        persistLocation(location);
+    }
+    
+    public void persistLocation(Point location) {
+        CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
+        CasaComponent component = (CasaComponent) scene.findObject(CasaNodeWidget.this);
         if (component instanceof CasaServiceEngineServiceUnit) {
             CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) component;
             if (su.getX() != location.x || su.getY() != location.y) {

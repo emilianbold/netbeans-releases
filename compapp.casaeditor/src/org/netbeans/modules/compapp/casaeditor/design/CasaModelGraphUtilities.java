@@ -204,8 +204,7 @@ public class CasaModelGraphUtilities {
             Point pos = adjustLocation(widget, x, y, true);
             widget.setPreferredLocation(pos);
         } else {
-            scene.getBindingLayOut().invokeLayout();
-            scene.validate();
+            scene.invokeRegionLayout(scene.getBindingRegion(), false);
         }
         
         widget.invokeDependencies();
@@ -236,8 +235,7 @@ public class CasaModelGraphUtilities {
             Point pos = adjustLocation(widget, x, y, false);
             widget.setPreferredLocation(pos);
         } else {
-            scene.getEngineLayOut().invokeLayout();
-            scene.validate();
+            scene.invokeRegionLayout(scene.getEngineRegion(), false);
         }
         
         RegionUtilities.stretchSceneWidthOnly(scene);

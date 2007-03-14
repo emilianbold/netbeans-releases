@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph.layout;
 
+import java.awt.Point;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 
 /**
  *
@@ -29,6 +31,7 @@ import org.netbeans.api.visual.widget.Widget;
 public abstract class CustomizablePersistLayout implements Layout {
     
     private boolean mIsPersisting;
+    private boolean mIsAnimating;
     
     
     public void justify(Widget widget) {
@@ -42,7 +45,26 @@ public abstract class CustomizablePersistLayout implements Layout {
         mIsPersisting = isPersisting;
     }
 
+    public void setIsAnimating(boolean isAnimating) {
+        mIsAnimating = isAnimating;
+    }
+    
+    protected boolean isAnimating() {
+        return mIsAnimating;
+    }
+    
     protected boolean isPersisting() {
         return mIsPersisting;
+    }
+    
+    protected void moveWidget(CasaNodeWidget widget, Point location) {
+        if (isPersisting()) {
+            widget.persistLocation(location);
+        }
+        if (isAnimating()) {
+            widget.getScene().getSceneAnimator().animatePreferredLocation(widget, location);
+        } else {
+            widget.setPreferredLocation(location);
+        }
     }
 }

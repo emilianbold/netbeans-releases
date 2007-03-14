@@ -58,10 +58,7 @@ public final class LayoutEngines extends CustomizablePersistLayout {
             int x = (int) ((double) (parentWidth - child.getBounds().width) / 2.0);
             int y = nextYStart;
             nextYStart += child.getEntireBounds().height + Y_SPACING;
-            child.setPreferredLocation(new Point(x, y));
-            if (isPersisting()) {
-                child.persistLocation();
-            }
+            moveWidget(child, new Point(x, y));
         }
         
         widget.getScene().validate();

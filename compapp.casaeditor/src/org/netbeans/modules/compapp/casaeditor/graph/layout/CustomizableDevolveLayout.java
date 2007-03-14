@@ -41,7 +41,6 @@ public class CustomizableDevolveLayout extends SceneLayout {
     
     private Widget widget;
     private CustomizablePersistLayout devolveLayout;
-    private boolean animate;
 
     
     public CustomizableDevolveLayout (Widget widget, CustomizablePersistLayout devolveLayout) {
@@ -53,7 +52,7 @@ public class CustomizableDevolveLayout extends SceneLayout {
 
     
     public void setIsAnimating(boolean isAnimating) {
-        this.animate = isAnimating;
+        this.devolveLayout.setIsAnimating(isAnimating);
     }
     
     public void setIsPersisting(boolean isPersisting) {
@@ -61,13 +60,6 @@ public class CustomizableDevolveLayout extends SceneLayout {
     }
     
     protected void performLayout () {
-        devolveLayout.layout (widget);
-        for (Widget child : widget.getChildren ()) {
-            if (animate)
-                widget.getScene ().getSceneAnimator ().animatePreferredLocation (child, child.getLocation ());
-            else
-                child.setPreferredLocation (child.getLocation ());
-            child.revalidate ();
-        }
+        devolveLayout.layout(widget);
     }
 }
