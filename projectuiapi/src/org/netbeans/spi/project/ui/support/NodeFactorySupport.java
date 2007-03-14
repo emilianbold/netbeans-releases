@@ -113,6 +113,7 @@ public class NodeFactorySupport {
         // protected for tests..
         protected Lookup createLookup() {
             FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(folderPath);
+            assert root != null : "Cannot find path " + folderPath + " in layers";
             DataFolder folder = DataFolder.findFolder(root);
             return new FolderLookup(folder).getLookup();
         }
@@ -144,7 +145,7 @@ public class NodeFactorySupport {
             result = createLookup().lookup(new Lookup.Template<NodeFactory>(NodeFactory.class));
             for (NodeFactory factory : result.allInstances()) {
                 NodeList<?> lst = factory.createNodes(project);
-                assert lst != null;
+                assert lst != null : "Factory " + factory.getClass() + " has broken the NodeFactory contract."; //NOI18N
                 lst.addNotify();
                 synchronized (keys) {
                     nodeLists.add(lst);
