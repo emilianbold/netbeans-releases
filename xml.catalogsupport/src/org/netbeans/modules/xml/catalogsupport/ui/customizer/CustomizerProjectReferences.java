@@ -1,4 +1,23 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * CustomizerProjectReferences.java
  *
  * Created on December 12, 2006, 12:30 PM
@@ -8,18 +27,25 @@ package org.netbeans.modules.xml.catalogsupport.ui.customizer;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
@@ -39,11 +65,13 @@ import org.netbeans.modules.xml.catalogsupport.util.ProjectReferenceUtility;
 public class CustomizerProjectReferences extends javax.swing.JPanel implements HelpCtx.Provider {
     
     private ReferenceHelper refHelper;
+    private Project owner;
     private SubprojectProvider subprojectProvider;
     /** Creates new form CustomizerProjectReferences */
-    public CustomizerProjectReferences(Project project, ReferenceHelper refHelper) {
+    public CustomizerProjectReferences(Project owner, ReferenceHelper refHelper) {
+        this.owner = owner;
         this.refHelper = refHelper;
-        this.subprojectProvider = (SubprojectProvider)project.getLookup().
+        this.subprojectProvider = (SubprojectProvider)owner.getLookup().
                 lookup(SubprojectProvider.class);
         initComponents();
         projectList.addListSelectionListener( new ListSelectionListener() {
@@ -64,12 +92,23 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
     private void refreshProjectList() {
         DefaultListModel listModel =  (DefaultListModel) projectList.getModel();
         listModel.clear();
+        Object[] raws = getRefHelper().getRawReferences();
         Set subprojects = getSubprojectProvider().getSubprojects();
         for(Object object:subprojects) {
             Project prj = (Project)object;
             ProjectInformation pInfo = ProjectUtils.getInformation(prj);
             listModel.addElement(pInfo);
         }
+        ReferenceHelper.RawReference[] rawRefs = getRefHelper().getRawReferences();
+        for(ReferenceHelper.RawReference rawRef:rawRefs) {
+            if(rawRef.toAntArtifact(getRefHelper())==null) {
+                listModel.addElement(new MissingProjectInformation(rawRef));
+            }
+        }
+    }
+    
+    private Project getProject() {
+        return owner;
     }
     
     private ReferenceHelper getRefHelper() {
@@ -171,7 +210,27 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
         Object[] selection = projectList.getSelectedValues();
         for(Object selected:selection) {
             ProjectInformation pInfo = (ProjectInformation)selected;
-            ProjectReferenceUtility.removeProjectReference(getRefHelper(),pInfo.getProject());
+            Project refProject = pInfo.getProject();
+            if(pInfo instanceof MissingProjectInformation) {
+                ReferenceHelper.RawReference rawRef =
+                        ((MissingProjectInformation)pInfo).getRawReference();
+                getRefHelper().removeRawReference(rawRef.getForeignProjectName(),
+                        rawRef.getID());
+            } else {
+                if(ProjectReferenceUtility.hasProjectReferenceInCatalog(
+                        getProject(),refProject)) {
+                    NotifyDescriptor confirmation = new NotifyDescriptor.Confirmation
+                            (NbBundle.getMessage(CustomizerProjectReferences.class, 
+                            "MSG_DeleteRefProject", pInfo.getName()),
+                            NotifyDescriptor.YES_NO_OPTION,
+                            NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(confirmation);
+                    if(confirmation.getValue()!=NotifyDescriptor.YES_OPTION) {
+                        return;
+                    };
+                }
+                ProjectReferenceUtility.removeProjectReference(getRefHelper(),refProject);
+            }
         }
         refreshProjectList();
     }//GEN-LAST:event_removeProject
@@ -219,6 +278,18 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
             try {
                 Project refProject = ProjectManager.getDefault().findProject(projectRoot);
                 if(refProject!=null) {
+                    if(refProject == getProject()){
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(NbBundle.getMessage(
+                                CustomizerProjectReferences.class, "MSG_RefToItself")));
+                        return;
+                    }
+                    if(ProjectUtils.hasSubprojectCycles(getProject(),refProject)){
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(NbBundle.getMessage(
+                                CustomizerProjectReferences.class, "MSG_Cycles")));
+                        return;
+                    }
                     ProjectReferenceUtility.addProjectReference(getRefHelper(),refProject);
                 }
             } catch (IllegalArgumentException ex) {
@@ -239,5 +310,47 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
     private javax.swing.JLabel refLabel;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
+    
+    private static final class MissingProjectInformation implements ProjectInformation {
+        
+        ReferenceHelper.RawReference missingRef;
+        
+        static Icon icon = new ImageIcon(Utilities.loadImage(
+                "org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif")); // NOI18N
+
+        public MissingProjectInformation(ReferenceHelper.RawReference missingRef) {
+            this.missingRef = missingRef;
+        }
+        
+        ReferenceHelper.RawReference getRawReference() {
+            return missingRef;
+        }
+
+        public String getName() {
+            return missingRef.getForeignProjectName();
+        }
+        
+        public String getDisplayName() {
+            return NbBundle.getMessage(CustomizerProjectReferences.class,
+                    "LBL_MISSING_PROJECT", missingRef.getForeignProjectName());
+        }
+        
+        public Icon getIcon() {
+            return icon;
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            // never changes
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            // never changes
+        }
+        
+        public Project getProject() {
+            return null;
+        }
+        
+    }
     
 }
