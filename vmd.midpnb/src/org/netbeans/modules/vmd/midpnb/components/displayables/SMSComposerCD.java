@@ -69,6 +69,8 @@ public final class SMSComposerCD extends ComponentDescriptor {
     public static final String PROP_BGK_COLOR = "backgroundColor"; //NOI18N
     public static final String PROP_FRG_COLOR = "foregroungColor"; //NOI18N
     
+    private static final String CATEGORIES_SMS = "SMS Properties"; //NOI18N
+    
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -93,10 +95,11 @@ public final class SMSComposerCD extends ComponentDescriptor {
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-               .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
+               .addPropertiesCategory(CATEGORIES_SMS) 
                    .addProperty("Phone Number", PropertyEditorString.createInstance(), PROP_PHONE_NUMBER)
                    .addProperty("Message", PropertyEditorString.createInstance(), PROP_MESSAGE)
                    .addProperty("Port Number", PropertyEditorNumber.createIntegerInstance(), PROP_PORT_NUMBER)
+               .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
                    .addProperty("Background Color", PropertyEditorNumber.createIntegerInstance(), PROP_BGK_COLOR)
                    .addProperty("Foreground Color", PropertyEditorNumber.createIntegerInstance(), PROP_FRG_COLOR);
     }
@@ -107,7 +110,6 @@ public final class SMSComposerCD extends ComponentDescriptor {
             .addParameters(MidpParameter.create(PROP_MESSAGE, PROP_PHONE_NUMBER, PROP_PORT_NUMBER, PROP_BGK_COLOR, PROP_FRG_COLOR))
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2)
             .addParameters(MidpCustomCodePresenterSupport.PARAM_DISPLAY))
-            
             .addSetters(MidpSetter.createSetter("setBGColor", MidpVersionable.MIDP).addParameters(PROP_BGK_COLOR))
             .addSetters(MidpSetter.createSetter("setFGColor", MidpVersionable.MIDP).addParameters(PROP_FRG_COLOR))
             .addSetters(MidpSetter.createSetter("setPhoneNumber", MidpVersionable.MIDP).addParameters(PROP_PHONE_NUMBER))
@@ -121,11 +123,11 @@ public final class SMSComposerCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // code
             createSetterPresenter(),
+            MidpCodePresenterSupport.createAddImportPresenter(),
             // actions
             AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
             //inspector
-            InspectorPositionPresenter.create(new DisplayablePC()),
-            MidpCodePresenterSupport.createAddImportPresenter()
+            InspectorPositionPresenter.create(new DisplayablePC())
         );
     }
 

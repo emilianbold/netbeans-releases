@@ -38,6 +38,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -91,6 +92,8 @@ public final class FileBrowserCD extends ComponentDescriptor {
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
             .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
+            .addParameters(MidpParameter.create(PROP_FILTER))
+            .addSetters(MidpSetter.createSetter("setFilter", MidpVersionable.MIDP).addParameters(PROP_FILTER))
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY));
     }
 
@@ -100,13 +103,11 @@ public final class FileBrowserCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // code
             createSetterPresenter(),
-            // delete
-            //DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK)
+            MidpCodePresenterSupport.createAddImportPresenter(),
             // actions
             AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
             //inspector
-            InspectorPositionPresenter.create(new DisplayablePC()),
-            MidpCodePresenterSupport.createAddImportPresenter()
+            InspectorPositionPresenter.create(new DisplayablePC())
         );
     }
 
