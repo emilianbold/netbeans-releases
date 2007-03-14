@@ -36,8 +36,6 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -183,19 +181,17 @@ public final class Splash {
         c.setBounds(Utilities.findCenterBounds(c.getSize()));
     }
 
-    /** Loads a splash image from its source */
-    private static Image loadSplash() {
-        return Utilities.loadImage("org/netbeans/core/startup/splash.gif", true);
-    }
-
-    /** Loads an about image from its source */
-    private static Image loadAbout() {
-        Image img = Utilities.loadImage("org/netbeans/core/startup/about.gif", true);
-        if (img != null) {
-            return img;
-        } else {
-            return loadSplash();
+    /** Loads a splash image from its source 
+     *  @param about if true then about image is loaded, if false splash image is loaded
+     */
+    private static Image loadContent(boolean about) {
+        if (about) {
+            Image img = Utilities.loadImage("org/netbeans/core/startup/about.gif", true);
+            if (img != null) {
+                return img;
+            }
         }
+        return Utilities.loadImage("org/netbeans/core/startup/splash.gif", true);
     }
 
     /**
@@ -278,7 +274,7 @@ public final class Splash {
 		//ignore - use default size
 	    }
 	    
-	    image = new ImageIcon(about? loadAbout(): loadSplash()).getImage(); // load!
+	    image = loadContent(about);
 	
 	    Font font = new Font("Dialog", Font.PLAIN, size);
 	    
