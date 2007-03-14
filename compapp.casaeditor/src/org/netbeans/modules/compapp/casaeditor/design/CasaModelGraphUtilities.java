@@ -30,6 +30,7 @@ import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.Widget.Dependency;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
@@ -335,9 +336,8 @@ public class CasaModelGraphUtilities {
 
         CasaWrapperModel model = scene.getModel();
         CasaEndpointRef endPointRef = (CasaEndpointRef) pin;
-        String toolTip =model.getServiceQName(endPointRef).toString() + "." ;
+        String toolTip =model.getServiceQName(endPointRef).toString() + Constants.PERIOD;
         toolTip += model.getEndpointName(endPointRef);
-        //pinWidget.setToolTip(endPointRef.getEndpoint().getQName().toString());
         pinWidget.setToolTip(toolTip);
         
         if (doUpdate) {
