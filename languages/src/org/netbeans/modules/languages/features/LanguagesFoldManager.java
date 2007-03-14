@@ -20,6 +20,7 @@
 package org.netbeans.modules.languages.features;
 
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.LanguagesManager;
@@ -196,7 +197,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     private List<FoldItem> folds;
     
     public void beforeEvaluation (State state, ASTNode root) {
-        folds = new ArrayList<FoldItem> ();
+        folds = new CopyOnWriteArrayList<FoldItem> ();
     }
 
     public void afterEvaluation (State state, ASTNode root) {
