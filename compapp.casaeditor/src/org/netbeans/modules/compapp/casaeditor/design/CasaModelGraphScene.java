@@ -44,6 +44,7 @@ import org.netbeans.api.visual.action.RectangularSelectDecorator;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.*;
+import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaBadgeEditAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaConnectAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPaletteAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaRemoveAction;
@@ -324,6 +325,9 @@ implements PropertyChangeListener {
             widget.initializeGlassLayer(mGlassLayer);
             mBindingRegion.addChild(widget);
             moveAction = mMoveActionBindingRegion;
+            
+            widget.getHeader().getActions().addAction(createObjectHoverAction());
+            widget.getActions().addAction(new CasaBadgeEditAction(this));
 
         } else if (node instanceof CasaServiceEngineServiceUnit) {
             CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) node;
@@ -340,9 +344,10 @@ implements PropertyChangeListener {
             widget.setEditable(mModel.isEditable(su));
             ((CasaNodeWidgetEngine) widget).setConfigurationStatus(su.isDefined());
             widget.initializeGlassLayer(mGlassLayer);
+            
+            widget.getHeader().getActions().addAction(createObjectHoverAction());
         }
         
-        widget.getHeader().getActions().addAction(createObjectHoverAction());
         widget.getActions().addAction(createSelectAction());
         widget.getActions().addAction(mPopupMenuAction);
         widget.getActions().addAction(moveAction);

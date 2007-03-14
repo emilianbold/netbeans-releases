@@ -366,6 +366,17 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mHeaderHolder.repaint();
     }
     
+    public Rectangle getEditBadgeBoundsForNode() {
+        Point location = mEditWidget.getLocation();
+        Widget parent = mEditWidget.getParentWidget();
+        while (parent != null && parent != this) {
+            location.x += parent.getLocation().x;
+            location.y += parent.getLocation().y;
+            parent = parent.getParentWidget();
+        }
+        return new Rectangle(location, mEditWidget.getBounds().getSize());
+    }
+    
     
         
     private static class BindingPinsLayout implements Layout {
