@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.design.view.actions;
 
+import java.awt.Component;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,6 +27,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.Import;
@@ -60,77 +64,93 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         }catch(CatalogModelException e){
             ErrorManager.getDefault().notify(e);
         }
-    }
-    
-    /** Creates new form NewJPanel */
-    public AddOperationFromSchemaPanel() {
-        initComponents();
-        opNameTxt.setText(NbBundle.getMessage(AddOperationFromSchemaPanel.class, "TXT_DefaultOperationName"));
-    }
-    
-    public File getWsdlFile() {
-        return wsdlFile;
-    }
-    
-    public String getOperationName(){
-        return opNameTxt.getText();
-    }
-    
-    public List<URL> getSchemaFiles() {
-        return schemaFiles;
-    }
-    
-    public String[] getParameterTypes() {
-        List<String> list = new ArrayList<String>(); 
-        Object[] objs = parmCombo.getSelectedObjects();
-        for(int i = 0; i < objs.length; i++){
-            list.add((String)objs[i]);
-        }    
-        return list.<String>toArray(new String[list.size()]);
-    }
-    
-    public String getReturnType() {
-        return (String)returnCombo.getSelectedItem();
-    }
-    
-    public String getFaultType() {
-        return (String)faultCombo.getSelectedItem();
-    }
-    
-    private void populate()throws CatalogModelException {
-        Map<String, Import> map = new HashMap<String, Import>();
-        WSDLModel model = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), false);
-        Definitions definitions = model.getDefinitions();
-        Types types = definitions.getTypes();
-        Collection<Schema> schemas = types.getSchemas();
-        for(Schema schema : schemas){
-            Collection<Import> importedSchemas = schema.getImports();
-            for(Import importedSchema : importedSchemas){
-                String schemaLocation = importedSchema.getSchemaLocation();
-                map.put(schemaLocation, importedSchema);
-                schemaCombo.addItem(schemaLocation);
+        SchemaPanelListCellRenderer renderer = new SchemaPanelListCellRenderer();
+        parmCombo.setRenderer(renderer);
+        returnCombo.setRenderer(renderer);
+        faultCombo.setRenderer(renderer);
+    }   
+        /** Creates new form NewJPanel */
+        public AddOperationFromSchemaPanel() {
+            initComponents();
+            opNameTxt.setText(NbBundle.getMessage(AddOperationFromSchemaPanel.class, "TXT_DefaultOperationName"));
+        }
+        
+        public File getWsdlFile() {
+            return wsdlFile;
+        }
+        
+        public String getOperationName(){
+            return opNameTxt.getText();
+        }
+        
+        public List<URL> getSchemaFiles() {
+            return schemaFiles;
+        }
+        
+        public GlobalElement[] getParameterTypes() {
+            List<GlobalElement> list = new ArrayList<GlobalElement>();
+            Object[] objs = parmCombo.getSelectedObjects();
+            for(int i = 0; i < objs.length; i++){
+                list.add((GlobalElement)objs[i]);
+            }
+            return list.<GlobalElement>toArray(new GlobalElement[list.size()]);
+        }
+        
+        public GlobalElement getReturnType() {
+            return (GlobalElement)returnCombo.getSelectedItem();
+        }
+        
+        public GlobalElement getFaultType() {
+            return (GlobalElement)faultCombo.getSelectedItem();
+        }
+        
+        private void populate()throws CatalogModelException {
+            Map<String, Import> map = new HashMap<String, Import>();
+            WSDLModel model = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
+            Definitions definitions = model.getDefinitions();
+            Types types = definitions.getTypes();
+            Collection<Schema> schemas = types.getSchemas();
+            for(Schema schema : schemas){
+                Collection<Import> importedSchemas = schema.getImports();
+                for(Import importedSchema : importedSchemas){
+                    String schemaLocation = importedSchema.getSchemaLocation();
+                    map.put(schemaLocation, importedSchema);
+                    schemaCombo.addItem(schemaLocation);
+                }
+            }
+            String selectedSchema = (String)schemaCombo.getSelectedItem();
+            Import importedSchema = map.get(selectedSchema);
+            String namespace = importedSchema.getNamespace();
+            SchemaModel schemaModel = importedSchema.resolveReferencedModel();
+            Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
+            for(GlobalElement element : elements){
+                String elementName = element.getName();
+                
+                parmCombo.addItem(element);
+                returnCombo.addItem(element);
+                faultCombo.addItem(element);
             }
         }
-        String selectedSchema = (String)schemaCombo.getSelectedItem();
-        Import importedSchema = map.get(selectedSchema);
-        String namespace = importedSchema.getNamespace();
-        SchemaModel schemaModel = importedSchema.resolveReferencedModel();        
-        Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
-        for(GlobalElement element : elements){
-            String elementName = element.getName();
-            parmCombo.addItem(namespace + " " + elementName);
-            returnCombo.addItem(namespace + " " + elementName);
-            faultCombo.addItem(namespace + " " +elementName);
+        
+        
+        class SchemaPanelListCellRenderer extends JLabel implements ListCellRenderer{
+            public Component getListCellRendererComponent(JList list,
+                    Object value,
+                    int index,
+                    boolean isSelected,
+                    boolean cellHasFocus){
+                String text = ((GlobalElement)value).getName();
+                setText(text);
+                return this;
+            }
         }
-    }
-    
-    
-    
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
+        
+        
+        /** This method is called from within the constructor to
+         * initialize the form.
+         * WARNING: Do NOT modify this code. The content of this method is
+         * always regenerated by the Form Editor.
+         */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -236,4 +256,4 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox schemaCombo;
     // End of variables declaration//GEN-END:variables
     
-}
+    }

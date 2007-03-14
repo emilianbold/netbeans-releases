@@ -36,11 +36,13 @@ import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -112,8 +114,8 @@ public class AddOperationAction extends AbstractAction {
         }
         if (panel!=null) {
             final String operationName = panel.getOperationName();
-            final String[] inputParms = panel.getParameterTypes();
-            final String outputParm = panel.getReturnType();
+            final GlobalElement[] inputParms = panel.getParameterTypes();
+            final GlobalElement outputParm = panel.getReturnType();
             DialogDescriptor desc = new DialogDescriptor(panel,
                     NbBundle.getMessage(AddOperationAction.class, "TTL_AddWsOperation"));
             desc.setButtonListener(new ActionListener() {
@@ -121,26 +123,36 @@ public class AddOperationAction extends AbstractAction {
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
                         WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
                         WSDLComponentFactory factory = wsdlModel.getFactory();
+                        Definitions definitions = wsdlModel.getDefinitions();
                         int counter = 0;
                         //create message for each schema element
                         String messageNameBase = operationName;
                         String messageName = messageNameBase;
                         String partNameBase = "parameter";
                         String partName = partNameBase;
+                        wsdlModel.startTransaction();
                         for(int i = 0; i < inputParms.length; i++){
                             Message inputMessage = factory.createMessage();
                             inputMessage.setName(messageName);
                             Part part = factory.createPart();
                             part.setName(partName);
-                            //getNamespace prefix
-                            StringTokenizer token = new StringTokenizer(inputParms[i]);
-                            String namespace = (String)token.nextElement();
-                            
+                            NamedComponentReference<GlobalElement> ref = part.createSchemaReference(inputParms[i], GlobalElement.class);
+                            part.setElement(ref);
+                            inputMessage.addPart(part);
+                            definitions.addMessage(inputMessage);
                             messageName = messageNameBase + "_" + ++counter;
                             partName = partNameBase + "_" + counter;
                         }
-                        //TODO implement the action
+                        Message outputMessage = factory.createMessage();
+                        outputMessage.setName(operationName + "Response");
+                        Part part = factory.createPart();
+                        part.setName("result");
+                        NamedComponentReference<GlobalElement> ref = part.createSchemaReference(outputParm, GlobalElement.class);
+                        part.setElement(ref);
+                        outputMessage.addPart(part);
+                        definitions.addMessage(outputMessage);
                         
+                        wsdlModel.endTransaction();
                     }
                 }
             });
