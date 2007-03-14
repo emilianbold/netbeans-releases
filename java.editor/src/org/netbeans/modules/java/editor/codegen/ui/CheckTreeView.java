@@ -89,12 +89,14 @@ public class CheckTreeView extends BeanTreeView  {
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER ) {
                 
-                JTree tree = (JTree) e.getSource();
-                TreePath path = tree.getSelectionPath();
-                
-                if ( toggle( path )) {
-                    e.consume();
-                }                
+                if ( e.getSource() instanceof JTree ) {
+                    JTree tree = (JTree) e.getSource();
+                    TreePath path = tree.getSelectionPath();
+
+                    if ( toggle( path )) {
+                        e.consume();
+                    }
+                }
             }
         }
         
