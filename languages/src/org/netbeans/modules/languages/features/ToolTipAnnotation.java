@@ -56,6 +56,7 @@ public class ToolTipAnnotation extends Annotation {
     public String getShortDescription () {
         try {
             Part lp = (Part) getAttachedAnnotatable();
+            if (lp == null) return null;
             Line line = lp.getLine ();
             DataObject dob = DataEditorSupport.findDataObject (line);
             EditorCookie ec = (EditorCookie) dob.getCookie (EditorCookie.class);

@@ -429,13 +429,10 @@ public class Feature {
                 try {
                     return method.invoke (null, params);
                 } catch (IllegalAccessException ex) {
-                    System.out.println(method);
                     ErrorManager.getDefault ().notify (ex);
                 } catch (InvocationTargetException ex) {
-                    System.out.println(method);
                     ErrorManager.getDefault ().notify (ex);
                 } catch (IllegalArgumentException ex) {
-                    System.out.println(method);
                     ErrorManager.getDefault ().notify (ex);
                 }
             return null;
