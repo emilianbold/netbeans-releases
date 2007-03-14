@@ -81,7 +81,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+      <change id="FileEncodingQuery">
+        <api name="general"/>
+        <summary>Added support for obtaining encoding of files</summary>
+        <version major="1" minor="9"/>
+        <date day="8" month="2" year="2007"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible">
+        </compatibility>
+        <description>
+          <p>
+            Added a query (<code>FileEncodingQuery</code>) to find out the encoding of the file. The query
+            delegates to the instances of the SPI interface (<code>FileEncodingQueryImplementation</code>),
+            when the SPI implementations don't know anything about the file encoding it returns the encoding
+            corresponding to the file.encoding property. The API also provides getter and setter for default
+            project encoding which should be used by the project generator.
+          </p>
+        </description>
+        <class package="org.netbeans.api.queries" name="FileEncodingQuery"/>
+        <class package="org.netbeans.spi.queries" name="FileEncodingQueryImplementation"/>
+        <issue number="83343"/>
+        </change>
         <change id="fileinfo-NonRecursiveFolder">
             <api name="general"/>
             <summary>Added <code>fileinfo</code> package with <code>NonRecursiveFolder</code> interface.</summary>

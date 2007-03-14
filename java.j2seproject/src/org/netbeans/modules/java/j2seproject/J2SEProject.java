@@ -49,6 +49,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImp
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
 import org.netbeans.modules.java.j2seproject.jaxws.J2SEProjectJAXWSClientSupport;
+import org.netbeans.modules.java.j2seproject.queries.J2SEProjectEncodingQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesSupportProvider;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -255,6 +256,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
+            new J2SEProjectEncodingQueryImpl (evaluator()),
             new J2SEPropertyEvaluatorImpl(evaluator()),
             new BinaryForSourceQueryImpl(this.sourceRoots, this.testRoots, this.helper, this.eval) //Does not use APH to get/put properties/cfgdata
         });

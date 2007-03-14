@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +42,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -106,6 +109,7 @@ public class J2SEProjectProperties {
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
     public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
+    public static final String PROJECT_ENCODING="project.encoding"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.11 */
     public static final String INCLUDES = "includes"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.11 */
@@ -450,8 +454,16 @@ public class J2SEProjectProperties {
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
-        updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
+        updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
         
+        String value = additionalProperties.get(PROJECT_ENCODING);
+        if (value != null) {
+            try {
+                FileEncodingQuery.setDefaultEncoding(Charset.forName(value));
+            } catch (UnsupportedCharsetException e) {
+                //When the encoding is not supported by JVM do not set it as default
+            }
+        }
     }
     
     /** Finds out what are new and removed project dependencies and 

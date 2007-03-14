@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,6 +39,7 @@ import junit.textui.TestRunner;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.actions.*;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
@@ -228,6 +230,17 @@ public class DataEditorSupportTest extends NbTestCase {
         env.fileLock.releaseLock();
     }
     
+    public void testFileEncodingQuery () throws Exception {
+        DES des = support();
+        FileEncodingQueryImpl.getDefault().reset();
+        StyledDocument doc = des.openDocument();
+        assertEquals(des.getDataObject().getPrimaryFile(),FileEncodingQueryImpl.getDefault().getFile());
+        FileEncodingQueryImpl.getDefault().reset();
+        doc.insertString(doc.getLength(), " Added text.", null);
+        des.saveDocument();        
+        assertEquals(des.getDataObject().getPrimaryFile(),FileEncodingQueryImpl.getDefault().getFile());
+    }
+    
     /** File object that let us know what is happening and delegates to certain
      * instance variables of the test.
      */
@@ -392,6 +405,37 @@ public class DataEditorSupportTest extends NbTestCase {
         }
         
     }
+    
+    private static final class FileEncodingQueryImpl extends FileEncodingQueryImplementation {
+        
+        private static FileEncodingQueryImpl instance;
+        
+        private FileObject file;
+        
+        private FileEncodingQueryImpl () {
+            
+        }
+            
+        public Charset getEncoding(FileObject file) {
+            this.file = file;
+            return Charset.defaultCharset();
+        }
+        
+        public void reset () {
+            this.file = null;
+        }
+        
+        public FileObject getFile () {
+            return this.file;
+        }
+        
+        public synchronized static FileEncodingQueryImpl getDefault () {
+            if (instance == null) {
+                instance = new FileEncodingQueryImpl ();
+            }
+            return instance;
+        }                
+    }
 
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup  {
         public Lkp () {
@@ -402,6 +446,7 @@ public class DataEditorSupportTest extends NbTestCase {
             super (ic);
             
             ic.add (new Pool ());
+            ic.add (FileEncodingQueryImpl.getDefault());
         }
         
     } // end of Lkp

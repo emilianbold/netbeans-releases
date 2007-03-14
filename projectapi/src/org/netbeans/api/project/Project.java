@@ -79,6 +79,7 @@ public interface Project extends Lookup.Provider {
      * <li>{@link org.netbeans.spi.project.ProjectConfigurationProvider}</li>
      * <li>{@link org.netbeans.spi.queries.FileBuiltQueryImplementation}</li>
      * <li>{@link org.netbeans.spi.queries.SharabilityQueryImplementation}</li>
+     * <li>{@link org.netbeans.spi.queries.FileEncodingQueryImplementation}</li>
      * <li><a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/ProjectOpenedHook.html"><code>ProjectOpenedHook</code></a></li>
      * <li><a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/RecommendedTemplates.html"><code>RecommendedTemplates</code></a></li>
      * <li><a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/PrivilegedTemplates.html"><code>PrivilegedTemplates</code></a></li>

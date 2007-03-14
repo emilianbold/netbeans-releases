@@ -178,6 +178,7 @@ is divided into following sections:
                 <property name="javac.debug" value="true"/>
                 <property name="javadoc.preview" value="true"/>
                 <property name="application.args" value=""/>
+                <property name="project.encoding" value="${{file.encoding}}"/>
                 <property name="includes" value="**"/>
                 <property name="excludes" value=""/>
             </target>
@@ -275,6 +276,7 @@ is divided into following sections:
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
+                            <xsl:attribute name="encoding">${project.encoding}</xsl:attribute>
                             <xsl:if test ="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform/@explicit-source-supported ='false')">                            
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                 <xsl:attribute name="target">${javac.target}</xsl:attribute>

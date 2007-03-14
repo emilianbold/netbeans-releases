@@ -40,6 +40,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.java.source.parsing.DocumentProvider;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -124,7 +125,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
    
 
     public java.io.Writer openWriter() throws IOException {
-        return new OutputStreamWriter (this.openOutputStream(),FileObjects.encodingName);
+        return new OutputStreamWriter (this.openOutputStream(), FileEncodingQuery.getEncoding(file));
     }
 
     public Reader openReader(boolean ignoreEncodingErrors) throws IOException {        
@@ -138,7 +139,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         else {
             final Document doc = getDocument(isOpened());
             if (doc == null) {
-                Reader r = new InputStreamReader (this.file.getInputStream(),FileObjects.encodingName);
+                Reader r = new InputStreamReader (this.file.getInputStream(),FileEncodingQuery.getEncoding(file));
                 if (filter != null) {
                     r = filter.filterReader(r);
                 }
@@ -470,13 +471,14 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
                         public void run () {
                             try {
                                 doc.remove(0,doc.getLength());
-                                doc.insertString(0,new String(data,0,pos,FileObjects.encodingName),null);
+                                //todo: use new String(data,0,pos,FileEncodingQuery.getEncoding(file)) on JDK 6.0
+                                doc.insertString(0,new String(data,0,pos,FileEncodingQuery.getEncoding(file).name()),null);
                             } catch (BadLocationException e) {
                                 ErrorManager.getDefault().notify(e);
                             }
                             catch (UnsupportedEncodingException ee) {
                                 ErrorManager.getDefault().notify (ee);
-                            }
+                        }
                         }
                     });
             } finally {

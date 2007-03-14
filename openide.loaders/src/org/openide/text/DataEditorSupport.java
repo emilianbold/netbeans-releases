@@ -23,10 +23,12 @@ package org.openide.text;
 import java.beans.*;
 import java.io.*;
 import java.lang.ref.Reference;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.*;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.openide.loaders.UIException;
 import org.openide.*;
 import org.openide.filesystems.*;
@@ -272,6 +274,34 @@ public class DataEditorSupport extends CloneableEditorSupport {
         
         return super.canClose();
     }
+    
+    /**
+     * @inheritDoc
+     */
+    @Override
+    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+        final Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        final Reader r = new InputStreamReader (stream, c);
+        try {
+            kit.read(r, doc, 0);
+        } finally {
+            r.close();
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+        final Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        final Writer w = new OutputStreamWriter (stream, c);
+        try {
+            kit.write(w, doc, 0, doc.getLength());
+        } finally {
+            w.close();
+        }
+    }        
 
     /** Saves document. Overrides superclass method, adds checking
      * for read-only property of saving file and warns user in that case. */

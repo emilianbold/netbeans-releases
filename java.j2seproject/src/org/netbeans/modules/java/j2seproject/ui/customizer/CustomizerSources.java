@@ -19,9 +19,20 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -36,6 +47,9 @@ import org.openide.util.NbBundle;
  * @author  Tomas Zezula
  */
 public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
+    
+    
+    private String originalEncoding;
 
     private final J2SEProjectProperties uiProperties;
 
@@ -92,6 +106,33 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }                                    
         });
         enableSourceLevel ();
+        this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(J2SEProjectProperties.PROJECT_ENCODING);
+        if (this.originalEncoding == null) {
+            this.originalEncoding = FileEncodingQuery.getDefaultEncoding().name();
+        }
+        
+        this.encoding.setModel(new EncodingModel(this.originalEncoding));
+        this.encoding.setRenderer(new EncodingRenderer());
+        
+
+        this.encoding.addActionListener(new ActionListener () {
+            public void actionPerformed(ActionEvent arg0) {
+                handleEncodingChange();
+            }            
+        });
+    }
+    
+    
+    private void handleEncodingChange () {
+            Charset enc = (Charset) encoding.getSelectedItem();
+            String encName;
+            if (enc != null) {
+                encName = enc.name();
+            }
+            else {
+                encName = originalEncoding;
+            }
+            this.uiProperties.putAdditionalProperty(J2SEProjectProperties.PROJECT_ENCODING, encName);
     }
 
     public HelpCtx getHelpCtx() {
@@ -101,6 +142,55 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private void enableSourceLevel () {
         this.sourceLevel.setEnabled(sourceLevel.getItemCount()>0);
     }
+    
+    
+    private static class EncodingRenderer extends DefaultListCellRenderer {
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof Charset; 
+            return super.getListCellRendererComponent(list, ((Charset)value).displayName(), index, isSelected, cellHasFocus);
+        }
+    }
+    
+    private static class EncodingModel extends DefaultComboBoxModel {
+        
+        public EncodingModel (String originalEncoding) {
+            Charset defEnc = null;
+            for (Charset c : Charset.availableCharsets().values()) {
+                if (c.name().equals(originalEncoding)) {
+                    defEnc = c;
+                }
+                addElement(c);
+            }
+            if (defEnc == null) {
+                //Create artificial Charset to keep the original value
+                //May happen when the project was set up on the platform
+                //which supports more encodings
+                defEnc = new UnknownCharset (originalEncoding);
+                addElement(defEnc);
+            }            
+            setSelectedItem(defEnc);
+        }
+    }
+    
+    private static class UnknownCharset extends Charset {
+        
+        UnknownCharset (String name) {
+            super (name, new String[0]);
+        }
+    
+        public boolean contains(Charset c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public CharsetDecoder newDecoder() {
+            throw new UnsupportedOperationException();
+        }
+
+        public CharsetEncoder newEncoder() {
+            throw new UnsupportedOperationException();
+        }
+}
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -133,6 +223,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jLabel4 = new javax.swing.JLabel();
         sourceLevel = new javax.swing.JComboBox();
         includeExcludeButton = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        encoding = new javax.swing.JComboBox();
+        jPanel2 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -387,6 +480,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         sourceLevel.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1.4", "1.5" }));
         sourceLevel.setMinimumSize(this.sourceLevel.getPreferredSize());
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(sourceLevel, gridBagConstraints);
@@ -403,7 +497,34 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel1.add(includeExcludeButton, gridBagConstraints);
 
+        jLabel5.setLabelFor(encoding);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_Encoding")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        jPanel1.add(jLabel5, gridBagConstraints);
+
+        encoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        jPanel1.add(encoding, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -429,12 +550,15 @@ private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JButton addTestRoot;
     private javax.swing.JButton downSourceRoot;
     private javax.swing.JButton downTestRoot;
+    private javax.swing.JComboBox encoding;
     private javax.swing.JButton includeExcludeButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField projectLocation;
