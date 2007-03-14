@@ -26,6 +26,8 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 
+import org.netbeans.junit.ide.ProjectSupport;
+
 
 /**
  *
@@ -78,7 +80,7 @@ public class VisualWebProjectWorkflow extends MemoryFootprintTestCase {
     public void close() {
         log("::close");
         VWPFootprintUtilities.closeAllDocuments();
-        VWPFootprintUtilities.closeProject(webproject);
+        ProjectSupport.closeProject(webproject);
     }
     
     private void openProject(String projectName) {

@@ -37,7 +37,6 @@ import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
-import org.netbeans.junit.ide.ProjectSupport;
 
 
 /**
@@ -50,10 +49,6 @@ public class VWPFootprintUtilities extends gui.VWPUtilities{
     static void collapseProject(String project) {
         ProjectRootNode prn = new ProjectsTabOperator().getProjectRootNode(project);
         prn.collapse();
-    }
-    
-    static void closeProject(String project) {
-        ProjectSupport.closeProject(project);
     }
     
     public static void deleteProject(String project) {

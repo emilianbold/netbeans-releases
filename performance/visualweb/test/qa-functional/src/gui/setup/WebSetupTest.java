@@ -19,6 +19,8 @@
 
 package gui.setup;
 
+import gui.VWPUtilities;
+
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -48,7 +50,13 @@ public class WebSetupTest extends IDESetupTest {
     public WebSetupTest(String testName) {
         super(testName);
     }
+
     
+    public void openJeditProject() {
+        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
+        VWPUtilities.waitForPendingBackgroundTasks();
+    }
+
     public void openWebPackProjects() {
         createTestProject("VisualWebProject");
         createTestProject("VW_Project");

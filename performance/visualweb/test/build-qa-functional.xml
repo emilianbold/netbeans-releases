@@ -97,7 +97,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="init-cp,copy_unzip_j2ee_project,check-appserver">
+    <target name="runidesetup" depends="init-cp,copy_unzip_jedit_project,copy_unzip_j2ee_project,check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <executeTests pluginName="ide">
