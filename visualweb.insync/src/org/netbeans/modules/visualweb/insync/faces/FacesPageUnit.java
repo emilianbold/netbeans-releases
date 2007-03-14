@@ -737,8 +737,15 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
             }
 
             // if before-sibling is missing, figure out from parent+index
-            if (before == null && pos.getIndex() >= 0)
-                before = eparent.getChildNodes().item(pos.getIndex());
+			if (before == null && pos.getIndex() >= 0) {
+                 Bean[] children = newparent.getChildren();
+                 for (int i = 0; i < children.length; i++) {
+                        Bean childBean = children[i];
+                        if (childBean == bean && i < (children.length - 1)) {
+                                before = ((MarkupBean)children[i+1]).element;
+                        }
+                 }
+             }
 
             eparent.insertBefore(((MarkupBean)bean).element, before);
         }
