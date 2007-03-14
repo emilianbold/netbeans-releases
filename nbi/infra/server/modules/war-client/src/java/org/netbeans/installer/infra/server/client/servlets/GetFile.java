@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ejb.EJB;
@@ -31,6 +32,12 @@ public class GetFile extends HttpServlet {
             final HttpServletRequest request,
             final HttpServletResponse response) throws ServletException, IOException {
         try {
+            Enumeration en = request.getHeaderNames();
+            while (en.hasMoreElements()) {
+                Object name = en.nextElement();
+                System.out.println("" + name + ": " + request.getHeader(name.toString()));
+            }
+            
             final String registry = request.getParameter("registry");
             final String path = request.getParameter("file");
             
