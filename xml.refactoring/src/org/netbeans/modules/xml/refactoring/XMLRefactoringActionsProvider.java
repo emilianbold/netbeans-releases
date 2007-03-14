@@ -69,7 +69,7 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
   }
   
  public boolean canRename(Lookup lookup) {
-     System.out.println("my canRename called");
+//     System.out.println("my canRename called");
      Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
          if(nodes.size() !=1){
              return false;
