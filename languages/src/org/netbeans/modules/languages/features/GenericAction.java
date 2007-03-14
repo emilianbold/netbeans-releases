@@ -59,7 +59,7 @@ public class GenericAction extends BaseAction {
             return null;
         }
         if (enabler == null) {
-            performer = Feature.createMethodCallFeature (null, null, enablerName);
+            enabler = Feature.createMethodCallFeature (null, null, enablerName);
         }
         return enabler;
     }
