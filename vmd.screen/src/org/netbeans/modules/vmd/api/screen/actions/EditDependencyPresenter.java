@@ -31,7 +31,6 @@ public abstract class EditDependencyPresenter extends Presenter {
      */
     public abstract boolean isComponentEditable();
     
-    
     public static final Presenter createEditablePresenter() {
         return new EditDependencyPresenter() {
             public boolean isComponentEditable() {
