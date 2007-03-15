@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontFace;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontSize;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontStyle;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontType;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 
@@ -38,7 +39,23 @@ public final class ScreenSupport {
     private ScreenSupport() {
     }
     
+    /**
+     * Returns AWT font according to kind, face, style and size
+     * 
+     * @param deviceInfo
+     * @param fontComponent 
+     * @return font
+     */
     public static final Font getFont(ScreenDeviceInfo deviceInfo, DesignComponent fontComponent) {
+        int kindCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FONT_KIND));
+        if (kindCode == FontCD.VALUE_KIND_DEFAULT) {
+            return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);
+        } else if (kindCode == FontCD.VALUE_KIND_STATIC) {
+            return deviceInfo.getDeviceTheme().getFont(FontType.STATIC_TEXT);
+        } else if (kindCode == FontCD.VALUE_KIND_INPUT) {
+            return deviceInfo.getDeviceTheme().getFont(FontType.INPUT_TEXT);
+        }
+
         int faceCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FACE));
         FontFace face = FontFace.SYSTEM;
         if (faceCode == FontCD.VALUE_FACE_MONOSPACE) {

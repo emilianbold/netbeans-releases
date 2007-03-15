@@ -199,7 +199,7 @@ public class ScreenDeviceInfo {
         public enum FontFace {MONOSPACE, PROPORTIONAL, SYSTEM}
         public enum FontSize {SMALL, MEDIUM, LARGE}
         public enum FontStyle {PLAIN, BOLD, ITALIC, UNDERLINED}
-        public enum FontType {DEFAULT, INPUT_TEXT, STATIC_TEXT}
+        public enum FontType {DEFAULT, INPUT_TEXT, STATIC_TEXT, CUSTOM}
         
         private static final int FONT_SIZE_SMALL = 10;
         private static final int FONT_SIZE_MEDIUM = 12;

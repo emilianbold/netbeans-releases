@@ -55,13 +55,15 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
         super.reload(deviceInfo);
         
         DesignComponent imageComponent = getComponent().readProperty(AlertCD.PROP_IMAGE).getComponent();
-        String iconPath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
-        Image image = Utilities.loadImage(iconPath);
-        if (image != null) {
-            Icon icon = new ImageIcon(image);
-            imageLabel.setIcon(icon);
-        } else {
-            Debug.warning("Can't load image for alert " + getComponent());
+        if (imageComponent != null) {
+            String iconPath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
+            Image image = Utilities.loadImage(iconPath);
+            if (image != null) {
+                Icon icon = new ImageIcon(image);
+                imageLabel.setIcon(icon);
+            } else {
+                Debug.warning("Can't load image for alert " + getComponent());
+            }
         }
         
         String text = MidpTypes.getString(getComponent().readProperty(AlertCD.PROP_STRING));

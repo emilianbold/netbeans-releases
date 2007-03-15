@@ -38,6 +38,8 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
+import org.netbeans.modules.vmd.midp.components.items.ChoiceCD;
+import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
 import org.openide.util.Utilities;
 
 /**
@@ -47,11 +49,15 @@ import org.openide.util.Utilities;
  */
 public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     
-    public static final String ICON_EMPTY_ELEMENT_PATH = "org/netbeans/modules/vmd/midp/resources/components/empty_element_16.png"; // NOI18N
-    public static final String ICON_ELEMENT_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
-
-    private static final Icon ICON_EMPTY_ELEMENT = new ImageIcon(Utilities.loadImage(ICON_EMPTY_ELEMENT_PATH));
-    private static final Icon ICON_ELEMENT = new ImageIcon(Utilities.loadImage(ICON_ELEMENT_PATH));
+    public static final String ICON_EMPTY_CHECKBOX_PATH = "org/netbeans/modules/vmd/midp/resources/components/empty_element_16.png"; // NOI18N
+    public static final String ICON_CHECKBOX_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
+    public static final String ICON_EMPTY_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/components/empty_radio_16.png"; // NOI18N
+    public static final String ICON_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/components/radio_16.png"; // NOI18N
+    
+    private static final Icon ICON_EMPTY_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_EMPTY_CHECKBOX_PATH));
+    private static final Icon ICON_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_CHECKBOX_PATH));
+    private static final Icon ICON_EMPTY_RADIOBUTTON = new ImageIcon(Utilities.loadImage(ICON_EMPTY_RADIOBUTTON_PATH));
+    private static final Icon ICON_RADIOBUTTON = new ImageIcon(Utilities.loadImage(ICON_RADIOBUTTON_PATH));
     
     private JPanel panel;
     private JLabel label;
@@ -86,7 +92,14 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
         label.setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING)));
         
         boolean isSelected = MidpTypes.getBoolean(getComponent().readProperty(ChoiceElementCD.PROP_SELECTED));
-        label.setIcon(isSelected ? ICON_ELEMENT : ICON_EMPTY_ELEMENT);
+        int choiceType = MidpTypes.getInteger(getComponent().getParentComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE));
+        if (choiceType == ChoiceCD.VALUE_EXCLUSIVE) {
+            label.setIcon(isSelected ? ICON_RADIOBUTTON : ICON_EMPTY_RADIOBUTTON);
+        } else if (choiceType == ChoiceCD.VALUE_POPUP) {
+            label.setIcon(null);
+        } else {
+            label.setIcon(isSelected ? ICON_CHECKBOX : ICON_EMPTY_CHECKBOX);
+        }
         
         DesignComponent font = getComponent().readProperty(ChoiceElementCD.PROP_FONT).getComponent();
         if (font != null) {
