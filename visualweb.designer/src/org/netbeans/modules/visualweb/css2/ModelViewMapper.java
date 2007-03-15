@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
@@ -39,7 +40,6 @@ import org.w3c.dom.NodeList;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.Position;
 

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.text;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import java.awt.Graphics;

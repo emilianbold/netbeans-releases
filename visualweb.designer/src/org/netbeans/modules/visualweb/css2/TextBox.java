@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -31,7 +32,6 @@ import org.w3c.dom.Node;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.Position;
 import org.w3c.dom.Text;

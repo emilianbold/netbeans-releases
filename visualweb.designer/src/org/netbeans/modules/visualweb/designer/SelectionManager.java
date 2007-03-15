@@ -20,6 +20,7 @@ package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService.ResizeConstraint;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Container;
@@ -62,7 +63,6 @@ import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.Position;
 import org.netbeans.modules.visualweb.text.actions.DefaultKeyTypedAction;

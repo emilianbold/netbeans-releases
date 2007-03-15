@@ -19,6 +19,7 @@
 package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
@@ -68,7 +69,6 @@ import org.netbeans.modules.visualweb.css2.LineBoxGroup;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
-import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.Document;
 import org.netbeans.modules.visualweb.text.Position;

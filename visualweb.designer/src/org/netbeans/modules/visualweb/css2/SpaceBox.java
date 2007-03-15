@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
+
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -25,8 +26,8 @@ import java.awt.Rectangle;
 
 import org.w3c.dom.Element;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.Position;
 import org.w3c.dom.Text;
 
