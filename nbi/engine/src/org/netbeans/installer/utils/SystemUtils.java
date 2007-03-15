@@ -27,7 +27,9 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -552,6 +554,19 @@ public final class SystemUtils {
         
         return currentPlatform;
     }
+    
+    public static String getHostName() {
+    try {
+      String hostName = InetAddress.getLocalHost().getHostName();
+      if (hostName != null) {
+        return hostName;
+      }
+    } catch (UnknownHostException e) {
+      LogManager.log(ErrorLevel.MESSAGE, e);      
+    }
+    
+    return "localhost"; //NOI18N
+  }
     
     // platforms probes /////////////////////////////////////////////////////////////
     public static boolean isWindows() {
