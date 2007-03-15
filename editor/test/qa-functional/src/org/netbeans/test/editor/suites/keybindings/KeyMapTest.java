@@ -188,15 +188,23 @@ public class KeyMapTest extends JellyTestCase{
             checkListContents(kmo.shortcuts(), new Object[]{});
             kmo.add().push();
             AddShortcutDialog asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);            
-            asd.btOK().push();
-            checkListContents(kmo.shortcuts(), "Alt+L");
+            asd.txtJTextField().pushKey(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
+            asd.btOK().push();            
+            checkListContents(kmo.shortcuts(), "Ctrl+I");
             kmo.ok().push();
             closed = true;
-            new EventTool().waitNoEvent(500);
-            editor.setCaretPosition(7, 1);
-            editor.pushKey(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);            
+            new EventTool().waitNoEvent(1000);
+            editor.requestFocus();
             new EventTool().waitNoEvent(100);
+            editor.setCaretPosition(7, 1);
+            ValueResolver vr = new ValueResolver() {
+                public Object getValue() {
+                    editor.setCaretPosition(7, 1);
+                    editor.pushKey(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);                   
+                    return (editor.txtEditorPane().getSelectedText())!=null;
+                }
+            };
+            waitMaxMilisForValue(3000, vr, Boolean.TRUE);
             String text =  editor.txtEditorPane().getSelectedText();
             assertEquals("        System.out.println(\"Hello\");",text);
         } finally {
@@ -512,7 +520,7 @@ public class KeyMapTest extends JellyTestCase{
             kmo.add().push();
             new EventTool().waitNoEvent(100);
             AddShortcutDialog asd = new AddShortcutDialog();
-            asd.txtJTextField().pushKey(KeyEvent.VK_Q, InputEvent.ALT_DOWN_MASK);            
+            asd.txtJTextField().pushKey(KeyEvent.VK_Q, InputEvent.ALT_DOWN_MASK);
             asd.btOK().push();
             checkListContents(kmo.shortcuts(), "Alt+Q");
             // remove shortcut
@@ -520,21 +528,21 @@ public class KeyMapTest extends JellyTestCase{
             checkListContents(kmo.shortcuts(), "HOME");
             kmo.shortcuts().setSelectedIndex(0);
             kmo.remove().push();
-            checkListContents(kmo.shortcuts(), new Object[]{});                        
+            checkListContents(kmo.shortcuts(), new Object[]{});
             kmo.ok().push();
             closed = true;
             new EventTool().waitNoEvent(500);
-            //test in editor                                    
+            //test in editor
             editor.setCaretPosition(7, 12);
             editor.pushKey(KeyEvent.VK_Q, InputEvent.ALT_DOWN_MASK);
             new EventTool().waitNoEvent(100);
-            String text =  editor.txtEditorPane().getSelectedText();            
+            String text =  editor.txtEditorPane().getSelectedText();
             assertEquals("tem.out.println(\"Hello\")",text);
             int caretPositionOriginal = editor.txtEditorPane().getCaretPosition();
             editor.pushKey(KeyEvent.VK_HOME);
             int caretPosition = editor.txtEditorPane().getCaretPosition();
             assertEquals("Caret was moved", caretPositionOriginal,caretPosition);
-            System.out.println("Caret position:"+caretPosition);                        
+            System.out.println("Caret position:"+caretPosition);
             kmo = KeyMapOperator.invoke();
             closed = false;
             kmo.restore().push();
@@ -552,7 +560,7 @@ public class KeyMapTest extends JellyTestCase{
             editor.setCaretPosition(7, 12);
             editor.pushKey(KeyEvent.VK_Q, InputEvent.ALT_DOWN_MASK);
             new EventTool().waitNoEvent(100);
-            text =  editor.txtEditorPane().getSelectedText();            
+            text =  editor.txtEditorPane().getSelectedText();
             assertEquals(null,text);
             editor.pushKey(KeyEvent.VK_HOME);
             caretPosition = editor.txtEditorPane().getCaretPosition();

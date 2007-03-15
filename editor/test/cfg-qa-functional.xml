@@ -53,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>
+                <include name="org/netbeans/test/editor/suites/keybindings/KeyMapTest.class/testProfileRestore"/>            
             </patternset>
         </testset>
     </testbag>

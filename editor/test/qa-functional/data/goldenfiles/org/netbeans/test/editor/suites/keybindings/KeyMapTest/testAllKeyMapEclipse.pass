@@ -63,6 +63,8 @@ Go To|goto-source
   Ctrl+F3
 Go To|Go to Test
   Alt+Shift+E
+Go To|Go to Type...
+  Alt+Shift+O
 Go To|Next Error
   Ctrl+PERIOD
 Go To|Next Inner View

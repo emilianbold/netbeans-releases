@@ -62,8 +62,12 @@ Go To|Go to Previous Document
   Ctrl+BACK_QUOTE
 Go To|goto-source
   Alt+O
+Go To|goto-super-implementation
+  Ctrl+B
 Go To|Go to Test
   Alt+Shift+E
+Go To|Go to Type...
+  Alt+Shift+O
 Go To|Next Bookmark
   F2
 Go To|Next Error
