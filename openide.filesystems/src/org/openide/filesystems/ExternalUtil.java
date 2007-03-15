@@ -135,7 +135,6 @@ final class ExternalUtil extends Object {
         public MainFS() {
             super(computeDelegates());
             ALL.addLookupListener(this);
-            resultChanged(null);
         }
         
         private static FileSystem[] computeDelegates() {
