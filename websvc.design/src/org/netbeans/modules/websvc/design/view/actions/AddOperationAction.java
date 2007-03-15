@@ -25,28 +25,15 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
-import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core._RetoucheUtil;
+import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.Input;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Output;
-import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -118,63 +105,18 @@ public class AddOperationAction extends AbstractAction {
         }
         if (panel!=null) {
             final String operationName = panel.getOperationName();
-            final GlobalElement[] inputParms = panel.getParameterTypes();
-            final GlobalElement outputParm = panel.getReturnType();
+            final GlobalElement[] parameterTypes = panel.getParameterTypes();
+            final GlobalElement returnType = panel.getReturnType();
+            final GlobalElement faultType = panel.getFaultType();
             DialogDescriptor desc = new DialogDescriptor(panel,
                     NbBundle.getMessage(AddOperationAction.class, "TTL_AddWsOperation"));
             desc.setButtonListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
+                        OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
                         WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
-                        WSDLComponentFactory factory = wsdlModel.getFactory();
-                        Definitions definitions = wsdlModel.getDefinitions();
-                        int counter = 0;
-                        //create message for each schema element
-                        String messageNameBase = operationName;
-                        String messageName = messageNameBase;
-                        String partNameBase = "parameter";
-                        String partName = partNameBase;
-                        wsdlModel.startTransaction();
-                        //for(int i = 0; i < inputParms.length; i++){
-                        //assume one parameter for now
-                        GlobalElement inputParameter = inputParms[0];
-                        Message inputMessage = factory.createMessage();
-                        inputMessage.setName(messageName);
-                        Part part = factory.createPart();
-                        part.setName(partName);
-                        NamedComponentReference<GlobalElement> ref = part.createSchemaReference(inputParameter, GlobalElement.class);
-                        part.setElement(ref);
-                        inputMessage.addPart(part);
-                        definitions.addMessage(inputMessage);
-                        messageName = messageNameBase + "_" + ++counter;
-                        partName = partNameBase + "_" + counter;
-                        //}
-                        Message outputMessage = factory.createMessage();
-                        outputMessage.setName(operationName + "Response");
-                        Part outpart = factory.createPart();
-                        outpart.setName("result");
-                        NamedComponentReference<GlobalElement> outref = part.createSchemaReference(outputParm, GlobalElement.class);
-                        part.setElement(outref);
-                        outputMessage.addPart(outpart);
-                        definitions.addMessage(outputMessage);
-                        
-                        RequestResponseOperation operation = factory.createRequestResponseOperation();
-                        operation.setName(operationName);
-                        Input input = factory.createInput();
-                        NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
-                        input.setName(operationName);
-                        input.setMessage(inputRef);
-                        operation.setInput(input);
-                        
-                        Output output = factory.createOutput();
-                        NamedComponentReference<Message> outputRef = input.createReferenceTo(outputMessage, Message.class);
-                        output.setName(operationName + "Response");
-                        output.setMessage(outputRef);
-                        operation.setOutput(output);
-                        //this is bogus: need to get the correct porttype
-                        PortType portType = definitions.getPortTypes().iterator().next();
-                        portType.addOperation(operation);
-                        wsdlModel.endTransaction();
+                        generatorHelper.addWsOperation(wsdlModel, operationName, parameterTypes, returnType, faultType);
+                        generatorHelper.generateJavaArtifacts(implementationClass, operationName);
                     }
                 }
             });
