@@ -147,6 +147,12 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
     private static final int PAGE_WIDGET_INDEX = 0;
     private static final int DEFAULT_PIN_WIDGET_INDEX = 1;
     
+   /**
+    * To show a mal formed page.
+    */
+   public void createMalFormedWidget() {     
+       //Not sure what to do yet.
+   }
     
     /**
      * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
@@ -306,6 +312,13 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
      */
     public void layoutScene() {
         sceneLayout.invokeLayout();
+    }
+    
+    /**
+     * Invokes the Layout Immediately.
+     */
+    public void layoutSceneImmediately() {
+            sceneLayout.invokeLayoutImmediately();
     }
     
     private static class MyPopupMenuProvider implements PopupMenuProvider {

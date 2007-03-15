@@ -138,6 +138,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
     }
     
 
+    public void warnUserMalFormedFacesConfig() {
+        clearGraph();
+        scene.createMalFormedWidget();        
+    }
     
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
     private static final Image IMAGE_LIST = null; // NOI18N
@@ -160,8 +164,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
      * 
      */
     public void validateGraph() {
-        scene.validate();
         scene.layoutScene();
+        scene.validate();
     }
     
  
@@ -182,7 +186,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         }
         
         widget.setNodeProperties(IMAGE_LIST, pageName, type, glyphs);
-        System.out.println("Page Node: " + pageName);
+//        System.out.println("Page Node: " + pageName);
         
         scene.addPin(pageNode, pageName +"pin");
         
@@ -342,7 +346,20 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
     }
     
     
-    
+//    @Override
+//    protected void componentShowing() {
+//        super.componentShowing();
+//        getPageFlowController().setupGraph();
+//        
+//    }
+//    
+//    
+//    @Override
+//    protected void componentActivated() {
+//        super.componentActivated();
+//        System.out.println("Component Activated");
+//    }
+
     
     
 }

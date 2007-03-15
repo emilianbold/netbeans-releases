@@ -9,6 +9,8 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,6 +23,9 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
@@ -51,6 +56,21 @@ public class PageFlowController {
         webFiles = getAllProjectRelevantFilesObjects();
         setupGraph();
         
+        configModel.addPropertyChangeListener(new FacesModelPropertyChangeListener(view));
+        
+        configModel.addComponentListener(new ComponentListener(){
+            public void valueChanged(ComponentEvent evt) {
+                System.out.println("ValueChanged: " + evt);
+            }
+            
+            public void childrenAdded(ComponentEvent evt) {
+                System.out.println("childrenAdded: " + evt);
+            }
+            
+            public void childrenDeleted(ComponentEvent evt) {
+                System.out.println("\n\n\n\n\n\nchildrenDeleted: " + evt);
+            }
+        });
     }
     
     /**
@@ -79,7 +99,7 @@ public class PageFlowController {
             facesConfig.addNavigationRule(navRule);
         } else {
             caseNum = getNewCaseNumber(navRule);
-        }      
+        }
         
         navCase.setFromOutcome(CASE_STRING + Integer.toString(caseNum));
         navRule.addNavigationCase(navCase);
@@ -89,7 +109,7 @@ public class PageFlowController {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        view.createEdge(navRule, navCase);
+        //        view.createEdge(navRule, navCase);
         return navCase;
         
     }
@@ -118,10 +138,10 @@ public class PageFlowController {
     private NavigationRule getRuleWithFromViewID(FacesConfig facesConfig, String fromViewId ){
         List<NavigationRule> rules = facesConfig.getNavigationRules();
         for( NavigationRule rule : rules ){
-            System.out.println("\nDo these match?");
-            System.out.println(rule.getFromViewId() + " == " + fromViewId);
+            //            System.out.println("\nDo these match?");
+            //            System.out.println(rule.getFromViewId() + " == " + fromViewId);
             if( rule.getFromViewId().equals(fromViewId) ){
-                System.out.println("Match Found.");
+                //                System.out.println("Match Found.");
                 return rule;
             }
         }
@@ -171,6 +191,7 @@ public class PageFlowController {
         assert webFiles != null;
         
         view.clearGraph();
+        
         
         FacesConfig facesConfig = configModel.getRootComponent();
         
@@ -272,7 +293,33 @@ public class PageFlowController {
     }
     
     
-    
+    private  class FacesModelPropertyChangeListener implements PropertyChangeListener {
+        public FacesModelPropertyChangeListener( PageFlowView view ){
+            
+        }
+        
+        public void propertyChange(PropertyChangeEvent ev) {
+            if ( ev.getPropertyName() == "navigation-case"){
+                NavigationCase myNavCase = (NavigationCase)ev.getNewValue();
+                view.createEdge((NavigationRule)myNavCase.getParent(), myNavCase);
+            } else if (ev.getPropertyName() == "navigation-rule" ) {
+                NavigationRule myNavRule = (NavigationRule)ev.getNewValue();            
+                //You can actually do nothing.
+            } else if ( ev.getNewValue() == State.VALID ) {            
+                setupGraph();
+            } else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
+                view.warnUserMalFormedFacesConfig();
+                System.out.println("NOT WELL FORMED!!!");
+            }
+//            System.out.println("New Value: " + ev.getNewValue());
+//            System.out.println("Old Value: " + ev.getOldValue());
+//            
+//            System.out.println("PropertyName: " + ev.getPropertyName());
+//            System.out.println("ID: " + ev.getPropagationId());
+//            System.out.println("PropertyChangeListener");
+            
+        }
+    }
     
     
 }
