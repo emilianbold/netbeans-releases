@@ -25,6 +25,7 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -40,6 +41,9 @@ public class OperationWidget extends Widget{
     private static final Color FILL_COLOR_LIGHT = new Color(204,255,255);
     private static final Color BORDER_COLOR = new Color(153,204,255);
     private LabelWidget label;
+    private OperationMessageWidget inputWidget;
+    private OperationMessageWidget outputWidget;
+    private OperationMessageWidget faultWidget;
 
     /**
      * Creates a new instance of OperationWidget
@@ -48,18 +52,19 @@ public class OperationWidget extends Widget{
      */
     public OperationWidget(Scene scene, WsdlOperation operation) {
         super(scene);
+        setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 4));
+        if(operation.getReturnTypeName()!=null) {
+            outputWidget = new OperationMessageWidget(scene,operation,
+                    OperationMessageWidget.MessageType.OUTPUT);
+            addChild(outputWidget);
+        }
         label = new LabelWidget(scene,operation.getName());
         addChild(label);
-    }
-    
-    protected Rectangle calculateClientArea() {
-        Rectangle labelBounds = label.getBounds();
-        return new Rectangle(
-                labelBounds.x - labelBounds.height, // x
-                labelBounds.y - labelBounds.height/2,// y
-                labelBounds.width + 2*labelBounds.height, //width
-                2*labelBounds.height //height
-                );
+        if(!operation.getParameters().isEmpty()) {
+            inputWidget = new OperationMessageWidget(scene,operation,
+                    OperationMessageWidget.MessageType.INPUT);
+            addChild(inputWidget);
+        }
     }
     
     protected void paintWidget() {

@@ -20,11 +20,17 @@
 package org.netbeans.modules.websvc.design.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Point;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.widget.LabelWidget;
+import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -56,11 +62,21 @@ public class DesignView extends JPanel  {
             new AddOperationAction(service, implementationClass),
         })));
 
+        Widget mMainLayer = new LayerWidget(scene);
+        mMainLayer.setPreferredLocation(new Point(0, 0));
+        mMainLayer.setBackground(Color.WHITE);
+        scene.addChild(mMainLayer);
+        Widget contentWidget = new Widget(scene);
+        contentWidget.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 16));
+        mMainLayer.addChild(contentWidget);
         //add operations widget
-        Widget opWidget = new OperationsWidget(scene,service);
-        scene.addChild(opWidget);
+        Widget opWidget = new OperationsWidget(scene,service,implementationClass);
+        contentWidget.addChild(opWidget);
 
-        add(scene.createView());
+
+        add(scene.createView(),BorderLayout.CENTER);
     }
 
     /**
