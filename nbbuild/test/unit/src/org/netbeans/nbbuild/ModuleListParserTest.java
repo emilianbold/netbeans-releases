@@ -76,10 +76,9 @@ public class ModuleListParserTest extends TestCase {
         assertNotNull("found module in a subdir", e);
         assertEquals("org.netbeans.libs.xerces", e.getCnb());
         assertEquals("unknown module put in extra cluster by default", file(build, "extra/modules/org-netbeans-libs-xerces.jar"), e.getJar());
-        assertEquals("correct CP extensions (using <binary-origin> and relative paths)", Arrays.asList(new File[] {
-            file(nball, "libs/external/xerces-2.8.0.jar"),
-            file(nball, "libs/external/xml-commons-dom-ranges-1.0.b2.jar"),
-        }), Arrays.asList(e.getClassPathExtensions()));
+        assertEquals("correct CP extensions (using <binary-origin> and relative paths)",
+            Collections.singletonList(file(nball, "libs/external/xerces-2.8.0.jar")),
+            Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("javax.jmi.model");
         assertNotNull(e);
         assertEquals("correct CP extensions (using <binary-origin> and property substitutions #1)", Arrays.asList(new File[] {
@@ -144,10 +143,9 @@ public class ModuleListParserTest extends TestCase {
         assertNotNull("found netbeans.org module by its binary", e);
         assertEquals("org.netbeans.libs.xerces", e.getCnb());
         assertEquals(jar, e.getJar());
-        assertEquals("correct CP extensions (using Class-Path header in manifest)", Arrays.asList(new File[] {
-            file(nball, "nbbuild/netbeans/ide8/modules/ext/xerces-2.8.0.jar"),
-            file(nball, "nbbuild/netbeans/ide8/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
-        }), Arrays.asList(e.getClassPathExtensions()));
+        assertEquals("correct CP extensions (using Class-Path header in manifest)",
+                Collections.singletonList(file(nball, "nbbuild/netbeans/ide8/modules/ext/xerces-2.8.0.jar")),
+                Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.openide.loaders");
         assertNotNull(e);
         assertEquals("org.openide.loaders", e.getCnb());
