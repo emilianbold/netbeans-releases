@@ -100,7 +100,7 @@ final class PanelOperation<T> extends Panel<T> {
   @Override
   protected String getError()
   {
-    String name = addExtension(myFile.getText());
+    String name = addExtension(myFile.getText().trim());
     FileObject file = getFolder().getFileObject(name);
 
     if (file != null) {
@@ -133,7 +133,7 @@ final class PanelOperation<T> extends Panel<T> {
 
   public void storeSettings(Object object) {
     WizardDescriptor descriptor = (WizardDescriptor) object;
-    String file = addExtension(myFile.getText());
+    String file = addExtension(myFile.getText().trim());
 
     if (myIsInput) {
       descriptor.putProperty(INPUT_FILE, file);

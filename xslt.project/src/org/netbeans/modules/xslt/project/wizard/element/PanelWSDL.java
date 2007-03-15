@@ -73,7 +73,7 @@ final class PanelWSDL<T> extends Panel<T> {
       myModel = (WSDLModel) myWebService.getResult();
 //    }
 //    else {
-//      String name = getName(myName.getText());
+//      String name = getName(myName.getText().trim());
 //
 //      if (name == null) {
 //        return i18n("ERR_File_Name_Must_Be_Specified"); // NOI18N
