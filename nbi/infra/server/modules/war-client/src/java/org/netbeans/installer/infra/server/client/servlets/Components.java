@@ -35,7 +35,7 @@ public class Components extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<String> fixed = Arrays.asList("nb-ide");
         List<String> standard = Arrays.asList("nb-ide", "nb-mobility", "glassfish");
-        List<String> selected = Arrays.asList("nb-mobility", "glassfish");
+        List<String> selected = Arrays.asList("nb-mobility", "nb-xml", "nb-soa", "nb-identity", "glassfish", "openesb", "sjsam");
         
         try {
             response.setContentType("text/javascript; charset=UTF-8");
