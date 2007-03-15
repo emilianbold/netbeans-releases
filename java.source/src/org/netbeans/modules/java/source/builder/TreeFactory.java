@@ -165,14 +165,14 @@ public class TreeFactory implements TreeMakerInt {
                      CharSequence simpleName,
                      List<? extends TypeParameterTree> typeParameters,
                      Tree extendsClause,
-                     List<? extends ExpressionTree> implementsClauses,
+                     List<? extends Tree> implementsClauses,
                      List<? extends Tree> memberDecls) 
     {
         ListBuffer<JCTypeParameter> typarams = new ListBuffer<JCTypeParameter>();
         for (TypeParameterTree t : typeParameters)
             typarams.append((JCTypeParameter)t);
         ListBuffer<JCExpression> impls = new ListBuffer<JCExpression>();
-        for (ExpressionTree t : implementsClauses)
+        for (Tree t : implementsClauses)
             impls.append((JCExpression)t);
         ListBuffer<JCTree> defs = new ListBuffer<JCTree>();
         for (Tree t : memberDecls)
@@ -834,15 +834,15 @@ public class TreeFactory implements TreeMakerInt {
         return copy;
     }
     
-    public ClassTree addClassImplementsClause(ClassTree clazz, ExpressionTree implementsClause) {
+    public ClassTree addClassImplementsClause(ClassTree clazz, Tree implementsClause) {
         return modifyClassImplementsClause(clazz, -1, implementsClause, Operation.ADD);
     }
 
-    public ClassTree insertClassImplementsClause(ClassTree clazz, int index, ExpressionTree implementsClause) {
+    public ClassTree insertClassImplementsClause(ClassTree clazz, int index, Tree implementsClause) {
         return modifyClassImplementsClause(clazz, index, implementsClause, Operation.ADD);
     }
     
-    public ClassTree removeClassImplementsClause(ClassTree clazz, ExpressionTree implementsClause) {
+    public ClassTree removeClassImplementsClause(ClassTree clazz, Tree implementsClause) {
         return modifyClassImplementsClause(clazz, -1, implementsClause, Operation.REMOVE);
     }
 
@@ -850,7 +850,7 @@ public class TreeFactory implements TreeMakerInt {
         return modifyClassImplementsClause(clazz, index, null, Operation.REMOVE);
     }
     
-    private ClassTree modifyClassImplementsClause(ClassTree clazz, int index, ExpressionTree implementsClause, Operation op) {
+    private ClassTree modifyClassImplementsClause(ClassTree clazz, int index, Tree implementsClause, Operation op) {
         ClassTree copy = Class(
             clazz.getModifiers(),
             clazz.getSimpleName(),
@@ -1502,7 +1502,7 @@ public class TreeFactory implements TreeMakerInt {
         for (TypeParameterTree t : typeParameters)
             typarams.append((JCTypeParameter)t);
         ListBuffer<JCExpression> impls = new ListBuffer<JCExpression>();
-        for (ExpressionTree t : implementsClauses)
+        for (Tree t : implementsClauses)
             impls.append((JCExpression)t);
         ListBuffer<JCTree> defs = new ListBuffer<JCTree>();
         for (Tree t : memberDecls)

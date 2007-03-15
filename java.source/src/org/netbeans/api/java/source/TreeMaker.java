@@ -210,7 +210,7 @@ public final class TreeMaker {
               CharSequence simpleName,
               List<? extends TypeParameterTree> typeParameters,
               Tree extendsClause,
-              List<? extends ExpressionTree> implementsClauses,
+              List<? extends Tree> implementsClauses,
               List<? extends Tree> memberDecls) {
         return delegate.Class(modifiers, simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
     }
@@ -1233,7 +1233,7 @@ public final class TreeMaker {
      * @param   implementsClause   element to be appended to implements list.
      * @return  class tree with modified implements.
      */
-    public ClassTree addClassImplementsClause(ClassTree clazz, ExpressionTree implementsClause) {
+    public ClassTree addClassImplementsClause(ClassTree clazz, Tree implementsClause) {
         return delegate.addClassImplementsClause(clazz, implementsClause);
     }
     
@@ -1249,7 +1249,7 @@ public final class TreeMaker {
      * @throws    IndexOutOfBoundsException if the index is out of range
      *		  (index &lt; 0 || index &gt; size()).
      */
-    public ClassTree insertClassImplementsClause(ClassTree clazz, int index, ExpressionTree implementsClause) {
+    public ClassTree insertClassImplementsClause(ClassTree clazz, int index, Tree implementsClause) {
         return delegate.insertClassImplementsClause(clazz, index, implementsClause);
     }
     
@@ -1262,7 +1262,7 @@ public final class TreeMaker {
      * @param implementsClause  element to be removed from this list, if present.
      * @return  class tree with modified implements.
      */
-    public ClassTree removeClassImplementsClause(ClassTree clazz, ExpressionTree implementsClause) {
+    public ClassTree removeClassImplementsClause(ClassTree clazz, Tree implementsClause) {
         return delegate.removeClassImplementsClause(clazz, implementsClause);
     }
     
