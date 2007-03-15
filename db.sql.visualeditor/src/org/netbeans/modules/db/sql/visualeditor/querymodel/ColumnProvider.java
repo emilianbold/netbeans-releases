@@ -24,6 +24,6 @@ import java.util.List;
 // The provider is usually an object that has got knowledge of database metadata
 public interface ColumnProvider {
 
-    public void getColumnNamesFull(String fullTableName, List columnList);
+    public void getColumnNames(String fullTableName, List columnNames ) ;
 
 }

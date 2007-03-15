@@ -119,15 +119,13 @@ public class QueryBuilderResultTable extends JTable
             if ((rs == null) ||
             ((rsmd=rs.getMetaData())==null)) {
                 //Thread.dumpStack();
-                Log.err.log(ErrorManager.EXCEPTION,
-                "Exception - unable to get query result ! "); // NOI18N
+		Log.getLogger().warning("Exception - unable to get query result ! "); // NOI18N
                 return resultsTruncated;
             }
 
             // Get Column Names
             int numberOfColumns = rsmd.getColumnCount();
-            Log.err.log(ErrorManager.INFORMATIONAL,
-            " rsmd.getColumnCount(): " + numberOfColumns); // NOI18N
+            Log.getLogger().finest(" rsmd.getColumnCount(): " + numberOfColumns); // NOI18N
 
             // Create a vector of column names, for headers
             String[] dbColumnNames = new String[numberOfColumns];
@@ -219,7 +217,7 @@ public class QueryBuilderResultTable extends JTable
             }
         } catch(SQLException sqle) {
             sqle.printStackTrace();
-            Log.err.log(ErrorManager.EXCEPTION, "Exception - unable to build table"); // NOI18N
+	    Log.getLogger().warning("Exception - unable to build table"); // NOI18N
         }finally{
             if (rs != null){
                 try{

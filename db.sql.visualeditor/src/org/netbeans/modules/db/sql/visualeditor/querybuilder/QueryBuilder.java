@@ -17,25 +17,20 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.db.sql.visualeditor.querybuilder;
-import org.netbeans.modules.db.sql.visualeditor.ui.ConnectionStatusPanel;
 
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Cursor;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.sql.Connection;
-import java.util.Iterator;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -49,17 +44,21 @@ import javax.swing.InputMap;
 import javax.swing.ActionMap;
 import javax.swing.JFrame;
 import javax.swing.RepaintManager;
-
 import javax.swing.text.DefaultEditorKit;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.ParameterMetaData;
+import java.sql.Connection;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -67,31 +66,27 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.actions.DeleteAction;
 import org.openide.nodes.Node;
-
 import org.openide.util.HelpCtx ;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
-
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-
-import org.netbeans.modules.db.sql.visualeditor.Log;
 
 import org.netbeans.modules.db.sql.visualeditor.querymodel.ColumnProvider;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.Column;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.JoinTable;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.OrderBy;
-
 import org.netbeans.modules.db.sql.visualeditor.parser.ParseException;
 import org.netbeans.modules.db.sql.visualeditor.parser.TokenMgrError;
-// import com.sun.rave.designtime.DesignBean;
 
-// import org.netbeans.modules.visualweb.sql.DatabaseMetaDataHelper;
-// import org.netbeans.modules.visualweb.sql.TableMetaData;
+import org.netbeans.modules.db.sql.visualeditor.ui.ConnectionStatusPanel;
+import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
+import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditor;
 
-import java.sql.PreparedStatement;
-import java.sql.ParameterMetaData;
+import org.netbeans.modules.db.sql.visualeditor.Log;
+
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 /**
  * The top-level class for the QueryBuilder.
@@ -115,16 +110,15 @@ public class QueryBuilder extends TopComponent
     private String lastQuery;
 
     // DO NOT CHANGE the next line.  Caching should not be implemented in this class.
-    private static final boolean CACHE_QueryBulderInstances = false ;
+    private static final boolean        CACHE_QueryBulderInstances = false ;
 
     // the boolean below is used to determine if we need to store
     // the query in the backing file. First time when 'generateText' is
     // called we avoid saving the query in the backing file as
     // this unnecessarily sets the save buttons ON.
-    private boolean        firstTimeGenerateText = true;
+    private boolean                     firstTimeGenerateText = true;
 
     // Provide package access on these, for use by other classes in the Query Builder
-
     QueryBuilderPane                    _queryBuilderPane;
     QueryModel                          _queryModel;
     boolean                             _updateModel = true;
@@ -139,7 +133,16 @@ public class QueryBuilder extends TopComponent
     // private DatabaseMetaData            _databaseMetaData;
     // private DatabaseMetaDataHelper      _dbmdh;
     
-    private SqlStatementMetaDataCache   metaDataCache = null ;
+    //  --- changes for designtime/insync avoidance.
+    // private SqlStatement                    sqlStatement = null ;
+    private DatabaseConnection              dbconn;
+    private String                          statement;
+
+    private QueryBuilderMetaData	    qbMetaData;
+    // private VisualSQLEditorMetaData         metaDataCache = null ;
+    private VisualSQLEditor         	    vse ;
+    
+    // private Connection   connection = null ;
 
     // all the schema names in the datasource.
     // private List                        _schemaNames    = null;
@@ -155,36 +158,17 @@ public class QueryBuilder extends TopComponent
 
     // used for syntax highlighting
     public boolean isSchemaName( String schemaName ) {
-        String[] schemas = metaDataCache.getSchemas() ;
-        for (int i = 0 ; i < schemas.length ; i++ ) {
-            if ( schemas[i].equals(schemaName)) {
-                Log.log(" found schema name "+schemaName) ;
-                return true ;
-            }
-        }
-        return false ;
+	return qbMetaData.isSchemaName( schemaName ) ;
     }
 
     public boolean isTableName( String tableName ) {
-        try {
-            String x = checkTableName( tableName ) ;
-            if ( x != null )
-                return true ;
-        } catch( SQLException se) {
-            // exception handled elsewhere.
-        }
-        return false ;
+	return qbMetaData.isTableName( tableName );
     }
 
     public boolean isColumnName( String columnName ) {
-        
-        try {
-            return metaDataCache.getAllColumnNames().containsKey(columnName) ;
-        }catch( SQLException se) {
-            // exception handled elsewhere.
-        }
-        return false ;
+	return qbMetaData.isColumnName( columnName );
     }
+
 
     /////////////////////////////////////////////////////////////////////////
     // Delete support
@@ -381,27 +365,66 @@ public class QueryBuilder extends TopComponent
     }
 
 
+//    /**
+//     * Static factory method, added for access from RowSet
+//     * @Return a QueryBuilder instance, either new or retrieved from the Map
+//     */
+//    public static Component openCustomizerPanel( SqlStatement sqlStatement) {
+//
+//        Log.err.log(ErrorManager.INFORMATIONAL,
+//                "Entering QueryBuilder.openCustomizerPanel"); // NOI18N
+//
+//	showBusyCursor( true );
+//
+//        QueryBuilder qb ;
+//        try {
+//            qb = new QueryBuilder(sqlStatement);
+//        } catch (SQLException sqle ) {
+//            qb = null ;
+//            // TODO:  popup an error dialog.
+//            ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
+//            csp.configureDisplay(sqlStatement.getConnectionInfo(), false,sqle.getLocalizedMessage(),  "", 0, false ) ;
+//            // csp.setGeneralInfo("") ;
+//            csp.displayDialog( sqlStatement.getConnectionInfo() ) ;
+//        }
+//        final QueryBuilder queryBuilder = qb ;
+//        SwingUtilities.invokeLater( new Runnable() {
+//            public void run() {
+//                if ( queryBuilder != null) {
+//                    queryBuilder.open();
+//                    queryBuilder.requestActive();
+//                }
+//                showBusyCursor( false );
+//            }
+//        }) ;
+//
+//        queryBuilder.getTextAreaFocusInvokeLater();
+//
+//        return queryBuilder;
+//    }
+    
+    
     /**
      * Static factory method, added for access from RowSet
      * @Return a QueryBuilder instance, either new or retrieved from the Map
      */
-    public static Component openCustomizerPanel( SqlStatement sqlStatement) {
-
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QueryBuilder.openCustomizerPanel"); // NOI18N
+    public static Component open( DatabaseConnection dbconn, String statement, VisualSQLEditorMetaData metadata, VisualSQLEditor vse)
+    {
+        Log.getLogger().entering("QueryBuilder", "open"); // NOI18N
 
 	showBusyCursor( true );
 
         QueryBuilder qb ;
         try {
-            qb = new QueryBuilder(sqlStatement);
+            qb = new QueryBuilder(dbconn, statement, metadata, vse);
         } catch (SQLException sqle ) {
             qb = null ;
-            // TODO:  popup an error dialog.
-            ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
-            csp.configureDisplay(sqlStatement.getConnectionInfo(), false,sqle.getLocalizedMessage(),  "", 0, false ) ;
-            // csp.setGeneralInfo("") ;
-            csp.displayDialog( sqlStatement.getConnectionInfo() ) ;
+            // JDTODO: restore this dialog
+//            // TODO:  popup an error dialog.
+//            ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
+//            csp.configureDisplay(sqlStatement.getConnectionInfo(), false,sqle.getLocalizedMessage(),  "", 0, false ) ;
+//            // csp.setGeneralInfo("") ;
+//            csp.displayDialog( sqlStatement.getConnectionInfo() ) ;
         }
         final QueryBuilder queryBuilder = qb ;
         SwingUtilities.invokeLater( new Runnable() {
@@ -415,26 +438,24 @@ public class QueryBuilder extends TopComponent
         }) ;
 
         queryBuilder.getTextAreaFocusInvokeLater();
-
         return queryBuilder;
     }
 
-    //  --- changes for designtime/insync avoidance.
-    private SqlStatement sqlStatement = null ;
-    // private Connection   connection = null ;
-
-    private QueryBuilder(SqlStatement sqlStatement) throws SQLException {
-
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryBuilder ctor"); // NOI18N
-
-        // Record the bean that created us, and the unique name
-        this.sqlStatement = sqlStatement ;
-       
-        this.metaDataCache = sqlStatement.getMetaDataCache() ;
+    // private constructors
+    
+    private QueryBuilder(DatabaseConnection dbconn, String statement, VisualSQLEditorMetaData metadata, VisualSQLEditor vse)
+            throws  SQLException
+    {
+	Log.getLogger().entering("QueryBuilder", "constructor");
+        this.dbconn = dbconn;
+        this.statement = statement;
+	this.vse = vse;
+        this.qbMetaData = new QueryBuilderMetaData(metadata, this);
+	
+        //JDTODO - figure out the title
+        String title = "fix4";
         
-        String title = sqlStatement.getTitle() ;
-        
-        // Set the name to display
+                // Set the name to display
         setName(title);
         setDisplayName(title);
 
@@ -452,6 +473,36 @@ public class QueryBuilder extends TopComponent
 
         addKeyListener(this);
     }
+    
+//     private QueryBuilder(SqlStatement sqlStatement) throws SQLException {
+
+//         Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryBuilder ctor"); // NOI18N
+
+//         // Record the bean that created us, and the unique name
+//         this.sqlStatement = sqlStatement ;
+       
+//         this.metaDataCache = sqlStatement.getMetaDataCache() ;
+        
+//         String title = sqlStatement.getTitle() ;
+        
+//         // Set the name to display
+//         setName(title);
+//         setDisplayName(title);
+
+//         setLayout(new java.awt.BorderLayout());
+
+//         ImageIcon imgIcon =
+//                 new ImageIcon(getClass().getResource("/org/netbeans/modules/db/sql/visualeditor/resources/query-editor-tab.png")); // NOI18N
+//         if (imgIcon != null)
+//             setIcon(imgIcon.getImage());
+
+//         _queryBuilderPane = new QueryBuilderPane(this);
+
+//         // Add the pane to the end of the QueryBuilder container
+//         add(_queryBuilderPane);
+
+//         addKeyListener(this);
+//     }
 
     void getGraphFrameCanvasFocus() {
         _queryBuilderPane.getQueryBuilderGraphFrame().getCanvasFocus ();
@@ -515,342 +566,42 @@ public class QueryBuilder extends TopComponent
         }
     }
 
-    public SqlStatement getSqlStatement() {
-        return this.sqlStatement ;
-    }
+//     public SqlStatement getSqlStatement() {
+//         return this.sqlStatement ;
+//     }
     
-    List getCachedAllTablesInDataSource() throws SQLException {
-        return metaDataCache.getTables() ;
-        /*
-        if (_tableNames == null ) {
-            _tableColumns = createTableColumns() ;
-        }
-        return _tableNames;
-         **/
-    }
-
-    /**
-     *   Check if the table name exists
-     *   Case is ignored while searching
-     *   If table does not exist then return null
-     *   else return the same name if it exactly matches
-     *   else return the name from the database
-     *
-     *   tableName can be schema.table or just table - look for both.
-     */
+//     List getCachedAllTablesInDataSource() throws SQLException {
+//         return metaDataCache.getTables() ;
+//         /*
+//         if (_tableNames == null ) {
+//             _tableColumns = createTableColumns() ;
+//         }
+//         return _tableNames;
+//          **/
+//     }
 
     String checkTableName( String tableName ) throws SQLException {
-
-        if ( tableName == null || tableName.length() < 1) {
-            return tableName ;
-        }
-        Log.log("checkTableName called. tableName = " + tableName); // NOI18N
-        
-        String[] descrip = parseTableName(tableName) ;
-        String paramSchemaName = descrip[0] ;
-        String paramTableName = descrip[1] ;
-        
-        if ( paramSchemaName != null ) {
-            return checkFullTableName( tableName ) ;
-        }
-
-        String returnTable = null ;
-        
-        List tables = metaDataCache.getTables() ;
-        // now search for the tablename in the list.
-        for ( Iterator i = tables.iterator(); i.hasNext() ;  ) {
-            // first check if the table name exists as is
-            String fullNameDb = (String)i.next() ;
-            String tableNameDb = parseTableName(fullNameDb)[1] ;
-            if ( tableNameDb.equalsIgnoreCase( paramTableName ) ) {
-                returnTable = fullNameDb ;
-                break ;
-            }   
-        }
-        
-        if ( returnTable == null ) {
-            String fullAliasTableName = _queryModel.getFullTableName(paramTableName) ;
-            if ( fullAliasTableName != null && tableName.equals(fullAliasTableName)) {
-                return null;
-
-            } else if ( fullAliasTableName != null ) {
-                 return checkTableName( fullAliasTableName ) ;
-            }
-        }
-
-        if ( returnTable != null )
-            metaDataCache.getColumnNames(returnTable ) ;
-
-        // table name was not found
-        return returnTable ;
+	return qbMetaData.checkTableName( tableName );
     }
-
-    /**
-     *   Check if the full table name exists in the _tableColumns
-     *   Case is ignored while searching
-     *   If table does not exist then return null
-     *   
-     *   return the same name if it exactly matches
-     *   if case differs, return the full name from the database
-     *   if it's an alias and there's a cases-insenstive match, return the full name from the database
-     *
-     *   This function is called only from checkFrom.
-     *   Cases to be considered :
-     *   case 1 : <schema_name>.<table_name>
-     *   case 2 : <table_name> SHOULD NOT EXIST.
-     *   case 3 : <alias_table_name>
-     *
-     *   return the
-     *
-     */
 
     String checkFullTableName( String fullTableName ) throws SQLException {
-
-        Log.log("checkFullTableName called. tableName = " + fullTableName ); // NOI18N
- 
-        String returnTable = null ;
-
-        if ( parseTableName(fullTableName)[0] == null ) {
-            // no schema name, so fullTableName is really just a tableName.
-            return checkTableName(fullTableName) ;
-        }
-
-        List tables = metaDataCache.getTables() ;
-        for ( Iterator i = tables.iterator(); i.hasNext() ;  ) {
-            // first check if the table name exists as is
-            String fullNameDb = (String)i.next() ;
-            if ( fullNameDb.equalsIgnoreCase( fullTableName ) ) {
-                returnTable = fullNameDb ;
-                break ;
-            }   
-        }
-        
-        // Load the column cache for this table.
-        if ( returnTable != null ) metaDataCache.getColumnNames(returnTable ) ;
-        
-        return returnTable ;
+	return qbMetaData.checkFullTableName( fullTableName );
     }
 
-
-    /**
-     *   Check if the column name exists in the _tableColumns
-     *   case is ignored while searching
-     *   if column does not exist then return null
-     *   else return the same name if it exactly matches
-     *   else return the name from the database
-     */
     String checkColumnName( String tableName, String columnName ) throws SQLException {
-        Log.log("checkColumnName() " + tableName  + ", " + columnName  ); // NOI18N
-        
-        String tabName = checkTableName( tableName ) ;
-        
-        List columns = metaDataCache.getColumnNames(tabName) ;
-        
-        if ( columns == null ) return null ;
-        
-        for ( int k = 0; k < columns.size(); k++ ) {
-            String  columnDB = (String) columns.get(k);
-            // first check if the column name exists "as is"
-            if ( columnName.equals( columnDB ) ) {
-                return columnName;
-            }
-            // otherwise compare ignoring case, if matched return the
-            // name from database
-            else if ( columnName.equalsIgnoreCase( columnDB ) ) {
-                return  columnDB ;
-            }
-        }
-        
-        // column name was not found
-        return null;
+	return qbMetaData.checkColumnName( tableName, columnName );
     }
 
-    /**
-     *  Given a column and table name checks if the table name stored in the
-     *  column matches with the one in the database.
-     *  Updates the column name with the one in the database and returns true
-     *  false otherwise.
-     */
-
+	
     boolean checkColumnNameForTable( Column col, String tableName ) {
-        String columnName = col.getColumnName();
-        
-        Log.log("checkColumnNameForTable for " + tableName + " . " + columnName ); // NOI18N
-        
-        String fullTableNameFromAlias = _queryModel.getFullTableName( tableName );
-        if ( fullTableNameFromAlias != null ) {
-            tableName = fullTableNameFromAlias ;
-        }
-        boolean retVal = false ;
-        
-        // TODO JFB should not catch this.
-        List cols ;
-        String checkedTable ;
-        try {
-            checkedTable = checkTableName( tableName ) ;
-            if (checkedTable == null) return false ;
-            cols = metaDataCache.getColumnNames(checkedTable) ;
-        } catch (SQLException sqle) {
-            Log.log("  ** problems getting metadata " + sqle.getMessage()) ;
-            return false ;
-
-        }
-        if ( "*".equals(columnName)) { // NOI18N
-            retVal = true ;                    
-            if ( fullTableNameFromAlias == null && ! ( checkedTable.equals(col.getTableSpec()) ) ) {
-                col.setTableSpec(col.getTableSpec(), checkedTable ) ;
-                Log.log( " adjust table to " + checkedTable) ;
-            }
-        } else {
-            for ( int icnt = 0 ; icnt < cols.size() ; icnt++ ) {
-                if ( columnName.equalsIgnoreCase( (String)cols.get(icnt))) {
-                    col.setColumnName(col.getColumnName(), (String)cols.get(icnt) );
-                    Log.log( " adjust colname to " + (String)cols.get(icnt) ) ;
-                    if ( col.getTableSpec() == null ) {
-                        col.setTableSpec(col.getTableSpec(), checkedTable ) ;
-                        Log.log( " adjust table to " + checkedTable) ;
-                    }
-                    retVal = true ;
-                    break ;
-                }
-            }
-        }
-        
-        Log.log("checkColumnNameForTable found="+retVal ); // NOI18N
-        
-        return retVal ;
-        
-        /***
-        for ( int i = 0; i < _tableColumns.size(); i++ ) {
-            TableColumns tableColumn = (TableColumns) _tableColumns.get(i);
-            String _tableName = tableColumn.getTableName();
-            // first check if the table name exists "as is"
-            // table name must already be valid using checkTableName
-            // reset the column's table spec.
-            if ( _tableName.equals( tableName ) ) {
-
-                List columns = tableColumn.getColumns();
-                for ( int k = 0; k < columns.size(); k++ ) {
-                    String _columnName = (String) columns.get(k);
-                    if ( ( _columnName.equals( columnName ) ) ||
-                            ( _columnName.equalsIgnoreCase( columnName ) ) ) {
-                        // change the column's table name
-                        col.setTableSpec(col.getTableSpec(), tableName);
-                        // change the column's name to the correct one.
-                        col.setColumnName(col.getColumnName(), _columnName);
-                        return true;
-                    }
-                }
-            } else {
-                // check if the tableName is actually an alias
-                String fullTableNameFromAlias =
-                        _queryModel.getFullTableName( tableName );
-                if ( fullTableNameFromAlias != null ) {
-                    // tableName is an alias
-                    if ( _tableName.equals( fullTableNameFromAlias ) ) {
-                        if ( ! tableColumn.columnsLoaded() ) {
-                            loadColumns( tableColumn );
-                        }
-                        List columns = tableColumn.getColumns();
-                        for ( int k = 0; k < columns.size(); k++ ) {
-                            String _columnName = (String) columns.get(k);
-                            if ( ( _columnName.equals( columnName ) ) ||
-                                    ( _columnName.equalsIgnoreCase( columnName ) ) ) {
-                                // change the column's table name
-                                col.setColumnTableName(fullTableNameFromAlias);
-                                // change the column's corr name
-                                col.setColumnCorrName(tableName);
-                                // change the column's name to the correct one.
-                                col.setColumnName(col.getColumnName(), _columnName);
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-         ***/
+	return qbMetaData.checkColumnNameForTable( col, tableName );
     }
 
-    // checks the table name and column name given a col.
-    // if possible corrects the column name and table name
-    // otherwise returns false, the caller is supposed to give an error message
+    
     boolean checkTableColumnName( Column col ) throws SQLException {
-
-        String tableSpec = col.getTableSpec() ;
-        String tableName = col.getFullTableName() ;
-        String colName = col.getColumnName() ;
-        
-        Log.log("checkTableColumnName called. " + " tableSpec = " + tableSpec  +
-                    " tableName = " + tableName + " . " + colName  ); // NOI18N        
-        
-        if ( "*".equals(col.getColumnName() ) && tableSpec == null  ) {
-            // Column name was "*" with no tableSpec - assume it's OK.
-            Log.log("checkTableColunName col=*, notable ") ;
-            return true ; //NOI18N
-        }
-        String checkedTableName = checkTableName( tableSpec ) ;
-
-        String fullTableNameFromAlias = null ;
-//        if ( checkedTableName == null && tableSpec != null ) {
-            // why the above check ? This will not set fullTableNameFromAlias
-            // regression
-            // http://daning.sfbay/cvsweb/queryeditor/src/com/sun/rave/queryeditor/querybuilder/QueryBuilder.java.diff?r1=1.133&r2=1.134&cvsroot=/cvs/rave
-            fullTableNameFromAlias = _queryModel.getFullTableName( tableSpec );
-//        }
-        Log.log("checkTableColumnName called. " +
-                    " checkedTableName = " + checkedTableName  +
-                    " fullTableNameFromAlias = " + fullTableNameFromAlias ); // NOI18N
-        if ( checkedTableName == null ) {
-            // table not found
-            return false; // let the caller display the error
-        }
-
-        // table has alias set corr name and set table name.
-        // Added the following check to fix :
-        //     5061214  Cannot parse a query with alias.
-        else if ( ( fullTableNameFromAlias != null ) &&
-                ( ! fullTableNameFromAlias.equalsIgnoreCase( tableSpec ) ) ) {
-            if (DEBUG)
-                System.out.println("setColumnTableName called. " +
-                        " checkedTableName = " + checkedTableName  + 
-                        " tableSpec = " + tableSpec  + 
-                        " fullTableNameFromAlias = " + fullTableNameFromAlias + "\n" ); // NOI18N
-            col.setColumnTableName( checkedTableName );
-            col.setColumnCorrName( tableSpec );
-        } else if ( ! checkedTableName.equals( tableName ) ) {
-            // table found but maybe in a wrong case, replace
-            // it in the querymodel
-            if (DEBUG)
-                System.out.println("setTableSpec called. " +
-                        " checkedTableName = " + checkedTableName  + "\n" ); // NOI18N
-            col.setTableSpec( tableName, checkedTableName );
-        }
-
-        String columnName = col.getColumnName();
-
-        if (columnName.equals("*")) return true ;
-        
-        String checkedColumnName = checkColumnName( checkedTableName,
-                columnName ) ;
-        if (DEBUG)
-            System.out.println("column Name = " + columnName  + "\n" // NOI18N
-                    + "checked column Name = " + checkedColumnName  + "\n" ); // NOI18N
-        if ( checkedColumnName == null ) {
-            // column not found
-            return false; // let the caller display the error
-        } else if ( ! checkedColumnName.equals( columnName ) )  {
-            if (DEBUG)
-                System.out.println("set column name called. oldColumnName = " + columnName + //NOI18N
-                        " newColumnName = " + checkedColumnName  + "\n" ); // NOI18N
-            // column found but maybe in a wrong case, replace
-            // it in the querymodel
-            col.setColumnName( columnName, checkedColumnName );
-        }
-
-        return true;
+	return qbMetaData.checkTableColumnName( col );
     }
+	
 
     /****
      * Check the database connection.
@@ -858,16 +609,18 @@ public class QueryBuilder extends TopComponent
      * if user doesn't want to retry,
      * then disable the query editor
      */
-    public boolean checkDatabaseAndDisable(String query) {
-        if ( query == null ) query = _queryBuilderPane.getQueryBuilderSqlTextArea().getText() ;
-        if ( checkDatabaseConnection() == false ) {
-            Log.log("checkDatabaseConnection returns false ... \n " ); // NOI18N
-            // If we don't have a valid connection, disable all visual editing.
-            disableVisualEditing(query);
-            return false;
-        }
-        return true ;
-    }
+//     public boolean checkDatabaseAndDisable(String query) {
+//         if ( query == null )
+// 	    query = _queryBuilderPane.getQueryBuilderSqlTextArea().getText() ;
+//         if ( checkDatabaseConnection() == false ) {
+// 	    Log.getLogger().finest("checkDatabaseConnection returns false ... \n " ); // NOI18N
+//             // If we don't have a valid connection, disable all visual editing.
+//             disableVisualEditing(query);
+//             return false;
+//         }
+//         return true ;
+//     }
+
     /**
      * Parse the query and regenerate all the panes
      * If parsing fails, raise an notification and do nothing else
@@ -880,12 +633,12 @@ public class QueryBuilder extends TopComponent
 
     boolean populate(String query, boolean forceParse ) {
 
-        Log.log("Entering populate, forceParse: " + forceParse); // NOI18N
+        Log.getLogger().entering("QueryBuilder", "populate", query); // NOI18N
 
         if ( ! forceParse ) {
             if ( query.trim().equals( _queryBuilderPane.getQueryBuilderSqlTextArea().getText().trim())) {
                 // no change, just return.
-                Log.log("  skipping populate(), no change") ; //NOI18N
+		Log.getLogger().finest("  skipping populate(), no change") ; //NOI18N
                 return true ;
             }
         }
@@ -893,7 +646,7 @@ public class QueryBuilder extends TopComponent
         // Fix CR 6275870 Error when parsing invalid SQL
         if ( query.trim().equals( lastQuery ) ) {
             // no change, just return.
-            Log.log("  skipping populate(), no change") ; //NOI18N
+	    Log.getLogger().finest("  skipping populate(), no change") ; //NOI18N
             return true ;
         }
         else {
@@ -921,20 +674,18 @@ public class QueryBuilder extends TopComponent
             _queryBuilderPane.getQueryBuilderGraphFrame().setGroupBy(_queryModel.hasGroupBy() );
             _graphicsEnabled=true;
             _queryBuilderPane.getQueryBuilderSqlTextArea().setQueryText(query);
-        } catch (ParseException pe) {
-
-            Log.err.log(ErrorManager.ERROR, "Parse error: " + pe.getLocalizedMessage());  // NOI18N
+        } catch (ParseException pe)	{
+            Log.getLogger().severe("Parse error: " + pe.getLocalizedMessage());  // NOI18N
             promptForContinuation(pe.getMessage(), query);
             return false;
-        } catch (TokenMgrError tme) {
-
-            Log.err.log(ErrorManager.ERROR, "Parse error: " + tme.getLocalizedMessage());  // NOI18N
+	} catch (TokenMgrError tme)	{
+            Log.getLogger().severe("Parse error: " + tme.getLocalizedMessage());  // NOI18N
             promptForContinuation(tme.getMessage(), query);
             return false;
 
         } catch (SQLException sqe) {
             lastException = sqe ;
-            Log.err.log(ErrorManager.ERROR, "Parse error: " + sqe.getLocalizedMessage());  // NOI18N
+            Log.getLogger().severe("Parse error: " + sqe.getLocalizedMessage());  // NOI18N
             promptForContinuation(sqe.getMessage(), query);
             return false;
         }
@@ -983,7 +734,7 @@ public class QueryBuilder extends TopComponent
                     options,
                     options[0]);
             if (val==JOptionPane.NO_OPTION) {    // Cancel - Revert to previous
-                Log.err.log(ErrorManager.WARNING, "Query execution canceled"); // NOI18N
+                Log.getLogger().info("Query execution canceled"); // NOI18N
                 _queryBuilderPane.getQueryBuilderSqlTextArea().restoreLastGoodQuery();
                 _queryBuilderPane.getQueryBuilderGraphFrame().setQBGFEnabled( true ) ;
                 _queryBuilderPane.setQueryBuilderInputTableEnabled( true ) ;
@@ -1010,7 +761,7 @@ public class QueryBuilder extends TopComponent
         _queryBuilderPane.getQueryBuilderGraphFrame().setQBGFEnabled( false ) ;
         _queryBuilderPane.setQueryBuilderInputTableEnabled( false ) ;
 
-        String command = sqlStatement.getCommand();
+        String command = getSqlCommand();
         if ( query != null && query.trim().length() != 0) {
             _queryBuilderPane.getQueryBuilderSqlTextArea().setQueryText(query);
             setSqlCommand(query) ;
@@ -1224,7 +975,7 @@ public class QueryBuilder extends TopComponent
     //
 
     boolean checkColumns( ArrayList columns )  throws SQLException {
-        Log.log ( " checkColumns called. columns.size = " + columns.size() );  // NOI18N
+	Log.getLogger().entering("QueryBuilder", "checkColumns"); // NOI18N
         for ( int i = 0; i < columns.size(); i++ ) {
             Column column = (Column) columns.get(i);
             String columnTableSpec = column.getTableSpec();
@@ -1288,7 +1039,7 @@ public class QueryBuilder extends TopComponent
      */
     void parseQuery(String query) throws ParseException {
 
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering parseQuery, query: " + query); // NOI18N
+        Log.getLogger().entering("QueryBuilder", "parseQuery", query); // NOI18N
 
         // Initialize the QueryModel object if necessary
         if (_queryModel==null)
@@ -1308,15 +1059,80 @@ public class QueryBuilder extends TopComponent
         // setValue operation if there has been no change
 
         String newQuery = getUnformattedSqlString();
-        if (!newQuery.equals( sqlStatement.getCommand())) {
-            Log.log("QB:  setting sql command to: " + newQuery) ; //NOI18N
+        if (!newQuery.equals( getSqlCommand())) {
+	    Log.getLogger().finest("QB:  setting sql command to: " + newQuery) ; //NOI18N
             setSqlCommand( newQuery ) ;
         }
     }
 
+
+    // Wrapper for SqlStatement methods, which are now handled by a combination of VisualSqlEditor
+    // and DatabaseConnection
+
     void setSqlCommand(String query) {
-        sqlStatement.setCommand(query) ;
+//        sqlStatement.setCommand(query) ;
+	vse.setStatement(query);
     }
+
+    String getSqlCommand() {
+//	return sqlStatement.getCommand();
+	return vse.getStatement();
+    }
+
+    // JDTODO - use dbconn
+    String getConnectionInfo() {
+//	return sqlStatement.getConnectionInfo();
+	return null;
+    }
+    
+    // JDTODO - use dbconn
+    Connection getConnection() {
+//	return sqlStatement.getConnection();
+        return dbconn.getJDBCConnection();
+    }
+    
+    // JDTODO - use dbconn, which requires ConnectionManager.disconnect
+    void closeQB() {
+//	sqlStatement.close();
+    }
+    
+
+    // Wrappers for schema methods that are used by other classes in the query builder
+
+    List getColumnNames(String fullTableName) throws SQLException {
+	return qbMetaData.getColumnNames( fullTableName );
+    }
+
+    public void getColumnNames(String fullTableName, List columnNames ) {
+	qbMetaData.getColumnNames( fullTableName, columnNames );
+    }
+	
+    List getImportedKeyColumns(String fullTableName) throws SQLException {
+	return qbMetaData.getImportedKeyColumns( fullTableName );
+    }
+
+    List<String> getAllTables() throws SQLException {
+	return qbMetaData.getAllTables();
+    }
+
+    List getPrimaryKeys(String fullTableName) throws SQLException {
+	return qbMetaData.getPrimaryKeys( fullTableName );
+    }
+    
+    List getForeignKeys(String fullTableName) throws SQLException {
+	return qbMetaData.getForeignKeys( fullTableName );
+    }
+	
+    String[] findForeignKey(String oldFullTableName, String newFullTableName, List foreignKeys) {
+	return qbMetaData.findForeignKey( oldFullTableName, newFullTableName, foreignKeys );
+    }
+
+    String[] findForeignKey(String fullTableName1, String colName1, String fullTableName2, String colName2)
+	throws SQLException
+    {
+	return qbMetaData.findForeignKey( fullTableName1, colName1, fullTableName2, colName2 );
+    }
+
 /***
     private void refreshDataBaseMetaData() {
         if (DEBUG) {
@@ -1337,8 +1153,7 @@ public class QueryBuilder extends TopComponent
 
     public void executeQuery(String query) {
 
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                    "Entering QueryBuilder.executeQuery, query:\n" + query);  // NOI18N
+        Log.getLogger().entering("QueryBuilder", "executeQuery", query); // NOI18N
 
         String sqlCommand = _queryBuilderPane.getSqlTextAreaText() ; // why not "query"?
         ResultSet result = null ;  // value to be returned.
@@ -1354,7 +1169,7 @@ public class QueryBuilder extends TopComponent
         int paramCount =  0;
 
         try {
-            connection = sqlStatement.getConnection() ;
+            connection = getConnection() ;
             myStatement = connection.prepareStatement(sqlCommand) ;
             pmd = myStatement.getParameterMetaData();
             paramCount =  pmd.getParameterCount();
@@ -1370,8 +1185,7 @@ public class QueryBuilder extends TopComponent
             canExecute = false ;
         } catch ( AbstractMethodError e) {
             // Certain drivers (e.g., Sybase 5.5) can throw Errors because of incompatibility.  Catch and report.
-            Log.log(ErrorManager.ERROR,
-                    "Error occurred when trying to retrieve table information: " + e); // NOI18N
+	    Log.getLogger().severe("Error occurred when trying to retrieve table information: " + e); // NOI18N
             String title = NbBundle.getMessage(QueryBuilder.class, "PROCESSING_ERROR");
             JOptionPane.showMessageDialog( this, e.toString() + "\n\n", title, JOptionPane.ERROR_MESSAGE );
             canExecute = false ;
@@ -1487,7 +1301,7 @@ public class QueryBuilder extends TopComponent
                 myStatement.close() ;
             }
         } catch( SQLException se) {
-            Log.err.log(ErrorManager.INFORMATIONAL, "Error Closing statement: " + se.getLocalizedMessage()); // NOI18N
+            Log.getLogger().finest("Error Closing statement: " + se.getLocalizedMessage()); // NOI18N
         }
 
         try {
@@ -1495,11 +1309,11 @@ public class QueryBuilder extends TopComponent
                 connection.close() ;
             }
         } catch( SQLException se) {
-            Log.err.log(ErrorManager.INFORMATIONAL, "Error Closing connection: " + se.getLocalizedMessage()); // NOI18N
+            Log.getLogger().finest("Error Closing connection: " + se.getLocalizedMessage()); // NOI18N
         }
         
         showBusyCursor ( false );
-        Log.err.log(ErrorManager.INFORMATIONAL, "Returning from QueryBuilder.executeQuery"); // NOI18N
+        Log.getLogger().finest("Returning from QueryBuilder.executeQuery"); // NOI18N
 
     }
 
@@ -1509,7 +1323,7 @@ public class QueryBuilder extends TopComponent
      */
     void generate() {
 
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryBuilder.generate"); // NOI18N
+        Log.getLogger().entering("QueryBuilder", "generate"); // NOI18N
 
         // Suppress updating of the text pane until we're ready
         _updateText = false;
@@ -1603,474 +1417,6 @@ public class QueryBuilder extends TopComponent
     }
 
 
-    /**
-     * Returns the list of tables and views
-     */
-    List getAllTables() throws SQLException {
-        /*
-        List tables = getTablesInternal("TABLE");
-        tables.addAll(getTablesInternal("VIEW"));
-        return tables;
-        */
-        return metaDataCache.getTables() ;
-    }
-
-    /* ===== JFB
-    private List getTablesInternal(String type) {
-        List tableNames = new ArrayList();
-        if ( checkDatabaseConnection() == false ) {
-            return tableNames;
-        }
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-
-                TableMetaData[] tmd;
-                if ( Log.isLoggable()) Log.log("start get"+type+"MetaData") ;
-                tmd = (type.equals("TABLE")) ? _dbmdh.getTableMetaData() : _dbmdh.getViewMetaData();
-                if ( Log.isLoggable()) Log.log("end get"+type+"MetaData") ;
-                for (int i=0; i<tmd.length; i++)
-                    tableNames.add(getFullTableName(tmd[i]));
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-        return tableNames;
-    }
-     *****/
-
-
-//     private String getFullTableName(TableMetaData tmd) throws SQLException {
-//         if (DEBUG) {
-//             System.out.println(" getFullTableName() called " + "\n" ); // NOI18N
-//         }
-//         String schema = tmd.getMetaInfo(TableMetaData.TABLE_SCHEM);
-//         /*
-//          * !JK always show schema
-//          * if (schema == null || schema.trim().equals("") || isSchemaInPath(schema)) {
-//          }
-//          */
-//         if (schema == null || schema.trim().equals("")) {
-//             schema = "";
-//         } else {
-//             schema += ".";
-//         }
-//         String tableName = tmd.getMetaInfo(TableMetaData.TABLE_NAME);
-// 
-//         // if table name does not contain spaces
-//         if (tableName.indexOf(' ') == -1 ) {
-//             return schema + tableName;
-//         } else {
-//             return schema + "\"" + tableName + "\"";
-//         }
-//     }
-
-    /**
-     * Returns the list of tables and views in all schemas that are accessible
-     * through the DataSource associated with this QE
-     */
-    List getAllTablesInDataSource() throws SQLException {
-
-        // Log.log(" getAllTablesInDataSource() called " + "\n" ); // NOI18N
-
-        return metaDataCache.getTables() ;
-        
-        /*
-        try {
-            checkMetaData();
-        } catch (SQLException sqle) {
-            reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-        }
-
-        // Get list of schemas in the datasource
-        String[] schemaNames =  sqlStatement.getSchemas();
-        if (schemaNames == null || schemaNames.length == 0)
-            return getAllTables();
-        else {
-            _schemaNames = new ArrayList();
-            List tables = new ArrayList();
-            for (int i=0; i<schemaNames.length; i++) {
-                tables.addAll(getTablesInternal("TABLE", schemaNames[i]));
-                tables.addAll(getTablesInternal("VIEW", schemaNames[i]));
-                _schemaNames.add(schemaNames[i]);
-            }
-            return tables;
-        }
-        */
-    }
-
-
-    /**
-     * Returns the list of table names in the specified schema
-     */
-    /**** JFB private List getTablesInternal(String type, String schemaName) {
-        if (Log.isLoggable() ) Log.log("enter tablesInternal "+type+","+schemaName) ;
-        List tableNames = new ArrayList();
-        if ( checkDatabaseConnection() == false )
-            return tableNames;
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-                String[] tables =
-                        (type.equals("TABLE")) ?_dbmdh.getTables(schemaName) : _dbmdh.getViews(schemaName);     // NOI18N
-
-                // Convert to ArrayList, because caller expects it
-                for (int i=0; i<tables.length; i++) {
-                    tableNames.add(tables[i]);
-                    if (DEBUG)
-                        System.out.println(" getAllTablesInternal() tables [ " + i + " ]  = " + tables[i]  + "\n" ); // NOI18N
-                }
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-
-        if (Log.isLoggable() ) Log.log("exit tablesInternal, cnt= " + tableNames.size() ) ;
-        return tableNames;
-    }
-    ***/
-
-    /**
-     * Returns the set of columns in the specified table.
-     * This is obtained from the DbMetaData.
-     */
-    // SCH: Modified to use schema if available
-    /*  JFB
-    public List getColumnNames(String tableName) throws SQLException {
-
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QueryBuilder.getColumnNames, tableName: " + tableName); // NOI18N
-
-        return metaDataCache.getColumnNames(tableName)) ;
-      
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-
-                ResultSet rs = _dbmdh.getMetaData().getColumns(null, null, tableName, "%"); // NOI18N
-                if (rs != null) {
-                    while (rs.next()) {
-                        columnNames.add(rs.getString("COLUMN_NAME")); // NOI18N
-                    }
-                    rs.close();
-                }
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-        if (DEBUG)
-            for (int j=0; j<columnNames.size(); j++)
-                System.out.println("Column ["+j+"] : " + (String) columnNames.get(j) + "\n" ); // NOI18N
-        
-    }
-    */
-    // Get the list of column names associated with the specified table name
-
-    public void getColumnNamesFull(String fullTableName, List columnNames)  {
-        try {
-            columnNames.addAll( getColumnNames(fullTableName)) ;
-        } catch(SQLException sqle) {
-            // can't do anything.
-        }
-    }
-    public List getColumnNames(String fullTableName) throws SQLException {
-
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QueryBuilder.getColumnNames, fullTableName: " + fullTableName); // NOI18N
-    
-        return metaDataCache.getColumnNames( fullTableName ) ;
-        /*
-        String[] table = fullTableName.split("\\.");
-        if (table.length==1) // no schema -- use the old method
-            getColumnNames(fullTableName, columnNames);
-        else {
-            String[] colNames=null;
-            boolean firstTime = true;
-            try {
-                checkMetaData();
-                // hack, getColumns throws an exception if table name has
-                // spaces.
-                colNames = _dbmdh.getColumns(fullTableName.replaceAll("\"", "") );
-            } catch (SQLException sqle) {
-                // First time we catch an error, try resetting the RowSet
-                refreshDataBaseMetaData();
-                try {
-                    checkMetaData();
-                    colNames = _dbmdh.getColumns(fullTableName);
-                } catch (SQLException sqle2) {
-                    // We must have a real error.  Report it.
-                    reportDatabaseError("DATABASE_ERROR", sqle2); // NOI18N
-                }
-            }
-
-            // Convert to ArrayList because caller expects it
-            if (colNames!=null)
-                for (int i=0; i<colNames.length; i++)
-                    columnNames.add(colNames[i]);
-        }
-        */
-    }
-
-
-    /**
-     * Returns the primary key columns of the specified table
-     */
-    List getPrimaryKeys(String fullTableName) throws SQLException {
-
-        Log.log(ErrorManager.INFORMATIONAL,
-                "Entering QueryBuilder.getPrimaryKeys, fullTableName: " + fullTableName ); // NOI18N
-
-        return metaDataCache.getPrimaryKeys(fullTableName) ;
-        /*
-        List primaryKeys = new ArrayList();
-
-        String tableName, schemaName=null;
-        String[] table = fullTableName.split("\\."); // NOI18N
-        if (table.length>1) {
-            schemaName=table[0];
-            tableName = table[1];
-        } else
-            tableName=table[0];
-
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-
-                ResultSet rs = _databaseMetaData.getPrimaryKeys(null, schemaName, tableName);
-                if (rs != null) {
-                    String name;
-                    while (rs.next()) {
-                        name = rs.getString("COLUMN_NAME"); // NOI18N
-                        primaryKeys.add(name);
-                    }
-                    rs.close();
-                }
-                break;
-
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-
-        return primaryKeys;
-         **/
-    }
-
-
-    /**
-     * Returns the Foreign Key Constraints that apply to the specified table
-     *
-     * Result is an a-list of <foreignTable, foreignCol, primTable, primCol>.
-     */
-    List getForeignKeys(String fullTableName) throws SQLException {
-
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QB.getForeignKeys, fullTableName: " + fullTableName); // NOI18N
-
-        
-        // keys.add(new String[] {"travel.trip", "personid", "travel.person", "personid"});
-
-        // We get the exported keys (foreign tables that reference this one), then
-        // imported keys (foreign tables that this one references).
-        /*
-        List keys = getForeignKeys1(fullTableName, true);
-        keys.addAll(getForeignKeys1(fullTableName, false));
-        */
-        List keys = metaDataCache.getForeignKeys(fullTableName, true);
-        keys.addAll( metaDataCache.getForeignKeys(fullTableName, false));
-
-        return keys;
-        
-    }
-
-    /**
-     * Returns either the exported or imported keys for this table, depending on the flag
-     */
-    /*
-    List getForeignKeys1(String fullTableName, boolean exported) {
-
-        String tableName, schemaName=null;
-        String[] table = fullTableName.split("\\."); // NOI18N
-        if (table.length>1) {
-            schemaName=table[0];
-            tableName = table[1];
-        } else
-            tableName=table[0];
-
-        Log.log(" getForeignKeys1 schemaName = " + schemaName + " tableName = " + tableName + "\n" ); // NOI18N
-        List keys = new ArrayList();
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-
-                ResultSet rs =
-                        exported ?
-                            _databaseMetaData.getExportedKeys(null, schemaName, tableName) :
-                            _databaseMetaData.getImportedKeys(null, schemaName, tableName);
-                if (rs != null) {
-                    while (rs.next()) {
-                        String fschem = rs.getString("FKTABLE_SCHEM"); // NOI18N
-                        String pschem = rs.getString("PKTABLE_SCHEM"); // NOI18N
-                        String[] key = new String[] {
-                            ((fschem!=null) ? fschem+"." : "") + rs.getString("FKTABLE_NAME"), // NOI18N
-                                    rs.getString("FKCOLUMN_NAME"), // NOI18N
-                                    ((pschem!=null) ? pschem+"." : "") + rs.getString("PKTABLE_NAME"), // NOI18N
-                                    rs.getString("PKCOLUMN_NAME") }; // NOI18N
-                                    keys.add(key);
-                    }
-                    rs.close();
-                }
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-        return keys;
-    }
-
-    */
-    /**
-     * Returns the imported key columns for this table -- i.e., the columns
-     * whose value is a foreign key for another table.  These columns are
-     * displayed with a special icon in the Query Builder.
-     */
-    List getImportedKeyColumns(String fullTableName) throws SQLException {
-
-        return metaDataCache.getImportedKeyColumns(fullTableName) ;
-        /*
-        List keys = new ArrayList();
-        String tableName, schemaName=null;
-        String[] table = fullTableName.split("\\."); // NOI18N
-        if (table.length>1) {
-            schemaName=table[0];
-            tableName = table[1];
-        } else
-            tableName=table[0];
-
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-
-                ResultSet rs = _databaseMetaData.getImportedKeys(null, schemaName, tableName);
-                if (rs != null) {
-                    while (rs.next()) {
-                        keys.add(rs.getString("FKCOLUMN_NAME")); // NOI18N
-                    }
-                    rs.close();
-                }
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-
-        Log.err.log(ErrorManager.INFORMATIONAL, "Imported key columns for table " + fullTableName); // NOI18N
-        if (keys!= null)
-            for (int i=0; i<keys.size(); i++)
-                Log.err.log(ErrorManager.INFORMATIONAL, "Keys("+i+"): " + keys.get(i)); // NOI18N
-
-        return keys;
-        */
-    }
-
-    /**
-     * Returns a FK between this pair of tables if there is one, else null
-     * Note that the set of FKs is passed in from the caller, to avoid having to make multiple
-     * fetches from the dbmetedata when we're adding a new table
-     */
-    String[] findForeignKey(String oldFullTableName, String newFullTableName, List foreignKeys) {
-
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QB.findForeignKey, t1: "+oldFullTableName + " t2: "+newFullTableName); // NOI18N
-
-        if (foreignKeys!=null) {
-            for (int i=0; i<foreignKeys.size(); i++) {
-                String[] key = (String[])foreignKeys.get(i);
-                if ((key[0].equalsIgnoreCase(newFullTableName)&&key[2].equalsIgnoreCase(oldFullTableName)) ||
-                        (key[0].equalsIgnoreCase(oldFullTableName)&&key[2].equalsIgnoreCase(newFullTableName)))
-                    return (String[]) foreignKeys.get(i);
-            }
-        }
-        Log.err.log(ErrorManager.INFORMATIONAL, "No key found"); // NOI18N
-        return null;
-    }
-
-
-    /**
-     * Returns a FK between this pair of tables and columnsif there is one, else null
-     */
-    String[] findForeignKey(String fullTableName1, String colName1,
-            String fullTableName2, String colName2) throws SQLException {
-
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering findForeignKey, t1: " + fullTableName1 + " c1: " + colName1 // NOI18N
-                + "   t2: " + fullTableName2 + "  c2: " + colName2); // NOI18N
-
-        // Get the complete list of keys for one of the tables; we use table1
-        List foreignKeys = getForeignKeys(fullTableName1);
-        if (foreignKeys!=null) {
-            for (int i=0; i<foreignKeys.size(); i++) {
-                String[] key = (String[])foreignKeys.get(i);
-                if ((key[0].equalsIgnoreCase(fullTableName1) && key[1].equalsIgnoreCase(colName1)
-                && key[2].equalsIgnoreCase(fullTableName2) && key[3].equalsIgnoreCase(colName2)) ||
-                        (key[0].equalsIgnoreCase(fullTableName2) && key[1].equalsIgnoreCase(colName2)
-                        && key[2].equalsIgnoreCase(fullTableName1) && key[3].equalsIgnoreCase(colName1)))
-                    return (String[]) foreignKeys.get(i);
-            }
-        }
-        Log.err.log(ErrorManager.INFORMATIONAL, "No key found"); // NOI18N
-        return null;
-    }
-
-    public String getConnectionInfo() {
-        return sqlStatement.getConnectionInfo() ;
-    }
-
     // Methods inherited from org.openide.windows.TopComponent
 
     /**
@@ -2082,15 +1428,14 @@ public class QueryBuilder extends TopComponent
      */
     protected void componentShowing() {
 
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QueryBuilder.componentShowing()"); // NOI18N
+        Log.getLogger().entering("QueryBuilder", "componentShowing"); // NOI18N
 
-        String command = sqlStatement.getCommand();
+        String command = getSqlCommand();
 
         if (_queryModel==null)
             _queryModel = new QueryModel();
 
-        Log.log("  * command=" + command) ;
+        Log.getLogger().finest("  * command=" + command) ;
 
         // Parse the current query, in case it has changed
 
@@ -2098,7 +1443,7 @@ public class QueryBuilder extends TopComponent
         // We should probably allow this, since the user can delete the last table in the
         // editor anyway, so we need to be able to deal with empty queries as a special case.
         if ((command==null) || (command.trim().length()==0)) {
-            Log.log("QBShowing command is null") ;
+            Log.getLogger().finest("QBShowing command is null") ;
             setVisible(true);
             this.repaint();
             String msg = NbBundle.getMessage(QueryBuilder.class, "EMPTY_QUERY_ADD_TABLE");
@@ -2140,9 +1485,8 @@ public class QueryBuilder extends TopComponent
      * If we have an associated rowset, update it with current text query.
      */
     protected void componentHidden() {
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "QB.componentHidden, updating command to: " + _queryBuilderPane.getSqlTextAreaText()); // NOI18N
-        String command = sqlStatement.getCommand();
+	Log.getLogger().entering("QueryBuilder", "componentHidden");
+        String command = getSqlCommand();
         if ((command!=null) && (command.trim().length()!=0)) {
             String queryText = getUnformattedSqlString();
 
@@ -2168,29 +1512,32 @@ public class QueryBuilder extends TopComponent
 
     /** Opened for the first time */
     protected void componentOpened() {
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QueryBuilder.componentOpened()"); // NOI18N
+
+	Log.getLogger().entering("QueryBuilder", "componentOpened");
 
         activateActions();
         ActionMap map = getActionMap();
         InputMap keys = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         installActions(map, keys);
-        sqlStatement.addPropertyChangeListener(sqlStatementListener) ;
+// JDTODO - I don't think the QueryBuilder needs to listen to VSE, because it will notify us
+// directly if something changes. The SqlCommandCustomizer needs to listen to VSE, because that's the only way
+// it is notified of changes to the command 
+//        sqlStatement.addPropertyChangeListener(sqlStatementListener) ;
+//        vse.addPropertyChangeListener(sqlStatementListener) ;
 
         // do NOT force a parse here.  It's done componentShowing().
         // populate( sqlStatement.getCommand()) ;
-
     }
 
     /* closed - not visible anywhere)
      */
     protected void componentClosed() {
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "QueryBuilder.componentClosed()"); // NOI18N
+	Log.getLogger().entering("QueryBuilder", "componentClosed");
 
         deactivateActions();
 
-        sqlStatement.close() ;
+	// JDTODO - use dbconn?
+	this.closeQB() ;
         lastQuery = null;
     }
 
@@ -2198,36 +1545,39 @@ public class QueryBuilder extends TopComponent
      * listener for changes in the sqlStatement - either the
      * command changed or the connection changed (e.g., datasource changed).
      */
+    // JDTODO
+    // May no longer be needed, since the customizer will just call vse.setStatement,
+    // which can in turn update the QueryEditor (?)
     private PropertyChangeListener sqlStatementListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             // what property?
             String propName = evt.getPropertyName() ;
-            Log.log("QB sqlStatement property change: " + propName ) ;
-            if ( propName.equals(SqlStatement.COMMAND)) {
-                Log.err.log(" newValue=" + sqlStatement.getCommand()) ;
-                populate( sqlStatement.getCommand() ) ;
+            Log.getLogger().finest("QB sqlStatement property change: " + propName ) ;
+            if ( propName.equals(VisualSQLEditor.PROP_STATEMENT)) {
+                Log.getLogger().finest(" newValue=" + getSqlCommand()) ;
+                populate( getSqlCommand() ) ;
                 _queryBuilderPane.getQueryBuilderSqlTextArea().requestFocus();
 
-            } else if ( propName.equals(SqlStatement.CONNECTION_INFO)) {
-                Log.err.log(" resetting connections") ;
-                // _dbmdh.refresh() ;
+//             } else if ( propName.equals(SqlStatement.CONNECTION_INFO)) {
+//                 Log.getLogger().finest(" resetting connections") ;
+//                 // _dbmdh.refresh() ;
 
-            } else if ( propName.equals(SqlStatement.TITLE) ) { 
-                Log.err.log(" title to " + sqlStatement.getTitle()) ; // NOI18N
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        setDisplayName(sqlStatement.getTitle()) ;
-                    }
-                }) ;
+//             } else if ( propName.equals(SqlStatement.TITLE) ) { 
+//                 Log.getLogger().finest(" title to " + sqlStatement.getTitle()) ; // NOI18N
+//                 SwingUtilities.invokeLater(new Runnable() {
+//                     public void run() {
+//                         setDisplayName(sqlStatement.getTitle()) ;
+//                     }
+//                 }) ;
 
-            } else if ( propName.equals(SqlStatement.CLOSING)) {
-                Log.err.log(" closing...") ; // NOI18N
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        close() ;
-                    }
-                }) ;
-            }
+//             } else if ( propName.equals(SqlStatement.CLOSING)) {
+//                 Log.getLogger().finest(" closing...") ; // NOI18N
+//                 SwingUtilities.invokeLater(new Runnable() {
+//                     public void run() {
+//                         close() ;
+//                     }
+//                 }) ;
+             }
         }
     } ;
 
@@ -2235,33 +1585,34 @@ public class QueryBuilder extends TopComponent
     private SQLException lastException = null ;
 
 
-    // Return true if we have a database connection, false otherwise.
-    // If connection is down, allow user to Retry (loop) or Cancel&Continue
-    protected boolean checkDatabaseConnection() {
+// JD: Disabled for now; we will eventually adopt a consistent approach to error handling
+//     // Return true if we have a database connection, false otherwise.
+//     // If connection is down, allow user to Retry (loop) or Cancel&Continue
+//     protected boolean checkDatabaseConnection() {
 
-        Log.err.log( "checkDatabaseConnection()" ); // NOI18N
-        boolean keepChecking = true ;
-        boolean connected = false ;
-        while ( keepChecking ) {
+// 	Log.getLogger().entering("QueryBuilder", "checkDatabaseConnection");
+//         boolean keepChecking = true ;
+//         boolean connected = false ;
+//         while ( keepChecking ) {
 
-            try {
-                metaDataCache.checkDataBaseConnection() ;
-                connected = true ;
-            } catch (SQLException sqle ) {
-                lastException = sqle ;
-                connected = false ;
-            }
+//             try {
+//                 qbMetaData.checkDatabaseConnection() ;
+//                 connected = true ;
+//             } catch (SQLException sqle ) {
+//                 lastException = sqle ;
+//                 connected = false ;
+//             }
             
-            if ( ! connected ) {
-                // either the verify failed or the connect failed.
-                boolean retry = showRetryDialog() ;
-                if (! retry) {
-                    keepChecking = false ;
-                }
-            } else keepChecking = false ;
-        }
-        return connected ;
-    }
+//             if ( ! connected ) {
+//                 // either the verify failed or the connect failed.
+//                 boolean retry = showRetryDialog() ;
+//                 if (! retry) {
+//                     keepChecking = false ;
+//                 }
+//             } else keepChecking = false ;
+//         }
+//         return connected ;
+//     }
     
     /***
     private final JButton retryButton = new JButton(NbBundle.getMessage(QueryBuilder.class, "RETRY_AND_CONTINUE")) ;
@@ -2274,9 +1625,9 @@ public class QueryBuilder extends TopComponent
      */
     int ii = 0 ;
     public boolean showRetryDialog() {
-        Log.log("enter showRetryDialog() " + ii++ ) ;
+	Log.getLogger().entering("QueryBuilder", "showRetryDialog", ii++);
         ConnectionStatusPanel csp = new ConnectionStatusPanel() ;
-        csp.configureDisplay(sqlStatement.getConnectionInfo(), false, lastException.getLocalizedMessage(),  "", 0, false ) ;
+        csp.configureDisplay(getConnectionInfo(), false, lastException.getLocalizedMessage(),  "", 0, false ) ;
         csp.setGeneralInfo(NbBundle.getMessage(QueryBuilder.class, "DATABASE_CONNECTION_ERROR") ) ;    // NOI18N
         csp.setFooterInfo(NbBundle.getMessage(QueryBuilder.class, "NO_DATABASE_CONNECTION") ) ;      // NOI18N
 
@@ -2287,14 +1638,14 @@ public class QueryBuilder extends TopComponent
         final Object[] retVal = new Object[1] ;
         ActionListener listener = new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Log.log("  retry dialog event: " + evt) ;
+                Log.getLogger().finest("  retry dialog event: " + evt) ;
                 retVal[0] = evt.getSource() ;
             }
 
         };
 
         DialogDescriptor dlg = new DialogDescriptor(csp,
-                NbBundle.getMessage(ConnectionStatusPanel.class, "ConStat_title", sqlStatement.getConnectionInfo()), // NOI18N
+                NbBundle.getMessage(ConnectionStatusPanel.class, "ConStat_title", getConnectionInfo()), // NOI18N
                 true/*modal*/,
                 new Object[] {retryButton, cancelButton}, cancelButton,
                         DialogDescriptor.DEFAULT_ALIGN, null, listener);
@@ -2309,32 +1660,14 @@ public class QueryBuilder extends TopComponent
         dialog.show();
 
         boolean val = ( retVal[0] == retryButton ) ;
-        Log.err.log( "  * dlg says:  Retry=" + val ) ;
+        Log.getLogger().finest("  * dlg says:  Retry=" + val ) ;
         return val ;
     }
 
 
-    // Utility methods
-    private void checkMetaData() throws SQLException {
-/**
-        if (_databaseMetaData == null) {
-            try {
-                if ( checkDatabaseConnection() ) {
-                    // _dbmdh = new DatabaseMetaDataHelper(connection);
-                    // _databaseMetaData = _dbmdh.getMetaData();
-                }
-
-            } catch (SQLException sqle) {
-                reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-            }
-        }
- ***/
-    }
-
     public void reportDatabaseError(SQLException e) {
 
-        Log.log(ErrorManager.ERROR,
-                "Error occurred when trying to retrieve table information: " + e); // NOI18N
+        Log.getLogger().finest("Error occurred when trying to retrieve table information: " + e); // NOI18N
 
         String msg = 
             (e.getErrorCode() == 17023) ?
@@ -2358,28 +1691,7 @@ public class QueryBuilder extends TopComponent
     String getParseErrorMessage() {
         return _parseErrorMessage;
     }
-    /* ================================================================ */
-    /*****
-     * parse a full table name, e.g. Schema.Table or Table
-     * and returns an array where 
-     * [0] = schema (or null if none found)
-     * [1] = table name.
-     */
-    private static String[]  parseTableName(String fullTableName) {
-        
-        String[] retVal = new String[2] ;
-        
-        String[] table = fullTableName.split("\\."); // NOI18N
-        if (table.length>1) {
-            retVal[0] = table[0];
-            retVal[1] = table[1];
-        } else {
-            retVal[0] = null ;
-            retVal[1] = table[0];
-        }
-        return retVal ;
-    }
-    
+
     /**
      * Showing/hiding busy cursor, before this funcionality was in Rave winsys,
      * the code is copied from that module.

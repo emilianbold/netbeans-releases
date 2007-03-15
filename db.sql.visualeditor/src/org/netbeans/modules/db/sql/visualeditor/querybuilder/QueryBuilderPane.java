@@ -116,7 +116,7 @@ public class QueryBuilderPane extends JSplitPane {
 */
 
         super(JSplitPane.VERTICAL_SPLIT);
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryBuilderPane ctor"); // NOI18N
+	Log.getLogger().entering("QueryBuilderPane", "constructor", queryBuilder); // NOTIFYDESCRIPTOR
 
         _queryBuilder = queryBuilder;
 

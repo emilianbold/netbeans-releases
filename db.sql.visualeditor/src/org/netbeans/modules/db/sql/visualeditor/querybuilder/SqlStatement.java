@@ -19,10 +19,13 @@
 
 package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
+import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
+
 import java.beans.PropertyChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+
 
 /**
  * For use by the Query Editor, this describes methods for
@@ -162,6 +165,6 @@ public interface SqlStatement {
      * gets an instance of the database's meta data cache to be used for
      * this sql statement.
      */
-    public SqlStatementMetaDataCache getMetaDataCache() throws SQLException ;
+    public VisualSQLEditorMetaData getMetaDataCache() throws SQLException ;
   
 }

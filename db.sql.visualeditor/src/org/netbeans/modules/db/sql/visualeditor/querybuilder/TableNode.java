@@ -78,7 +78,7 @@ public class TableNode extends AbstractNode
 
     public void setCorrName(String corrName) {
 
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering TableNode.setCorrName, corrname: " + corrName); // NOI18N
+	Log.getLogger().entering("TableNode", "setCorrName",  corrName); // NOI18N
 
         // Note the old value
         String oldCorrName = getCorrName();

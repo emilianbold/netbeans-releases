@@ -198,7 +198,7 @@ public class QueryBuilderGraphFrame extends JPanel
             DefaultTableModel resultTableModel) {
         super(new BorderLayout());
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryBuilderGraphFrame ctor"); // NOI18N
+	Log.getLogger().entering("QueryBuilderGraphFrame", "constructor"); // NOI18N
         
         _queryBuilder = queryBuilder;
         _queryBuilderInputTable = queryBuilderInputTable;
@@ -630,16 +630,15 @@ public class QueryBuilderGraphFrame extends JPanel
     public void tableChanged(TableModelEvent e) {
         
         // if the graph is disabled, do not handle any events.
-        if ( _disableQBGF ) return;
+        if ( _disableQBGF )
+	    return;
         
         // if the graph is being generated from model, do not handle events.
-        if (_queryBuilder._updateModel == false) return;
+        if (_queryBuilder._updateModel == false)
+	    return;
         
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QBGF.tableChanged, source: " + e.getSource()); // NOI18N
-        if (DEBUG)
-            System.out.println("Entering QBGF.tableChanged source = " + e.getSource()); // NOI18N
-        
+        Log.getLogger().finest("Entering QBGF.tableChanged, source: " + e.getSource()); // NOI18N
+
         if (e.getSource() instanceof QueryBuilderTableModel)
             tableModelChanged(e);
         
@@ -652,7 +651,8 @@ public class QueryBuilderGraphFrame extends JPanel
     
     private void tableModelChanged(TableModelEvent e) {
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QBGF.tableModelChanged");
+        Log.getLogger().entering("QueryBuilderGraphFrame", "tableModelChanged");
+
         // We have a mouse click inside a graph table node, indicating select/deselect.
         // Propagate the information to the input table
         
@@ -736,7 +736,7 @@ public class QueryBuilderGraphFrame extends JPanel
     
     private void inputTableModelChanged(TableModelEvent e) {
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QBGF.inputTableModelChanged");
+        Log.getLogger().entering("QueryBuilderGraphFrame", "inputTableModelChanged");
         
         // if _inputTableAddCriteria is true we should not handle any
         // events. This is set when the events are not directly generated
@@ -952,8 +952,7 @@ public class QueryBuilderGraphFrame extends JPanel
             System.out.println(
                     "Entering QBGF.insertTableInteractively, fullTableName: " + fullTableName + " queryBuilder.queryModel : " + _queryBuilder._queryModel); // NOI18N
         }
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QBGF.insertTableInteractively, fullTableName: " + fullTableName); // NOI18N
+	Log.getLogger().entering("QueryBuilderGraphFrame", "insertTableInteractively", fullTableName); // NOI18N
         
         // fix for 6316681 Opening QE on a rowset where command=null throws NPE
         // If the query model is null then the QueryBuilder was not opened
@@ -1046,8 +1045,7 @@ public class QueryBuilderGraphFrame extends JPanel
     // ToDo: Generalize this to support joinTable with conjoined predicates
     
     void insertTableFromModel(JoinTable joinTable, List columnNames) {
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QBGF.insertTableFromModel, tablespec: " + joinTable.getTableSpec()); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "insertTableFromModel", joinTable.getTableSpec()); // NOI18N
         
         // Save the state of _updateText
         boolean updateText = _queryBuilder._updateText;
@@ -1089,7 +1087,7 @@ public class QueryBuilderGraphFrame extends JPanel
     
     QueryBuilderInternalFrame insertTable(JoinTable joinTable, List columnNames) {
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QBGF.insertTable"); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "insertTable"); // NOI18N
         
         // if ( _queryBuilder.checkDatabaseAndDisable(null) == false ) return null;
         
@@ -1101,8 +1099,7 @@ public class QueryBuilderGraphFrame extends JPanel
         
         // Set a location for it
         internalFrame.setLocation(getNextLocation(internalFrame));
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Location for new cell: " + internalFrame.getLocation()); // NOI18N
+        Log.getLogger().finest("Location for new cell: " + internalFrame.getLocation()); // NOI18N
         
         //Add new cell (table) to graph model, with the internalFrame as userObject
         DefaultGraphCell insertCell = new DefaultGraphCell(internalFrame);
@@ -1153,18 +1150,17 @@ public class QueryBuilderGraphFrame extends JPanel
         
         String tableSpec = ((corrName!=null) ? corrName : fullTableName);
         
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QBGF.createNode, fullTableName: " + fullTableName + " corrName: " + corrName); // NOI18N
+        Log.getLogger().finest("In QBGF.createNode, fullTableName: " + fullTableName + " corrName: " + corrName); // NOI18N
         
         // Correct case of table name...
         try { // TODO JFB shouldn't catch this...
             String newS = _queryBuilder.checkFullTableName(fullTableName) ;
             if ( newS != null & ! fullTableName.equals(newS)) {
                 fullTableName = newS ;
-                Log.log("  fullTableName corrected to " + fullTableName ) ;
+                Log.getLogger().finest("  fullTableName corrected to " + fullTableName ) ;
             }
         } catch (SQLException se) {
-            Log.log( "  fullTableName " + se.getMessage()  ) ;
+            Log.getLogger().finest("  fullTableName " + se.getMessage()  ) ;
         }
         
         final String[] columnNames = {"", // "Output",      // NOI18N
@@ -1204,7 +1200,7 @@ public class QueryBuilderGraphFrame extends JPanel
             foreignKeyCols = _queryBuilder.getImportedKeyColumns(fullTableName);
         } catch (SQLException sqle) {
             // HACK!  log and dispose
-            Log.err.log(ErrorManager.WARNING, "QueryBuilderGraphFrame:  cannot get info " + sqle.getLocalizedMessage()) ;
+            Log.getLogger().warning("QueryBuilderGraphFrame:  cannot get info " + sqle.getLocalizedMessage()) ;
             primaryKeys = new ArrayList() ;
             foreignKeyCols = new ArrayList() ;
         }
@@ -1270,7 +1266,7 @@ public class QueryBuilderGraphFrame extends JPanel
         String title = (corrName==null) ? tableName : corrName+": "+tableName; // NOI18N
         internalFrame.setTitle(title);
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "TableName for new cell: " + tableName); // NOI18N
+	Log.getLogger().finest("TableName for new cell: " + tableName); // NOI18N
         
         return internalFrame;
     }
@@ -1281,8 +1277,8 @@ public class QueryBuilderGraphFrame extends JPanel
     // ToDo: Enable support for multiple edges between a pair of nodes
     
     private List insertFKEdges(DefaultGraphCell newCell, String newFullTableName) {
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QBGF.insertFKEdges, newFullTableName: " + newFullTableName); // NOI18N
+	
+        Log.getLogger().entering("QueryBuilderGraphFrame", "insertFKEdges", newFullTableName); // NOI18N
         
         // Get foreign key information, for deciding relationship status
         // Do this once, to avoid repeated calls to database
@@ -1303,8 +1299,8 @@ public class QueryBuilderGraphFrame extends JPanel
             String[] fk;
             
             if ((root instanceof DefaultGraphCell)      // Do we have a cell of some form?
-            && !(_graphModel.isEdge(root))          // ... that is a node, not an edge?
-            && (root != newCell))                   // ... and is not the cell we just created?
+		&& !(_graphModel.isEdge(root))          // ... that is a node, not an edge?
+		&& (root != newCell))                   // ... and is not the cell we just created?
             {
                 DefaultGraphCell oldCell = (DefaultGraphCell)root;
                 String oldFullTableName=((QueryBuilderInternalFrame)oldCell.getUserObject()).getFullTableName();
@@ -1337,7 +1333,7 @@ public class QueryBuilderGraphFrame extends JPanel
     // associate with the table in the FROM list
     void insertJoinEdges(JoinTable joinTable) {
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering insertJoinEdges"); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "insertJoinEdges"); // NOI18N
         // We're generating the graph from the model.
         // Don't look for new edges to add, but add the edges that are
         // explicitly mentioned in the join condition for this table
@@ -1367,7 +1363,7 @@ public class QueryBuilderGraphFrame extends JPanel
     // Insert the graph edge corrsponding to this predicate
     void insertJoinEdge(Predicate pred, String joinType) {
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "QBGF.Entering insertJoinEdge"); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "insertJoinEdge"); // NOI18N
         
         Value val1 = pred.getVal1();
         Value val2 = pred.getVal2();
@@ -1388,7 +1384,7 @@ public class QueryBuilderGraphFrame extends JPanel
             String colName2 = col2.getColumnName();
             
             if ((cell1==null) || (cell2==null))
-                Log.err.log(ErrorManager.ERROR, "Could not find node"); // NOI18N
+                Log.getLogger().severe("Could not find node"); // NOI18N
             else {
                 // See if there's a foreign key on exactly this combination of tables/columns
                 // If not, we will have no direction label on the join
@@ -1396,7 +1392,7 @@ public class QueryBuilderGraphFrame extends JPanel
                 try {
                     fk = _queryBuilder.findForeignKey(fullTableName1, colName1, fullTableName2, colName2);
                 } catch (SQLException sqle) {
-                    Log.err.log(ErrorManager.WARNING,"QBDF:  findforeignKey "+sqle.getLocalizedMessage()) ;
+                    Log.getLogger().warning("QBGF:  findforeignKey "+sqle.getLocalizedMessage()) ;
                 }
                 
                 // Direction is cell1 -> cell2, matching the join
@@ -1430,9 +1426,8 @@ public class QueryBuilderGraphFrame extends JPanel
             String tableSpec1, String tableSpec2,
             String colName1, String colName2,
             String[] fk, String joinType) {
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QBGF.insertEdge, fullTableName1: " + fullTableName1 +     // NOI18N
-                "  fullTableName2: " + fullTableName2); // NOI18N
+	
+	Log.getLogger().entering("QueryBuilderGraphFrame", "insertEdge", new Object[] { fullTableName1, fullTableName2 }); // NOI18N
         
         // Create the ports on the two cells
         DefaultPort cell1Port = new DefaultPort();
@@ -1522,7 +1517,7 @@ public class QueryBuilderGraphFrame extends JPanel
     void removeTable(QueryBuilderInternalFrame currentSelectedFrame) {
         String tableSpec = currentSelectedFrame.getTableSpec();
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QBGF.removeTable, tableSpec: " + tableSpec); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "removeTable"); // NOI18N
         if (DEBUG) {
             printRoots();
         }
@@ -1602,9 +1597,10 @@ public class QueryBuilderGraphFrame extends JPanel
     
     void generateGraph(QueryModel query) {
         
-        if ( _disableQBGF ) return;
+        Log.getLogger().entering("QueryBuilderGraphFrame", "generateGraph");
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryBuilderGraphFrame.generateGraph"); // NOI18N
+        if ( _disableQBGF )
+	    return;
         
         // Reset the graph and input table
         clearGraph();
@@ -1630,7 +1626,7 @@ public class QueryBuilderGraphFrame extends JPanel
     // except for the graph model
     void clearGraph() {
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QBGF.clearGraph"); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "clearGraph"); // NOI18N
         
         // This is used in certain places
         _firstTableInserted=false;
@@ -1671,8 +1667,7 @@ public class QueryBuilderGraphFrame extends JPanel
     
     private void generateGraphFrom(QueryModel query) {
         
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QBGF.generateGraphFrom"); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "generateGraphFrom"); // NOI18N
         
         // Start with the From clause
         List tables = query.getFrom().getTableList();
@@ -1733,7 +1728,7 @@ public class QueryBuilderGraphFrame extends JPanel
     
     private void generateGraphWhere(QueryModel query) {
         
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QBGF.generateGraphWhere"); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "generateGraphWhere"); // NOI18N
         if (DEBUG)
             System.out.println("Entering QBGF.generateGraphWhere"); // NOI18N
         
@@ -1853,8 +1848,7 @@ public class QueryBuilderGraphFrame extends JPanel
      */
     DefaultGraphCell findNode(String tableSpec) {
         
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QBGF.findNode, searching for cell: " + tableSpec); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "findNode", tableSpec); // NOI18N
         
         for (int i=0; i<_graphModel.getRootCount(); i++) {
             
@@ -1878,14 +1872,14 @@ public class QueryBuilderGraphFrame extends JPanel
     // Top-level method for adding a table to the query.
     // Called from the "Add Table" menu item
     public void addTable() {
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QBGF.addTable"); // NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "addTable"); // NOI18N
         
         // if ( _queryBuilder.checkDatabaseAndDisable(null) == false ) return;
         
         QueryBuilder.showBusyCursor( true );
         try {
             
-            List tableNames = _queryBuilder.getCachedAllTablesInDataSource();
+            List tableNames = _queryBuilder.getAllTables();
             String[] tableStrings = new String[tableNames.size()];
             tableNames.toArray(tableStrings);
             _addTableDlg = new AddTableDlg(tableStrings, true);
@@ -1928,7 +1922,9 @@ public class QueryBuilderGraphFrame extends JPanel
                 redrawFrameWithMove( currentSelectedFrame );
             }
         } catch (SQLException sqe) {
-            _queryBuilder.checkDatabaseAndDisable(null) ;
+	    // JDTODO - We need a consistent approach to handling SQL Exceptions.  Best is probably to expose them to user.
+            // This comes up a number of places in QBGF.
+            // _queryBuilder.checkDatabaseAndDisable(null) ;
         } finally {
             QueryBuilder.showBusyCursor( false );
         }
@@ -1941,8 +1937,7 @@ public class QueryBuilderGraphFrame extends JPanel
      */
     public void actionPerformed(ActionEvent e) {
         
-        if (DEBUG)
-            System.out.println("Entering QBGF.actionPerformed"); //NOI18N
+        Log.getLogger().entering("QueryBuilderGraphFrame", "actionPerformed"); //NOI18N
         
         JMenuItem source = (JMenuItem)(e.getSource());
         
@@ -2305,7 +2300,7 @@ public class QueryBuilderGraphFrame extends JPanel
         
         public void valueChanged(GraphSelectionEvent e) {
             
-            Log.err.log(ErrorManager.INFORMATIONAL, "Graph selection changed, event: "+e); // NOI18N
+            Log.getLogger().finest("Graph selection changed, event: "+e); // NOI18N
             if (_graph.getSelectionCount() > 0) {
                 // Use the first selection; should only be one
                 Object cell = _graph.getSelectionCell();
@@ -2383,7 +2378,7 @@ public class QueryBuilderGraphFrame extends JPanel
                     // user should be allowed to drop tables from the
                     // current data source only.
                     List tableNamesArrayList =
-                            _queryBuilder.getCachedAllTablesInDataSource();
+                            _queryBuilder.getAllTables();
                     String fullTableName = ( ( Node ) o ).getName();
                     
                      // Reassign fullTableName to just the table name - minus the schema name

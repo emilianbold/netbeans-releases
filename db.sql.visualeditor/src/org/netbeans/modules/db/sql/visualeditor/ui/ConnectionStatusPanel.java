@@ -92,8 +92,11 @@ public class ConnectionStatusPanel extends javax.swing.JPanel {
 
         displayDialog(dsName) ;
     }
+
     public void displayDialog(String dsName) {
-        Log.log("ConnectionStatusDisplay.displayDialog for " +dsName) ;
+	
+	Log.getLogger().entering("ConnectionStatusPanel", "displayDialog", dsName);
+
         // Add a listener to the dialog's buttons
         ActionListener listener = new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -117,6 +120,7 @@ public class ConnectionStatusPanel extends javax.swing.JPanel {
 
         dialog.show();
     }
+
     public void configureDisplay( String dsName, boolean connected, String sqlException, String tableName, 
             int rows, boolean showValTableInfo ) {
         /* calculate the displayd values based on this method's input parameters.

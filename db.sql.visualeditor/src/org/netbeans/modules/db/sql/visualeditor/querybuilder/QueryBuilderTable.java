@@ -49,7 +49,7 @@ public class QueryBuilderTable extends JTable {
         super();
         super.setModel( model );
 
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryBuilderTable ctor, model: " + model); // NOI18N
+	Log.getLogger().entering("QueryBuilderTable", "constructor", model); // NOI18N
 
         this.setAutoResizeMode (JTable.AUTO_RESIZE_OFF);
 

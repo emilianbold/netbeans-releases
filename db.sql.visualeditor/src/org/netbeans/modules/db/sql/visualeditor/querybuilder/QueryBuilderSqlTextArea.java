@@ -36,6 +36,7 @@ import javax.swing.JTextPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+// import org.netbeans.modules.db.sql.editor.SQLEditorKit;
 
 import org.openide.util.NbBundle;
 
@@ -140,7 +141,7 @@ public class QueryBuilderSqlTextArea extends JTextPane
         super();
         _queryBuilder = queryBuilder;
         _sqlTextPopup = createSqlTextPopup();
-        
+        // setEditorKit(new SQLEditorKit());        
         
         
         if ( SYNTAX_HIGHLIGHT ) {
@@ -711,4 +712,5 @@ public class QueryBuilderSqlTextArea extends JTextPane
     void reset() {
         this.setQueryText(_lastGoodQuery);
     }
+    
 }

@@ -74,7 +74,7 @@ class QueryModel {
 
     String genText() {
 
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryModel.genText");  // NOI18N
+	Log.getLogger().entering("QueryModel", "genText"); // NOI18N
         if (QueryModel.DEBUG)
             (new Throwable()).printStackTrace();
         if ( _query == null )
@@ -164,7 +164,8 @@ class QueryModel {
      * Remove a table from the model, along with all references to it
      */
     void removeTable (String tableSpec) {
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryModel.removeTable, tableSpec: " + tableSpec);  // NOI18N
+
+        Log.getLogger().entering("QueryModel", "removeTable", tableSpec); // NOI18N
         _query.removeTable(tableSpec);
     }
     
@@ -174,7 +175,7 @@ class QueryModel {
 
     void replaceStar(ColumnProvider tableReader) {
 
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryModel.replaceStar");  // NOI18N
+        Log.getLogger().entering("QueryModel", "replaceStar"); // NOI18N
         _query.replaceStar(tableReader);
     }
 
@@ -376,10 +377,7 @@ class QueryModel {
     void renameTableSpec(String oldTableSpec, String corrName) {
         // Find all the places where a tableSpec can occur, and replace
         // This seems to be most of the query
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                    "Entering QueryModel.renameTableSpec, oldTableSpec: " + oldTableSpec    // NOI18N
-                    + "  corrName: " + corrName);    // NOI18N
-
+	Log.getLogger().entering("QueryModel", "renameTableSpec", new Object[] { oldTableSpec, corrName } ) ; // NOI18N
         _query.renameTableSpec(oldTableSpec, corrName);
     }
 

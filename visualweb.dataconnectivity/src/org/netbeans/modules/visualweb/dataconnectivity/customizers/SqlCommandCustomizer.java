@@ -18,18 +18,29 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.customizers;
 
+import javax.naming.NamingException;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.visualweb.dataconnectivity.Log;
 import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilder;
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.SqlStatement;
+import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditor;
+import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorFactory;
+import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.QueryTopComponent;
+
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.impl.BasicCustomizer2;
 import com.sun.sql.rowset.CachedRowSetX;
 import com.sun.sql.rowset.JdbcRowSetX;
+
 import java.awt.Component;
 import java.awt.Container;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import java.util.Iterator;
 import java.util.Set;
+
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
@@ -45,109 +56,199 @@ import org.openide.windows.WindowManager;
  *  Which calls
  */
 public class SqlCommandCustomizer extends BasicCustomizer2 {
-
+    
     public String customerizerClassName = "" ; // NOI18N
+    
+//    private static boolean useViewData = false ;
+    
+    private DesignBean 				bean;
+    private VisualSQLEditor			vse;
+    
+    // Constructor
+    
     public SqlCommandCustomizer(String customerizerClassName )  {
         super(null, NbBundle.getMessage(SqlCommandCustomizer.class, "EDIT_QUERY"));        // NOI18N
         this.customerizerClassName = customerizerClassName ; // e.g., com.sun.sql.rowset.JdbcRowSetXImpl.class.getName()
         Log.err.log("Customizer for "+customerizerClassName) ;
     }
-    private static boolean useViewData = false ;
-
+    
     public Component getCustomizerPanel(DesignBean srcBean ) {
-
+        
         Log.err.log("Customizer panel requested for " + srcBean.getInstanceName() ) ;
-
-        Component retVal ;
-
+        
+        bean = srcBean;
+        
+        Component retComp ;
+        
         /* see if there's already a TopComponent with the same name **/
-        retVal = findCurrent(srcBean) ;
-        if ( retVal != null) {
-            if ( retVal instanceof TopComponent) {
-                ((TopComponent)retVal).requestActive() ;
+        retComp = findCurrent(srcBean) ;
+        if ( retComp != null) {
+            if ( retComp instanceof TopComponent) {
+                ((TopComponent)retComp).requestActive() ;
             }
-            return retVal ;
+            return retComp ;
         }
-
+        
         /****
          * get the dataSourceName
          */
         // Object o = designBean.getInstance();
         String dsName = null ;
         dsName = (String)srcBean.getProperty("dataSourceName").getValue() ;
-
-        SqlStatement sqlStatement = null ;
+        VisualSQLEditorMetaData metadata = null;
         try {
-            sqlStatement = new SqlStatementImpl( dsName, srcBean ) ;
-        } catch (javax.naming.NamingException ne) {
-            org.openide.ErrorManager.getDefault().notify(ne);
-            sqlStatement = null ;
+            metadata = VisualSQLEditorMetaDataImpl.getDataSourceCache(dsName);
+        } catch (java.sql.SQLException e) {
+            
+            // JDTODO
         }
-        if ( sqlStatement == null ) return null ;
-
-
-        if ( ! useViewData) {
-            retVal = QueryBuilder.openCustomizerPanel( sqlStatement ) ;
-        } else {
-            retVal = QueryTopComponent.openQueryFrame(sqlStatement, dsName) ;
+        
+//        SqlStatement sqlStatement = null ;
+//        try {
+//            sqlStatement = new SqlStatementImpl( dsName, srcBean ) ;
+//        } catch (javax.naming.NamingException ne) {
+//            org.openide.ErrorManager.getDefault().notify(ne);
+//            sqlStatement = null ;
+//        }
+//        if ( sqlStatement == null ) return null ;
+        
+        // Get the DatabaseConnection, to be passed to the Visual SQL Editor
+        DatabaseConnection dbconn = null;
+        try {
+            // First, get the DesignTimeDataSource
+            DesignTimeDataSource dtds = lookupDataSource(dsName);
+            
+            // Get the list of DatabaseConnections
+            DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
+            // Find the one we want
+            for (int i=0; i<dbconns.length; i++) {
+                if (((DatabaseConnection)dbconns[i]).getDatabaseURL().equals(dtds.getUrl())) {
+                    dbconn = (DatabaseConnection)dbconns[i];
+                    break;
+                }
+            }
+        } catch (NamingException ex) {
         }
-        return retVal ;
+        
+//        if ( ! useViewData) {
+        
+        String command = (String)srcBean.getProperty("command").getValue();
+        vse = VisualSQLEditorFactory.createVisualSQLEditor(dbconn, command, metadata);
+        
+        vse.addPropertyChangeListener(vseListener);
+        retComp = vse.open();
+        
+//            QueryBuilder.openCustomizerPanel( sqlStatement ) ;
+//        } else {
+//            retComp = QueryTopComponent.openQueryFrame(sqlStatement, dsName) ;
+//        }
+        
+        return retComp ;
     }
-
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx( "projrave_ui_elements_editors_about_query_editor" );        // NOI18N
     }
-    public static void setUseViewData(boolean use) {
-        useViewData = use ;
-    }
-    public static boolean getUseViewData() {
-        return useViewData ;
-    }
-    static {
-        if ( System.getProperty("useViewData")!=null ) {
-            useViewData = true ;
-        } else {
-            useViewData = false ;
-        }
-    }
+//     public static void setUseViewData(boolean use) {
+//         useViewData = use ;
+//     }
+//     public static boolean getUseViewData() {
+//         return useViewData ;
+//     }
+    
+//     static {
+//         if ( System.getProperty("useViewData")!=null ) {
+//             useViewData = true ;
+//         } else {
+//             useViewData = false ;
+//         }
+//     }
+    
     /**
-     * Attempt to locate an existing QB for the given
-     * designBean.
+     * Attempt to locate an existing QB for the given designBean.
      */
     public static QueryBuilder findCurrent(DesignBean dBean ) {
-
+        
         QueryBuilder qbForm = null;
-
+        
         // Search through workspaces, then modes, then topcomponents
         Set modes = WindowManager.getDefault().getModes();
         Iterator it2 = modes.iterator();
-
-        while (it2.hasNext()) {
-            Mode m = (Mode)it2.next();
-            TopComponent[] tcs = m.getTopComponents();
-
-            if (tcs != null) {
-                for (int j = 0; j < tcs.length; j++) { // for each topcomponents 
-                    TopComponent tc = (TopComponent)tcs[j] ;
-
-                    if ( tcs[j] instanceof QueryBuilder) {
-                        SqlStatement sss = ((QueryBuilder)tcs[j]).getSqlStatement() ;
-                        if ( sss instanceof SqlStatementImpl) {
-                            if ( dBean == ((SqlStatementImpl)sss).designBean ) {
-                                qbForm = (QueryBuilder)tcs[j] ;
-                                break ;
-                            }
-                        }
-                    }
-                } // for each topcomponents 
-            }
-
-            if (qbForm != null ) {
-                break ;
+        
+        // JDTODO - figure out a way of doing this in the new version
+        // The Customizer will have to retain the mapping, since the QueryEditor no longer
+        // knows about the designbean
+//        while (it2.hasNext()) {
+//            Mode m = (Mode)it2.next();
+//            TopComponent[] tcs = m.getTopComponents();
+//
+//            if (tcs != null) {
+//                for (int j = 0; j < tcs.length; j++) { // for each topcomponents
+//                    TopComponent tc = (TopComponent)tcs[j] ;
+//
+//                    if ( tcs[j] instanceof QueryBuilder) {
+//                        SqlStatement sss = ((QueryBuilder)tcs[j]).getSqlStatement() ;
+//                        if ( sss instanceof SqlStatementImpl) {
+//                            if ( dBean == ((SqlStatementImpl)sss).designBean ) {
+//                                qbForm = (QueryBuilder)tcs[j] ;
+//                                break ;
+//                            }
+//                        }
+//                    }
+//                } // for each topcomponents
+//            }
+//
+//            if (qbForm != null ) {
+//                break ;
+//            }
+//        }
+//
+//        return qbForm;
+        return null;
+    }
+    
+    // Listen for changes to statement property, and notify the bean
+    
+    private PropertyChangeListener vseListener =
+            
+            new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            // what property?
+            String propName = evt.getPropertyName() ;
+            Log.log("VSE property change: " + propName ) ;
+            if ( propName.equals(VisualSQLEditor.PROP_STATEMENT)) {
+                Log.err.log(" newValue=" + vse.getStatement()) ;
+                bean.getProperty("command").setValue(vse.getStatement()) ;
             }
         }
-
-        return qbForm;
+    } ;
+    
+    
+    /****
+     * convenience method for looking up the datasource in the current
+     * context.  Copied from SqlStatementImpl
+     */
+    private DesignTimeDataSource lookupDataSource( String dataSourceName )
+        throws NamingException 
+    {
+        String dsName ;
+        if ( dataSourceName == null ) {
+            // we should never be here, but just in case ...
+            NamingException ne = new NamingException("Data Source Name is required:  none provided." ) ; // NOI18N
+            throw ne ;
+        }
+        
+        javax.naming.Context ctx = new javax.naming.InitialContext();
+        if ( ! dataSourceName.startsWith("java:comp/env/jdbc/") ) {
+            dsName =  "java:comp/env/jdbc/" + dataSourceName ;
+        } else {
+            dsName = dataSourceName ;
+        }
+        
+        DesignTimeDataSource ds = (DesignTimeDataSource) ctx.lookup( dsName );
+        return ds ;
     }
+    
+    
     
 }

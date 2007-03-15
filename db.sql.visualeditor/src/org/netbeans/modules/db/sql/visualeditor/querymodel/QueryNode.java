@@ -175,8 +175,8 @@ public class QueryNode implements Query {
             for (int i=0; i<tables.size(); i++) {
                 TableNode tbl = (TableNode) tables.get(i);
                 String fullTableName = tbl.getFullTableName();
-                List columnNames = new ArrayList();
-                tableReader.getColumnNamesFull(fullTableName, columnNames);
+		List columnNames = new ArrayList();
+		tableReader.getColumnNames(fullTableName, columnNames);
                 String corrName=tbl.getCorrName();
                 String tableName=tbl.getTableName();
                 String schemaName=tbl.getSchemaName();

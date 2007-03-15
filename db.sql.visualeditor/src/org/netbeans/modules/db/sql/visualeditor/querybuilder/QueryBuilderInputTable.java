@@ -117,7 +117,7 @@ public class QueryBuilderInputTable extends JTable
 
         super();
 
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering QueryBuilderInputTable ctor"); // NOI18N
+	Log.getLogger().entering("QueryBuilderInputTable", "constructor"); // NOI18N
 
         _queryBuilder = queryBuilder;
 
@@ -803,7 +803,7 @@ public class QueryBuilderInputTable extends JTable
 
     void removeRows(String tableSpec) {
 
-        Log.err.log(ErrorManager.INFORMATIONAL, "Entering removeRows, tableSpec: " + tableSpec);        // NOI18N
+	Log.getLogger().entering("QueryBuilderInputTable", "removeRows", tableSpec);        // NOI18N
 
         for (int i=this.getRowCount()-1; i>=0; i--) {
             if (this.getValueAt(i, Table_COLUMN).equals(tableSpec)) {
@@ -817,14 +817,7 @@ public class QueryBuilderInputTable extends JTable
     
     void addCriterion(String tableSpec, String columnName, String val, String order) {
         
-        if (DEBUG) {
-            System.out.println(
-                    "Entering QueryBuilderInputTable.addCriterion, tableSpec: " + tableSpec     // NOI18N
-                    + "  columnName: "+columnName + "  val: "+val + "Order: " + order + "\n");     // NOI18N
-        }
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                    "Entering QueryBuilderInputTable.addCriterion, tableSpec: " + tableSpec     // NOI18N
-                    + "  columnName: " + columnName + "  val: " + val);     // NOI18N
+	Log.getLogger().entering("QueryBuilderInputTable", "addCriterion", new Object[] { tableSpec, columnName, val }); // NOI18N
 
         // Get the Table object representing this table
 //      ITable tbl = _queryBuilder._queryModel.findTable(tableSpec);
