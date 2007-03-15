@@ -637,8 +637,8 @@ public class ManagerBean implements Manager {
                 File statefile = FileUtils.createTempFile(TEMP, false);
                 File userDir = FileUtils.createTempFile(TEMP, false);
                 File bundle = new File(
-                        FileUtils.createTempFile(BUNDLES, false).getAbsolutePath() + 
-                        ".jar");
+                        FileUtils.createTempFile(BUNDLES, false), 
+                        "bundle.jar");
                 
                 File javaHome  = new File(System.getProperty("java.home"));
                 
