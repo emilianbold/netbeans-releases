@@ -17,31 +17,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- *                 Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- *
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
- * Microsystems, Inc. All Rights Reserved.
- */
 
-package org.netbeans.modules.sql.project.ui;
+package org.netbeans.modules.sql.project;
 
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
+
+import org.netbeans.api.project.*;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -51,19 +35,17 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
-import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
-// import org.netbeans.modules.websvc.api.webservices.WebServicesView;
+import org.netbeans.modules.sql.project.IcanproProject;
+import org.netbeans.modules.sql.project.ui.PackageView;
+import org.netbeans.modules.sql.project.ui.customizer.IcanproProjectProperties;
 import org.openide.filesystems.FileChangeListener;
 
-class SQLproViews {
+public class IcanproViews {
 
-    private static Logger logger = Logger.getLogger(SQLproViews.class.getName());
-    private SQLproViews() {
+    private IcanproViews() {
     }
 
     static final class LogicalViewChildren extends Children.Keys implements FileChangeListener {
@@ -85,13 +67,6 @@ class SQLproViews {
             projectDir = helper.getProjectDirectory();
             this.evaluator = evaluator;
             this.project = project;
-        }
-
-        public LogicalViewChildren (AntProjectHelper helper, PropertyEvaluator evaluator) {
-            assert helper != null;
-            this.helper = helper;
-            projectDir = helper.getProjectDirectory();
-            this.evaluator = evaluator;
         }
 
         protected void addNotify() {
@@ -143,7 +118,8 @@ class SQLproViews {
             if (key == KEY_SOURCE_DIR) {
                 FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty (IcanproProjectProperties.SRC_DIR));
                 Project p = FileOwnerQuery.getOwner (srcRoot);
-                SourceGroup sgs [] = ProjectUtils.getSources (p).getSourceGroups (JavaProjectConstants.SOURCES_TYPE_JAVA);
+                Sources s = ProjectUtils.getSources(p);
+                SourceGroup sgs [] = ProjectUtils.getSources (p).getSourceGroups (IcanproProject.SOURCES_TYPE_ICANPRO);
                 for (int i = 0; i < sgs.length; i++) {
                     if (sgs [i].contains (srcRoot)) {
                         n = PackageView.createPackageView (sgs [i]);
@@ -190,17 +166,10 @@ class SQLproViews {
         }
 
         private DataFolder getFolder(String propName) {
-            String propertyValue = evaluator.getProperty (propName);
-            if (propertyValue != null ) {
-                FileObject fo = helper.resolveFileObject(evaluator.getProperty (propName));
-                if ( fo != null && fo.isValid()) {
-                    try {
-                        DataFolder df = DataFolder.findFolder(fo);
-                        return df;
-                    } catch (Exception ex) {
-                        logger.info(ex.getMessage());
-                    }
-                }
+            FileObject fo = helper.resolveFileObject(evaluator.getProperty (propName));
+            if (fo != null) {
+                DataFolder df = DataFolder.findFolder(fo);
+                return df;
             }
             return null;
         }
@@ -232,7 +201,7 @@ class SQLproViews {
     }
 
     private static final class DocBaseNode extends FilterNode {
-        private static Image CONFIGURATION_FILES_BADGE = Utilities.loadImage( "org/netbeans/modules/sql/projects/ui/resources/docjar.gif", true ); // NOI18N
+        private static Image CONFIGURATION_FILES_BADGE = Utilities.loadImage( "org/netbeans/modules/sql/project/ui/resources/docjar.gif", true ); // NOI18N
 
         DocBaseNode (Node orig) {
             super (orig);
@@ -253,7 +222,7 @@ class SQLproViews {
         }
 
         public String getDisplayName () {
-            return NbBundle.getMessage(IcanproLogicalViewProvider.class, "LBL_Node_DocBase"); //NOI18N
+            return NbBundle.getMessage(IcanproViews.class, "LBL_Node_DocBase"); //NOI18N
         }
     }
 }

@@ -62,6 +62,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -91,6 +92,10 @@ public class WSDLGenerator {
     private static final String IMPORT_ELEMENT = "xsd:import";
     private static final String NAMESPACE_ATTR = "namespace";
     private static final String SCHEMALOCATION_ATTR = "schemaLocation";
+    private static final String TARGET_NS = "targetNamespace";
+    private static final String TARGET_NS_PREFIX_STRING = "http://j2ee.netbeans.org/wsdl/";
+    private static final String TNS_STRING = "xmlns:tns";
+    private static final String NAME = "name";
      
     private static final String PART_ELEMENT = "part";
     private static final String NAME_ATTR = "name";
@@ -261,6 +266,7 @@ public class WSDLGenerator {
      */
     private void modifyWSDL() throws WSDLException, Exception {
         this.modifyName();
+        this.modifyTargetNamespace();
         this.modifyMessageTypes();
         this.modifyBindings();
         this.modifyServiceAndPortNames();
@@ -274,9 +280,24 @@ public class WSDLGenerator {
      *
      */
     private void modifyName() {
-        QName q = this.def.getQName();
+        /* QName q = this.def.getQName();
         q = new QName(q.getNamespaceURI(), this.mWSDLFileName);
-        this.def.setQName(q);
+        this.def.setQName(q); */
+    	Element rootEle = this.doc.getDocumentElement();
+    	Attr attr = rootEle.getAttributeNode(NAME);
+		attr.setNodeValue(this.mWSDLFileName);
+    }
+    
+    /**
+     * Modify the WSDL TargetNamespace
+     *
+     */
+    private void modifyTargetNamespace() {
+    	Element rootEle = this.doc.getDocumentElement();
+    	Attr attr = rootEle.getAttributeNode(TARGET_NS);
+		attr.setNodeValue(TARGET_NS_PREFIX_STRING + this.mWSDLFileName);
+    	attr = rootEle.getAttributeNode(TNS_STRING);
+		attr.setNodeValue(TARGET_NS_PREFIX_STRING + this.mWSDLFileName);
     }
     /**
      * 
@@ -325,6 +346,9 @@ public class WSDLGenerator {
 					break;
 				}
 			}
+			//modfiy the targetnamespace attribute of xsd:schema element. Set it to wsdlname
+			Attr attr = schEle.getAttributeNode(TARGET_NS);
+			attr.setNodeValue(TARGET_NS_PREFIX_STRING + this.mWSDLFileName);
 			final Element importElem = this.doc.createElementNS(WSDLGenerator.XMLSCHEMA_NAMESPACE,
 					WSDLGenerator.IMPORT_ELEMENT);
 			importElem.setAttribute(WSDLGenerator.NAMESPACE_ATTR, WSDLGenerator.TARGETNAMESPACE);// get
@@ -633,7 +657,7 @@ public class WSDLGenerator {
     public void modifyServiceAndPortNames() throws WSDLException, Exception {
         try {
             final Element rootEle = this.doc.getDocumentElement();
-            final String projectName = getProjectName(this.wsdlFileLocation);
+            //final String projectName = getProjectName(this.wsdlFileLocation);
             final NodeList list = rootEle.getChildNodes();
             for (int i = 0; i < list.getLength(); i++) {
                 final Node n = list.item(i);
@@ -641,7 +665,7 @@ public class WSDLGenerator {
                     if (n.getLocalName().equalsIgnoreCase(SERVICE_NAME)) {
                         Element serEle = (Element) n;
                         serEle.removeAttribute("name");
-                        serEle.setAttribute("name", projectName + this.mWSDLFileName + SERVICE_NAME);
+                        serEle.setAttribute("name", this.mWSDLFileName + SERVICE_NAME);
                         final NodeList childList = n.getChildNodes();
                         for (int j = 0; j < childList.getLength(); j++) {
                             final Node childNode = childList.item(j);
@@ -649,7 +673,7 @@ public class WSDLGenerator {
                                 if (childNode.getLocalName().equalsIgnoreCase(PORT_NAME)) {
                                     Element portEle = (Element) childNode;
                                     portEle.removeAttribute("name");
-                                    portEle.setAttribute("name", projectName + this.mWSDLFileName + PORT_NAME);
+                                    portEle.setAttribute("name", this.mWSDLFileName + PORT_NAME);
                                 }
                             }
                         }

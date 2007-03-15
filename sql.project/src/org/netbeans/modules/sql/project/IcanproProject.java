@@ -17,83 +17,59 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- *                 Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- *
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
- * Microsystems, Inc. All Rights Reserved.
- */
 
 package org.netbeans.modules.sql.project;
 
-import org.netbeans.modules.sql.project.spi.JbiArtifactProvider;
-import org.netbeans.modules.sql.project.ui.IcanproCustomizerProvider;
-import org.netbeans.modules.sql.project.IcanproLogicalViewProvider;
-import org.netbeans.modules.sql.project.ui.customizer.IcanproProjectProperties;
-import org.netbeans.modules.sql.project.SQLproConstants;
-import org.netbeans.modules.sql.project.ui.SQLproLogicalViewProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.java.project.JavaProjectConstants;
+
+
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.sql.project.spi.JbiArtifactProvider;
+import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
+import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-
-
-
 /**
- * Represents one sql module project
+ * Represents one ejb module project
  * @author Chris Webster
  */
-public final class SQLproProject implements Project, AntProjectListener {
+public final class IcanproProject implements Project, AntProjectListener {
 
+//    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("com/sun/jbi/ui/devtoolT/projects/icanpro/ui/resources/icanproProjectIcon.gif")); // NOI18N
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/sql/project/ui/resources/sqlproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
-    public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
-
-    public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-sql-project.jar";
-    public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.sql.project";
-    public static final String MODULE_INSTALL_DIR = "module.install.dir";
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -101,7 +77,7 @@ public final class SQLproProject implements Project, AntProjectListener {
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
 
-    public SQLproProject(final AntProjectHelper helper) throws IOException {
+    public IcanproProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
@@ -116,11 +92,7 @@ public final class SQLproProject implements Project, AntProjectListener {
     }
 
     public String toString() {
-        return "SQLproProject[" + getProjectDirectory() + "]"; // NOI18N
-    }
-
-    public ReferenceHelper getReferenceHelper() {
-        return this.refHelper;
+        return "IcanproProject[" + getProjectDirectory() + "]"; // NOI18N
     }
 
     private PropertyEvaluator createEvaluator() {
@@ -150,7 +122,7 @@ public final class SQLproProject implements Project, AntProjectListener {
         sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
 
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
+        // sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -160,17 +132,15 @@ public final class SQLproProject implements Project, AntProjectListener {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
-//B            new ProjectWebServicesSupportProvider(),
             // XXX the helper should not be exposed
             helper,
             spp,
-            new SQLproActionProvider( this, helper, refHelper ),
-            new SQLproLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
+            new IcanproActionProvider( this, helper, refHelper ),
+            new IcanproLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
             new IcanproCustomizerProvider( this, helper, refHelper ),
             new JbiArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
-            new SQLproProjectOperations(this),
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
@@ -228,35 +198,6 @@ public final class SQLproProject implements Project, AntProjectListener {
         });
     }
 
-    public AntProjectHelper getAntProjectHelper() {
-        return helper;
-    }
-
-	/** Store configured project name. */
-	public void setName(final String name) {
-		ProjectManager.mutex().writeAccess(new Mutex.Action() {
-			public Object run() {
-				Element data = helper.getPrimaryConfigurationData(true);
-				// XXX replace by XMLUtil when that has findElement, findText, etc.
-				NodeList nl = data.getElementsByTagNameNS(SQLproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-				Element nameEl;
-				if (nl.getLength() == 1) {
-					nameEl = (Element) nl.item(0);
-					NodeList deadKids = nameEl.getChildNodes();
-					while (deadKids.getLength() > 0) {
-						nameEl.removeChild(deadKids.item(0));
-					}
-				} else {
-					nameEl = data.getOwnerDocument().createElementNS(SQLproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-					data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
-				}
-				nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-				helper.putPrimaryConfigurationData(data, true);
-				return null;
-			}
-		});
-    }
-
     // Private innerclasses ----------------------------------------------------
 
     private final class Info implements ProjectInformation {
@@ -270,11 +211,11 @@ public final class SQLproProject implements Project, AntProjectListener {
         }
 
         public String getName() {
-            return SQLproProject.this.getName();
+            return IcanproProject.this.getName();
         }
 
         public String getDisplayName() {
-            return SQLproProject.this.getName();
+            return IcanproProject.this.getName();
         }
 
         public Icon getIcon() {
@@ -282,7 +223,7 @@ public final class SQLproProject implements Project, AntProjectListener {
         }
 
         public Project getProject() {
-            return SQLproProject.this;
+            return IcanproProject.this;
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -302,11 +243,11 @@ public final class SQLproProject implements Project, AntProjectListener {
         protected void projectXmlSaved() throws IOException {
             genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                SQLproProject.class.getResource("resources/build-impl.xsl"),
+                IcanproProject.class.getResource("resources/build-impl.xsl"),
                 false);
             genFilesHelper.refreshBuildScript(
                 getBuildXmlName(),
-                SQLproProject.class.getResource("resources/build.xsl"),
+                IcanproProject.class.getResource("resources/build.xsl"),
                 false);
         }
 
@@ -321,45 +262,25 @@ public final class SQLproProject implements Project, AntProjectListener {
                 // Check up on build scripts.
                 genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                SQLproProject.class.getResource("resources/build-impl.xsl"),
+                IcanproProject.class.getResource("resources/build-impl.xsl"),
                 true);
                 genFilesHelper.refreshBuildScript(
                 getBuildXmlName(),
-                SQLproProject.class.getResource("resources/build.xsl"),
+                IcanproProject.class.getResource("resources/build.xsl"),
                 true);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
 
-            // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
-
-                    File f = InstalledFileLocator.getDefault().locate(MODULE_INSTALL_NAME, MODULE_INSTALL_CBN, false);
-                    if (f != null) {
-                        ep.setProperty(MODULE_INSTALL_DIR, f.getParentFile().getPath());
-                    }
-
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    try {
-                        ProjectManager.getDefault().saveProject(SQLproProject.this);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                    return null;
-                }
-            });
             if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
-                BrokenReferencesSupport.showAlert();
+                // BrokenReferencesSupport.showAlert();
             }
         }
 
         protected void projectClosed() {
             // Probably unnecessary, but just in case:
             try {
-                ProjectManager.getDefault().saveProject(SQLproProject.this);
+                ProjectManager.getDefault().saveProject(IcanproProject.this);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -369,19 +290,16 @@ public final class SQLproProject implements Project, AntProjectListener {
 
     /**
      * Exports the main JAR as an official build product for use from other scripts.
-     * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.
+     * The type of the artifact will be {@link AntArtifact}.
      */
     private final class JbiArtifactProviderImpl implements JbiArtifactProvider {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(SQLproProject.ARTIFACT_TYPE_JBI_ASA + ":" +
+                helper.createSimpleAntArtifact(JbiArtifactProvider.ARTIFACT_TYPE_JBI_ASA+":"+
                         helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX),
                         IcanproProjectProperties.SE_DEPLOYMENT_JAR,
                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
-				helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR,
-                         IcanproProjectProperties.SE_DEPLOYMENT_JAR,
-                         helper.getStandardPropertyEvaluator(), "dist_se", "clean") // NOI18N
             };
         }
 
@@ -400,8 +318,8 @@ public final class SQLproProject implements Project, AntProjectListener {
         };
 
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/XML/stylesheet.xsl",
             "Templates/CAPS/schema.xsd",
+            "Templates/CAPS/untitled.bpel",
             "Templates/CAPS/untitled.wsdl"
         };
 
@@ -412,10 +330,6 @@ public final class SQLproProject implements Project, AntProjectListener {
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }
-       
 
-    }
-    public IcanproProjectProperties getProjectProperties() {
-        return new IcanproProjectProperties(this, helper, refHelper);
     }
 }

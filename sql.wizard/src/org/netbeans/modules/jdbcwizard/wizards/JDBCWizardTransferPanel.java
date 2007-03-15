@@ -48,6 +48,8 @@ import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -93,12 +95,12 @@ public class JDBCWizardTransferPanel extends JPanel implements ActionListener, W
             this.setName(title);
         }
 
-        final ArrayList testList = new ArrayList();
-        this.tablePanel = new JDBCWizardTablePanel(testList);
-
-        this.setLayout(new BorderLayout());
-        this.add(this.tablePanel, BorderLayout.CENTER);
-        JDBCWizardTransferPanel.this.tablePanel.resetTable(this.selTableList);
+//        final ArrayList testList = new ArrayList();
+//        this.tablePanel = new JDBCWizardTablePanel(testList);
+//
+//        this.setLayout(new BorderLayout());
+//        this.add(this.tablePanel, BorderLayout.CENTER);
+//        JDBCWizardTransferPanel.this.tablePanel.resetTable(this.selTableList);
     }
 
     /**
@@ -152,26 +154,33 @@ public class JDBCWizardTransferPanel extends JPanel implements ActionListener, W
      * @see org.openide.WizardDescriptor.Panel#readSettings
      */
     public void readSettings(final Object settings) {
-        WizardDescriptor wizard = null;
-        if (settings instanceof JDBCWizardContext) {
-            final JDBCWizardContext wizardContext = (JDBCWizardContext) settings;
-            wizard = (WizardDescriptor) wizardContext.getProperty(JDBCWizardContext.WIZARD_DESCRIPTOR);
+		WizardDescriptor wizard = null;
+		if (settings instanceof JDBCWizardContext) {
+			final JDBCWizardContext wizardContext = (JDBCWizardContext) settings;
+			wizard = (WizardDescriptor) wizardContext
+					.getProperty(JDBCWizardContext.WIZARD_DESCRIPTOR);
 
-        } else if (settings instanceof WizardDescriptor) {
-            wizard = (WizardDescriptor) settings;
-        }
+		} else if (settings instanceof WizardDescriptor) {
+			wizard = (WizardDescriptor) settings;
+		}
 
-        if (wizard != null && WizardDescriptor.NEXT_OPTION.equals(wizard.getValue())) {
+		if (wizard != null
+				&& WizardDescriptor.NEXT_OPTION.equals(wizard.getValue())) {
+			final Object[] sources = (Object[]) wizard
+					.getProperty(JDBCWizardContext.SELECTEDTABLES);
+			this.selTableList = Arrays.asList(sources);
+			final ArrayList testList = new ArrayList();
+		    this.tablePanel = new JDBCWizardTablePanel(testList);
 
-            final Object[] sources = (Object[]) wizard.getProperty(JDBCWizardContext.SELECTEDTABLES);
-            this.selTableList = Arrays.asList(sources);
-            this.tablePanel.resetTable(this.selTableList);
-        }
-    }
+		    this.setLayout(new BorderLayout());
+		    this.add(this.tablePanel, BorderLayout.CENTER);
+		    JDBCWizardTransferPanel.this.tablePanel.resetTable(this.selTableList);
+		}
+	}
 
     /**
-     * @see org.openide.WizardDescriptor.Panel#removeChangeListener
-     */
+	 * @see org.openide.WizardDescriptor.Panel#removeChangeListener
+	 */
     public void removeChangeListener(final ChangeListener l) {
         synchronized (this.listeners) {
             this.listeners.remove(l);
@@ -189,6 +198,16 @@ public class JDBCWizardTransferPanel extends JPanel implements ActionListener, W
 
         } else if (settings instanceof WizardDescriptor) {
             wizard = (WizardDescriptor) settings;
+        }
+        
+        final Object selectedOption = wizard.getValue();
+        if (NotifyDescriptor.CANCEL_OPTION == selectedOption || NotifyDescriptor.CLOSED_OPTION == selectedOption) {
+                return;
+        }
+        if(selectedOption.toString().equals("PREVIOUS_OPTION")){
+        	this.remove(this.tablePanel);
+        	this.selTableList = null;
+        	return;
         }
     }
 

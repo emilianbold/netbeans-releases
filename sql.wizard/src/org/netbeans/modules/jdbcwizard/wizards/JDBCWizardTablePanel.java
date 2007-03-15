@@ -68,6 +68,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -85,6 +86,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import org.openide.util.NbBundle;
 
@@ -115,12 +117,14 @@ public class JDBCWizardTablePanel extends JPanel {
          */
         private static final long serialVersionUID = 1L;
 
-        protected MyTableModelCellRenderer mytabmod = new MyTableModelCellRenderer();
+        protected MyTableModelCellRenderer mytabmod;
 
-        protected MyBooleanRenderer mybool = new MyBooleanRenderer();
-
-        public MetaTableComponent() {
+        protected MyBooleanRenderer mybool;
+		
+		public MetaTableComponent() {
             // Need to revisit whether should use abstract model here??
+			mytabmod = new MyTableModelCellRenderer();
+			mybool = new MyBooleanRenderer();
             this.setDefaultRenderer(DBTableImpl.class, this.mytabmod);
             this.setDefaultRenderer(Boolean.class, this.mybool);
             final JTableHeader header = this.getTableHeader();
@@ -152,6 +156,7 @@ public class JDBCWizardTablePanel extends JPanel {
             this.myPanel.add(this, BorderLayout.CENTER);
             this.myPanel.setOpaque(true);
             this.myPanel.setBorder(MyBooleanRenderer.noFocusBorder);
+			this.setSelected(true);
         }
 
         public Component getTableCellRendererComponent(final JTable table,
@@ -215,7 +220,10 @@ public class JDBCWizardTablePanel extends JPanel {
         public void setBackground(final Color c) {
             super.setBackground(c);
         }
-
+		
+		public void setSelected(boolean flag){
+			super.setSelected(flag);
+		}
         /**
          * Overrides <code>JComponent.setForeground</code> to assign the unselected-foreground
          * color to the specified color.
@@ -299,62 +307,70 @@ public class JDBCWizardTablePanel extends JPanel {
             return this.myButPanel;
         }
 
-        public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int column) {
-            final RowDataWrapper rowDW = ((MyTableModel) table.getModel()).getRowDataWrapper(row);
-            if (rowDW != null && !rowDW.isEditable().booleanValue()) {
-                this.setEnabled(false);
-                this.setFocusable(false);
-                this.setBackground(Color.LIGHT_GRAY);
-                final Object obj = rowDW.getTable();
-                if (obj instanceof DBTable) {
-                    final DBTable st = (DBTable) obj;
-                    if (!st.isSelected()) {
-                        this.setToolTipText(NbBundle.getMessage(JDBCWizardTablePanel.class,
-                                "TOOLTIP_source_table_disabled_unselected", rowDW.getTable()));
-                    }
-                }
-            } else {
+        public Component getTableCellEditorComponent(final JTable table,
+				final Object value, final boolean isSelected, final int row,
+				final int column) {
+			final RowDataWrapper rowDW = ((MyTableModel) table.getModel())
+					.getRowDataWrapper(row);
+			this.addActionListener(new ColumnAction(rowDW));
+			if (rowDW != null && !rowDW.isEditable().booleanValue()) {
+				this.setEnabled(false);
+				this.setFocusable(false);
+				this.setBackground(Color.LIGHT_GRAY);
+				final Object obj = rowDW.getTable();
+				if (obj instanceof DBTable) {
+					final DBTable st = (DBTable) obj;
+					if (!st.isSelected()) {
+						this.setToolTipText(NbBundle.getMessage(
+								JDBCWizardTablePanel.class,
+								"TOOLTIP_source_table_disabled_unselected",
+								rowDW.getTable()));
+					}
+				}
+			} else {
 
-                if (isSelected) {
-                    this.myButPanel.setBackground(Color.LIGHT_GRAY);
-                    this.myButPanel.add(this, BorderLayout.CENTER);
-                    this.setEnabled(true);
-                    this.myButPanel.setEnabled(true);
-                    this.myButPanel.setOpaque(true);
-                    this.addActionListener(new ColumnAction(rowDW));
-                    this.setForeground(table.getSelectionForeground());
-                    this.setBackground(table.getSelectionBackground());
-                    this.myButPanel.setForeground(table.getSelectionForeground());
-                    this.myButPanel.setBackground(table.getSelectionBackground());
-                } else {
-                    this.setForeground(table.getForeground());
-                    this.setBackground(table.getBackground());
-                    this.myButPanel.setForeground(table.getForeground());
-                    this.myButPanel.setBackground(table.getBackground());
-                }
-                this.setFocusable(true);
-                this.setText("Advanced..");
-            }
-            return this.myButPanel;
-        }
+				if (isSelected) {
+					this.myButPanel.setBackground(Color.LIGHT_GRAY);
+					this.myButPanel.add(this, BorderLayout.CENTER);
+					this.setEnabled(true);
+					this.myButPanel.setEnabled(true);
+					this.myButPanel.setOpaque(true);
+					//this.addActionListener(new ColumnAction(rowDW));
+					this.setForeground(table.getSelectionForeground());
+					this.setBackground(table.getSelectionBackground());
+					this.myButPanel.setForeground(table
+							.getSelectionForeground());
+					this.myButPanel.setBackground(table
+							.getSelectionBackground());
+				} else {
+					this.setForeground(table.getForeground());
+					this.setBackground(table.getBackground());
+					this.myButPanel.setForeground(table.getForeground());
+					this.myButPanel.setBackground(table.getBackground());
+				}
+				this.setFocusable(true);
+				this.setText("Advanced..");
+			}
+			return this.myButPanel;
+		}
 
         /**
-         * 
-         */
+		 * 
+		 */
         public Object getCellEditorValue() {
             return this.getCellEditorValue();
         }
 
         /**
-         * 
-         */
+		 * 
+		 */
         public boolean isCellEditable(final EventObject anEvent) {
             return true;
         }
 
         /**
-         * 
-         */
+		 * 
+		 */
         public boolean shouldSelectCell(final EventObject anEvent) {
             return true;
         }
@@ -391,6 +407,10 @@ public class JDBCWizardTablePanel extends JPanel {
         protected JButton okbutton = new JButton("OK");
 
         protected JButton cancelbutton = new JButton("Cancel");
+        
+        protected JButton selectallbutton = new JButton("Select All");
+        
+        protected JButton clearallbutton = new JButton("Clear All");
 
         protected JPanel buttonpanel = new JPanel();
 
@@ -402,7 +422,7 @@ public class JDBCWizardTablePanel extends JPanel {
 
         protected PolledColumnPanel correspPolledCol;
 
-        protected JTabbedPane myTabpane = new JTabbedPane();
+        protected JTabbedPane myTabpane;
 
         // protected JDialog columndisplay = new JDialog();
         protected class ColumnDialog extends JDialog {
@@ -419,22 +439,10 @@ public class JDBCWizardTablePanel extends JPanel {
         ColumnDialog columnDisplayDialog = new ColumnDialog(new JDialog(), true);
 
         protected String title = "Columns";
-
+        
+        RowDataWrapper takes;
         public ColumnAction(final RowDataWrapper takes) {
-
-            this.correspInsertCol = new InsertColumnPanel();
-            this.correspInsertCol.addColumnTable(((DBTable) takes.getTable()).getColumnList());
-
-            this.correspUpdateCol = new UpdateColumnPanel();
-            this.correspUpdateCol.addColumnTable(((DBTable) takes.getTable()).getColumnList());
-
-            this.correspChosenCol = new ChosenColumnPanel();
-            this.correspChosenCol.addColumnTable(((DBTable) takes.getTable()).getColumnList());
-
-            this.correspPolledCol = new PolledColumnPanel();
-            this.correspPolledCol.addColumnTable(((DBTable) takes.getTable()).getColumnList());
-
-            this.title = this.title.concat(JDBCWizardTablePanel.SEPARATOR + ((DBTable) takes.getTable()).getName());
+        	this.takes = takes;
         }
 
         // this is the default action when the button corresponding to the
@@ -443,8 +451,29 @@ public class JDBCWizardTablePanel extends JPanel {
          * 
          */
         public void actionPerformed(final ActionEvent anAct) {
-            this.initializeColumn();
-        }
+        	if(this.takes != null && this.takes.isSelected().booleanValue()){
+        		this.correspInsertCol = new InsertColumnPanel();
+				this.correspInsertCol.addColumnTable(((DBTable) this.takes
+						.getTable()).getColumnList());
+
+				this.correspUpdateCol = new UpdateColumnPanel();
+				this.correspUpdateCol.addColumnTable(((DBTable) this.takes
+						.getTable()).getColumnList());
+
+				this.correspChosenCol = new ChosenColumnPanel();
+				this.correspChosenCol.addColumnTable(((DBTable) this.takes
+						.getTable()).getColumnList());
+
+				this.correspPolledCol = new PolledColumnPanel();
+				this.correspPolledCol.addColumnTable(((DBTable) this.takes
+						.getTable()).getColumnList());
+				this.title = this.title.concat(JDBCWizardTablePanel.SEPARATOR
+						+ ((DBTable) this.takes.getTable()).getName());
+        		this.initializeColumn();
+        	}
+        	else
+        		JOptionPane.showMessageDialog(null, "Please select the table to select additional properties", "Column Selection", JOptionPane.WARNING_MESSAGE);
+        }	
 
         /**
          *
@@ -455,6 +484,8 @@ public class JDBCWizardTablePanel extends JPanel {
             this.correspUpdateCol.setName("Update");
             this.correspChosenCol.setName("Select");
             this.correspPolledCol.setName("Poll");
+            
+            this.myTabpane = new JTabbedPane();
             this.myTabpane.add(this.correspInsertCol);
             this.myTabpane.add(this.correspUpdateCol);
             this.myTabpane.add(this.correspChosenCol);
@@ -470,7 +501,20 @@ public class JDBCWizardTablePanel extends JPanel {
                     ColumnAction.this.okAction();
                 }
             });
-            this.buttonpanel.add(this.okbutton, BorderLayout.LINE_START);
+            this.selectallbutton.addActionListener(new ActionListener(){
+            	public void actionPerformed(final ActionEvent e){
+            		ColumnAction.this.selectAllAction(ColumnAction.this.myTabpane.getSelectedIndex());
+            	}
+            });
+            this.clearallbutton.addActionListener(new ActionListener(){
+            	public void actionPerformed(final ActionEvent e){
+            		ColumnAction.this.clearAllAction(ColumnAction.this.myTabpane.getSelectedIndex());
+            	}
+            });
+            
+            this.buttonpanel.add(this.selectallbutton, BorderLayout.LINE_START);
+            this.buttonpanel.add(this.clearallbutton, BorderLayout.WEST);
+            this.buttonpanel.add(this.okbutton, BorderLayout.EAST);
             this.buttonpanel.add(this.cancelbutton, BorderLayout.LINE_END);
             this.columnDisplayDialog.add(this.buttonpanel, BorderLayout.SOUTH);
             this.centerWindowOnScreen(this.columnDisplayDialog);
@@ -497,6 +541,85 @@ public class JDBCWizardTablePanel extends JPanel {
 
         public void okAction() {
             this.columnDisplayDialog.dispose();
+        }
+        
+        public void selectAllAction(int index){
+        	int cnt = 0;
+            switch (index) {
+            case 0:
+            	while( cnt < this.correspInsertCol.getColumnTable().getModel().getRowCount()){
+                    DBColumn db = (DBColumn) (this.correspInsertCol.getColumnTables()).get(cnt);
+                    db.setInsertSelected(true);
+                    cnt++;
+                }
+            	this.correspInsertCol.repaint();
+            	break;
+            case 1:
+            	while( cnt < this.correspUpdateCol.getColumnTable().getModel().getRowCount()){
+                    DBColumn db = (DBColumn) (this.correspUpdateCol.getColumnTables()).get(cnt);
+                    db.setUpdateSelected(true);
+                    cnt++;
+                }
+            	this.correspUpdateCol.repaint();
+            	break;
+            case 2:
+            	while( cnt < this.correspChosenCol.getColumnTable().getModel().getRowCount()){
+                    DBColumn db = (DBColumn) (this.correspChosenCol.getColumnTables()).get(cnt);
+                    db.setChooseSelected(true);
+                    cnt++;
+                }
+            	this.correspChosenCol.repaint();
+            	break;  
+            case 3:
+            	while( cnt < this.correspPolledCol.getColumnTable().getModel().getRowCount()){
+                    DBColumn db = (DBColumn) (this.correspPolledCol.getColumnTables()).get(cnt);
+                    db.setPollSelected(true);
+                    cnt++;
+                }
+            	this.correspPolledCol.repaint();
+            	break;
+            }        	
+        }
+        
+        public void clearAllAction(int index){
+        	int cnt = 0;
+            switch (index) {
+            case 0:
+            	while( cnt < this.correspInsertCol.getColumnTable().getModel().getRowCount()){
+                    DBColumn db = (DBColumn) (this.correspInsertCol.getColumnTables()).get(cnt);
+                    if(db.isNullable()){
+                        db.setInsertSelected(false);
+                    }
+                    cnt++;
+                }
+            	this.correspInsertCol.repaint();
+            	break;
+            case 1:
+            	while( cnt < this.correspUpdateCol.getColumnTable().getModel().getRowCount()){
+                    DBColumn db = (DBColumn) (this.correspUpdateCol.getColumnTables()).get(cnt);
+                    db.setUpdateSelected(false);
+                    cnt++;
+                }
+            	this.correspUpdateCol.repaint();
+            	break;
+            case 2:
+            	while( cnt < this.correspChosenCol.getColumnTable().getModel().getRowCount()){
+                    DBColumn db = (DBColumn) (this.correspChosenCol.getColumnTables()).get(cnt);
+                    db.setChooseSelected(false);
+                    cnt++;
+                }
+            	this.correspChosenCol.repaint();
+            	break;  
+            case 3:
+            	while( cnt < this.correspPolledCol.getColumnTable().getModel().getRowCount()){
+                    DBColumn db = (DBColumn) (this.correspPolledCol.getColumnTables()).get(cnt);
+                    db.setPollSelected(false);
+                    cnt++;
+                }
+            	this.correspPolledCol.repaint();
+            	break;             	
+            }
+
         }
 
         /**
@@ -837,7 +960,7 @@ public class JDBCWizardTablePanel extends JPanel {
     /**
      * @param testList
      */
-    private void addTable(final List testList) {
+    public void addTable(final List testList) {
         this.metaDataTable = new MetaTableComponent();
         this.metaDataTable.setFont(JDBCWizardTablePanel.FONT_TABLE_COLUMNS);
         this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);

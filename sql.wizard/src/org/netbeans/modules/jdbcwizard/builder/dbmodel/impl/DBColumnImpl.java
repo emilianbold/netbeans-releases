@@ -83,6 +83,9 @@ public class DBColumnImpl implements DBColumn, Cloneable, Comparable {
 
     /** editable */
     protected boolean editable = true;
+    
+    /** insert editable */
+    protected boolean insertEditable = true;
 
     /** selected */
     protected boolean insertSelected = true;
@@ -522,6 +525,15 @@ public class DBColumnImpl implements DBColumn, Cloneable, Comparable {
     public boolean isEditable() {
         return this.editable;
     }
+    
+    /**
+     * Gets the status of Insert editing
+     * 
+     * @return InsertEditable
+     */
+    public boolean isInsertEditable() {
+        return this.insertEditable;
+    }
 
     /**
      * Sets status of editing the column table
@@ -531,6 +543,16 @@ public class DBColumnImpl implements DBColumn, Cloneable, Comparable {
 
     public void setEditable(final boolean cedit) {
         this.editable = cedit;
+    }
+    
+    /**
+     * Sets status of editing the column table at Insert tab
+     * 
+     * @param the editing status is from now that of cedit
+     */
+
+    public void setInsertEditable(final boolean cedit) {
+        this.insertEditable = cedit;
     }
 
     /**

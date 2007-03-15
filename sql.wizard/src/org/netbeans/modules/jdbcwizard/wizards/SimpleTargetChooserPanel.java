@@ -301,7 +301,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
 
         ((WizardDescriptor) settings).putProperty(JDBCWizardContext.COLLABORATION_NAME, this.gui.getTargetName());
         ((WizardDescriptor) settings).putProperty(JDBCWizardContext.TARGETFOLDER_PATH,
-                getTargetFolderFromGUI().getPath());
+                (FileUtil.toFile(getTargetFolderFromGUI())).getAbsolutePath());
         ((WizardDescriptor) settings).putProperty("NewDtelWizard_Title", null); // NOI18N
     }
 

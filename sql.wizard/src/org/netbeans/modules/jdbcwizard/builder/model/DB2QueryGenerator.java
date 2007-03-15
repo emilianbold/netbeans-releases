@@ -38,6 +38,7 @@
 package org.netbeans.modules.jdbcwizard.builder.model;
 
 import org.netbeans.modules.jdbcwizard.builder.model.DBQueryModel;
+import org.netbeans.modules.jdbcwizard.builder.util.XMLCharUtil;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
 
@@ -261,8 +262,9 @@ public class DB2QueryGenerator implements DBQueryModel {
             tempList = this.mUpdateColumns;
         }
         for (int i = 0; i < tempList.size(); i++) {
-            sb.append(((DBColumn) tempList.get(i)).getName());
-            if (i == tempList.size() - 1) {
+        	String ncName = XMLCharUtil.makeValidNCName(((DBColumn) tempList.get(i)).getName());
+        	sb.append(ncName);
+        	if (i == tempList.size() - 1) {
                 sb.append("");
             } else {
                 sb.append(",");

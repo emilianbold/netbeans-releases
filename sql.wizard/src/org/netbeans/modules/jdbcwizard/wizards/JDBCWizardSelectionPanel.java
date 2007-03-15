@@ -65,6 +65,8 @@ import org.netbeans.modules.jdbcwizard.builder.Table;
 import org.netbeans.modules.jdbcwizard.builder.TableColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.impl.DBColumnImpl;
+import org.netbeans.modules.jdbcwizard.builder.util.XMLCharUtil;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -482,20 +484,19 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         }
         
 		if(listModel!= null){
-		List selList = this.listModel.getDestinationList();
-        List selTabList = new ArrayList();
-        Iterator itr = selList.iterator();
-        while(itr.hasNext()){
-            DBTable tabObj = (DBTable)populateDBTable((String)itr.next());
-            //By default make the table selected
-            //tabObj.setSelected(true);
-            selTabList.add(tabObj);
-        }
-        
-		if (wd != null) {
-            wd.putProperty(JDBCWizardContext.SELECTEDTABLES, selTabList.toArray());
-            wd.putProperty(JDBCWizardContext.DBTYPE, this.dbtype);
-            wd.putProperty(JDBCWizardContext.CONNECTION_INFO, def);
+			List selList = this.listModel.getDestinationList();
+        	List selTabList = new ArrayList();
+        	Iterator itr = selList.iterator();
+        	while(itr.hasNext()){
+        		DBTable tabObj = (DBTable)populateDBTable((String)itr.next());
+        		// By default make the table selected
+        		tabObj.setSelected(true);
+        		selTabList.add(tabObj);
+        	}
+        	if (wd != null) {
+        		wd.putProperty(JDBCWizardContext.SELECTEDTABLES, selTabList.toArray());
+        		wd.putProperty(JDBCWizardContext.DBTYPE, this.dbtype);
+        		wd.putProperty(JDBCWizardContext.CONNECTION_INFO, def);
 	        }
         }
     }
@@ -527,6 +528,8 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                             ffColumn = new DBColumnImpl(tc.getName(), tc.getSqlTypeCode(), tc.getNumericScale(),
                                     tc.getNumericPrecision(), tc.getIsPrimaryKey(), tc.getIsForeignKey(),
                                     false /* isIndexed */, tc.getIsNullable());
+                            final String ncName = XMLCharUtil.makeValidNCName(tc.getName());
+                            ffColumn.setJavaName(ncName);
                             ffTable.addColumn(ffColumn);
                         }
                         return ((DBTable)ffTable);

@@ -162,11 +162,22 @@ public interface DBColumn extends Cloneable, Comparable {
      * Gets the status of the editing of the column table @return boolean editable
      */
     public boolean isEditable();
+    
+    /*
+     * Gets the status of the editing of the column table @return boolean editable
+     */
+    public boolean isInsertEditable();
 
     /*
      * set column table editable
      */
     public void setEditable(boolean cedit);
+    
+    /*
+     * set column table editable
+     */
+    public void setInsertEditable(boolean cedit);
+
 
     /*
      * set column table selected
@@ -192,5 +203,16 @@ public interface DBColumn extends Cloneable, Comparable {
      * @param cselect
      */
     public void setPollSelected(boolean cselect);
+   
+    /**
+     * 
+     * @return
+     */
+    public String getJavaName();
+    /**
+     * 
+     * @param newName
+     */
+    public void setJavaName(final String newName); 
 
 }

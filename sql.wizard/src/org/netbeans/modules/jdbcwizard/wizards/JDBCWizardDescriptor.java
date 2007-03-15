@@ -96,7 +96,7 @@ public abstract class JDBCWizardDescriptor extends WizardDescriptor {
         this.putProperty("WizardPanel_leftDimension", new Dimension(184, 500)); // NOI18N
 
         // Optional: show a help tab with special info about the pane:
-        // putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
+        this.putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
 
         // Make the left pane appear:
         this.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N

@@ -108,10 +108,11 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
                                                        final int row,
                                                        final int column) {
             final RowDataWrapper rowDW = ((MyTColumnModel) table.getModel()).getRowDataWrapper(row);
-            if (rowDW != null && !rowDW.isEditable().booleanValue()) {
-                this.setEnabled(false);
-                this.setFocusable(false);
-                this.setBackground(Color.LIGHT_GRAY);
+            // if (rowDW != null && !rowDW.isEditable().booleanValue()) {
+            if (rowDW != null ) {    
+                //this.setEnabled(false);
+                //this.setFocusable(false);
+                //this.setBackground(Color.LIGHT_GRAY);
                 final Object obj = rowDW.getTColumn();
                 if (obj instanceof DBColumn) {
                     final DBColumn st = (DBColumn) obj; // SourceTable modified to
@@ -119,6 +120,9 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
                     if (!st.isInsertSelected()) {
                         this.setToolTipText(NbBundle.getMessage(JDBCWizardTablePanel.class,
                                 "TOOLTIP_source_table_disabled_unselected", rowDW.getTColumn()));
+                    }
+                    if(!st.isNullable()){
+                        st.setInsertEditable(false);
                     }
                 }
                 this.myPanel.setBorder(MyBooleanRenderer.noFocusBorder);
@@ -341,6 +345,9 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
                     renderer.setToolTipText(NbBundle.getMessage(JDBCWizardTablePanel.class,
                             "TOOLTIP_source_table_disabled_unselected", rowDW.getTColumn()));
                 }
+                if (st.getName() != null) {
+                    this.setText(st.getName());
+                }
                 renderer.setBorder(MyTColumnModelCellRenderer.noFocusBorder1);
                 renderer.setFocusable(false);
             } else {
@@ -386,7 +393,7 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
          * @return
          */
         public Boolean isEditable() {
-            return this.tcolumn.isEditable() ? Boolean.TRUE : Boolean.FALSE;
+            return this.tcolumn.isInsertEditable() ? Boolean.TRUE : Boolean.FALSE;
             // return Boolean.TRUE;
         }
 
@@ -401,7 +408,7 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
          * @param isEditable
          */
         public void setEditable(final Boolean isEditable) {
-            this.tcolumn.setEditable(isEditable.booleanValue());
+            this.tcolumn.setInsertEditable(isEditable.booleanValue());
         }
 
         /**

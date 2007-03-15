@@ -234,7 +234,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             // Try to find the node
             for (int i = 0; i < nodes.length; i++) {
                 try {
-                    sel = NodeOp.findPath(nodes[i], new StringTokenizer(preselectedFileName, "/"));
+                    sel = NodeOp.findPath(nodes[i], new String(preselectedFileName).split("/"));
 
                     break;
                 } catch (NodeNotFoundException e) {

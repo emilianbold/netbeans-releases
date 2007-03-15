@@ -141,8 +141,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="SeeBeyondJbiComponents">
         <!-- JBI Component -->
-        <file name="com.sun.sqlse">
-            <attr name="id" stringvalue="com.sun.sqlse-1.0-2"/>
+        <file name="sun-sql-engine">
+            <attr name="id" stringvalue="sun-sql-engine"/>
             <attr name="description" stringvalue="This is a sql service engine."/>
             <attr name="type" stringvalue="Engine"/>
         </file>
