@@ -61,7 +61,6 @@ import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.cookies.OpenCookie;
 
 /**
@@ -94,17 +93,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         final String pageName = preSetName;
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, pageName); // NOI18N
         JsfProjectUtils.setProjectVersion(project, "4.0"); // NOI18N
-
-        // Create Visual Web files
-        ProjectManager.mutex().postReadRequest(new Runnable() {
-            public void run() {
-                try{ 
-                    template.create(project, webModule.getJ2eePlatformVersion(), pageName);
-                } catch (IOException ioe){
-                    ErrorManager.getDefault().notify(ioe);
-                }
-           }
-        }); 
 
         // <RAVE> Add the VWP libraries to the project
         try {
@@ -141,21 +129,23 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
 
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
-            fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, template, pageName));
+            fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, pageName));
 
-            // Open the new visual page
+            // Create Visual Web files and open the created visual page
             ProjectManager.mutex().postReadRequest(new Runnable() {
                 public void run() {
-                    FileObject pagejsp = fileObject.getFileObject(pageName);
-                    if (pagejsp != null) {
-                        try {
+                    try {
+                        template.create(project, webModule.getJ2eePlatformVersion(), pageName);
+                        FileObject pagejsp = fileObject.getFileObject(pageName);
+                        if (pagejsp != null) {
                             DataObject obj = DataObject.find(pagejsp);
                             OpenCookie open = (OpenCookie) obj.getCookie(OpenCookie.class);
                             if (open != null) {
                                 open.open();
                             }
-                        } catch (DataObjectNotFoundException e) {
                         }
+                    } catch (IOException ioe){
+                        ErrorManager.getDefault().notify(ioe);
                     }
                 }
             });
@@ -240,13 +230,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private class  CreateFacesConfig implements FileSystem.AtomicAction{
         WebModule webModule;
         boolean isMyFaces;
-        ProjectTemplate template;
         String pageName;
         
-        public CreateFacesConfig(WebModule webModule, boolean isMyFaces, ProjectTemplate template, String pageName){
+        public CreateFacesConfig(WebModule webModule, boolean isMyFaces, String pageName){
             this.webModule = webModule;
             this.isMyFaces = isMyFaces;
-            this.template = template;
             this.pageName = pageName;
         }
         
