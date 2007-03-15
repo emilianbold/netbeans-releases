@@ -236,6 +236,10 @@ public class PackageView {
         public void propertyChange (PropertyChangeEvent event) {
             String prop = event.getPropertyName();
             if (JavaProjectSettings.PROP_PACKAGE_VIEW_TYPE.equals(prop) || SourceGroup.PROP_CONTAINERSHIP.equals(prop)) {
+                // XXX this should perhaps be invoked asynch
+                // since otherwise you can deadlock between Children.MUTEX and ProjectManager.mutex
+                // Mutex.postWriteRequest is probably useless (can still block)
+                // RP.post or EQ.invokeLater would work, but could break unit tests
                 changeOriginal(getOriginalNode(sourceGroup), true);
             }
         }

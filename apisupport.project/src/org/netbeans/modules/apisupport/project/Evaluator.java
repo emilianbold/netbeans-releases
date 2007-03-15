@@ -197,6 +197,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             // but leave old evaluator in place for now
         }
         delegate.addPropertyChangeListener(this);
+        // XXX better to compute diff between previous and new values and fire just those
         pcs.firePropertyChange(null, null, null);
     }
     
