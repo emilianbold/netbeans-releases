@@ -20,7 +20,9 @@
 
 package org.netbeans.modules.bpel.project;
 
-import org.openide.options.SystemOption;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.openide.util.NbPreferences;
 
 /**
  * Settings for the PackageView presentation.
@@ -29,10 +31,15 @@ import org.openide.options.SystemOption;
  * Currently there are two modes, the package structure and tree structure.
  * @author Tomas Zezula
  */
-public final class PackageViewSettings extends SystemOption {
+public final class PackageViewSettings {
 
-    private static final long serialVersionUID = -4228076536688710264L;
-
+    private static PackageViewSettings INSTANCE = new PackageViewSettings();
+    private static final PropertyChangeSupport propChangeSupport = 
+            new PropertyChangeSupport(PackageViewSettings.class);
+    
+    private PackageViewSettings() {
+    }
+    
     /**
      * The package view should be diplayed as a list of packages
      */
@@ -45,10 +52,6 @@ public final class PackageViewSettings extends SystemOption {
     
     public static final String PROP_PACKAGE_VIEW_TYPE = "packageViewType"; //NOI18N
     
-    public String displayName() {
-        return PackageViewSettings.class.getName(); // irrelevant
-    }
-    
     /**
      * Returns how the package view should be displayed.
      * @return {@link PackageViewSettings#TYPE_PACKAGE_VIEW} or
@@ -56,8 +59,8 @@ public final class PackageViewSettings extends SystemOption {
      *
      */
     public int getPackageViewType () {
-        Integer value = (Integer) getProperty (PROP_PACKAGE_VIEW_TYPE);
-        return value == null ? TYPE_PACKAGE_VIEW : value.intValue();
+        return NbPreferences.forModule(PackageViewSettings.class)
+                    .getInt(PROP_PACKAGE_VIEW_TYPE, TYPE_PACKAGE_VIEW);
     }
     
     /**
@@ -67,7 +70,14 @@ public final class PackageViewSettings extends SystemOption {
      *
      */
     public void setPackageViewType (int type) {
-        putProperty(PROP_PACKAGE_VIEW_TYPE, new Integer (type),true);
+        int currentType = getPackageViewType();
+        
+        if (currentType != type) {
+            NbPreferences.forModule(PackageViewSettings.class)
+                .putInt(PROP_PACKAGE_VIEW_TYPE, type);
+            propChangeSupport.firePropertyChange(
+                    PROP_PACKAGE_VIEW_TYPE, currentType, type);
+        }
     }
     
     /**
@@ -75,7 +85,14 @@ public final class PackageViewSettings extends SystemOption {
      * @return PackageViewSettings
      */
     public static PackageViewSettings getDefault () {
-        return (PackageViewSettings)SystemOption.findObject(PackageViewSettings.class, true);
+        return INSTANCE;
     }
     
+    public static void addPropertyChangeListener(PropertyChangeListener l) {
+        propChangeSupport.addPropertyChangeListener(l);
+    }
+
+    public static void removePropertyChangeListener(PropertyChangeListener l) {
+        propChangeSupport.removePropertyChangeListener(l);
+    }
 }
