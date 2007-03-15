@@ -256,8 +256,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     private FileObject findLeader(FileSystem[] fs, String path) {
         MultiFileSystem mfs = getMultiFileSystem();
 
-        for (int i = 0; i < fs.length; i++) {
-            FileObject fo = mfs.findResourceOn(fs[i], path);
+        for (FileSystem f : fs) {
+            if (f == null) {
+                continue;
+            }
+            FileObject fo = mfs.findResourceOn(f, path);
 
             if (fo != null) {
                 return fo;
