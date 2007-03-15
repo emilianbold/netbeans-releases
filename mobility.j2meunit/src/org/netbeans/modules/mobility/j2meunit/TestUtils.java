@@ -258,6 +258,14 @@ public class TestUtils {
                 && (elemKind.isClass() || elemKind.isInterface());
     }
 
+    static boolean isTestMethod(MethodTree testMethod) {
+        String testMethodName = testMethod.getName().toString();
+        if (testMethodName.startsWith(NbBundle.getMessage(TestUtils.class, "PROP_test_method_prefix")) && //NOI18N
+                testMethodName.endsWith(NbBundle.getMessage(TestUtils.class, "PROP_test_method_suffix"))) //NOI18N
+            return true;
+        else return false;
+    }
+
     private static List<TypeElement> findTopClassElems(CompilationInfo compInfo, CompilationUnitTree compilationUnit) {
         List<? extends Tree> typeDecls = compilationUnit.getTypeDecls();
         if ((typeDecls == null) || typeDecls.isEmpty()) {
