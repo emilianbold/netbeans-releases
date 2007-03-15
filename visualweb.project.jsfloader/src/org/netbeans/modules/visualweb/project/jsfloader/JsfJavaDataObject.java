@@ -104,7 +104,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
     }
 
     public HelpCtx getHelpCtx () {
-        return new HelpCtx(JsfJavaDataLoader.class.getName () + ".Obj"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.visualweb.project.jsfloader.JsfJavaDataLoader" + ".Obj"); // NOI18N
     }
 
     private JsfJavaEditorSupport jsfJavaEditor;

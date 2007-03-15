@@ -89,7 +89,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     }
 
     public HelpCtx getHelpCtx () {
-        return new HelpCtx(JsfJspDataLoader.class.getName () + ".Obj"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.visualweb.project.jsfloader.JsfJspDataLoader" + ".Obj"); // NOI18N
     }
 
     /** Creates new Cookie */

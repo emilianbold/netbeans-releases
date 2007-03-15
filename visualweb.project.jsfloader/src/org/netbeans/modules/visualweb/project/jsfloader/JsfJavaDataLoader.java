@@ -77,7 +77,8 @@ public class JsfJavaDataLoader extends MultiFileLoader {
     }
 
     public JsfJavaDataLoader() {
-        super(JsfJavaDataObject.class.getName());
+        // use String name instead of class.getName() for performance reasons
+        super("org.netbeans.modules.visualweb.project.jsfloader.JsfJavaDataObject"); // NOI18N
     }
 
 
