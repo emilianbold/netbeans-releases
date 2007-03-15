@@ -39,5 +39,5 @@ public class LanguagesDataObject extends MultiDataObject {
     protected Node createNodeDelegate() {
         return new LanguagesDataNode(this);
     }
-
 }
+

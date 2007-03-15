@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages.dataobject;
 
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.modules.languages.features.CompletionProviderImpl;
@@ -102,9 +103,7 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                 lookup  = Lookup.EMPTY;
                 return lookup;
             }
-            if (LanguagesManager.getDefault ().getSupportedMimeTypes ().
-                    contains (mimeTypes [0])
-            ) {
+            if (LanguagesManagerImpl.get ().isSupported (mimeTypes [0])) {
                 lookup = Lookups.fixed (
                     new Integer[] {
                         new Integer (1), 

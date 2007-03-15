@@ -19,19 +19,20 @@
 
 package org.netbeans.modules.languages.dataobject;
 
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
-import org.netbeans.modules.languages.LanguagesManagerImpl.LanguagesManagerListener;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.MultiDataObject.Entry;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.NbBundle;
 
 import java.io.IOException;
-import java.util.Iterator;
+import org.openide.loaders.FileEntry;
 
-public class LanguagesDataLoader extends UniFileLoader {
+
+public class LanguagesDataLoader extends MultiFileLoader {
 
     private static final long serialVersionUID = 1L;
 
@@ -43,36 +44,36 @@ public class LanguagesDataLoader extends UniFileLoader {
         return NbBundle.getMessage(LanguagesDataLoader.class, "LBL_mf_loader_name");
     }
 
-    protected void initialize() {
-        super.initialize();
-        Iterator it = LanguagesManager.getDefault ().getSupportedMimeTypes ().
-            iterator ();
-        while (it.hasNext ()) {
-            String mimeType = (String) it.next ();
-            if (mimeType.equals ("text/xml")) continue;
-            getExtensions().addMimeType (mimeType);
-        }
-        ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-            addLanguagesManagerListener (new LanguagesManagerListener () {
-
-            public void languageAdded (String mimeType) {
-                getExtensions().addMimeType (mimeType);
-            }
-
-            public void languageRemoved (String mimeType) {
-                getExtensions().removeMimeType (mimeType);
-            }
-
-            public void languageChanged (String mimeType) {
-            }
-        });
-    }
-
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new LanguagesDataObject(primaryFile, this);
-    }
-
     protected String actionsContext() {
         return "Loaders/Languages/Actions";
+    }
+
+    protected FileObject findPrimaryFile(FileObject fo) {
+        String mimeType = fo.getMIMEType ();
+        if (LanguagesManagerImpl.get ().isSupported (mimeType))
+            return fo;
+        return null;
+    }
+
+    protected MultiDataObject createMultiObject (FileObject primaryFile) 
+    throws DataObjectExistsException, IOException {
+        String mimeType = primaryFile.getMIMEType ();
+        if (LanguagesManagerImpl.get ().isSupported (mimeType))
+            return new LanguagesDataObject (primaryFile, this);
+        return null;
+    }
+
+    protected Entry createPrimaryEntry (
+        MultiDataObject obj,
+        FileObject primaryFile
+    ) {
+        return new FileEntry (obj, primaryFile);
+    }
+
+    protected Entry createSecondaryEntry (
+        MultiDataObject obj,
+        FileObject secondaryFile
+    ) {
+        return new FileEntry (obj, secondaryFile);
     }
 }

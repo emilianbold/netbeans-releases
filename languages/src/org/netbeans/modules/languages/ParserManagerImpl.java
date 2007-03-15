@@ -402,14 +402,6 @@ public class ParserManagerImpl extends ParserManager {
             if (pm == null) return;
             pm.startParsing ();
         }
-
-        public void languageAdded(String mimeType) {
-            getPM ();
-        }
-
-        public void languageRemoved(String mimeType) {
-            getPM ();
-        }
     }
 }
 

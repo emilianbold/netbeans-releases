@@ -31,6 +31,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
 
@@ -47,7 +48,7 @@ public class SLanguageProvider extends LanguageProvider {
 
     public Language<STokenId> findLanguage (String mimePath) {
 //        System.out.println("findLanguage " + mimePath);
-        if (LanguagesManager.getDefault ().getSupportedMimeTypes ().contains (mimePath))
+        if (LanguagesManagerImpl.get ().isSupported (mimePath))
             return new SLanguageHierarchy (mimePath).language ();
         return null;
     }
