@@ -423,7 +423,7 @@ Microsystems, Inc. All Rights Reserved.
 				
                 <xsl:comment> copy all files from project source directory to build directory. </xsl:comment>
                 <copy todir="${{build.dir}}" preservelastmodified="true" >
-                    <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd" dir="${{src.dir}}"/>
+                    <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd, **/*.xsl, **/*.xslt" dir="${{src.dir}}"/>
                 </copy>
                 
                 <xsl:comment> build sub-projects and copy them to the build dir </xsl:comment>
@@ -464,7 +464,7 @@ Microsystems, Inc. All Rights Reserved.
             <target name="dist_se">
                 <xsl:attribute name="depends">init,pre-dist</xsl:attribute>
                 <jar compress="${{jar.compress}}" jarfile="${{build.dir}}/SEDeployment.jar">
-                    <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd" dir="${{basedir}}/${{build.dir}}"/>
+                    <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd, **/*.xsl, **/*.xslt" dir="${{basedir}}/${{build.dir}}"/>
 
                     <fileset dir="${{basedir}}/${{build.dir}}">
                         <include name="**/jbi.xml" />
