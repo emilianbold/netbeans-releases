@@ -72,7 +72,6 @@ public class OperationGeneratorHelper {
         int counter = 0;
         //create message for each schema element
         String messageNameBase = operationName;
-        System.out.println("operationName="+operationName);
         String messageName = messageNameBase;
         String partNameBase = "parameter";
         String partName = partNameBase;
