@@ -216,6 +216,7 @@ public class AntActionInstance implements
         class AntButton extends JButton implements PropertyChangeListener {
             public AntButton() {
                 super(AntActionInstance.this);
+                // XXX setVisible(false) said to be poor on GTK L&F; consider using #26338 instead
                 setVisible(isEnabled());
                 AntActionInstance.this.addPropertyChangeListener(WeakListeners.propertyChange(this, AntActionInstance.this));
             }
