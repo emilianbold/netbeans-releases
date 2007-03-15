@@ -94,7 +94,7 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
     boolean selectionVisible;
     Timer flasher;
     Point magicCaretPosition;
-    transient Handler handler = new Handler();
+    private final Handler handler = new Handler();
 
     /**
      * This is used to indicate if the caret currently owns the selection. This is always false if
@@ -569,7 +569,12 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      *            the component
      */
     public void install(DesignerPaneBase c) {
-        assert !installed;
+//        assert !installed;
+        if (installed) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("The designer caret is installed already!")); // NOI18N
+            return;
+        }
 
         installed = true;
         component = c;
@@ -578,6 +583,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         // should also do that
         //dot = mark = Position.NONE;
         c.addFocusListener(this);
+        
+        c.getDocument().addDomDocumentListener(handler);
 
         // if the component already has focus, it won't
         // be notified.
@@ -594,10 +601,17 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      *            the component
      */
     public void deinstall(DesignerPaneBase c) {
-        assert installed;
+//        assert installed;
+        if (!installed) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalStateException("The designer caret was not installed before!")); // NOI18N
+            return;
+        }
 
         installed = false;
         c.removeFocusListener(this);
+        
+        c.getDocument().removeDomDocumentListener(handler);
 
         synchronized (this) {
             component = null;
@@ -1185,7 +1199,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             return;
         }
 
-        component.getDocument().insertString(this, pos, content);
+//        component.getDocument().insertString(this, pos, content);
+        component.getDocument().insertString(pos, content);
     }
 
     /**
@@ -1334,7 +1349,7 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         }
     }
 
-    class Handler implements ActionListener, ClipboardOwner {
+    class Handler implements ActionListener, ClipboardOwner, Document.DomDocumentListener {
         // --- ActionListener methods ----------------------------------
 
         /**
@@ -1384,5 +1399,15 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
                 }
             }
         }
+
+        //////////////////////////
+        // DomDocumentListener >>>
+        
+        public void insertUpdate(Document.DomDocumentEvent evt) {
+            DesignerCaret.this.setDot(evt.getDomPosition());
+        }
+        
+        // DomDocumentListener <<<
+        //////////////////////////
     }
 }
