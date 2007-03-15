@@ -19,16 +19,22 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CancellableTask;
@@ -65,6 +71,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("testMethodMods6"));
 //        suite.addTest(new ModifiersTest("testMethodMods7"));
 //        suite.addTest(new ModifiersTest("testAnnRename"));
+//        suite.addTest(new ModifiersTest("testAddArrayValue"));
         return suite;
     }
     
@@ -508,6 +515,67 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 AnnotationTree ann = mods.getAnnotations().get(0);
                 IdentifierTree ident = (IdentifierTree) ann.getAnnotationType();
                 workingCopy.rewrite(ident, make.Identifier("Annotation"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Original:
+     * 
+     * public class Test {
+     * ...
+     * 
+     * Result:
+     * 
+     * @Annotation(value = { "Lojza", "Karel" })
+     * public class Test {
+     * ...
+     * 
+     */
+    public void testAddArrayValue() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    public Test() {\n" +
+                "    }\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(value = {\"Lojza\", \"Karel\"})\n" +
+                "public class Test {\n" +
+                "    public Test() {\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                List<LiteralTree> l = new ArrayList<LiteralTree>();
+                l.add(make.Literal("Lojza"));
+                l.add(make.Literal("Karel"));
+                NewArrayTree nat = make.NewArray(null, Collections.<ExpressionTree>emptyList(), l);
+                AssignmentTree at = make.Assignment(make.Identifier("value"), nat);
+                AnnotationTree ann = make.Annotation(make.Identifier("Annotation"), Collections.<ExpressionTree>singletonList(at));
+                workingCopy.rewrite(mods, make.Modifiers(mods.getFlags(), Collections.<AnnotationTree>singletonList(ann)));
             }
             
             public void cancel() {
