@@ -18,18 +18,28 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import javax.swing.JMenuItem;
+import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.xml.refactoring.ui.WhereUsedQueryUI;
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.bpel.nodes.BpelNode;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CookieAction;
+import org.openide.windows.TopComponent;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.10.27
  */
-public class FindUsagesAction extends org.netbeans.modules.xml.refactoring.actions.FindUsagesAction {
+public class FindUsagesAction extends CookieAction {
     private static final long serialVersionUID = 1L;
 //    public static final String FINDUSAGES_KEYSTROKE = 
 //            NbBundle.getMessage(FindUsagesAction.class,"ACT_FindUsagesAction");// NOI18N
+      
+    private static final Class[] COOKIE_ARRAY =
+            new Class[] { };
 
     public FindUsagesAction() {
         super();
@@ -37,11 +47,11 @@ public class FindUsagesAction extends org.netbeans.modules.xml.refactoring.actio
 //                KeyStroke.getKeyStroke(FINDUSAGES_KEYSTROKE));
     }
 
-    public void performAction(Node[] nodes) {
-        super.performAction(nodes);
-    }
+ //   public void performAction(Node[] nodes) {
+     //   super.performAction(nodes);
+ //   }
     
-    @Override
+   // @Override
     public boolean enable(Node[] nodes) {
         return super.enable(nodes);
     }
@@ -62,4 +72,72 @@ public class FindUsagesAction extends org.netbeans.modules.xml.refactoring.actio
     }
     return null;
   }
+  
+    
+    /**
+     *
+     *
+     */
+    public String getName() {
+        return "Find Usages"; // NOI18N
+    }
+    
+    
+    /**
+     *
+     *
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass());
+    }
+    
+    
+    /**
+     *
+     *
+     */
+    protected boolean asynchronous() {
+        return false;
+    }
+        
+    /**
+     *
+     *
+     */
+    public void performAction(Node[] nodes) {
+       assert nodes.length==1:
+            "Length of nodes array should be 1";
+        Referenceable ref = getReferenceable(nodes);
+        assert ref != null:"The node's NamedReferenceable should not be null";
+        //WhereUsedView wuv = new WhereUsedView(ref);
+        WhereUsedQueryUI ui = new WhereUsedQueryUI(ref);
+        TopComponent activetc = TopComponent.getRegistry().getActivated();
+        if (activetc instanceof CloneableEditorSupport.Pane) {
+           UI.openRefactoringUI(ui, activetc); // new RefactoringPanel(ui, activetc);
+        } else {
+            UI.openRefactoringUI(ui);
+        }
+    }
+    
+ 
+    protected int mode() {
+        return CookieAction.MODE_EXACTLY_ONE;
+    }
+
+
+
+    protected Class[] cookieClasses() {
+        return COOKIE_ARRAY;
+    }
+    
+ 
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance members
+    ////////////////////////////////////////////////////////////////////////////
+    
+    protected JMenuItem menuItem;
 }
+
+  
+
