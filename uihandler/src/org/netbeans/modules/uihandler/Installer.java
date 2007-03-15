@@ -20,6 +20,7 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
@@ -509,6 +510,12 @@ public class Installer extends ModuleInstall {
             }
             
             exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
+
+            String defaultURI = NbBundle.getMessage(Installer.class, msg);
+            if (defaultURI == null || defaultURI.length() == 0) {
+                okToExit = true;
+                return;
+            }
             
             synchronized (this) {
                 RequestProcessor.getDefault().post(this);
@@ -525,13 +532,7 @@ public class Installer extends ModuleInstall {
             for (;;) {
                 try {
                     if (url == null) {
-                        String uri = NbBundle.getMessage(Installer.class, msg);
-                        if (uri == null || uri.length() == 0) {
-                            okToExit = true;
-                            closeDialog();
-                            return;
-                        }
-                        url = new URL(uri); // NOI18N
+                        url = new URL(defaultURI); // NOI18N
                     }
                     
                     URLConnection conn = url.openConnection();
