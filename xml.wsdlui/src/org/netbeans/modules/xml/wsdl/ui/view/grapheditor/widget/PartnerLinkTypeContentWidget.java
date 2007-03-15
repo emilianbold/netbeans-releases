@@ -31,6 +31,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.OperationSceneLayer;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.PartnerLinkTypeContentLayout;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -122,10 +123,10 @@ public class PartnerLinkTypeContentWidget extends Widget {
         mOperationSceneLayer = new OperationSceneLayer(scene, this);
         addChild(mOperationSceneLayer);
         
-        LabelWidget roleLabel = new LabelWidget(scene, "Roles");
+        LabelWidget roleLabel = new LabelWidget(scene, NbBundle.getMessage(PartnerLinkTypeContentWidget.class, "LBL_Roles"));
         roleLabel.setForeground(Color.GRAY);
         
-        LabelWidget portTypesLabel = new LabelWidget(scene, "Port Types");
+        LabelWidget portTypesLabel = new LabelWidget(scene, NbBundle.getMessage(PartnerLinkTypeContentWidget.class, "LBL_PortTypes"));
         portTypesLabel.setForeground(Color.GRAY);
         
         addChild(roleLabel);
