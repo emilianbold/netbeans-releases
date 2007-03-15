@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.visualweb.project.jsf.ui;
 
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.services.ComponentLibraryService;
 import org.netbeans.modules.visualweb.project.jsf.services.DataSourceService;
 
@@ -66,9 +67,12 @@ public class JSFNodeFactory implements NodeFactory {
         
         public List<String> keys() {
             List<String> result = new ArrayList<String>();
-            result.add(THEMES_FOLDER);
-            result.add(COMPONENT_LIBS);
-            result.add(DATASOURCE_REFS);
+            String version = JsfProjectUtils.getProjectVersion(project);
+            if (version != null && version.length() > 0) {
+                result.add(THEMES_FOLDER);
+                result.add(COMPONENT_LIBS);
+                result.add(DATASOURCE_REFS);
+            }
             return result;
         }
 
