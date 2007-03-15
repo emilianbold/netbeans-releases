@@ -101,7 +101,7 @@ implements ActionListener, Runnable, Callable<JButton> {
         Window w = SwingUtilities.windowForComponent(c);
         if (w != null) {
             w.dispose();
-        }
-        run();
+        } 
+        Installer.RP.post(this);
     }
 }
