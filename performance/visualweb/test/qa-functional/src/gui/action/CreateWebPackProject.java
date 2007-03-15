@@ -45,7 +45,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
      */
     public CreateWebPackProject(String testName) {
         super(testName);
-        expectedTime = 25000;
+        expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
     
@@ -56,7 +56,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
      */
     public CreateWebPackProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 25000;
+        expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
     
