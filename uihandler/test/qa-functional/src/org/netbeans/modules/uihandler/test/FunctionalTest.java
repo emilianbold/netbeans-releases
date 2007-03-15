@@ -67,6 +67,7 @@ public class FunctionalTest extends NbTestCase {
         assertNotNull("ERROR DIALOG SHOULD APPEAR", errDialOp);
         errDialOp.report();
         ReportDialogOperator reportOper = new ReportDialogOperator();
+        assertEquals(reportOper.summary().getText(), "NullPointerException : TESTING EXCEPTION");
         reportOper.summary().setText(summary);
         reportOper.comment().setText(comment);
         reportOper.userName().setText(userName);
@@ -95,7 +96,7 @@ public class FunctionalTest extends NbTestCase {
     
     public void testUIGestures(){
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        ContainerOperator toolbar = mainWindow.getToolbar("UIGestures");
+        ContainerOperator toolbar = mainWindow.getToolbar("UI Gestures");
         assertNotNull("UIGESTURES Toolbar", toolbar);
         assertEquals("ToolbarBump, NrButton", 2, toolbar.getComponentCount());
         Component label = toolbar.getComponent(1);
