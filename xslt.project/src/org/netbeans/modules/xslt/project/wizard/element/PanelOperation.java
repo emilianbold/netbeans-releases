@@ -100,7 +100,7 @@ final class PanelOperation<T> extends Panel<T> {
   @Override
   protected String getError()
   {
-    String name = myFile.getText();
+    String name = addExtension(myFile.getText());
     FileObject file = getFolder().getFileObject(name);
 
     if (file != null) {
@@ -133,16 +133,17 @@ final class PanelOperation<T> extends Panel<T> {
 
   public void storeSettings(Object object) {
     WizardDescriptor descriptor = (WizardDescriptor) object;
+    String file = addExtension(myFile.getText());
 
     if (myIsInput) {
-      descriptor.putProperty(INPUT_FILE, myFile.getText());
+      descriptor.putProperty(INPUT_FILE, file);
       descriptor.putProperty(INPUT_OPERATION, getOperation());
       descriptor.putProperty(INPUT_PARTNER_ROLE_PORT, getPartnerRolePort());
       descriptor.putProperty(
         INPUT_TRANSFORM_JBI, new Boolean(myTransformJBI.isSelected()));
     }
     else {
-      descriptor.putProperty(OUTPUT_FILE, myFile.getText());
+      descriptor.putProperty(OUTPUT_FILE, file);
       descriptor.putProperty(OUTPUT_OPERATION, getOperation());
       descriptor.putProperty(OUTPUT_PARTNER_ROLE_PORT, getPartnerRolePort());
       descriptor.putProperty(

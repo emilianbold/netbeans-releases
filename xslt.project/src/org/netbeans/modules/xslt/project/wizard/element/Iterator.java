@@ -193,7 +193,6 @@ public final class Iterator implements TemplateWizard.Iterator {
     description.setRoleName(partnerRolePort.getRole().getName());
     description.setPortType(
             namespace + partnerRolePort.getPortType().getName());
-
     description.setOperation(operation.getName());
 
     description.setMessageType(

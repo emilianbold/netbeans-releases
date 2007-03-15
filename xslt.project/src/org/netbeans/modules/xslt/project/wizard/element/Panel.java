@@ -182,7 +182,7 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   }
 
   protected final String getXslFileName(int number) {
-    return NAME + number + DOT + EXT;
+    return NAME + number;
   }
 
   protected final String getType(OperationParameter parameter) {
@@ -237,6 +237,13 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
       }
     }
     return EMPTY;
+  }
+
+  protected final String addExtension(String file) {
+    if (file.endsWith(Panel.DOT + Panel.EXT)) {
+      return file;
+    }
+    return file + Panel.DOT + Panel.EXT;
   }
 
   // -------------------------------------------------------
@@ -327,9 +334,9 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   private FileObject myFolder;
   private Panel<T> myParent;
 
-  private static final String NAME = "xsl"; // NOI18N
-  private static final String EXT = "xsl"; // NOI18N
   private static final String DOT = "."; // NOI18N
+  private static final String EXT = "xsl"; // NOI18N
+  private static final String NAME = "newXslFile"; // NOI18N
 
   protected static final String EMPTY = ""; // NOI18N
 
