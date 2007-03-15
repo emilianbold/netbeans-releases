@@ -48,9 +48,9 @@ public abstract class ProjectTemplate {
 
     public abstract void addLibrary(Project project) throws IOException;
 
-    public abstract void create(Project project, String j2eeLevel) throws IOException;
+    public abstract void create(Project project, String j2eeLevel, String pageName) throws IOException;
 
-    public abstract void instantiateFile(Project project, Node node, FileObject folder, String j2eeLevel) throws IOException;
+    public abstract void instantiateFile(Project project, Node node, FileObject folder, String j2eeLevel, String pageName) throws IOException;
 
     protected FileObject instantiateFileTemplate(FileObject folder, String name, String templateName) throws IOException {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();

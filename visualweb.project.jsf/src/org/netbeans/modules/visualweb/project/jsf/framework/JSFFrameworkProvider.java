@@ -80,15 +80,23 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         final Project project = FileOwnerQuery.getOwner(fileObject);
         final ProjectTemplate template = new JsfProjectTemplateJakarta();
 
+        // Set Bean Package and Start Page
         template.setBeanPackage(panel.getBeanPackage());
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, template.getBeanPackage());
-        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "Page1.jsp"); // NOI18N
+
+        String preSetName = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_START_PAGE);
+        if (preSetName == null || preSetName.length() == 0) {
+            preSetName = "Page1.jsp"; // NOI18N
+        }
+        final String pageName = preSetName;
+        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, pageName); // NOI18N
         JsfProjectUtils.setProjectVersion(project, "4.0"); // NOI18N
 
+        // Create Visual Web files
         ProjectManager.mutex().postReadRequest(new Runnable() {
             public void run() {
                 try{ 
-                    template.create(project, webModule.getJ2eePlatformVersion());
+                    template.create(project, webModule.getJ2eePlatformVersion(), pageName);
                 } catch (IOException ioe){
                     ErrorManager.getDefault().notify(ioe);
                 }
@@ -130,22 +138,17 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
 
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
-            fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, template));
+            fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, template, pageName));
 
-            FileObject pagejsp = fileObject.getFileObject("Page1.jsp"); //NOI18N
+            FileObject pagejsp = fileObject.getFileObject(pageName);
             if (pagejsp != null) {
-                FileObject indexjsp = fileObject.getFileObject("index.jsp"); //NOI18N
-                if (indexjsp != null){
-                    changeIndexJSP(indexjsp);
-                }
-	        result.add(pagejsp);
+                result.add(pagejsp);
             }
         } catch (FileNotFoundException exc) {
             ErrorManager.getDefault().notify(exc);
         } catch (IOException exc) {
             ErrorManager.getDefault().notify(exc);
         }
-
         return result;
     }
 
@@ -223,11 +226,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         WebModule webModule;
         boolean isMyFaces;
         ProjectTemplate template;
+        String pageName;
         
-        public CreateFacesConfig(WebModule webModule, boolean isMyFaces, ProjectTemplate template){
+        public CreateFacesConfig(WebModule webModule, boolean isMyFaces, ProjectTemplate template, String pageName){
             this.webModule = webModule;
             this.isMyFaces = isMyFaces;
             this.template = template;
+            this.pageName = pageName;
         }
         
         public void run() throws IOException {            
@@ -398,56 +403,62 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ErrorManager.getDefault().notify(cnfe);
                 }
             }
+
+            FileObject documentBase = webModule.getDocumentBase();
+            FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
+            if (indexjsp != null){
+                changeIndexJSP(indexjsp, pageName);
+            }
         }
-    }
         
-    /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.
-     */
-    private void changeIndexJSP(FileObject indexjsp) throws IOException {
+        /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.
+         */
+        private void changeIndexJSP(FileObject indexjsp, String pageName) throws IOException {
+            
+            String content = readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
         
-        String content = readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
-        
-        // what find
-        String find = "<h1>JSP Page</h1>"; // NOI18N
-        String endLine = System.getProperty("line.separator"); //NOI18N
-        if ( content.indexOf(find) > 0){
-            StringBuffer replace = new StringBuffer();
-            replace.append(find);
-            replace.append(endLine);
-            replace.append("    <br/>");                        //NOI18N
-            replace.append(endLine);
-            replace.append("    <a href=\".");                  //NOI18N
-            replace.append(translateURI(panel == null ? "/faces/*" : panel.getURLPattern(),"/Page1.jsp")); //NOI18N
-            replace.append("\">");                              //NOI18N
-            replace.append(NbBundle.getMessage(JSFFrameworkProvider.class,"LBL_JSF_WELCOME_PAGE"));
-            replace.append("</a>");                             //NOI18N
-            content = content.replaceFirst(find, new String(replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
-            createFile(indexjsp, content, "UTF-8"); //NOI18N
+            // what find
+            String find = "<h1>JSP Page</h1>"; // NOI18N
+            String endLine = System.getProperty("line.separator"); //NOI18N
+            if ( content.indexOf(find) > 0){
+                StringBuffer replace = new StringBuffer();
+                replace.append(find);
+                replace.append(endLine);
+                replace.append("    <br/>");                        //NOI18N
+                replace.append(endLine);
+                replace.append("    <a href=\".");                  //NOI18N
+                replace.append(translateURI(panel == null ? "/faces/*" : panel.getURLPattern(),"/"+pageName)); //NOI18N
+                replace.append("\">");                              //NOI18N
+                replace.append(NbBundle.getMessage(JSFFrameworkProvider.class,"LBL_JSF_WELCOME_PAGE"));
+                replace.append("</a>");                             //NOI18N
+                content = content.replaceFirst(find, new String(replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
+                createFile(indexjsp, content, "UTF-8"); //NOI18N
+            }
         }
-    }
     
-    /**
-     * Translates an URI to be executed with faces serlvet with the given mapping.
-     * For example, the servlet has mapping <i>*.jsf</i> then uri <i>/hello.jps</i> will be
-     * translated to <i>/hello.jsf</i>. In the case where the mapping is <i>/faces/*</i>
-     * will be translated to <i>/faces/hello.jsp<i>.
-     *
-     * @param mapping The servlet mapping
-     * @param uri The original URI
-     * @return The translated URI
-     */
-    public static String translateURI(String mapping, String uri){
-        String resource = "";
-        if (mapping != null && mapping.length()>0){
-            if (mapping.startsWith("*.")){
-                if (uri.indexOf('.') > 0)
-                    resource = uri.substring(0, uri.lastIndexOf('.'))+mapping.substring(1);
-                else
-                    resource = uri + mapping.substring(1);
-            } else
-                if (mapping.endsWith("/*"))
-                    resource = mapping.substring(0,mapping.length()-2) + uri;
+        /**
+         * Translates an URI to be executed with faces serlvet with the given mapping.
+         * For example, the servlet has mapping <i>*.jsf</i> then uri <i>/hello.jps</i> will be
+         * translated to <i>/hello.jsf</i>. In the case where the mapping is <i>/faces/*</i>
+         * will be translated to <i>/faces/hello.jsp<i>.
+         *
+         * @param mapping The servlet mapping
+         * @param uri The original URI
+         * @return The translated URI
+         */
+        public String translateURI(String mapping, String uri){
+            String resource = "";
+            if (mapping != null && mapping.length()>0){
+                if (mapping.startsWith("*.")){
+                    if (uri.indexOf('.') > 0)
+                        resource = uri.substring(0, uri.lastIndexOf('.'))+mapping.substring(1);
+                    else
+                        resource = uri + mapping.substring(1);
+                } else
+                    if (mapping.endsWith("/*"))
+                        resource = mapping.substring(0,mapping.length()-2) + uri;
+            }
+            return resource;
         }
-        return resource;
     }
 }
