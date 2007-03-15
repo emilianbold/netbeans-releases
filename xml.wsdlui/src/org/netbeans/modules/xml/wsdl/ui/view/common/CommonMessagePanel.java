@@ -27,6 +27,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.common;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
 
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -49,7 +50,7 @@ public class CommonMessagePanel extends javax.swing.JPanel {
         }
         nbWarningForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbWarningForeground == null) {
-            nbWarningForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
+            nbWarningForeground = new Color(51, 51, 51); // Label.foreground
         }
         
     }
@@ -88,7 +89,7 @@ public class CommonMessagePanel extends javax.swing.JPanel {
         m_lblMessage.setText(errorMsg);
         m_lblMessage.setForeground (nbErrorForeground);
         m_lblMessage.repaint();
-        m_lblMessage.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/error.gif")));
+        m_lblMessage.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/common/resources/error.gif")));
         mValidState = false;
     }
     
@@ -96,7 +97,11 @@ public class CommonMessagePanel extends javax.swing.JPanel {
         m_lblMessage.setText(warningMsg);
         m_lblMessage.setForeground (nbWarningForeground);
         m_lblMessage.repaint();
-        m_lblMessage.setIcon(new ImageIcon (Utilities.loadImage ("org/openide/resources/warning.gif")));
+        Image image = Utilities.loadImage ("org/netbeans/modules/xml/wsdl/ui/view/common/resources/warning.gif");
+        if (image == null) {
+            
+        }
+        m_lblMessage.setIcon(new ImageIcon (image));
         mValidState = true;
     }
     
