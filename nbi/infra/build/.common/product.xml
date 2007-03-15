@@ -430,7 +430,7 @@
                 </if>
                 
                 <!-- remove the temporary directory -->
-                <delete dir="${current.temp}"/>
+                <delete dir="${current.temp.dir}"/>
             </if>
             
             <!-- if the data does not need to be packaged -->
