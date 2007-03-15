@@ -880,7 +880,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         boolean dotChanged;
 
         if (range == null) {
-            range = new Range(component.getDocument().getWebForm(), node, offset, node, offset);
+//            range = new Range(component.getDocument().getWebForm(), node, offset, node, offset);
+            range = Range.create(component.getDocument().getWebForm(), node, offset, node, offset);
             dotChanged = true;
         } else {
             range.setMark(node, offset, dot.getBias());
@@ -927,7 +928,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 //        range.setDot(dot.getNode(), dot.getOffset(), dot.getBias());
         if (range == null) {
             // XXX Log the problem?
-            range = new Range(component.getDocument().getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
+//            range = new Range(component.getDocument().getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
+            range = Range.create(component.getDocument().getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
         } else {
             range.setDot(dot.getNode(), dot.getOffset(), dot.getBias());
         }
