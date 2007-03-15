@@ -79,7 +79,7 @@ public final class JavaHierarchy {
                                 Element[] elements = elementsSet.toArray(JavaMembersModel.EMPTY_ELEMENTS_ARRAY);
                                 show(fileObject, elements, compilationController);
                             }
-                        }, false);
+                        }, true);
 
                     return;
                 } catch (IOException ioe) {

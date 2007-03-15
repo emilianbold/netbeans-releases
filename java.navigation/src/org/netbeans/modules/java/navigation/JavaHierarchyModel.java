@@ -22,19 +22,22 @@ package org.netbeans.modules.java.navigation;
 import com.sun.javadoc.Doc;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -45,6 +48,11 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -58,6 +66,8 @@ import org.openide.util.NbBundle;
 public final class JavaHierarchyModel extends DefaultTreeModel {
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
     static ElementHandle[] EMPTY_ELEMENTHANDLES_ARRAY = new ElementHandle[0];
+
+    private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );
 
     /**
      * Holds value of property pattern.
@@ -142,7 +152,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                             Element[] elements = elementsList.toArray(EMPTY_ELEMENTS_ARRAY);
                             update(elements, compilationController);
                         }
-                    }, false);
+                    }, true);
 
                 return;
             } catch (IOException ioe) {
@@ -181,12 +191,10 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                     for(TypeElement superTypeElement:superClasses) {
                         FileObject fileObject = SourceUtils.getFile(superTypeElement, compilationInfo.getClasspathInfo());
                         DefaultMutableTreeNode child = new SimpleTypeTreeNode(fileObject, superTypeElement, compilationInfo, typeElement != superTypeElement || typeElement.getQualifiedName().equals(Object.class.getName()));
-                        if (typeElement.getQualifiedName().toString().equals(Object.class.getName())) {
-                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_WontShowSubTypesOfObject", Object.class.getName())); // TODO
-                        }
                         parent.insert(child, 0);
                         parent = child;
                     }
+                    JavaMembersAndHierarchyOptions.setSubTypeHierarchyDepth(superClasses.size()+2);
                 }
             }
         }
@@ -234,16 +242,12 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                 StringBuilder stringBuilder = new StringBuilder();
                 setJavaDoc(doc.getRawCommentText());
             }
-            // prevent showing sub classes of java.lang.Object
-            if (element instanceof TypeElement && ((TypeElement)element).getQualifiedName().toString().equals(Object.class.getName())) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_WontShowSubTypesOfObject", Object.class.getName())); // TODO
-            } else {
-                if (!lazyLoadChildren) {
-                    try {
-                        loadChildren(element, compilationInfo);
-                    } finally {
-                        loaded = true;
-                    }
+
+            if (!lazyLoadChildren) {
+                try {
+                    loadChildren(element, compilationInfo);
+                } finally {
+                    loaded = true;
                 }
             }
         }
@@ -336,11 +340,11 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
                                 Element element = elementHandle.resolve(compilationController);
                                 if (element instanceof TypeElement && ((TypeElement)element).getQualifiedName().toString().equals(Object.class.getName())) {
-                                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_WontShowSubTypesOfObject", Object.class.getName())); // TODO
+                                } else {
+                                    loadChildren(element, compilationController);
                                 }
-                                loadChildren(element, compilationController);
                             }
-                        }, false);
+                        }, true);
 
                     return;
                 } catch (IOException ioe) {
@@ -456,19 +460,88 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                 return;
             }
 
-            ClassIndex classIndex = ClasspathInfo.create(getFileObject()).getClassIndex();
-            Set<ElementHandle<TypeElement>> implementors = classIndex.getElements(ElementHandle.create(typeElement),
-                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                    EnumSet.of(ClassIndex.SearchScope.SOURCE
-                    , ClassIndex.SearchScope.DEPENDENCIES
-                    ));
-            int index = 0;
-            for (ElementHandle<TypeElement> implementorElementHandle: implementors) {
-                Element implementor = implementorElementHandle.resolve(compilationInfo);
-                if (implementor instanceof TypeElement) {
-                    FileObject fileObject = SourceUtils.getFile(implementor, compilationInfo.getClasspathInfo());
-                    if (fileObject != null) {
-                        insert(new SimpleTypeTreeNode(fileObject, (TypeElement) implementor, compilationInfo), index++);
+            // Get open projects
+            Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+            if (openProjects == null) {
+                return;
+            }
+            Set<ElementHandle<TypeElement>> processedImplementorElementHandles = new LinkedHashSet<ElementHandle<TypeElement>>();
+            
+            ElementHandle<TypeElement> typeElementHandle = ElementHandle.create(typeElement);
+
+            final int[] index = new int[] {0};
+            // Walk through open projects
+            for (Project project : openProjects) {
+                // Get Sources
+                Collection<? extends Sources> sourcess = project.getLookup().lookupAll(Sources.class);
+                if (sourcess == null) {
+                    continue;
+                }
+                
+                // Walk through sources
+                for (Sources sources : sourcess) {
+                    // Get Source groups of type java
+                    SourceGroup[] sourceGroups = sources.getSourceGroups("java");
+                    if (sourceGroups == null) {
+                        continue;
+                    }
+                    
+                    // Walk through source groups
+                    for (SourceGroup sourceGroup : sourceGroups) {
+                        
+                        // Get root file object
+                        FileObject rootFileObject = sourceGroup.getRootFolder();
+                        if (rootFileObject == null) {
+                            continue;
+                        }
+                        
+                        // Find implementors
+                        ClassPath classPath =ClassPathSupport.createClassPath(new FileObject[] {rootFileObject});
+                        if (classPath != null) {                            
+                            ClasspathInfo classpathInfo = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, classPath);
+                            if (classpathInfo != null) {
+                                ClassIndex classIndex = classpathInfo.getClassIndex();
+                                if (classIndex != null) {
+                                    Set<ElementHandle<TypeElement>> implementors = classIndex.getElements(typeElementHandle,
+                                            EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+                                            EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
+                                    for (ElementHandle<TypeElement> implementorElementHandle: implementors) {
+                                        if (processedImplementorElementHandles.contains(implementorElementHandle)) {
+                                            continue;
+                                        }
+                                        processedImplementorElementHandles.add(implementorElementHandle);
+                                        final ElementHandle<TypeElement> finalImplementorElementHandle = implementorElementHandle;
+                                        FileObject implementorfileObject = SourceUtils.getFile(implementorElementHandle, classpathInfo);
+                                        if (implementorfileObject == null) {
+                                            continue;
+                                        }
+                                        JavaSource javaSource = JavaSource.forFileObject(implementorfileObject);
+                                        if (javaSource != null) {
+                                            try {
+                                                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+                                                        public void cancel() {
+                                                        }
+
+                                                        public void run(CompilationController compilationController)
+                                                            throws Exception {
+                                                            compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                                            Element implementor = finalImplementorElementHandle.resolve(compilationController);
+                                                            if (implementor instanceof TypeElement && ((TypeElement)implementor).getNestingKind() != NestingKind.ANONYMOUS) {
+                                                                FileObject fo = SourceUtils.getFile(implementor, compilationController.getClasspathInfo());
+                                                                if (fo != null) {
+                                                                    insert(new SimpleTypeTreeNode(fo, (TypeElement) implementor, compilationController), index[0]++);
+                                                                } 
+                                                            }
+                                                        }
+                                                    }, true);
+                                            } catch (IOException ioe) {
+                                                ErrorManager.getDefault().notify(ioe);
+                                            }
+                                        }                                       
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

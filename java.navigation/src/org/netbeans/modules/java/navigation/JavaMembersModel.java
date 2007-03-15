@@ -144,7 +144,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                             Element[] elements = elementsList.toArray(EMPTY_ELEMENTS_ARRAY);
                             update(elements, compilationController);
                         }
-                    }, false);
+                    }, true);
 
                 return;
             } catch (IOException ioe) {

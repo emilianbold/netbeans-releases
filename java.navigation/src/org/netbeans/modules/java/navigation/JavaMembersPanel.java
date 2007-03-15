@@ -413,43 +413,45 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(
             new Runnable() {
             public void run() {
-                javaMembersModel.setPattern(filterTextField.getText());
+                try {
+                    javaMembersModel.setPattern(filterTextField.getText());
 
-                JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
-                JavaMembersAndHierarchyOptions.setShowInherited(showInheritedToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowInner(showInnerToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowConstructors(showConstructorsToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowMethods(showMethodsToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowFields(showFieldsToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowEnumConstants(showEnumConstantsToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowProtected(showProtectedToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowPackage(showPackageToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowPrivate(showPrivateToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowStatic(showStaticToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowInherited(showInheritedToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowInner(showInnerToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowConstructors(showConstructorsToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowMethods(showMethodsToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowFields(showFieldsToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowEnumConstants(showEnumConstantsToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowProtected(showProtectedToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowPackage(showPackageToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowPrivate(showPrivateToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowStatic(showStaticToggleButton.isSelected());
 
-                javaMembersModel.update();
+                    javaMembersModel.update();
 
-                // expand the tree
-                for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
-                    TreePath treePath = javaMembersTree.getPathForRow(row);
-                    javaMembersTree.expandRow(row);
-                }
+                    // expand the tree
+                    for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
+                        TreePath treePath = javaMembersTree.getPathForRow(row);
+                        javaMembersTree.expandRow(row);
+                    }
 
-                // select first matching
-                for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
-                    Object o = javaMembersTree.getPathForRow(row).getLastPathComponent();
-                    if (o instanceof JavaElement) {
-                        if (javaMembersModel.patternMatch((JavaElement)o)) {
-                            javaMembersTree.setSelectionRow(row);
-                            break;
+                    // select first matching
+                    for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
+                        Object o = javaMembersTree.getPathForRow(row).getLastPathComponent();
+                        if (o instanceof JavaElement) {
+                            if (javaMembersModel.patternMatch((JavaElement)o)) {
+                                javaMembersTree.setSelectionRow(row);
+                                break;
+                            }
                         }
                     }
-                }
-
-                JRootPane rootPane = SwingUtilities.getRootPane(JavaMembersPanel.this);
-                if (rootPane != null) {
-                    rootPane.setCursor(Cursor.getDefaultCursor());
+                } finally {
+                    JRootPane rootPane = SwingUtilities.getRootPane(JavaMembersPanel.this);
+                    if (rootPane != null) {
+                        rootPane.setCursor(Cursor.getDefaultCursor());
+                    }
                 }
             }
         });
@@ -563,7 +565,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         caseSensitiveFilterCheckBox.setFocusable(false);
         caseSensitiveFilterCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        splitPane.setDividerLocation(400);
+        splitPane.setDividerLocation(350);
         splitPane.setOneTouchExpandable(true);
 
         javaMembersTreeScrollPane.setBorder(null);
@@ -657,14 +659,14 @@ public class JavaMembersPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
+                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 980, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filterLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
-                        .add(15, 15, 15)
+                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 853, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(caseSensitiveFilterCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
+                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 980, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filtersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -689,7 +691,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                         .add(showPrivateToggleButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(showStaticToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 456, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 725, Short.MAX_VALUE)
                         .add(closeButton)))
                 .addContainerGap())
         );

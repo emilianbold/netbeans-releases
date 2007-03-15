@@ -27,16 +27,16 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="splitPane" alignment="0" pref="716" max="32767" attributes="0"/>
+                  <Component id="splitPane" alignment="0" pref="855" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="1">
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="filterTextField" pref="583" max="32767" attributes="0"/>
+                      <Component id="filterTextField" pref="720" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="caseSensitiveFilterCheckBox" min="-2" pref="95" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="signatureEditorPane" alignment="0" pref="716" max="32767" attributes="0"/>
+                  <Component id="signatureEditorPane" alignment="0" pref="855" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="filtersLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -47,7 +47,9 @@
                       <Component id="showFQNToggleButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="showInnerToggleButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="570" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="expandAllButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="690" max="32767" attributes="0"/>
                       <Component id="closeButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -61,8 +63,8 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="filterLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="filterTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="caseSensitiveFilterCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="filterTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="splitPane" pref="350" max="32767" attributes="0"/>
@@ -76,6 +78,7 @@
                   <Component id="showFQNToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="showInnerToggleButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="closeButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="expandAllButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -120,7 +123,7 @@
     </Component>
     <Container class="javax.swing.JSplitPane" name="splitPane">
       <Properties>
-        <Property name="dividerLocation" type="int" value="400"/>
+        <Property name="dividerLocation" type="int" value="350"/>
         <Property name="oneTouchExpandable" type="boolean" value="true"/>
       </Properties>
       <AuxValues>
@@ -237,6 +240,18 @@
         <Property name="selected" type="boolean" value="true"/>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/java/navigation/Bundle.properties" key="TOOLTIP_showInnerToggleButton" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="focusPainted" type="boolean" value="false"/>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[2, 2, 2, 2]"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="expandAllButton">
+      <Properties>
+        <Property name="icon" postCode="expandAllButton.setIcon(JavaMembersAndHierarchyIcons.EXPAND_ALL_ICON);"/>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/navigation/Bundle.properties" key="TOOLTIP_expandAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="focusPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">

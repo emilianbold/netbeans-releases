@@ -51,6 +51,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -93,13 +94,13 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         filterTextField.getDocument().addDocumentListener(
                 new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
-                applyFilter();
+                selectMatchingRow();
             }
             public void insertUpdate(DocumentEvent e) {
-                applyFilter();
+                selectMatchingRow();
             }
             public void removeUpdate(DocumentEvent e) {
-                applyFilter();
+                selectMatchingRow();
             }
         }
         );
@@ -216,7 +217,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (filterTextField.getText().trim().length() > 0) {
                     // apply filters again only if there is some filter text
-                    applyFilter();
+                    selectMatchingRow();
                 }
             }
         });
@@ -295,7 +296,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         showSuperTypeHierarchyToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                applyFilter();                
             }
         });
 
@@ -317,6 +318,12 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             }
         });
 
+        expandAllButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        expandAll();
+                    }
+                });
+                
         closeButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
                         close();
@@ -362,40 +369,81 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(
                 new Runnable() {
             public void run() {
-                javaHierarchyModel.setPattern(filterTextField.getText());
+                try {
+                    JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(showSuperTypeHierarchyToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowSubTypeHierarchy(showSubTypeHierarchyToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
+                    JavaMembersAndHierarchyOptions.setShowInner(showInnerToggleButton.isSelected());
 
-                JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
-                JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(showSuperTypeHierarchyToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowSubTypeHierarchy(showSubTypeHierarchyToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
-                JavaMembersAndHierarchyOptions.setShowInner(showInnerToggleButton.isSelected());
+                    javaHierarchyModel.update();
 
-                javaHierarchyModel.update();
-
-                // expand the tree
-                for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-                    TreePath treePath = javaHierarchyTree.getPathForRow(row);
-                    javaHierarchyTree.expandRow(row);
-                }
-
-                // select first matching
-                for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-                    Object o = javaHierarchyTree.getPathForRow(row).getLastPathComponent();
-                    if (o instanceof JavaElement) {
-                        if (javaHierarchyModel.patternMatch((JavaElement)o)) {
-                            javaHierarchyTree.setSelectionRow(row);
-                            break;
+                    // expand the tree
+                    for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
+                        TreePath treePath = javaHierarchyTree.getPathForRow(row);
+                        if (JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy()) { 
+                            if (treePath.getPathCount() < JavaMembersAndHierarchyOptions.getSubTypeHierarchyDepth()) {
+                                javaHierarchyTree.expandRow(row);
+                            }
+                        } else {
+                            javaHierarchyTree.expandRow(row);
                         }
                     }
-                }
-
-                JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
-                if (rootPane != null) {
-                    rootPane.setCursor(Cursor.getDefaultCursor());
+                } finally {
+                    JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
+                    if (rootPane != null) {
+                        rootPane.setCursor(Cursor.getDefaultCursor());
+                    }
                 }
             }
         }
         );
+    }
+    private void expandAll() {
+        SwingUtilities.invokeLater(
+                new Runnable() {
+            public void run() {
+                JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
+                if (rootPane != null) {
+                    rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                }
+            }
+        }
+        );
+
+        SwingUtilities.invokeLater(
+                new Runnable() {
+            public void run() {
+                try {                   
+                    // expand the tree
+                    for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
+                        TreePath treePath = javaHierarchyTree.getPathForRow(row);
+                        javaHierarchyTree.expandRow(row);
+                    }
+                    selectMatchingRow();
+                } finally {
+                    JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
+                    if (rootPane != null) {
+                        rootPane.setCursor(Cursor.getDefaultCursor());
+                    }
+                }
+            }
+        }
+        );
+    }
+    
+    private void selectMatchingRow() {
+        javaHierarchyModel.setPattern(filterTextField.getText());
+        // select first matching
+        for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
+            Object o = javaHierarchyTree.getPathForRow(row).getLastPathComponent();
+            if (o instanceof JavaElement) {
+                if (javaHierarchyModel.patternMatch((JavaElement)o)) {
+                    javaHierarchyTree.setSelectionRow(row);
+                    break;
+                }
+            }
+        }
     }
 
     private void gotoElement(JavaElement javaToolsJavaElement) {
@@ -465,6 +513,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         showSubTypeHierarchyToggleButton = new javax.swing.JToggleButton();
         showFQNToggleButton = new javax.swing.JToggleButton();
         showInnerToggleButton = new javax.swing.JToggleButton();
+        expandAllButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -481,7 +530,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         caseSensitiveFilterCheckBox.setFocusable(false);
         caseSensitiveFilterCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        splitPane.setDividerLocation(400);
+        splitPane.setDividerLocation(350);
         splitPane.setOneTouchExpandable(true);
 
         javaHierarchyTreeScrollPane.setBorder(null);
@@ -524,6 +573,11 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         showInnerToggleButton.setFocusPainted(false);
         showInnerToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 
+        expandAllButton.setIcon(JavaMembersAndHierarchyIcons.EXPAND_ALL_ICON);
+        expandAllButton.setToolTipText(org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_expandAll")); // NOI18N
+        expandAllButton.setFocusPainted(false);
+        expandAllButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+
         closeButton.setMnemonic('l');
         closeButton.setText(org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "LABEL_Close")); // NOI18N
 
@@ -534,15 +588,15 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
+                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 855, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filterLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
+                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 720, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(caseSensitiveFilterCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 95, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
+                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 855, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filtersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -553,7 +607,9 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                         .add(showFQNToggleButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(showInnerToggleButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 570, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(expandAllButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 690, Short.MAX_VALUE)
                         .add(closeButton)))
                 .addContainerGap())
         );
@@ -563,8 +619,8 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(filterLabel)
-                    .add(filterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(caseSensitiveFilterCheckBox))
+                    .add(caseSensitiveFilterCheckBox)
+                    .add(filterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -576,7 +632,8 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     .add(showSubTypeHierarchyToggleButton)
                     .add(showFQNToggleButton)
                     .add(showInnerToggleButton)
-                    .add(closeButton))
+                    .add(closeButton)
+                    .add(expandAllButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -584,6 +641,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JCheckBox caseSensitiveFilterCheckBox;
     public javax.swing.JButton closeButton;
+    public javax.swing.JButton expandAllButton;
     public javax.swing.JLabel filterLabel;
     public javax.swing.JTextField filterTextField;
     public javax.swing.JLabel filtersLabel;

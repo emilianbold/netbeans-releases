@@ -40,6 +40,9 @@ final class JavaMembersAndHierarchyIcons {
 
     public static final Icon SUB_TYPE_HIERARCHY_ICON = new ImageIcon(Utilities.loadImage(
                 "org/netbeans/modules/java/navigation/resources/subtypehierarchy.gif")); // NOI18N
+
+    public static final Icon EXPAND_ALL_ICON = new ImageIcon(Utilities.loadImage(
+                "org/netbeans/modules/java/navigation/resources/expandall.gif")); // NOI18N
     
     public static final Icon FQN_ICON = new ImageIcon(Utilities.loadImage(
                 "org/netbeans/modules/java/navigation/resources/fqn.gif")); // NOI18N

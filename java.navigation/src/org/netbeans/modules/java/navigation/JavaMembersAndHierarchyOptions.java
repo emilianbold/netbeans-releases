@@ -20,11 +20,11 @@
 package org.netbeans.modules.java.navigation;
 
 /**
- * The static options for hierarchy and members pop up windows. 
+ * The static options for hierarchy and members pop up windows.
  * <p>
  * The options are currently not persisted (probably should be). Also note that
  * some options are shared between hierarchy andmembers windows.
- * 
+ *
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public final class JavaMembersAndHierarchyOptions {
@@ -83,6 +83,8 @@ public final class JavaMembersAndHierarchyOptions {
     /**
      */
     private static boolean showStatic = true;
+
+    private static int subTypeHierarchyDepth = 1;
 
     private JavaMembersAndHierarchyOptions() {
     }
@@ -288,6 +290,14 @@ public final class JavaMembersAndHierarchyOptions {
      */
     public static void setShowStatic(boolean showStatic) {
         JavaMembersAndHierarchyOptions.showStatic = showStatic;
+    }
+
+    static int getSubTypeHierarchyDepth() {
+        return subTypeHierarchyDepth;
+    }
+
+    static void setSubTypeHierarchyDepth(int subTypeHierarchyDepth) {
+        JavaMembersAndHierarchyOptions.subTypeHierarchyDepth = subTypeHierarchyDepth;
     }
 
 }
