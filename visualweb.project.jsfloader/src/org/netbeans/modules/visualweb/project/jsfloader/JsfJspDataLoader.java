@@ -59,7 +59,8 @@ public class JsfJspDataLoader extends UniFileLoader {
     static final long serialVersionUID =-5809935261731217882L;
 
     public JsfJspDataLoader() {
-        super(JsfJspDataObject.class.getName());
+        // Use String representation instead of JsfJspDataObject.class.getName() for classloading performance
+        super("org.netbeans.modules.visualweb.JsfJspDataObject"); // NOI18N
     }
 
     protected void initialize() {

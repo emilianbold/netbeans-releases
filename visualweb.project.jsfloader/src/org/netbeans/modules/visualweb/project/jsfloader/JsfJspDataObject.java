@@ -21,6 +21,7 @@
 package org.netbeans.modules.visualweb.project.jsfloader;
 
 
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -347,6 +348,27 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
                 newBackingJava.getPrimaryFile().setAttribute("NBIssue81746Workaround", Boolean.TRUE); // NOI18N
             } catch (IOException ex) {
                 ex.printStackTrace();
+            }
+            
+            // Invalidate the JspDataObject if it had been created earlier and replace
+            // with the correct DataObject type (since the backing java file now exists)
+            if (! (result instanceof JsfJspDataObject)) {
+                try {
+                    FileObject jspFile = result.getPrimaryFile();
+                    result.setValid(false);
+                    result = DataObject.find(jspFile);
+                    
+                    if (! (result instanceof JsfJspDataObject)) {
+                        ErrorManager.getDefault().log(ErrorManager.ERROR, 
+                                "JsfJspDataObject#handleCreateFromTemplate: DataObject.find() did not return the correct value for "
+                                + jspFile);
+                    }
+                    
+                }catch (PropertyVetoException ex) {
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, 
+                            "\nJsfJspDataObject#handleCreateFromTemplate: Unable to change to JsfJspDataLoader for FileObject: " // NOI18N
+                            + result.getPrimaryFile());
+                }
             }
         }
         
