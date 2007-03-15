@@ -143,17 +143,12 @@ public class EditorContextImpl extends EditorContext {
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
             return false;
         }
-        if (fronting != null) {
-            if (fronting.equals ("true"))
-                l.show (Line.SHOW_TOFRONT); //FIX 47825
-            else
-                l.show (Line.SHOW_GOTO);
-            return true;
-        }
-        if (Utilities.isWindows())
+        if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
+            l.show (Line.SHOW_REUSE);
             l.show (Line.SHOW_TOFRONT); //FIX 47825
-        else 
-            l.show (Line.SHOW_GOTO);
+        } else {
+            l.show (Line.SHOW_REUSE);
+        }
         return true;
     }
     
