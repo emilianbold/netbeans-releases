@@ -23,6 +23,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
@@ -33,11 +36,8 @@ import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.refactoring.CannotRefactorException;
-import org.netbeans.modules.xml.refactoring.DeleteRequest;
-import org.netbeans.modules.xml.refactoring.RefactoringManager;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.schema.abe.InstanceDesignConstants;
 import org.netbeans.modules.xml.schema.abe.InstanceUIContext;
@@ -50,6 +50,7 @@ import org.netbeans.modules.xml.schema.ui.basic.SchemaGotoType;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
+import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
 import org.netbeans.modules.xml.xam.ui.actions.GotoType;
@@ -248,8 +249,6 @@ public abstract class ABEAbstractNode extends AbstractNode
         null,
         SystemAction.get(GoToAction.class),
         null,
-       // SystemAction.get(FindUsagesAction.class),
-     //   SystemAction.get(RefactorAction.class),
         (SystemAction)RefactoringActionsFactory.whereUsedAction(),
         (SystemAction)RefactoringActionsFactory.editorSubmenuAction(),
         null,
@@ -431,14 +430,16 @@ public abstract class ABEAbstractNode extends AbstractNode
         }
         AXIModel model = getAXIComponent().getModel();
         // try rename silently
-        RenameRequest request  = new RenameRequest((Nameable)ref, value);
-        request.setScopeLocal();
+        
         try {
+            
             context.setUserInducedEventMode(true);
             SchemaModel sm = model.getSchemaModel();
-            RefactoringManager.getInstance().execute(request, false);
+          //  RefactoringManager.getInstance().execute(request, false);
+            SharedUtils.silentRename((Nameable)ref,value, false);
             model.sync();
         } catch(CannotRefactorException ex) {
+            SharedUtils.showRenameRefactoringUI((Nameable)ref);
             // call rename refactoring UI
            /*
             WhereUsedView wuv = new WhereUsedView(ref);
@@ -499,30 +500,16 @@ public abstract class ABEAbstractNode extends AbstractNode
     private void safeDelete() {
         final NamedReferenceable ref = getReferenceable();
         // try delete silently
-        DeleteRequest request  = new DeleteRequest(ref);
-        request.setScopeLocal();
         AXIModel model = getAXIComponent().getModel();
         try {
             context.setUserInducedEventMode(true);
             SchemaModel sm = model.getSchemaModel();
-            RefactoringManager.getInstance().execute(request, true);
+            SharedUtils.silentDeleteRefactor(ref, true);
             model.sync();
         } catch(CannotRefactorException ex) {
+            SharedUtils.showDeleteRefactoringUI(ref);
             // call delete refactoring UI
-            //SwingUtilities.invokeLater();
-                    
-                    /*new Runnable(){
-                public void run() {
-                    WhereUsedView wuv = new WhereUsedView(ref);
-                    DeleteRefactoringUI ui = new DeleteRefactoringUI(wuv, ref);
-                    TopComponent activetc = TopComponent.getRegistry().getActivated();
-                    if (activetc instanceof CloneableEditorSupport.Pane) {
-                        new RefactoringPanel(ui, activetc);
-                    } else {
-                        new RefactoringPanel(ui);
-                    }
-                }
-            });*/            
+                 
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
