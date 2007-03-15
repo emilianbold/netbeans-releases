@@ -597,6 +597,10 @@ public class LayerUtils {
                 Iterator it = projects.iterator();
                 while (it.hasNext()) {
                     NbModuleProject p2 = (NbModuleProject) it.next();
+                    if (p2.getManifest() == null) {
+                        //profiler for example.
+                        continue;
+                    }
                     ManifestManager mm = ManifestManager.getInstance(p2.getManifest(), false);
                     String layer = mm.getLayer();
                     if (layer == null) {
