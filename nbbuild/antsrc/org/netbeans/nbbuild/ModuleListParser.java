@@ -546,8 +546,8 @@ final class ModuleListParser {
         if (type != ParseProjectXml.TYPE_NB_ORG) {
             // External module.
             File basedir = new File(properties.get("basedir"));
-            if (nball != null) {
-                throw new IOException("You must *not* declare <suite-component/> or <standalone/> for a netbeans.org module in " + basedir + "; fix project.xml to use the /2 schema");
+            if (nball != null && project != null) {
+                project.log("You must *not* declare <suite-component/> or <standalone/> for a netbeans.org module in " + basedir + "; fix project.xml to use the /2 schema", Project.MSG_WARN);
             }
             entries = scanBinaries(properties, project);
             if (type == ParseProjectXml.TYPE_SUITE) {
