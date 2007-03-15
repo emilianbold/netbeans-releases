@@ -58,8 +58,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <!-- The following templates are needed for the framework approach. -->
         <folder name="JSP_Servlet">
-            <attr name="Html.html/Page.jsp" boolvalue="true"/>
-            <attr name="Page.jsp/JSFManagedBean.java" boolvalue="true"/>
+            <attr name="JSP.jsp/Page.jsp" boolvalue="true"/>
             <file name="Page.jsp" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.jsp.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
@@ -68,7 +67,22 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html" />
             </file>
+	    <attr name="Page.jsp/Page.java" boolvalue="true"/>
             <file name="Page.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
+            </file>
+            <attr name="Page.java/PageFragment.jspf" boolvalue="true"/>
+            <file name="PageFragment.jspf" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/PageFragment.jspf.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html" />
+            </file>
+            <attr name="PageFragment.jspf/PageFragment.java" boolvalue="true"/>
+            <file name="PageFragment.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/PageFragment.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
             </file>
