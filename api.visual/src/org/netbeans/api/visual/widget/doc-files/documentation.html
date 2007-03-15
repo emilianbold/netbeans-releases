@@ -2230,7 +2230,7 @@ There is no API for enabling antialiasing. Anyway it can be implemented by overr
 class MyScene extends Scene {
     public void paintChildren () {
         Object anti = getGraphics ().getRenderingHint (RenderingHints.KEY_ANTIALIASING);
-        Object textAnti = getGraphics ().setRenderingHint (RenderingHints.KEY_TEXT_ANTIALIASING);
+        Object textAnti = getGraphics ().getRenderingHint (RenderingHints.KEY_TEXT_ANTIALIASING);
 
         getGraphics ().setRenderingHint (
                 RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
