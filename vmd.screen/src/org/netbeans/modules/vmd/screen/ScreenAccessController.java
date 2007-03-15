@@ -128,7 +128,7 @@ public final class ScreenAccessController implements AccessController {
     }
 
     // called in AWT and document transaction
-    private void setEditedScreen (DesignComponent component) {
+    public void setEditedScreen (DesignComponent component) {
         // TODO - hideNotify
         editedScreen = component;
         editedScreenCombo.removeActionListener (editedScreenComboListener);
