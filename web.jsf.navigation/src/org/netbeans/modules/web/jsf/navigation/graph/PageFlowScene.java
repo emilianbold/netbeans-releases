@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.web.jsf.navigation.graph;
 
+import java.io.IOException;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.DeleteAction;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.GraphPopupProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
@@ -39,9 +40,12 @@ import org.netbeans.api.visual.widget.EventProcessingType;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collections;
+import java.util.EnumSet;
 import javax.swing.border.Border;
 import org.netbeans.api.visual.action.EditProvider;
+import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.SelectProvider;
+import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
@@ -50,10 +54,13 @@ import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -147,12 +154,12 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
     private static final int PAGE_WIDGET_INDEX = 0;
     private static final int DEFAULT_PIN_WIDGET_INDEX = 1;
     
-   /**
-    * To show a mal formed page.
-    */
-   public void createMalFormedWidget() {     
-       //Not sure what to do yet.
-   }
+    /**
+     * To show a mal formed page.
+     */
+    public void createMalFormedWidget() {
+        //Not sure what to do yet.
+    }
     
     /**
      * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
@@ -171,6 +178,10 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         imageWidget.getActions().addAction(createWidgetHoverAction());
         header.addChild(imageWidget);
         header.getActions().addAction(createWidgetHoverAction());
+        
+        LabelWidget lblWidget = nodeWidget.getNodeNameWidget();
+        lblWidget.getActions().addAction(
+                ActionFactory.createInplaceEditorAction( new PageFlowTextFieldInplaceEditor(nodeWidget) ));
         
         
         //        Widget widget = new Widget(this);
@@ -208,7 +219,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
             if (previousState.isHovered()  == state.isHovered())
                 return;
             setBorder(state.isHovered() ? BORDER_HOVERED : BORDER );
-
+            
         }
         
         
@@ -259,7 +270,6 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         connectionWidget.getActions().addAction(createSelectAction());
         connectionWidget.getActions().addAction(moveControlPointAction);
         //        connectionWidget.getActions ().addAction (deleteAction);
-        
         return connectionWidget;
     }
     
@@ -318,7 +328,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
      * Invokes the Layout Immediately.
      */
     public void layoutSceneImmediately() {
-            sceneLayout.invokeLayoutImmediately();
+        sceneLayout.invokeLayoutImmediately();
     }
     
     private static class MyPopupMenuProvider implements PopupMenuProvider {
@@ -331,48 +341,6 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         
     }
     
-    //    private static class NodePinLayout implements Layout {
-    //        int gap = 0;
-    //        int displacepin = 0;
-    //
-    //        public NodePinLayout(int gap ){
-    //            this.gap = gap;
-    //            this.displacepin = displacepin;
-    //        }
-    //
-    //        public void layout(Widget widget) {
-    //
-    //            Collection<Widget> children = widget.getChildren();
-    //            int pos = 0;
-    //            for( Widget child : children ){
-    //                Rectangle preferredBounds = child.getPreferredBounds();
-    //                int x = preferredBounds.x;
-    //                int y = preferredBounds.y;
-    //                int width = preferredBounds.width;
-    //                int height = preferredBounds.height;
-    //                int lx = pos - x;
-    //                int ly = - y;
-    //                if ( child.isVisible() ) {
-    //                    if(child instanceof VMDNodeWidget ) {
-    //                        child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, width, height));
-    //                    } else {
-    //                        child.resolveBounds(new Point(lx , ly + 5), new Rectangle(x, y, width, height));
-    //                    }
-    //                    pos += width + gap;
-    //                } else {
-    //                    child.resolveBounds(new Point(lx, ly), new Rectangle(x, y, 0, 0));
-    //                }
-    //            }
-    //        }
-    //
-    //        public boolean requiresJustification(Widget arg0) {
-    //            return false;
-    //        }
-    //
-    //        public void justify(Widget arg0) {
-    //
-    //        }
-    //    }
     
     
     private final class PageFlowSelectProvider implements SelectProvider {
@@ -398,6 +366,36 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
             } else
                 userSelectionSuggested(Collections.emptySet(), invertSelection);
         }
+    }
+    
+    private final class PageFlowTextFieldInplaceEditor implements TextFieldInplaceEditor {
+            private VMDNodeWidget nodeWidget;
+            
+            public PageFlowTextFieldInplaceEditor (VMDNodeWidget nodeWidget ) {
+                this.nodeWidget = nodeWidget;
+            }
+        
+            public boolean isEnabled(Widget widget) {
+                return true;
+            }
+            public String getText(Widget widget) {
+                return ((LabelWidget) widget).getLabel();
+            }
+            public void setText(Widget widget, String text) {
+                ((LabelWidget) widget).setLabel(text);                
+                AbstractNode pageNode = (AbstractNode)findObject(nodeWidget);
+                if( pageNode instanceof DataNode ){
+                    try {
+                        ((DataNode)pageNode).getDataObject().rename(text);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    System.out.println("I need to reset the model for at least the page.");
+                    
+                }
+            }
+        
     }
     
     

@@ -258,6 +258,7 @@ public class PageFlowController {
         //Create any pages that don't actually exist but are defined specified by the config file.
         for( String pageName : pages ){
             AbstractNode node = new AbstractNode(Children.LEAF);
+            
             node.setName(pageName);
             view.createNode(node, null, null);
         }
@@ -320,6 +321,17 @@ public class PageFlowController {
             
         }
     }
+    
+//    public final class EmptyPageNode extends AbstractNode {
+//        public EmptyPageNode(Children children) {
+//            super(children);
+//        }
+//        public rename( String name ) {
+//            this.setDisplayName(name);
+//            configModel.startTransaction();
+//            
+//        }
+//    }
     
     
 }
