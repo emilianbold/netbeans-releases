@@ -86,7 +86,7 @@ public class LoginAccountPanel extends JPanel {
         updateAccountList();
 
         if (SHOW_BACKGROUND) {
-            backgroundImage = Utilities.loadImage("/org/netbeans/modules/collab/ui/resources/login_bg.jpg");
+            backgroundImage = Utilities.loadImage("org/netbeans/modules/collab/ui/resources/login_bg.jpg");
 
             if (backgroundImage == null) {
                 Debug.out.println("Couldn't load background image");
