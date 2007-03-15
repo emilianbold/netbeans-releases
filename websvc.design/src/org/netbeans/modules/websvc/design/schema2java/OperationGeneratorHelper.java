@@ -63,7 +63,7 @@ public class OperationGeneratorHelper {
      */
     public void addWsOperation(WSDLModel wsdlModel, 
             String operationName, 
-            GlobalElement[] parameterTypes, 
+            GlobalElement parameterType, 
             GlobalElement returnType, 
             GlobalElement faultType) {
         
@@ -72,30 +72,34 @@ public class OperationGeneratorHelper {
         int counter = 0;
         //create message for each schema element
         String messageNameBase = operationName;
+        System.out.println("operationName="+operationName);
         String messageName = messageNameBase;
         String partNameBase = "parameter";
         String partName = partNameBase;
         wsdlModel.startTransaction();
         //for(int i = 0; i < inputParms.length; i++){
         //assume one parameter for now
-        GlobalElement inputParameter = parameterTypes[0];
+        GlobalElement inputParameter = parameterType;
+        
         Message inputMessage = factory.createMessage();
         inputMessage.setName(messageName);
+        
         Part part = factory.createPart();
         part.setName(partName);
         NamedComponentReference<GlobalElement> ref = part.createSchemaReference(inputParameter, GlobalElement.class);
         part.setElement(ref);
         inputMessage.addPart(part);
         definitions.addMessage(inputMessage);
-        messageName = messageNameBase + "_" + ++counter;
-        partName = partNameBase + "_" + counter;
+        
+        //messageName = messageNameBase + "_" + ++counter;
+        //partName = partNameBase + "_" + counter;
         //}
         Message outputMessage = factory.createMessage();
         outputMessage.setName(operationName + "Response");
         Part outpart = factory.createPart();
         outpart.setName("result");
-        NamedComponentReference<GlobalElement> outref = part.createSchemaReference(returnType, GlobalElement.class);
-        part.setElement(outref);
+        NamedComponentReference<GlobalElement> outref = outpart.createSchemaReference(returnType, GlobalElement.class);
+        outpart.setElement(outref);
         outputMessage.addPart(outpart);
         definitions.addMessage(outputMessage);
 

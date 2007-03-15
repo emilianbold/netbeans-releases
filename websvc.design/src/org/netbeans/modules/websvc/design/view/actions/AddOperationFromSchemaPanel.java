@@ -94,13 +94,16 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
             return schemaFiles;
         }
         
-        public GlobalElement[] getParameterTypes() {
+        public GlobalElement getParameterType() {
+            return (GlobalElement)parmCombo.getSelectedItem();
+            /*
             List<GlobalElement> list = new ArrayList<GlobalElement>();
             Object[] objs = parmCombo.getSelectedObjects();
             for(int i = 0; i < objs.length; i++){
                 list.add((GlobalElement)objs[i]);
             }
             return list.<GlobalElement>toArray(new GlobalElement[list.size()]);
+            */
         }
         
         public GlobalElement getReturnType() {

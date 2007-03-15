@@ -81,41 +81,22 @@ public class AddOperationAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent arg0) {
-        AddOperationFromSchemaPanel panel = null;
-        //File wsdlFile = null;
-        /*
-        String localWsdlUrl = service.getLocalWsdlFile();
-        AddOperationFromSchemaPanel panel = null;
-        if (localWsdlUrl!=null) { //WS from e
-            JAXWSSupport support = JAXWSSupport.getJAXWSSupport(implementationClass);
-            if (support!=null) {
-                FileObject localWsdlFolder = support.getLocalWsdlFolderForService(service.getName(),false);
-                if (localWsdlFolder!=null) {
-                    File wsdlFolder = FileUtil.toFile(localWsdlFolder);
-                    wsdlFile = new File(wsdlFolder.getAbsolutePath()+File.separator+localWsdlUrl);
-                    if (wsdlFile!=null && wsdlFile.exists()) {
-                        panel = new AddOperationFromSchemaPanel(wsdlFile);
-                    }
-                }
-            }
-        }
-         */
         if(wsdlFile != null && wsdlFile.exists()){
-            panel = new AddOperationFromSchemaPanel(wsdlFile);
-        }
-        if (panel!=null) {
-            final String operationName = panel.getOperationName();
-            final GlobalElement[] parameterTypes = panel.getParameterTypes();
-            final GlobalElement returnType = panel.getReturnType();
-            final GlobalElement faultType = panel.getFaultType();
+            final AddOperationFromSchemaPanel panel = new AddOperationFromSchemaPanel(wsdlFile);
             DialogDescriptor desc = new DialogDescriptor(panel,
                     NbBundle.getMessage(AddOperationAction.class, "TTL_AddWsOperation"));
             desc.setButtonListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
                         OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
+                        
                         WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
-                        generatorHelper.addWsOperation(wsdlModel, operationName, parameterTypes, returnType, faultType);
+                        String operationName = panel.getOperationName();
+                        GlobalElement parameterType = panel.getParameterType();
+                        GlobalElement returnType = panel.getReturnType();
+                        GlobalElement faultType = panel.getFaultType();
+                        
+                        generatorHelper.addWsOperation(wsdlModel, operationName, parameterType, returnType, faultType);
                         generatorHelper.generateJavaArtifacts(service, implementationClass, operationName);
                     }
                 }
