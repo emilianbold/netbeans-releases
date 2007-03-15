@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -58,17 +58,9 @@ public class JNIKill  {
         {"Windows_2003,amd64","lib.jnikill.amd64.x86.dll"}
     };
     
-    // static initializer of JNIKill - just load appropriate dynamic library
-    //static {
-    //    loadJNILibrary();
-    //}
-    
     private static String getPlatform() {
         String platform=System.getProperty("os.name","")+","+
-                        /*
-                        System.getProperty("os.version","")+","+
-                         */
-                System.getProperty("os.arch","");
+                        System.getProperty("os.arch","");
         return platform.replace(' ','_');
     }
     
@@ -102,7 +94,11 @@ public class JNIKill  {
             for (int i=0;i<SUPPORTED_PLATFORMS.length;i++) {
                 if (currentPlatform.equalsIgnoreCase(SUPPORTED_PLATFORMS[i][0])) {
                     // we have it - let's load the library
-                    loadJNILibrary(SUPPORTED_PLATFORMS[i][1]);
+                    try {
+                        loadJNILibrary(SUPPORTED_PLATFORMS[i][1]);
+                    } catch (UnsatisfiedLinkError ule) {
+                        ule.printStackTrace();
+                    }
                     if(isLibraryLoaded()) {
                         return;
                     }
@@ -110,7 +106,11 @@ public class JNIKill  {
             }
             // fallback - try all available libraries if platform entry is missing
             for (int i=0;i<SUPPORTED_PLATFORMS.length;i++) {
-                loadJNILibrary(SUPPORTED_PLATFORMS[i][1]);
+                try {
+                    loadJNILibrary(SUPPORTED_PLATFORMS[i][1]);
+                } catch (UnsatisfiedLinkError ule) {
+                    // ignore
+                }
                 if(isLibraryLoaded()) {
                     return;
                 }
@@ -123,12 +123,7 @@ public class JNIKill  {
     /** Load library and set flag if it succeeds. */
     private static void loadJNILibrary(String libraryName) {
         String libraryFilename = getLibraryFilename(libraryName);
-        try {
-            Runtime.getRuntime().load(libraryFilename);
-        } catch (UnsatisfiedLinkError ule) {
-            return;
-        }
-        // everything's ok
+        Runtime.getRuntime().load(libraryFilename);
         System.out.println("Loading library: "+libraryName);
         System.out.println("Loading library from: "+libraryFilename);
         JNIKill.setLibraryLoaded();
