@@ -59,7 +59,6 @@
     <tocitem text="Creating a Template" target="files.template" />
     <tocitem text="Using Macros in Templates" target="files.templatemacros" />
     <tocitem text="Working with Unknown File Extensions" target="files.unknown" />
-    <tocitem text="Configuring the Display Name Format of Java Elements" target="files.elements" />
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
   </tocitem>
 

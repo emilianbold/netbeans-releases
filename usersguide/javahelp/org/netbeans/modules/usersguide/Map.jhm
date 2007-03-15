@@ -54,7 +54,7 @@
 <mapID target="files.templatemacros" url="files/files_template_macros.html" />
 <mapID target="files.unknown" url="files/files_unknown.html" />
 <mapID target="files.runtime" url="files/files_runtime.html" />
-<mapID target="files.elements" url="files/files_elements.html" />
+
 
 <!--begin GUI Builder section-->
 
@@ -701,8 +701,6 @@ under Print Settings in the Options window)
     <mapID target="org.netbeans.modules.java.platform.wizard.LocationChooser" url="project/csh/proj_platform_manager.html" />
     <mapID target="org.netbeans.modules.java.j2seplatform.wizard.DetectPanel" url="project/csh/proj_platform_manager.html" />
 
-<!--ID for Java Elements Options window node:-->
-    <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceOptions" url="files/files_elements.html" />
     
 <!--remove ID issue 54601:-->
     <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
