@@ -27,7 +27,7 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Variable;
 
-import org.netbeans.modules.xml.refactoring.UsageGroup;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringElement;
 import org.netbeans.modules.xml.schema.model.Choice;
 import org.netbeans.modules.xml.schema.model.ComplexContent;
 import org.netbeans.modules.xml.schema.model.ComplexContentDefinition;
@@ -72,11 +72,18 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  */
 final class XPath extends AbstractXPathVisitor {
 
-  XPath(UsageGroup usage, Named target, String oldName) {
+  /*XPath(UsageGroup usage, Named target, String oldName) {
+    myOldName = oldName;
+    myTarget = target;
+    //myUsage = usage;
+  }*/
+  
+  XPath(List<BpelRefactoringElement> usage, Named target, String oldName) {
     myOldName = oldName;
     myTarget = target;
     myUsage = usage;
   }
+  
 
   void visit(String content, Component component) {
 //out();
@@ -574,7 +581,7 @@ final class XPath extends AbstractXPathVisitor {
 
   private void addItem() {
     if (myUsage != null) {
-      myUsage.addItem(myComponent);
+      myUsage.add(new BpelRefactoringElement(myComponent));
 //out("!! ===== ADD: " + Util.getName(myComponent));
     }
   }
@@ -582,7 +589,7 @@ final class XPath extends AbstractXPathVisitor {
   private Named myTarget;
   private String myOldName;
   private String myPartName;
-  private UsageGroup myUsage;
+  private List<BpelRefactoringElement> myUsage;
   private boolean myDoRename;
   private Variable myVariable;
   private Component myComponent;

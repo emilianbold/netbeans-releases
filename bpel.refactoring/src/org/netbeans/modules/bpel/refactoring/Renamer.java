@@ -43,8 +43,9 @@ import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 
-import org.netbeans.modules.xml.refactoring.FileRenameRequest;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 
@@ -101,7 +102,7 @@ final class Renamer {
 
   void rename(
     List<Component> components,
-    FileRenameRequest request) throws IOException
+    RenameRefactoring request) throws IOException
   {
     if (components == null) {
       return;
@@ -113,7 +114,7 @@ final class Renamer {
 
   private void renameFile(
     Component component,
-    FileRenameRequest request) throws IOException
+    RenameRefactoring request) throws IOException
   {
 //out();
 //out("FILE RENAME: " + Util.getName(component));
@@ -122,7 +123,7 @@ final class Renamer {
     }
     try {
       Import _import = (Import) component;
-      _import.setLocation(request.calculateNewLocationString(_import.getLocation()));
+      _import.setLocation(SharedUtils.calculateNewLocationString(_import.getLocation(), request));
     }
     catch(VetoException e) {
       throw new IOException(e.getMessage());

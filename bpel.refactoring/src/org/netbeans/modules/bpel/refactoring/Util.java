@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
+import java.util.List;
 import javax.xml.namespace.QName;
 
-import org.netbeans.modules.xml.refactoring.UsageGroup;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -42,22 +42,24 @@ final class Util {
 
   private Util() {}
 
-  public static void visit(
-    NamedComponentReference<GlobalType> type,
+  
+  public static void visit( 
+  NamedComponentReference<GlobalType> type,
     NamedComponentReference<GlobalElement> element,
     Referenceable target,
     Component component,
-    UsageGroup usage)
+    List<BpelRefactoringElement> usage)
   {
     visit(type, target, component, usage);
     visit(element, target, component, usage);
-  }
-
+  }        
+          
+        
   public static void visit(
     Reference reference,
     Referenceable target,
     Component component,
-    UsageGroup usage)
+    List<BpelRefactoringElement> usage)
   {
     if (reference == null || reference.get() == null) {
       return;
@@ -68,7 +70,7 @@ final class Util {
     if (target.equals(reference.get())) {
 //out();
 //out("AdD: " + getName(component));
-      usage.addItem(component);
+      usage.add(new BpelRefactoringElement(component));
     }
   }
 
@@ -76,14 +78,14 @@ final class Util {
     QName qName,
     Referenceable target,
     Component component,
-    UsageGroup usage)
+    List<BpelRefactoringElement> usage)
   {
 //out();
 //out("VISIT: " + qName);
     if (target instanceof Named && contains(qName, (Named) target)) {
 //out();
 //out("ADd: " + getName(component));
-      usage.addItem(component);
+      usage.add(new BpelRefactoringElement(component));
     }
   }
 

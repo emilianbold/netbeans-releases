@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
-import org.netbeans.modules.xml.refactoring.UsageGroup;
+import java.util.List;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
@@ -39,7 +39,8 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  */
 final class WsdlVisitor extends ChildVisitor {
 
-  WsdlVisitor(UsageGroup usage, Referenceable target) {
+  
+  WsdlVisitor(List<BpelRefactoringElement> usage, Referenceable target) {
     myUsage = usage;
     myTarget = target;
   }
@@ -129,16 +130,17 @@ final class WsdlVisitor extends ChildVisitor {
       return;
     }
     if (reference.get().equals(part.getParent())) {
-      myUsage.addItem(alias);
-    }
+      myUsage.add(new BpelRefactoringElement(alias));
+     }
   }
 
   private void checkUsages(Component component) {
     if (myTarget.equals(component)) {
-      myUsage.addItem(component);
+      myUsage.add(new BpelRefactoringElement(component));
     }
   }
 
-  private UsageGroup myUsage;
+//  private UsageGroup myUsage;
+  private List<BpelRefactoringElement> myUsage;
   private Referenceable myTarget;
 }
