@@ -213,7 +213,10 @@ public abstract class BackupFacility {
         private boolean createNewFile(File f) throws IOException {
             if (f.exists())
                 return true;
-            createNewFile(f.getParentFile());
+            File parent = f.getParentFile();
+            if (parent!=null) {
+                createNewFile(parent);
+            }
             f.createNewFile();
             return false;
             
