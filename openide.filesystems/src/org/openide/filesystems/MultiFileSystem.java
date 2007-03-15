@@ -200,7 +200,7 @@ public class MultiFileSystem extends FileSystem {
     /** This filesystem is readonly if it has not writable system.
     */
     public boolean isReadOnly() {
-        return (systems[WRITE_SYSTEM_INDEX] == null) || systems[WRITE_SYSTEM_INDEX].isReadOnly();
+        return WRITE_SYSTEM_INDEX >= systems.length || systems[WRITE_SYSTEM_INDEX] == null || systems[WRITE_SYSTEM_INDEX].isReadOnly();
     }
 
     /** The name of the filesystem.
@@ -407,7 +407,7 @@ public class MultiFileSystem extends FileSystem {
     */
     protected FileSystem createWritableOn(String name)
     throws IOException {
-        if ((systems[WRITE_SYSTEM_INDEX] == null) || systems[WRITE_SYSTEM_INDEX].isReadOnly()) {
+        if (isReadOnly()) {
             FSException.io("EXC_FSisRO", getDisplayName()); // NOI18N
         }
 
