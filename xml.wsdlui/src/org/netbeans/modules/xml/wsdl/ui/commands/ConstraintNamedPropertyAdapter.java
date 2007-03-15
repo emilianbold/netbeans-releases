@@ -25,8 +25,8 @@
  */
 package org.netbeans.modules.xml.wsdl.ui.commands;
 
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyAdapter;
 import org.netbeans.modules.xml.xam.Nameable;
@@ -53,7 +53,7 @@ public abstract class ConstraintNamedPropertyAdapter extends PropertyAdapter imp
             NamedReferenceable ref = NamedReferenceable.class.cast(comp);
             if (ref != null) {
                 // try rename silent and locally
-                AnalysisUtilities.locallyRenameRefactor((Nameable)ref, name);
+                SharedUtils.locallyRenameRefactor((Nameable)ref, name);
             }
         } else if (comp instanceof Nameable) {
             getDelegate().getModel().startTransaction();

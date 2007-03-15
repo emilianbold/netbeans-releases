@@ -71,7 +71,8 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.util.GeomUtil;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Operation;
@@ -301,7 +302,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                         }
                     } else {
                         // try rename silent and locally
-                        AnalysisUtilities.locallyRenameRefactor(getWSDLComponent(), text);
+                        SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
                     }
                 }
 

@@ -30,7 +30,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.nodes.Node;
@@ -59,7 +59,7 @@ public abstract class OperationWidget<T extends Operation>
         mOperationNameLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
             
             public void setText(Widget widget, String text) {
-                AnalysisUtilities.locallyRenameRefactor(getWSDLComponent(), text);
+                SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
             }
             
             public boolean isEnabled(Widget widget) {

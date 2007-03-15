@@ -63,7 +63,8 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.action.TextFieldInplaceEditorProvider;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -749,8 +750,8 @@ public class MessageWidget extends AbstractWidget<Message>
             Message message = getMessage(widget);
             if (message != null) {
                 // try rename silent and locally
-                AnalysisUtilities.locallyRenameRefactor(message, text);
-            }
+                SharedUtils.locallyRenameRefactor(message, text);
+             }
         }
         
         

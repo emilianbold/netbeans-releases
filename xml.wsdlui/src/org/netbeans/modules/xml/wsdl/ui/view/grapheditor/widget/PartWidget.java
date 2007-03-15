@@ -39,7 +39,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.action.TextFieldInplaceEditorProvider;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.TableLayout;
@@ -170,7 +170,7 @@ public class PartWidget extends AbstractWidget<Part> {
             Part part = getPart(widget);
             if (part != null) {
                 // try rename silent and locally
-                AnalysisUtilities.locallyRenameRefactor(part, text);
+                SharedUtils.locallyRenameRefactor(part, text);
             }
         }
         

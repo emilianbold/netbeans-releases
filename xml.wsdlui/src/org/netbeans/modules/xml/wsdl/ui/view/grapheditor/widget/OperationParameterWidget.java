@@ -55,7 +55,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.LabelWidget.VerticalAlignment;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -190,7 +190,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
 
                     public void setText(Widget widget, String text) {
                         if (getWSDLComponent() != null)
-                            AnalysisUtilities.locallyRenameRefactor(getWSDLComponent(), text);
+                            SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
                     }
 
                     public boolean isEnabled(Widget widget) {

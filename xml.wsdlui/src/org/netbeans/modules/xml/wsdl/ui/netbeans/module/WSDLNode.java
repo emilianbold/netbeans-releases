@@ -23,10 +23,9 @@ import java.io.IOException;
 import javax.swing.Action;
 import javax.swing.undo.UndoManager;
 import org.netbeans.modules.xml.refactoring.CannotRefactorException;
-import org.netbeans.modules.xml.refactoring.FileRenameRequest;
-import org.netbeans.modules.xml.refactoring.RefactoringManager;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.ui.ModelProvider;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.WSDLViewOpenAction;
 import org.openide.DialogDisplayer;
@@ -67,16 +66,18 @@ public class WSDLNode extends DataNode implements ModelProvider {
             UndoManager undo = editor.getUndoManager();
             // Modifying definitions component leaves an edit on the queue.
             model.removeUndoableEditListener(undo);
-            FileRenameRequest request = new FileRenameRequest(model, name);
+            //FileRenameRequest request = new FileRenameRequest(model, name);
             try {
-                RefactoringManager.getInstance().execute(request, true);
+            //    RefactoringManager.getInstance().execute(request, true);
+                SharedUtils.silentFileRefactor(model, name, true);
                 // Rename the definitions element in the model to follow
                 // the name of the file.
                 if (model.startTransaction()) {
                     model.getDefinitions().setName(name);
                 }
             } catch (CannotRefactorException cre) {
-                AnalysisUtilities.showRefactoringUI(request);
+               // AnalysisUtilities.showFileRenameRefactoringUI(model);
+                SharedUtils.showFileRenameRefactoringUI(model);
             } finally {
                 model.endTransaction();
             }
