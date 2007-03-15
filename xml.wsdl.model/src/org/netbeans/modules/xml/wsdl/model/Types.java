@@ -30,12 +30,13 @@ package org.netbeans.modules.xml.wsdl.model;
 
 import java.util.Collection;
 import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.xam.EmbeddableRoot.ForeignParent;
 
 /**
  *
  * @author rico
  * Represents the types section of the WSDL
  */
-public interface Types extends WSDLComponent {
+public interface Types extends WSDLComponent, ForeignParent {
      public Collection<Schema> getSchemas();
 }

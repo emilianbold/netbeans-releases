@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.wsdl.model.impl;
 
+import java.util.Locale;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.Import;
@@ -98,7 +99,7 @@ public class ImportImpl extends WSDLComponentBase implements Import {
     public DocumentModel resolveImportedModel() throws CatalogModelException {
         ModelSource ms = resolveModel(getLocation());
         
-        String location = getLocation().toLowerCase();
+        String location = getLocation().toLowerCase(Locale.US);
         if (location.endsWith(".wsdl")) { //NOI18N
             return loadAsWSDL(ms);
         } else if (location.endsWith(".xsd")) { //NOI18N

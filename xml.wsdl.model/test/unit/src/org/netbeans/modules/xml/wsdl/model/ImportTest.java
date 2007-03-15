@@ -6,6 +6,7 @@ import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.model.impl.WSDLModelImpl;
 import org.netbeans.modules.xml.wsdl.model.visitor.FindWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -117,5 +118,13 @@ public class ImportTest extends TestCase {
         String xpath = "/definitions/message[@name='SiebelInterfaceRequest']/part[@name='SWEExtData']";
         Part part = Util.find(Part.class, model, xpath);
         assertNotNull("part.element should resolve w/o prefix", part.getElement().get());
+    }
+
+    public void testReferenceToOtherEmbededSchema() throws Exception {
+        WSDLModelImpl model = (WSDLModelImpl)Util.loadWSDLModel("resources/Sumador.wsdl");
+        Schema schema = new ArrayList<Schema>(model.getDefinitions().getTypes().getSchemas()).get(1);
+        GlobalElement e = new ArrayList<GlobalElement>(schema.getElements()).get(1);
+        assertTrue(e.getType().getRefString().equals("tns1:Operacion"));
+        assertTrue(e.getType().get().getName().equals("Operacion"));
     }
 }

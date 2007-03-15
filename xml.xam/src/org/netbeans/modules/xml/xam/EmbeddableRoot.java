@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.xml.xam;
 
+import java.util.List;
+
 /**
  * A root component which could be embedded into a foreign domain model.
  * @author Nam Nguyen
@@ -29,4 +31,8 @@ public interface EmbeddableRoot {
      */
     Component getForeignParent();
     void setForeignParent(Component component);
+
+    interface ForeignParent {
+        List<EmbeddableRoot> getAdoptedChildren();
+    }
 }
