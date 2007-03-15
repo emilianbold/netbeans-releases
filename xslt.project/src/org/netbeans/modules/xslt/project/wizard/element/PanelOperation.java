@@ -316,7 +316,8 @@ final class PanelOperation<T> extends Panel<T> {
       i18n("TLT_Choose_Output_Type"), // NOI18N
       new AbstractAction(i18n("LBL_Choose_Output_Type")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          new DialogType<T>(getProject(), myModel, PanelOperation.this, false).show();
+          new DialogType<T>(
+            getProject(), myModel, PanelOperation.this, false).show();
         }
       }
     );

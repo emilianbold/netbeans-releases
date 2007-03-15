@@ -30,7 +30,6 @@ import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 
 import org.netbeans.modules.xslt.core.xsltmap.AbstractTransformationDesc;
