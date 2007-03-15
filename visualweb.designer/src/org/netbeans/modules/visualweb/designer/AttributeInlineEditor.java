@@ -356,18 +356,21 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
             //    br = text.getParentNode().appendChild(text.getOwnerDocument().createElement("br"));
             //}
             if (text.getNodeType() == Node.TEXT_NODE) {
-                begin = new Position(text, 0, Bias.FORWARD);
+//                begin = new Position(text, 0, Bias.FORWARD);
+                begin = Position.create(text, 0, Bias.FORWARD);
 
 //                if (br != null) {
 //                    end = Position.create(br, false);
 //                } else {
-                    end = new Position(text, text.getNodeValue().length(), Bias.BACKWARD);
+//                    end = new Position(text, text.getNodeValue().length(), Bias.BACKWARD);
+                end = Position.create(text, text.getNodeValue().length(), Bias.BACKWARD);
 //                }
             } else {
                 NodeList children = text.getChildNodes();
 
                 if (children.getLength() > 0) {
-                    begin = new Position(children.item(0), 0, Bias.FORWARD);
+//                    begin = new Position(children.item(0), 0, Bias.FORWARD);
+                    begin = Position.create(children.item(0), 0, Bias.FORWARD);
 
 //                    if (br != null) {
 //                        end = Position.create(br, false);
@@ -375,24 +378,30 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
                         Node last = children.item(children.getLength() - 1);
 
                         if (last.getNodeType() == Node.TEXT_NODE) {
-                            end = new Position(last, last.getNodeValue().length(), Bias.BACKWARD);
+//                            end = new Position(last, last.getNodeValue().length(), Bias.BACKWARD);
+                            end = Position.create(last, last.getNodeValue().length(), Bias.BACKWARD);
                         } else {
-                            end = new Position(last, last.getChildNodes().getLength(), Bias.BACKWARD);
+//                            end = new Position(last, last.getChildNodes().getLength(), Bias.BACKWARD);
+                            end = Position.create(last, last.getChildNodes().getLength(), Bias.BACKWARD);
                         }
 //                    }
                 } else {
-                    begin = new Position(text, 0, Bias.FORWARD);
+//                    begin = new Position(text, 0, Bias.FORWARD);
+                    begin = Position.create(text, 0, Bias.FORWARD);
 
 //                    if (br != null) {
 //                        end = Position.create(br, false);
 //                    } else {
-                        end = new Position(text, text.getChildNodes().getLength(), Bias.BACKWARD);
+//                        end = new Position(text, text.getChildNodes().getLength(), Bias.BACKWARD);
+                    end = Position.create(text, text.getChildNodes().getLength(), Bias.BACKWARD);
 //                    }
                 }
             }
         } else {
-            begin = new Position(fragment, 0, Bias.FORWARD);
-            end = new Position(fragment, fragment.getChildNodes().getLength(), Bias.FORWARD);
+//            begin = new Position(fragment, 0, Bias.FORWARD);
+//            end = new Position(fragment, fragment.getChildNodes().getLength(), Bias.FORWARD);
+            begin = Position.create(fragment, 0, Bias.FORWARD);
+            end = Position.create(fragment, fragment.getChildNodes().getLength(), Bias.FORWARD);
         }
 
         boolean changed = DesignerUtils.stripDesignStyleClasses(fragment);
@@ -700,7 +709,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
             // XXX hack Don't do this, I should have Positions be
             // immutable.
 //            end.setOffset(n.getNodeValue().length());
-            end = new Position(end.getNode(), n.getNodeValue().length(), end.getBias());
+//            end = new Position(end.getNode(), n.getNodeValue().length(), end.getBias());
+            end = Position.create(end.getNode(), n.getNodeValue().length(), end.getBias());
         }
 
 //        //        /*

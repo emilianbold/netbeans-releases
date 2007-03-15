@@ -216,7 +216,8 @@ public class SpaceBox extends CssBox {
     /** Return the first position in the document of this space node */
     public Position getFirstPosition() {
         if (node != null) {
-            return new Position(node, getDomStartOffset(), Bias.FORWARD);
+//            return new Position(node, getDomStartOffset(), Bias.FORWARD);
+            return Position.create(node, getDomStartOffset(), Bias.FORWARD);
         } else {
             return Position.NONE;
         }
@@ -225,7 +226,8 @@ public class SpaceBox extends CssBox {
     /** Return the last position in the document of this space node */
     public Position getLastPosition() {
         if (node != null) {
-            return new Position(node, getDomEndOffset(), Bias.BACKWARD);
+//            return new Position(node, getDomEndOffset(), Bias.BACKWARD);
+            return Position.create(node, getDomEndOffset(), Bias.BACKWARD);
         } else {
             return Position.NONE;
         }
@@ -245,7 +247,8 @@ public class SpaceBox extends CssBox {
             offset++;
         }
         */
-        return new Position(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
+//        return new Position(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
+        return Position.create(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
     }
 
     /** Return the bounding box of the character at the given position */
@@ -317,7 +320,8 @@ public class SpaceBox extends CssBox {
             // Jump over all spaces in one big jump
             int offset = getDomStartOffset();
 
-            return new Position(node, offset, Bias.BACKWARD);
+//            return new Position(node, offset, Bias.BACKWARD);
+            return Position.create(node, offset, Bias.BACKWARD);
         } else {
             return Position.NONE;
         }
@@ -336,7 +340,7 @@ public class SpaceBox extends CssBox {
             // Jump over all spaces in one big jump
             int offset = getDomEndOffset();
 
-            return new Position(node, offset, Bias.FORWARD);
+            return Position.create(node, offset, Bias.FORWARD);
         } else {
             return Position.NONE;
         }

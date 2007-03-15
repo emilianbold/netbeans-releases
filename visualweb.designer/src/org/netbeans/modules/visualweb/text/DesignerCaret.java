@@ -1322,10 +1322,12 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 //            new Position(box.getDesignBean().getElement(), 0, Bias.FORWARD);
                 // XXX Possible NPE?
 //                new Position(CssBox.getMarkupDesignBeanForCssBox(box).getElement(), 0, Bias.FORWARD);
-                new Position(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+//                new Position(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+                Position.create(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
         Position editableRegionEnd =
-            new Position(editableRegionStart.getNode(),
-                editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+//            new Position(editableRegionStart.getNode(),
+//                editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+            Position.create(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
 
         return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
     }

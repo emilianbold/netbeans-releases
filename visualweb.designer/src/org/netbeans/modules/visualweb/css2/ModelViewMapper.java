@@ -1523,7 +1523,8 @@ public final class ModelViewMapper {
                     offset = node.getNodeValue().length();
                 } else if (node.getNodeType() == Node.ELEMENT_NODE) {
                     return modelToView(pageBox,
-                        new Position(node, node.getChildNodes().getLength(), Bias.FORWARD));
+//                        new Position(node, node.getChildNodes().getLength(), Bias.FORWARD));
+                            Position.create(node, node.getChildNodes().getLength(), Bias.FORWARD));
                 } else {
                     offset = 1; // XXX ?
                 }
@@ -1581,9 +1582,10 @@ public final class ModelViewMapper {
                 int x = box.getAbsoluteX();
 
                 if (box.getBoxType() == BoxType.TEXT) {
-                    return ((TextBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
+//                    return ((TextBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
+                    return ((TextBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
                 } else if (box.getBoxType() == BoxType.SPACE) {
-                    return ((SpaceBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
+                    return ((SpaceBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
 
                     /*
                     } else if (box instanceof FormComponentBox) {
@@ -1605,12 +1607,14 @@ public final class ModelViewMapper {
                     Rectangle r = null;
 
                     if (box.getBoxType() == BoxType.TEXT) {
-                        r = ((TextBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
+//                        r = ((TextBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
+                        r = ((TextBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
                         r.width += ((TextBox)box).getMetrics().charWidth(' ');
 
                         return r;
                     } else if (box.getBoxType() == BoxType.SPACE) {
-                        r = ((SpaceBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
+//                        r = ((SpaceBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
+                        r = ((SpaceBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
                         r.width += ((SpaceBox)box).getMetrics().charWidth(' ');
 
                         return r;
@@ -2070,12 +2074,14 @@ public final class ModelViewMapper {
 
         if (box.getBoxType() == BoxType.TEXT) {
             TextBox tb = (TextBox)box;
-            Position p = new Position(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+//            Position p = new Position(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+            Position p = Position.create(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
 
             return p.getSourcePosition();
         } else if (box.getBoxType() == BoxType.SPACE) {
             SpaceBox tb = (SpaceBox)box;
-            Position p = new Position(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+//            Position p = new Position(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+            Position p = Position.create(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
 
             return p.getSourcePosition();
         } else {
@@ -2099,12 +2105,14 @@ public final class ModelViewMapper {
 
         if (box.getBoxType() == BoxType.TEXT) {
             TextBox tb = (TextBox)box;
-            Position p = new Position(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+//            Position p = new Position(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+            Position p = Position.create(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
 
             return p.getSourcePosition();
         } else if (box.getBoxType() == BoxType.SPACE) {
             SpaceBox tb = (SpaceBox)box;
-            Position p = new Position(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+//            Position p = new Position(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+            Position p = Position.create(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
 
             return p.getSourcePosition();
         } else {

@@ -974,7 +974,8 @@ public class SelectionManager {
                                 DesignerCaret dc = pane.getPaneUI().createCaret();
                                 pane.setCaret(dc);
 
-                                Position newPos = new Position(text, 0, Bias.FORWARD);
+//                                Position newPos = new Position(text, 0, Bias.FORWARD);
+                                Position newPos = Position.create(text, 0, Bias.FORWARD);
                                 pane.setCaretPosition(newPos);
 
 //                                Document doc = webform.getDocument();

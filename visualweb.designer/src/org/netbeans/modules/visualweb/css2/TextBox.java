@@ -406,7 +406,8 @@ public final class TextBox extends CssBox {
     /** Return the first position in the document of this text node */
     public Position getFirstPosition() {
         if (node != null) {
-            return new Position(node, getDomStartOffset(), Bias.FORWARD);
+//            return new Position(node, getDomStartOffset(), Bias.FORWARD);
+            return Position.create(node, getDomStartOffset(), Bias.FORWARD);
         } else {
             return Position.NONE;
         }
@@ -415,7 +416,8 @@ public final class TextBox extends CssBox {
     /** Return the last position in the document of this text node */
     public Position getLastPosition() {
         if (node != null) {
-            return new Position(node, getDomEndOffset(), Bias.BACKWARD);
+//            return new Position(node, getDomEndOffset(), Bias.BACKWARD);
+            return Position.create(node, getDomEndOffset(), Bias.BACKWARD);
         } else {
             return Position.NONE;
         }
@@ -463,7 +465,8 @@ public final class TextBox extends CssBox {
             // </markup_separation>
         }
 
-        return new Position(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
+//        return new Position(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
+        return Position.create(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
     }
     
     // XXX Moved from DesignerUtils.
@@ -643,7 +646,8 @@ public final class TextBox extends CssBox {
                 // </markup_separation>
             }
 
-            return new Position(node, offset, Bias.BACKWARD);
+//            return new Position(node, offset, Bias.BACKWARD);
+            return Position.create(node, offset, Bias.BACKWARD);
         } else {
             return Position.NONE;
         }
@@ -688,7 +692,8 @@ public final class TextBox extends CssBox {
                 // </markup_separation>
             }
 
-            return new Position(node, offset, Bias.FORWARD);
+//            return new Position(node, offset, Bias.FORWARD);
+            return Position.create(node, offset, Bias.FORWARD);
         } else {
             return Position.NONE;
         }

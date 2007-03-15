@@ -221,7 +221,8 @@ public class InteractionManager {
                     if ((pos != Position.NONE) && (componentRootElement != null)) {
                         Element sourceElement = MarkupService.getSourceElementForElement(componentRootElement);
                         if (sourceElement != null) {
-                            pos = new Position(sourceElement, 0, Bias.FORWARD);
+//                            pos = new Position(sourceElement, 0, Bias.FORWARD);
+                            pos = Position.create(sourceElement, 0, Bias.FORWARD);
                         }
                     }
                 }
