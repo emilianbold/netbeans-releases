@@ -90,9 +90,16 @@ import org.openide.util.Mutex;
  * @author Po-Ting Wu
  */
 public class JsfProjectUtils {
+    public final static String SUN_WEB_XML_PATH = "web/WEB-INF/sun-web.xml"; // NOI18N
+
     private final static String RAVE_AUX_NAMESPACE = "http://www.sun.com/creator/ns";
     private final static String RAVE_AUX_NAME = "creator-data";
-    public final static String SUN_WEB_XML_PATH = "web/WEB-INF/sun-web.xml"; // NOI18N
+    private static final String[] CreatorProperties = {
+        JsfProjectConstants.PROP_CURRENT_THEME,
+        JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE,
+        JsfProjectConstants.PROP_JSF_PROJECT_LIBRARIES_DIR,
+        JsfProjectConstants.PROP_START_PAGE
+    };
 
     private static final HashMap propertyListeners = new HashMap();
 
@@ -176,42 +183,67 @@ public class JsfProjectUtils {
             }
             
             Element auxElement = ac.getConfigurationFragment(RAVE_AUX_NAME, RAVE_AUX_NAMESPACE, true);
-            if (auxElement == null) {  // Thresher project
-                return getProjectProperty2(project, propName);
+            if (auxElement == null) {  // Creator 2 project
+                return getCreatorProperty(project, propName);
             }
             String value = auxElement.getAttribute(propName);
-            if (value == null || value.equals("")) {  // Thresher project
-                return getProjectProperty2(project, propName);
+            if (value == null || value.equals("")) {  // Creator 2 project
+                return getCreatorProperty(project, propName);
             }
             return value;
         } else
             return "";
     }
     
-    private static String getProjectProperty2(final Project project, final String propName) {
+    private static String getCreatorProperty(final Project project, String propName) {
+        EditableProperties props;
         try {
-            String value = (String)ProjectManager.mutex().readAccess(
-                    new Mutex.ExceptionAction() {
-                        public Object run() throws Exception {
-                            FileObject propFile = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            EditableProperties prop = new EditableProperties();
-                            InputStream is = propFile.getInputStream();
-                            
-                            prop.load(is);
-                            is.close();
-                            
-                            return prop.getProperty(propName);
-                        }
-            });
+            props = (EditableProperties) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
+                public Object run() throws Exception {
+                    EditableProperties ep = new EditableProperties();
+                    FileObject propFile = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    InputStream is = propFile.getInputStream();
+            
+                    ep.load(is);
+                    is.close();
 
-            if (value == null) {
-                return "";
-            }
-            putProjectProperty(project, propName, value, "");
-            return value;
+                    return ep;
+                }
+            });
         } catch (Exception e) {
             return "";
         }
+
+        // Store Creator properties into the new format
+        String ret = "";
+        boolean isCreator = false;
+        for (int i = 0; i < CreatorProperties.length; i++) {
+            String val = props.getProperty(CreatorProperties[i]);
+            if (val != null) {
+                isCreator = true;
+
+                putProjectProperty(project, CreatorProperties[i], val, "");
+
+                if (propName.equals(CreatorProperties[i])) {
+                    ret = val;
+                }
+            }
+        }
+
+        // Store version into the new format
+        String version = props.getProperty("creator"); // NOI18N
+        if (isCreator && version == null) {
+            version = "2.0"; // NOI18N
+        }
+        if (version != null) {
+            version = "4.0-import"; // NOI18N
+            setProjectVersion(project, version);
+            if (propName.equals("creator")) { // NOI18N
+                ret = version;
+            }
+        }
+
+        return ret;
     }
     
     public static void createProjectProperty(Project project, String propName, String value) {
