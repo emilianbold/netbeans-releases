@@ -60,7 +60,7 @@ import org.netbeans.modules.xml.nbprefuse.render.FindUsagesRendererFactory;
 import org.netbeans.modules.xml.nbprefuse.render.GeneralizationEdgeRenderer;
 import org.netbeans.modules.xml.nbprefuse.render.NbLabelRenderer;
 import org.netbeans.modules.xml.nbprefuse.render.ReferenceEdgeRenderer;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.model.SchemaModel;

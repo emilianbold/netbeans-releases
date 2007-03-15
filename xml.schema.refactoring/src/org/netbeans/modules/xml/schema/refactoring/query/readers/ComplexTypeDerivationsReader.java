@@ -34,6 +34,7 @@ import java.beans.BeanInfo;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,18 +42,19 @@ import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.xml.nbprefuse.AnalysisConstants;
-import org.netbeans.modules.xml.refactoring.FindUsageResult;
-import org.netbeans.modules.xml.refactoring.RefactoringManager;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
-import org.netbeans.modules.xml.refactoring.UsageSet;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.schema.model.ComplexContentRestriction;
 import org.netbeans.modules.xml.schema.model.ComplexExtension;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
+import org.netbeans.modules.xml.schema.refactoring.SchemaUIHelper;
 import org.netbeans.modules.xml.schema.refactoring.ui.DisplayInfoVisitor;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
@@ -161,6 +163,10 @@ public class ComplexTypeDerivationsReader {
                 int.class, -1);
     }
     
+     public enum Type {
+        REFERENCE, GENERALIZATION;
+    }
+    
     /**
      * Creates a new instance of ComplexTypeDerivationsReader
      */
@@ -200,28 +206,30 @@ public class ComplexTypeDerivationsReader {
         org.openide.nodes.Node displayNode = null;
         
         Named ref = baseCT;
-        FindUsageResult result = RefactoringManager.getInstance().findUsages(baseCT,
-                baseCT.getModel().getSchema());
-        UsageSet usageSet = null;
-        try {
-            usageSet = result.get();
-        } catch (InterruptedException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (ExecutionException ex) {
-            ErrorManager.getDefault().notify(ex);
+   //     FindUsageResult result = RefactoringManager.getInstance().findUsages(baseCT,
+  //              baseCT.getModel().getSchema());
+        Collection<RefactoringElement> elements = SharedUtils.findUsages(baseCT, baseCT.getModel().getSchema());
+                
+       // UIHelper queryUIHelper = getUIHelper(baseCT);
+        
+        ArrayList<TreeElement> nodes = new ArrayList<TreeElement>();
+        for (RefactoringElement element: elements) {
+            TreeElement previewNode = TreeElementFactory.getTreeElement(element);
+            if(previewNode != null)
+                nodes.add(previewNode);
         }
         
-        UIHelper queryUIHelper = getUIHelper(baseCT);
+        
         Node queryNode  = createQueryNode(graph,
                 baseCT,
-                queryUIHelper,
                 false,
                 componentsInGraph,
                 false,
                 fileGroupNumber);
-        if (queryUIHelper != null){
-            displayNode = queryUIHelper.getDisplayNode(baseCT);
-        }
+        
+        SchemaUIHelper uiHelper = new SchemaUIHelper();
+        displayNode = uiHelper.getDisplayNode(baseCT);
+        
         queryNode.set(AnalysisConstants.COMPONENT_TYPE_NAME,
                 displayNode.getShortDescription()); // comp type
         queryNode.set(AnalysisConstants.XAM_COMPONENT,
@@ -230,8 +238,15 @@ public class ComplexTypeDerivationsReader {
         queryNode.setString(AnalysisConstants.ELEMENT_TYPE,
                 displayNode.getDisplayName());  // element type
         
+        loadGraph(true, //derivations of CTs only
+                graph, 
+                queryNode, 
+                baseCT, 
+                nodes,
+                false, //is primitive
+                derivationsCount);
         //  Map of SourceGroups and their packages
-        Map<SourceGroup, Map<FileObject,Set<UsageGroup>>> sortedUses =
+     /*   Map<SourceGroup, Map<FileObject,Set<UsageGroup>>> sortedUses =
                 usageSet.getSortedUsages();
         Set<Entry<SourceGroup,Map<FileObject,Set<UsageGroup>>>> sgUses =
                 sortedUses.entrySet();
@@ -260,7 +275,7 @@ public class ComplexTypeDerivationsReader {
                     
                 }
             }
-        }
+        }*/
         
         
         writeDerivationsFoundStatusMessage(derivationsCount.get(0).intValue(),
@@ -320,9 +335,9 @@ public class ComplexTypeDerivationsReader {
     
     
     
-    private UIHelper getUIHelper(Referenceable ref) {
+  /*  private UIHelper getUIHelper(Referenceable ref) {
         return RefactoringManager.getInstance().getTargetComponentUIHelper(ref);
-    }
+    }*/
 
     /**
      *
@@ -337,7 +352,7 @@ public class ComplexTypeDerivationsReader {
      * @param  model  the Model of this Multiview's schema file
      *
      */
-    private void addUsagesToGraph(boolean ctDerivationsOnly,
+    /*private void addUsagesToGraph(boolean ctDerivationsOnly,
             UsageGroup usage,
             Graph graph,
             boolean isPrimitive,
@@ -488,7 +503,7 @@ public class ComplexTypeDerivationsReader {
                 
             }
         }
-    }// end addUsagesToGraph()
+    }// end addUsagesToGraph()*/
     
     
     
@@ -521,15 +536,15 @@ public class ComplexTypeDerivationsReader {
      *
      */
     private void addApppropriateEdge(Graph graph, Node from, Node queryNode,
-            int fileGroupNumber, Usage.Type edgeType){
+            int fileGroupNumber, Type edgeType){
         Edge edge = graph.addEdge(from, queryNode);
 //        edge.setBoolean(AnalysisConstants.SHOW, isVisible);
         
         edge.setInt(AnalysisConstants.FILE_GROUP, Integer.valueOf(fileGroupNumber));
-        if ( edgeType == Usage.Type.GENERALIZATION){
+        if ( edgeType == Type.GENERALIZATION){
             edge.setString(AnalysisConstants.EDGE_TYPE,
                     AnalysisConstants.GENERALIZATION);
-        } else if ( edgeType == Usage.Type.REFERENCE){
+        } else if ( edgeType == Type.REFERENCE){
             edge.setString(AnalysisConstants.EDGE_TYPE,
                     AnalysisConstants.REFERENCE);
             from.setString(AnalysisConstants.LABEL,
@@ -541,7 +556,7 @@ public class ComplexTypeDerivationsReader {
         }
     }
     
-    private Node findDup(Graph graph, Component sc){
+    private Node findDup(Graph graph, Object sc){
         Iterator it = graph.nodes();
         while (it.hasNext()){
             Node n= Node.class.cast(it.next());
@@ -559,31 +574,25 @@ public class ComplexTypeDerivationsReader {
     
     public static Node createQueryNode(Graph graph,
             Component query,
-            UIHelper uiHelper,
             boolean isPrimitive,
-            List<Component> componentsInGraph,
+            List componentsInGraph,
             boolean showOnlyDerivations,
             int fileGroupNumber
             ) {
         //  TODO remove this temporary hack when UIHelper for query Component is available
         Node queryNode = null;
-        if (uiHelper == null){
-            String name = "";   //NOI18N
+        String name = "";   //NOI18N
             if (query instanceof Named){
                 name = ((Named)Named.class.cast(query)).getName();
             }
-            queryNode = graph.addNode();
-            componentsInGraph.add(query);
-            queryNode.setBoolean(AnalysisConstants.IS_PRIMITIVE, isPrimitive);
-            queryNode.setString(AnalysisConstants.LABEL, name);
-            queryNode.setString(AnalysisConstants.COMPONENT_TYPE_NAME, "" ); //NOI18N
-            queryNode.set(AnalysisConstants.XAM_COMPONENT, query  );
-            queryNode.setInt(AnalysisConstants.FILE_GROUP, fileGroupNumber);
+       queryNode = graph.addNode();
+       componentsInGraph.add(query);
+       queryNode.setBoolean(AnalysisConstants.IS_PRIMITIVE, isPrimitive);
+       queryNode.setString(AnalysisConstants.LABEL, name);
+       queryNode.setString(AnalysisConstants.COMPONENT_TYPE_NAME, "" ); //NOI18N
+       queryNode.set(AnalysisConstants.XAM_COMPONENT, query  );
+       queryNode.setInt(AnalysisConstants.FILE_GROUP, fileGroupNumber);
             
-        } else {
-            queryNode = createNode(graph, query, uiHelper, isPrimitive, componentsInGraph, query, fileGroupNumber);
-        }
-        
         queryNode.setBoolean(AnalysisConstants.IS_QUERY_NODE, true);
         // unset the FILE_GROUP because this node is always visible
         queryNode.setInt(AnalysisConstants.FILE_GROUP,-1);
@@ -618,13 +627,13 @@ public class ComplexTypeDerivationsReader {
         if (queryComp == null || fobj == null){
             return null;
         }
-        String fileType = AnalysisUtilities.getXmlFileType(fobj);
+        String fileType = SharedUtils.getXmlFileType(fobj);
         Node n = graph.addNode();
         n.setString(AnalysisConstants.FILE_TYPE,fileType);
         n.setInt(AnalysisConstants.FILE_NODE_FILE_GROUP, fileGroupNumber);
         n.setBoolean(AnalysisConstants.IS_EXPANDED, false);
         n.setBoolean(AnalysisConstants.IS_FILE_NODE, true);
-        n.set(AnalysisConstants.JAVA_AWT_IMAGE, AnalysisUtilities.getImage(fobj));
+        n.set(AnalysisConstants.JAVA_AWT_IMAGE, SharedUtils.getImage(fobj));
         n.setString(AnalysisConstants.LABEL, fobj.getNameExt());
         n.setString(AnalysisConstants.XML_FILENAME, fobj.getNameExt());
         n.set(AnalysisConstants.FILE_OBJECT, fobj);
@@ -634,7 +643,7 @@ public class ComplexTypeDerivationsReader {
                 MessageFormat.format(
                 NbBundle.getMessage(ComplexTypeDerivationsReader.class,
                 "LBL_Xml_File_With_Usages"),new Object[]{
-            AnalysisUtilities.getXmlFileTypeDisplayName(fileType),
+            SharedUtils.getXmlFileTypeDisplayName(fileType),
             queryNode.getString(AnalysisConstants.LABEL)}),
                 100,
                 Color.BLACK.getRGB(),
@@ -657,39 +666,193 @@ public class ComplexTypeDerivationsReader {
      *
      */
     public static Node createNode(Graph graph,
-            Component comp,
-            UIHelper uiHelper,
+            TreeElement displayNode,
             boolean isPrimitive,
-            List<Component> componentsInGraph,
+            List componentsInGraph,
             Component queryComponent,
             int fileGroupNumber
             ){
         Node n = graph.addNode();
+        
         if (componentsInGraph != null){
-            componentsInGraph.add(comp);
+            componentsInGraph.add(displayNode.getUserObject());
         }
 //        DisplayInfo dInfo = div.getDisplayInfo(comp);
-        org.openide.nodes.Node displayNode = uiHelper.getDisplayNode(comp);
+       // org.openide.nodes.Node displayNode = uiHelper.getDisplayNode(comp);
         
         // if the queryComponent node is a primitive,
         // check if the usage node is also a primitive, i.e.,
         // from the same model (the W3c Schema model)
         if (isPrimitive){
-            if (comp.getModel() ==
-                    queryComponent.getModel()) {
-                n.setBoolean(AnalysisConstants.IS_PRIMITIVE, true);
+            if(displayNode.getUserObject() instanceof Component ){
+                Component comp = (Component)displayNode.getUserObject();
+                if (comp.getModel() ==    queryComponent.getModel()) {
+                    n.setBoolean(AnalysisConstants.IS_PRIMITIVE, true);
+                }
             }
         }
         n.setBoolean(AnalysisConstants.IS_PRIMITIVE, false);
-        n.setString(AnalysisConstants.LABEL, displayNode.getName());
-        n.setString(AnalysisConstants.COMPONENT_TYPE_NAME, displayNode.getShortDescription() );
-        n.set(AnalysisConstants.XAM_COMPONENT, comp  );
+            n.setString(AnalysisConstants.LABEL, displayNode.getText(true));
+        n.setString(AnalysisConstants.COMPONENT_TYPE_NAME, displayNode.getText(true) );
+       
+        if(displayNode.getUserObject() instanceof Component)
+            n.set(AnalysisConstants.XAM_COMPONENT, (Component)displayNode.getUserObject()  );
+        else if(displayNode.getUserObject() instanceof RefactoringElement ) {
+            Component comp = (Component)( (RefactoringElement)displayNode.getUserObject()).getComposite();
+            n.set(AnalysisConstants.XAM_COMPONENT, comp);
+        } else
+            //no clue what kind of obj we got
+            n.set(AnalysisConstants.XAM_COMPONENT, null);
+        
         n.set(AnalysisConstants.OPENIDE_NODE, displayNode  );
         n.setInt(AnalysisConstants.FILE_GROUP, fileGroupNumber);
-        n.set(AnalysisConstants.JAVA_AWT_IMAGE, displayNode.getIcon(BeanInfo.ICON_COLOR_16x16));
+        n.set(AnalysisConstants.JAVA_AWT_IMAGE,( (ImageIcon)displayNode.getIcon()).getImage());
         
         return n;
     }
     
+    public void loadGraph(boolean ctDerivationsOnly, Graph graph, Node queryNode, Component queryComponent, ArrayList<TreeElement> elements, boolean isPrimitive, List<Integer> derivationsCount) {
+        List componentsInGraph = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
+        Map<FileObject, Node> fileNodes = new Hashtable<FileObject, Node>();
+        int fileGroupNumber = 0;
+        int usagesCount = 0;
+       
+        // *****************************
+        // *** FILE NODE
+        // *****************************
+        // create file node and attach it to the query node
+        for(int i =0; i < elements.size(); i++ ){
+      
+            TreeElement usageNode = elements.get(i);
+            
+            //get the RefactoringElement
+            RefactoringElement usageElement =(RefactoringElement)usageNode.getUserObject();
+            
+            if (ctDerivationsOnly){
+                Component usageComponent = (Component)usageElement.getComposite();
+                if (usageComponent instanceof ComplexContentRestriction){
+                    derivationsCount.set(1,derivationsCount.get(1)+1);
+                } else if (usageComponent instanceof ComplexExtension){
+                    derivationsCount.set(0,derivationsCount.get(0)+1);
+                } else{
+                    continue;   // continue to next Item
+                }
+            }           
+            //Next, lets create a file node and attach it to the query node
+            //there should be one file node per file object
+            
+            FileObject fo = usageElement.getParentFile();
+            Node parent = null;
+            if( !(files.contains(fo)) ) {
+                Node fileNode = createFileNode(graph, queryComponent, fo, queryNode, ++fileGroupNumber);
+
+              // create a special edge from the file node to the query node
+              //  that will be visible when the file node is collapsed
+              //  This edge uses the default prefuse renderer, e.g.,
+              //    a small solid arrow head
+              //  When the file node is expanded, this edge will be
+              //  hidden.  See FindUsagesFocusControl (double click)
+                  Edge fileEdge = graph.addEdge(fileNode,queryNode);
+                  fileEdge.setString(AnalysisConstants.EDGE_TYPE, AnalysisConstants.FILE_EDGE_TYPE);
+                  fileEdge.setInt(AnalysisConstants.FILE_GROUP, fileGroupNumber);
+
+                  files.add(fo);
+                  parent = fileNode;
+                  fileNodes.put(fo, fileNode);
+            } else {
+                parent = fileNodes.get(fo);
+            }
+            
+            Node child = null;
+            TreeElement leaf = usageNode;
+            
+            while( (leaf.getParent(true)) instanceof TreeElement ) {
+                Node pn = null;
+                
+                Object userObject = leaf.getUserObject();
+                                
+                if(componentsInGraph.contains(userObject)){
+                    //there's already a node for this
+                    pn= findDup(graph,userObject);
+                    assert pn !=null:"Cannot find node for User Object" + userObject;
+                }
+                
+                if(pn == null){
+                    pn =  createNode(graph, leaf, isPrimitive, componentsInGraph, queryComponent, fileGroupNumber);
+                    
+                }
+                
+                //// To find out if this tree element is a usage node, we would need to check if there's a corresponding
+                //// refactoring element. only leaf nodes have corresponding refactoring elements
+                AnalysisUtilities.ToolTipLine topLine = null;
+                if(userObject instanceof RefactoringElement){
+                    pn.setBoolean(AnalysisConstants.IS_USAGE_NODE, true);
+                    topLine = new AnalysisUtilities.ToolTipLine((
+                            MessageFormat.format(NbBundle.getMessage(
+                            ComplexTypeDerivationsReader.class, "LBL_Uses_Component"),
+                            new Object[] {queryNode.getString(
+                                    AnalysisConstants.LABEL) })),
+                            100,
+                            Color.BLACK.getRGB(),
+                            AnalysisUtilities.ToolTipLine.
+                            HorizontalAlignment.CENTER);
+                    
+                    // Connect this usage node to the Query Node
+                    // with the appropriate edge (composition or reference)
+                     Object obj= ((RefactoringElement)userObject).getComposite();
+                     if(obj instanceof Component)
+                         addApppropriateEdge(graph, pn, queryNode, fileGroupNumber,Type.REFERENCE );
+                     else
+                         addApppropriateEdge(graph, pn, queryNode, fileGroupNumber, null);
+                     
+                    child=pn;
+                    leaf = leaf.getParent(true);
+                    continue;
+                }
+                                     
+               AnalysisUtilities.ToolTipLine typeLine =
+                        new AnalysisUtilities.ToolTipLine(getCompTypeDisplayName(pn),
+                        100,
+                        Color.BLACK.getRGB(),
+                        AnalysisUtilities.ToolTipLine.
+                        HorizontalAlignment.CENTER);
+                String toolTip = AnalysisUtilities.createHTMLToolTip(
+                        new AnalysisUtilities.ToolTipLine[] {topLine, typeLine});
+                pn.setString(AnalysisConstants.TOOLTIP, toolTip);
+                
+                
+                // connect it to its parent
+                addCompositionEdge(graph, child, pn, fileGroupNumber);
+                child = pn;
+                leaf = leaf.getParent(true);
+            }
+            
+            AnalysisUtilities.ToolTipLine topLine = null;
+                  // connect last node to file node
+            AnalysisUtilities.ToolTipLine typeLine =
+                            new AnalysisUtilities.ToolTipLine(child.getString(AnalysisConstants.COMPONENT_TYPE_NAME),
+                            100,
+                            Color.BLACK.getRGB(),
+                            AnalysisUtilities.ToolTipLine.
+                            HorizontalAlignment.CENTER);
+                    String toolTip = AnalysisUtilities.createHTMLToolTip(
+                            new AnalysisUtilities.ToolTipLine[] {topLine, typeLine});
+                    child.setString(AnalysisConstants.TOOLTIP, toolTip);
+                    
+                    // connect the node to the File Node with compositon edge
+                    Edge fileCompositionEdge = graph.addEdge(child,parent);
+                    fileCompositionEdge.setString(AnalysisConstants.EDGE_TYPE,
+                            AnalysisConstants.COMPOSITION);
+                    // it's part of the group of nodes and edges that are
+                    // visible or hidden, depending on whether the file node
+                    // is expanded or collapsed
+                    fileCompositionEdge.setInt(AnalysisConstants.FILE_GROUP,
+                            fileGroupNumber);
+          
+        }
+        
+    }
     
+  
 }

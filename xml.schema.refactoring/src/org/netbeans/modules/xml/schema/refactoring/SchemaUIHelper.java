@@ -22,8 +22,6 @@ package org.netbeans.modules.xml.schema.refactoring;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.spi.UIHelper;
 import org.netbeans.modules.xml.schema.model.Redefine;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.refactoring.ui.DisplayInfoVisitor;
@@ -46,7 +44,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jeri Lockhart
  */
-public class SchemaUIHelper extends UIHelper{
+public class SchemaUIHelper {
     
     /**
      * Return UI relevant path from root.  Specific implementation should
@@ -54,7 +52,7 @@ public class SchemaUIHelper extends UIHelper{
      * For SchemaComponent, return only Named components,
      * except the Redefine component
      */
-    public List<Component> getRelevantPathFromRoot(Usage item) {
+   /* public List<Component> getRelevantPathFromRoot(Usage item) {
         List<Component> path = item.getPathFromRoot();
         ArrayList<Component> relevantPath = null;
         if (path != null && path.size()>0){
@@ -66,7 +64,7 @@ public class SchemaUIHelper extends UIHelper{
             }
         }
         return relevantPath;
-    }
+    }*/
 
     /**
      * Returns specific node for displaying the component in a preview window.

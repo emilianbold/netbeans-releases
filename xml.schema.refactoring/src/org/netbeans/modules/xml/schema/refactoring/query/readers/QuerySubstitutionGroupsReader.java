@@ -38,11 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.xml.nbprefuse.AnalysisConstants;
-import org.netbeans.modules.xml.refactoring.RefactoringManager;
-import org.netbeans.modules.xml.refactoring.spi.UIHelper;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.refactoring.SchemaUIHelper;
 import org.netbeans.modules.xml.xam.Component;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -227,7 +226,10 @@ public class QuerySubstitutionGroupsReader  {
     
     private Node createNode(Graph graph, GlobalElement ge){
         Node n = graph.addNode();
-        UIHelper uiHleper = RefactoringManager.getInstance().getTargetComponentUIHelper(ge);
+        
+        System.out.println("QuerySubstitutionGroupsReader:: createNode");
+        //Check with Name if I can assume the ui helper is SchemaUIHelper???
+        SchemaUIHelper uiHleper = new SchemaUIHelper();
         org.openide.nodes.Node displayNode = uiHleper.getDisplayNode(ge);
         n.set(AnalysisConstants.OPENIDE_NODE, displayNode  );
         n.set(AnalysisConstants.XAM_COMPONENT, ge);

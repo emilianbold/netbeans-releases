@@ -19,46 +19,48 @@
 package org.netbeans.modules.xml.schema.refactoring;
 
 import java.io.IOException;
-import org.netbeans.modules.xml.refactoring.DeleteRequest;
-import org.netbeans.modules.xml.refactoring.FileRenameRequest;
-import org.netbeans.modules.xml.refactoring.RefactorRequest;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.xml.refactoring.spi.ChangeExecutor;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Nameable;
+import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.Referenceable;
 
 /**
  *
  * @author Nam Nguyen
  */
-public class SchemaChangeExecutor extends ChangeExecutor {
+public class SchemaChangeExecutor  {
     
     /** Creates a new instance of SchemaChangePerformer */
     public SchemaChangeExecutor() {
     }
 
-    public <T extends RefactorRequest> boolean canChange(Class<T> changeType, Referenceable target) {
-        return (target instanceof SchemaComponent || target instanceof SchemaModel) &&
-               (changeType == RenameRequest.class || 
-                changeType == DeleteRequest.class);
+   /* public boolean canChange(Referenceable target, AbstractRefactoring request){
+        return (target instanceof SchemaComponent || target instanceof SchemaModel) && 
+                (request instanceof RenameRefactoring ||
+                 request instanceof SafeDeleteRefactoring);
     }
 
-    public void doChange(RefactorRequest request) throws IOException {
-        if (request instanceof RenameRequest) {
-            SharedUtils.renameTarget((RenameRequest) request);
-        } else if (request instanceof DeleteRequest) {
-            SharedUtils.deleteTarget((DeleteRequest) request);
-        } else {
+    public void doChange(Referenceable target, AbstractRefactoring request) throws IOException {
+        if (target instanceof Nameable  && request instanceof RenameRefactoring) {
+            SharedUtils.renameTarget((Nameable) target, ((RenameRefactoring)request).getNewName());
+        } else if (target instanceof NamedReferenceable && request instanceof SafeDeleteRefactoring) {
+            SharedUtils.deleteTarget((NamedReferenceable) target);
+        } else if(target instanceof Model) {
             //just do nothing
         }
-    }
+    }*/
     
-    public UIHelper getUIHelper() {
+    /*public UIHelper getUIHelper() {
         return new SchemaUIHelper();
-    }
+    }*/
 
 }
 

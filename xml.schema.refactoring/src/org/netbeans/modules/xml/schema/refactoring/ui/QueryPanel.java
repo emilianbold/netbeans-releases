@@ -31,7 +31,6 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.xml.nbprefuse.AnalysisViewer;
-import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.ParametersPanel;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -53,7 +52,7 @@ public class QueryPanel extends JPanel   implements NodeListener   {
     private final Query query;
     
     private transient boolean isVisible = false;
-    private transient ParametersPanel parametersPanel = null;
+  //  private transient ParametersPanel parametersPanel = null;
       
     private WeakReference refCallerTC;
     

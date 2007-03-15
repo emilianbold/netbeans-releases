@@ -22,15 +22,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.xml.refactoring.DeleteRequest;
-import org.netbeans.modules.xml.refactoring.FileRenameRequest;
-import org.netbeans.modules.xml.refactoring.RefactorRequest;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
-import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
-import org.netbeans.modules.xml.refactoring.spi.UIHelper;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -40,6 +34,8 @@ import org.netbeans.modules.xml.schema.model.visitor.FindUsageVisitor;
 import org.netbeans.modules.xml.schema.model.visitor.Preview;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Nameable;
+import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
@@ -48,7 +44,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Nam Nguyen
  */
-public class SchemaRefactoringEngine extends RefactoringEngine {
+public class SchemaRefactoringEngine { 
     
     /** Creates a new instance of SchemaRefactoringEngine */
     public SchemaRefactoringEngine() {
@@ -58,103 +54,12 @@ public class SchemaRefactoringEngine extends RefactoringEngine {
         return Collections.singletonList(RefactoringUtil.XSD_MIME_TYPE);
     }
 
-    public Component getSearchRoot(FileObject file) throws IOException {
+   /* public Component getSearchRoot(FileObject file) throws IOException {
         return RefactoringUtil.getSchema(file);
-    }
-
-    public List<UsageGroup> findUsages(Model target, Component searchRoot) {
-        if (! (target instanceof SchemaModel) ||
-            ! (searchRoot instanceof Schema)) {
-            return null;
-        }
-        SchemaModel targetModel = (SchemaModel) target;
-        Schema schema = (Schema) searchRoot;
-        UsageGroup ug = new UsageGroup(this, schema.getModel(), targetModel);
-        List<SchemaModelReference> refs = new ArrayList<SchemaModelReference>();
-        refs.addAll(schema.getImports());
-        refs.addAll(schema.getIncludes());
-        refs.addAll(schema.getRedefines());
-        for (SchemaModelReference ref : refs) {
-            SchemaModel importedModel = null;
-            try {
-                importedModel = ref.resolveReferencedModel();
-            } catch (CatalogModelException e) {
-                ug.addError(searchRoot, e.getMessage());
-            }
-            if (targetModel.equals(importedModel)) {
-                ug.addItem(ref);
-                return Collections.singletonList(ug);
-            }
-        }
-        return Collections.emptyList();
-    }
-
-    public List<UsageGroup> findUsages(Component target, Component searchRoot) {
-        if (! (target instanceof ReferenceableSchemaComponent) ||
-            ! (searchRoot instanceof Schema)) {
-            return Collections.emptyList();
-        }
-        
-        ReferenceableSchemaComponent referenceable = 
-                (ReferenceableSchemaComponent) target;
-        Schema schema = (Schema) searchRoot;
-        UsageGroup u = null;
-        Preview p = new FindUsageVisitor().findUsages(Collections.singleton(schema), referenceable);
-        if (! p.getUsages().keySet().isEmpty()) {
-            u = new UsageGroup(this, schema.getModel(), referenceable);
-            for (SchemaComponent c : p.getUsages().keySet()) {
-                u.addItem(c);
-            }
-        }
-        if (u == null) {
-            return Collections.emptyList();
-        } else {
-            return Collections.singletonList(u);
-        }
-    }
-
-    public UIHelper getUIHelper() {
-        return new SchemaUIHelper();
-    }
-
-    public void refactorUsages(RefactorRequest request) throws IOException {
-        for (UsageGroup usage : request.getUsages().getUsages()) {
-            if (usage.getEngine() instanceof SchemaRefactoringEngine) {
-                if (request instanceof RenameRequest) {
-                    new RenameReferenceVisitor().rename((RenameRequest)request, usage);
-                } else if (request instanceof DeleteRequest) {
-                    // no supports for cascade delete or reset reference at this time.
-                } else if (request instanceof FileRenameRequest) {
-                    _refactorUsages((FileRenameRequest)request, usage);
-                }
-            }
-        }
-    }
-    
-    void _refactorUsages(FileRenameRequest request, UsageGroup usage) {
-        if (request == null || usage == null || usage.getModel() == null) return;
-        if (! (usage.getModel() instanceof SchemaModel)) return;
-        SchemaModel model = (SchemaModel) usage.getModel();
-        boolean startTransaction = ! model.isIntransaction();
-        try {
-            if (startTransaction) {
-                model.startTransaction();
-            }
-            for (Usage u : usage.getItems()) {
-                if (u.getComponent() instanceof SchemaModelReference) {
-                    SchemaModelReference ref = (SchemaModelReference) u.getComponent();
-                    String newLocation = request.calculateNewLocationString(ref.getSchemaLocation());
-                    ref.setSchemaLocation(newLocation);
-                }
-            }
-        } finally {
-            if (startTransaction && model.isIntransaction()) {
-                model.endTransaction();
-            }
-        }
-    }
-    
-    public <T extends RefactorRequest> boolean supportsRefactorType(Class<T> type) {
+    }*/
+      
+                
+ /*   public <T extends RefactorRequest> boolean supportsRefactorType(Class<T> type) {
         return (type == RenameRequest.class || 
                 type == DeleteRequest.class ||
                 type == FileRenameRequest.class);
@@ -170,13 +75,14 @@ public class SchemaRefactoringEngine extends RefactoringEngine {
                 RefactoringUtil.prepareDescription((FileRenameRequest)request, SchemaModel.class);
             }
         }
-    }
+    }*/
     
-    @Override
+  
     public String getModelReference(Component component) {
         if (component instanceof SchemaModelReference) {
             return ((SchemaModelReference)component).getSchemaLocation();
         }
         return null;
     }
-}
+    
+  }

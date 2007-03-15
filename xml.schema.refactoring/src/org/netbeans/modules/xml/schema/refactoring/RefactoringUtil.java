@@ -19,10 +19,6 @@
 package org.netbeans.modules.xml.schema.refactoring;
 
 import java.io.IOException;
-import org.netbeans.modules.xml.refactoring.FileRenameRequest;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
@@ -61,7 +57,7 @@ public class RefactoringUtil {
         }
     }
 
-    public static void prepareDescription(RenameRequest request, Class<? extends Model> referencingModelType) {
+   /* public static void prepareDescription(RenameRequest request, Class<? extends Model> referencingModelType) {
         SchemaComponent target =  (SchemaComponent) request.getTarget();
         for (UsageGroup usage : request.getUsages().getUsages()) {
             if (! (referencingModelType.isAssignableFrom(usage.getModel().getClass()))) {
@@ -93,7 +89,7 @@ public class RefactoringUtil {
                 i.setRefactoringDescription(msg);
             }
         }
-    }
+    }*/
     
     public static String getLocationReferenceAttributeName(Component usageComponent) {
         if (usageComponent instanceof org.netbeans.modules.xml.wsdl.model.Import) {
@@ -105,7 +101,7 @@ public class RefactoringUtil {
         }
     }
     
-    private static String getNewLocationValue(FileRenameRequest request, Component usageComponent) {
+    /*private static String getNewLocationValue(FileRenameRequest request, Component usageComponent) {
         String current = ""; //NOI18N
         if (usageComponent instanceof Import) {
             current =((Import)usageComponent).getLocation();
@@ -114,5 +110,5 @@ public class RefactoringUtil {
         }        
 
         return request.calculateNewLocationString(current);
-    }
+    }*/
 }

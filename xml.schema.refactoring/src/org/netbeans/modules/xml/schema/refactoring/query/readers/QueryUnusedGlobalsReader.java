@@ -36,7 +36,6 @@ import java.util.Map;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.nbprefuse.AnalysisConstants;
-import org.netbeans.modules.xml.refactoring.RefactoringManager;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
 import org.netbeans.modules.xml.refactoring.ui.CancelSignal;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
@@ -50,7 +49,9 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.model.visitor.Preview;
+import org.netbeans.modules.xml.schema.refactoring.SchemaUIHelper;
 import org.netbeans.modules.xml.schema.refactoring.ui.QueryUtilities;
+import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
@@ -62,6 +63,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -292,8 +294,12 @@ public class QueryUnusedGlobalsReader {
         } else if (sc instanceof GlobalElement){
             index = ELE;
         }
-        Node displayNode = RefactoringManager.getInstance().
-                getTargetComponentUIHelper((Referenceable)sc).getDisplayNode(sc);
+        
+        System.out.println("QueryUnusedGlobalsReader:: create node called");
+        SchemaUIHelper uiHelper = new SchemaUIHelper();
+        Node displayNode = uiHelper.getDisplayNode(sc);
+  //      Node displayNode = RefactoringManager.getInstance().
+        //        getTargetComponentUIHelper((Referenceable)sc).getDisplayNode(sc);
         displayNode = new FilterNode(displayNode) {
             public String getHtmlDisplayName() {
                 return null;

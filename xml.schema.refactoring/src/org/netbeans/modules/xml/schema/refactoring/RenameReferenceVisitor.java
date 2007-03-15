@@ -22,11 +22,14 @@ package org.netbeans.modules.xml.schema.refactoring;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
+import java.util.Set;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+
 import org.netbeans.modules.xml.schema.model.*;
 import org.netbeans.modules.xml.schema.model.visitor.*;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
@@ -48,30 +51,28 @@ class RenameReferenceVisitor extends DefaultSchemaVisitor {
     public RenameReferenceVisitor() {
     }
     
-    public void rename(RenameRequest request, UsageGroup usage) {
-        if (request == null || usage == null || usage.getModel() == null) return;
-        if (! (usage.getModel() instanceof SchemaModel)) return;
+    public void rename(Model mod, Set<RefactoringElementImplementation> elements, RenameRefactoring request) {
+        if ( elements == null || mod == null) return;
+        if (! (mod instanceof SchemaModel)) return;
 
-        if (! (request.getTarget() instanceof ReferenceableSchemaComponent) ||
-                request.getOldName() == null) {
+        Referenceable ref = request.getRefactoringSource().lookup(Referenceable.class);
+        this.oldName = request.getContext().lookup(String.class);
+        if (! (ref instanceof ReferenceableSchemaComponent)  || oldName == null) {
             return;
         }
-        
-        SchemaModel model = (SchemaModel) usage.getModel();
+        SchemaModel model = (SchemaModel) mod;
         boolean startTransaction = ! model.isIntransaction();
         
-        global_component = (ReferenceableSchemaComponent) request.getRenamedTarget();
-        oldName = request.getOldName();
-        SchemaComponent currentComponent = null;
+         global_component = (ReferenceableSchemaComponent) ref;
+         SchemaComponent currentComponent = null;
         try {
             if (startTransaction) {
                 model.startTransaction();
             }
-            Collection<Usage> items = usage.getItems();
-            for (Usage item : items) {
-                if (item.isIncludedInRefactoring() &&
-                    item.getComponent() instanceof SchemaComponent) {
-                    currentComponent = (SchemaComponent)item.getComponent();
+          //  Collection<Usage> items = usage.getItems();
+            for (RefactoringElementImplementation item : elements) {
+                if (item.isEnabled() && item.getComposite() instanceof SchemaComponent) {
+                    currentComponent = (SchemaComponent)item.getComposite();
                     currentComponent.accept(this);
                 }
             }
