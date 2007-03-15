@@ -2398,19 +2398,18 @@ public class CasaWrapperModel extends CasaModelImpl {
      * @return a map mapping namespace prefix to namespace URI
      */
     public Map<String, String> getNamespaces() {
-        Map<String, String> ret = new HashMap<String, String>();
-        ret.putAll(getDocumentModelNamespaces(this));
-        return ret;
+        return getDocumentModelNamespaces(this);
     }
     
     /**
-     * Gets all the namespaces defined in any document model.
+     * Gets the namespaces defined in any document model. Note that certain 
+     * well-known namespaces are not included.
      *
      * @return a map mapping namespace prefix to namespace URI
      */
     private static Map<String, String> getDocumentModelNamespaces(
             AbstractDocumentModel model) {
-        Map<String, String> ret = new HashMap<String, String>();
+        Map<String, String> ret = new TreeMap<String, String>();
         
         NamedNodeMap map = model.getRootComponent().getPeer().getAttributes();
         for (int j = 0; j < map.getLength(); j++) {
@@ -2419,12 +2418,9 @@ public class CasaWrapperModel extends CasaModelImpl {
             String prefix = node.getPrefix();
             if (prefix != null && prefix.equals("xmlns")) {
                 String localName = node.getLocalName();
-                if (! localName.equals("xsi")) { // TMP
+                if (! localName.equals("xsi") // NOI18N         // TMP
+                    && ! localName.equals("xlink")) { // NOI18N // TMP
                     String namespaceURI = node.getNodeValue();
-//                    System.out.println(
-//                            " prefix=" + prefix +
-//                            " localName: " + localName +
-//                            " namespaceURI: " + namespaceURI);
                     ret.put(localName, namespaceURI);
                 }
             }
