@@ -20,9 +20,12 @@
 package org.netbeans.modules.websvc.design.schema2java;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -40,6 +43,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 
 
@@ -117,9 +121,10 @@ public class OperationGeneratorHelper {
      * generate WsdlModel to find information about the new operation
      * add new menthod to implementation class
      */
-    public void generateJavaArtifacts(final FileObject implementationClass, final String operationName) {
+    public void generateJavaArtifacts(org.netbeans.modules.websvc.api.jaxws.project.config.Service service,
+            final FileObject implementationClass, final String operationName) {
         Project project = FileOwnerQuery.getOwner(implementationClass);
-        invokeWsImport(project);
+        invokeWsImport(project,service);
         try {
             WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlFile.toURL());
             modeler.generateWsdlModel(new WsdlModelListener() {
@@ -127,14 +132,27 @@ public class OperationGeneratorHelper {
                     MethodGenerator generator = new MethodGenerator(wsdlModel,implementationClass);
                     generator.generateMethod(operationName);
                 }
-            });
+            },true);
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
     
-    private void invokeWsImport(Project project) {
-        // TODO
+    private void invokeWsImport(Project project, org.netbeans.modules.websvc.api.jaxws.project.config.Service service) {
+         if (project!=null) {
+            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+            try {
+                String name = service.getName();
+                ExecutorTask wsimportTask =
+                    ActionUtils.runTarget(buildImplFo,
+                        new String[]{"wsimport-service-clean-"+name,"wsimport-service-"+name},null); //NOI18N
+                wsimportTask.waitFinished();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().log(ex.getLocalizedMessage());
+            } catch (IllegalArgumentException ex) {
+                ErrorManager.getDefault().log(ex.getLocalizedMessage());
+            } 
+        }
     }
 }
     

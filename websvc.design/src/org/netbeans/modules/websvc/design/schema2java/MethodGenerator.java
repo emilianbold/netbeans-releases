@@ -19,21 +19,56 @@
 
 package org.netbeans.modules.websvc.design.schema2java;
 
+import java.io.IOException;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
+import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkuchtiak
  */
 public class MethodGenerator {
-    
+    FileObject implClassFo;
+    WsdlModel wsdlModel;
     /** Creates a new instance of MethodGenerator */
-    public MethodGenerator(WsdlModel wsdlModel, FileObject implementationClass) {
+    public MethodGenerator(WsdlModel wsdlModel, FileObject implClassFo) {
+        this.wsdlModel=wsdlModel;
+        this.implClassFo=implClassFo;
+    }
+    /** generate new method to implementation class
+     */ 
+    public void generateMethod(String operationName) {   
+        
+        org.netbeans.modules.websvc.core.MethodGenerator delegatedGenerator = 
+                new org.netbeans.modules.websvc.core.MethodGenerator(wsdlModel, implClassFo);
+        try {
+            delegatedGenerator.generateMethod(operationName);
+        } catch (IOException ex) {
+            
+        }
+
+        //open in editor
+        try {
+            DataObject dobj = DataObject.find(implClassFo);
+            openFileInEditor(dobj);
+        } catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+
     }
     
-    public void generateMethod(String operationName) {   
-        //TODO
+    private static void openFileInEditor(DataObject dobj){
+        final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+        RequestProcessor.getDefault().post(new Runnable(){
+            public void run(){
+                ec.open();
+            }
+        }, 1000);
     }
     
 }

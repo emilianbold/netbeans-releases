@@ -116,7 +116,7 @@ public class AddOperationAction extends AbstractAction {
                         OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
                         WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
                         generatorHelper.addWsOperation(wsdlModel, operationName, parameterTypes, returnType, faultType);
-                        generatorHelper.generateJavaArtifacts(implementationClass, operationName);
+                        generatorHelper.generateJavaArtifacts(service, implementationClass, operationName);
                     }
                 }
             });
