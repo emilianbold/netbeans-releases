@@ -32,6 +32,7 @@ import javax.swing.text.Document;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.FindAction;
 import org.netbeans.jellytools.modules.editor.Find;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 
 /**
@@ -160,9 +161,16 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         find.cboFindWhat().clearText();
     }
     
-    protected Find openFindDialog(String text, int modifiers){
-        new FindAction().perform();
-        Find find = new Find();
+    protected Find openFindDialog(String text, int modifiers){                     
+        new FindAction().performMenu();
+        Find find = null;
+        try {
+            find = new Find();
+        } catch (TimeoutExpiredException tee) {
+            log("Find dialog not opened, one more try");
+            new FindAction().performMenu();
+            find = new Find();
+        }
         if (modifiers != 0 && (modifiers & NO_RESET) == 0) {
             resetFindProperties(find, (modifiers & NO_RESET_SEARCH_SELECTION) == 0);
         }
@@ -512,9 +520,10 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             
             //#52115
             // firstly try CTRL+V
+            editor.requestFocus();
             editor.setCaretPosition(16, 9);  //word "search"
             txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK);
-            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_MASK);
+            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
@@ -527,10 +536,14 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             find.find();
             find.close();
             checkSelection(txtOper, 8, 14, "Issue #52115 testing failed on CTRL+V!");
+            
+            log("Copy paste with Ctrl-V done");
+            
             // then Shift+Insert
-            editor.setCaretPosition(327);  //word "text"
+            editor.requestFocus();
+            editor.setCaretPosition(16,27);  //word "text"
             txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK);
-            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_MASK);
+            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux

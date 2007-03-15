@@ -19,6 +19,7 @@
 
 package search_replace;
 
+import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -39,5 +40,10 @@ public class SearchAndReplaceTestSuite extends NbTestSuite {
     public static NbTestSuite suite() {
         return new SearchAndReplaceTestSuite();
     }
+    
+    public static void main(String[] args) {
+        TestRunner.run(new NbTestSuite(SearchAndReplaceTest.class));
+    }
+
 
 }
