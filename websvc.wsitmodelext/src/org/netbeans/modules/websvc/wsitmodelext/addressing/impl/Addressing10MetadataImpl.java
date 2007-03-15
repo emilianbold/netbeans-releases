@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10Metadata;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10QName;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10ReferenceProperties;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
@@ -29,24 +29,24 @@ import org.w3c.dom.Element;
  *
  * @author Martin Grebac
  */
-public class Addressing10MetadataImpl extends Addressing10ComponentImpl implements Addressing10ReferenceProperties {
+public class Addressing10MetadataImpl extends Addressing10ComponentImpl implements Addressing10Metadata {
     
     /**
-     * Creates a new instance of AddressImpl
+     * Creates a new instance of Addressing10MetadataImpl
      */
     public Addressing10MetadataImpl(WSDLModel model, Element e) {
         super(model, e);
     }
     
     public Addressing10MetadataImpl(WSDLModel model){
-        this(model, createPrefixedElement(Addressing10QName.REFERENCEPROPERTIES.getQName(), model));
+        this(model, createPrefixedElement(Addressing10QName.ADDRESSINGMETADATA.getQName(), model));
     }
 
-    public void setReferenceProperties(String referenceProperties) {
-        setText(REFERENCEPROPERTIES_CONTENT_VALUE_PROPERTY, referenceProperties);
+    public void setAddressing10Metadata(String mdata) {
+        setText(ADDRESSING10_METADATA_CONTENT_VALUE_PROPERTY, mdata);
     }
 
-    public String getReferenceProperties() {
+    public String getAddressing10Metadata() {
         return getText();
     }
 

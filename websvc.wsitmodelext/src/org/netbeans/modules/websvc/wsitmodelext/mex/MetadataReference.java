@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.mex;
 
-import org.netbeans.modules.websvc.wsitmodelext.addressing.Address;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Address10;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
@@ -30,8 +30,8 @@ public interface MetadataReference extends ExtensibilityElement {
 
     public static final String ADDRESS_PROPERTY = "ADDRESS";     //NOI18N
 
-    Address getAddress();
-    void setAddress(Address addr);
-    void removeAddress(Address addr);
+    Address10 getAddress();
+    void setAddress(Address10 addr);
+    void removeAddress(Address10 addr);
 
 }

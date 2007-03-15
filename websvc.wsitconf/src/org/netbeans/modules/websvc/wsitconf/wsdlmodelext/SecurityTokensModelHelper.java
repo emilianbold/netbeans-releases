@@ -21,13 +21,13 @@ package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.Address;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingQName;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Address10;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10Metadata;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10QName;
 import org.netbeans.modules.websvc.wsitmodelext.mex.Metadata;
 import org.netbeans.modules.websvc.wsitmodelext.mex.MetadataReference;
 import org.netbeans.modules.websvc.wsitmodelext.mex.MetadataSection;
 import org.netbeans.modules.websvc.wsitmodelext.mex.MexQName;
-import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.RequestSecurityTokenTemplate;
@@ -648,9 +648,9 @@ public class SecurityTokensModelHelper {
             List<Issuer> issuerList = tokenType.getExtensibilityElements(Issuer.class);
             if ((issuerList != null) && (!issuerList.isEmpty())) {
                 Issuer issuer = issuerList.get(0);
-                List<Address> addrs = issuer.getExtensibilityElements(Address.class);
+                List<Address10> addrs = issuer.getExtensibilityElements(Address10.class);
                 if ((addrs != null) && (!addrs.isEmpty())) {
-                    Address a = addrs.get(0);
+                    Address10 a = addrs.get(0);
                     if (a != null) {
                         return a.getAddress();
                     }
@@ -722,17 +722,21 @@ public class SecurityTokensModelHelper {
             List<Issuer> issuerList = tokenType.getExtensibilityElements(Issuer.class);
             if ((issuerList != null) && (!issuerList.isEmpty())) {
                 Issuer issuer = issuerList.get(0);
-                List<Metadata> mdata = issuer.getExtensibilityElements(Metadata.class);
-                if ((mdata != null) && (!mdata.isEmpty())) {
-                    Metadata m = mdata.get(0);
-                    if (m != null) {
-                        MetadataSection ms = m.getMetadataSection();
-                        if (ms != null) {
-                            MetadataReference mr = ms.getMetadataReference();
-                            if (mr != null) {
-                                Address a = mr.getAddress();
-                                if (a != null) {
-                                    return a.getAddress();
+                List<Addressing10Metadata> amdatas = issuer.getExtensibilityElements(Addressing10Metadata.class);
+                if ((amdatas != null) && (!amdatas.isEmpty())) {
+                    Addressing10Metadata amdata = amdatas.get(0);
+                    List<Metadata> mdata = amdata.getExtensibilityElements(Metadata.class);
+                    if ((mdata != null) && (!mdata.isEmpty())) {
+                        Metadata m = mdata.get(0);
+                        if (m != null) {
+                            MetadataSection ms = m.getMetadataSection();
+                            if (ms != null) {
+                                MetadataReference mr = ms.getMetadataReference();
+                                if (mr != null) {
+                                    Address10 a = mr.getAddress();
+                                    if (a != null) {
+                                        return a.getAddress();
+                                    }
                                 }
                             }
                         }
@@ -754,13 +758,15 @@ public class SecurityTokensModelHelper {
 
         try {
             Issuer i = PolicyModelHelper.createElement(token, TokensQName.ISSUER.getQName(), Issuer.class, false);
-            Address a = PolicyModelHelper.createElement(i, AddressingQName.ADDRESS.getQName(), Address.class, false);
+            Address10 a = PolicyModelHelper.createElement(i, Addressing10QName.ADDRESS.getQName(), Address10.class, false);
             a.setAddress(address);
 
-            Metadata m = PolicyModelHelper.createElement(i, MexQName.METADATA.getQName(), Metadata.class, false);
+            Addressing10Metadata am = PolicyModelHelper.createElement(i, 
+                    Addressing10QName.ADDRESSINGMETADATA.getQName(), Addressing10Metadata.class, false);
+            Metadata m = PolicyModelHelper.createElement(am, MexQName.METADATA.getQName(), Metadata.class, false);
             MetadataSection ms = PolicyModelHelper.createElement(m, MexQName.METADATASECTION.getQName(), MetadataSection.class, false);
             MetadataReference mr = PolicyModelHelper.createElement(ms, MexQName.METADATAREFERENCE.getQName(), MetadataReference.class, false);
-            Address ma = PolicyModelHelper.createElement(mr, AddressingQName.ADDRESS.getQName(), Address.class, false);
+            Address10 ma = PolicyModelHelper.createElement(mr, Addressing10QName.ADDRESS.getQName(), Address10.class, false);
             ma.setAddress(metaAddress);
         } finally {
             if (!isTransaction) {

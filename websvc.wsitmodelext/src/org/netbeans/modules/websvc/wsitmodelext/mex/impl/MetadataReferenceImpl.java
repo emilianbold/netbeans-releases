@@ -20,7 +20,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.mex.impl;
 
 import java.util.Collections;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.Address;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Address10;
 import org.netbeans.modules.websvc.wsitmodelext.mex.MetadataReference;
 import org.netbeans.modules.websvc.wsitmodelext.mex.MexQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -50,16 +50,16 @@ public class MetadataReferenceImpl extends MexComponentImpl implements MetadataR
         visitor.visit(this);
     }
 
-    public Address getAddress() {
-        return getChild(Address.class);
+    public Address10 getAddress() {
+        return getChild(Address10.class);
     }
 
-    public void setAddress(Address addr) {
+    public void setAddress(Address10 addr) {
         java.util.List<Class<? extends WSDLComponent>> classes = Collections.emptyList();
-        setChild(Address.class, ADDRESS_PROPERTY, addr, classes);
+        setChild(Address10.class, ADDRESS_PROPERTY, addr, classes);
     }
 
-    public void removeAddress(Address addr) {
+    public void removeAddress(Address10 addr) {
         removeChild(ADDRESS_PROPERTY, addr);
     }
 
