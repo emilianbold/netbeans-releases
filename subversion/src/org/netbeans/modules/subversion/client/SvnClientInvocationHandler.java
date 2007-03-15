@@ -174,8 +174,11 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 support.setCancellableDelegate(cancellable);
             }
             if (remoteMethods.contains(proxyMethod.getName())) {
-                // save the proxy settings into the svn servers file
-                SvnConfigFiles.getInstance().setProxy(desc.getSvnUrl().toString());
+                // save the proxy settings into the svn servers file                
+                if(desc != null && desc.getSvnUrl() != null) {
+                    // XXX still not sure if this is the best place to set the proxy
+                    SvnConfigFiles.getInstance().setProxy(desc.getSvnUrl().toString());      
+                }                
             }
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
             if(support != null) {
