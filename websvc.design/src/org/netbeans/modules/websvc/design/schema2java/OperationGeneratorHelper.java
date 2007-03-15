@@ -41,12 +41,11 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 
 /**
  *
- * @author mkuchtiak
+ * @author mkuchtiak, rcruz
  */
 public class OperationGeneratorHelper {
     File wsdlFile;
@@ -116,7 +115,7 @@ public class OperationGeneratorHelper {
     }
     /** call wsimport to generate java artifacts
      * generate WsdlModel to find information about the new operation
-     * add 
+     * add new menthod to implementation class
      */
     public void generateJavaArtifacts(final FileObject implementationClass, final String operationName) {
         Project project = FileOwnerQuery.getOwner(implementationClass);
