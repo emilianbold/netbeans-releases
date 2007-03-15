@@ -21,6 +21,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 <settings version="1.0">
     <module name="org.netbeans.modules.xml.refactoring/1" spec="1.0"/>
     <instanceof class="org.openide.windows.TopComponent"/>
-    <instanceof class="org.netbeans.modules.xml.refactoring.ui.j.ui.RefactoringPanelContainer"/>
-    <instance class="org.netbeans.modules.xml.refactoring.ui.j.ui.RefactoringPanelContainer" method="createUsagesComponent"/>
+    <instanceof class="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer"/>
+    <instance class="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer" method="createUsagesComponent"/>
 </settings>          
