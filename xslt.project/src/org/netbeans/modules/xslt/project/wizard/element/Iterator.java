@@ -25,6 +25,7 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.api.project.Project;
@@ -55,13 +56,13 @@ public final class Iterator implements TemplateWizard.Iterator {
   }
 
   /**{@inheritDoc}*/
-  public Set instantiate(TemplateWizard wizard) throws IOException {
-    return Collections.singleton(createFiles(wizard));
+  public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
+    return Collections.singleton(createFile(wizard));
   }
 
   /**{@inheritDoc}*/
   public void initialize(TemplateWizard wizard) {
-    myPanel = new PanelStartup(Templates.getProject(wizard), null);
+    myPanel = new PanelStartup<WizardDescriptor>(Templates.getProject(wizard), null);
   }
 
   /**{@inheritDoc}*/
@@ -95,7 +96,7 @@ public final class Iterator implements TemplateWizard.Iterator {
   }
 
   /**{@inheritDoc}*/
-  public WizardDescriptor.Panel current() {
+  public WizardDescriptor.Panel<WizardDescriptor> current() {
     return myPanel;
   }
   
@@ -105,7 +106,7 @@ public final class Iterator implements TemplateWizard.Iterator {
   /**{@inheritDoc}*/
   public void removeChangeListener(ChangeListener listener) {}
 
-  private FileObject createFiles(TemplateWizard wizard) throws IOException {
+  private DataObject createFile(TemplateWizard wizard) throws IOException {
     FileObject file = null;
     Project project = Templates.getProject(wizard);
     String choice = (String) wizard.getProperty(Panel.CHOICE);
@@ -128,7 +129,7 @@ public final class Iterator implements TemplateWizard.Iterator {
     model.addTransformationUC(use);
     model.sync();
 
-    return file;
+    return DataObject.find(file);
   }
 
   private AbstractTransformationUC createRequestReply(
@@ -187,6 +188,7 @@ public final class Iterator implements TemplateWizard.Iterator {
     }
     String namespace =
       "{" + operation.getModel().getDefinitions().getTargetNamespace()+"}"; // NOI18N
+
     description.setPartnerLink(
       namespace + partnerRolePort.getPartnerLinkType().getName());
     description.setRoleName(partnerRolePort.getRole().getName());
@@ -195,10 +197,9 @@ public final class Iterator implements TemplateWizard.Iterator {
 
     description.setOperation(operation.getName());
 
-        description.setMessageType(
-                (Operation) wizard.getProperty(Panel.INPUT_OPERATION),
-                (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION));
-
+    description.setMessageType(
+      (Operation) wizard.getProperty(Panel.INPUT_OPERATION),
+      (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION));
 
     description.setFile(file);
   }
@@ -214,5 +215,5 @@ public final class Iterator implements TemplateWizard.Iterator {
     return Util.createFile(Util.getSrcFolder(project), file, text);
   }
 
-  private Panel myPanel;
+  private Panel<WizardDescriptor> myPanel;
 }

@@ -23,7 +23,6 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.xslt.core.xsltmap.TransformationDesc;
 import org.netbeans.modules.xslt.core.xsltmap.TransformationDescType;
 import org.netbeans.modules.xslt.project.XsltproConstants;
-import org.netbeans.modules.xslt.project.wizard.element.Util;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;

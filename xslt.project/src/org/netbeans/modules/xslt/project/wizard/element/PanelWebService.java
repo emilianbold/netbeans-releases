@@ -40,9 +40,9 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.01.30
  */
-final class PanelWebService extends Panel {
+final class PanelWebService<T> extends Panel<T> {
     
-  PanelWebService(Project project, Panel parent) {
+  PanelWebService(Project project, Panel<T> parent) {
     super(project, parent);
   }
 

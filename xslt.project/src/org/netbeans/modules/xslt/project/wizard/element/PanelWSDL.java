@@ -42,11 +42,11 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.01.30
  */
-final class PanelWSDL extends Panel {
+final class PanelWSDL<T> extends Panel<T> {
     
-  PanelWSDL(Project project, Panel parent) {
+  PanelWSDL(Project project, Panel<T> parent) {
     super(project, parent);
-    myWebService = new PanelWebService(project, parent);
+    myWebService = new PanelWebService<T>(project, parent);
   }
 
   @Override
@@ -56,9 +56,9 @@ final class PanelWSDL extends Panel {
   }
 
   @Override
-  protected Panel getNext()
+  protected Panel<T> getNext()
   {
-    return new PanelTransformation(getProject(), this, myModel);
+    return new PanelTransformation<T>(getProject(), this, myModel);
   }
 
   @Override
@@ -237,7 +237,7 @@ final class PanelWSDL extends Panel {
 //  private JRadioButton myExisting;
 //  private JRadioButton myCreate;
   private WSDLModel myModel;
-  private PanelWebService myWebService;
+  private PanelWebService<T> myWebService;
 
 //  private static final String HOST =
 //    "http://enterprise.netbeans.org/bpel/"; // NOI18N

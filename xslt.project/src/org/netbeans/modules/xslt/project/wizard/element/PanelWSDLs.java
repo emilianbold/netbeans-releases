@@ -25,19 +25,18 @@ import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-
 import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.02.02
  */
-final class PanelWSDLs extends Panel {
+final class PanelWSDLs<T> extends Panel<T> {
     
-  PanelWSDLs(Project project, Panel parent) {
+  PanelWSDLs(Project project, Panel<T> parent) {
     super(project, parent);
-    myWebServiceImplement = new PanelWebService(project, parent);
-    myWebServiceCall = new PanelWebService(project, parent);
+    myWebServiceImplement = new PanelWebService<T>(project, parent);
+    myWebServiceCall = new PanelWebService<T>(project, parent);
  }
 
   @Override
@@ -47,9 +46,9 @@ final class PanelWSDLs extends Panel {
   }
 
   @Override
-  protected Panel getNext()
+  protected Panel<T> getNext()
   {
-    return new PanelProxy(getProject(), this,
+    return new PanelProxy<T>(getProject(), this,
       (WSDLModel) myWebServiceImplement.getResult(),
       (WSDLModel) myWebServiceCall.getResult());
   }
@@ -92,6 +91,6 @@ final class PanelWSDLs extends Panel {
     mainPanel.add(panel, cc);
   }
 
-  private Panel myWebServiceImplement;
-  private Panel myWebServiceCall;
+  private Panel<T> myWebServiceImplement;
+  private Panel<T> myWebServiceCall;
 }

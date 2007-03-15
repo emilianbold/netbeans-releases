@@ -33,12 +33,12 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.25
  */
-final class PanelStartup extends Panel {
+final class PanelStartup<T> extends Panel<T> {
     
-  PanelStartup(Project project, Panel parent) {
+  PanelStartup(Project project, Panel<T> parent) {
     super(project, parent);
-    myTransformationPanel = new PanelWSDL(getProject(), this);
-    myProxyPanel = new PanelWSDLs(getProject(), this);
+    myTransformationPanel = new PanelWSDL<T>(getProject(), this);
+    myProxyPanel = new PanelWSDLs<T>(getProject(), this);
   }
 
   @Override
@@ -48,7 +48,7 @@ final class PanelStartup extends Panel {
   }
 
   @Override
-  protected Panel getNext()
+  protected Panel<T> getNext()
   {
     if (myTransformation != null && myTransformation.isSelected()) {
       return myTransformationPanel;
@@ -100,9 +100,9 @@ final class PanelStartup extends Panel {
     mainPanel.add(panel, cc);
   }
 
-  private Panel myTransformationPanel;
+  private Panel<T> myTransformationPanel;
   private JRadioButton myTransformation;
-  private Panel myProxyPanel;
+  private Panel<T> myProxyPanel;
   private JRadioButton myProxy;
   private static final int TEXT_WIDTH = 40;
 }

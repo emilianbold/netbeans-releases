@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.xslt.project.XsltproConstants;
-import org.netbeans.modules.xslt.project.wizard.element.Util;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileEvent;

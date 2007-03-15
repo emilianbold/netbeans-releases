@@ -50,9 +50,9 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.25
  */
-abstract class Panel implements WizardDescriptor.ValidatingPanel {
+abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
     
-  Panel(Project project, Panel parent) {
+  Panel(Project project, Panel<T> parent) {
     myProject = project;
     myFolder = Util.getSrcFolder(project);
     myParent = parent;
@@ -66,7 +66,7 @@ abstract class Panel implements WizardDescriptor.ValidatingPanel {
     return myFolder;
   }
 
-  protected final Panel getParent() {
+  protected final Panel<T> getParent() {
     return myParent;
   }
 
@@ -78,7 +78,7 @@ abstract class Panel implements WizardDescriptor.ValidatingPanel {
     return null;
   }
 
-  protected Panel getNext() {
+  protected Panel<T> getNext() {
     return null;
   }
 
@@ -86,7 +86,7 @@ abstract class Panel implements WizardDescriptor.ValidatingPanel {
     return null;
   }
 
-  protected final Panel getPrevious() {
+  protected final Panel<T> getPrevious() {
     return myParent;
   }
 
@@ -325,7 +325,7 @@ abstract class Panel implements WizardDescriptor.ValidatingPanel {
   private Project myProject;
   private JPanel myComponent;
   private FileObject myFolder;
-  private Panel myParent;
+  private Panel<T> myParent;
 
   private static final String NAME = "xsl"; // NOI18N
   private static final String EXT = "xsl"; // NOI18N

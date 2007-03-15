@@ -42,7 +42,6 @@
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xslt.project.wizard.element.Iterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/xslt.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.resources.Bundle"/>
-                <!--attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/xslt.gif"/-->
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/core/resources/xslt_file.gif"/>
             </file>
         </folder>

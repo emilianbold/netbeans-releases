@@ -41,11 +41,11 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.02.01
  */
-final class PanelProxy extends Panel {
+final class PanelProxy<T> extends Panel<T> {
     
   PanelProxy(
     Project project,
-    Panel parent,
+    Panel<T> parent,
     WSDLModel modelImplement,
     WSDLModel modelCall)
   {
@@ -53,10 +53,10 @@ final class PanelProxy extends Panel {
     int numberImplement = getXslFileNumber(1);
     int numberCall = getXslFileNumber(numberImplement + 1);
 
-    myOperationImplement = new PanelOperation(
+    myOperationImplement = new PanelOperation<T>(
       project, this, modelImplement, getXslFileName(numberImplement), true, true);
 
-    myOperationCall = new PanelOperation(
+    myOperationCall = new PanelOperation<T>(
       project, this, modelCall, getXslFileName(numberCall), true, false);
  }
 
@@ -221,8 +221,8 @@ final class PanelProxy extends Panel {
     return panel;
   }
 
-  private PanelOperation myOperationImplement;
-  private PanelOperation myOperationCall;
+  private PanelOperation<T> myOperationImplement;
+  private PanelOperation<T> myOperationCall;
   private JCheckBox myRequestBox; 
   private JCheckBox myReplyBox; 
   private JTextField myRequestText; 
