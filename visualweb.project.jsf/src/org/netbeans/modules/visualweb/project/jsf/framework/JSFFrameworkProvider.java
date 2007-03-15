@@ -60,6 +60,10 @@ import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.cookies.OpenCookie;
+
 /**
  *
  * @author Po-Ting Wu
@@ -75,8 +79,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     }
 
     public Set extend (final WebModule webModule) {
-        Set result = new HashSet();
-        FileObject fileObject = webModule.getDocumentBase();;
+        final FileObject fileObject = webModule.getDocumentBase();;
         final Project project = FileOwnerQuery.getOwner(fileObject);
         final ProjectTemplate template = new JsfProjectTemplateJakarta();
 
@@ -140,16 +143,28 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, template, pageName));
 
-            FileObject pagejsp = fileObject.getFileObject(pageName);
-            if (pagejsp != null) {
-                result.add(pagejsp);
-            }
+            // Open the new visual page
+            ProjectManager.mutex().postReadRequest(new Runnable() {
+                public void run() {
+                    FileObject pagejsp = fileObject.getFileObject(pageName);
+                    if (pagejsp != null) {
+                        try {
+                            DataObject obj = DataObject.find(pagejsp);
+                            OpenCookie open = (OpenCookie) obj.getCookie(OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            }
+                        } catch (DataObjectNotFoundException e) {
+                        }
+                    }
+                }
+            });
         } catch (FileNotFoundException exc) {
             ErrorManager.getDefault().notify(exc);
         } catch (IOException exc) {
             ErrorManager.getDefault().notify(exc);
         }
-        return result;
+        return null;
     }
 
     public static String readResource(InputStream is, String encoding) throws IOException {
