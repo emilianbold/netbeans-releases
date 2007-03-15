@@ -113,7 +113,7 @@ public class MultiFileSystem extends FileSystem {
     * subclasses.
     */
     protected MultiFileSystem() {
-        this(new FileSystem[1]);
+        this(new FileSystem[0]);
     }
 
     /** Creates new MultiFileSystem.
