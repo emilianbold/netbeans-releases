@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteAction;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesAction;
+import org.netbeans.modules.vmd.api.screen.actions.EditAction;
 
 import org.openide.util.actions.SystemAction;
 

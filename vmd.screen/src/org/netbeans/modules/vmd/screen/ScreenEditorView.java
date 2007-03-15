@@ -35,6 +35,8 @@ public class ScreenEditorView implements DataEditorView {
 
     private DataObjectContext context;
     private transient ScreenViewController controller;
+    
+    public static final String SCREEN_EDITOR_VIEW_DISPALY_NAME = "Screen"; //NOI18N
 
     public ScreenEditorView (DataObjectContext context) {
         this.context = context;
@@ -62,7 +64,7 @@ public class ScreenEditorView implements DataEditorView {
     }
 
     public String getDisplayName () {
-        return "Screen";
+        return SCREEN_EDITOR_VIEW_DISPALY_NAME;
     }
 
     public HelpCtx getHelpCtx () {

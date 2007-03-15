@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.actions.EditDependencyPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -127,6 +128,8 @@ public final class CommandCD extends ComponentDescriptor {
         return Arrays.asList (
             // properties
             createPropertiesPresenter(),
+            // action
+            EditDependencyPresenter.createEditablePresenter(),
             // inspector
             InspectorFolderPresenter.create(true),
             InspectorPositionPresenter.create(FolderPositionControllerFactory.createHierarchical()),

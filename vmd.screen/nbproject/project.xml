@@ -88,9 +88,17 @@
                         <specification-version>6.5</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.12</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.modules.vmd.api.screen</package>
+                <package>org.netbeans.modules.vmd.api.screen.actions</package>
                 <package>org.netbeans.modules.vmd.api.screen.display</package>
                 <package>org.netbeans.modules.vmd.api.screen.resource</package>
             </public-packages>

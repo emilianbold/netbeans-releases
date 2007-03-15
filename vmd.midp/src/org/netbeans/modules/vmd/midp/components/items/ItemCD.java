@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPre
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.actions.EditDependencyPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
@@ -161,6 +162,8 @@ public class ItemCD extends ComponentDescriptor {
                 MidpInspectorSupport.createComponentCommandsCategory(createOrderingArrayController(), CommandCD.TYPEID),
                 // accept
                 new AcceptItemCommandPresenter (),
+                // action
+                EditDependencyPresenter.createEditablePresenter(),
                 // code
                 createSetterPresenter(),
                 new RootCode.CodeComponentDependencyPresenter() {

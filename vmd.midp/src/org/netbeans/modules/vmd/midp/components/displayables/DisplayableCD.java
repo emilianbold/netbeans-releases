@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPre
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.api.properties.common.TextFieldBC;
+import org.netbeans.modules.vmd.api.screen.actions.EditDependencyPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
@@ -132,6 +133,8 @@ public final class DisplayableCD extends ComponentDescriptor {
             // inspector
             InspectorFolderPresenter.create(true),
             MidpInspectorSupport.createComponentCommandsCategory(createOrderingArrayController(), CommandCD.TYPEID),
+            // action
+            EditDependencyPresenter.createEditablePresenter(),    
             // accept
             new DisplayableAccept.DisplayableCommandsAcceptPresenter (),
 //            new DisplayableAccept.DisplayableCommandsEventHandlerAcceptPresenter (),
