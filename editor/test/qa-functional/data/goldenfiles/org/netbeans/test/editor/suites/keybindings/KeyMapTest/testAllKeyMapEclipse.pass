@@ -53,40 +53,6 @@ File|Save
   Ctrl+S
 File|Save All
   Ctrl+Shift+S
-Go To|goto-declaration
-  F3
-Go To|<unknown action>
-  Ctrl+L
-Go To|Go to Previous Document
-  Ctrl+F6
-Go To|goto-source
-  Ctrl+F3
-Go To|Go to Test
-  Alt+Shift+E
-Go To|Go to Type...
-  Alt+Shift+O
-Go To|Next Error
-  Ctrl+PERIOD
-Go To|Next Inner View
-  Alt+Shift+RIGHT
-Go To|Next Tab
-  Alt+RIGHT
-Go To|Previous Bookmark
-  Shift+F2
-Go To|Previous Error
-  Ctrl+COMMA
-Go To|Previous Inner View
-  Alt+Shift+LEFT
-Go To|Previous Tab
-  Alt+LEFT
-Go To|Select Node in Files
-  Ctrl+Shift+2
-Go To|Select Node in Projects
-  Ctrl+Shift+1
-Go To|Select in Favorites
-  Ctrl+Shift+3
-Go To|Toggle Bookmark
-  Ctrl+F2
 Help|Help
   F1
 Run|Continue

@@ -61,42 +61,6 @@ File|Save
   Ctrl+X Ctrl+S
 File|Save All
   Ctrl+X S
-Go To|goto-declaration
-  Alt+PERIOD
-  Ctrl+Alt+G
-Go To|<unknown action>
-  Ctrl+G
-Go To|Go to Previous Document
-  Ctrl+BACK_QUOTE
-Go To|Go to Test
-  Alt+Shift+E
-Go To|Go to Type...
-  Alt+Shift+O
-Go To|Next Bookmark
-  F2
-Go To|Next Error
-  F12
-  Ctrl+X BACK_QUOTE
-Go To|Next Inner View
-  Alt+Shift+RIGHT
-Go To|Next Tab
-  Alt+RIGHT
-Go To|Previous Bookmark
-  Shift+F2
-Go To|Previous Error
-  Shift+F12
-Go To|Previous Inner View
-  Alt+Shift+LEFT
-Go To|Previous Tab
-  Alt+LEFT
-Go To|Select Node in Files
-  Ctrl+Shift+2
-Go To|Select Node in Projects
-  Ctrl+Shift+1
-Go To|Select in Favorites
-  Ctrl+Shift+3
-Go To|Toggle Bookmark
-  Ctrl+F2
 Help|Help
   F1
 Run|Continue

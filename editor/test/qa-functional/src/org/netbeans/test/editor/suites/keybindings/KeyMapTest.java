@@ -113,6 +113,7 @@ public class KeyMapTest extends JellyTestCase{
             for (int i = 0; i < s.length; i++) {
                 String item = s[i];
                 if(item.equals("Other")) continue;  //performance
+                if(item.equals("Go To")) continue;  // platform dependent?
                 if(path.length()!=0) dump(path+"|"+item,tree,kmo);
                 else dump(item,tree,kmo);
             }
@@ -189,7 +190,7 @@ public class KeyMapTest extends JellyTestCase{
             kmo.add().push();
             AddShortcutDialog asd = new AddShortcutDialog();
             asd.txtJTextField().pushKey(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
-            asd.btOK().push();            
+            asd.btOK().push();
             checkListContents(kmo.shortcuts(), "Ctrl+I");
             kmo.ok().push();
             closed = true;
@@ -200,7 +201,7 @@ public class KeyMapTest extends JellyTestCase{
             ValueResolver vr = new ValueResolver() {
                 public Object getValue() {
                     editor.setCaretPosition(7, 1);
-                    editor.pushKey(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);                   
+                    editor.pushKey(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
                     return (editor.txtEditorPane().getSelectedText())!=null;
                 }
             };
@@ -259,9 +260,15 @@ public class KeyMapTest extends JellyTestCase{
             kmo.ok().push();
             closed = true;
             new EventTool().waitNoEvent(500);
-            editor.setCaretPosition(7, 9);
-            editor.pushKey(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK);
-            new EventTool().waitNoEvent(100);
+            ValueResolver vr = new ValueResolver() {
+                public Object getValue() {
+                    editor.setCaretPosition(7, 9);
+                    editor.pushKey(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK);
+                    String text =  editor.txtEditorPane().getSelectedText();
+                    return text!=null;
+                }
+            };
+            waitMaxMilisForValue(3000, vr, Boolean.TRUE);
             String text =  editor.txtEditorPane().getSelectedText();
             assertEquals("System",text);
         } finally {
@@ -388,9 +395,15 @@ public class KeyMapTest extends JellyTestCase{
             kmo = KeyMapOperator.invoke();
             closed = false;
             kmo.help().push();
-            HelpOperator help = new HelpOperator();
-            
+            final HelpOperator help = new HelpOperator();            
+            ValueResolver vr = new ValueResolver() {
+                public Object getValue() {
+                    return help.getContentText().contains("Options Window: Keymap");
+                }
+            };
+            waitMaxMilisForValue(5000, vr, Boolean.TRUE);
             boolean ok = help.getContentText().contains("Options Window: Keymap");
+            if(!ok) log(help.getContentText());
             assertTrue("Wrong help page opened",ok);
             help.close();
         } finally {
@@ -415,17 +428,9 @@ public class KeyMapTest extends JellyTestCase{
             new EventTool().waitNoEvent(500);
             editor.setCaretPosition(7, 1);
             editor.pushKey(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK);
-            new EventTool().waitNoEvent(100);
+            new EventTool().waitNoEvent(500);
             String text =  editor.getText();
-            assertEquals("\n" +
-                    "package keymap;\n" +
-                    "\n" +
-                    "public class Test {\n" +
-                    "    \n" +
-                    "    public Test() {\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "}\n",text);
+            assertFalse("Line not removed",text.contains("\"Hello\""));
             kmo = KeyMapOperator.invoke();
             closed = false;
             assertEquals(kmo.profile().getSelectedItem(),"Eclipse");
@@ -474,7 +479,7 @@ public class KeyMapTest extends JellyTestCase{
                     return editor.getText().contains("system.out.println");
                 }
             };
-            waitMaxMilisForValue(10000, res, Boolean.TRUE);
+            waitMaxMilisForValue(3000, res, Boolean.TRUE);
             assertTrue("Action not performed",editor.getText().contains("system.out.println"));
             kmo = KeyMapOperator.invoke();
             closed = false;
