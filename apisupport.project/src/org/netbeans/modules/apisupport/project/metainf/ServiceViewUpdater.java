@@ -97,8 +97,8 @@ final class ServiceViewUpdater {
      */
     private static SuiteProject getSuite(ServiceNodeHandler handler) throws IOException {
         SuiteProject retPrj = null;
-        NbModuleProject p = handler.getProject();
-        NbModuleProvider.NbModuleType type = ((NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class)).getModuleType();
+        Project p = handler.getProject();
+        NbModuleProvider.NbModuleType type = p.getLookup().lookup(NbModuleProvider.class).getModuleType();
         if (type == NbModuleProvider.SUITE_COMPONENT) {
             SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
             assert suiteProv != null : p;
@@ -142,7 +142,8 @@ final class ServiceViewUpdater {
         if (getSuite(handler) != null) {
             List<Service> allServices = getAllServices(handler);
             List <Service> retList = new ArrayList();
-            String cnb = handler.getProject().getCodeNameBase();
+            NbModuleProvider info = handler.getProject().getLookup().lookup(NbModuleProvider.class);
+            String cnb = info.getCodeNameBase();
             for (int i = 0 ; i < allServices.size() ; i++) {
                Service service = (Service) allServices.get(i);
                if (service.getCodebase().equals(cnb)) {

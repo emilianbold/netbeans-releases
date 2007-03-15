@@ -26,9 +26,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -59,7 +60,8 @@ public final class ServiceNodeHandler  {
     int prevAllServicesCount = -1;
     int prevModuleServicesCount = -1;
     
-    final NbModuleProject project;
+    final Project project;
+    final NbModuleProvider info;
     List /*Service*/ moduleServices;
     
     /** services in this module
@@ -389,7 +391,7 @@ public final class ServiceNodeHandler  {
                if (services != null && services.size() > 0) {
                    service = (Service) services.get(0);
                } else {
-                   service = new Service(project.getCodeNameBase(),serviceName,new ArrayList());
+                   service = new Service(getInfo().getCodeNameBase(),serviceName,new ArrayList());
                }
                service.getClasses().add(classServiceName);
                service.write(project);  
@@ -399,8 +401,13 @@ public final class ServiceNodeHandler  {
         void refreshName() {
             fireDisplayNameChange(null,null);
         }
-        NbModuleProject getProject() {
+        
+        Project getProject() {
             return project;
+        }
+        
+        NbModuleProvider getInfo() {
+            return project.getLookup().lookup(NbModuleProvider.class);
         }
         
     }
@@ -490,8 +497,9 @@ public final class ServiceNodeHandler  {
         }
     }
     
-    public ServiceNodeHandler(NbModuleProject project) {
+    public ServiceNodeHandler(Project project, NbModuleProvider provider) {
         this.project = project;
+        this.info = provider;
         if (!registeredListener) {
             // #87269 deadlock when file is modified externally on project initialization
             // for example cvs update can cause it 
@@ -562,7 +570,8 @@ public final class ServiceNodeHandler  {
      *  META-INF/service | META-INF | project/src
      */
     public  void registerFileObjectListener() {
-        FileObject srcDir = project.getSourceDirectory();
+        FileObject srcDir = project.getProjectDirectory().getFileObject(
+                                info.getResourceDirectoryPath(false));
         
         // srcDir is sometimes null, is it bug?
         if (srcDir != null) {
@@ -590,7 +599,7 @@ public final class ServiceNodeHandler  {
             // Error - logging 
             ErrorManager em = ErrorManager.getDefault();
             em.log(" project.getSourceDirectory() = null");
-            em.log("codenamebase = " + project.getCodeNameBase() );
+            em.log("codenamebase = " + info.getCodeNameBase() );
             em.log("projectroot = " + project.getProjectDirectory().getPath());
         }
     }
@@ -599,7 +608,7 @@ public final class ServiceNodeHandler  {
         try {
             if (fo.getParent() == SUtil.getServicesFolder(project,false) ) {
                 InputStream is = fo.getInputStream();
-                Service service = Service.createService(project.getCodeNameBase(),fo.getNameExt(), is );
+                Service service = Service.createService(info.getCodeNameBase(),fo.getNameExt(), is );
                 is.close();
                 ServiceViewUpdater.serviceUpdated(service,this);
                 // merge or add service
@@ -681,7 +690,7 @@ public final class ServiceNodeHandler  {
         synchronized (this) {
             if (moduleServiceMap != null) {
                 List services = (List) moduleServiceMap.get(service.getFileName()) ;
-                if (service.getCodebase().equals(project.getCodeNameBase())) {
+                if (service.getCodebase().equals(info.getCodeNameBase())) {
                     if (services != null && services.size() > 0 ) {
                         services.remove(0);
                     } else {
@@ -712,12 +721,12 @@ public final class ServiceNodeHandler  {
         }
     }
 
-    NbModuleProject getProject() {
+    Project getProject() {
         return project;
     }
 
     private String getCodeNameBase() {
-         String cnb = project.getCodeNameBase();
+         String cnb = info.getCodeNameBase();
           // cnb will be null if project is deleted
          if (cnb == null) {
              cnb = codeNameBase;

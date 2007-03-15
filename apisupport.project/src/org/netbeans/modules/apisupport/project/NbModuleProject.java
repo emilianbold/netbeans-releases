@@ -224,7 +224,7 @@ public final class NbModuleProject implements Project {
             new ModuleProjectClassPathExtender(this),
             new LocalizedBundleInfoProvider(),
             new ModuleOperations(this),
-            new ServiceNodeHandler(this),
+            new ServiceNodeHandler(this, typeProvider),
             LookupProviderSupport.createSourcesMerger(),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),

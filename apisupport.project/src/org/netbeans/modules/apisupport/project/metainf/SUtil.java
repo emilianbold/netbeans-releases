@@ -26,8 +26,9 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -73,8 +74,9 @@ import org.openide.filesystems.FileObject;
 //	    null; 
 //    }
     
-   static FileObject getServicesFolder(NbModuleProject project,boolean create) throws IOException {
-        FileObject srcDir = project.getSourceDirectory();
+   static FileObject getServicesFolder(Project project,boolean create) throws IOException {
+        NbModuleProvider info = project.getLookup().lookup(NbModuleProvider.class);
+        FileObject srcDir = project.getProjectDirectory().getFileObject(info.getResourceDirectoryPath(false));
         if (srcDir != null) {
             FileObject services = srcDir.getFileObject("META-INF/services"); //NOI18N
             if (services == null && create) {

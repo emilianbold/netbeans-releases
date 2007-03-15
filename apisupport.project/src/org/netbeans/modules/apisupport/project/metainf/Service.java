@@ -107,14 +107,15 @@ final class Service {
         return services;
     }
     
-    static List /*Service*/ getOnlyProjectServices(NbModuleProject project) {
+    static List /*Service*/ getOnlyProjectServices(Project project) {
         List /*Service */ services = new ArrayList();
         try {
+            NbModuleProvider info = project.getLookup().lookup(NbModuleProvider.class);
             FileObject mIServicesFolder = null;
             mIServicesFolder = SUtil.getServicesFolder(project,false);
             // get META-INF.services folder
             if (mIServicesFolder != null) {
-                String codebase = project.getCodeNameBase();
+                String codebase = info.getCodeNameBase();
                 FileObject servicesFOs [] = mIServicesFolder.getChildren();
                 for (int foIt = 0 ; foIt < servicesFOs.length ; foIt++ ) {
                     if (servicesFOs[foIt].isData() && VisibilityQuery.getDefault().isVisible(servicesFOs[foIt])) {
@@ -153,7 +154,7 @@ final class Service {
         classes.remove(name);
     }
     
-    private  static Set<File> getJars(NbModuleProject p) throws IOException {
+    private  static Set<File> getJars(Project p) throws IOException {
         if (p == null) {
             // testing
             return SUtil.getPlatformJars();
@@ -183,12 +184,12 @@ final class Service {
         }
     }
     
-    static List <Service> getPlatfromServices(NbModuleProject p) throws IOException {
+    static List <Service> getPlatfromServices(Project p) throws IOException {
         NbModuleProvider.NbModuleType type = Util.getModuleType(p);
         List<Service> services = new ArrayList<Service>();
         if (type == NbModuleProvider.NETBEANS_ORG) {
             // special case fro nborg modules
-            Set<NbModuleProject> projects = LayerUtils.getProjectsForNetBeansOrgProject(p);
+            Set<NbModuleProject> projects = LayerUtils.getProjectsForNetBeansOrgProject((NbModuleProject)p);
             Iterator it = projects.iterator();
             while (it.hasNext()) {
                 services.addAll(getOnlyProjectServices((NbModuleProject)it.next()));
@@ -202,7 +203,7 @@ final class Service {
         return services;
     }
 
-    void removeClass(String className,NbModuleProject project) {
+    void removeClass(String className, Project project) {
         String removedClass = "-" + className;
         removedClass = removedClass.intern();
         if (containsClass(className)) {
@@ -215,7 +216,7 @@ final class Service {
         write(project);
     }
     
-    void write(NbModuleProject project) {
+    void write(Project project) {
         try {
             FileObject mIServicesFolder = null;
             mIServicesFolder = SUtil.getServicesFolder(project,true);

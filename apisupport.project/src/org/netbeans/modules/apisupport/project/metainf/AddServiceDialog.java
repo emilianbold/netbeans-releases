@@ -19,10 +19,11 @@
 package org.netbeans.modules.apisupport.project.metainf;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -39,9 +40,9 @@ public class AddServiceDialog extends javax.swing.JPanel {
     
     /** selected class name 
      */
-    private NbModuleProject project;
+    private Project project;
     /** Creates new form AddNodeDialog */
-    public AddServiceDialog(NbModuleProject project) {
+    public AddServiceDialog(Project project) {
         initComponents();
         this.project = project;
     }
@@ -115,7 +116,8 @@ public class AddServiceDialog extends javax.swing.JPanel {
                     FileObject fo = dobj.getPrimaryFile();
                     if (fo.getExt().equals("java")) { // NOI18N
                         String fileName = fo.getPath();
-                        String className = fileName.substring(project.getSourceDirectory().getPath().length(),
+                        NbModuleProvider info = project.getLookup().lookup(NbModuleProvider.class);
+                        String className = fileName.substring(info.getSourceDirectory().getPath().length(),
                                 fileName.length() - ".java".length()); // NOI18N
                         if (className.startsWith("/")) { // NOI18N
                             className = className.substring(1);

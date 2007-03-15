@@ -84,6 +84,19 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>Introduced NodeFactoryUtils</summary>
+            <version major="1" minor="16"/>
+            <date day="15" month="3" year="2007"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                Adding <code>NodeFactoryUtils</code> factory class for creation of layer file node.
+            </description>
+        </change>
+        
+        
+        <change>
+            <api name="apisupport_spi"/>
             <summary>Initial version of SPI released</summary>
             <version major="1" minor="15"/>
             <date day="3" month="3" year="2007"/>
