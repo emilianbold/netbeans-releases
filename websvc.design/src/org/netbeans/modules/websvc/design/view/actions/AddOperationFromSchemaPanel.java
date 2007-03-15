@@ -95,7 +95,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         }
         
         public GlobalElement getParameterType() {
-            return (GlobalElement)parmCombo.getSelectedItem();
+            Object paramType = parmCombo.getSelectedItem();
+            return (paramType instanceof GlobalElement?(GlobalElement)paramType:null);
             /*
             List<GlobalElement> list = new ArrayList<GlobalElement>();
             Object[] objs = parmCombo.getSelectedObjects();
@@ -107,11 +108,13 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         }
         
         public GlobalElement getReturnType() {
-            return (GlobalElement)returnCombo.getSelectedItem();
+            Object returnType = returnCombo.getSelectedItem();
+            return (returnType instanceof GlobalElement?(GlobalElement)returnType:null);
         }
         
         public GlobalElement getFaultType() {
-            return (GlobalElement)faultCombo.getSelectedItem();
+            Object faultType = faultCombo.getSelectedItem();
+            return (faultType instanceof GlobalElement?(GlobalElement)faultType:null);
         }
         
         private void populate()throws CatalogModelException {
@@ -146,9 +149,13 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                     Object value,
                     int index,
                     boolean isSelected,
-                    boolean cellHasFocus){
-                    String text = ((GlobalElement)value).getName();
-                    setText(text);
+                    boolean cellHasFocus) {
+                    if (value instanceof GlobalElement) {
+                        String text = ((GlobalElement)value).getName();
+                        setText(text);
+                    } else if (value instanceof String) { 
+                        setText((String)value);
+                    }
                 return this;
             }
         }
@@ -260,6 +267,9 @@ private void schemaComboChanged(java.awt.event.ItemEvent evt) {
 
 
 private void populateWithElements(String selectedItem) {
+    parmCombo.addItem("<no params>");
+    returnCombo.addItem("void");
+    faultCombo.addItem("<no exceptions>");
     Import importedSchema = map.get(selectedItem);
     if (importedSchema!=null) {
         String namespace = importedSchema.getNamespace();

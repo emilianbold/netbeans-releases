@@ -79,43 +79,56 @@ public class OperationGeneratorHelper {
         wsdlModel.startTransaction();
         //for(int i = 0; i < inputParms.length; i++){
         //assume one parameter for now
-        GlobalElement inputParameter = parameterType;
-        
-        Message inputMessage = factory.createMessage();
-        inputMessage.setName(messageName);
-        
-        Part part = factory.createPart();
-        part.setName(partName);
-        NamedComponentReference<GlobalElement> ref = part.createSchemaReference(inputParameter, GlobalElement.class);
-        part.setElement(ref);
-        inputMessage.addPart(part);
-        definitions.addMessage(inputMessage);
+
+        Message inputMessage=null;
+        if (parameterType!=null) {
+            inputMessage = factory.createMessage();
+            inputMessage.setName(messageName);
+
+            Part part = factory.createPart();
+            part.setName(partName);
+            NamedComponentReference<GlobalElement> ref = part.createSchemaReference(parameterType, GlobalElement.class);
+            part.setElement(ref);
+            inputMessage.addPart(part);
+            definitions.addMessage(inputMessage);
+        }
         
         //messageName = messageNameBase + "_" + ++counter;
         //partName = partNameBase + "_" + counter;
         //}
-        Message outputMessage = factory.createMessage();
-        outputMessage.setName(operationName + "Response");
-        Part outpart = factory.createPart();
-        outpart.setName("result");
-        NamedComponentReference<GlobalElement> outref = outpart.createSchemaReference(returnType, GlobalElement.class);
-        outpart.setElement(outref);
-        outputMessage.addPart(outpart);
-        definitions.addMessage(outputMessage);
+        
+        Message outputMessage=null;
+        if (returnType!=null) {
+            outputMessage = factory.createMessage();
+            outputMessage.setName(operationName + "Response");
+            Part outpart = factory.createPart();
+            outpart.setName("result");
+            NamedComponentReference<GlobalElement> outref = outpart.createSchemaReference(returnType, GlobalElement.class);
+            outpart.setElement(outref);
+            outputMessage.addPart(outpart);
+            definitions.addMessage(outputMessage);
+        }
 
+        
         RequestResponseOperation operation = factory.createRequestResponseOperation();
         operation.setName(operationName);
-        Input input = factory.createInput();
-        NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
-        input.setName(operationName);
-        input.setMessage(inputRef);
-        operation.setInput(input);
-
-        Output output = factory.createOutput();
-        NamedComponentReference<Message> outputRef = input.createReferenceTo(outputMessage, Message.class);
-        output.setName(operationName + "Response");
-        output.setMessage(outputRef);
-        operation.setOutput(output);
+        
+        if (inputMessage!=null) {
+            Input input = factory.createInput();
+            NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
+            input.setName(operationName);
+            input.setMessage(inputRef);
+            operation.setInput(input);
+        }
+        
+        if (outputMessage!=null) {
+            Output output = factory.createOutput();
+            NamedComponentReference<Message> outputRef = output.createReferenceTo(outputMessage, Message.class);
+            output.setName(operationName + "Response");
+            output.setMessage(outputRef);
+            operation.setOutput(output);
+        }
+        
         //this is bogus: need to get the correct porttype
         PortType portType = definitions.getPortTypes().iterator().next();
         portType.addOperation(operation);
