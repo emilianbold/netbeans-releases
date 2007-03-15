@@ -19,13 +19,14 @@
 
 package org.netbeans.modules.xml.wsdl.refactoring.xsd;
 
+import java.util.Collection;
 import java.util.List;
 import junit.framework.*;
-import org.netbeans.modules.xml.refactoring.RefactorRequest;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
-import org.netbeans.modules.xml.refactoring.UsageSet;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.ChangeExecutor;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -34,14 +35,17 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.refactoring.NamespaceLocation;
 import org.netbeans.modules.xml.wsdl.refactoring.TestCatalogModel;
 import org.netbeans.modules.xml.wsdl.refactoring.Util;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author nn136682
  */
 public class SchemaUsageRefactoringEngineTest extends TestCase {
-    SchemaUsageRefactoringEngine instance = new SchemaUsageRefactoringEngine();
+  //  SchemaUsageRefactoringEngine instance = new SchemaUsageRefactoringEngine();
     
     public SchemaUsageRefactoringEngineTest(String testName) {
         super(testName);
@@ -63,46 +67,36 @@ public class SchemaUsageRefactoringEngineTest extends TestCase {
         SchemaModel schemaMod = TestCatalogModel.getDefault().getSchemaModel(NamespaceLocation.OTA);
         WSDLModel model = TestCatalogModel.getDefault().getWSDLModel(NamespaceLocation.TRAVEL);
         GlobalElement el = (GlobalElement) Util.findGlobalComponentByName(schemaMod.getSchema(), "TravelItinerary");
-        
-        List<UsageGroup> result = instance.findUsages(el, model.getDefinitions());
-        assertEquals(1, result.size());
-        assertEquals(2, result.get(0).getItems().size());
-        Usage usage0 =  (Usage) result.get(0).getItems().get(0);
-        assertEquals("itinerary", ((Part)usage0.getComponent()).getName());
+        WhereUsedQuery query = new WhereUsedQuery(Lookups.singleton((Referenceable)el));
+        query.getContext().add((Component)model.getDefinitions());
+        RefactoringSession session = RefactoringSession.create("test refactor");
+        query.prepare(session);
+        Collection<RefactoringElement> element = session.getRefactoringElements();
+        assertEquals(2, element.size());
+       
     }
     
-    private void executeChange(RefactorRequest request) throws Exception {
-        Lookup.Result results = Lookup.getDefault().lookup(
-                new Lookup.Template(ChangeExecutor.class));
-        for (Object service : results.allInstances()){
-            ChangeExecutor exec = (ChangeExecutor)service;
-            if (exec.canChange(RenameRequest.class, request.getTarget())) {
-                exec.doChange(request);
-                return;
-            }
-        }
         
-        fail("Failed to find a change executor for schema component");
-    }
-    
     public void testRefactorUsages() throws Exception {
         SchemaModel schemaMod = TestCatalogModel.getDefault().getSchemaModel(NamespaceLocation.OTA);
         WSDLModel model = TestCatalogModel.getDefault().getWSDLModel(NamespaceLocation.TRAVEL);
         GlobalElement el = (GlobalElement) Util.findGlobalComponentByName(schemaMod.getSchema(), "TravelItinerary");
-        List<UsageGroup> usageList = instance.findUsages(el, model.getDefinitions());
-        UsageSet usages = new UsageSet(el);
-        usages.addUsages(usageList);
+        
         String newName = "myItirenary";
-        RenameRequest request = new RenameRequest(el, newName);
-        request.setUsages(usages);
-        executeChange(request);
-        assertTrue(request.confirmChangePerformed());
-        instance.refactorUsages(request);
+       
+        RenameRefactoring refactoring = new RenameRefactoring(Lookups.singleton(el));
+        XMLRefactoringTransaction transaction = new XMLRefactoringTransaction((Referenceable)el, refactoring);
+        refactoring.setNewName(newName);
+        refactoring.getContext().add(transaction);
+        refactoring.getContext().add((Component)model.getDefinitions());
+        refactoring.getContext().add(el.getName());
+        RefactoringSession session = RefactoringSession.create("test refactor");
+        assertNull(refactoring.prepare(session));
+        session.doRefactoring(true);
         
         Part part = model.findComponentByName("itinerary", Part.class);
         assertEquals(newName, part.getElement().getQName().getLocalPart());
-        usageList = instance.findUsages((GlobalElement)request.getRenamedTarget(), model.getDefinitions());
-        assertEquals(2, usageList.get(0).getItems().size());
+        
     }
     
 }

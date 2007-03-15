@@ -19,52 +19,44 @@
 package org.netbeans.modules.xml.wsdl.refactoring;
 
 import java.io.IOException;
-import org.netbeans.modules.xml.refactoring.DeleteRequest;
-import org.netbeans.modules.xml.refactoring.RefactorRequest;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.spi.ChangeExecutor;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
-import org.netbeans.modules.xml.refactoring.spi.UIHelper;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Nameable;
+import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.Referenceable;
 
 /**
  *
  * @author Nam Nguyen
  */
-public class WSDLChangeExecutor extends ChangeExecutor {
+public class WSDLChangeExecutor  {
     
-    private WSDLUIHelper uiHelper;
-    
+      
     /** Creates a new instance of WSDLChangeExecutor */
     public WSDLChangeExecutor() {
     }
 
-    public <T extends RefactorRequest> boolean canChange(Class<T> changeType, Referenceable target) {
-        if ((target instanceof WSDLComponent || target instanceof WSDLModel) && 
-            (changeType == RenameRequest.class || changeType == DeleteRequest.class)) 
-        {
-            return true;
-        }
-        return false;
+      
+     public boolean canChange(Referenceable target, AbstractRefactoring request){
+        return (target instanceof WSDLComponent || target instanceof WSDLModel) && 
+                (request instanceof RenameRefactoring ||
+                 request instanceof SafeDeleteRefactoring);
     }
 
-    public void doChange(RefactorRequest request) throws IOException {
-        if (request instanceof RenameRequest) {
-            SharedUtils.renameTarget((RenameRequest) request);
-        } else if (request instanceof DeleteRequest) {
-            SharedUtils.deleteTarget((DeleteRequest) request);
-        } else {
+       
+    public void doChange(Referenceable target, AbstractRefactoring request) throws IOException {
+        if (target instanceof Nameable  && request instanceof RenameRefactoring) {
+            SharedUtils.renameTarget((Nameable) target, ((RenameRefactoring)request).getNewName());
+        } else if (target instanceof NamedReferenceable && request instanceof SafeDeleteRefactoring) {
+            SharedUtils.deleteTarget((NamedReferenceable) target);
+        } else if(target instanceof Model) {
             //just do nothing
         }
     }
-    
-    public UIHelper getUIHelper() {
-        if (uiHelper == null) {
-            uiHelper = new WSDLUIHelper();
-        }
-        return uiHelper;
-    }
-    
+        
 }

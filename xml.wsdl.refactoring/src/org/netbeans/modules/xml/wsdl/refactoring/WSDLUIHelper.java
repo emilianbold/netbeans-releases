@@ -24,9 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Action;
-import org.netbeans.modules.xml.refactoring.RefactoringManager;
 
-import org.netbeans.modules.xml.refactoring.spi.UIHelper;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -51,7 +49,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Jeri Lockhart
  */
-public class WSDLUIHelper extends UIHelper{
+public class WSDLUIHelper {
     
     private static final SystemAction[] ACTIONS =  
         new SystemAction[] {
@@ -71,7 +69,7 @@ public class WSDLUIHelper extends UIHelper{
      * Return UI relevant path from root.  Specific implementation should
      * override.
      */
-    @Override
+   
     public List<Component> getRelevantPathFromRoot(Component component) {
         ArrayList<Component> pathFromRoot = new ArrayList<Component>();
         Component dc = component;
@@ -125,24 +123,23 @@ public class WSDLUIHelper extends UIHelper{
      * getPreferredAction() - 
      * the Action which navigates to the primary view of the Component
      */
-    @Override
+   
     public Node getDisplayNode(Component component) {
         if (! (component instanceof WSDLComponent) && 
             ! (component instanceof SchemaComponent)) 
         {
-            return super.getDisplayNode(component);
+            return null;
         }
         
         if (component instanceof SchemaComponent) {
             SchemaComponent sc = (SchemaComponent) component;
             SchemaModel sm = sc.getModel();
             assert sm != null : "Given a dead component";
-            UIHelper delegate = RefactoringManager.getInstance().getTargetComponentUIHelper(sm);
-            if (delegate != null) {
-                return delegate.getDisplayNode(component);
-            } else {
-                return super.getDisplayNode(component);
-            }
+            return null;
+           // UIHelper delegate = RefactoringManager.getInstance().getTargetComponentUIHelper(sm);
+         //   if (delegate != null) {
+         //       return delegate.getDisplayNode(component);
+         //   } 
         }
         
         Model model = component.getModel();
@@ -183,13 +180,12 @@ public class WSDLUIHelper extends UIHelper{
         return displayNode;
     }
     
-    @Override
+    
     public Node getDisplayNode(Model model) {
         if (model instanceof DocumentModel) {
             return getDisplayNode(((DocumentModel)model).getRootComponent());
-        } else {
-            return super.getDisplayNode(model);
-        }
+        } 
+        return null;
     }
     
    public class WSDLHelperNode extends AbstractNode {

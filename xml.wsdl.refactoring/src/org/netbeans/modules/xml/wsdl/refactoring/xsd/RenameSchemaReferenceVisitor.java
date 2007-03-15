@@ -20,9 +20,9 @@ package org.netbeans.modules.xml.wsdl.refactoring.xsd;
 
 import java.io.IOException;
 import java.util.Collection;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
+import java.util.Set;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
@@ -31,6 +31,8 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
@@ -40,32 +42,36 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 public class RenameSchemaReferenceVisitor extends DefaultVisitor implements WSDLVisitor {
     private ReferenceableSchemaComponent renamedReferenced;
     private String oldName;
+    private RenameRefactoring request;
     
     /** Creates a new instance of FindUsageVisitor */
     public RenameSchemaReferenceVisitor() {
     }
     
-    public void rename(RenameRequest request, UsageGroup usage) throws IOException {
-        if (request == null || usage == null || usage.getModel() == null) return;
-        if (! (usage.getModel() instanceof WSDLModel)) return;
-        if (! (request.getTarget() instanceof ReferenceableSchemaComponent) ||
-                request.getOldName() == null) {
+    public void rename(Model mod, Set<RefactoringElementImplementation> elements, RenameRefactoring request) throws IOException {
+        if (request == null || elements == null || mod == null) return;
+        if (! (mod instanceof WSDLModel)) return;
+        
+        Referenceable ref = request.getRefactoringSource().lookup(Referenceable.class);
+        this.oldName = request.getContext().lookup(String.class);
+        
+        if (! (ref instanceof ReferenceableSchemaComponent) || oldName  == null) {
             return;
         }
 
-        WSDLModel model = (WSDLModel) usage.getModel();
+        WSDLModel model = (WSDLModel) mod;
         boolean startTransaction = ! model.isIntransaction();
-        renamedReferenced = (ReferenceableSchemaComponent) request.getRenamedTarget();
-        oldName = request.getOldName();
+        renamedReferenced = (ReferenceableSchemaComponent) ref;
+
         try {
             if (startTransaction) {
                 model.startTransaction();
             }
-            Collection<Usage> items = usage.getItems();
-            for (Usage item : items) {
-                if (item.isIncludedInRefactoring() &&
-                    item.getComponent() instanceof WSDLComponent) {
-                    WSDLComponent referencing = (WSDLComponent)item.getComponent();
+         //   Collection<Usage> items = usage.getItems();
+            for (RefactoringElementImplementation item:elements) {
+                if (item.isEnabled() &&
+                    item.getComposite() instanceof WSDLComponent) {
+                    WSDLComponent referencing = (WSDLComponent)item.getComposite();
                     referencing.accept(this);
                 }
             }

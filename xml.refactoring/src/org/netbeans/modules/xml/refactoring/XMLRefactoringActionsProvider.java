@@ -13,12 +13,12 @@ import java.util.Collection;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
-import org.netbeans.modules.xml.refactoring.impl.RefactoringUtil;
-import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.DeleteRefactoringUI;
-import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.FileRenameRefactoringUI;
-import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.RenameRefactoringUI;
-import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.WhereUsedQueryUI;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
+import org.netbeans.modules.xml.refactoring.ui.DeleteRefactoringUI;
+import org.netbeans.modules.xml.refactoring.ui.FileRenameRefactoringUI;
+import org.netbeans.modules.xml.refactoring.ui.RenameRefactoringUI;
+import org.netbeans.modules.xml.refactoring.ui.WhereUsedQueryUI;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.ui.views.WhereUsedView;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
@@ -50,7 +50,7 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
          }
              
          Node[] n = nodes.toArray(new Node[0]);
-         Referenceable ref = AnalysisUtilities.getReferenceable(n);
+         Referenceable ref = SharedUtils.getReferenceable(n);
                
          return ref instanceof Referenceable;        
       
@@ -60,26 +60,25 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
     Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
     Node[] n = nodes.toArray(new Node[0]);
     
-    Referenceable ref = AnalysisUtilities.getReferenceable(n);
+    Referenceable ref = SharedUtils.getReferenceable(n);
     assert ref != null:"The node's NamedReferenceable should not be null";
-    WhereUsedView wuv = new WhereUsedView(ref);
-    WhereUsedQueryUI ui = new WhereUsedQueryUI(wuv, ref);
+    //WhereUsedView wuv = new WhereUsedView(ref);
+    WhereUsedQueryUI ui = new WhereUsedQueryUI(ref);
     UI.openRefactoringUI(ui);
   
   }
   
  public boolean canRename(Lookup lookup) {
-//     System.out.println("my canRename called");
-     Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+    Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
          if(nodes.size() !=1){
              return false;
          }
              
          Node[] n = nodes.toArray(new Node[0]);
-         Referenceable ref = AnalysisUtilities.getReferenceable(n);
+         Referenceable ref = SharedUtils.getReferenceable(n);
          if ( ref instanceof Model && RefactoringUtil.isWritable((Model)ref) )
              return true;
-         if ( ref instanceof Nameable  &&  RefactoringUtil.isWritable(RefactorRequest.getModel(ref)) ) {
+         if ( ref instanceof Nameable  &&  RefactoringUtil.isWritable(SharedUtils.getModel(ref)) ) {
              return true;
           }
          
@@ -88,10 +87,9 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
 
  public void doRename(Lookup lookup) {
      Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-     System.out.println("my rename impl called");
      Node[] n = nodes.toArray(new Node[0]);
    
-     final Referenceable ref = AnalysisUtilities.getReferenceable(n);
+     final Referenceable ref = SharedUtils.getReferenceable(n);
      final EditorCookie ec = lookup.lookup(EditorCookie.class);
      RefactoringUI ui = null;
      if(ref instanceof Model) {
@@ -118,12 +116,12 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
          }
              
          Node[] n = nodes.toArray(new Node[0]);
-         Referenceable ref = AnalysisUtilities.getReferenceable(n);
+         Referenceable ref = SharedUtils.getReferenceable(n);
         
         if (ref instanceof Component && ((Component)ref).getParent() == null) {
             return false;
         }
-        if( ref instanceof NamedReferenceable && RefactoringUtil.isWritable(RefactorRequest.getModel(ref)) && n[0].canDestroy() )
+        if( ref instanceof NamedReferenceable && RefactoringUtil.isWritable(SharedUtils.getModel(ref)) && n[0].canDestroy() )
             return true;
         
         return false;
@@ -131,11 +129,10 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
  
  public void doDelete(Lookup lookup){
       Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-      System.out.println("my delete impl called");
       Node[] n = nodes.toArray(new Node[0]);
       
       
-      final Referenceable ref = AnalysisUtilities.getReferenceable(n);
+      final Referenceable ref = SharedUtils.getReferenceable(n);
       final EditorCookie ec = lookup.lookup(EditorCookie.class);
    
       DeleteRefactoringUI ui = new DeleteRefactoringUI(NamedReferenceable.class.cast(ref));
@@ -161,24 +158,6 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
     
           
    
-public class FindUsagesRunnable implements Runnable {
-        private Node[] nodes;
-        private RefactoringUI ui;
-        
-        public FindUsagesRunnable(Node[] n) {
-            this.nodes=n;
-        }
-        
-        public final void run() {
-          
-            Referenceable ref = AnalysisUtilities.getReferenceable(nodes);
-            assert ref != null:"The node's NamedReferenceable should not be null";
-            WhereUsedView wuv = new WhereUsedView(ref);
-            WhereUsedQueryUI ui = new WhereUsedQueryUI(wuv, ref);
-            UI.openRefactoringUI(ui);
-            
-        }
-  }
 
 
 }

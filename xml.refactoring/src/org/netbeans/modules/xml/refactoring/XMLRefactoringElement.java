@@ -20,59 +20,29 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Sonali
  */
-public class XMLRefactoringElement extends SimpleRefactoringElementImpl {
+public abstract class XMLRefactoringElement extends SimpleRefactoringElementImpl {
     
-    Usage usage;
-    Node node;
+    public Node node;
     
-    /**
-     * Creates a new instance of XMLRefactoringElement
-     */
-    public XMLRefactoringElement(Usage u) {
-        this.usage=u;
-        Component comp = usage.getComponent();
-        //UIHelper engine = usage.getContainer().getEngine().getUIHelper();
-       try {
-            node = usage.getContainer().getEngine().getUIHelper().getDisplayNode(comp);
-       } catch(NullPointerException e){
-           
-       }
-    }
-
+        
     public String getText() {
-        if(node != null)
-            return node.getName();
-        else 
-            return "";
+        return node.getName();
     }
 
     public String getDisplayText() {
-        if(node != null)
-            return node.getHtmlDisplayName();
-        else
-            return "";
-      
-       
+        return node.getHtmlDisplayName();
     }
 
     public void performChange() {
     }
 
-    public Object getComposite() {
-        return usage;
-        //return null;
-    }
-
-    public FileObject getParentFile() {
-        return usage.getContainer().getFileObject();
-    }
-
-    public PositionBounds getPosition() {
+   public PositionBounds getPosition() {
         return null;
     }
     
@@ -80,19 +50,5 @@ public class XMLRefactoringElement extends SimpleRefactoringElementImpl {
         //UI.setComponentForRefactoringPreview(null);
      }
      
-     public void openInEditor(){
-         if(node != null ) {   
-             Action preferredAction = node.getPreferredAction();
-	         if (preferredAction != null) {
-		     String command = (String)preferredAction.getValue(Action.ACTION_COMMAND_KEY);
-		     ActionEvent ae = new ActionEvent(node, 0, command);
-		     preferredAction.actionPerformed(ae);
-	        }
-         }
-     
-     }
-         
-         
-     
-    
+        
 }

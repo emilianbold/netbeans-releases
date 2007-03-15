@@ -22,10 +22,9 @@ package org.netbeans.modules.xml.wsdl.refactoring;
 import java.io.IOException;
 import java.util.List;
 import junit.framework.*;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
-import org.netbeans.modules.xml.refactoring.UsageSet;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.ChangeExecutor;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
@@ -44,9 +43,11 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPFault;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -54,16 +55,16 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
  */
 public class WSDLRefactoringEngineTest extends TestCase {
 
-    private WSDLRefactoringEngine engine;
-    private ChangeExecutor exec;
+//    private WSDLRefactoringEngine engine;
+//    private ChangeExecutor exec;
     
     public WSDLRefactoringEngineTest(String testName) {
         super(testName);
     }
 
     protected void setUp() throws Exception {
-        exec = new WSDLChangeExecutor();
-        engine = new WSDLRefactoringEngine();
+       // exec = new WSDLChangeExecutor();
+       // engine = new WSDLRefactoringEngine();
     }
 
     protected void tearDown() throws Exception {
@@ -74,26 +75,24 @@ public class WSDLRefactoringEngineTest extends TestCase {
         return suite;
     }
     
-    private void createRenameRequestAndExecute(Nameable<WSDLComponent> target, List<UsageGroup> usages) throws IOException {
-        RenameRequest rr = new RenameRequest(target, "renamed");
-        exec.doChange(rr);
-        assertTrue(rr.confirmChangePerformed());
-        UsageSet usageSet = new UsageSet((Referenceable)target);
-        usageSet.addUsages(usages);
-        rr.setUsages(usageSet);
-        engine.precheck(rr);
-        engine.refactorUsages(rr);
-    }
+    private void createRenameRequestAndExecute(Nameable<WSDLComponent> target, WSDLModel model) throws IOException {
+        //RenameRequest rr = new RenameRequest(target, "renamed");
+        RenameRefactoring refactoring = new RenameRefactoring(Lookups.singleton(target));
+        XMLRefactoringTransaction transaction = new XMLRefactoringTransaction((Referenceable)target, refactoring);
+        refactoring.getContext().add(transaction);
+        refactoring.getContext().add(target.getName());
+        refactoring.getContext().add((Component)model.getDefinitions());
+        RefactoringSession session = RefactoringSession.create("Test rename");
+        refactoring.setNewName("renamed");
+        assertNull(refactoring.prepare(session));
+        session.doRefactoring(true);
+        
+   }
     
     public void testMessage() throws Exception {
         WSDLModel model = Util.loadWSDLModel("resources/stockquote.wsdl");
         Message target = (Message) Util.findByXpath(model, "/definitions/message[@name='GetLastTradePriceInput']");
-        List<UsageGroup> usages = engine.findUsages(target, model.getDefinitions());
-        List<Usage> items = usages.get(0).getItems();
-        assertEquals(2, items.size());
-        assertEquals(target, ((Input)items.get(0).getComponent()).getMessage().get());
-
-        createRenameRequestAndExecute(target, usages);
+        createRenameRequestAndExecute(target, model);
         
         Input fixed1 = (Input) Util.findByXpath(model, "/definitions/portType/operation/input");
         assertEquals("tns:renamed", ((AbstractDocumentComponent)fixed1).getPeer().getAttribute("message"));
@@ -106,12 +105,8 @@ public class WSDLRefactoringEngineTest extends TestCase {
     public void testBinding() throws Exception {
         WSDLModel model = Util.loadWSDLModel("resources/TravelReservationService.wsdl");
         Binding target = (Binding) Util.findByXpath(model, "/definitions/binding[@name='TravelReservationSoapBinding']");
-        List<UsageGroup> usages = engine.findUsages(target, model.getDefinitions());
-        List<Usage> items = usages.get(0).getItems();
-        assertEquals(1, items.size());
-        assertEquals(target, ((Port)items.get(0).getComponent()).getBinding().get());
-        
-        createRenameRequestAndExecute(target, usages);
+           
+        createRenameRequestAndExecute(target, model);
 
         Port fixed1 = (Port) Util.findByXpath(model, "/definitions/service/port");
         assertEquals("tns:renamed", ((AbstractDocumentComponent)fixed1).getPeer().getAttribute("binding"));
@@ -121,13 +116,8 @@ public class WSDLRefactoringEngineTest extends TestCase {
         WSDLModel model = Util.loadWSDLModel("resources/TravelReservationService.wsdl");
         Fault target = (Fault) Util.findByXpath(model, 
                 "/definitions/portType[@name='TravelReservationPortType']/operation/fault[@name='itineraryProblem']");
-        List<UsageGroup> usages = engine.findUsages(target, model.getDefinitions());
-        List<Usage> items = usages.get(0).getItems();
-        assertEquals(2, items.size());
-        assertEquals(target, ((BindingFault)items.get(0).getComponent()).getFault().get());
-        assertEquals(target, ((SOAPFault)items.get(1).getComponent()).getFault().get());
-        
-        createRenameRequestAndExecute(target, usages);
+              
+        createRenameRequestAndExecute(target, model);
 
         BindingFault fixed1 = (BindingFault) Util.findByXpath(model, "/definitions/binding/operation/fault");
         assertEquals("renamed", ((AbstractDocumentComponent)fixed1).getPeer().getAttribute("name"));
@@ -140,12 +130,7 @@ public class WSDLRefactoringEngineTest extends TestCase {
         WSDLRefactoringEngine engine = new WSDLRefactoringEngine();
         Operation target = (Operation) Util.findByXpath(model, 
                 "/definitions/portType[@name='TravelReservationPortType']/operation[@name='buildItinerary']");
-        List<UsageGroup> usages = engine.findUsages(target, model.getDefinitions());
-        List<Usage> items = usages.get(0).getItems();
-        assertEquals(1, items.size());
-        assertEquals(target, ((BindingOperation) items.get(0).getComponent()).getOperation().get());
-
-        createRenameRequestAndExecute(target, usages);
+        createRenameRequestAndExecute(target,model);
 
         BindingOperation fixed1 = (BindingOperation) Util.findByXpath(model, "/definitions/binding/operation");
         assertEquals("renamed", ((AbstractDocumentComponent)fixed1).getPeer().getAttribute("name"));
@@ -156,12 +141,7 @@ public class WSDLRefactoringEngineTest extends TestCase {
         WSDLRefactoringEngine engine = new WSDLRefactoringEngine();
         Part target = (Part) Util.findByXpath(model, 
                 "/definitions/message[@name='bindingDetail']/part[@name='body']");
-        List<UsageGroup> usages = engine.findUsages(target, model.getDefinitions());
-        List<Usage> items = usages.get(0).getItems();
-        assertEquals(2, items.size());
-        assertTrue(((SOAPBody) items.get(1).getComponent()).getParts().contains("body"));
-
-        createRenameRequestAndExecute(target, usages);
+        createRenameRequestAndExecute(target, model);
 
         SOAPBody fixed1 = (SOAPBody) Util.findByXpath(model, "/definitions/binding/operation[@name='find_binding']/output/soap:body");
         assertEquals("renamed", ((AbstractDocumentComponent)fixed1).getPeer().getAttribute("parts"));
@@ -172,15 +152,9 @@ public class WSDLRefactoringEngineTest extends TestCase {
     
     public void testInput() throws Exception {
         WSDLModel model = Util.loadWSDLModel("resources/uddi.wsdl");
-        WSDLRefactoringEngine engine = new WSDLRefactoringEngine();
         Input target = (Input) Util.findByXpath(model, 
                 "/definitions/portType/operation[@name='find_binding']/input");
-        List<UsageGroup> usages = engine.findUsages(target, model.getDefinitions());
-        List<Usage> items = usages.get(0).getItems();
-        assertEquals(1, items.size());
-        assertEquals(target, ((BindingInput) items.get(0).getComponent()).getInput().get());
-
-        createRenameRequestAndExecute(target, usages);
+        createRenameRequestAndExecute(target, model);
 
         BindingInput fixed1 = (BindingInput) Util.findByXpath(model, "/definitions/binding/operation[@name='find_binding']/input");
         // Still have binding/input@name implicit.
@@ -189,15 +163,10 @@ public class WSDLRefactoringEngineTest extends TestCase {
     
     public void testOutput() throws Exception {
         WSDLModel model = Util.loadWSDLModel("resources/uddi.wsdl");
-        WSDLRefactoringEngine engine = new WSDLRefactoringEngine();
         Output target = (Output) Util.findByXpath(model, 
                 "/definitions/portType/operation[@name='find_binding']/output");
-        List<UsageGroup> usages = engine.findUsages(target, model.getDefinitions());
-        List<Usage> items = usages.get(0).getItems();
-        assertEquals(1, items.size());
-        assertEquals(target, ((BindingOutput) items.get(0).getComponent()).getOutput().get());
-        
-        createRenameRequestAndExecute(target, usages);
+             
+        createRenameRequestAndExecute(target, model);
 
         BindingOutput fixed1 = (BindingOutput) Util.findByXpath(model, "/definitions/binding/operation[@name='find_binding']/output");
         // Still have binding/output@name implicit.
@@ -206,15 +175,10 @@ public class WSDLRefactoringEngineTest extends TestCase {
 
     public void testPortType() throws Exception {
         WSDLModel model = Util.loadWSDLModel("resources/TravelReservationService.wsdl");
-        WSDLRefactoringEngine engine = new WSDLRefactoringEngine();
         PortType target = (PortType) Util.findByXpath(model, 
                 "/definitions/portType[@name='TravelReservationPortType']");
-        List<UsageGroup> usages = engine.findUsages(target, model.getDefinitions());
-        List<Usage> items = usages.get(0).getItems();
-        assertEquals(1, items.size());
-        assertEquals(target, ((Binding)items.get(0).getComponent()).getType().get());
-        
-        createRenameRequestAndExecute(target, usages);
+               
+        createRenameRequestAndExecute(target, model);
 
         Binding fixed1 = (Binding) Util.findByXpath(model, "/definitions/binding");
         assertEquals("tns:renamed", ((AbstractDocumentComponent)fixed1).getPeer().getAttribute("type"));

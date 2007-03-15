@@ -21,10 +21,8 @@ package org.netbeans.modules.xml.refactoring.spi;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.xml.refactoring.DeleteRequest;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
-import org.netbeans.modules.xml.refactoring.RefactorRequest;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
@@ -56,7 +54,7 @@ public abstract class RefactoringEngine {
      * @param searchRoot the scope of the search.
      * @return list of usages; or empty list if no usages found; or null if not applicable.
      */
-    public abstract List<UsageGroup> findUsages(Component target, Component searchRoot);
+    public abstract List<RefactoringElement> findUsages(Component target, Component searchRoot);
 
     /**
      * Returns usages of the given target component or null if target 
@@ -67,41 +65,9 @@ public abstract class RefactoringEngine {
      * @param searchRoot the scope of the search.
      * @return list of usages; or empty list if no usages found; or null if not applicable.
      */
-    public abstract List<UsageGroup> findUsages(Model target, Component searchRoot);
+    public abstract List<RefactoringElement> findUsages(Model target, Component searchRoot);
 
-    /**
-     * Returns usages of the given target component or null if search target or 
-     * file is not applicable to current engine.  Implemantation should override
-     * if wish to report errors during loading of the model source.
-     * @param target the component for which usage is search for.
-     * @param file the file to search.
-     * @return list of usages, or empty list if no usages found.
-     */
-    public List<UsageGroup> findUsages(Component target, FileObject file) {
-        if (! (target instanceof Referenceable)) {
-            return null;
-        }
-        ErrorItem error = null;
-        Component searchRoot = null;
-        try {
-            searchRoot = getSearchRoot(file);
-        } catch (Exception e) {
-            error = new ErrorItem(file, e.getMessage());
-        }
-
-        if (error == null) {
-            if (searchRoot != null) {
-                return findUsages(target, searchRoot);
-            } else {
-                return Collections.emptyList();
-            }
-        } else {
-            UsageGroup usages = new UsageGroup(this, file, (Referenceable) target);
-            usages.addError(error);
-            return Collections.singletonList(usages);
-        }
-    }
-    
+     
     /**
      * Returns UI helper in displaying the usages.  Implementation could override
      * the default UI to help display usages in a more intuitive way than the 
@@ -111,22 +77,7 @@ public abstract class RefactoringEngine {
         return new UIHelper();
     }
 
-    /**
-     * Perform a pre-change checking on the refactor request.
-     * Implementation should quietly ignore unsupported refactoring type.
-     */
-    public void precheck(RefactorRequest request) {
-	if (request instanceof DeleteRequest) {
-	    SharedUtils.addCascadeDeleteErrors((DeleteRequest)request, this);
-	}
-    }
     
-    /**
-     * Refactor usages specified by request.
-     * Implementation should quietly ignore unsupported refactoring type.
-     */
-    public void refactorUsages(RefactorRequest request) throws IOException {
-    }
 
     /**
      * @param component the component to check for model reference.

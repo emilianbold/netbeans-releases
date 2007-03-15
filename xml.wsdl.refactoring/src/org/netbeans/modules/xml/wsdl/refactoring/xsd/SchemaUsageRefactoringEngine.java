@@ -21,17 +21,17 @@ package org.netbeans.modules.xml.wsdl.refactoring.xsd;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.xml.refactoring.DeleteRequest;
-import org.netbeans.modules.xml.refactoring.FileRenameRequest;
-import org.netbeans.modules.xml.refactoring.RefactorRequest;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
@@ -44,11 +44,12 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.refactoring.WSDLRefactoringElement;
 import org.netbeans.modules.xml.wsdl.refactoring.WSDLRefactoringEngine;
-import org.netbeans.modules.xml.wsdl.refactoring.WSDLUIHelper;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -62,39 +63,32 @@ import org.openide.util.NbBundle;
  *
  * @author Nam Nguyen
  */
-public class SchemaUsageRefactoringEngine extends RefactoringEngine {
+public class SchemaUsageRefactoringEngine {
     
     /** Creates a new instance of WSDLRefactoringEngine */
     public SchemaUsageRefactoringEngine() {
     }
 
-    /**
-     * Returns UI helper in displaying the usages.  Implementation could override
-     * the default UI to help display usages in a more intuitive way than the 
-     * generic helper.
-     */
-    public UIHelper getUIHelper() {
-        return new WSDLUIHelper();
-    }
-    
+      
     public Component getSearchRoot(FileObject file) throws IOException {
         return WSDLRefactoringEngine.getWSDLDefinitions(file);
     }
     
-    public List<UsageGroup> findUsages(Component target, Component searchRoot) {
+    public List<WSDLRefactoringElement> findUsages(Component target, Component searchRoot, RefactoringSession session, XMLRefactoringTransaction transaction) {
         if (target instanceof ReferenceableSchemaComponent &&
             searchRoot instanceof Definitions) {
             return new FindSchemaUsageVisitor().findUsages(
-                    (ReferenceableSchemaComponent)target, (Definitions)searchRoot, this);
+                    (ReferenceableSchemaComponent)target, (Definitions)searchRoot, session, transaction);
         }
         return null;
     }
 
-    public List<UsageGroup> findUsages(Model target, Component searchRoot) {
-        if (target instanceof SchemaModel &&
-            searchRoot instanceof Definitions) {
+    public List<WSDLRefactoringElement> findUsages(Model target, Component searchRoot) {
+        List<WSDLRefactoringElement> elements = new ArrayList<WSDLRefactoringElement>();
+        if (target instanceof SchemaModel && searchRoot instanceof Definitions) {
             Definitions definitions = (Definitions) searchRoot;
             String namespace = ((SchemaModel)target).getSchema().getTargetNamespace();
+            FileObject fo = searchRoot.getModel().getModelSource().getLookup().lookup(FileObject.class);
             if (namespace == null) return null;
             for (Import i : definitions.getImports()) {
                 if (! namespace.equals(i.getNamespace())) {
@@ -102,9 +96,10 @@ public class SchemaUsageRefactoringEngine extends RefactoringEngine {
                 }
                 ModelSource ms = resolve(definitions.getModel(), i.getLocation(), namespace);
                 if (areSameSource(ms, target.getModelSource())) {
-                    UsageGroup ug = new UsageGroup(this, searchRoot.getModel(), (SchemaModel) target);
-                    ug.addItem(i);
-                    return Collections.singletonList(ug);
+                    //UsageGroup ug = new UsageGroup(this, searchRoot.getModel(), (SchemaModel) target);
+                   // ug.addItem(i);
+                    elements.add(new WSDLRefactoringElement(searchRoot.getModel(), target, i));
+                    return elements;
                 }
             }
             Types types = definitions.getTypes();
@@ -115,56 +110,37 @@ public class SchemaUsageRefactoringEngine extends RefactoringEngine {
             for (Schema schema : schemas) {
                 for (SchemaModelReference ref : schema.getSchemaReferences()) {
                     if (isReferenceTo(ref, (SchemaModel) target)) {
-                        UsageGroup ug = new UsageGroup(this, searchRoot.getModel(), (SchemaModel) target);
-                        ug.addItem(ref);
-                        return Collections.singletonList(ug);
+                       // UsageGroup ug = new UsageGroup(this, searchRoot.getModel(), (SchemaModel) target);
+                        //ug.addItem(ref);
+                        FileObject fo1 = ref.getModel().getModelSource().getLookup().lookup(FileObject.class);
+                        elements.add(new WSDLRefactoringElement(searchRoot.getModel(), target, ref));
+                        return elements;
                     }
                 }
             }
         }
         return null;
     }
-    
-    public void refactorUsages(RefactorRequest request) throws IOException {
-        for (UsageGroup usage : request.getUsages().getUsages()) {
-            if (usage.getEngine() instanceof SchemaUsageRefactoringEngine) {
-                if (request instanceof RenameRequest) {
-                    _refactorUsages((RenameRequest)request, usage);
-                } else if (request instanceof DeleteRequest) {
-                    // NOOP
-                } else if (request instanceof FileRenameRequest) {
-                    _refactorUsages((FileRenameRequest)request, usage);
-                }
-            }
-        }
-    }
+ 
 
-    void _refactorUsages(RenameRequest request, UsageGroup usage) throws IOException {
-        new RenameSchemaReferenceVisitor().rename(request, usage);
-    }
-    
-    void _refactorUsages(DeleteRequest request, UsageGroup usage) throws IOException {
-        //NOOP currently do not support cascade delete
-    }
-
-    void _refactorUsages(FileRenameRequest request, UsageGroup usage) throws IOException {
-        if (request == null || usage == null || usage.getModel() == null) return;
-        if (! (usage.getModel() instanceof WSDLModel)) return;
-        WSDLModel model = (WSDLModel) usage.getModel();
+    public void _refactorUsages(Model mod, Set<RefactoringElementImplementation> elements, RenameRefactoring request) throws IOException {
+        if (request == null || elements == null || mod == null) return;
+        if (! (mod instanceof WSDLModel)) return;
+        WSDLModel model = (WSDLModel) mod;
         boolean startTransaction = ! model.isIntransaction();
         
         try {
             if (startTransaction) {
                 model.startTransaction();
             }
-            for (Usage u : usage.getItems()) {
-                if (u.getComponent() instanceof Import) {
-                    Import im = (Import) u.getComponent();
-                    String newLocation = request.calculateNewLocationString(im.getLocation());
+            for (RefactoringElementImplementation u:elements) {
+                if (u.getComposite() instanceof Import) {
+                    Import im = (Import) u.getComposite();
+                    String newLocation = calculateNewLocationString(im.getLocation(), request);
                     im.setLocation(newLocation);
-                } else if (u.getComponent() instanceof SchemaModelReference) {
-                    SchemaModelReference ref = (SchemaModelReference) u.getComponent();
-                    String newLocation = request.calculateNewLocationString(ref.getSchemaLocation());
+                } else if (u.getComposite() instanceof SchemaModelReference) {
+                    SchemaModelReference ref = (SchemaModelReference) u.getComposite();
+                    String newLocation = calculateNewLocationString(ref.getSchemaLocation(), request);
                     ref.setSchemaLocation(newLocation);
                 }
             }
@@ -175,7 +151,22 @@ public class SchemaUsageRefactoringEngine extends RefactoringEngine {
         }
     }
     
-    public void precheck(RefactorRequest request) {
+     public String calculateNewLocationString(String currentLocationString, RenameRefactoring request) {
+        StringBuilder sb = new StringBuilder();
+        int i = currentLocationString.lastIndexOf('/');
+        if (i > -1) {
+            sb.append(currentLocationString.substring(0, i+1));
+        }
+        sb.append(request.getNewName());
+        sb.append("."); //NOI18N
+        Referenceable ref = request.getRefactoringSource().lookup(Referenceable.class);
+        Model model = SharedUtils.getModel(ref);
+        FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
+        sb.append(fo.getExt());
+        return sb.toString();
+    }
+    
+   /* public void precheck(RefactorRequest request) {
         if (request.getTarget() instanceof SchemaComponent || 
             request.getTarget() instanceof SchemaModel) {
             if (request instanceof RenameRequest) {
@@ -221,7 +212,7 @@ public class SchemaUsageRefactoringEngine extends RefactoringEngine {
                 i.setRefactoringDescription(msg);
             }
         }
-    }
+    }*/
     
     public static String getLocationReferenceAttributeName(Component usageComponent) {
         if (usageComponent instanceof org.netbeans.modules.xml.wsdl.model.Import) {
@@ -233,7 +224,7 @@ public class SchemaUsageRefactoringEngine extends RefactoringEngine {
         }
     }
     
-    private static String getNewLocationValue(FileRenameRequest request, Component usageComponent) {
+    /*private static String getNewLocationValue(FileRenameRequest request, Component usageComponent) {
         String current = ""; //NOI18N
         if (usageComponent instanceof Import) {
             current =((Import)usageComponent).getLocation();
@@ -242,7 +233,7 @@ public class SchemaUsageRefactoringEngine extends RefactoringEngine {
         }        
 
         return request.calculateNewLocationString(current);
-    }
+    }*/
 
     public static ModelSource resolveModelSource(
             String location, Model currentModel, CatalogModel currentCatalog) {
@@ -295,11 +286,13 @@ public class SchemaUsageRefactoringEngine extends RefactoringEngine {
         return false;
     }
 
-    @Override
+ //   @Override
     public String getModelReference(Component component) {
         if (component instanceof SchemaModelReference) {
             return ((SchemaModelReference)component).getSchemaLocation();
         }        
         return null;
     }
+    
+   
 }

@@ -41,11 +41,10 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.tree.DefaultTreeModel;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.xml.nbprefuse.View;
-import org.netbeans.modules.xml.refactoring.FindUsageResult;
 import org.netbeans.modules.xml.nbprefuse.AnalysisConstants;
 import org.netbeans.modules.xml.nbprefuse.AnalysisViewer;
-import org.netbeans.modules.xml.refactoring.ui.j.ui.RefactoringPanel;
 import org.netbeans.modules.xml.nbprefuse.layout.AggregateLayout;
 import org.netbeans.modules.xml.nbprefuse.layout.NbFruchtermanReingoldLayout;
 import org.netbeans.modules.xml.nbprefuse.AggregateDragControl;
@@ -58,14 +57,12 @@ import org.netbeans.modules.xml.nbprefuse.NodeFillColorAction;
 import org.netbeans.modules.xml.nbprefuse.NodeStrokeColorAction;
 import org.netbeans.modules.xml.nbprefuse.NodeTextColorAction;
 import org.netbeans.modules.xml.nbprefuse.PopupMouseControl;
-import org.netbeans.modules.xml.refactoring.ui.readers.WhereUsedReader;
 import org.netbeans.modules.xml.nbprefuse.render.CompositionEdgeRenderer;
 import org.netbeans.modules.xml.nbprefuse.render.FindUsagesRendererFactory;
 import org.netbeans.modules.xml.nbprefuse.render.GeneralizationEdgeRenderer;
 import org.netbeans.modules.xml.nbprefuse.render.NbLabelRenderer;
 import org.netbeans.modules.xml.nbprefuse.render.ReferenceEdgeRenderer;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
@@ -119,6 +116,8 @@ public class WhereUsedView implements View, PropertyChangeListener {
     private DefaultTreeModel defaultTreeModel;
 //    
     private static int paletteCount = 0;
+    public static final String
+            NODE_SELECTION_CHANGE = "node-selection-change";
     
     public WhereUsedView(Referenceable ref){
         if (ref != null){
@@ -147,28 +146,24 @@ public class WhereUsedView implements View, PropertyChangeListener {
          return query;
      }
      
-     
-    public Object[] createModels(  ){
-        return null;
-    }
-    
+      
     /**
      * Create the graph and the tree model
      *  
      *
      */
-    public Object[] createModels(FindUsageResult fuResult ){
+  /*  public Object[] createModels(FindUsageResult fuResult ){
         defaultTreeModel = null;
         Graph graph = this.createGraph(fuResult, true);
         return new Object[] {defaultTreeModel, graph};
-    }
+    }*/
     
     
     /**
      *
      *
      */
-    private Graph createGraph(FindUsageResult fuResult, boolean createDefaultTreeModel){
+    /*private Graph createGraph(FindUsageResult fuResult, boolean createDefaultTreeModel){
         usePacer = true;
         graph = null;
         Object[] models = new WhereUsedReader().loadGraph(fuResult, query, 
@@ -181,7 +176,7 @@ public class WhereUsedView implements View, PropertyChangeListener {
         }
         return graph;
         
-    }
+    }*/
     
     public boolean showView(AnalysisViewer viewer) {
         boolean wasShown = false;
@@ -519,12 +514,12 @@ public class WhereUsedView implements View, PropertyChangeListener {
     
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(
-                RefactoringPanel.NODE_SELECTION_CHANGE)){
+        if (evt.getPropertyName().equals(NODE_SELECTION_CHANGE)){
             // In the FindUsages explorer, a new node has been selected
             Object newVal = evt.getNewValue();
-            if (newVal instanceof Usage) {
-                newVal = ((Usage)newVal).getComponent();
+           // if (newVal instanceof Usage) {
+            if(newVal instanceof RefactoringElement){
+                newVal = ((RefactoringElement)newVal).getComposite();
             }
             if (display == null || graph == null){
                 return;
@@ -544,6 +539,9 @@ public class WhereUsedView implements View, PropertyChangeListener {
                 Tuple n = (Tuple)it.next();
                // Component sc = (Component)n.get(AnalysisConstants.XAM_COMPONENT);
                 Object sc = n.get(AnalysisConstants.USER_OBJECT);
+                if(sc == null)
+                    if(n.canGetString(AnalysisConstants.XAM_COMPONENT))
+                        sc = (Component)n.get(AnalysisConstants.XAM_COMPONENT);
                 FileObject fo = (FileObject)n.get(AnalysisConstants.FILE_OBJECT);
                 if (sc == newVal || fo == newVal) {
                     ts.setTuple(n);
@@ -561,8 +559,10 @@ public class WhereUsedView implements View, PropertyChangeListener {
     public void setGraph(Graph newGraph){
         this.graph = newGraph;
     }
-    
-   
+
+    public Object[] createModels() {
+        return null;
+    }
     
     
 }

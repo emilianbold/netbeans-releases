@@ -13,8 +13,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
-import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
+import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
@@ -28,30 +29,30 @@ import org.openide.text.PositionBounds;
  */
 public class FauxRefactoringElement extends SimpleRefactoringElementImpl {
     
-    Usage usage;
     Node node;
     FileObject targetFobj;
     Referenceable ref;
-    String name, label;
+    String label, name, type;
     
-    /** Creates a new instance of WhereUsedElement */
-    public FauxRefactoringElement(Referenceable ref) {
+    
+    public FauxRefactoringElement(Referenceable ref, String refactoringType) {
         this.ref = ref;
         Component targetComponent = ref instanceof Component ? (Component) ref : ref instanceof DocumentModel ? ((DocumentModel) ref).getRootComponent() :null;
-            assert targetComponent != null : "target is not Component or DocumentModel";
-            targetFobj = AnalysisUtilities.getFileObject(targetComponent);
-                      
-            UIHelper helper = RefactoringManager.getInstance().getTargetComponentUIHelper(ref);
-            if (helper == null){
-                helper = new UIHelper();
-            }
-            node = AnalysisUtilities.getDisplayNode(ref); 
-            name = AnalysisUtilities.getName(ref); 
-            label = " <b>" + name + "</b>";
+        assert targetComponent != null : "target is not Component or DocumentModel";
+        targetFobj = SharedUtils.getFileObject(targetComponent);
+        type = refactoringType; 
+        //node = AnalysisUtilities.getDisplayNode(ref); 
+        name = SharedUtils.getName(ref); 
+        label = " <b>" + refactoringType + " " + name + "</b>";
     }
+    
+    public FauxRefactoringElement(Referenceable ref){
+        this(ref, "");
+    }
+        
 
     public String getText() {
-        return name;
+        return SharedUtils.getName(ref);
     }
 
     public String getDisplayText() {
@@ -64,7 +65,7 @@ public class FauxRefactoringElement extends SimpleRefactoringElementImpl {
     }
 
     public Object getComposite() {
-        return ref;
+        return this;
         //return null;
     }
 
@@ -87,10 +88,17 @@ public class FauxRefactoringElement extends SimpleRefactoringElementImpl {
      }
      
      public void setEnabled(boolean enabled){
-         usage.setIncludedInRefactoring(enabled);
+       //  usage.setIncludedInRefactoring(enabled);
          //System.out.println("setEnabled called with " + enabled);
      }
          
+     public String getRefactoringType() {
+         return type;
+     }
      
+     public Referenceable getTarget(){
+         return ref;
+         
+     }
     
 }

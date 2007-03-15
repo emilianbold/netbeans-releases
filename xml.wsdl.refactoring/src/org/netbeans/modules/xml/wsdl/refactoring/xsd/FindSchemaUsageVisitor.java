@@ -21,10 +21,11 @@ package org.netbeans.modules.xml.wsdl.refactoring.xsd;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.xml.refactoring.FindUsageResult;
-import org.netbeans.modules.xml.refactoring.RefactoringManager;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
-import org.netbeans.modules.xml.refactoring.UsageSet;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -37,10 +38,13 @@ import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
+import org.netbeans.modules.xml.wsdl.refactoring.WSDLRefactoringElement;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -48,23 +52,22 @@ import org.openide.ErrorManager;
  */
 public class FindSchemaUsageVisitor extends ChildVisitor implements WSDLVisitor {
     private ReferenceableSchemaComponent referenced;
-    private UsageGroup usage;
-    private List<UsageGroup> usages;
+    private Model model;
+    List<WSDLRefactoringElement> elements = new ArrayList();
+    RefactoringSession session;
+    XMLRefactoringTransaction transaction;
     
     /** Creates a new instance of FindUsageVisitor */
     public FindSchemaUsageVisitor() {
     }
     
-    public List<UsageGroup> findUsages(ReferenceableSchemaComponent referenced,
-            Definitions wsdl, RefactoringEngine engine) {
+    public List<WSDLRefactoringElement> findUsages(ReferenceableSchemaComponent referenced,
+            Definitions wsdl, RefactoringSession session, XMLRefactoringTransaction transaction) {
         this.referenced = referenced;
-        usage = new UsageGroup(engine, wsdl.getModel(), referenced);
-        usages = new ArrayList<UsageGroup>();
+        this.model = wsdl.getModel();
+        this.session = session;
         wsdl.accept(this);
-        if (!usage.isEmpty()) {
-            usages.add(usage);
-        }
-        return usages;
+        return elements;
     }
     
     public void visit(Types types) {
@@ -84,11 +87,11 @@ public class FindSchemaUsageVisitor extends ChildVisitor implements WSDLVisitor 
                     referenced instanceof GlobalType && part.getType() != null &&
                     part.getType().references((GlobalType)referenced)) 
             {
-                usage.addItem(part);
+                    elements.add(new WSDLRefactoringElement(model, referenced, part));
             }
         } catch(Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            usage.addError(part, e.getMessage());
+        
         }
         super.visit(part);
     }
@@ -100,17 +103,12 @@ public class FindSchemaUsageVisitor extends ChildVisitor implements WSDLVisitor 
     }*/
     
     private void collectUsage(Component searchRoot) {
-        FindUsageResult result = RefactoringManager.getInstance().findUsages(referenced, searchRoot);
-        try {
-            UsageSet usageSet = result.get();
-            for (UsageGroup u : usageSet.getUsages()) {
-                if (! u.isEmpty()) {
-                    usages.add(u);
-                }
-            }
-        } catch(Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            usage.addError(searchRoot, e.getMessage());
-        }
+        WhereUsedQuery query = new WhereUsedQuery(Lookups.singleton(referenced));
+        query.getContext().add(searchRoot);
+        if(transaction!=null)
+            query.getContext().add(transaction);
+        // query.getContext().add(Lookups.fixed(searchRoots));
+        query.prepare(session);
+       
     }
 }

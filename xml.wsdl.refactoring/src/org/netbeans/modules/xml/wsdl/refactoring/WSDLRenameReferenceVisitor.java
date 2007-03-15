@@ -20,9 +20,9 @@ package org.netbeans.modules.xml.wsdl.refactoring;
 
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.Usage;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
+import java.util.Set;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
@@ -50,6 +50,8 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeaderFault;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 import org.netbeans.modules.xml.wsdl.model.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
@@ -57,41 +59,45 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  * @author Nam Nguyen
  */
 public class WSDLRenameReferenceVisitor extends DefaultVisitor implements WSDLVisitor {
-    RenameRequest request;
+    RenameRefactoring request;
+    String oldName;
+    Referenceable target;
     
     /** Creates a new instance of WSDLRenameRefactorVisitor */
     public WSDLRenameReferenceVisitor() {
     }
     
-    public void refactor(RenameRequest request, UsageGroup usage) throws IOException {
-        if (request == null || usage == null || usage.getModel() == null) return;
-        if (! (usage.getModel() instanceof WSDLModel)) return;
+    public void refactor(Model mod, Set<RefactoringElementImplementation> elements, RenameRefactoring request) throws IOException {
+        if (request == null || elements == null || mod == null) return;
+        if (! (mod instanceof WSDLModel)) return;
         
         this.request = request;
-        WSDLModel model = (WSDLModel) usage.getModel();
+        this.target = request.getRefactoringSource().lookup(Referenceable.class);
+        this.oldName = request.getContext().lookup(String.class);
+        WSDLModel model = (WSDLModel) mod;
         boolean startTransaction = ! model.isIntransaction();
         try {
             if (startTransaction) {
                 model.startTransaction();
             }
-            for (Usage u : usage.getItems()) {
-                assert u.getComponent() instanceof WSDLComponent : "Wrong component type in WSDL usage group"; //NOI18N
-                ((WSDLComponent) u.getComponent()).accept(this);
+            for (RefactoringElementImplementation element: elements) {
+                assert element.getComposite() instanceof WSDLComponent : "Wrong component type in WSDL usage group"; //NOI18N
+                ((WSDLComponent) element.getComposite()).accept(this);
             }
         } finally {
-            if (startTransaction && usage.getModel().isIntransaction())
-                usage.getModel().endTransaction();
+            if (startTransaction && model.isIntransaction())
+                model.endTransaction();
         }
     }
     
     private <T extends ReferenceableWSDLComponent> NamedComponentReference<T>
             createReference(Class<T> type, WSDLComponent referencing) {
-        T referenced = type.cast(request.getRenamedTarget());
+        T referenced = type.cast(target);
         return referencing.createReferenceTo(referenced, type);
     }
     
     public void visit(BindingOperation referencing) {
-        assert request.getRenamedTarget() instanceof Operation : "Invalid type, expect Operation"; //NOI18N
+        assert target instanceof Operation : "Invalid type, expect Operation"; //NOI18N
         referencing.setName(request.getNewName());
     }
     
@@ -126,14 +132,14 @@ public class WSDLRenameReferenceVisitor extends DefaultVisitor implements WSDLVi
     }
     
     public void visit(BindingInput referencing) {
-        if (referencing.getName() != null && referencing.getName().equals(request.getOldName()) ||
+        if (referencing.getName() != null && referencing.getName().equals(request.getNewName()) ||
                 isOverloaded((BindingOperation) referencing.getParent())) {
             referencing.setName(request.getNewName());
         }
     }
     
     public void visit(BindingOutput referencing) {
-        if (referencing.getName() != null && referencing.getName().equals(request.getOldName()) ||
+        if (referencing.getName() != null && referencing.getName().equals(oldName) ||
                 isOverloaded((BindingOperation) referencing.getParent())) {
             referencing.setName(request.getNewName());
         }
@@ -157,9 +163,9 @@ public class WSDLRenameReferenceVisitor extends DefaultVisitor implements WSDLVi
 
     public class SOAPReferencingVisitor implements SOAPComponent.Visitor {
         public void visit(SOAPHeader referencing) {
-            if (request.getTarget() instanceof Message) {
+            if (target instanceof Message) {
                 referencing.setMessage(createReference(Message.class, referencing));
-            } else if (request.getTarget() instanceof Part) {
+            } else if (target instanceof Part) {
                 referencing.setPartRef(createReference(Part.class, referencing));
             }
         }
@@ -169,9 +175,9 @@ public class WSDLRenameReferenceVisitor extends DefaultVisitor implements WSDLVi
         }
 
         public void visit(SOAPHeaderFault referencing) {
-            if (request.getTarget() instanceof Message) {
+            if (target instanceof Message) {
                 referencing.setMessage(createReference(Message.class, referencing));
-            } else if (request.getTarget() instanceof Part) {
+            } else if (target instanceof Part) {
                 referencing.setPartRef(createReference(Part.class, referencing));
             }
         }
@@ -185,9 +191,9 @@ public class WSDLRenameReferenceVisitor extends DefaultVisitor implements WSDLVi
         }
 
         public void visit(SOAPBody referencing) {
-            if (request.getTarget() instanceof Part) {
+            if (target instanceof Part) {
                 List<String> parts = referencing.getParts();
-                int i = parts.indexOf(request.getOldName());
+                int i = parts.indexOf(oldName);
                 parts.remove(i);
                 parts.add(i, request.getNewName());
                 referencing.setParts(parts);

@@ -19,8 +19,8 @@
 package org.netbeans.modules.xml.refactoring.spi;
 
 import java.io.IOException;
-import org.netbeans.modules.xml.refactoring.RefactorRequest;
-import org.netbeans.modules.xml.refactoring.impl.RefactoringUtil;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
 import org.netbeans.modules.xml.xam.Referenceable;
 
 /**
@@ -34,13 +34,13 @@ import org.netbeans.modules.xml.xam.Referenceable;
  */
 public abstract class ChangeExecutor {
 
-    public abstract <T extends RefactorRequest> boolean canChange(Class<T> changeType, Referenceable target);
+    public abstract <T extends AbstractRefactoring> boolean canChange(Class<T> changeType, Referenceable target);
 
     /**
      * Perform a pre-change checking on the refactor request.
      * Implementation should quietly ignore unsupported refactoring type.
      */
-    public void precheck(RefactorRequest request) {
+    public void precheck(AbstractRefactoring request) {
     }
 
     /**
@@ -48,7 +48,7 @@ public abstract class ChangeExecutor {
      * fail the overall refactoring should be reported throught #RefactoringRequest.addError
      * Implementation should quietly ignore unsupported refactoring type.
      */
-    public void doChange(RefactorRequest request) throws IOException {
+    public void doChange(AbstractRefactoring request) throws IOException {
     }
 
     /**

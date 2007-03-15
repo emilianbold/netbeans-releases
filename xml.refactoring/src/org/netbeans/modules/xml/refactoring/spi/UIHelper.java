@@ -20,7 +20,6 @@ package org.netbeans.modules.xml.refactoring.spi;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.xml.refactoring.Usage;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
@@ -113,7 +112,7 @@ public class UIHelper {
      * override.
      * @deprecated use #getRelevantPathFromRoot(Component item) instead
      */
-    public List<Component> getRelevantPathFromRoot(Usage item) {
-        return getRelevantPathFromRoot(item.getComponent());
-    }
+   // public List<Component> getRelevantPathFromRoot(Usage item) {
+   //     return getRelevantPathFromRoot(item.getComponent());
+   // }
 }

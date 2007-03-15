@@ -20,7 +20,6 @@ package org.netbeans.modules.xml.wsdl.refactoring;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.xml.refactoring.UsageGroup;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
@@ -61,23 +60,20 @@ import org.openide.ErrorManager;
 public class FindWSDLUsageVisitor extends ChildVisitor implements WSDLVisitor {
     
     private ReferenceableWSDLComponent referenced;
-    private UsageGroup usage;
-    private List<UsageGroup> usages;
+    private List<WSDLRefactoringElement> elements;
+    private Definitions wsdl;
     
     /** Creates a new instance of FindWSDLUsageVisitor */
     public FindWSDLUsageVisitor() {
     }
     
-    public List<UsageGroup> findUsages(ReferenceableWSDLComponent referenced,
-            Definitions wsdl, RefactoringEngine engine) {
+       
+    public List<WSDLRefactoringElement> findUsages(ReferenceableWSDLComponent referenced,Definitions wsdl) {
         this.referenced = referenced;
-        usage = new UsageGroup(engine, wsdl.getModel(), referenced);
-        usages = new ArrayList<UsageGroup>();
+        this.wsdl = wsdl;
+        elements = new ArrayList<WSDLRefactoringElement>();
         wsdl.accept(this);
-        if (!usage.isEmpty()) {
-            usages.add(usage);
-        }
-        return usages;
+        return elements;
     }
     
     private <T extends ReferenceableWSDLComponent> void check(NamedComponentReference<T> ref, Component referencing) {
@@ -87,11 +83,11 @@ public class FindWSDLUsageVisitor extends ChildVisitor implements WSDLVisitor {
         
         try {
             if (ref.references(ref.getType().cast(referenced))) {
-                usage.addItem(referencing);
+                elements.add(new WSDLRefactoringElement(referencing.getModel(), (Referenceable)referenced, referencing));
             }
         } catch(Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            usage.addError(referencing, e.getMessage());
+            
         }
     }
     
@@ -101,11 +97,11 @@ public class FindWSDLUsageVisitor extends ChildVisitor implements WSDLVisitor {
         }
         try {
             if (ref.references(ref.getType().cast(referenced))) {
-                usage.addItem(referencing);
+                elements.add(new WSDLRefactoringElement(referencing.getModel(), referenced, referencing));
             }
         } catch(Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            usage.addError(referencing, e.getMessage());
+            
         }
     }
     
