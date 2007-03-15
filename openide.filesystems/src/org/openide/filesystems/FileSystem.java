@@ -833,7 +833,7 @@ public abstract class FileSystem implements Serializable {
      * <p>
      * Please use only the limited markup subset of HTML supported by the
      * lightweight HTML renderer.
-     * @see org.openide.awt.HtmlRenderer
+     * @see <a href="@org-openide-awt@/org/openide/awt/HtmlRenderer.html"><code>HtmlRenderer</code></a>
      * @since 4.30
      */
     public static interface HtmlStatus extends Status {
@@ -852,9 +852,8 @@ public abstract class FileSystem implements Serializable {
          * @param files an immutable set of files belonging to this filesystem
          * @return the annotated name (XXX may it be the same as the passed-in name or should it then be null?)
          * @since 4.30
-         * @see org.openide.awt.HtmlRenderer
-         * @see <a href="@OPENIDE/LOADERS@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
-         * @see org.openide.nodes.Node#getHtmlDisplayName
+         * @see <a href="@org-openide-loaders@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
+         * @see <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getHtmlDisplayName"><code>Node.getHtmlDisplayName()</code></a>
          **/
         public String annotateNameHtml(String name, Set<? extends FileObject> files);
     }

@@ -692,7 +692,7 @@ public abstract class AbstractFileSystem extends FileSystem {
         * May do nothing if the underlying storage does not support locking.
         * This does not affect locking using {@link FileLock} within NetBeans, however.
         * @param name name of the file
-        * @throws FileAlreadyLockedException if the file is already locked
+        * @throws IOException (e.g. {@link FileAlreadyLockedException}) if the file is already locked or otherwise cannot be locked
         */
         public void lock(String name) throws IOException;
 
@@ -727,7 +727,7 @@ public abstract class AbstractFileSystem extends FileSystem {
         * @param name the file
         * @param attrName name of the attribute
         * @param value new value or <code>null</code> to clear the attribute. Must be serializable, although particular filesystems may or may not use serialization to store attribute values.
-        * @exception IOException if the attribute cannot be set. If serialization is used to store it, this may in fact be a subclass such as {@link NotSerializableException}.
+        * @exception IOException if the attribute cannot be set. If serialization is used to store it, this may in fact be a subclass such as {@link java.io.NotSerializableException}.
         */
         public void writeAttribute(String name, String attrName, Object value)
         throws IOException;

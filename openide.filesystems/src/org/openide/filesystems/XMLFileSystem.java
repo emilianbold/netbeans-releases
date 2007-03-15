@@ -512,7 +512,6 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
         for (int i = 0; i < children.length; i++) {
             AbstractFolder fo2 = (AbstractFolder) fo.getFileObject(names[i]);
-            @SuppressWarnings("unchecked")
             FileObjRef currentRef = (FileObjRef) findReference(fo2.getPath());
             int diff = initializeReference(currentRef, children[i]);
             fo2.lastModified();
@@ -671,12 +670,6 @@ public final class XMLFileSystem extends AbstractFileSystem {
             this.fs = fs;
         }
 
-        /**
-         *
-         * Scans children for given name
-         * @return array of children`s names
-         * @param name the folder, by name; e.g. <code>top/next/afterthat</code>
-         */
         public String[] children(String name) {
             FileObject fo2name;
 
@@ -693,94 +686,41 @@ public final class XMLFileSystem extends AbstractFileSystem {
         // Change
         //
 
-        /**
-         * Creates new folder named name.
-         * @param name name of folder
-         * @throws IOException if operation fails
-         */
         public void createFolder(String name) throws java.io.IOException {
             throw new IOException();
         }
 
-        /**
-         * Create new data file.
-         *
-         * @param name name of the file
-         * @exception IOException if the file cannot be created (e.g. already exists) */
         public void createData(String name) throws IOException {
             throw new IOException();
         }
 
-        /** Rename a file.
-         * @param oldName old name of the file; fully qualified
-         * @param newName new name of the file; fully qualified
-         * @exception IOException if it could not be renamed
-         */
         public void rename(String oldName, String newName)
         throws IOException {
             throw new IOException();
         }
 
-        /**
-         * Delete the file.
-         *
-         * @param name name of file
-         * @exception IOException if the file could not be deleted
-         */
         public void delete(String name) throws IOException {
             throw new IOException();
         }
 
         // Info
 
-        /**
-         *
-         * Get last modification time.
-         * @param name the file to test
-         * @return the date
-         */
         public java.util.Date lastModified(String name) {
             return fs.lastModified(name);
         }
 
-        /**
-         * Test if the file is folder or contains data.
-         * @param name name of the file
-         * @return true if the file is folder, false otherwise
-         */
         public boolean folder(String name) {
             return fs.isFolder(name);
         }
 
-        /**
-         * Test whether this file can be written to or not.
-         * @param name the file to test
-         * @return <CODE>true</CODE> if file is read-only
-         */
         public boolean readOnly(String name) {
             return true;
         }
 
-        /** Get the MIME type of the file. If filesystem has no special support
-        * for MIME types then can simply return null. FileSystem can register
-        * MIME types for a well-known extensions: FileUtil.setMIMEType(String ext, String mimeType)
-        * or together with filesystem supply some resolvers subclassed from MIMEResolver.
-        *
-        * @param name the file to test
-        * @return the MIME type textual representation (e.g. <code>"text/plain"</code>)
-        * or null if no special support for recognizing MIME is implemented.
-         */
         public String mimeType(String name) {
             return null;
         }
 
-        /**
-         * Get the size of the file.
-         *
-         * @param name the file to test
-         * @return the size of the file in bytes or zero if the file does not contain data (does not
-         *  exist or is a folder).
-         */
         public long size(String name) {
             if (fs.isFolder(name)) {
                 return 0;
@@ -789,13 +729,6 @@ public final class XMLFileSystem extends AbstractFileSystem {
             return fs.getSize(name);
         }
 
-        /**
-         * Get input stream.
-         *
-         * @param name the file to test
-         * @return an input stream to read the contents of this file
-         * @exception FileNotFoundException if the file does not exists or is invalid
-         */
         public InputStream inputStream(String name) throws java.io.FileNotFoundException {
             InputStream is = fs.getInputStream(name);
 
@@ -806,50 +739,21 @@ public final class XMLFileSystem extends AbstractFileSystem {
             return is;
         }
 
-        /**
-         * Get output stream.
-         *
-         * @param name the file to test
-         * @return output stream to overwrite the contents of this file
-         * @exception IOException if an error occures (the file is invalid, etc.)
-         */
         public OutputStream outputStream(String name) throws java.io.IOException {
             throw new IOException();
         }
 
-        /**
-         * Does nothing to lock the file.
-         *
-         * @param name name of the file
-         * @throws IOException if cannot be locked
-         */
         public void lock(String name) throws IOException {
             FSException.io("EXC_CannotLock", name, fs.getDisplayName(), name); // NOI18N
         }
 
-        /**
-         * Does nothing to unlock the file.
-         *
-         * @param name name of the file
-         */
         public void unlock(String name) {
         }
 
-        /**
-         * Does nothing.
-         *
-         * @param name the file to mark
-         */
         public void markUnimportant(String name) {
         }
 
-        /** Get the file attribute with the specified name.
-         * @param name the file
-         * @param attrName name of the attribute
-         * @return appropriate (serializable) value or <CODE>null</CODE> if the attribute is unset (or could not be properly restored for some reason)
-         */
         public Object readAttribute(String name, String attrName) {
-            @SuppressWarnings("unchecked")
             FileObjRef ref = (FileObjRef) fs.findReference(name);
 
             if ((ref == null) && (name.length() == 0) && (fs.rootRef != null)) {
@@ -863,24 +767,13 @@ public final class XMLFileSystem extends AbstractFileSystem {
             return ref.readAttribute(attrName);
         }
 
-        /** Set the file attribute with the specified name.
-         * @param name the file
-         * @param attrName name of the attribute
-         * @param value new value or <code>null</code> to clear the attribute. Must be serializable, although particular filesystems may or may not use serialization to store attribute values.
-         * @exception IOException if the attribute cannot be set. If serialization is used to store it, this may in fact be a subclass such as {@link NotSerializableException}.
-         */
         public void writeAttribute(String name, String attrName, Object value)
         throws IOException {
             throw new IOException();
         }
 
-        /** Get all file attribute names for the file.
-         * @param name the file
-         * @return enumeration of keys (as strings)
-         */
         public Enumeration<String> attributes(String name) {
-            @SuppressWarnings("unchecked")
-            FileObjRef<? extends FileObject> ref = (FileObjRef) fs.findReference(name);
+            FileObjRef<? extends FileObject> ref = (FileObjRef<? extends FileObject>) fs.findReference(name);
 
             if ((ref == null) && (name.length() == 0) && (fs.rootRef != null)) {
                 ref = fs.rootRef;
@@ -893,17 +786,9 @@ public final class XMLFileSystem extends AbstractFileSystem {
             return ref.attributes();
         }
 
-        /** Called when a file is renamed, to appropriately update its attributes.
-         * @param oldName old name of the file
-         * @param newName new name of the file
-         */
         public void renameAttributes(String oldName, String newName) {
         }
 
-        /** Called when a file is deleted, to also delete its attributes.
-         *
-         * @param name name of the file
-         */
         public void deleteAttributes(String name) {
         }
     }
