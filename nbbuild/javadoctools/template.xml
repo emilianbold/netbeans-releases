@@ -316,21 +316,21 @@ cause it to fail.
     </target>
 
     <target name="javadoc-stage-apichanges" depends="javadoc-init,javadoc-check-timestamps,javadoc-stage-export-apichanges" unless="javadoc.up.to.date">
-        <style in="${javadoc.apichanges}" out="${javadoc.out.dir}/apichanges.html" style="apichanges.xsl">
+        <xslt in="${javadoc.apichanges}" out="${javadoc.out.dir}/apichanges.html" style="apichanges.xsl">
             <param name="javadoc-url-base" expression="."/>
-        </style>
+        </xslt>
     </target>
     <target name="javadoc-stage-export-apichanges" depends="javadoc-init,javadoc-check-timestamps,javadoc-stage-init-apichanges" unless="javadoc.apichanges.should.not.be.generated">
         <fail message="Need to specify the date of branching of previous.release.year: ${previous.release.year}" unless="previous.release.year" />
         <fail message="Need to specify the date of branching of previous.release.month: ${previous.release.month}" unless="previous.release.month" />
         <fail message="Need to specify the date of branching of previous.release.day: ${previous.release.day}" unless="previous.release.day" />
     
-        <style in="${javadoc.apichanges}" out="${export.apichanges}/${javadoc.name}" style="export-apichanges.xsl">
+        <xslt in="${javadoc.apichanges}" out="${export.apichanges}/${javadoc.name}" style="export-apichanges.xsl">
             <param name="changes-since-url" expression="${javadoc.name}/apichanges.html"/>
             <param name="changes-since-year" expression="${previous.release.year}"/>
             <param name="changes-since-day" expression="${previous.release.day}"/>
             <param name="changes-since-month" expression="${previous.release.month}"/>
-        </style>
+        </xslt>
     </target>
     <target name="javadoc-stage-init-apichanges" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
         <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
@@ -365,9 +365,9 @@ cause it to fail.
         <arch xsl="exportInterfaces.xsl" answers="${javadoc.arch}" output="${export.interfaces}/architecture-summary.html" stylesheet="prose.css"/>
         <move file="${export.interfaces}/architecture-summary.html" tofile="${export.interfaces}/${javadoc.name}" />
         <mkdir dir="${export.interfaces}/properties" />
-        <style style="exportInterfaceProperties.xsl" in="${export.interfaces}/${javadoc.name}" out="${export.interfaces}/properties/${javadoc.name}" >
+        <xslt style="exportInterfaceProperties.xsl" in="${export.interfaces}/${javadoc.name}" out="${export.interfaces}/properties/${javadoc.name}" >
             <param name="code.name.base" expression="${javadoc.name}" />
-        </style>
+        </xslt>
         <concat destfile="${export.interfaces}/properties/all.properties" >
             <fileset dir="${export.interfaces}/properties/">
                 <include name="*" />
