@@ -87,7 +87,9 @@ public class CasaWrapperModel extends CasaModelImpl {
     public static final String PROPERTY_CASA_PORT_ADDED      = PROPERTY_PREFIX + "casa_port_added";         // NOI18N
     public static final String PROPERTY_ENDPOINT_REMOVED     = PROPERTY_PREFIX + "endpoint_removed";        // NOI18N
     public static final String PROPERTY_ENDPOINT_ADDED       = PROPERTY_PREFIX + "endpoint_added";          // NOI18N
-    public static final String PROPERTY_ENDPOINT_RENAMED     = PROPERTY_PREFIX + "endpoint_renamed";        // NOI18N
+    public static final String PROPERTY_ENDPOINT_NAME_CHANGED     = PROPERTY_PREFIX + "endpoint_renamed";        // NOI18N
+    public static final String PROPERTY_ENDPOINT_INTERFACE_QNAME_CHANGED    = PROPERTY_PREFIX + "endpoint_interface_qname_changed";        // NOI18N
+    public static final String PROPERTY_ENDPOINT_SERVICE_QNAME_CHANGED      = PROPERTY_PREFIX + "endpoint_service_qname_changed";        // NOI18N
     public static final String PROPERTY_SERVICE_UNIT_RENAMED = PROPERTY_PREFIX + "service_unit_renamed";    // NOI18N
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_ADDED   = PROPERTY_PREFIX + "service_unit_added";   // NOI18N
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED = PROPERTY_PREFIX + "service_unit_removed"; // NOI18N
@@ -722,10 +724,23 @@ public class CasaWrapperModel extends CasaModelImpl {
     private void fireCasaEndpointRenamed(CasaComponent casaComponent) {
         firePropertyChangeEvent(new PropertyChangeEvent(
                 casaComponent,
-                PROPERTY_ENDPOINT_RENAMED,
+                PROPERTY_ENDPOINT_NAME_CHANGED,
                 null, null));
     }
     
+    private void fireCasaEndpointInterfaceQNameChanged(CasaComponent casaComponent) {
+        firePropertyChangeEvent(new PropertyChangeEvent(
+                casaComponent,
+                PROPERTY_ENDPOINT_INTERFACE_QNAME_CHANGED,
+                null, null));
+    }
+    
+    private void fireCasaEndpointServiceQNameChanged(CasaComponent casaComponent) {
+        firePropertyChangeEvent(new PropertyChangeEvent(
+                casaComponent,
+                PROPERTY_ENDPOINT_SERVICE_QNAME_CHANGED,
+                null, null));
+    }
     
     private void fireServiceUnitRenamed(CasaServiceUnit su) {
         firePropertyChangeEvent(new PropertyChangeEvent(
@@ -2290,7 +2305,8 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Sets name of an endpoint.
      */
-    private void setEndpointName(CasaComponent component, CasaEndpointRef endpointRef, String endpointName) {
+    private void setEndpointName(CasaComponent component, 
+            CasaEndpointRef endpointRef, String endpointName) {
         CasaEndpoint casaEndpoint = endpointRef.getEndpoint().get();
        
         if (!casaEndpoint.getEndpointName().equals(endpointName)) {
@@ -2320,6 +2336,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             endpoint.setInterfaceQName(interfaceQName);
         } finally {
             if (isIntransaction()) {
+                fireCasaEndpointInterfaceQNameChanged(endpointRef);
                 endTransaction();
             }
         }
@@ -2334,6 +2351,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             endpoint.setServiceQName(serviceQName);
         } finally {
             if (isIntransaction()) {
+                fireCasaEndpointServiceQNameChanged(endpointRef);
                 endTransaction();
             }
         }
