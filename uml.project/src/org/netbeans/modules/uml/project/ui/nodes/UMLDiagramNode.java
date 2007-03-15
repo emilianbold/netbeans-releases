@@ -20,14 +20,11 @@
 package org.netbeans.modules.uml.project.ui.nodes;
 
 import org.netbeans.modules.uml.common.ui.SaveNotifier;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
-import org.netbeans.modules.uml.core.preferenceframework.PreferenceManager;
 import org.netbeans.modules.uml.ui.support.ADTransferable;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.ArrayList;
 import org.openide.NotifyDescriptor;
-
-import org.openide.cookies.CloseCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.nodes.Node;
@@ -49,18 +46,18 @@ import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.ui.support.ErrorDialogIconKind;
-import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogKind;
-import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
-import org.netbeans.modules.uml.ui.support.SwingPreferenceQuestionDialog;
-import org.netbeans.modules.uml.ui.support.commondialogs.IPreferenceQuestionDialog;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder;
 import javax.swing.Action;
+import org.netbeans.modules.uml.project.ui.nodes.actions.CopyDiagramAction;
+import org.openide.util.actions.SystemAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.RenameAction;
 import org.openide.util.NbBundle;
-import org.openide.util.datatransfer.NewType;
 
 /**
  *
@@ -94,6 +91,7 @@ public class UMLDiagramNode extends UMLElementNode
         setFilename(diagram.getFilename());
         setDiagramType(diagram.getDiagramKindName());
         registerListeners();
+        getCookieSet().add(new DiagramCookie());
     }
     
     public String getShortDescription()
@@ -205,6 +203,25 @@ public class UMLDiagramNode extends UMLElementNode
             }
             
         }
+        return retVal;
+    }
+    
+    
+    
+    public Action[] getActions(boolean context)
+    {
+        ArrayList<Action> actions = new ArrayList <Action>();
+        
+        actions.add(SystemAction.get(OpenAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(CopyDiagramAction.class));
+        actions.add(SystemAction.get(RenameAction.class));
+        actions.add(SystemAction.get(DeleteAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(PropertiesAction.class));;
+        
+        Action[] retVal = new Action[actions.size()];
+        actions.toArray(retVal);
         return retVal;
     }
     
@@ -628,7 +645,7 @@ public class UMLDiagramNode extends UMLElementNode
     private boolean userConfirmedSave(String name, String dialogMsg)
     {
         String prefVal = ProductHelper.getPreferenceManager()
-        .getPreferenceValue("Default|PromptToSaveDiagram"); // NOI18N
+        .getPreferenceValue("", "PromptToSaveDiagram"); // NOI18N
         
         if (("PSK_NO").equals(prefVal))
             return true;
@@ -674,36 +691,18 @@ public class UMLDiagramNode extends UMLElementNode
     }
 
     
-    
-    /**
-     * The save cookie instance that is used to save an modified diagram.
-     */
-    public class DiagramSaveCookie implements SaveCookie
-    {
-        public void save()
-        throws IOException
+    public class DiagramCookie implements Cookie
+    { 
+        public IProxyDiagram getDiagram()
         {
-            IProjectTreeItem item = getData();
-            IProductDiagramManager pDiaMgr =
-                    ProductHelper.getProductDiagramManager();
-            
-            if (item != null && pDiaMgr != null)
-            {
-                IProxyDiagram proxyDia = item.getDiagram();
-                if (proxyDia != null)
-                {
-                    IDiagram diagram = proxyDia.getDiagram();
-                    if (diagram != null)
-                    {
-                        diagram.save();
-                    }
-                }
-            }
+            return UMLDiagramNode.this.getDiagram();
         }
     }
     
+    
     public class DiagramPrintCookie implements PrintCookie
     {
+        
         public void print()
         {
             IProjectTreeItem item = getData();

@@ -3055,7 +3055,7 @@ public class ADProjectTreeEngine
     *
     * @param diagramLocation The location of the diagram.
     */
-   protected void addDiagramNode(String diagramLocation)
+   public void addDiagramNode(String diagramLocation)
    {
       if ((diagramLocation != null) && (diagramLocation.length() > 0))
       {
