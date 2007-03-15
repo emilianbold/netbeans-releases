@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -25,5 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="xtest" testtypes="unit" attributes="uncompilable"/>
         <!-- Test reporting of empty testbag (http://www.netbeans.org/issues/show_bug.cgi?id=88180). -->
         <module name="xtest" testtypes="unit" attributes="empty"/>
+        <!-- Test JVM watchdog (http://www.netbeans.org/issues/show_bug.cgi?id=97927). -->
+        <module name="xtest" testtypes="unit" attributes="watchdog"/>
     </config>
 </testconfig>

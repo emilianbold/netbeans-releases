@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.xtest.plugin.jvm;
@@ -49,7 +49,7 @@ public class JVMExecuteWatchdog extends ExecuteWatchdog {
         project.log("JVMExecWatchdog created with timeout "+timeout, Project.MSG_VERBOSE);
     }
     
-    public void timeoutOccured(Watchdog w) {
+    public synchronized void timeoutOccured(Watchdog w) {
         antProject.log(" XTest: Hard timeout "+timeout+"ms occured - trying to kill JVM - "+Calendar.getInstance().getTime());
         this.killJVM();
         antProject.log("XTest: JVM killed.");
