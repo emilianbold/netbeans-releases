@@ -20,16 +20,24 @@ package org.netbeans.modules.xml.retriever.catalog.impl;
 
 import java.io.IOException;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.w3c.dom.ls.LSResourceResolver;
 
 /**
@@ -37,8 +45,14 @@ import org.w3c.dom.ls.LSResourceResolver;
  * @author girix
  */
 public class CatalogModelFactoryImpl extends CatalogWriteModelFactory{
-    private static final Logger logger = Utilities.getLogger();
+    private static Logger logger = Utilities.getLogger();
     
+    
+    private static WeakHashMap <Project, CatalogWriteModel> projcat = new WeakHashMap<Project, CatalogWriteModel>();
+    
+    private static WeakHashMap <FileObject, CatalogWriteModel> foCat = new WeakHashMap<FileObject, CatalogWriteModel>();
+    
+    private static int count = 0;
     
     public CatalogWriteModel getCatalogWriteModelForProject(FileObject anyFileObjectExistingInAProject) throws CatalogModelException {
         logger.entering("CatalogModelFactoryImpl","getCatalogModelForProject");
@@ -46,11 +60,16 @@ public class CatalogModelFactoryImpl extends CatalogWriteModelFactory{
         assert(project != null);
         CatalogWriteModel result = null;
         try {
-            result = new CatalogWriteModelImpl(project);
+            CatalogWriteModel cwm = foCat.get(Utilities.getProjectCatalogFileObject(project));
+            if(cwm != null){
+                return cwm;
+            }
+            result = new XAMCatalogWriteModelImpl(project);
+            foCat.put(result.getCatalogFileObject(), result);
+            return result;
         } catch (IOException ex) {
             throw new CatalogModelException(ex);
         }
-        return result;
     }
     
     
@@ -93,7 +112,7 @@ public class CatalogModelFactoryImpl extends CatalogWriteModelFactory{
     
     public CatalogWriteModel getCatalogWriteModelForCatalogFile(FileObject fileObjectOfCatalogFile) throws CatalogModelException {
         try{
-            return new CatalogWriteModelImpl(fileObjectOfCatalogFile);
+            return new XAMCatalogWriteModelImpl(fileObjectOfCatalogFile);
         } catch (IOException ex) {
             throw new CatalogModelException(ex);
         }

@@ -61,6 +61,7 @@ import org.netbeans.modules.xml.retriever.Retriever;
 import org.netbeans.modules.xml.retriever.RetrieverImpl;
 import org.netbeans.modules.xml.retriever.XMLCatalogProvider;
 import org.netbeans.modules.xml.retriever.catalog.impl.*;
+import org.netbeans.modules.xml.retriever.catalog.impl.XAMCatalogWriteModelImpl;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -514,8 +515,8 @@ public class Utilities {
     }
     
     private static Document _getDocument(DataObject modelSourceDataObject)
-            throws IOException {
-    	Document result = null;
+    throws IOException {
+        Document result = null;
         if (modelSourceDataObject != null && modelSourceDataObject.isValid()) {
             EditorCookie ec = (EditorCookie)
             modelSourceDataObject.getCookie(EditorCookie.class);
@@ -541,14 +542,19 @@ public class Utilities {
      */
     protected static Document _getDocument(FileObject modelSourceFileObject)
     throws DataObjectNotFoundException, IOException {
-	DataObject dObject = DataObject.find(modelSourceFileObject);
-	return _getDocument(dObject);
+        DataObject dObject = DataObject.find(modelSourceFileObject);
+        return _getDocument(dObject);
     }
     
     private static CatalogWriteModel testCatalogModel = null;
     public static CatalogWriteModel getTestCatalogWriteModel() throws IOException{
         if(testCatalogModel == null){
-            CatalogWriteModel cm = new CatalogWriteModelImpl(new File(System.getProperty("java.io.tmpdir")));
+            CatalogWriteModel cm = null;
+            try {
+                cm = new XAMCatalogWriteModelImpl(new File(System.getProperty("java.io.tmpdir")));
+            } catch (CatalogModelException ex) {
+                return null;
+            }
             File file = FileUtil.toFile(cm.getCatalogFileObject());
             file.deleteOnExit();
             return cm;
@@ -563,7 +569,7 @@ public class Utilities {
         
         FileObject result = null;
         FileObject myProjectRootFileObject = prj.getProjectDirectory();
-       
+        
         //see if this prj has XMLCatalogProvider. If yes use it.
         XMLCatalogProvider catProv =  (XMLCatalogProvider) prj.getLookup().
                 lookup(XMLCatalogProvider.class);
@@ -588,6 +594,39 @@ public class Utilities {
         }
         return result;
     }
+    
+    /**
+     * Choose the suitable catalog file for this file object considering XMLCatalogProvider
+     * and return the correct choice
+     **/
+    /*public static FileObject getCatalogFile(FileObject fo) throws IOException{
+        if(fo == null)
+            return null;
+        Project foprj = FileOwnerQuery.getOwner(fo);
+        if(foprj == null)
+            return null;
+     
+        XMLCatalogProvider xcp = (XMLCatalogProvider) foprj.getLookup().lookup(XMLCatalogProvider.class);
+        if(xcp == null)
+            return getProjectCatalogFileObject(foprj);
+     
+        //look for per file catalog
+        URI catURI = xcp.getCatalog(fo);
+        if(catURI == null)
+            return getProjectCatalogFileObject(foprj);
+     
+        catURI = FileUtil.toFile(foprj.getProjectDirectory()).toURI().resolve(catURI);
+        File catFile = new File(catURI);
+        if(!catFile.isFile()){
+            catFile.createNewFile();
+        }
+        FileObject result = FileUtil.toFileObject(FileUtil.normalizeFile(catFile));
+     
+        if(result == null)
+            return getProjectCatalogFileObject(foprj);
+     
+        return result;
+    }*/
     
     public static FileObject getFileObject(ModelSource ms){
         return (FileObject) ms.getLookup().lookup(FileObject.class);
@@ -792,6 +831,7 @@ public class Utilities {
             if(publicCatURI != null){
                 URI pubcatURI = prjrt.toURI().resolve(publicCatURI);
                 if(pubcatURI != null){
+
                     File pubcatFile = new File(pubcatURI);
                     if(!pubcatFile.isFile())
                         try {

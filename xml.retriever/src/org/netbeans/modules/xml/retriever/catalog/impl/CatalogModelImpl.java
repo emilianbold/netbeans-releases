@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.resolver.Catalog;
@@ -49,7 +50,9 @@ import org.apache.xml.resolver.helpers.Debug;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.retriever.XMLCatalogProvider;
+import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -58,6 +61,7 @@ import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -75,7 +79,7 @@ import org.xml.sax.SAXException;
  */
 public class CatalogModelImpl implements CatalogModel {
     protected FileObject catalogFileObject = null;
-    private static final Logger logger = Utilities.getLogger();
+    private static Logger logger = Utilities.getLogger();
     /** Creates a new instance of CatalogModelImpl */
     public CatalogModelImpl(Project myProject) throws IOException{
         assert(myProject != null);
@@ -204,6 +208,25 @@ public class CatalogModelImpl implements CatalogModel {
     
     
     /**
+     * This method must be overridden by the Unit testcase to return a special
+     * Document object for a FileObject.
+     */
+    private Document getDocument(FileObject modelSourceFileObject) throws CatalogModelException{
+        Document result = null;
+        try {
+            DataObject dObject = DataObject.find(modelSourceFileObject);
+            EditorCookie ec = (EditorCookie)dObject.getCookie(EditorCookie.class);
+            Document doc = ec.openDocument();
+            assert(doc instanceof BaseDocument);
+            result = doc;
+        } catch (Exception dObjEx) {
+            throw new CatalogModelException(dObjEx);
+        }
+        return result;
+    }
+    
+    
+    /**
      * This method could be overridden by the Unit testcase to return a special
      * ModelSource object for a FileObject with custom impl of classes added to the lookup.
      * This is optional if both getDocument(FO) and createCatalogModel(FO) are overridden.
@@ -328,6 +351,9 @@ public class CatalogModelImpl implements CatalogModel {
                             } else
                                 throw new FileNotFoundException(result.getAbsolutePath()+" Not Found.");
                         }else{
+                            File res = resolveProjectProtocol(strRes);
+                            if(res != null)
+                                return res;
                             throw new CatalogModelException("Catalog contains non-file URI. Catalog Maps URI to a local file only.");
                         }
                     }
@@ -601,9 +627,9 @@ public class CatalogModelImpl implements CatalogModel {
                 return null;
             }
             if(dobj.isValid() && dobj.isModified()){
-		// DataObjectAdapters does not implement getByteStream
-		// so calling this here will effectively return null
-		return DataObjectAdapters.inputSource(dobj).getCharacterStream();
+                // DataObjectAdapters does not implement getByteStream
+                // so calling this here will effectively return null
+                return DataObjectAdapters.inputSource(dobj).getCharacterStream();
             } else{
                 //return null so that the validator will use normal file path to access doc
                 return null;
@@ -612,7 +638,7 @@ public class CatalogModelImpl implements CatalogModel {
         return null;
     }
     
- 
+    
     protected File resolveProjectProtocol(URI strRes) {
         File result = null;
         Project prj = FileOwnerQuery.getOwner(this.catalogFileObject);

@@ -50,7 +50,7 @@ public class CatalogWriteModelImpl extends CatalogModelImpl implements CatalogWr
     
     PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
-    private static final Logger logger = Utilities.getLogger();
+    private static Logger logger = Utilities.getLogger();
     
     private DocumentModel.State currentStateOfCatalog;
     
@@ -87,12 +87,13 @@ public class CatalogWriteModelImpl extends CatalogModelImpl implements CatalogWr
         if(locationURI == null)
             return null;
         bootStrapCatalog();
+        URI strRes = null;
         if(catalogFileObject != null){
             //look up in the global catalog
             File publicCatalogFile = FileUtil.toFile(catalogFileObject);
             if(publicCatalogFile.isFile()){
                 try {
-                    URI strRes = resolveUsingApacheCatalog(publicCatalogFile, locationURI.toString());
+                    strRes = resolveUsingApacheCatalog(publicCatalogFile, locationURI.toString());
                 } catch (IOException ex) {
                     return null;
                 } catch (CatalogModelException ex) {
@@ -100,7 +101,7 @@ public class CatalogWriteModelImpl extends CatalogModelImpl implements CatalogWr
                 }
             }
         }
-        return null;
+        return strRes;
     }
     
     
@@ -127,6 +128,84 @@ public class CatalogWriteModelImpl extends CatalogModelImpl implements CatalogWr
         CatalogEntry catEnt = new CatalogEntryImpl(CatalogElement.system, locationURI.toString(), finalDestStr);
         catalogWrapper.addSystem(catEnt);
     }
+    
+    
+    /*public void addURI(URI locationURI, FileObject fileObj, FileObject referringFileObject) throws IOException {
+        HashMap<String, String> extraAttrs = calculateExtraAttributes(fileObj, referringFileObject);
+        if(extraAttrs == null){
+            addURI(locationURI, fileObj);
+            return;
+        }
+        
+        if(this.catalogFileObject == null)
+            return;
+        //remove the old entry if exists
+        //TO DO: Handle multiple files refering same URI from same dir
+        //removeURI(locationURI);
+        
+        bootStrapCatalog();
+        
+        URI master = FileUtil.toFile(this.catalogFileObject).toURI();
+        URI fileObjURI = FileUtil.toFile(fileObj).toURI();
+        
+        String finalDestStr = Utilities.relativize(master, fileObjURI);
+        CatalogEntry catEnt = new CatalogEntryImpl(CatalogElement.system,
+                locationURI.toString(), finalDestStr, extraAttrs);
+        catalogWrapper.addSystem(catEnt);
+        
+    }*/
+    
+    
+    /*protected HashMap<String, String> calculateExtraAttributes(FileObject fileObj,  FileObject referringFileObject){
+        /*Get the FO of this URI
+         *Find out if FO belongs to this project
+         * Yes : return empty map
+         * No: and belongs to some project which has common path, calculate extra attributes
+         *     xprojectCatalogFileLocation and referencingFiles
+         */
+        /*if(fileObj == null)
+            return null;
+        Project foprj = FileOwnerQuery.getOwner(fileObj);
+        Project myprj = FileOwnerQuery.getOwner(this.catalogFileObject);
+        
+        if(myprj == null)
+            return null;
+        if(myprj.equals(foprj))
+            return null;
+        if(foprj == null)
+            return null;
+        
+        //get the path to the cross proj catalog
+        URI master = FileUtil.toFile(this.catalogFileObject).toURI();
+        FileObject catFO = null;
+        try {
+            catFO = Utilities.getCatalogFile(fileObj);
+        } catch (IOException ex) {
+        }
+        if(catFO == null)
+            return null;
+        
+        URI catURI = FileUtil.toFile(catFO).toURI();
+        
+        //relativize to this cat file
+        String catStr = Utilities.relativize(master, catURI).toString();
+        
+        HashMap <String, String> result = new HashMap<String, String>();
+        
+        result.put(CatalogAttribute.xprojectCatalogFileLocation.toString(), catStr);
+        
+        
+        URI refURI = FileUtil.toFile(referringFileObject).toURI();
+
+        //relativize to this cat file
+        String refStr = Utilities.relativize(master, refURI).toString();
+        
+        result.put(CatalogAttribute.referencingFiles.toString(), refStr);
+        
+        return result;
+        
+    }*/
+    
     
     public String toString(){
         return "This Public Catalog FO:"+this.catalogFileObject;
@@ -271,6 +350,5 @@ public class CatalogWriteModelImpl extends CatalogModelImpl implements CatalogWr
         logger.finer("RETURN: "+catEntList.size());
         
     }
-    
     
 }
