@@ -26,12 +26,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="release" depends="init">
         <ant dir="../external" target="unzip_swdp"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <copy description="Copying files" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxws21/">
-            <fileset dir="../external/jaxws21/" excludes="jaxb-api.jar, jaxws-api.jar, jsr173_api.jar, jsr181-api.jar, saaj-api.jar"/>
-        </copy>
-        <copy description="Copying files" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxws21/api/">
-            <fileset dir="../external/jaxws21/" includes="jaxb-api.jar, jaxws-api.jar, jsr173_api.jar, jsr181-api.jar, saaj-api.jar"/>
-        </copy>
         <copy description="Copying files" 
 	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/swdp/">
             <fileset dir="../external/swdp/"/>
@@ -59,8 +53,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>-->
     
     <target name="clean" depends="init">
-        <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxws21/"/>
-        <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxws21/"/>
+        <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/swdp/"/>
         <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/swdp/"/>
     </target>
 </project>

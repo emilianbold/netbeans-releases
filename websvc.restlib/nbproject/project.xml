@@ -38,8 +38,17 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <package>com.sun.localization</package>
+                <package>com.sun.research.ws.wadl</package>
+                <package>com.sun.research.ws.wadl.util</package>
+                <package>com.sun.research.ws.wadl2java</package>
+                <package>com.sun.research.ws.wadl2java.ast</package>
                 <package>com.sun.ws.rest.annotation</package>
+                <package>com.sun.ws.rest.annotation.apt</package>
                 <package>com.sun.ws.rest.api</package>
+                <package>com.sun.ws.rest.api.container.httpserver</package>
+                <package>com.sun.ws.rest.api.container.jaxws</package>
+                <package>com.sun.ws.rest.api.core</package>
                 <package>com.sun.ws.rest.api.representation</package>
                 <package>com.sun.ws.rest.spi.httpserver</package>
                 <package>com.sun.ws.rest.spi.invoker</package>
@@ -47,6 +56,10 @@ Microsystems, Inc. All Rights Reserved.
                 <package>com.sun.ws.rest.spi.resolver</package>
                 <package>com.sun.ws.rest.spi.service</package>
                 <package>com.sun.ws.rest.tools</package>
+                <package>com.sun.ws.rest.wadl.resource</package>
+                <package>com.sun.ws.rest.wadl.writer</package>
+                <package>com.sun.ws.rest.webapp</package>
+                <package>com.sun.ws.rest.webapp.writer</package>
             </friend-packages>
         </data>
     </configuration>

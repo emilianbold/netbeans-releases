@@ -28,6 +28,6 @@ Microsystems, Inc. All Rights Reserved.
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/swdp/restbeans-impl.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/swdp/wadl2java.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/swdp/localization.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/swdp/localizer.jar!/</resource>
     </volume>  
 </library>
