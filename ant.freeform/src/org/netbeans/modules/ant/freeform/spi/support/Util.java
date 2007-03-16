@@ -401,6 +401,7 @@ public class Util {
     private static Element fixupNoNamespaceAttrs(Element root) {
         // XXX #6529766: some versions of JAXP reject attributes set using setAttribute
         // (rather than setAttributeNS) even though the schema calls for no-NS attrs!
+        // JDK 5 is fine; JDK 6 broken; JDK 6u2 supposedly will be fixed; current JDK 7 broken
         Element copy = (Element) root.cloneNode(true);
         NodeList nl = copy.getElementsByTagName("*");
         for (int i = 0; i < nl.getLength(); i++) {
