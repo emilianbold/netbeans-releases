@@ -46,7 +46,7 @@ public class OutlinePanelProvider implements NavigatorPanel {
 
 
     /** Current context to work on. */
-    private Lookup.Result currentContextResult;
+    private Lookup.Result<DesignBean> currentContextResult;
 
     /** Listens on the retrieved <code>Lookup.Result</code>. */
     private final LookupListener outlineLookupListener = new OutlineLookupListener();
@@ -70,19 +70,19 @@ public class OutlinePanelProvider implements NavigatorPanel {
     }
 
     public void panelActivated(Lookup lookup) {
-        currentContextResult = lookup.lookup(new Lookup.Template(DesignBean.class));
+        currentContextResult = lookup.lookup(new Lookup.Template<DesignBean>(DesignBean.class));
 
         if (DEBUG) {
             debugLog("panelActivated lookup=" + lookup); // NOI18N
             if (lookup != null) {
-                java.util.Collection col = lookup.lookup(new Lookup.Template(Object.class)).allInstances();
+                java.util.Collection col = lookup.lookup(new Lookup.Template<Object>(Object.class)).allInstances();
                 for (java.util.Iterator it = col.iterator(); it.hasNext(); ) {
                     debugLog("item=" + it.next()); // NOI18N
                 }
             }
         }
 
-        Collection<DesignBean> designBeans = currentContextResult.allInstances();
+        Collection<? extends DesignBean> designBeans = currentContextResult.allInstances();
         OutlinePanel.getDefault().setActiveBeans(designBeans.toArray(new DesignBean[designBeans.size()]));
         currentContextResult.addLookupListener(outlineLookupListener);
     }
@@ -93,7 +93,7 @@ public class OutlinePanelProvider implements NavigatorPanel {
     }
 
     public Lookup getLookup() {
-        return null;
+        return OutlinePanel.getDefault().getLookup();
     }
 
 
@@ -106,7 +106,7 @@ public class OutlinePanelProvider implements NavigatorPanel {
     /** Listens on retrieved <code>Lookup.Result</code>. */
     private static class OutlineLookupListener implements LookupListener {
         public void resultChanged(LookupEvent evt) {
-            Collection<DesignBean> designBeans = ((Lookup.Result)evt.getSource()).allInstances();
+            Collection<? extends DesignBean> designBeans = ((Lookup.Result<DesignBean>)evt.getSource()).allInstances();
             if (DEBUG) {
                 debugLog("designBeans=" + designBeans); // NOI18N
             }

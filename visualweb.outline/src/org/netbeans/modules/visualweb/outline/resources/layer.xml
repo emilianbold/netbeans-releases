@@ -21,8 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
-    <!-- XXX For now disabled inside the navigator, and used as standalone window.
-    That should be temporary only (for shortfin), until the NB navigator issues will be fixed.
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="application">
@@ -32,8 +30,8 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-    -->
-    
+
+    <!--
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="navigator">
@@ -69,4 +67,5 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="ViewOutlineAction.shadow/ShowPaletteAction.shadow" boolvalue="true"/>
         </folder>
     </folder>
+    -->
 </filesystem>

@@ -474,7 +474,7 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
 //    } // End of OutlineDesignProjectListener.
     
     
-    private static class OutlineRootChildren extends Children.Keys {
+    private static class OutlineRootChildren extends Children.Keys<DesignBean> {
 
         private final DesignProjectListener designProjectListener = new OutlineDesignProjectListener(this);
         
@@ -501,19 +501,11 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
 //            super.removeNotify();
 //        }
         
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(DesignBean key) {
             if (DEBUG) {
                 debugLog("creatingNode for key=" + key); // NOI18N
             }
-            if (key instanceof DesignBean) {
-                DesignBean designBean = (DesignBean)key;
-                return new Node[] { OutlineUtilities.getNodeForDesignBean(designBean) };
-            } else {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new IllegalArgumentException("The key should be instance" // NOI18N
-                        + "of DesignBean, but key=" + key)); // NOI18N
-                return new Node[0];
-            }
+            return key == null ? new Node[0] : new Node[] {OutlineUtilities.getNodeForDesignBean(key)};
         }
 
         private void setDesignBean(DesignBean designBean) {
