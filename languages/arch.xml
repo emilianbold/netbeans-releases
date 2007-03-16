@@ -22,7 +22,7 @@
         </question>
 -->
 <answer id="arch-what">
-Languages Engine module allows you quickly create support for new language, <a href="http://saturn.czech.sun.com/wiki/view/Schliemann">see</a>.
+Languages Engine module allows you quickly create support for new language, <a href="http://wiki.netbeans.org/wiki/view/Schliemann">see</a>.
 </answer>
 
 
@@ -45,7 +45,7 @@ Languages Engine module allows you quickly create support for new language, <a h
 <answer id="arch-overall">
 The Languages Engine module defines
 <api name="NBSFileAPI" group="java" type="import" category="devel"/>
-defining language structure and describing its features, <a href="http://saturn.czech.sun.com/wiki/view/SchliemannNBSLanguageDescription">see</a>.
+defining language structure and describing its features, <a href="http://wiki.netbeans.org/wiki/view/SchliemannNBSLanguageDescription">see</a>.
 
 </answer>
 
