@@ -115,6 +115,7 @@ public class UsernameAuthentication extends javax.swing.JPanel {
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             setChBox(secConvChBox, false);
+            setChBox(derivedKeysChBox, false);
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(comp));
             setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(comp));
             setChBox(encryptOrderChBox, SecurityPolicyModelHelper.isEncryptBeforeSigning(comp));
@@ -148,6 +149,7 @@ public class UsernameAuthentication extends javax.swing.JPanel {
 
         if (source.equals(secConvChBox)) {
             ProfilesModelHelper.enableSecureConversation(comp, secConvChBox.isSelected(), ComboConstants.PROF_MSGAUTHSSL);
+            sync();
         }
         
         if (secConv) {
@@ -167,7 +169,6 @@ public class UsernameAuthentication extends javax.swing.JPanel {
                         (String)supportTokenCombo.getSelectedItem(), 
                         SecurityTokensModelHelper.SIGNED_SUPPORTING);
             }
-            
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             if (source.equals(reqSigConfChBox)) {

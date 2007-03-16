@@ -119,6 +119,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
             setChBox(encryptOrderChBox, SecurityPolicyModelHelper.isEncryptBeforeSigning(bootPolicy));
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
+            setChBox(derivedKeysChBox, false);
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(comp));
             setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(comp));
             setChBox(encryptOrderChBox, SecurityPolicyModelHelper.isEncryptBeforeSigning(comp));
@@ -166,6 +167,7 @@ public class STSIssuedEndorsing extends javax.swing.JPanel {
 
         if (source.equals(secConvChBox)) {
             ProfilesModelHelper.enableSecureConversation(comp, secConvChBox.isSelected(), ComboConstants.PROF_MSGAUTHSSL);
+            sync();
         }
 
         if (secConv) {

@@ -116,6 +116,7 @@ public class SenderVouches extends javax.swing.JPanel {
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             setChBox(secConvChBox, false);
+            setChBox(derivedKeysChBox, false);
             setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(comp));
             setChBox(encryptOrderChBox, SecurityPolicyModelHelper.isEncryptBeforeSigning(comp));
         }
@@ -165,6 +166,7 @@ public class SenderVouches extends javax.swing.JPanel {
 
         if (source.equals(secConvChBox)) {
             ProfilesModelHelper.enableSecureConversation(comp, secConvChBox.isSelected(), ComboConstants.PROF_MSGAUTHSSL);
+            sync();
         }
         
         if (secConv) {
