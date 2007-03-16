@@ -161,8 +161,10 @@ public class JavaScript {
         };
     }
 
-    public static Runnable hyperlink (SyntaxContext context) {
-        ASTPath path = context.getASTPath ();
+    public static Runnable hyperlink (Context context) {
+        if (!(context instanceof SyntaxContext)) return null;
+        SyntaxContext scontext = (SyntaxContext) context;
+        ASTPath path = scontext.getASTPath ();
         ASTToken t = (ASTToken) path.getLeaf ();
         ASTNode n = path.size () > 1 ? 
             (ASTNode) path.get (path.size () - 2) :
@@ -179,6 +181,7 @@ public class JavaScript {
             lookup (DataObject.class);
         EditorCookie ec = (EditorCookie) dataObject.getCookie (EditCookie.class);
         StyledDocument document = ec.getDocument ();
+        if (document == null) return null;
         int offset = NbDocument.findLineOffset (
             document, 
             l.getLine ().getLineNumber ()
