@@ -59,6 +59,7 @@ public class SLanguageProvider extends LanguageProvider {
         InputAttributes inputAttributes
     ) {
         String mimeType = languagePath.innerLanguage ().mimeType ();
+        if (!LanguagesManagerImpl.get().isSupported (mimeType)) return null;
         Language<STokenId> language = getTokenImport (mimeType, token);
         if (language == null) 
             language = getPreprocessorImport (languagePath, token);
