@@ -66,7 +66,6 @@ public class FauxRefactoringElement extends SimpleRefactoringElementImplementati
     public void performChange() {
     }
 
-    @Override
     public Lookup getLookup() {
         return Lookups.singleton(this);
     }

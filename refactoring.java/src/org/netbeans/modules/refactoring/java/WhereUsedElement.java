@@ -54,7 +54,6 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         return displayText;
     }
 
-    @Override
     public Lookup getLookup() {
         Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
         if (composite==null) 

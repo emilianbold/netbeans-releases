@@ -47,7 +47,6 @@ public class SchemaRefactoringElement  extends SimpleRefactoringElementImplement
            
     }
 
-    @Override
     public Lookup getLookup() {
        return Lookups.singleton(comp);
        
