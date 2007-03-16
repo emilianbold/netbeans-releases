@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core qa-performance test config">
     
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="all or menus or dialogs or actions or setup or memory_usage or memory_dialog or memory_action or memory_menu or editor_related or java_related or apisupport_related or temp or memory_temp" prio="1"
+    <testbag testattribs="all or menus or dialogs or actions or setup or editor_related or java_related or apisupport_related or temp" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
