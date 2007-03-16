@@ -20,6 +20,42 @@ package org.netbeans.modules.bpel.refactoring;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.Import;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.Transaction;
+import org.netbeans.modules.xml.refactoring.ErrorItem;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
+import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Nameable;
+import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xam.Referenceable;
+import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.xml.namespace.QName;
 
@@ -66,11 +102,202 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import static org.netbeans.modules.print.api.PrintUI.*;
 
+
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.06.27
+ * @version 2007.03.16
  */
-final class Renamer {
+class Renamer extends Plugin implements XMLRefactoringPlugin{
+    
+    public Renamer(RenameRefactoring refactoring) {
+        this.request = refactoring;
+    }
+
+   
+    public void cancelRequest() {
+        
+    }
+    
+    public Problem fastCheckParameters() {
+        Referenceable obj = request.getRefactoringSource().lookup(Referenceable.class);
+        ErrorItem error = null;
+        if(obj instanceof Model) {
+           error = RefactoringUtil.precheck((Model)obj, request.getNewName());
+        } else if(obj instanceof Nameable) {
+           error = RefactoringUtil.precheck((Nameable)obj, request.getNewName());
+        }
+                
+        if (error != null) {
+            Problem p = new Problem(true, error.getMessage());
+            return p;
+        }
+        
+        return null;
+    }
+    
+    
+    /** Checks pre-conditions of the refactoring and returns problems.
+     * @return Problems found or null (if no problems were identified)
+     */
+    public Problem preCheck() {
+        return null;
+    }
+    
+    /** Checks parameters of the refactoring.
+     * @return Problems found or null (if no problems were identified)
+     */
+    public Problem checkParameters() {
+       Referenceable obj = request.getRefactoringSource().lookup(Referenceable.class);
+       if( obj == null)
+           return null;
+       if( !((obj instanceof Model) ||  (obj instanceof Nameable)) )
+            return null;
+         
+        Model model = SharedUtils.getModel(obj);
+        ErrorItem error = RefactoringUtil.precheckTarget(model, true);
+        if(error != null)
+            return new Problem(isFatal(error), error.getMessage());
+       
+        if(obj instanceof Model)
+            error  = RefactoringUtil.precheck((Model)model, request.getNewName());
+        else if(obj instanceof Nameable)
+            error = RefactoringUtil.precheck((Nameable)obj, request.getNewName());
+        if(error != null)
+            return new Problem(isFatal(error), error.getMessage());
+        
+              
+        return null;
+       
+        
+    }
+    
+    /** Collects refactoring elements for a given refactoring.
+     * @param refactoringElements Collection of refactoring elements - the implementation of this method
+     * should add refactoring elements to this collections. It should make no assumptions about the collection
+     * content.
+     * @return Problems found or null (if no problems were identified)
+     */
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
+        Referenceable obj = request.getRefactoringSource().lookup(Referenceable.class);
+        if(obj == null)
+            return null;
+        if( !((obj instanceof Model) ||  (obj instanceof Nameable)) )
+            return null;
+             
+        fireProgressListenerStart(ProgressEvent.START, -1);
+        Set<Component> searchRoots = getSearchRoots(obj);
+       
+        List<Element> elements = new ArrayList<Element>();
+        for (Component root : searchRoots) {
+            List<Element> founds = find(obj, root);
+            if (founds != null) {
+                   elements.addAll(founds);
+            }
+        }
+       
+         
+        if(elements!=null && elements.size() > 0) {
+            List<Model> models = getModels(elements);
+            List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
+            if(errors !=null && errors.size() > 0 ){
+                return processErrors(errors);
+              } 
+        } 
+        
+        //get the gloabl object responsible for refactoring
+        XMLRefactoringTransaction transaction = request.getContext().lookup(XMLRefactoringTransaction.class);
+        transaction.register((XMLRefactoringPlugin)this, elements);
+        refactoringElements.registerTransaction(transaction);
+        if (elements != null && elements.size() >0 )   {
+            for (RefactoringElementImplementation ug : elements) {
+                //System.out.println("BPELRenameRefactoring::adding element");
+                refactoringElements.add(request, ug);
+                fireProgressListenerStep();
+             }
+        }      
+              
+        fireProgressListenerStop();
+        return null;
+    }
+      
+    public Problem processErrors(List<ErrorItem> errorItems){
+        
+        if (errorItems == null || errorItems.size()== 0){
+            return null;
+        }
+        Problem parent = null;
+        Problem child = null;
+        Problem head = null;
+        Iterator<ErrorItem> iterator = errorItems.iterator();
+                
+        while(iterator.hasNext()) {
+            ErrorItem error = iterator.next();
+            if(parent == null ){
+                parent = new Problem(isFatal(error), error.getMessage());
+                child = parent;
+                head = parent;
+                continue;
+            }
+            child = new Problem(isFatal(error), error.getMessage());
+            parent.setNext(child);
+            parent = child;
+            
+        }
+        
+       
+        return head;
+    }
+    
+    public boolean isFatal(ErrorItem error){
+        if(error.getLevel() == ErrorItem.Level.FATAL)
+            return true;
+        else
+            return false;
+   }  
+    
+     
+    public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
+        Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModelMap(elements);
+        Set<Model> models = modelsInRefactoring.keySet();
+        Referenceable obj = request.getRefactoringSource().lookup(Referenceable.class);
+        String oldName = request.getContext().lookup(String.class);
+        
+        for(Model model: models){
+            if(model instanceof BpelModel){
+                 if(obj instanceof Nameable){
+                     /*new Renamer().*/rename(getComponents(modelsInRefactoring.get(model)), model, (Named)obj, oldName);
+                 }else if(obj instanceof Model){
+                     /*new Renamer().*/rename(getComponents(modelsInRefactoring.get(model)), request);
+                 }
+            }
+        }       
+}
+    
+    private List<Component> getComponents(Set<RefactoringElementImplementation> bpelElements) {
+        List<Component> comp = new ArrayList<Component>(bpelElements.size());
+        for(RefactoringElementImplementation elem: bpelElements){
+            comp.add((Component)elem.getComposite());
+        }
+        return comp;
+    }
+       
+    /**
+     * @param component the component to check for model reference.
+     * @return the reference string if this component is a reference to an 
+     * external model, for example, the schema <import> component, 
+     * otherwise returns null.
+     */
+     public String getModelReference(Component component) {
+         if (component instanceof Import) {
+              return ((Import) component).getLocation();
+         }
+         return null;
+     }
+
+
+
+
+/// --------------------------------------
 
   void rename(
     List<Component> components,
@@ -100,7 +327,7 @@ final class Renamer {
     }
   }
 
-  void rename(
+  private void rename(
     List<Component> components,
     RenameRefactoring request) throws IOException
   {
@@ -464,4 +691,5 @@ final class Renamer {
 
   private XPath myXPath;
   private String myOldName;
+  private RenameRefactoring request;
 }

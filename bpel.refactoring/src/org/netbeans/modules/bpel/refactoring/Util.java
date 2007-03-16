@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.refactoring;
 import java.util.List;
 import javax.xml.namespace.QName;
 
+import org.openide.nodes.Node;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -32,34 +33,34 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+
+import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
 import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.06.27
  */
-final class Util {
+public final class Util {
 
   private Util() {}
-
   
   public static void visit( 
-  NamedComponentReference<GlobalType> type,
+    NamedComponentReference<GlobalType> type,
     NamedComponentReference<GlobalElement> element,
     Referenceable target,
     Component component,
-    List<BpelRefactoringElement> usage)
+    List<Element> usage)
   {
     visit(type, target, component, usage);
     visit(element, target, component, usage);
   }        
           
-        
   public static void visit(
     Reference reference,
     Referenceable target,
     Component component,
-    List<BpelRefactoringElement> usage)
+    List<Element> usage)
   {
     if (reference == null || reference.get() == null) {
       return;
@@ -70,7 +71,7 @@ final class Util {
     if (target.equals(reference.get())) {
 //out();
 //out("AdD: " + getName(component));
-      usage.add(new BpelRefactoringElement(component));
+      usage.add(new Element(component));
     }
   }
 
@@ -78,14 +79,14 @@ final class Util {
     QName qName,
     Referenceable target,
     Component component,
-    List<BpelRefactoringElement> usage)
+    List<Element> usage)
   {
 //out();
 //out("VISIT: " + qName);
     if (target instanceof Named && contains(qName, (Named) target)) {
 //out();
 //out("ADd: " + getName(component));
-      usage.add(new BpelRefactoringElement(component));
+      usage.add(new Element(component));
     }
   }
 
@@ -127,5 +128,9 @@ final class Util {
       }
     }
     return component.getClass().getName();
+  }
+
+  public static Node getDisplayNode(Component component) {
+    return FactoryAccess.getRefactoringNodeFactory().createNode(component);
   }
 }

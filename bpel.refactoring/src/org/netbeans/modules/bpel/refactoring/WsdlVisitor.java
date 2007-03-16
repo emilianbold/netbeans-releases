@@ -40,7 +40,7 @@ import static org.netbeans.modules.print.api.PrintUI.*;
 final class WsdlVisitor extends ChildVisitor {
 
   
-  WsdlVisitor(List<BpelRefactoringElement> usage, Referenceable target) {
+  WsdlVisitor(List<Element> usage, Referenceable target) {
     myUsage = usage;
     myTarget = target;
   }
@@ -130,17 +130,16 @@ final class WsdlVisitor extends ChildVisitor {
       return;
     }
     if (reference.get().equals(part.getParent())) {
-      myUsage.add(new BpelRefactoringElement(alias));
+      myUsage.add(new Element(alias));
      }
   }
 
   private void checkUsages(Component component) {
     if (myTarget.equals(component)) {
-      myUsage.add(new BpelRefactoringElement(component));
+      myUsage.add(new Element(component));
     }
   }
 
-//  private UsageGroup myUsage;
-  private List<BpelRefactoringElement> myUsage;
+  private List<Element> myUsage;
   private Referenceable myTarget;
 }

@@ -72,19 +72,16 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  */
 final class XPath extends AbstractXPathVisitor {
 
-  /*XPath(UsageGroup usage, Named target, String oldName) {
-    myOldName = oldName;
-    myTarget = target;
-    //myUsage = usage;
-  }*/
-  
-  XPath(List<BpelRefactoringElement> usage, Named target, String oldName) {
+  XPath(
+    List<org.netbeans.modules.bpel.refactoring.Element> usage,
+    Named target,
+    String oldName)
+  {
     myOldName = oldName;
     myTarget = target;
     myUsage = usage;
   }
   
-
   void visit(String content, Component component) {
 //out();
 //out("XPATH visit: " + content);
@@ -581,7 +578,7 @@ final class XPath extends AbstractXPathVisitor {
 
   private void addItem() {
     if (myUsage != null) {
-      myUsage.add(new BpelRefactoringElement(myComponent));
+      myUsage.add(new org.netbeans.modules.bpel.refactoring.Element(myComponent));
 //out("!! ===== ADD: " + Util.getName(myComponent));
     }
   }
@@ -589,7 +586,6 @@ final class XPath extends AbstractXPathVisitor {
   private Named myTarget;
   private String myOldName;
   private String myPartName;
-  private List<BpelRefactoringElement> myUsage;
   private boolean myDoRename;
   private Variable myVariable;
   private Component myComponent;
@@ -597,5 +593,6 @@ final class XPath extends AbstractXPathVisitor {
   private List<ComplexType> myVisitedComplexType;
   private XPathVariableReference myVariableReference;
   private NamedComponentReference<GlobalType> myTypeReference;
+  private List<org.netbeans.modules.bpel.refactoring.Element> myUsage;
   private static final String INDENT = "  "; // NOI18N
 }

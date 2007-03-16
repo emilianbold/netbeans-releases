@@ -67,7 +67,7 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  */
 final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
 
-  BpelVisitor(List<BpelRefactoringElement> usage, Referenceable target) {
+  BpelVisitor(List<Element> usage, Referenceable target) {
     if (target instanceof Named) {
       Named named = (Named) target;
       myXPath = new XPath(usage, named, named.getName());
@@ -84,7 +84,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
     if (ImportHelper.getWsdlModel(_import) == myTarget ||
       ImportHelper.getSchemaModel(_import) == myTarget)
     {
-      myUsage.add(new BpelRefactoringElement(_import));
+      myUsage.add(new Element(_import));
     }
   }
 
@@ -550,7 +550,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       myUsage
     );
     if (invoke.getCompensationHandler() == myTarget) {
-      myUsage.add(new BpelRefactoringElement(invoke));
+      myUsage.add(new Element(invoke));
     }
   }
 
@@ -558,7 +558,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   public void visit(Scope scope)
   {
     if (scope.getCompensationHandler() == myTarget) {
-      myUsage.add(new BpelRefactoringElement(scope));
+      myUsage.add(new Element(scope));
     }
   }
 
@@ -613,7 +613,6 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   private XPath myXPath;
- // private UsageGroup myUsage;
-  private List<BpelRefactoringElement> myUsage;
   private Referenceable myTarget;
+  private List<Element> myUsage;
 }
