@@ -1038,7 +1038,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <property name="xtest.debug.address" value="${jpda.address}" />
         <property name="xtest.debug.pause" value="false" />
     </ant>
-    <nbbrowse file="test/results/index.html"/>
   </target>
 
   <target name="cleanall" depends="init">
