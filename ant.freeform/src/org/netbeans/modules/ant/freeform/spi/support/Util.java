@@ -23,8 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.xml.XMLConstants;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
@@ -46,6 +48,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -333,7 +336,6 @@ public class Util {
         }
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             public Void run() {
-                /* XXX schema validation is apparently broken in JDK 6! (#6529766)
                 Element dataAs1 = translateXML(data, FreeformProjectType.NS_GENERAL_1);
                 try {
                     validate(dataAs1, SCHEMA_1);
@@ -346,14 +348,6 @@ public class Util {
                         assert false : x2.getMessage() + "; rejected content: " + format(data);
                         putPrimaryConfigurationDataAs1(helper, dataAs1);
                     }
-                }
-                 */
-                // For now, just hardcode the differences between /1 and /2.
-                if (data.getElementsByTagName("includes").getLength() > 0 || data.getElementsByTagName("excludes").getLength() > 0) {
-                    putPrimaryConfigurationDataAs2(helper, data);
-                } else {
-                    Element dataAs1 = translateXML(data, FreeformProjectType.NS_GENERAL_1);
-                    putPrimaryConfigurationDataAs1(helper, dataAs1);
                 }
                 return null;
             }
@@ -396,13 +390,35 @@ public class Util {
             }
         });
         try {
-            v.validate(new DOMSource(data));
+            v.validate(new DOMSource(fixupNoNamespaceAttrs(data)));
         } catch (IOException x) {
             assert false : x;
         }
         if (error[0] != null) {
             throw error[0];
         }
+    }
+    private static Element fixupNoNamespaceAttrs(Element root) {
+        // XXX #6529766: some versions of JAXP reject attributes set using setAttribute
+        // (rather than setAttributeNS) even though the schema calls for no-NS attrs!
+        Element copy = (Element) root.cloneNode(true);
+        NodeList nl = copy.getElementsByTagName("*");
+        for (int i = 0; i < nl.getLength(); i++) {
+            Element e = (Element) nl.item(i);
+            Map<String,String> replace = new HashMap<String,String>();
+            NamedNodeMap attrs = e.getAttributes();
+            for (int j = 0; j < attrs.getLength(); j++) {
+                Attr attr = (Attr) attrs.item(j);
+                if (attr.getNamespaceURI() == null) {
+                    replace.put(attr.getName(), attr.getValue());
+                }
+            }
+            for (Map.Entry<String,String> entry : replace.entrySet()) {
+                e.removeAttribute(entry.getKey());
+                e.setAttributeNS(null, entry.getKey(), entry.getValue());
+            }
+        }
+        return copy;
     }
     private static String format(Element data) {
         LSSerializer ser = ((DOMImplementationLS) data.getOwnerDocument().getImplementation().getFeature("LS", "3.0")).createLSSerializer();
