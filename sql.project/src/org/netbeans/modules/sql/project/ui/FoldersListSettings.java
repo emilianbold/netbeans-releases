@@ -19,10 +19,9 @@
 
 package org.netbeans.modules.sql.project.ui;
 
-import org.openide.options.SystemOption;
 
 import org.openide.util.NbBundle;
-
+import org.openide.util.NbPreferences;
 
 /**
  * DOCUMENT ME!
@@ -30,14 +29,18 @@ import org.openide.util.NbBundle;
  * @author $author$
  * @version $Revision$
  */
-public class FoldersListSettings extends SystemOption {
+public class FoldersListSettings {
     /**
      * DOCUMENT ME!
      */
-    static final long serialVersionUID = -4905094097265543014L;
     private static final String LAST_EXTERNAL_SOURCE_ROOT = "srcRoot"; // NOI18N
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; // NOI18N
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; // NOI18N
+
+    private static FoldersListSettings INSTANCE = new FoldersListSettings();
+
+    private FoldersListSettings() {
+    }
 
     /**
      * DOCUMENT ME!
@@ -54,7 +57,8 @@ public class FoldersListSettings extends SystemOption {
      * @return DOCUMENT ME!
      */
     public String getLastExternalSourceRoot() {
-        return (String) getProperty(LAST_EXTERNAL_SOURCE_ROOT);
+        return NbPreferences.forModule(FoldersListSettings.class)
+            .get(LAST_EXTERNAL_SOURCE_ROOT, null);
     }
 
     /**
@@ -63,18 +67,22 @@ public class FoldersListSettings extends SystemOption {
      * @param path DOCUMENT ME!
      */
     public void setLastExternalSourceRoot(String path) {
-        putProperty(LAST_EXTERNAL_SOURCE_ROOT, path, true);
+        if (path != null) {
+            NbPreferences.forModule(FoldersListSettings.class)
+                .put(LAST_EXTERNAL_SOURCE_ROOT, path);
+        } else {
+            NbPreferences.forModule(FoldersListSettings.class)
+                .remove(LAST_EXTERNAL_SOURCE_ROOT);
     }
-
+    }
     /**
      * DOCUMENT ME!
      *
      * @return DOCUMENT ME!
      */
     public int getNewProjectCount() {
-        Integer value = (Integer) getProperty(NEW_PROJECT_COUNT);
-
-        return (value == null) ? 0 : value.intValue();
+        return NbPreferences.forModule(FoldersListSettings.class)
+            .getInt(NEW_PROJECT_COUNT, 0);
     }
 
     /**
@@ -83,7 +91,8 @@ public class FoldersListSettings extends SystemOption {
      * @param count DOCUMENT ME!
      */
     public void setNewProjectCount(int count) {
-        this.putProperty(NEW_PROJECT_COUNT, new Integer(count), true);
+        NbPreferences.forModule(FoldersListSettings.class)
+            .putInt(NEW_PROJECT_COUNT, count);
     }
 
     /**
@@ -92,9 +101,8 @@ public class FoldersListSettings extends SystemOption {
      * @return DOCUMENT ME!
      */
     public boolean isShowAgainBrokenRefAlert() {
-        Boolean b = (Boolean) getProperty(SHOW_AGAIN_BROKEN_REF_ALERT);
-
-        return (b == null) ? true : b.booleanValue();
+        return NbPreferences.forModule(FoldersListSettings.class)
+            .getBoolean(SHOW_AGAIN_BROKEN_REF_ALERT, true);
     }
 
     /**
@@ -103,7 +111,8 @@ public class FoldersListSettings extends SystemOption {
      * @param again DOCUMENT ME!
      */
     public void setShowAgainBrokenRefAlert(boolean again) {
-        this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
+        NbPreferences.forModule(FoldersListSettings.class)
+            .putBoolean(SHOW_AGAIN_BROKEN_REF_ALERT, again);
     }
 
     /**
@@ -112,6 +121,6 @@ public class FoldersListSettings extends SystemOption {
      * @return DOCUMENT ME!
      */
     public static FoldersListSettings getDefault() {
-        return (FoldersListSettings) SystemOption.findObject(FoldersListSettings.class, true);
+        return INSTANCE;
     }
 }

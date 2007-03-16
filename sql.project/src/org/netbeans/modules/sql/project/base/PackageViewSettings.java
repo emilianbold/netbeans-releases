@@ -20,7 +20,8 @@
 
 package org.netbeans.modules.sql.project.base;
 
-import org.openide.options.SystemOption;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Settings for the PackageView presentation.
@@ -29,9 +30,7 @@ import org.openide.options.SystemOption;
  * Currently there are two modes, the package structure and tree structure.
  * @author Tomas Zezula
  */
-public final class PackageViewSettings extends SystemOption {
-
-    private static final long serialVersionUID = -4228076536688710264L;
+public final class PackageViewSettings {
 
     /**
      * The package view should be diplayed as a list of packages
@@ -45,6 +44,11 @@ public final class PackageViewSettings extends SystemOption {
 
     public static final String PROP_PACKAGE_VIEW_TYPE = "packageViewType"; //NOI18N
 
+    private static PackageViewSettings INSTANCE = new PackageViewSettings();
+
+    private PackageViewSettings() {
+    }
+
     public String displayName() {
         return PackageViewSettings.class.getName(); // irrelevant
     }
@@ -56,8 +60,8 @@ public final class PackageViewSettings extends SystemOption {
      *
      */
     public int getPackageViewType () {
-        Integer value = (Integer) getProperty (PROP_PACKAGE_VIEW_TYPE);
-        return value == null ? TYPE_PACKAGE_VIEW : value.intValue();
+        return NbPreferences.forModule(PackageViewSettings.class)
+            .getInt(PROP_PACKAGE_VIEW_TYPE, 0);
     }
 
     /**
@@ -67,7 +71,8 @@ public final class PackageViewSettings extends SystemOption {
      *
      */
     public void setPackageViewType (int type) {
-        putProperty(PROP_PACKAGE_VIEW_TYPE, new Integer (type),true);
+		NbPreferences.forModule(PackageViewSettings.class)
+            .putInt(PROP_PACKAGE_VIEW_TYPE, type);
     }
 
     /**
@@ -75,7 +80,7 @@ public final class PackageViewSettings extends SystemOption {
      * @return PackageViewSettings
      */
     public static PackageViewSettings getDefault () {
-        return (PackageViewSettings)SystemOption.findObject(PackageViewSettings.class, true);
+        return INSTANCE;
     }
 
 }

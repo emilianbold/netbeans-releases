@@ -211,7 +211,7 @@ public class PackageView {
             super (getOriginalNode (group, PackageViewSettings.getDefault()));
             this.sourceGroup = group;
             this.settings = PackageViewSettings.getDefault();
-            this.settings.addPropertyChangeListener(WeakListeners.propertyChange(this, this.settings));
+            //this.settings.addPropertyChangeListener(WeakListeners.propertyChange(this, this.settings));
         }
 
         public void propertyChange (PropertyChangeEvent event) {

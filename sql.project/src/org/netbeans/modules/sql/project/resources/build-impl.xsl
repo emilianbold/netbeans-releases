@@ -148,7 +148,6 @@ is divided into following sections:
                     <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-nodes.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-options.jar"/>
                     <pathelement location="${{netbeans.home}}/../enterprise3/modules/org-netbeans-modules-derby.jar"/>                    
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-db.jar"/>
                     <pathelement location="${{module.install.dir}}/org-netbeans-modules-sql-project.jar"/>
