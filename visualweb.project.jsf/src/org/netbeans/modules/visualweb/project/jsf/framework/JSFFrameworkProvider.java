@@ -60,6 +60,9 @@ import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
+import org.openide.loaders.DataObject;
+import org.openide.cookies.OpenCookie;
+
 /**
  *
  * @author Po-Ting Wu
@@ -76,20 +79,24 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
     public Set extend (final WebModule webModule) {
         Set result = new HashSet();
-        FileObject fileObject = webModule.getDocumentBase();;
+        final FileObject fileObject = webModule.getDocumentBase();;
         final Project project = FileOwnerQuery.getOwner(fileObject);
         final ProjectTemplate template = new JsfProjectTemplateJakarta();
 
         // Set Bean Package and Start Page
-        template.setBeanPackage(panel.getBeanPackage());
-        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, template.getBeanPackage());
-
-        String preSetName = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_START_PAGE);
-        if (preSetName == null || preSetName.length() == 0) {
-            preSetName = "Page1.jsp"; // NOI18N
+        String presetPackage = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
+        if (presetPackage == null || presetPackage.length() == 0) {
+            presetPackage = panel.getBeanPackage();
+            JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, presetPackage);
         }
-        final String pageName = preSetName;
-        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, pageName); // NOI18N
+        template.setBeanPackage(presetPackage);
+
+        String presetName = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_START_PAGE);
+        if (presetName == null || presetName.length() == 0) {
+            presetName = "Page1.jsp"; // NOI18N
+        }
+        final String pageName = presetName;
+        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, pageName);
         JsfProjectUtils.setProjectVersion(project, "4.0"); // NOI18N
 
         // Create Visual Web files
@@ -143,6 +150,24 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             FileObject pagejsp = fileObject.getFileObject(pageName);
             if (pagejsp != null) {
                 result.add(pagejsp);
+            } else {
+                // Page is not created yet, open later.
+                ProjectManager.mutex().postReadRequest(new Runnable() {
+                    public void run() {
+                        try {
+                            FileObject pagejsp = fileObject.getFileObject(pageName);
+                            if (pagejsp != null) {
+                                DataObject obj = DataObject.find(pagejsp);
+                                OpenCookie open = (OpenCookie) obj.getCookie(OpenCookie.class);
+                                if (open != null) {
+                                    open.open();
+                                }
+                            }
+                        } catch (IOException ioe){
+                            ErrorManager.getDefault().notify(ioe);
+                        }
+                    }
+                }); 
             }
         } catch (FileNotFoundException exc) {
             ErrorManager.getDefault().notify(exc);

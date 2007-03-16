@@ -21,8 +21,11 @@ package org.netbeans.modules.visualweb.project.jsf.ui;
 
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.visualweb.project.jsf.framework.JSFFrameworkProvider;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 import java.awt.Component;
@@ -30,6 +33,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
@@ -180,6 +184,27 @@ public class PageIterator implements TemplateWizard.Iterator {
 
         DataObject dTemplate = DataObject.find(template);                
         String targetName = Templates.getTargetName(wizard);
+
+        // Visual Web framework is not initialized
+        String version = JsfProjectUtils.getProjectVersion(project);
+        if (version == null || version.length() == 0) {
+            List frameworks = WebFrameworkSupport.getFrameworkProviders();
+	    for (int i = 0; i < frameworks.size(); i++) {
+	        WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
+                String name = NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name");
+                if (framework.getName().equals(name)) {
+                    FileObject projDir = project.getProjectDirectory();
+                    WebModule webModule = WebModule.getWebModule(projDir);
+                    String beanPackage = JsfProjectUtils.deriveSafeName(projDir.getName());
+                    JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, beanPackage);
+                    if ("jsp".equals(template.getExt())) {
+                        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, targetName+".jsp");
+                    }
+
+		    return framework.extend(webModule);
+                }
+	    }
+        }
 
         DataObject result;
         try {
