@@ -51,7 +51,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
     private java.util.List<HotSpot> hotspots = new ArrayList<HotSpot>(0);
     
     private DiffSplitDivider mydivider;
-
+    
     DiffSplitPaneDivider(BasicSplitPaneUI splitPaneUI, EditableDiffView master) {
         super(splitPaneUI);
         this.master = master;
@@ -135,9 +135,13 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
     
     private class DiffSplitDivider extends JComponent {
     
+        private Map renderingHints;
+
         public DiffSplitDivider() {
             setBackground(UIManager.getColor("SplitPane.background")); // NOI18N
             setOpaque(true);
+            renderingHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
+                    "awt.font.desktophints")); // NOI18N
         }
 
         public String getToolTipText(MouseEvent event) {
@@ -162,6 +166,9 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             g.setColor(getBackground());
             g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
+            if (renderingHints != null) {
+                g.addRenderingHints(renderingHints);
+            }
             String diffInfo = (master.getCurrentDifference() + 1) + "/" + master.getDifferenceCount(); // NOI18N
             int width = g.getFontMetrics().stringWidth(diffInfo);
             g.setColor(Color.BLACK);
@@ -177,6 +184,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             g.drawLine(0, clip.y, 0, clip.height);
             g.drawLine(rightY, clip.y, rightY, clip.height);
             
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             DiffViewManager.DecoratedDifference [] decoratedDiffs = master.getManager().getDecorations();
             int [] xCoords = new int[4];
             int [] yCoords = new int[4];
@@ -225,6 +233,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
                 newActionIcons.add(new HotSpot(hotSpot, null));
                 hotspots = newActionIcons;
             }
+            g.dispose();
         }
     }    
 }
