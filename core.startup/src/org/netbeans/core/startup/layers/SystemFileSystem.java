@@ -31,9 +31,9 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -126,7 +126,7 @@ implements FileSystem.Status, org.openide.util.LookupListener {
             else
                 s.add (arr[i]);
 
-        layers = (FileSystem[])arr.clone();
+        layers = arr.clone();
         // create own internal copy of passed filesystems
         setDelegates(computeLayers());
         firePropertyChange ("layers", null, null); // NOI18N
@@ -143,17 +143,15 @@ implements FileSystem.Status, org.openide.util.LookupListener {
     }
     
     private synchronized static FileSystem[] computeLayers () {
-        FileSystem[] fromLookup = result.allInstances ().toArray (new FileSystem[0]);
-        
-        if (fromLookup.length > 0) {
-            ArrayList<FileSystem> arr = new ArrayList<FileSystem>(layers.length + fromLookup.length);
+        Collection<? extends FileSystem> fromLookup = result.allInstances();
+        if (fromLookup.isEmpty()) {
+            return layers;
+        } else {
+            ArrayList<FileSystem> arr = new ArrayList<FileSystem>(layers.length + fromLookup.size());
             arr.addAll (Arrays.asList (layers));
-            List<FileSystem> lkpBased = Arrays.asList(fromLookup);
-            arr.addAll(lkpBased);
-            return arr.toArray (new FileSystem[0]);
+            arr.addAll(fromLookup);
+            return arr.toArray(new FileSystem[arr.size()]);
         }
-        
-        return layers;
     }
 
     protected FileSystem createWritableOnForRename (String oldName, String newName) throws IOException {        

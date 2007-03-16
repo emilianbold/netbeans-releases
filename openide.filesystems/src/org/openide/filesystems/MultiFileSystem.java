@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -140,6 +139,10 @@ public class MultiFileSystem extends FileSystem {
     * @param fileSystems array of filesystems
     */
     protected final void setDelegates(FileSystem... fileSystems) {
+        if (Arrays.equals(fileSystems, systems)) {
+            return;
+        }
+
         // save for notification
         FileSystem[] oldSystems = systems;
 
@@ -155,9 +158,7 @@ public class MultiFileSystem extends FileSystem {
         Set<FileSystem> toRemove = new HashSet<FileSystem>(oldList);
         toRemove.removeAll(newList);
 
-        for (Iterator iter = toRemove.iterator(); iter.hasNext();) {
-            FileSystem fs = ((FileSystem) iter.next());
-
+        for (FileSystem fs : toRemove) {
             if (fs != null) {
                 fs.removeNotify();
             }
@@ -167,9 +168,7 @@ public class MultiFileSystem extends FileSystem {
         Set<FileSystem> toAdd = new HashSet<FileSystem>(newList);
         toAdd.removeAll(oldList);
 
-        for (Iterator iter = toAdd.iterator(); iter.hasNext();) {
-            FileSystem fs = ((FileSystem) iter.next());
-
+        for (FileSystem fs : toAdd) {
             if (fs != null) {
                 fs.addNotify();
             }
