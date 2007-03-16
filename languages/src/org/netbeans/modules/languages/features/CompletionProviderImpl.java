@@ -21,8 +21,6 @@ package org.netbeans.modules.languages.features;
 
 import java.util.ArrayList;
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.LanguagesManager;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager;
@@ -40,8 +38,8 @@ import org.netbeans.api.languages.Context;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -53,7 +51,6 @@ import org.openide.ErrorManager;
 import java.util.Iterator;
 import javax.swing.text.JTextComponent;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -144,7 +141,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             Feature feature = null;
             String start = null;
             try {
-                Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+                Language language = LanguagesManager.getDefault ().
                     getLanguage (mimeType);
                 tokenSequence.move (offset - 1);
                 if (!tokenSequence.moveNext ()) return;
@@ -224,7 +221,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             for (int i = path.size () - 1; i >= 0; i--) {
                 ASTItem item = path.get (i);
                 try {
-                    Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+                    Language language = LanguagesManager.getDefault ().
                         getLanguage (item.getMimeType ());
                     Feature feature = language.getFeature (COMPLETION, path.subPath (i));
                     if (feature != null) {

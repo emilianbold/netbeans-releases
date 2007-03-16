@@ -22,7 +22,6 @@ package org.netbeans.modules.languages.features;
 import java.util.Iterator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
 import java.awt.event.ActionEvent;
@@ -42,8 +41,8 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.ErrorManager;
 
@@ -112,7 +111,7 @@ public class FormatAction extends BaseAction {
         NbEditorDocument document
     ) {
         try {
-            Language language = LanguagesManagerImpl.get ().getLanguage (item.getMimeType ());
+            Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
 
             path.add (item);
             ASTPath path2 = ASTPath.create (path);

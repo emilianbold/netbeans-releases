@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.languages.dataobject;
 
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
@@ -50,7 +50,7 @@ public class LanguagesDataLoader extends MultiFileLoader {
 
     protected FileObject findPrimaryFile(FileObject fo) {
         String mimeType = fo.getMIMEType ();
-        if (LanguagesManagerImpl.get ().isSupported (mimeType))
+        if (LanguagesManager.getDefault ().isSupported (mimeType))
             return fo;
         return null;
     }
@@ -58,7 +58,7 @@ public class LanguagesDataLoader extends MultiFileLoader {
     protected MultiDataObject createMultiObject (FileObject primaryFile) 
     throws DataObjectExistsException, IOException {
         String mimeType = primaryFile.getMIMEType ();
-        if (LanguagesManagerImpl.get ().isSupported (mimeType))
+        if (LanguagesManager.getDefault ().isSupported (mimeType))
             return new LanguagesDataObject (primaryFile, this);
         return null;
     }

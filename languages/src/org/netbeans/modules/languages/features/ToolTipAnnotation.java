@@ -20,12 +20,10 @@
 package org.netbeans.modules.languages.features;
 
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.SyntaxContext;
-import javax.swing.JEditorPane;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -33,7 +31,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.api.languages.Context;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
@@ -71,8 +69,7 @@ public class ToolTipAnnotation extends Annotation {
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
             tokenSequence.move (offset);
             if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) return null;
-            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage 
-                (mimeType);
+            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             Token token = tokenSequence.token ();
             Feature tooltip = l.getFeature (Language.TOOLTIP, token.id ().name ());
             if (tooltip != null) {

@@ -27,12 +27,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.JMenu;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 
 
 /**
@@ -44,7 +43,7 @@ public class LanguagesGenerateFoldPopupAction extends GenerateFoldPopupAction {
     protected void addAdditionalItems (JTextComponent target, JMenu menu) {
         try {
             String mimeType = (java.lang.String) target.getDocument ().getProperty ("mimeType");
-            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             Set expands = new HashSet ();
             addFoldTypes (target, menu, l, expands);
             Iterator<Language> it = l.getImportedLanguages ().iterator ();

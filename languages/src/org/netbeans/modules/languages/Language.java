@@ -21,11 +21,10 @@ package org.netbeans.modules.languages;
 
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.parser.*;
 import java.awt.*;
 import java.util.*;
@@ -234,7 +233,7 @@ public class Language {
     ) {
         try {
             String mimeType = (String) feature.getValue ("mimeType");
-            Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+            Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
             if (feature.getPattern ("start") != null) {
                 //feature.put ("token", "PE");
                 assert (preprocessorImport == null);

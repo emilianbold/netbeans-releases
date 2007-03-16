@@ -36,13 +36,12 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 
 
 /**
@@ -243,7 +242,7 @@ public class LLSyntaxAnalyser {
         if (children.isEmpty ())
             return token;
         TokenInput in = TokenInput.create (children);
-        Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+        Language language = LanguagesManager.getDefault ().
             getLanguage (children.get (0).getMimeType ());
         ASTNode root = language.getAnalyser ().read (in, skipErrors);
         return ASTToken.create (

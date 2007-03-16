@@ -21,7 +21,6 @@ package org.netbeans.modules.languages.features;
 
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.Highlighting;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
@@ -39,7 +38,7 @@ import org.netbeans.api.languages.Highlighting;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import java.awt.Color;
 import java.awt.event.MouseEvent;
@@ -196,7 +195,7 @@ MouseListener {
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
                 tokenSequence.move (offset);
                 tokenSequence.moveNext ();
-                Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+                Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
                 Token token = tokenSequence.token ();
                 Feature hyperlink = language.getFeature 
                     (Language.HYPERLINK, token.id ().name ());

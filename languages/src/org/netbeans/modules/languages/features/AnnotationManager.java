@@ -21,7 +21,6 @@ package org.netbeans.modules.languages.features;
 
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager;
@@ -31,16 +30,14 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.text.Annotation;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -79,7 +76,7 @@ public class AnnotationManager extends ASTEvaluator {
     public void evaluate (State state, ASTPath path) {
         try {
             ASTItem item = path.getLeaf ();
-            Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+            Language language = LanguagesManager.getDefault ().
                 getLanguage (item.getMimeType ());
             Feature mark = language.getFeature (Language.MARK, path);
             if (mark != null) {

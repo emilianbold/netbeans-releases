@@ -35,7 +35,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.languages.Context;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -44,7 +43,7 @@ import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 
@@ -71,7 +70,7 @@ public class IndentAction extends InsertBreakAction {
                     ts.move (caret.getDot ());
                     if (!ts.moveNext ()) break;
                 }
-            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (ts.language ().mimeType ());
+            Language l = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
             Token token = ts.token ();
             Object indentValue = getIndentProperties (l);
 

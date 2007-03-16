@@ -32,7 +32,6 @@ import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.api.languages.ASTToken;
@@ -44,8 +43,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.modules.languages.parser.TokenInput;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
-import org.netbeans.modules.languages.LanguagesManagerImpl.LanguagesManagerListener;
+import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.modules.languages.LanguagesManager.LanguagesManagerListener;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.cookies.EditorCookie;
@@ -110,7 +109,7 @@ public class ParserManagerImpl extends ParserManager {
         if (parsingTask != null) {
             String mimeType = (String) doc.getProperty ("mimeType");
             try {
-                Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+                Language l = LanguagesManager.getDefault ().
                     getLanguage (mimeType);
                 LLSyntaxAnalyser a = l.getAnalyser ();
                 a.cancel ();
@@ -233,7 +232,7 @@ public class ParserManagerImpl extends ParserManager {
     private ASTNode process (ASTNode root) {
         try {
             String mimeType = (String) doc.getProperty ("mimeType");
-            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+            Language l = LanguagesManager.getDefault ().
                 getLanguage (mimeType);
             Feature astProperties = l.getFeature ("AST");
             if (astProperties != null && ast != null) {
@@ -251,7 +250,7 @@ public class ParserManagerImpl extends ParserManager {
     
     private static ASTNode parse (Document doc) throws ParseException {
         String mimeType = (String) doc.getProperty ("mimeType");
-        Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+        Language l = LanguagesManager.getDefault ().
             getLanguage (mimeType);
         LLSyntaxAnalyser a = l.getAnalyser ();
         long start = System.currentTimeMillis ();
@@ -370,14 +369,14 @@ public class ParserManagerImpl extends ParserManager {
             pmwr = new WeakReference<ParserManagerImpl> (pm);
             pman = pm;
             doc.addDocumentListener (this);
-            ((LanguagesManagerImpl) LanguagesManager.getDefault ()).addLanguagesManagerListener (this);
+            LanguagesManager.getDefault ().addLanguagesManagerListener (this);
         }
         
         private ParserManagerImpl getPM () {
             ParserManagerImpl pm = pmwr.get ();
             pman = null;
             if (pm != null) return pm;
-            ((LanguagesManagerImpl) LanguagesManager.getDefault ()).removeLanguagesManagerListener (this);
+            LanguagesManager.getDefault ().removeLanguagesManagerListener (this);
             return null;
         }
         

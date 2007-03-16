@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager.State;
@@ -38,6 +37,7 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
@@ -45,7 +45,6 @@ import org.netbeans.spi.editor.fold.FoldOperation;
 import org.openide.text.NbDocument;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
@@ -239,8 +238,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                 eln = NbDocument.findLineNumber (doc, e);
             if (sln == eln) return;
             String mimeType = item.getMimeType ();
-            Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-                getLanguage (mimeType);
+            Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
             List<Feature> fls = language.getFeatures (Language.FOLD, path);
             if (fls == null || fls.isEmpty()) {
                 return;

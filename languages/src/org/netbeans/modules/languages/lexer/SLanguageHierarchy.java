@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.languages.lexer;
 
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +27,7 @@ import java.util.Iterator;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -104,10 +103,11 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     private Language getLanguage () {
         if (language == null)
             try {
-                language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+                language = LanguagesManager.getDefault ().getLanguage (mimeType);
             } catch (ParseException ex) {
                 language = new Language (mimeType);
             }
+        
         return language;
     }
 }

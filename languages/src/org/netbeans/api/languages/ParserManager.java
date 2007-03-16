@@ -22,7 +22,7 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.text.Document;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.modules.languages.parser.LanguageDefinitionNotFoundException;
 import org.openide.ErrorManager;
@@ -64,7 +64,7 @@ public abstract class ParserManager {
         if (pm == null) {
             String mimeType = (String) doc.getProperty("mimeType");
             try {
-                ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage(mimeType);
+                LanguagesManager.getDefault ().getLanguage (mimeType);
             } catch (LanguageDefinitionNotFoundException e) {
                 return null;
             } catch (ParseException e) {

@@ -22,7 +22,6 @@ package org.netbeans.modules.languages.lexer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -30,8 +29,8 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.languages.Feature;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
 
@@ -48,7 +47,7 @@ public class SLanguageProvider extends LanguageProvider {
 
     public Language<STokenId> findLanguage (String mimePath) {
 //        System.out.println("findLanguage " + mimePath);
-        if (LanguagesManagerImpl.get ().isSupported (mimePath))
+        if (LanguagesManager.getDefault ().isSupported (mimePath))
             return new SLanguageHierarchy (mimePath).language ();
         return null;
     }
@@ -59,7 +58,7 @@ public class SLanguageProvider extends LanguageProvider {
         InputAttributes inputAttributes
     ) {
         String mimeType = languagePath.innerLanguage ().mimeType ();
-        if (!LanguagesManagerImpl.get().isSupported (mimeType)) return null;
+        if (!LanguagesManager.getDefault ().isSupported (mimeType)) return null;
         Language<STokenId> language = getTokenImport (mimeType, token);
         if (language == null) 
             language = getPreprocessorImport (languagePath, token);
@@ -87,8 +86,7 @@ public class SLanguageProvider extends LanguageProvider {
         if (!preprocessorImport.containsKey (mimeType)) {
             try {
                 org.netbeans.modules.languages.Language language = 
-                    ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-                    getLanguage (mimeType);
+                    LanguagesManager.getDefault ().getLanguage (mimeType);
                 Feature properties = language.getPreprocessorImport ();
                 if (properties != null) {
                     String innerMT = (String) properties.getValue ("mimeType");
@@ -113,8 +111,7 @@ public class SLanguageProvider extends LanguageProvider {
             tokenImports.put (mimeType, tokenTypeToLanguage);
             try {
                 org.netbeans.modules.languages.Language language = 
-                    ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-                    getLanguage (mimeType);
+                    LanguagesManager.getDefault ().getLanguage (mimeType);
                 Map<String,Feature> tokenImports = language.getTokenImports ();
                 if (tokenImports != null) {
                     Iterator<String> it = tokenImports.keySet ().iterator ();

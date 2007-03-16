@@ -23,17 +23,16 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.ErrorManager;
+
 
 /**
  *
@@ -60,7 +59,7 @@ public class BraceCompletionDeleteAction extends ExtDeleteCharAction {
                 ts = ts2;
             }
             mimeType = ts.language ().mimeType ();
-            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             List<Feature> completes = l.getFeatures ("COMPLETE");
             Iterator<Feature> it = completes.iterator ();
             while (it.hasNext ()) {

@@ -28,7 +28,7 @@ import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -251,7 +251,7 @@ public class LanguagesNavigator implements NavigatorPanel {
         ASTPath path2 = ASTPath.create (path);
         Feature navigator = null;
         try {
-            Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+            Language language = LanguagesManager.getDefault ().
                 getLanguage (item.getMimeType ());
             navigator = language.getFeature (Language.NAVIGATOR, path2);
         } catch (ParseException ex) {
@@ -458,8 +458,8 @@ public class LanguagesNavigator implements NavigatorPanel {
                 else {
                     nodes = getNavigatorNodes (n.item, n.path, new ArrayList ());
                     try {
-                        Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage 
-                            (n.item.getMimeType ());
+                        Language language = LanguagesManager.getDefault ().
+                            getLanguage (n.item.getMimeType ());
                         Feature properties = language.getFeature ("PROPERTIES");
                         if (properties != null &&
                             properties.getBoolean ("navigator-sort", false)

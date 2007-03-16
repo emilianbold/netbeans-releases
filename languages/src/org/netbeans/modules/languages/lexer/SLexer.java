@@ -26,14 +26,13 @@ import java.util.Map;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.lexer.PartType;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -69,7 +68,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         parser = language.getParser ();
         String outerMimeType = info.languagePath ().language (0).mimeType ();
         try {
-            Language outerLanguage = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+            Language outerLanguage = LanguagesManager.getDefault ().
                 getLanguage (outerMimeType);
             this.input = createInputBridge (info.input (), outerLanguage);
         } catch (ParseException ex) {

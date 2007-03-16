@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -36,7 +35,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.lexer.STokenId;
 
 
@@ -59,7 +58,7 @@ public class BraceHighlighting extends ExtSyntaxSupport {
             tokens.moveNext ();
             Token<STokenId> token = tokens.token ();
             String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
-            Language language = ((LanguagesManagerImpl)LanguagesManager.getDefault()).getLanguage(mimeType);
+            Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
             Map<String,String>[] bracesValue = getBraces (language);
             if (bracesValue == null) {
                 return super.findMatchingBlock(offset, simpleSearch);

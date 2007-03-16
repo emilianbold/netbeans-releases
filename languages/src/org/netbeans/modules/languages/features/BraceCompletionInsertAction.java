@@ -25,7 +25,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.languages.Context;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -34,7 +33,7 @@ import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 
@@ -64,7 +63,7 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
                 ts = ts2;
             }
             mimeType = ts.language ().mimeType ();
-            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             List<Feature> completes = l.getFeatures ("COMPLETE");
             if (completes == null) {
                 super.insertString (doc, dotPos, caret, str, overwrite);

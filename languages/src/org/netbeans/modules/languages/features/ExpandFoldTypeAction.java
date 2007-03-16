@@ -30,12 +30,11 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManager;
 
 
 /**
@@ -55,7 +54,7 @@ public class ExpandFoldTypeAction extends BaseAction {
         // Hierarchy locking done in the utility method
         try {
             String mimeType = (java.lang.String) target.getDocument ().getProperty ("mimeType");
-            Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             if (expand (hierarchy, l)) return;
             Iterator<Language> it = l.getImportedLanguages ().iterator ();
             while (it.hasNext ())
