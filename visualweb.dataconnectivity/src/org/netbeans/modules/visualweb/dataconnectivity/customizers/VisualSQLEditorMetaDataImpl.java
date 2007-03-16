@@ -96,14 +96,13 @@ public class VisualSQLEditorMetaDataImpl implements VisualSQLEditorMetaData {
         throws SQLException
     {
         try {
-        if ( dsName.startsWith(contextSuffix)) dsName = dsName.substring(contextSuffix.length()) ;
-        dataSourceInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(dsName) ;
+	    if ( dsName.startsWith(contextSuffix)) dsName = dsName.substring(contextSuffix.length()) ;
+	    dataSourceInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(dsName) ;
 
-        // TODO:  add listeners to dataSourceInfo for DatabaseMetaDataHelper changes.
+	    // TODO:  add listeners to dataSourceInfo for DatabaseMetaDataHelper changes.
+	    dataSourceInfo.addConnectionListener(listener) ;
 
-        dataSourceInfo.addConnectionListener(listener) ;
-
-        initMetaData() ;
+	    initMetaData() ;
         } catch (SQLException sqle) {
             Log.log("Could not create cache for " + sqle.getLocalizedMessage()) ;
             throw sqle ;

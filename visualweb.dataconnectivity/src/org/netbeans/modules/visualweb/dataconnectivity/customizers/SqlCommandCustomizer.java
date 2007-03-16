@@ -22,12 +22,12 @@ import javax.naming.NamingException;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.visualweb.dataconnectivity.Log;
-import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilder;
+// import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilder;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditor;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorFactory;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
-import org.netbeans.modules.visualweb.dataconnectivity.ui.QueryTopComponent;
+// import org.netbeans.modules.visualweb.dataconnectivity.ui.QueryTopComponent;
 
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.impl.BasicCustomizer2;
@@ -80,15 +80,16 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         
         Component retComp ;
         
-        /* see if there's already a TopComponent with the same name **/
-        retComp = findCurrent(srcBean) ;
-        if ( retComp != null) {
-            if ( retComp instanceof TopComponent) {
-                ((TopComponent)retComp).requestActive() ;
-            }
-            return retComp ;
-        }
-        
+// JDTODO - See if we have a way to do this
+//         /* see if there's already a TopComponent with the same name **/
+//         retComp = findCurrent(srcBean) ;
+//         if ( retComp != null) {
+//             if ( retComp instanceof TopComponent) {
+//                 ((TopComponent)retComp).requestActive() ;
+//             }
+//             return retComp ;
+//         }
+
         /****
          * get the dataSourceName
          */
@@ -167,17 +168,17 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
     /**
      * Attempt to locate an existing QB for the given designBean.
      */
-    public static QueryBuilder findCurrent(DesignBean dBean ) {
+//     public static QueryBuilder findCurrent(DesignBean dBean ) {
         
-        QueryBuilder qbForm = null;
+//         QueryBuilder qbForm = null;
         
-        // Search through workspaces, then modes, then topcomponents
-        Set modes = WindowManager.getDefault().getModes();
-        Iterator it2 = modes.iterator();
+//         // Search through workspaces, then modes, then topcomponents
+//         Set modes = WindowManager.getDefault().getModes();
+//         Iterator it2 = modes.iterator();
         
-        // JDTODO - figure out a way of doing this in the new version
-        // The Customizer will have to retain the mapping, since the QueryEditor no longer
-        // knows about the designbean
+//         // JDTODO - figure out a way of doing this in the new version
+//         // The Customizer will have to retain the mapping, since the QueryEditor no longer
+//         // knows about the designbean
 //        while (it2.hasNext()) {
 //            Mode m = (Mode)it2.next();
 //            TopComponent[] tcs = m.getTopComponents();
@@ -204,8 +205,8 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
 //        }
 //
 //        return qbForm;
-        return null;
-    }
+//         return null;
+//     }
     
     // Listen for changes to statement property, and notify the bean
     
