@@ -349,7 +349,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
 
         try {
             synchronized (getDocumentLock()) {
-                editorLock = lockEditor(getEditorCookie());
+                editorLock = lockEditor();
                 getDocument().remove(0, getDocument().getLength());
                 getDocument().insertString(0, content, null);
                 unlockEditor(editorLock);
@@ -490,7 +490,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             StyledDocument fileDocument = getDocument();
 
             synchronized(getDocumentLock()) {
-                editorLock = lockEditor(getEditorCookie()); 
+                editorLock = lockEditor(); 
 
                 int documentLength = fileDocument.getLength();
                 RegionInfo region = getLockRegion(lockRegionData);
@@ -726,7 +726,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                     "region: "+regionName+" with update : [" + text +"]");//NoI18n
 
                 synchronized (getDocumentLock()) {
-                    editorLock = lockEditor(getEditorCookie());
+                    editorLock = lockEditor();
 
                     boolean originallyModified = isDocumentModified();
 
@@ -928,24 +928,19 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
      * lockEditor
      *
      */
-    public EditorLock lockEditor() throws CollabException {
-        return lockEditor(getEditorCookie());
+    public final EditorLock lockEditor() throws CollabException {
+        return doLockEditor();
     }
 
     /**
      * lockEditor
      *
      */
-    protected EditorLock lockEditor(EditorCookie editorCookie)
-    throws CollabException {
+    protected EditorLock doLockEditor() throws CollabException {
         Debug.log("CollabFileHandlerSupport", "CollabFileHandlerSupport, locking Editor"); //NoI18n	
         disableUnlockTimer(true);
 
-        if (editorCookie == null) {
-            return null;
-        }
-
-        JEditorPane[] editorPanes = editorCookie.getOpenedPanes();
+        JEditorPane[] editorPanes = getEditorPanes();
 
         if (editorPanes == null) {
             return null;
@@ -1036,13 +1031,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
     protected void resetAllLock() throws CollabException {
         Debug.log("CollabFileHandlerSupport", "CollabFileHandlerSupport, resetAllLock"); //NoI18n
 
-        EditorCookie editorCookie = getEditorCookie();
-
-        if (editorCookie == null) {
-            return;
-        }
-
-        JEditorPane[] editorPanes = editorCookie.getOpenedPanes();
+        JEditorPane[] editorPanes = getEditorPanes();
 
         if (editorPanes == null) {
             return;
@@ -1082,7 +1071,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             new Runnable() {
                 public void run() {
                     try {
-                        pauseEditorLock = lockEditor(getEditorCookie());
+                        pauseEditorLock = lockEditor();
                     } catch (Throwable th) {
                         Debug.log(
                             "CollabFileHandlerSupport",
@@ -1266,7 +1255,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             synchronized (getDocumentLock()) {
                 EditorLock editorLock = null;
                 try {
-                    editorLock = lockEditor(getEditorCookie());
+                    editorLock = lockEditor();
                     regions = rCtx.getContainingLineRegion(regionBegin, length/*-1*/);
                     unlockEditor(editorLock);
                 } catch(Exception e) {
@@ -1482,7 +1471,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
 
             String text = null;
             synchronized(getDocumentLock()) {
-                editorLock = lockEditor(getEditorCookie());
+                editorLock = lockEditor();
                 Debug.log("CollabFileHandlerSupport","CFHS, region begin: "+cregion.getBeginOffset());
                 Debug.log("CollabFileHandlerSupport","CFHS, region end: "+cregion.getEndOffset());
 
@@ -1737,7 +1726,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
         content.setData(encodedFileContent);
 
         //lock editor if opened
-        EditorLock editorLock = lockEditor(getEditorCookie());
+        EditorLock editorLock = lockEditor();
 
         try {
             //set line region user
@@ -2298,7 +2287,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
         try {
             StyledDocument fileDocument = fileDocument=getDocument();
             synchronized(getDocumentLock()) {
-                editorLock = lockEditor(getEditorCookie());
+                editorLock = lockEditor();
 
                 /* refactored into findUnAssignedLines()
 				 if (includeMarginLines) {
@@ -3672,7 +3661,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
         EditorLock editorLock = null;
 
         try {
-            editorLock = lockEditor(getEditorCookie());
+            editorLock = lockEditor();
         } catch (CollabException ce) {
             //ignore
         }
@@ -4016,9 +4005,13 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
     
     private JEditorPane[] getEditorPanes()
     throws CollabException {
-        EditorCookie ec=getEditorCookie();
+        final EditorCookie ec=getEditorCookie();
         if(ec!=null)
-            return ec.getOpenedPanes();
+            return (JEditorPane[])Mutex.EVENT.readAccess(new Mutex.Action() {
+                public Object run() {
+                    return ec.getOpenedPanes();
+                }
+            });
         return null;
     }
     

@@ -122,7 +122,7 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
      * lockEditor
      *
      */
-    protected EditorLock lockEditor(EditorCookie editorCookie)
+    protected EditorLock doLockEditor()
     throws CollabException {
         Debug.log(this, "CollabJavaHandler, locking Editor"); //NoI18n
 
@@ -132,7 +132,7 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
 
             return null;
         } else {
-            return super.lockEditor(editorCookie);
+            return super.doLockEditor();
         }
     }
 

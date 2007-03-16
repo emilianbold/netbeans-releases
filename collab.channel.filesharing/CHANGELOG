@@ -40,3 +40,4 @@
 
 1.11:   Make filesharing compatible with new Java infrastructure
 
+1.12:   Don't call editor outside of AWT thread.
