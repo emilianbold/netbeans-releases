@@ -29,7 +29,6 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.screen.resource.ResourcePanel;
 import org.netbeans.modules.vmd.screen.device.DevicePanel;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -38,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 
 /**
  * TODO - implement refresh of only components those were claimed as dirty by their ScreenPresenters - similar to Flow
@@ -70,7 +70,11 @@ public final class ScreenAccessController implements AccessController {
         editedScreenCombo.setRenderer(new EditedComboRenderer());
         editedScreenComboListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setEditedComponent((DesignComponent) editedScreenCombo.getSelectedItem());
+                ActiveDocumentSupport.getDefault().getActiveDocument().getTransactionManager().readAccess(new Runnable() {
+                    public void run() {
+                        setEditedComponent((DesignComponent) editedScreenCombo.getSelectedItem());
+                    }
+                });
             }
         };
         editedScreenCombo.addActionListener(editedScreenComboListener);
