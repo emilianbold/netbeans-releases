@@ -12,6 +12,7 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +33,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
@@ -60,15 +63,15 @@ public class PageFlowController {
         
         configModel.addComponentListener(new ComponentListener(){
             public void valueChanged(ComponentEvent evt) {
-                System.out.println("ValueChanged: " + evt);
+                //                System.out.println("ValueChanged: " + evt);
             }
             
             public void childrenAdded(ComponentEvent evt) {
-                System.out.println("childrenAdded: " + evt);
+                //                System.out.println("childrenAdded: " + evt);
             }
             
             public void childrenDeleted(ComponentEvent evt) {
-                System.out.println("\n\n\n\n\n\nchildrenDeleted: " + evt);
+                //                System.out.println("\n\n\n\n\n\nchildrenDeleted: " + evt);
             }
         });
     }
@@ -80,7 +83,7 @@ public class PageFlowController {
      * @param comp
      * @return
      */
-    public NavigationCase createLink(AbstractNode source, AbstractNode target, String comp) {
+    public NavigationCase createLink(Node source, Node target, String comp) {
         
         String sourceName = source.getDisplayName();
         int caseNum = 1;
@@ -96,7 +99,9 @@ public class PageFlowController {
         if (navRule == null) {
             navRule = configModel.getFactory().createNavigationRule();
             navRule.setFromViewId(source.getDisplayName());
+            //            configModel.startTransaction();T
             facesConfig.addNavigationRule(navRule);
+            //            configModel.endTransaction();
         } else {
             caseNum = getNewCaseNumber(navRule);
         }
@@ -137,6 +142,7 @@ public class PageFlowController {
      **/
     private NavigationRule getRuleWithFromViewID(FacesConfig facesConfig, String fromViewId ){
         List<NavigationRule> rules = facesConfig.getNavigationRules();
+        
         for( NavigationRule rule : rules ){
             //            System.out.println("\nDo these match?");
             //            System.out.println(rule.getFromViewId() + " == " + fromViewId);
@@ -145,6 +151,7 @@ public class PageFlowController {
                 return rule;
             }
         }
+        
         return null;
     }
     
@@ -238,15 +245,16 @@ public class PageFlowController {
     private void createAllProjectPageNodes(Collection<String> pagesInConfig) {
         
         
-        Collection<String> pages = pagesInConfig;
+        Collection<String> pages = new HashSet<String>(pagesInConfig);
         
         //Create all pages in the project...
         for( FileObject webFile : webFiles ) {
             String webFileName = webFile.getNameExt();
             pages.remove(webFileName);
-            DataNode node = null;
+            Node node = null;
             try {
-                node = (DataNode)(DataObject.find(webFile)).getNodeDelegate();
+                //                                node = (DataNode)(DataObject.find(webFile)).getNodeDelegate();
+                node = new PageFlowNode((DataObject.find(webFile)).getNodeDelegate());
             } catch ( DataObjectNotFoundException ex ) {
                 ex.printStackTrace();
             } catch( ClassCastException cce ){
@@ -257,24 +265,27 @@ public class PageFlowController {
         
         //Create any pages that don't actually exist but are defined specified by the config file.
         for( String pageName : pages ){
-            AbstractNode node = new AbstractNode(Children.LEAF);
-            
+            //                Node tmpPageNode = new AbstractNode(Children.LEAF);
+            //                tmpPageNode.setName(pageName);
+            //                Node node = new PageFlowNode(tmpPageNode);
+            Node node = new AbstractNode(Children.LEAF);
             node.setName(pageName);
             view.createNode(node, null, null);
         }
     }
     
     private void createFacesConfigPageNodes(Collection<String> pagesInConfig) {
-        Collection<String> pages = pagesInConfig;
+        Collection<String> pages = new HashSet(pagesInConfig);
         
         for( String pageName : pages ) {
             boolean isFound = false;
             for( FileObject webFile : webFiles ) {
                 String webFileName = webFile.getNameExt();
                 if( webFileName.equals(pageName)) {
-                    DataNode node = null;
+                    Node node = null;
                     try {
-                        node = (DataNode)(DataObject.find(webFile)).getNodeDelegate();
+                        //                        node = (DataNode)DataObject.find(webFile).getNodeDelegate();
+                        node = new PageFlowNode((DataObject.find(webFile)).getNodeDelegate());
                     } catch ( DataObjectNotFoundException ex ) {
                         ex.printStackTrace();
                     } catch( ClassCastException cce ){
@@ -285,8 +296,12 @@ public class PageFlowController {
                 }
             }
             if( !isFound ) {
-                AbstractNode node = new AbstractNode(Children.LEAF);
+                //                Node tmpPageNode = new AbstractNode(Children.LEAF);
+                //                tmpPageNode.setName(pageName);
+                //                Node node = new PageFlowNode(tmpPageNode);
+                Node node = new AbstractNode(Children.LEAF);
                 node.setName(pageName);
+                
                 view.createNode(node, null, null);
             }
             isFound = false;
@@ -304,34 +319,84 @@ public class PageFlowController {
                 NavigationCase myNavCase = (NavigationCase)ev.getNewValue();
                 view.createEdge((NavigationRule)myNavCase.getParent(), myNavCase);
             } else if (ev.getPropertyName() == "navigation-rule" ) {
-                NavigationRule myNavRule = (NavigationRule)ev.getNewValue();            
+                NavigationRule myNavRule = (NavigationRule)ev.getNewValue();
                 //You can actually do nothing.
-            } else if ( ev.getNewValue() == State.VALID ) {            
+            } else if ( ev.getNewValue() == State.VALID ) {
                 setupGraph();
             } else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
                 view.warnUserMalFormedFacesConfig();
                 System.out.println("NOT WELL FORMED!!!");
             }
-//            System.out.println("New Value: " + ev.getNewValue());
-//            System.out.println("Old Value: " + ev.getOldValue());
-//            
-//            System.out.println("PropertyName: " + ev.getPropertyName());
-//            System.out.println("ID: " + ev.getPropagationId());
-//            System.out.println("PropertyChangeListener");
+            //            System.out.println("New Value: " + ev.getNewValue());
+            //            System.out.println("Old Value: " + ev.getOldValue());
+            //
+            //            System.out.println("PropertyName: " + ev.getPropertyName());
+            //            System.out.println("ID: " + ev.getPropagationId());
+            //            System.out.println("PropertyChangeListener");
             
         }
     }
     
-//    public final class EmptyPageNode extends AbstractNode {
-//        public EmptyPageNode(Children children) {
-//            super(children);
-//        }
-//        public rename( String name ) {
-//            this.setDisplayName(name);
-//            configModel.startTransaction();
-//            
-//        }
-//    }
+    //    public final class EmptyPageNode extends AbstractNode {
+    //        public EmptyPageNode(Children children) {
+    //            super(children);
+    //        }
+    //        public rename( String name ) {
+    //            this.setDisplayName(name);
+    //            configModel.startTransaction();
+    //
+    //        }
+    //    }
+    
+    /**
+     * A Filter Node for a given DataNode or non File Node.
+     */
+    public final class PageFlowNode extends FilterNode {
+        /**
+         *
+         * @param original
+         */
+        public PageFlowNode( Node original ){
+            super(original, Children.LEAF);
+        }
+        
+        @Override
+        public void setName(String s) {
+            String oldDisplayName = getDisplayName();
+            String oldName = getName();
+            super.setName(s);
+            System.out.println("About to rename node.");
+            System.out.println("Old Display Name: " + oldDisplayName + " New Display Name: " + getDisplayName() );
+            System.out.println("Old Name: " + oldName + " New Name: " + getName() );
+            configModel.startTransaction();
+            FacesConfig facesConfig = configModel.getRootComponent();
+            List<NavigationRule> navRules = facesConfig.getNavigationRules();
+            for( NavigationRule navRule : navRules ){
+                if ( navRule.getFromViewId().equals(oldDisplayName) ){
+                    System.out.println("Switching Rule From-View: " + oldDisplayName + " To From-View: " + getDisplayName());
+                    navRule.setFromViewId(getDisplayName());
+                }
+                List<NavigationCase> navCases = navRule.getNavigationCases();
+                for( NavigationCase navCase : navCases ) {
+                    if ( navCase.getToViewId().equals(oldDisplayName) ) {
+                        System.out.println("Switching Case To-View: " + oldDisplayName + " To To-View: " + getDisplayName());
+                        navCase.setToViewId(getDisplayName());
+                    }
+                }
+            }
+            
+            configModel.endTransaction();
+            try {
+                configModel.sync();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+        }
+        
+        
+        
+    }
     
     
 }

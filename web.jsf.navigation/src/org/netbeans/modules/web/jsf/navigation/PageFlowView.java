@@ -39,7 +39,6 @@ import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node;
@@ -67,7 +66,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
     
     
     /**
-     * 
+     *
      * @return PageFlowController
      */
     public PageFlowController getPageFlowController() {
@@ -125,9 +124,9 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         JScrollPane pane = new JScrollPane(scene.createView());
         pane.setVisible(true);
         
-//        Dimension viewDim = pane.getViewportBorderBounds().getSize();
-//        scene.setPreferredBounds(pane.getViewportBorderBounds());
-//        scene.setPreferredSize(pane.getViewportBorderBounds().getSize());
+        //        Dimension viewDim = pane.getViewportBorderBounds().getSize();
+        //        scene.setPreferredBounds(pane.getViewportBorderBounds());
+        //        scene.setPreferredSize(pane.getViewportBorderBounds().getSize());
         add(pane, BorderLayout.CENTER);
         
         try{
@@ -137,20 +136,20 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         
     }
     
-
+    
     public void warnUserMalFormedFacesConfig() {
         clearGraph();
-        scene.createMalFormedWidget();        
+        scene.createMalFormedWidget();
     }
     
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
     private static final Image IMAGE_LIST = null; // NOI18N
     
     /**
-     * 
+     *
      */
     public void clearGraph() {
-//        scene.removeChildren();
+        //        scene.removeChildren();
         
         //Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
         Collection<Node> nodes = new HashSet<Node>(scene.getNodes());
@@ -161,14 +160,14 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
     }
     
     /**
-     * 
+     *
      */
     public void validateGraph() {
         scene.layoutScene();
         scene.validate();
     }
     
- 
+    
     
     /**
      * Creates a PageFlowScene node from a pageNode.  The PageNode will generally be some type of DataObject unless
@@ -180,13 +179,14 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
      */
     protected VMDNodeWidget createNode( Node pageNode, String type, List<Image> glyphs) {
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
-        String pageName = pageNode.getName();
-        if( pageNode instanceof DataNode ){
-            pageName = ((DataNode)pageNode).getDataObject().getPrimaryFile().getNameExt();
-        }
+//        String pageName = pageNode.getName();
+//        if( pageNode instanceof DataNode ){
+//            pageName = ((DataNode)pageNode).getDataObject().getPrimaryFile().getNameExt();
+//            System.out.println("PageName : " + pageName);
+//        }
+        String pageName = pageNode.getDisplayName();
         
         widget.setNodeProperties(IMAGE_LIST, pageName, type, glyphs);
-//        System.out.println("Page Node: " + pageName);
         
         scene.addPin(pageNode, pageName +"pin");
         
@@ -263,7 +263,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         
     }
     
-
+    
     private static final String PATH_TOOLBAR_FOLDER = "PageFlowEditor/Toolbars"; // NOI18N
     
     
@@ -345,22 +345,6 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         }
         return null;
     }
-    
-    
-//    @Override
-//    protected void componentShowing() {
-//        super.componentShowing();
-//        getPageFlowController().setupGraph();
-//        
-//    }
-//    
-//    
-//    @Override
-//    protected void componentActivated() {
-//        super.componentActivated();
-//        System.out.println("Component Activated");
-//    }
 
-    
     
 }

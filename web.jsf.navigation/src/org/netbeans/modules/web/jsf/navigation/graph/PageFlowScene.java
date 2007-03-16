@@ -59,8 +59,6 @@ import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -169,7 +167,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
     protected Widget attachNodeWidget(Node node) {
         assert node != null;
         VMDNodeWidget nodeWidget = new VMDNodeWidget(this);
-        nodeWidget.setNodeName(node.getName());
+        nodeWidget.setNodeName(node.getDisplayName());
         
         Widget header = nodeWidget.getHeader();
         ImageWidget imageWidget = new DefaultAnchorWidget(this, POINT_SHAPE_IMAGE);
@@ -385,12 +383,13 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
             return pageNode.getName();
         }
         public void setText(Widget widget, String text) {
-            ((LabelWidget) widget).setLabel(text);
             
             Node pageNode = (Node)findObject(nodeWidget);
             if ( pageNode.canRename() ) {
                 pageNode.setName(text);
             }
+            
+            ((LabelWidget) widget).setLabel(pageNode.getDisplayName());
         }
         
     }
