@@ -20,6 +20,8 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
 import java.io.*;
+import java.util.Collections;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.*;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
@@ -133,6 +135,95 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
                 ParameterizedTypeTree ptt = (ParameterizedTypeTree) vt.getType();
                 WildcardTree wct = (WildcardTree) ptt.getTypeArguments().get(0);
                 workingCopy.rewrite(wct.getBound(), make.Identifier("E"));
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     */
+    public void testAddGenericImplements() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public class MyList<Ex> {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public class MyList<Ex> implements Nothing<String> {\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ParameterizedTypeTree ptt = make.ParameterizedType(
+                        make.Identifier("Nothing"), 
+                        Collections.<ExpressionTree>singletonList(make.Identifier("String"))
+                );
+                // name
+                workingCopy.rewrite(clazz, make.addClassImplementsClause(clazz, ptt));
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     */
+    public void testAddGenericImplementsWithAutoImp() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class MyList<Ex> {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class MyList<Ex> implements List<String> {\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                TypeElement te = workingCopy.getElements().getTypeElement("java.util.List");
+                ParameterizedTypeTree ptt = make.ParameterizedType(
+                        make.QualIdent(te),
+                        Collections.<ExpressionTree>singletonList(make.Identifier("String"))
+                );
+                // name
+                workingCopy.rewrite(clazz, make.addClassImplementsClause(clazz, ptt));
             }
 
             public void cancel() {
