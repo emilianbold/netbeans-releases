@@ -465,6 +465,12 @@ public class WindowsNativeUtils extends NativeUtils {
                 }
                 
                 // contents based analysis
+                // Switched off due to Issue 97995	
+                // This analysis can be switched back only after the serious invesigation
+                // The main additional check should be done based on the name
+		// If it contains any extenstion (except .sh) then check is failed anyway
+		// E.G: GlassFish\imq\lib\props\broker\default.properties 
+		/*
                 String line = FileUtils.readFirstLine(child);
                 if (line != null) {
                     if (line.startsWith("#!/bin/sh")) { // shell script
@@ -472,6 +478,7 @@ public class WindowsNativeUtils extends NativeUtils {
                         continue;
                     }
                 }
+		*/
                 
             }
         }
