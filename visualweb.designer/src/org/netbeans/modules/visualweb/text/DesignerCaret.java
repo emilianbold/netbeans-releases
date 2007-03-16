@@ -591,7 +591,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         //dot = mark = Position.NONE;
         c.addFocusListener(this);
         
-        c.getDocument().addDomDocumentListener(handler);
+//        c.getDocument().addDomDocumentListener(handler);
+        c.getWebForm().getDocument().addDomDocumentListener(handler);
 
         // if the component already has focus, it won't
         // be notified.
@@ -618,7 +619,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         installed = false;
         c.removeFocusListener(this);
         
-        c.getDocument().removeDomDocumentListener(handler);
+//        c.getDocument().removeDomDocumentListener(handler);
+        c.getWebForm().getDocument().removeDomDocumentListener(handler);
 
         synchronized (this) {
             component = null;
@@ -983,9 +985,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
     void repaintNewCaret() {
         if (component != null) {
             DesignerPaneBaseUI mapper = component.getUI();
-            Document doc = component.getDocument();
+//            Document doc = component.getDocument();
 
-            if ((mapper != null) && (doc != null) && (range != null)) {
+            if ((mapper != null) /*&& (doc != null)*/ && (range != null)) {
                 // determine the new location and scroll if
                 // not visible.
                 Position dot = range.getDot();
@@ -1229,7 +1231,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         }
 
 //        component.getDocument().insertString(this, pos, content);
-        component.getDocument().insertString(pos, content);
+//        component.getDocument().insertString(pos, content);
+        component.getWebForm().getDocument().insertString(pos, content);
     }
 
     /**

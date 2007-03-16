@@ -745,19 +745,19 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             
             // attach to the model and editor
             //editor.addPropertyChangeListener(updateHandler);
-            Document doc = editor.getDocument();
+//            Document doc = editor.getDocument();
             
-            if (doc == null) {
-                // no model, create a default one.  This will
-                // fire a notification to the updateHandler
-                // which takes care of the rest.
-                Thread.dumpStack();
-                throw new RuntimeException("Not yet implemented");
-                
-                //editor.setDocument(getEditorKit(editor).createDefaultDocument());
-            } else {
+//            if (doc == null) {
+//                // no model, create a default one.  This will
+//                // fire a notification to the updateHandler
+//                // which takes care of the rest.
+//                Thread.dumpStack();
+//                throw new RuntimeException("Not yet implemented");
+//                
+//                //editor.setDocument(getEditorKit(editor).createDefaultDocument());
+//            } else {
                 resetPageBox();
-            }
+//            }
             
             //            if (DesignerPane.debugclip) {
             //                editor.addKeyListener(updateHandler);
@@ -899,7 +899,7 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             throw(new IllegalArgumentException("Null component."));
         }
         
-        Document doc = editor.getDocument();
+//        Document doc = editor.getDocument();
         Insets i = c.getInsets();
         Dimension d = c.getSize();
         
@@ -967,7 +967,7 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             throw(new IllegalArgumentException("Null component."));
         }
         
-        Document doc = editor.getDocument();
+//        Document doc = editor.getDocument();
         Insets i = c.getInsets();
         Dimension d = new Dimension();
         
@@ -1009,7 +1009,7 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             throw(new IllegalArgumentException("Null component."));
         }
         
-        Document doc = editor.getDocument();
+//        Document doc = editor.getDocument();
         Insets i = c.getInsets();
         Dimension d = new Dimension();
         

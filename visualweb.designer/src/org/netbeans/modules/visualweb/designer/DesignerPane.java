@@ -135,8 +135,9 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
     private FontMetrics metrics;
     private FontMetrics boldMetrics;
 
-    public DesignerPane(final WebForm webform, Document document) {
-        super(document);
+    public DesignerPane(final WebForm webform/*, Document document*/) {
+        super(/*document*/);
+        
         this.webform = webform;
 
         this.designerTransferHandler = new DesignerTransferHandler(webform);

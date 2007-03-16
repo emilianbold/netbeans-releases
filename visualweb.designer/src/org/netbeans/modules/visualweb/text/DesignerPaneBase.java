@@ -330,7 +330,7 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      */
     private static final String uiClassID = "EditorPaneUI";
 //    private Document model = null;
-    private final Document model;
+//    private final Document model;
 
     // --- member variables ----------------------------------
 
@@ -357,9 +357,9 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      * because layout is managed by the view subsystem of text. The document model is set to
      * <code>null</code>.
      */
-    public DesignerPaneBase(Document document) {
+    public DesignerPaneBase(/*Document document*/) {
         super();
-        this.model = document;
+//        this.model = document;
 
         // enable InputMethodEvent for on-the-spot pre-editing
         enableEvents(AWTEvent.KEY_EVENT_MASK | AWTEvent.INPUT_METHOD_EVENT_MASK);
@@ -417,16 +417,16 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
         return focusedComponent;
     }
 
-    /**
-     * Fetches the model associated with the editor. This is primarily for the UI to get at the
-     * minimal amount of state required to be a text editor. Subclasses will return the actual type
-     * of the model which will typically be something that extends Document.
-     *
-     * @return the model
-     */
-    public Document getDocument() {
-        return model;
-    }
+//    /**
+//     * Fetches the model associated with the editor. This is primarily for the UI to get at the
+//     * minimal amount of state required to be a text editor. Subclasses will return the actual type
+//     * of the model which will typically be something that extends Document.
+//     *
+//     * @return the model
+//     */
+//    public Document getDocument() {
+//        return model;
+//    }
 
     /**
      * Fetches the command list for the editor. This is the list of commands supported by the
