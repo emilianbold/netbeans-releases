@@ -27,9 +27,9 @@ import java.util.Map;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Annotatable;
-
 import org.openide.text.Annotation;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
@@ -72,6 +72,10 @@ public class DebuggerAnnotation extends Annotation {
     }
     
     public String getShortDescription () {
+        if (type.endsWith("_broken")) {
+            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
+                ("TOOLTIP_BREAKPOINT_BROKEN"); // NOI18N
+        }
         if (type == EditorContext.BREAKPOINT_ANNOTATION_TYPE)
             return NbBundle.getBundle (DebuggerAnnotation.class).getString 
                 ("TOOLTIP_BREAKPOINT"); // NOI18N
@@ -95,8 +99,8 @@ public class DebuggerAnnotation extends Annotation {
         if (type == EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE)
             return NbBundle.getBundle (DebuggerAnnotation.class).getString 
                 ("TOOLTIP_CALLSITE"); // NOI18N
-        return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-            ("TOOLTIP_ANNOTATION"); // NOI18N
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown breakpoint type '"+type+"'."));
+        return null;
     }
     
     private static final class HighlightAnnotatable extends Annotatable {

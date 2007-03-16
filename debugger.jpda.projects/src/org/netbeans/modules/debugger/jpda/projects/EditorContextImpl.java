@@ -261,6 +261,9 @@ public class EditorContextImpl extends EditorContext {
     }
     
     private static Color getColor(String annotationType) {
+        if (annotationType.endsWith("_broken")) {
+            annotationType = annotationType.substring(0, annotationType.length() - "_broken".length());
+        }
         if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(annotationType)) {
             return new Color(0xFC9D9F);
         } else if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType) ||

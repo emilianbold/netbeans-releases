@@ -337,29 +337,6 @@ public class EditorContextBridge {
         return CLASS;
     }
 
-    public static Object annotate (
-        LineBreakpoint b
-    ) {
-        String url = b.getURL ();
-        int lineNumber = b.getLineNumber ();
-        if (lineNumber < 1) return null;
-        String condition = b.getCondition ();
-        boolean isConditional = (condition != null) &&
-            !condition.trim ().equals (""); // NOI18N
-        String annotationType = b.isEnabled () ?
-            (isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.BREAKPOINT_ANNOTATION_TYPE) :
-            (isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                             EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
-
-        return annotate (
-            url,
-            lineNumber,
-            annotationType,
-            null
-        );
-    }
-
     public static String getRelativePath (
         JPDAThread thread,
         String stratumn

@@ -282,36 +282,55 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors"> 
         <folder name="AnnotationTypes">
             <file name="Breakpoint.xml" url="Breakpoint.xml"/>
+            <file name="Breakpoint_broken.xml" url="Breakpoint_broken.xml"/>
             <file name="DisabledBreakpoint.xml" url="DisabledBreakpoint.xml"/>
             <file name="CondBreakpoint.xml" url="CondBreakpoint.xml"/>
+            <file name="CondBreakpoint_broken.xml" url="CondBreakpoint_broken.xml"/>
             <file name="DisabledCondBreakpoint.xml" url="DisabledCondBreakpoint.xml"/>
             <file name="CurrentPC.xml" url="CurrentPC.xml"/>
             <file name="CallSite.xml" url="CallSite.xml"/>
             <file name="CurrentExpressionLine.xml" url="CurrentExpressionLine.xml"/>
+            <file name="CurrentExpressionLine_BP.xml" url="CurrentExpressionLine_BP.xml"/>
+            <file name="CurrentExpressionLine_CBP.xml" url="CurrentExpressionLine_CBP.xml"/>
+            <file name="CurrentExpressionLine_DBP.xml" url="CurrentExpressionLine_DBP.xml"/>
+            <file name="CurrentExpressionLine_DCBP.xml" url="CurrentExpressionLine_DCBP.xml"/>
             <file name="CurrentExpression.xml" url="CurrentExpression.xml"/>
             <file name="BreakpointableLine.xml" url="BreakpointableLine.xml"/>
             <file name="PC_BP.xml" url="PC_BP.xml"/>
+            <file name="PC_BP_broken.xml" url="PC_BP_broken.xml"/>
             <file name="PC_CBP.xml" url="PC_CBP.xml"/>
+            <file name="PC_CBP_broken.xml" url="PC_CBP_broken.xml"/>
             <file name="PC_DBP.xml" url="PC_DBP.xml"/>
             <file name="PC_DCBP.xml" url="PC_DCBP.xml"/>
             <file name="multi_BPCBP.xml" url="multi_BPCBP.xml"/>
+            <file name="multi_BPCBP_broken.xml" url="multi_BPCBP_broken.xml"/>
             <file name="multi_DBPCBP.xml" url="multi_DBPCBP.xml"/>
             <file name="PC_multi_BPCBP.xml" url="PC_multi_BPCBP.xml"/>
+            <file name="PC_multi_BPCBP_broken.xml" url="PC_multi_BPCBP_broken.xml"/>
             <file name="PC_multi_DBPCBP.xml" url="PC_multi_DBPCBP.xml"/>
             <file name="mixed_BP.xml" url="mixed_BP.xml"/>
+            <file name="mixed_BP_broken.xml" url="mixed_BP_broken.xml"/>
             <file name="PC_mixedBP.xml" url="PC_mixedBP.xml"/>
+            <file name="PC_mixedBP_broken.xml" url="PC_mixedBP_broken.xml"/>
 
 	<!-- following are invisible annotation types which are used for combining -->
             <file name="_multi_BP.xml" url="_multi_BP.xml"/>
+            <file name="_multi_BP_broken.xml" url="_multi_BP_broken.xml"/>
             <file name="_multi_CBP.xml" url="_multi_CBP.xml"/>
+            <file name="_multi_CBP_broken.xml" url="_multi_CBP_broken.xml"/>
             <file name="_multi_DBP.xml" url="_multi_DBP.xml"/>
             <file name="_multi_DCBP.xml" url="_multi_DCBP.xml"/>
             <file name="_mixed_BPCBP.xml" url="_mixed_BPCBP.xml"/>
+            <file name="_mixed_BPCBP_broken.xml" url="_mixed_BPCBP_broken.xml"/>
             <file name="_mixed_DBPCBP.xml" url="_mixed_DBPCBP.xml"/>
             <file name="_mixed_BPD.xml" url="_mixed_BPD.xml"/>
+            <file name="_mixed_BPD_broken.xml" url="_mixed_BPD_broken.xml"/>
             <file name="_mixed_CBPD.xml" url="_mixed_CBPD.xml"/>
+            <file name="_mixed_CBPD_broken.xml" url="_mixed_CBPD_broken.xml"/>
             <file name="_mixed_DBP.xml" url="_mixed_DBP.xml"/>
+            <file name="_mixed_DBP_broken.xml" url="_mixed_DBP_broken.xml"/>
             <file name="_mixed_DCBP.xml" url="_mixed_DCBP.xml"/>
+            <file name="_mixed_DCBP_broken.xml" url="_mixed_DCBP_broken.xml"/>
         </folder>
         
     </folder>

@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -346,11 +347,13 @@ public class EditorContextBridge {
         String condition = b.getCondition ();
         boolean isConditional = (condition != null) &&
             !"".equals (condition.trim ()); // NOI18N
+        boolean isInvalid = b.getValidity() == VALIDITY.INVALID;
         String annotationType = b.isEnabled () ?
             (isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
                              EditorContext.BREAKPOINT_ANNOTATION_TYPE) :
             (isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
                              EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
+        if (isInvalid && b.isEnabled ()) annotationType += "_broken";
 
         return annotate (
             url,

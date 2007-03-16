@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,7 +22,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.Breakpoint;
-
+import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
@@ -403,36 +403,42 @@ public class BreakpointsNodeModel implements NodeModel {
     public String getIconBase (Object o) throws UnknownTypeException {
         boolean current = currentBreakpoint == o;
         boolean disabled = !((Breakpoint) o).isEnabled();
+        boolean invalid = ((Breakpoint) o).getValidity() == VALIDITY.INVALID;
         if (o instanceof LineBreakpoint) {
             String condition = ((LineBreakpoint) o).getCondition();
             boolean conditional = condition != null && condition.trim().length() > 0;
+            String iconBase;
             if (current) {
                 if (disabled) {
                     if (conditional) {
-                        return DISABLED_LINE_CONDITIONAL_BREAKPOINT;
+                        iconBase = DISABLED_LINE_CONDITIONAL_BREAKPOINT;
                     } else {
-                        return DISABLED_CURRENT_LINE_BREAKPOINT;
+                        iconBase = DISABLED_CURRENT_LINE_BREAKPOINT;
                     }
                 } else {
                     if (conditional) {
-                        return CURRENT_LINE_CONDITIONAL_BREAKPOINT;
+                        iconBase = CURRENT_LINE_CONDITIONAL_BREAKPOINT;
                     } else {
-                        return CURRENT_LINE_BREAKPOINT;
+                        iconBase = CURRENT_LINE_BREAKPOINT;
                     }
                 }
             } else if (disabled) {
                 if (conditional) {
-                    return DISABLED_LINE_CONDITIONAL_BREAKPOINT;
+                    iconBase = DISABLED_LINE_CONDITIONAL_BREAKPOINT;
                 } else {
-                    return DISABLED_LINE_BREAKPOINT;
+                    iconBase = DISABLED_LINE_BREAKPOINT;
                 }
             } else {
                 if (conditional) {
-                    return LINE_CONDITIONAL_BREAKPOINT;
+                    iconBase = LINE_CONDITIONAL_BREAKPOINT;
                 } else {
-                    return LINE_BREAKPOINT;
+                    iconBase = LINE_BREAKPOINT;
                 }
             }
+            if (invalid && !disabled) {
+                iconBase += "_broken";
+            }
+            return iconBase;
         } else
         if (o instanceof ThreadBreakpoint ||
             o instanceof FieldBreakpoint ||
@@ -440,17 +446,22 @@ public class BreakpointsNodeModel implements NodeModel {
             o instanceof ClassLoadUnloadBreakpoint ||
             o instanceof ExceptionBreakpoint) {
             
+            String iconBase;
             if (current) {
                 if (disabled) {
-                    return DISABLED_CURRENT_BREAKPOINT;
+                    iconBase = DISABLED_CURRENT_BREAKPOINT;
                 } else {
-                    return CURRENT_BREAKPOINT;
+                    iconBase = CURRENT_BREAKPOINT;
                 }
             } else if (disabled) {
-                return DISABLED_BREAKPOINT;
+                iconBase = DISABLED_BREAKPOINT;
             } else {
-                return BREAKPOINT;
+                iconBase = BREAKPOINT;
+                if (invalid) {
+                    iconBase += "_broken";
+                }
             }
+            return iconBase;
         } else
         throw new UnknownTypeException (o);
     }
