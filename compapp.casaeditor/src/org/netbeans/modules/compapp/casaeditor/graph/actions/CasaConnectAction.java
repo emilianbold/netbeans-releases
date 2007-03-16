@@ -168,6 +168,10 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
                 // to attempting to create a conneciton.
                 return State.CHAIN_ONLY;
             }
+        } else {
+            // The wrong button, or an incorrect number of clicks.
+            // Cleanup our connection state if any exists.
+            cleanup();
         }
         return State.REJECTED;
     }
@@ -178,24 +182,34 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
         }
         Point point = event.getPoint ();
         move(widget, point);
-        if (Math.abs (startingPoint.x - point.x) >= MIN_DIFFERENCE  ||  Math.abs (startingPoint.y - point.y) >= MIN_DIFFERENCE)
+        if (
+                Math.abs (startingPoint.x - point.x) >= MIN_DIFFERENCE  ||  
+                Math.abs (startingPoint.y - point.y) >= MIN_DIFFERENCE) {
             provider.createConnection (connectionSourceWidget, connectionTargetWidget);
+        }
+        
+        cleanup();
+        
+        return State.CONSUMED;
+    }
+
+    private void cleanup() {
         connectionSourceWidget = null;
         connectionTargetWidget = null;
         startingPoint = null;
-        dragConnectionWidget.setSourceAnchor (null);
-        dragConnectionWidget.setTargetAnchor (null);
-        if (interractionLayer.getChildren().contains(dragConnectionWidget)) {
-            interractionLayer.removeChild (dragConnectionWidget);
+        if (dragConnectionWidget != null) {
+            dragConnectionWidget.setSourceAnchor(null);
+            dragConnectionWidget.setTargetAnchor(null);
+            if (interractionLayer.getChildren().contains(dragConnectionWidget)) {
+                interractionLayer.removeChild (dragConnectionWidget);
+            }
         }
         dragConnectionWidget = null;
         mIsCommitted = false;
         
         updateConnectionHints();
-        
-        return State.CONSUMED;
     }
-
+    
     public WidgetAction.State mouseDragged (Widget widget, WidgetAction.WidgetMouseEvent event) {
         if (connectionSourceWidget == null || widget != connectionSourceWidget) {
             return State.REJECTED;

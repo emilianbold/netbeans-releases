@@ -21,6 +21,7 @@ package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
@@ -49,19 +50,22 @@ public class CasaRemoveAction extends WidgetAction.Adapter {
     
     public State keyPressed(Widget widget, WidgetKeyEvent event) {
         if (event.getKeyCode() == KeyEvent.VK_DELETE) {
-            // First check whether any of the selected objects are
-            // not deletable. If at least one is not, then bail.
-            // Otherwise, allow the delete.
-            Set objectsToDelete = mScene.getSelectedObjects();
-            for (Object object : objectsToDelete) {
+            Set selectedObjects = mScene.getSelectedObjects();
+            List objectsToDelete = new ArrayList();
+            for (Object object : selectedObjects) {
                 CasaNode node = 
                         (CasaNode) mScene.getNodeFactory().createNodeFor((CasaComponent) object);
-                if (!node.isDeletable()) {
-                    return State.REJECTED;
+                if (node.isDeletable()) {
+                    objectsToDelete.add(object);
                 }
             }
+            
+            if (objectsToDelete.size() == 0) {
+                return State.REJECTED;
+            }
+            
             // Perform the deletion.
-            NodeDeleteAction.delete(mModel, new ArrayList(mScene.getSelectedObjects()));
+            NodeDeleteAction.delete(mModel, objectsToDelete);
             return State.CONSUMED;
         }
         
