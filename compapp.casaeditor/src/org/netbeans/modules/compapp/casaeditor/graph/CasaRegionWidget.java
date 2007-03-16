@@ -50,7 +50,7 @@ public class CasaRegionWidget extends LayerWidget {
     private static final int    TITLE_Y_POS   = 20;
     
     private static final Color  BANNER_COLOR  = new Color(160, 135, 230);
-    private static final Font   BANNER_FONT   = new Font("Dialog", Font.BOLD, 28);  // NOI18N
+    private static final Font   BANNER_FONT   = new Font("Dialog", Font.BOLD, 18);  // NOI18N
     
     private static final String LABEL_TRUNCATED = NbBundle.getMessage(CasaRegionWidget.class, "LBL_Truncated"); // NOI18N
     
@@ -64,7 +64,7 @@ public class CasaRegionWidget extends LayerWidget {
     private String mTitleText;
     private int mFullTitleStringWidth = -1;
     
-    private MultiLabelWidget mBannerWidget;
+    private LineBreakingLabelWidget mBannerWidget;
     
     
     /** Creates a new instance of CasaRegion */
@@ -133,11 +133,16 @@ public class CasaRegionWidget extends LayerWidget {
     
     
     private void updateBannerLabel() {
-        if (mBannerWidget.getBounds() != null) {
-            mBannerWidget.setPreferredLocation(new Point(
-                    (mRegionPreferredSize.width - mBannerWidget.getStringLength()) / 2,
-                    (CasaRegionWidget.this.getPreferredBounds().height - mBannerWidget.getBounds().height) / 2));
-        }
+        int height = CasaRegionWidget.this.getPreferredBounds().height - getLabelYOffset();
+        mBannerWidget.setPreferredBounds(new Rectangle(
+                0,
+                0,
+                CasaRegionWidget.this.getPreferredBounds().width,
+                height));
+        // set the preferred location AFTER the bounds are set, because only 
+        // the location change causes the banner widget dependency to trigger -
+        // and we want the dependency to trigger after the bounds are set.
+        mBannerWidget.setPreferredLocation(new Point(0, height / 2));
     }
     
     private void updateTitleLabel(LabelWidget widget, String text, int stringWidth, int yPos) {
@@ -164,17 +169,14 @@ public class CasaRegionWidget extends LayerWidget {
         return mBannerWidget != null;
     }
     
-    public void setBanner(String[] bannerText) {
+    public void setBanner(String bannerText) {
         if (bannerText == null) {
             removeChild(mBannerWidget);
             mBannerWidget = null;
             getScene().validate();
         } else {
-            mBannerWidget = new MultiLabelWidget(
-                    getScene(), 
-                    bannerText,
-                    (Color) getBackground(),
-                    BANNER_FONT);
+            mBannerWidget = new LineBreakingLabelWidget(getScene());
+            mBannerWidget.setText(bannerText, (Color) getBackground(), BANNER_FONT);
             addChild(mBannerWidget);
             getScene().validate();
             updateBannerLabel();

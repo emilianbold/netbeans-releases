@@ -29,6 +29,11 @@ import org.openide.util.NbBundle;
  */
 public class BannerSceneListener implements SceneListener{
     
+    private static String STR_BC_BANNER          = "STR_START_HINT_BC";
+    private static String STR_SU_INTERNAL_BANNER = "STR_START_HINT_SU_INTERNAL";
+    private static String STR_SU_EXTERNAL_BANNER = "STR_START_HINT_SU_EXTERNAL";
+    
+    
     private CasaModelGraphScene mScene;
     private boolean mIsIgnore;
     
@@ -45,7 +50,13 @@ public class BannerSceneListener implements SceneListener{
     }
     
     public void sceneValidated() {
-        CasaRegionWidget regionWidget = mScene.getEngineRegion();
+        updateBanner(mScene.getBindingRegion(),  STR_BC_BANNER);
+        updateBanner(mScene.getEngineRegion(),   STR_SU_INTERNAL_BANNER);
+        updateBanner(mScene.getExternalRegion(), STR_SU_EXTERNAL_BANNER);
+    }
+    
+    
+    private void updateBanner(CasaRegionWidget regionWidget, String bannerKey) {
         if (
                 mIsIgnore ||
                 regionWidget == null ||
@@ -57,9 +68,7 @@ public class BannerSceneListener implements SceneListener{
         if (isEmpty && !regionWidget.hasBanner()) {
             try {
                 mIsIgnore = true;
-                regionWidget.setBanner(new String[] {
-                    NbBundle.getMessage(getClass(), "STR_EMPTY_CONFIGURATION"),
-                    NbBundle.getMessage(getClass(), "STR_ADD_JBI_MODULES") });
+                regionWidget.setBanner(NbBundle.getMessage(getClass(), bannerKey));
             } finally {
                 mIsIgnore = false;
             }
