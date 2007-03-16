@@ -36,13 +36,15 @@ import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 
 /** Plugin that implements the core functionality of Copy Class Refactoring.
@@ -101,7 +103,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
     
-private class CopyClass extends SimpleRefactoringElementImpl implements RefactoringElementImplementation{
+private class CopyClass extends SimpleRefactoringElementImplementation implements RefactoringElementImplementation{
         
         public CopyClass () {
         }
@@ -116,8 +118,8 @@ private class CopyClass extends SimpleRefactoringElementImpl implements Refactor
             );
         }
 
-        public Object getComposite() {
-            return getParentFile();
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
         }
 
         public PositionBounds getPosition() {

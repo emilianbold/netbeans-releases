@@ -37,10 +37,12 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -120,7 +122,7 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
         return null;
     }
     
-    public class JSFWhereUsedElement extends SimpleRefactoringElementImpl  {
+    public class JSFWhereUsedElement extends SimpleRefactoringElementImplementation  {
         
         private final Occurrences.OccurrenceItem item;
         
@@ -151,8 +153,8 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
             return item.getClassDefinitionPosition();
         }
         
-        public Object getComposite() {
-            return item.getFacesConfig();
+        public Lookup getLookup() {
+            return Lookups.singleton(item.getFacesConfig());
         }
         
     }

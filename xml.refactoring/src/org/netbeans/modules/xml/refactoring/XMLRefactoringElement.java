@@ -11,7 +11,7 @@ package org.netbeans.modules.xml.refactoring;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
@@ -26,7 +26,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Sonali
  */
-public abstract class XMLRefactoringElement extends SimpleRefactoringElementImpl {
+public abstract class XMLRefactoringElement extends SimpleRefactoringElementImplementation {
     
     public Node node;
     

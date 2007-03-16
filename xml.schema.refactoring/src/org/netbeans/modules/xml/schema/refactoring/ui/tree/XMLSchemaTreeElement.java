@@ -53,7 +53,7 @@ public class XMLSchemaTreeElement implements TreeElement {
        
     XMLSchemaTreeElement(RefactoringElement element) {
         this.element = element;
-        this.component = (SchemaComponent) element.getComposite();
+        this.component = element.getLookup().lookup(SchemaComponent.class);
         assert component instanceof SchemaComponent:"This TreeElement handles SchemaComponents only";
         SchemaComponent sc = SchemaComponent.class.cast(component);
         CategorizedSchemaNodeFactory nodeFactory = new CategorizedSchemaNodeFactory(sc.getModel(), Lookups.singleton(sc));

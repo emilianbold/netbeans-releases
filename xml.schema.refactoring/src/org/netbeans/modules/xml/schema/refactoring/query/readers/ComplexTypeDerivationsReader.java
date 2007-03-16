@@ -698,7 +698,7 @@ public class ComplexTypeDerivationsReader {
         if(displayNode.getUserObject() instanceof Component)
             n.set(AnalysisConstants.XAM_COMPONENT, (Component)displayNode.getUserObject()  );
         else if(displayNode.getUserObject() instanceof RefactoringElement ) {
-            Component comp = (Component)( (RefactoringElement)displayNode.getUserObject()).getComposite();
+            Component comp = (Component)( (RefactoringElement)displayNode.getUserObject()).getLookup().lookup(Component.class);
             n.set(AnalysisConstants.XAM_COMPONENT, comp);
         } else
             //no clue what kind of obj we got
@@ -730,7 +730,7 @@ public class ComplexTypeDerivationsReader {
             RefactoringElement usageElement =(RefactoringElement)usageNode.getUserObject();
             
             if (ctDerivationsOnly){
-                Component usageComponent = (Component)usageElement.getComposite();
+                Component usageComponent = usageElement.getLookup().lookup(Component.class);
                 if (usageComponent instanceof ComplexContentRestriction){
                     derivationsCount.set(1,derivationsCount.get(1)+1);
                 } else if (usageComponent instanceof ComplexExtension){
@@ -800,8 +800,8 @@ public class ComplexTypeDerivationsReader {
                     
                     // Connect this usage node to the Query Node
                     // with the appropriate edge (composition or reference)
-                     Object obj= ((RefactoringElement)userObject).getComposite();
-                     if(obj instanceof Component)
+                     Component obj= ((RefactoringElement)userObject).getLookup().lookup(Component.class);
+                     if(obj !=null)
                          addApppropriateEdge(graph, pn, queryNode, fileGroupNumber,Type.REFERENCE );
                      else
                          addApppropriateEdge(graph, pn, queryNode, fileGroupNumber, null);

@@ -94,8 +94,10 @@ public final class RefactoringSession {
             if (saveAfterDone) {
                 LifecycleManager.getDefault().saveAll();
             }
-            for (Transaction fileChange:SPIAccessor.DEFAULT.getFileChanges(bag)) {
-                fileChange.commit();
+            for (RefactoringElementImplementation fileChange:SPIAccessor.DEFAULT.getFileChanges(bag)) {
+                if (fileChange.isEnabled()) {
+                    fileChange.performChange();
+                }
             }
             fireProgressListenerStep();
         } finally {
@@ -118,10 +120,13 @@ public final class RefactoringSession {
         try {
             ListIterator it = internalList.listIterator(internalList.size());
             fireProgressListenerStart(0, internalList.size()+1);
-            ArrayList<Transaction> fileChanges = SPIAccessor.DEFAULT.getFileChanges(bag);
+            ArrayList<RefactoringElementImplementation> fileChanges = SPIAccessor.DEFAULT.getFileChanges(bag);
             ArrayList<Transaction> commits = SPIAccessor.DEFAULT.getCommits(bag);
-            for (ListIterator<Transaction> fileChangeIterator = fileChanges.listIterator(fileChanges.size()); fileChangeIterator.hasPrevious();) {
-                fileChangeIterator.previous().rollback();
+            for (ListIterator<RefactoringElementImplementation> fileChangeIterator = fileChanges.listIterator(fileChanges.size()); fileChangeIterator.hasPrevious();) {
+                RefactoringElementImplementation f = fileChangeIterator.previous();
+                if (f.isEnabled()) {
+                    f.undoChange();
+                }
             }
             for (ListIterator<Transaction> commitIterator = commits.listIterator(commits.size()); commitIterator.hasPrevious();) {
                 commitIterator.previous().rollback();
@@ -199,23 +204,28 @@ public final class RefactoringSession {
         public Iterator<RefactoringElement> iterator() {
             return new Iterator() {
                 private final Iterator<RefactoringElementImplementation> inner = internalList.iterator();
+                private final Iterator<RefactoringElementImplementation> inner2 = SPIAccessor.DEFAULT.getFileChanges(bag).iterator();
 
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }
                 
                 public RefactoringElement next() {
-                    return new RefactoringElement(inner.next());
+                    if (inner.hasNext()) {
+                        return new RefactoringElement(inner.next());
+                    } else {
+                        return new RefactoringElement(inner2.next());
+                    }
                 }
                 
                 public boolean hasNext() {
-                    return inner.hasNext();
+                    return (inner.hasNext() || inner2.hasNext());
                 }
             };
         }
 
         public int size() {
-            return internalList.size();
+            return internalList.size() + SPIAccessor.DEFAULT.getFileChanges(bag).size();
         }
     }
 }

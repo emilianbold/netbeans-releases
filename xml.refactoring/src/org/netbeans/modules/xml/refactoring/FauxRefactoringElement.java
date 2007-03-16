@@ -11,7 +11,7 @@ package org.netbeans.modules.xml.refactoring;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
@@ -22,12 +22,14 @@ import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Sonali
  */
-public class FauxRefactoringElement extends SimpleRefactoringElementImpl {
+public class FauxRefactoringElement extends SimpleRefactoringElementImplementation {
     
     Node node;
     FileObject targetFobj;
@@ -64,9 +66,9 @@ public class FauxRefactoringElement extends SimpleRefactoringElementImpl {
     public void performChange() {
     }
 
-    public Object getComposite() {
-        return this;
-        //return null;
+    @Override
+    public Lookup getLookup() {
+        return Lookups.singleton(this);
     }
 
     public FileObject getParentFile() {

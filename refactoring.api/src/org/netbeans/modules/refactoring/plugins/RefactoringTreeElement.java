@@ -38,10 +38,12 @@ public class RefactoringTreeElement implements TreeElement {
 
     public TreeElement getParent(boolean isLogical) {
         if (isLogical) {
-            return TreeElementFactory.getTreeElement(element.getComposite());
-        } else {
-            return TreeElementFactory.getTreeElement(element.getParentFile());
+            Object composite = element.getLookup().lookup(Object.class);
+            if (composite!=null) {
+                return TreeElementFactory.getTreeElement(composite);
+            }
         }
+        return TreeElementFactory.getTreeElement(element.getParentFile());
     }
     
     public Icon getIcon() {

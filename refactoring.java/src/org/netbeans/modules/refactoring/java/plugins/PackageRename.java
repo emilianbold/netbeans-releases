@@ -32,13 +32,15 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -72,7 +74,7 @@ public class PackageRename implements RefactoringPluginFactory{
         }
         
         public Problem prepare(RefactoringElementsBag elements) {
-            elements.add(refactoring, new RenameNonRecursiveFolder(refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class), elements));
+            elements.addFileChange(refactoring, new RenameNonRecursiveFolder(refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class), elements));
             return null;
         }
         
@@ -102,7 +104,7 @@ public class PackageRename implements RefactoringPluginFactory{
         public void cancelRequest() {
         }
         
-        private class RenameNonRecursiveFolder extends SimpleRefactoringElementImpl {
+        private class RenameNonRecursiveFolder extends SimpleRefactoringElementImplementation {
             
             private FileObject folder;
             private RefactoringElementsBag session;
@@ -131,19 +133,15 @@ public class PackageRename implements RefactoringPluginFactory{
             }
             
             public void performChange() {
-                session.registerFileChange(new Transaction() {
-                    public void commit() {
-                        setName();
-                    }
-                    
-                    public void rollback() {
-                        throw new UnsupportedOperationException("not implemented");
-                    }
-                });
+                setName();
             }
             
-            public Object getComposite() {
-                return folder.getParent();
+            public void undoChange() {
+                throw new UnsupportedOperationException("not implemented");
+            }
+            
+            public Lookup getLookup() {
+                return Lookups.singleton(folder.getParent());
             }
             
             public FileObject getParentFile() {

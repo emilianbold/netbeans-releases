@@ -43,7 +43,7 @@ public class RefactoringTreeElement implements TreeElement {
     
     RefactoringTreeElement(RefactoringElement element) {
         this.element = element;
-        thisFeature = getFeature(((ElementGrip) element.getComposite()));
+        thisFeature = getFeature(((ElementGrip) element.getLookup().lookup(ElementGrip.class)));
         parent =  thisFeature.getParent();
         if (parent == null) {
             parent = thisFeature;

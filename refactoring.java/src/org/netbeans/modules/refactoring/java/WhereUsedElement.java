@@ -25,18 +25,21 @@ import java.io.IOException;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 import static org.netbeans.modules.refactoring.java.RetoucheUtils.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
-public class WhereUsedElement extends SimpleRefactoringElementImpl {
+public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     private PositionBounds bounds;
     private String displayText;
     private FileObject parentFile;
@@ -51,11 +54,12 @@ public class WhereUsedElement extends SimpleRefactoringElementImpl {
         return displayText;
     }
 
-    public Object getComposite() {
+    @Override
+    public Lookup getLookup() {
         Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
         if (composite==null) 
             composite = parentFile;
-        return composite;
+        return Lookups.singleton(composite);
     }
 
     public PositionBounds getPosition() {

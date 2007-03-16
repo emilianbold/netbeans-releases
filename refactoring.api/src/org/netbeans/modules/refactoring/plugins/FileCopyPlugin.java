@@ -25,12 +25,13 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -64,7 +65,7 @@ public class FileCopyPlugin implements RefactoringPlugin {
     public void cancelRequest() {
     }
     
-    private class CopyFile extends SimpleRefactoringElementImpl {
+    private class CopyFile extends SimpleRefactoringElementImplementation {
         
         private FileObject fo;
         private RefactoringSession session;
@@ -103,8 +104,8 @@ public class FileCopyPlugin implements RefactoringPlugin {
             }
         }
         
-        public Object getComposite() {
-            return fo;
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
         }
         
         public FileObject getParentFile() {

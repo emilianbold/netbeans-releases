@@ -25,11 +25,12 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -48,7 +49,7 @@ public class FileRenamePlugin implements RefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
-        elements.add(refactoring, new RenameFile(refactoring.getRefactoringSource().lookup(FileObject.class), elements));
+        elements.addFileChange(refactoring, new RenameFile(refactoring.getRefactoringSource().lookup(FileObject.class), elements));
         return null;
     }
     
@@ -63,13 +64,11 @@ public class FileRenamePlugin implements RefactoringPlugin {
     public void cancelRequest() {
     }
     
-    private class RenameFile extends SimpleRefactoringElementImpl {
+    private class RenameFile extends SimpleRefactoringElementImplementation {
         
         private FileObject fo;
-        private RefactoringElementsBag bag;
         public RenameFile(FileObject fo, RefactoringElementsBag bag) {
             this.fo = fo;
-            this.bag = bag;
         }
         public String getText() {
             return "Rename file " + fo.getNameExt();
@@ -79,34 +78,31 @@ public class FileRenamePlugin implements RefactoringPlugin {
             return getText();
         }
 
+        private String oldName;
+        
         public void performChange() {
-            bag.registerFileChange(new Transaction() {
-                private String oldName;
-                public void commit() {
-                    try {
-                        oldName = fo.getName();
-                        DataObject.find(fo).rename(refactoring.getNewName());
-                    } catch (DataObjectNotFoundException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-                
-                public void rollback() {
-                    try {
-                        DataObject.find(fo).rename(oldName);
-                    } catch (DataObjectNotFoundException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
-         }
+            try {
+                oldName = fo.getName();
+                DataObject.find(fo).rename(refactoring.getNewName());
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        public void undoChange(){
+            try {
+                DataObject.find(fo).rename(oldName);
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
 
-        public Object getComposite() {
-            return fo;
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
         }
 
         public FileObject getParentFile() {

@@ -21,6 +21,7 @@ package org.netbeans.modules.refactoring.spi;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 
 /** Interface representing a refactoring element (object affected by a refactoring)
  * returned in a collection from {@link org.netbeans.modules.refactoring.api.AbstractRefactoring#prepare} operation.
@@ -90,13 +91,16 @@ public interface RefactoringElementImplementation {
      */
     void undoChange();
     
-    /** Returns element containing this refactoring element.
+    /** 
+     * Returns Lookup associated with this element.
+     * Lookup items might be used by TreeElementFactories to build refactoring
+     * preview trees.
      * @see org.netbeans.modules.refactoring.spi.ui.TreeElement
      * @see org.netbeans.modules.refactoring.spi.ui.TreeElementFactory
      * @see org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation
-     * @return element.
+     * @return Lookup. Might be empty.
      */
-    Object getComposite();
+    Lookup getLookup();
     
     /** Returns file that the element affects (relates to)
      * @return File

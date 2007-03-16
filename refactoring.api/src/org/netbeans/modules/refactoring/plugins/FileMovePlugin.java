@@ -25,13 +25,14 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -51,7 +52,7 @@ public class FileMovePlugin implements RefactoringPlugin {
     
     public Problem prepare(RefactoringElementsBag elements) {
         for (FileObject o: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
-                elements.add(refactoring, new MoveFile(o, elements));
+            elements.addFileChange(refactoring, new MoveFile(o, elements));
         }
         return null;
     }
@@ -67,13 +68,11 @@ public class FileMovePlugin implements RefactoringPlugin {
     public void cancelRequest() {
     }
     
-    private class MoveFile extends SimpleRefactoringElementImpl {
+    private class MoveFile extends SimpleRefactoringElementImplementation {
         
         private FileObject fo;
-        private RefactoringElementsBag session;
         public MoveFile(FileObject fo, RefactoringElementsBag session) {
             this.fo = fo;
-            this.session = session;
         }
         public String getText() {
             return "Move file " + fo.getNameExt();
@@ -82,41 +81,38 @@ public class FileMovePlugin implements RefactoringPlugin {
         public String getDisplayText() {
             return getText();
         }
-
+        
+        DataFolder sourceFolder;
+        DataObject source;
         public void performChange() {
-            session.registerFileChange(new Transaction() {
-                DataFolder sourceFolder;
-                DataObject source;
-                public void commit() {
-                    try {
-                        FileObject target = FileHandlingFactory.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
-                        DataFolder targetFolder = DataFolder.findFolder(target);
-                        if (!fo.isValid()) {
-                            fo = FileUtil.toFileObject(FileUtil.toFile(fo));
-                        }
-                        source = DataObject.find(fo);
-                        sourceFolder = source.getFolder();
-                        source.move(targetFolder);
-                    } catch (DataObjectNotFoundException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
+            try {
+                FileObject target = FileHandlingFactory.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
+                DataFolder targetFolder = DataFolder.findFolder(target);
+                if (!fo.isValid()) {
+                    fo = FileUtil.toFileObject(FileUtil.toFile(fo));
                 }
-                public void rollback() {
-                    try {
-                        source.move(sourceFolder);
-                    } catch (DataObjectNotFoundException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
-         }
+                source = DataObject.find(fo);
+                sourceFolder = source.getFolder();
+                source.move(targetFolder);
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        public void undoChange() {
+            try {
+                source.move(sourceFolder);
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
 
-        public Object getComposite() {
-            return fo;
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
         }
 
         public FileObject getParentFile() {

@@ -24,7 +24,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.xml.nbprefuse.AnalysisConstants;
@@ -178,7 +178,7 @@ public class GraphHelper {
              //For the 0 usages case, we get a FauxTreeElement. Dont graph this map 
             //the only way of finding its a faux element is by looking at its composite object
            
-            if (usageElement.getComposite() instanceof SimpleRefactoringElementImpl){
+            if (usageElement.getLookup().lookup(SimpleRefactoringElementImplementation.class)!=null){
                 break;
             }
                
@@ -245,8 +245,8 @@ public class GraphHelper {
                             HorizontalAlignment.CENTER);
                     // Connect this usage node to the Query Node
                     // with the appropriate edge (composition or reference)
-                     Object obj= ((RefactoringElement)userObject).getComposite();
-                     if(obj instanceof Component)
+                     Component obj = ((RefactoringElement)userObject).getLookup().lookup(Component.class);
+                     if(obj!=null)
                          addApppropriateEdge(graph, pn, queryNode, fileGroupNumber,Type.REFERENCE );
                      else
                          addApppropriateEdge(graph, pn, queryNode, fileGroupNumber, null);

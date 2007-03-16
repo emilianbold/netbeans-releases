@@ -265,7 +265,7 @@ public class SharedUtils {
      public static Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements){
         Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
         for(RefactoringElementImplementation element:elements){
-           Model model = ((Component)element.getComposite()).getModel();
+           Model model = ((Component)element.getLookup().lookup(Component.class)).getModel();
            Set<RefactoringElementImplementation> elementsInModel = results.get(model);
            if(elementsInModel == null){
                elementsInModel = new HashSet<RefactoringElementImplementation>();

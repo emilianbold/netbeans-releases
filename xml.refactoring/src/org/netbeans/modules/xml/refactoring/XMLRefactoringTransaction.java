@@ -198,7 +198,7 @@ public class XMLRefactoringTransaction implements Transaction {
     private Map<Model, Set<RefactoringElementImplementation>> getModels(){
         Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
         for(RefactoringElementImplementation element:elements){
-           Model model = ((Component)element.getComposite()).getModel();
+           Model model = ((Component)element.getLookup().lookup(Component.class)).getModel();
            Set<RefactoringElementImplementation> elementsInModel = results.get(model);
            if(elementsInModel == null){
                elementsInModel = new HashSet<RefactoringElementImplementation>();
@@ -319,7 +319,7 @@ public class XMLRefactoringTransaction implements Transaction {
             List<Component> ret = new ArrayList<Component>();
             for(RefactoringElementImplementation element:elements){
                 if(element.isEnabled())
-                    ret.add( (Component)element.getComposite());
+                    ret.add( (Component)element.getLookup().lookup(Component.class));
             }
             return ret;
         }

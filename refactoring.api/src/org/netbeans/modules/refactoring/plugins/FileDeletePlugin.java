@@ -26,12 +26,13 @@ import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 
 
 /**
@@ -52,7 +53,7 @@ public class FileDeletePlugin implements RefactoringPlugin {
     
     public Problem prepare(RefactoringElementsBag elements) {
         for (FileObject fo: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
-            elements.add(refactoring, new DeleteFile(fo, elements));
+            elements.addFileChange(refactoring, new DeleteFile(fo, elements));
         }
         return null;
     }
@@ -68,7 +69,7 @@ public class FileDeletePlugin implements RefactoringPlugin {
     public void cancelRequest() {
     }
     
-    private class DeleteFile extends SimpleRefactoringElementImpl {
+    private class DeleteFile extends SimpleRefactoringElementImplementation {
         
         private FileObject fo;
         private RefactoringElementsBag session;
@@ -84,36 +85,32 @@ public class FileDeletePlugin implements RefactoringPlugin {
             return getText();
         }
 
+        BackupFacility.Handle id;
         public void performChange() {
-            session.registerFileChange(new Transaction() {
-               BackupFacility.Handle id;
-                public void commit () {
-                    try {
-                        if (!fo.isValid()) {
-                            fo = FileUtil.toFileObject(new File(fo.getPath()));
-                        }
-                            
-                        id = BackupFacility.getDefault().backup(fo);
-                        DataObject.find(fo).delete();
-                    } catch (DataObjectNotFoundException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
+            try {
+                if (!fo.isValid()) {
+                    fo = FileUtil.toFileObject(new File(fo.getPath()));
                 }
                 
-                public void rollback() {
-                    try {
-                        id.restore();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
+                id = BackupFacility.getDefault().backup(fo);
+                DataObject.find(fo).delete();
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        public void undoChange() {
+            try {
+                id.restore();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
 
-        public Object getComposite() {
-            return fo;
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
         }
 
         public FileObject getParentFile() {

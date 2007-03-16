@@ -38,10 +38,12 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -162,7 +164,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
         return originalFullyQualifiedName.substring(0, lastDot + 1) + newName;
     }
     
-    public static class JSFConfigRenameClassElement extends SimpleRefactoringElementImpl {
+    public static class JSFConfigRenameClassElement extends SimpleRefactoringElementImplementation {
         private final Occurrences.OccurrenceItem item;
         
         JSFConfigRenameClassElement(Occurrences.OccurrenceItem item){
@@ -197,8 +199,8 @@ public class JSFRenamePlugin implements RefactoringPlugin {
             return item.getClassDefinitionPosition();
         }
         
-        public Object getComposite() {
-            return item.getFacesConfig();
+        public Lookup getLookup() {
+            return Lookups.singleton(item.getFacesConfig());
         }
     }
     

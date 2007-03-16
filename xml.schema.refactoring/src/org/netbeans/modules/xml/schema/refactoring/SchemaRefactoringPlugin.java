@@ -119,7 +119,7 @@ public abstract class SchemaRefactoringPlugin extends ProgressProviderAdapter im
      public List<Model> getModels(List<SchemaRefactoringElement> elements){
          List<Model> models = new ArrayList<Model>();
          for(RefactoringElementImplementation element:elements){
-             models.add( ((Component)element.getComposite()).getModel());
+             models.add( (element.getLookup().lookup(Component.class)).getModel());
          }
          return models;
      }

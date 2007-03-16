@@ -11,7 +11,7 @@ package org.netbeans.modules.xml.schema.refactoring;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
@@ -24,13 +24,14 @@ import org.netbeans.modules.xml.xam.ui.actions.ShowSourceAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
 /**
  *
  * @author Sonali
  */
-public class SchemaRefactoringElement  extends SimpleRefactoringElementImpl {
+public class SchemaRefactoringElement  extends SimpleRefactoringElementImplementation {
     
     private FileObject source;
     SchemaComponent comp;
@@ -46,8 +47,9 @@ public class SchemaRefactoringElement  extends SimpleRefactoringElementImpl {
            
     }
 
-    public Object getComposite() {
-       return comp;
+    @Override
+    public Lookup getLookup() {
+       return Lookups.singleton(comp);
        
     }
 

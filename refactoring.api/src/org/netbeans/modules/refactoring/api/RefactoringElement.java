@@ -19,8 +19,11 @@
 package org.netbeans.modules.refactoring.api;
 
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 
 /** Interface representing a refactoring element (object affected by a refactoring)
  * returned in a collection from {@link org.netbeans.modules.refactoring.api.AbstractRefactoring#prepare} operation.
@@ -77,19 +80,15 @@ public final class RefactoringElement {
     }
     
     /** 
-     * Returns element associated with this refactoring element.
-     * For instance Java Implementation returns internal representation of method
-     * from getComposite() of RefectoringElement representing reference inside 
-     * of method body.
+     * Returns Lookup associated with this element.
+     * Lookup items might be used by TreeElementFactories to build refactoring
+     * preview trees.
      * @see org.netbeans.modules.refactoring.spi.ui.TreeElement
      * @see org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation 
-     * @return element.
+     * @return Lookup.
      */
-    public Object getComposite() {
-        Object o = impl.getComposite();
-        if (o==null)
-            return getParentFile();
-        return o;
+    public Lookup getLookup() {
+        return impl.getLookup();
     }
     
     /** Returns file that the element affects (relates to)

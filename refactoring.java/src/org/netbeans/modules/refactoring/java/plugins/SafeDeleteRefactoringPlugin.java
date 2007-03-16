@@ -55,7 +55,7 @@ import org.netbeans.modules.refactoring.spi.ProblemDetailsFactory;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.java.ui.SafeDeleteUI;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
@@ -65,6 +65,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -126,8 +127,8 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         Collection importStmts = new ArrayList();
         
         for (Iterator iter = inner.getRefactoringElements().iterator(); iter.hasNext(); ) {
-            ElementGrip elem = (ElementGrip) ((RefactoringElement) iter.next()).getComposite();
-            ElementGrip comp = elem;
+            ElementGrip elem = ((DiffElement) iter.next()).getLookup().lookup(ElementGrip.class);
+            //ElementGrip comp = elem;
             boolean isOuterRef = true;
 //            //Check if this usage is an import statement & ignore it if so.
 //            boolean isUsageImport = false;
@@ -318,7 +319,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return new Problem(true,errorMsg);
     }
  
-    private static class ImportRefDeleteElement extends SimpleRefactoringElementImpl{
+    private static class ImportRefDeleteElement extends SimpleRefactoringElementImplementation {
         
 //        private final Import importStmt;
         private final String text = "todo";
@@ -341,9 +342,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 //            importStmt.refDelete();
         }
 
-        public Element getComposite() {
+        public Lookup getLookup() {
 //            return importStmt.getResource();
-            return null;
+            return Lookup.EMPTY;
         }
 
         public FileObject getParentFile() {

@@ -37,7 +37,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
 import org.netbeans.modules.xml.refactoring.FauxRefactoringElement;
@@ -231,8 +231,8 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
                 model.startTransaction();
             }
             for (RefactoringElementImplementation u : elements) {
-                if (u.getComposite() instanceof SchemaModelReference) {
-                    SchemaModelReference ref = (SchemaModelReference) u.getComposite();
+                SchemaModelReference ref = (SchemaModelReference) u.getLookup().lookup(SchemaModelReference.class);
+                if (ref!=null) {
                     String newLocation = SharedUtils.calculateNewLocationString(ref.getSchemaLocation(), request);
                     ref.setSchemaLocation(newLocation);
                 }

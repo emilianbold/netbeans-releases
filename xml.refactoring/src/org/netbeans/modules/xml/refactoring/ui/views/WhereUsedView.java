@@ -519,7 +519,7 @@ public class WhereUsedView implements View, PropertyChangeListener {
             Object newVal = evt.getNewValue();
            // if (newVal instanceof Usage) {
             if(newVal instanceof RefactoringElement){
-                newVal = ((RefactoringElement)newVal).getComposite();
+                newVal = ((RefactoringElement)newVal).getLookup().lookup(Object.class);
             }
             if (display == null || graph == null){
                 return;

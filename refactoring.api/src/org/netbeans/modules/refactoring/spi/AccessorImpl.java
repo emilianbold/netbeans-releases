@@ -43,7 +43,7 @@ final class AccessorImpl extends SPIAccessor {
         return bag.commits;
     }
 
-    public ArrayList<Transaction> getFileChanges(RefactoringElementsBag bag) {
+    public ArrayList<RefactoringElementImplementation> getFileChanges(RefactoringElementsBag bag) {
         return bag.fileChanges;
     }
 

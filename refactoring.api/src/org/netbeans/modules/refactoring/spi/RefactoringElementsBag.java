@@ -38,7 +38,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public final class RefactoringElementsBag {
     ArrayList<Transaction> commits;
-    ArrayList<Transaction> fileChanges;
+    ArrayList<RefactoringElementImplementation> fileChanges;
 
     static {
         SPIAccessor.DEFAULT = new AccessorImpl();
@@ -156,9 +156,10 @@ public final class RefactoringElementsBag {
      * @see Transaction
      * @see BackupFacilty
      */
-    public void registerFileChange(Transaction changes) {
+    public Problem addFileChange(AbstractRefactoring refactoring, RefactoringElementImplementation el) {
         if (APIAccessor.DEFAULT.isCommit(session))
-            fileChanges.add(changes);
+            fileChanges.add(el);
+        return null;
     }    
     
     private boolean isReadOnly(RefactoringElementImplementation rei) {

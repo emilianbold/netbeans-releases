@@ -41,11 +41,9 @@ public class XMLSchemaTreeFactoryImpl implements TreeElementFactoryImplementatio
     public TreeElement getTreeElement(Object o) {
         TreeElement result = null;
         if (o instanceof RefactoringElement) {
-            if (((RefactoringElement) o).getComposite() instanceof Component) {
-                Component comp = (Component)((RefactoringElement)o).getComposite();
-                if(comp instanceof SchemaComponent)
-                    result = new XMLSchemaTreeElement((RefactoringElement) o);
-             } 
+            SchemaComponent comp = ((RefactoringElement)o).getLookup().lookup(SchemaComponent.class);
+            if(comp!=null)
+                result = new XMLSchemaTreeElement((RefactoringElement) o);
         } if( o instanceof SchemaComponent){
             result = new XMLSchemaTreeElement((SchemaComponent)o);
         }

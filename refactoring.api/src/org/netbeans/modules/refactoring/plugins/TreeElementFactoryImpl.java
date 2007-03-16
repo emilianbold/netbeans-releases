@@ -40,9 +40,7 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         if (result!= null)
             return result;
         if (o instanceof RefactoringElement) {
-            if (((RefactoringElement) o).getComposite() instanceof FileObject) {
-                result = new RefactoringTreeElement((RefactoringElement) o);
-            }
+            result = new RefactoringTreeElement((RefactoringElement) o);
         }
         if (result != null) {
             map.put(o, result);

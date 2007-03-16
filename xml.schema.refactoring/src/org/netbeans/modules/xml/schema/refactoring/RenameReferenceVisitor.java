@@ -71,8 +71,8 @@ class RenameReferenceVisitor extends DefaultSchemaVisitor {
             }
           //  Collection<Usage> items = usage.getItems();
             for (RefactoringElementImplementation item : elements) {
-                if (item.isEnabled() && item.getComposite() instanceof SchemaComponent) {
-                    currentComponent = (SchemaComponent)item.getComposite();
+                if (item.isEnabled() && item.getLookup().lookup(SchemaComponent.class)!=null) {
+                    currentComponent = item.getLookup().lookup(SchemaComponent.class);
                     currentComponent.accept(this);
                 }
             }
