@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
@@ -82,7 +83,7 @@ public final class LayerNode extends FilterNode {
         
         private final LayerUtils.LayerHandle handle;
         private ClassPath cp;
-        private NbModuleProject p;
+        private Project p;
         private FileSystem layerfs;
         private FileSystem sfs;
         
@@ -98,7 +99,7 @@ public final class LayerNode extends FilterNode {
                 public void run() {
                     try {
                         FileObject layer = handle.getLayerFile();
-                        p = (NbModuleProject) FileOwnerQuery.getOwner(layer);
+                        p = FileOwnerQuery.getOwner(layer);
                         assert p != null : layer;
                         try {
                             cp = createClasspath(p);
@@ -266,7 +267,7 @@ public final class LayerNode extends FilterNode {
     /**
      * Make a runtime classpath indicative of what is accessible from a sample resource.
      */
-    private static ClassPath createClasspath(NbModuleProject p) throws IOException {
+    private static ClassPath createClasspath(Project p) throws IOException {
         NbModuleProvider.NbModuleType type = Util.getModuleType(p);
         if (type == NbModuleProvider.STANDALONE) {
             return LayerUtils.createLayerClasspath(Collections.singleton(p), LayerUtils.getPlatformJarsForStandaloneProject(p));
@@ -278,7 +279,8 @@ public final class LayerNode extends FilterNode {
             Set<NbModuleProject> modules = SuiteUtils.getSubProjects(suite);
             return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(p, suite));
         } else if (type == NbModuleProvider.NETBEANS_ORG) {
-            return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject(p), Collections.EMPTY_SET);
+            //Can cast to NbModuleProject here..
+            return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject((NbModuleProject)p), Collections.EMPTY_SET);
         } else {
             throw new AssertionError(type);
         }
