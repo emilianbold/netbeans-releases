@@ -91,6 +91,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             return createToken ((Marenka) state);
         }
         int index = input.getIndex ();
+        Object sstate = state;
         if (input.eof ()) 
             return createToken (index);
         ASTToken token = null;
@@ -114,6 +115,11 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 input.read ();
             return createToken ("error", index);
         }
+        if (state != sstate && 
+            index == input.getIndex ()
+        )
+            // 0 length token (<script></script>
+            return nextTokenIn ();
         return createToken (token.getType (), index);
     }
 
