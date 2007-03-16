@@ -86,7 +86,7 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
             throw new Error("Cannot push menu item Open on node " + openNodeName);
         }
         log("------------------------- after open ------------");
-        return new TopComponentOperator(openNodeName,0);
+        return new TopComponentOperator("navigation.xml",0); // NOI18N
     }
     
     public void close() {
