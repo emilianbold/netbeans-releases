@@ -96,6 +96,20 @@
             <issue number="97564"/>
         </change>
 
+        <change>
+            <api name="general"/>
+            <summary>Added ActionFactory.createActionMapAction methods</summary>
+            <version major="2" minor="0"/>
+            <date day="13" month="3" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added an action whith is using ActionMap and InputMap for handling key-presses and a popup menu.
+            </description>
+            <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
+            <issue number="97563"/>
+        </change>
+
     </changes>
 
     <htmlcontents>
