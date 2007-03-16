@@ -238,15 +238,9 @@ implements Executor {
             //removeStepRequests (((LocatableEvent) ev).thread ());
             
             
-            // 3) ignore step events in not current threads
+            // 3) ignore step events in not current threads - NO, we have impl. of issue #44582.
             JPDAThreadImpl ct = (JPDAThreadImpl) getDebuggerImpl ().
                 getCurrentThread ();
-            if (ct != null &&
-                !ct.getThreadReference ().equals (tr)
-            ) {
-                // step finished in different thread => ignore
-                return true; // resume debugging
-            }
             
             int suspendPolicy = getDebuggerImpl().getSuspend();
             

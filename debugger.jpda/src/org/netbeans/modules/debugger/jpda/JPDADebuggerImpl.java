@@ -135,6 +135,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private StackFrame      altCSF = null;  //PATCH 48174
 
     private boolean                     doContinue = true; // Whether resume() will actually resume
+    private Boolean                     singleThreadStepResumeDecission = null;
+    private Boolean                     stepInterruptByBptResumeDecission = null;
 
     // init ....................................................................
 
@@ -888,6 +890,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
     
     /**
+     * Can be called if the current thread is resumed after stop.
+     */
+    public void setRunningState() {
+        setState(STATE_RUNNING);
+    }
+    
+    /**
     * Performs stop action and disable a next call to resume()
     */
     public void setStoppedStateNoContinue (ThreadReference thread) {
@@ -1137,6 +1146,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     public ExpressionPool getExpressionPool() {
         return expressionPool;
+    }
+    
+    synchronized void setSingleThreadStepResumeDecission(Boolean decission) {
+        singleThreadStepResumeDecission = decission;
+    }
+    
+    synchronized Boolean getSingleThreadStepResumeDecission() {
+        return singleThreadStepResumeDecission;
+    }
+    
+    public synchronized void setStepInterruptByBptResumeDecission(Boolean decission) {
+        stepInterruptByBptResumeDecission = decission;
+    }
+    
+    public synchronized Boolean getStepInterruptByBptResumeDecission() {
+        return stepInterruptByBptResumeDecission;
     }
 
 

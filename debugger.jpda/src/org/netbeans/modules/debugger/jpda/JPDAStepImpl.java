@@ -26,7 +26,10 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -38,6 +41,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -514,11 +523,24 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     watchTask.schedule(DELAY);
                     return ;
                 }
+                if (request.thread().status() == ThreadReference.THREAD_STATUS_ZOMBIE) {
+                    // Do not wait for zombie!
+                    return ;
+                }
+                Boolean resumeDecission = debugger.getSingleThreadStepResumeDecission();
+                if (resumeDecission != null) {
+                    if (resumeDecission.booleanValue()) {
+                        doResume();
+                    }
+                    return ;
+                }
             }
             String message = NbBundle.getMessage(JPDAStepImpl.class, "SingleThreadedStepBlocked");
-            final boolean[] yes = new boolean[] { true };
+            JCheckBox cb = new JCheckBox(NbBundle.getMessage(JPDAStepImpl.class, "RememberDecission"));
+            final boolean[] yes = new boolean[] { false, false };
             DialogDescriptor dd = new DialogDescriptor(
-                    message,
+                    //message,
+                    createDlgPanel(message, cb),
                     new NotifyDescriptor.Confirmation(message, NotifyDescriptor.YES_NO_OPTION).getTitle(),
                     true,
                     NotifyDescriptor.YES_NO_OPTION,
@@ -527,6 +549,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         public void actionPerformed(ActionEvent evt) {
                             synchronized (yes) {
                                 yes[0] = evt.getSource() == NotifyDescriptor.YES_OPTION;
+                                yes[1] = evt.getSource() == NotifyDescriptor.NO_OPTION;
                             }
                         }
                     });
@@ -544,16 +567,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             synchronized (this) {
                 dialog = null;
                 if (watchTask == null) return ;
+                if ((yes[0] || yes[1]) && cb.isSelected()) {
+                    debugger.setSingleThreadStepResumeDecission(Boolean.valueOf(yes[0]));
+                }
                 if (doResume) {
-                    synchronized (debugger.LOCK) {
-                        List<JPDAThread> suspendedThreads = new ArrayList<JPDAThread>();
-                        JPDAThreadGroup[] tgs = debugger.getTopLevelThreadGroups();
-                        for (JPDAThreadGroup tg: tgs) {
-                            fillSuspendedThreads(tg, suspendedThreads);
-                        }
-                        resumeThreads(suspendedThreads);
-                        resumedThreads = suspendedThreads;
-                    }
+                    doResume();
                 }
             }
             /*
@@ -563,6 +581,42 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 debugger.resume();
             }
              */
+        }
+        
+        private static JPanel createDlgPanel(String message, JCheckBox cb) {
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.WEST;
+            JTextArea area = new JTextArea(message);
+            Color color = UIManager.getColor("Label.background"); // NOI18N
+            if (color != null) {
+                area.setBackground(color);
+            }
+            //area.setLineWrap(true);
+            //area.setWrapStyleWord(true);
+            area.setEditable(false);
+            area.setTabSize(4); // looks better for module sys messages than 8
+            panel.add(area, c);
+            c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 1;
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new java.awt.Insets(12, 0, 0, 0);
+            panel.add(cb, c);
+            return panel;
+        }
+        
+        private void doResume() {
+            synchronized (debugger.LOCK) {
+                List<JPDAThread> suspendedThreads = new ArrayList<JPDAThread>();
+                JPDAThreadGroup[] tgs = debugger.getTopLevelThreadGroups();
+                for (JPDAThreadGroup tg: tgs) {
+                    fillSuspendedThreads(tg, suspendedThreads);
+                }
+                resumeThreads(suspendedThreads);
+                resumedThreads = suspendedThreads;
+            }
         }
         
         private static void fillSuspendedThreads(JPDAThreadGroup tg, List<JPDAThread> sts) {
