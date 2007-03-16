@@ -52,22 +52,37 @@ public final class TestCreator implements TestabilityJudge {
     
     /** */
     private final TestGeneratorSetup setup;
+    /** */
+    private final JUnitVersion junitVersion;
     
     /** Creates a new instance of TestCreator */
-    TestCreator(boolean loadDefaults) {
+    TestCreator(boolean loadDefaults,
+                JUnitVersion junitVersion) {
         setup = new TestGeneratorSetup(loadDefaults);
+        this.junitVersion = junitVersion;
     }
     
     /** Creates a new instance of TestCreator */
-    TestCreator(Map<CreateTestParam, Object> params) {
+    TestCreator(Map<CreateTestParam, Object> params,
+                JUnitVersion junitVersion) {
         setup = new TestGeneratorSetup(params);
+        this.junitVersion = junitVersion;
     }
     
     /**
      */
     public void createEmptyTest(final JavaSource tstSource) throws IOException {
-        AbstractTestGenerator testGenerator
-                = new JUnit3TestGenerator(setup);
+        AbstractTestGenerator testGenerator;
+        switch (junitVersion) {
+            case JUNIT3:
+                testGenerator = new JUnit3TestGenerator(setup);
+                break;
+            case JUNIT4:
+                testGenerator = new JUnit4TestGenerator(setup);
+                break;
+            default:
+                throw new IllegalStateException("junit version not set");//NOI18N
+        }
         ModificationResult result = tstSource.runModificationTask(testGenerator);
         result.commit();
     }
@@ -79,11 +94,25 @@ public final class TestCreator implements TestabilityJudge {
     public void createSimpleTest(ElementHandle<TypeElement> topClassToTest,
                                  JavaSource tstSource,
                                  boolean isNewTestClass) throws IOException {
-        AbstractTestGenerator testGenerator
-                = new JUnit3TestGenerator(setup,
+        AbstractTestGenerator testGenerator;
+        switch (junitVersion) {
+            case JUNIT3:
+                testGenerator = new JUnit3TestGenerator(
+                                          setup,
                                           Collections.singletonList(topClassToTest),
                                           null,
                                           isNewTestClass);
+                break;
+            case JUNIT4:
+                testGenerator = new JUnit4TestGenerator(
+                                          setup,
+                                          Collections.singletonList(topClassToTest),
+                                          null,
+                                          isNewTestClass);
+                break;
+            default:
+                throw new IllegalStateException("junit version not set");//NOI18N
+        }
         ModificationResult result = tstSource.runModificationTask(testGenerator);
         result.commit();
     }
@@ -93,11 +122,25 @@ public final class TestCreator implements TestabilityJudge {
     public List<String> createTestSuite(List<String> suiteMembers,
                                         JavaSource tstSource,
                                         boolean isNewTestClass) throws IOException {
-        AbstractTestGenerator testGenerator
-                = new JUnit3TestGenerator(setup,
+        AbstractTestGenerator testGenerator;
+        switch (junitVersion) {
+            case JUNIT3:
+                testGenerator = new JUnit3TestGenerator(
+                                          setup,
                                           null,
                                           suiteMembers,
                                           isNewTestClass);
+                break;
+            case JUNIT4:
+                testGenerator = new JUnit4TestGenerator(
+                                          setup,
+                                          null,
+                                          suiteMembers,
+                                          isNewTestClass);
+                break;
+            default:
+                throw new IllegalStateException("junit version not set");//NOI18N
+        }
         ModificationResult result = tstSource.runModificationTask(testGenerator);
         result.commit();
         

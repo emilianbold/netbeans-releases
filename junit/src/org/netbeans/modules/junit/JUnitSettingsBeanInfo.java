@@ -94,7 +94,21 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propGenerateTearDown.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_tearDown"));
             propGenerateTearDown.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_tearDown"));
             
-
+            PropertyDescriptor propGenerateClassSetUp = new PropertyDescriptor (JUnitSettings.PROP_GENERATE_CLASS_SETUP, JUnitSettings.class);
+            propGenerateClassSetUp.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_class_setUp"));
+            propGenerateClassSetUp.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_class_setUp"));
+            
+            PropertyDescriptor propGenerateClassTearDown = new PropertyDescriptor (JUnitSettings.PROP_GENERATE_CLASS_TEARDOWN, JUnitSettings.class);
+            propGenerateClassTearDown.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_class_tearDown"));
+            propGenerateClassTearDown.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_class_tearDown"));
+            
+            PropertyDescriptor propGenerator = new PropertyDescriptor (JUnitSettings.PROP_GENERATOR, JUnitSettings.class,
+                                                                       "getGenerator", "setGenerator");
+            propGenerator.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generator"));
+            propGenerator.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generator"));
+            propGenerator.setPropertyEditorClass(GeneratorsPropEditor.class);
+            
+            
             
             // expert properties
             PropertyDescriptor propGenerateMainMethod = new PropertyDescriptor (JUnitSettings.PROP_GENERATE_MAIN_METHOD, JUnitSettings.class);
@@ -135,11 +149,13 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
                         
 
             return new PropertyDescriptor[] {
+              propGenerator,
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
               propJavaDoc,
               propGenerateExceptionClasses, propGenerateAbstractImpl, propIncludePackagePrivateClasses, 
               propGenerateSuiteClasses,
               propGenerateSetUp, propGenerateTearDown,
+              propGenerateClassSetUp, propGenerateClassTearDown,
               propGenerateMainMethod, propGenerateMainMethodBody, 
               //propTestClassNamePrefix, propTestClassNameSuffix, propSuiteClassNamePrefix, propSuiteClassNameSuffix, 
               propRootSuiteClassName 
@@ -159,10 +175,15 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    public static class SortedListPropEd extends PropertyEditorSupport {
+    static abstract class SortedListPropEd extends PropertyEditorSupport {
+        private final String      defaultValue;
         private List<String>  displays = new LinkedList<String>();
         private List<String>  values = new LinkedList<String>();
         private String      defaultDisplay = NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_value_not_found");
+        
+        protected SortedListPropEd(String defValue) {
+            defaultValue = defValue;
+        }
 
         public String[] getTags () {
             TreeSet<String> t = new TreeSet<String>(displays);
@@ -204,18 +225,32 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             throw new IllegalArgumentException ();
         }
 
-        protected void put(String display, String value, int type) {
-            if (SHOW_IN_LIST == (type & SHOW_IN_LIST)) {
-                displays.add(display);
-                values.add(value);
-            }
-            if (IS_DEFAULT == (type & IS_DEFAULT)) {
+        protected void put(String display, String value) {
+            displays.add(display);
+            values.add(value);
+            
+            if ((defaultDisplay == null) && value.equals(defaultValue)) {
                 defaultDisplay = display;
             }
         }
         
-        protected static int SHOW_IN_LIST   = 1;
-        protected static int IS_DEFAULT     = 2;
+    }
+    
+    public static final class GeneratorsPropEditor extends SortedListPropEd {
+        
+        public GeneratorsPropEditor() {
+            super(JUnitSettings.DEFAULT_GENERATOR);
+            put(NbBundle.getMessage(JUnitSettings.class,
+                                    "LBL_JUnit3_generator"),            //NOI18N
+                JUnitSettings.JUNIT3_GENERATOR);
+            put(NbBundle.getMessage(JUnitSettings.class,
+                                    "LBL_JUnit4_generator"),            //NOI18N
+                JUnitSettings.JUNIT4_GENERATOR);
+            put(NbBundle.getMessage(JUnitSettings.class,
+                                    "LBL_JUnit_generator_ask_user"),    //NOI18N
+                JUnitSettings.JUNIT_GENERATOR_ASK_USER);
+        }
+        
     }
 
 }

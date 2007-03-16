@@ -281,8 +281,14 @@ public class TestSuiteWizardIterator
         List testClassNames = TestUtil.getJavaFileNames(targetFolder,
                                                         testClassPath);
         
+        DefaultPlugin defaultPlugin = new DefaultPlugin();
+        
+        if (!defaultPlugin.setupJUnitVersionByProject(targetFolder)) {
+            return null;
+        }
+
         /* create test class(es) for the selected source class: */
-        DataObject suite = new DefaultPlugin().createSuiteTest(
+        DataObject suite = defaultPlugin.createSuiteTest(
                 testRootFolder,
                 targetFolder,
                 name,

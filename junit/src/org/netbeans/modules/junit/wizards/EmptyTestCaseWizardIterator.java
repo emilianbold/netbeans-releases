@@ -265,8 +265,15 @@ public class EmptyTestCaseWizardIterator
                    Templates.getTargetName(wizard));
                 
         /* create the test class: */
-        JUnitPlugin plugin = TestUtil.getPluginForProject(
+        final JUnitPlugin plugin = TestUtil.getPluginForProject(
                                                 Templates.getProject(wizard));
+        
+        if (!JUnitPluginTrampoline.DEFAULT.createTestActionCalled(
+                                            plugin,
+                                            new FileObject[] {targetFolder})) {
+            return null;
+        }
+
         /*
          * The JUnitPlugin instance must be initialized _before_ field
          * JUnitPluginTrampoline.DEFAULT gets accessed.

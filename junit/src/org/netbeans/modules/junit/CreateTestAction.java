@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.junit;
 
+import java.awt.EventQueue;
 import java.util.*;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -37,6 +38,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.cookies.EditorCookie;
+import org.openide.util.RequestProcessor;
 
 /** Action sensitive to some cookie that does something useful.
  *
@@ -171,6 +173,20 @@ public final class CreateTestAction extends TestAction {
             return;
         } 
 
+        final FileObject[] filesToTest = getFileObjectsFromNodes(nodes);
+        if (filesToTest == null) {
+            return;     //XXX: display some message
+        }
+
+        /* Determine the plugin to be used: */
+        final JUnitPlugin plugin = TestUtil.getPluginForProject(
+                FileOwnerQuery.getOwner(filesToTest[0]));
+
+        if (!JUnitPluginTrampoline.DEFAULT.createTestActionCalled(
+                                                        plugin, filesToTest)) {
+            return;
+        }
+
         // show configuration dialog
         // when dialog is canceled, escape the action
         JUnitCfgOfCreate cfg = new JUnitCfgOfCreate(nodes);
@@ -188,35 +204,33 @@ public final class CreateTestAction extends TestAction {
         final FileObject targetFolder = cfg.getTargetFolder();
         cfg = null;
 
-        FileObject[] filesToTest = getFileObjectsFromNodes(nodes);
-        if (filesToTest == null) {
-            return;     //XXX: display some message
-        }
+        RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    /* Now create the tests: */
+                    final FileObject[] testFileObjects
+                            = JUnitPluginTrampoline.DEFAULT.createTests(
+                                    plugin,
+                                    filesToTest,
+                                    targetFolder,
+                                    params);
 
-        /* Determine the plugin to be used: */
-        final JUnitPlugin plugin = TestUtil.getPluginForProject(
-                FileOwnerQuery.getOwner(filesToTest[0]));
-
-        /* Now create the tests: */
-        final FileObject[] testFileObjects
-                = JUnitPluginTrampoline.DEFAULT.createTests(
-                        plugin,
-                        filesToTest,
-                        targetFolder,
-                        params);
-
-        /* Open the created/updated test class if appropriate: */
-        if (testFileObjects.length == 1) {
-            try {
-                DataObject dobj = DataObject.find(testFileObjects[0]);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    ec.open();
-                }
-            } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
-            }
-        }
+                    /* Open the created/updated test class if appropriate: */
+                    if (testFileObjects.length == 1) {
+                        try {
+                            DataObject dobj = DataObject.find(testFileObjects[0]);
+                            final EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                            if (ec != null) {
+                                EventQueue.invokeLater(new Runnable() {
+                                        public void run() {
+                                            ec.open();
+                                        }
+                                });
+                            }
+                        } catch (DataObjectNotFoundException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }});
     }
 
     /**

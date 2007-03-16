@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -54,6 +54,28 @@ Microsystems, Inc. All Rights Reserved.
             <class package="org.netbeans.modules.junit.plugin" name="JUnitPlugin"/>
             <issue number="74160"/>
             <issue number="42349"/>
+        </change>
+
+        <change id="issue-72819">
+            <api name="junit-plugin"/>
+            <summary>Added enum members
+                     INC_CLASS_SETUP and INC_CLASS_TEARDOWN</summary>
+            <version major="2" minor="23"/>
+            <date day="16" month="3" year="2007"/>
+            <author login="mpetras"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added members <code>INC_CLASS_SETUP</code> and
+                    <code>INC_CLASS_TEARDOWN</code>
+                    to enum <code>JUnitPlugin.CreateTestParam</code>.
+                    Added method
+                    <code>createTestActionCalled(FileObject[])</code>
+                    to class <code>JUnitPlugin</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.junit.plugin" name="JUnitPlugin"/>
+            <issue number="72819"/>
         </change>
 
 </changes>

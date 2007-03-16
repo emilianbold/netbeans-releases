@@ -236,6 +236,7 @@ public final class GuiUtils {
         textArea.setFocusable(false);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
+        textArea.setColumns(25);
         
         Color color;
         

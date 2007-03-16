@@ -278,6 +278,13 @@ public class SimpleTestCaseWizardIterator
         /* create test class(es) for the selected source class: */
         JUnitPlugin plugin = TestUtil.getPluginForProject(
                                                 Templates.getProject(wizard));
+        
+        if (!JUnitPluginTrampoline.DEFAULT.createTestActionCalled(
+                                            plugin,
+                                            new FileObject[] {classToTest})) {
+            return null;
+        }
+
         /*
          * The JUnitPlugin instance must be initialized _before_ field
          * JUnitPluginTrampoline.DEFAULT gets accessed.

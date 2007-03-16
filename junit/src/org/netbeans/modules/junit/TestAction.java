@@ -43,10 +43,7 @@ abstract class TestAction extends NodeAction {
     }
     
     public boolean asynchronous() {
-        return true;
-        // yes, this action should run asynchronously
-        // would be better to rewrite it to synchronous (running in AWT thread),
-        // just replanning test generation to RequestProcessor
+        return false;
     }
     
     /**

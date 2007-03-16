@@ -729,12 +729,10 @@ public class JUnit4TestGenerator extends AbstractTestGenerator {
                         getClassIdentifierTree(ANN_SUITE, workingCopy),
                         ANN_SUITE_MEMBERS),
                 Collections.singletonList(
-                        maker.Assignment(
-                                maker.Identifier("value"),              //NOI18N
-                                maker.NewArray(
-                                        maker.Identifier("Class"),      //NOI18N
-                                        Collections.<ExpressionTree>emptyList(),
-                                        suiteMemberExpressions))));
+                        maker.NewArray(
+                                null,  //do not generate "new Class[]"
+                                Collections.<ExpressionTree>emptyList(),
+                                suiteMemberExpressions)));
     }
 
     /**

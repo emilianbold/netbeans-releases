@@ -19,6 +19,10 @@
 
 package org.netbeans.modules.junit;
 
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.awt.GridLayout;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,15 +34,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -49,14 +66,20 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 import static javax.lang.model.util.ElementFilter.typesIn;
 import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
 import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
 import static org.netbeans.api.java.classpath.ClassPath.BOOT;
-//import static org.netbeans.modules.junit.plugin.JUnitPlugin.Location.CLASS_LIKE_ELEM_TYPES;
+import static org.netbeans.modules.junit.JUnitSettings.JUNIT_GENERATOR_ASK_USER;
+import static org.openide.NotifyDescriptor.CANCEL_OPTION;
+import static org.openide.NotifyDescriptor.OK_CANCEL_OPTION;
+import static org.openide.NotifyDescriptor.QUESTION_MESSAGE;
 
 /**
  * Default JUnit plugin.
@@ -64,6 +87,19 @@ import static org.netbeans.api.java.classpath.ClassPath.BOOT;
  * @author  Marian Petras
  */
 public final class DefaultPlugin extends JUnitPlugin {
+
+    /** */
+    private static final String PROJECT_SETTINGS_NAMESPACE_URI
+            = "http://www.netbeans.org/ns/junit/1";                     //NOI18N
+    /** */
+    private static final String JUNIT_VERSION_ELEM_NAME
+                                            = "junit-version";          //NOI18N
+    /** */
+    private static final String JUNIT_VERSION_ATTR_NAME
+                                            = "value";                  //NOI18N
+    
+    /** */
+    private JUnitVersion junitVer;
     
     /**
      *
@@ -641,15 +677,30 @@ public final class DefaultPlugin extends JUnitPlugin {
                     "MSG_StatusBar_CreateTest_Begin");                  //NOI18N
         progress.displayStatusText(msg);
 
-        final TestCreator testCreator = new TestCreator(params);
+        final TestCreator testCreator = new TestCreator(params, junitVer);
+        final boolean isJUnit4 = (junitVer == JUnitVersion.JUNIT4);
         
         CreationResults results;
         try {
             if ((filesToTest == null) || (filesToTest.length == 0)) {
                 //XXX: Not documented that filesToTest may be <null>
                 
-                DataObject doTestTempl = loadTestTemplate(
-                                         "PROP_emptyTestClassTemplate");//NOI18N
+                final String templateId;
+                switch (junitVer) {
+                    case JUNIT3:
+                        templateId = "PROP_emptyTestClassTemplate";     //NOI18N
+                        break;
+                    case JUNIT4:
+                        templateId = "PROP_junit4_emptyTestClassTemplate";//NOI18N
+                        break;
+                    default:
+                        assert false;
+                        templateId = null;
+                        break;
+                }
+                DataObject doTestTempl = (templateId != null)
+                                         ? loadTestTemplate(templateId)
+                                         : null;
                 if (doTestTempl == null) {
                     return null;
                 }
@@ -666,8 +717,22 @@ public final class DefaultPlugin extends JUnitPlugin {
                 }
                 
             } else {
-                DataObject doTestTempl = loadTestTemplate(
-                                         "PROP_testClassTemplate");     //NOI18N
+                final String templateId;
+                switch (junitVer) {
+                    case JUNIT3:
+                        templateId = "PROP_testClassTemplate";          //NOI18N
+                        break;
+                    case JUNIT4:
+                        templateId = "PROP_junit4_testClassTemplate";   //NOI18N
+                        break;
+                    default:
+                        assert false;
+                        templateId = null;
+                        break;
+                }
+                DataObject doTestTempl = (templateId != null)
+                                         ? loadTestTemplate(templateId)
+                                         : null;
                 if (doTestTempl == null) {
                     return null;
                 }
@@ -698,8 +763,22 @@ public final class DefaultPlugin extends JUnitPlugin {
                         results = new CreationResults(1);
                     }
                 } else {
-                    DataObject doSuiteTempl = loadTestTemplate(
-                                              "PROP_testSuiteTemplate");//NOI18N
+                    final String suiteTemplateId;
+                    switch (junitVer) {
+                        case JUNIT3:
+                            suiteTemplateId = "PROP_testSuiteTemplate";         //NOI18N
+                            break;
+                        case JUNIT4:
+                            suiteTemplateId = "PROP_junit4_testSuiteTemplate";  //NOI18N
+                            break;
+                        default:
+                            assert false;
+                            suiteTemplateId = null;
+                            break;
+                    }
+                    DataObject doSuiteTempl = (suiteTemplateId != null)
+                                              ? loadTestTemplate(suiteTemplateId)
+                                              : null;
                     if (doSuiteTempl == null) {
                         return null;
                     }
@@ -781,7 +860,353 @@ public final class DefaultPlugin extends JUnitPlugin {
         }
         return createdFiles;
     }
+
+    /**
+     */
+    public boolean setupJUnitVersionByProject(FileObject targetFolder) {
+        return createTestActionCalled(new FileObject[] {targetFolder});
+    }
     
+    /**
+     */
+    @Override
+    protected boolean createTestActionCalled(FileObject[] selectedFiles) {
+        assert EventQueue.isDispatchThread();
+
+        Project project = FileOwnerQuery.getOwner(selectedFiles[0]);
+        assert project != null;         //PENDING
+        readProjectSettingsJUnitVer(project);
+        if (junitVer != null) {
+            switch (junitVer) {
+                case JUNIT3:
+                    return true;
+                case JUNIT4:
+                    String sourceLevel = getSourceLevel(selectedFiles);
+                    assert sourceLevel != null;         //PENDING
+                    if (sourceLevel.compareTo("1.5") >= 0) {            //NOI18N
+                        return true;
+                    } else if (askUserLastWasJUnit4NowSource14(sourceLevel)) {
+                        junitVer = JUnitVersion.JUNIT3;
+                        storeProjectSettingsJUnitVer(project);
+                        return true;
+                    }
+                    return false;
+                default:
+                    assert false;
+                    return false;
+            }
+        }
+
+        readSystemSettingsJUnitVer();
+        if (junitVer != null) {
+            switch (junitVer) {
+                case JUNIT3:
+                    return true;
+                case JUNIT4:
+                    String sourceLevel = getSourceLevel(selectedFiles);
+                    assert sourceLevel != null;         //PENDING
+                    if (sourceLevel.compareTo("1.5") >= 0) {            //NOI18N
+                        return true;
+                    } else if (informUserOnlyJUnit3Applicable(sourceLevel)) {
+                        junitVer = JUnitVersion.JUNIT3;
+                        storeProjectSettingsJUnitVer(project);
+                        return true;
+                    }
+                    return false;
+                default:
+                    assert false;
+                    return false;
+            }
+        }
+
+        String sourceLevel = getSourceLevel(selectedFiles);
+        assert sourceLevel != null;         //PENDING
+        boolean offerJUnit4 = (sourceLevel.compareTo("1.5") >= 0);      //NOI18N
+        junitVer = askUserWhichJUnitToUse(offerJUnit4);
+        if (junitVer != null) {
+            storeProjectSettingsJUnitVer(project);
+            return true;
+        }
+
+        return false;
+    }
+    
+    /**
+     */
+    private boolean askUserLastWasJUnit4NowSource14(String sourceLevel) {
+        assert EventQueue.isDispatchThread();
+
+        JComponent msg
+               = createMessageComponent("MSG_last_was_junit4_what_now", //NOI18N
+                                        sourceLevel);
+        Object selectOption = NbBundle.getMessage(
+                                    getClass(),
+                                    "LBL_create_junit3_tests");         //NOI18N
+        Object answer = DialogDisplayer.getDefault().notify(
+                new DialogDescriptor(
+                        wrapDialogContent(msg),
+                        NbBundle.getMessage(
+                                getClass(),
+                                "LBL_title_cannot_use_junit4"),         //NOI18N
+                        true,
+                        new Object[] {selectOption, CANCEL_OPTION},
+                        selectOption,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        (HelpCtx) null,
+                        (ActionListener) null));
+
+        return answer == selectOption;
+    }
+
+    /**
+     */
+    private boolean informUserOnlyJUnit3Applicable(String sourceLevel) {
+        assert EventQueue.isDispatchThread();
+
+        JComponent msg
+              = createMessageComponent("MSG_cannot_use_default_junit4", //NOI18N
+                                       sourceLevel);
+        Object selectOption = NbBundle.getMessage(
+                                    getClass(),
+                                    "LBL_create_junit3_tests");         //NOI18N
+        Object answer = DialogDisplayer.getDefault().notify(
+                new DialogDescriptor(
+                        wrapDialogContent(msg),
+                        NbBundle.getMessage(
+                                getClass(),
+                                "LBL_title_cannot_use_junit4"),         //NOI18N
+                        true,       //modal
+                        new Object[] {selectOption, CANCEL_OPTION},
+                        selectOption,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        (HelpCtx) null,
+                        (ActionListener) null));
+
+        return answer == selectOption;
+    }
+
+    /**
+     */
+    private JUnitVersion askUserWhichJUnitToUse(boolean offerJUnit4) {
+        assert EventQueue.isDispatchThread();
+
+        JRadioButton rbtnJUnit3 = new JRadioButton(
+               NbBundle.getMessage(getClass(), "LBL_JUnit3_generator"));//NOI18N
+        JRadioButton rbtnJUnit4 = new JRadioButton(
+               NbBundle.getMessage(getClass(),
+                                   offerJUnit4
+                                        ? "LBL_JUnit4_generator"
+                                        : "LBL_JUnit4_generator_reqs"));//NOI18N
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(rbtnJUnit3);
+        group.add(rbtnJUnit4);
+
+        if (offerJUnit4) {
+            rbtnJUnit4.setSelected(true);
+        } else {
+            rbtnJUnit3.setSelected(true);
+            rbtnJUnit4.setEnabled(false);
+        }
+
+        JComponent msg
+                = createMessageComponent("MSG_select_junit_version");   //NOI18N
+        
+        JPanel choicePanel = new JPanel(new GridLayout(0, 1, 0, 3));
+        choicePanel.add(rbtnJUnit3);
+        choicePanel.add(rbtnJUnit4);
+
+        JPanel panel = new JPanel(new BorderLayout(0, 12));
+        panel.add(msg, BorderLayout.NORTH);
+        panel.add(choicePanel, BorderLayout.CENTER);
+
+        Object selectOption = NbBundle.getMessage(getClass(),
+                                                  "LBL_Select");        //NOI18N
+        Object answer = DialogDisplayer.getDefault().notify(
+                new DialogDescriptor(
+                        wrapDialogContent(panel),
+                        NbBundle.getMessage(getClass(),
+                                            "LBL_title_select_generator"),//NOI18N
+                        true,
+                        new Object[] {selectOption, CANCEL_OPTION},
+                        selectOption,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        (HelpCtx) null,
+                        (ActionListener) null));
+
+        if (answer == selectOption) {
+            JUnitVersion ver;
+            if (rbtnJUnit3.isSelected()) {
+                ver = JUnitVersion.JUNIT3;
+            } else if (rbtnJUnit4.isSelected()) {
+                ver = JUnitVersion.JUNIT4;
+            } else {
+                assert false;
+                ver = null;
+            }
+            return ver;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     */
+    private JComponent createMessageComponent(String msgKey,
+                                              String... args) {
+        String message = NbBundle.getMessage(getClass(), msgKey, args);
+        
+        return GuiUtils.createMultilineLabel(message);
+    }
+    
+    /**
+     */
+    private static JComponent wrapDialogContent(JComponent comp) {
+        return wrapDialogContent(comp, true);
+    }
+    
+    /**
+     */
+    private static JComponent wrapDialogContent(JComponent comp,
+                                                boolean selfResizing) {
+        JComponent result;
+        
+        if ((comp.getBorder() != null) || selfResizing) {
+            result = selfResizing ? new SelfResizingPanel() : new JPanel();
+            result.setLayout(new GridLayout());
+            result.add(comp);
+        } else {
+            result = comp;
+        }
+        result.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        
+        return result;
+    }
+
+    /**
+     * Reads JUnit version from the project's configuration file and stores it
+     * into field {@link #junitVer}.
+     * If the &quot;junit version&quot; is not stored in the project's settings,
+     * {@code null} is stored.
+     *
+     * @param  project  project whose configuration file is to be checked
+     * @see  #junitVer
+     */
+    private void readProjectSettingsJUnitVer(Project project) {
+        assert project != null;
+
+        junitVer = null;
+
+        AuxiliaryConfiguration cfg
+                = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        if (cfg != null) {
+            Element cfgElem = cfg.getConfigurationFragment(
+                                                JUNIT_VERSION_ELEM_NAME,
+                                                PROJECT_SETTINGS_NAMESPACE_URI,
+                                                true);       //shared
+            if (cfgElem != null) {
+                String cfgValue = cfgElem.getAttribute(JUNIT_VERSION_ATTR_NAME);
+                if (cfgValue != null) {
+                    try {
+                        junitVer = Enum.valueOf(JUnitVersion.class,
+                                                cfgValue.toUpperCase());
+                    } catch (IllegalArgumentException ex) {
+                        /* This should not happen unless the configuration file
+                           is broken, modified by hand, or generated by a newer
+                           version of the IDE. */
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Stores JUnit version to the project's configuration file.
+     *
+     * @param  project  project whose configuration file is to be checked
+     * @see  #junitVer
+     */
+    private void storeProjectSettingsJUnitVer(Project project) {
+        assert junitVer != null;
+
+        final AuxiliaryConfiguration cfg
+                = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        if (cfg == null) {
+            return;
+        }
+
+        ProjectManager.getDefault().mutex().writeAccess(
+                new Runnable() {
+                        public void run() {
+                            Element cfgElem = cfg.getConfigurationFragment(
+                                                JUNIT_VERSION_ELEM_NAME,
+                                                PROJECT_SETTINGS_NAMESPACE_URI,
+                                                true);       //shared
+                            if (cfgElem == null) {
+                                Document doc = createXmlDocument();
+                                if (doc != null) {
+                                    cfgElem = doc.createElementNS(
+                                                PROJECT_SETTINGS_NAMESPACE_URI,
+                                                JUNIT_VERSION_ELEM_NAME);
+                                }
+                            }
+                            cfgElem.setAttribute(JUNIT_VERSION_ATTR_NAME,
+                                                 junitVer.name().toLowerCase());
+                            cfg.putConfigurationFragment(cfgElem, true);//shared
+                        }
+                });
+    }
+
+    /**
+     * Creates a new DOM document.
+     *
+     * @return  created document, or {@code null} if the document
+     *          could not be created
+     */
+    private Document createXmlDocument() {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            return factory.newDocumentBuilder().newDocument();
+        } catch (ParserConfigurationException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Reads information about preferred JUnit version from the IDE settings
+     * and stores is into field {@link #junitVer}.
+     *
+     * @see  #junitVer
+     */
+    private void readSystemSettingsJUnitVer() {
+        String value = JUnitSettings.getDefault().getGenerator();
+        if ((value == null) || value.equals(JUNIT_GENERATOR_ASK_USER)) {
+            junitVer = null;
+        } else {
+            try {
+                junitVer = Enum.valueOf(JUnitVersion.class, value.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                junitVer = null;
+            }
+        }
+    }
+    
+    /**
+     */
+    private String getSourceLevel(FileObject[] filesToTest) {
+        ClassPath srcCP = ClassPath.getClassPath(filesToTest[0], SOURCE);
+        if (srcCP == null) {
+            return null;
+        }
+        
+        FileObject srcRoot = srcCP.findOwnerRoot(filesToTest[0]);
+        if (srcRoot == null) {
+            return null;
+        }
+        
+        return SourceLevelQuery.getSourceLevel(srcRoot);
+    }
+
     /**
      * Creates a new test class.
      * 
@@ -1053,7 +1478,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 final FileObject targetFolder,
                                 final String suiteName,
                                 final Map<CreateTestParam, Object> params) {
-        TestCreator testCreator = new TestCreator(params);
+        TestCreator testCreator = new TestCreator(params, junitVer);
         ClassPath testClassPath = ClassPathSupport.createClassPath(
                 new FileObject[] {targetRootFolder});
         List<String> testClassNames = TestUtil.getJavaFileNames(targetFolder,

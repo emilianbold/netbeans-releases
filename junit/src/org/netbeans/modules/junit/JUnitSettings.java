@@ -29,7 +29,6 @@ import org.openide.util.NbPreferences;
  *
  * @author  vstejskal
  * @author  Marian Petras
- * @version 1.0
  */
 public class JUnitSettings {
     private static final JUnitSettings INSTANCE = new JUnitSettings();
@@ -54,14 +53,30 @@ public class JUnitSettings {
     static final boolean GENERATE_TESTS_FROM_TEST_CLASSES = NbBundle.getMessage(
             JUnitSettings.class,
             "PROP_generate_tests_from_test_classes").equals("true");    //NOI18N
-    /** generate method setUp() by default? */
+    /** generate test initializer method by default? */
     static final boolean DEFAULT_GENERATE_SETUP = NbBundle.getMessage(
             JUnitSettings.class,
             "PROP_generate_setUp_default").equals("true");              //NOI18N
-    /** generate method tearDown() by default? */
+    /** generate test finalizer method by default? */
     static final boolean DEFAULT_GENERATE_TEARDOWN = NbBundle.getMessage(
             JUnitSettings.class,
             "PROP_generate_tearDown_default").equals("true");           //NOI18N
+    /** generate test class initializer method by default? */
+    static final boolean DEFAULT_GENERATE_CLASS_SETUP = NbBundle.getMessage(
+            JUnitSettings.class,
+            "PROP_generate_class_setUp_default").equals("true");        //NOI18N
+    /** generate test class finalizer method by default? */
+    static final boolean DEFAULT_GENERATE_CLASS_TEARDOWN = NbBundle.getMessage(
+            JUnitSettings.class,
+            "PROP_generate_class_tearDown_default").equals("true");     //NOI18N
+    /** */
+    static final String JUNIT3_GENERATOR = JUnitVersion.JUNIT3.name().toLowerCase();
+    /** */
+    static final String JUNIT4_GENERATOR = JUnitVersion.JUNIT4.name().toLowerCase();
+    /** */
+    static final String JUNIT_GENERATOR_ASK_USER = "ask";               //NOI18N
+    /** */
+    static final String DEFAULT_GENERATOR = JUNIT_GENERATOR_ASK_USER;
 
     // XXX this property has to go too - will not work any longer, need some src -> test query
     private static final String PROP_FILE_SYSTEM         = "fileSystem";
@@ -80,6 +95,9 @@ public class JUnitSettings {
     public static final String PROP_GENERATE_MAIN_METHOD_BODY = "generateMainMethodBody";
     public static final String PROP_GENERATE_SETUP      = "generateSetUp";
     public static final String PROP_GENERATE_TEARDOWN   = "generateTearDown";
+    public static final String PROP_GENERATE_CLASS_SETUP      = "generateClassSetUp";
+    public static final String PROP_GENERATE_CLASS_TEARDOWN   = "generateClassTearDown";
+    public static final String PROP_GENERATOR = "generator";
     public static final String PROP_ROOT_SUITE_CLASSNAME = "rootSuiteClassName";                
     
     public String displayName () {
@@ -191,7 +209,8 @@ public class JUnitSettings {
     }
     
     public boolean isGenerateSetUp() {
-        return getPreferences().getBoolean(PROP_GENERATE_SETUP,true);
+        return getPreferences().getBoolean(PROP_GENERATE_SETUP,
+                                           DEFAULT_GENERATE_SETUP);
     }
 
     public void setGenerateSetUp(boolean newVal) {
@@ -199,11 +218,38 @@ public class JUnitSettings {
     }
     
     public boolean isGenerateTearDown() {
-        return getPreferences().getBoolean(PROP_GENERATE_TEARDOWN,true);
+        return getPreferences().getBoolean(PROP_GENERATE_TEARDOWN,
+                                           DEFAULT_GENERATE_TEARDOWN);
     }
 
     public void setGenerateTearDown(boolean newVal) {
         getPreferences().putBoolean(PROP_GENERATE_TEARDOWN,newVal);
+    }
+    
+    public boolean isGenerateClassSetUp() {
+        return getPreferences().getBoolean(PROP_GENERATE_CLASS_SETUP,
+                                           DEFAULT_GENERATE_CLASS_SETUP);
+    }
+
+    public void setGenerateClassSetUp(boolean newVal) {
+        getPreferences().putBoolean(PROP_GENERATE_CLASS_SETUP, newVal);
+    }
+    
+    public boolean isGenerateClassTearDown() {
+        return getPreferences().getBoolean(PROP_GENERATE_CLASS_TEARDOWN,
+                                           DEFAULT_GENERATE_CLASS_TEARDOWN);
+    }
+
+    public void setGenerateClassTearDown(boolean newVal) {
+        getPreferences().putBoolean(PROP_GENERATE_CLASS_TEARDOWN, newVal);
+    }
+    
+    public String getGenerator() {
+        return getPreferences().get(PROP_GENERATOR, DEFAULT_GENERATOR);
+    }
+    
+    public void setGenerator(String generator) {
+        getPreferences().put(PROP_GENERATOR, generator);
     }
     
     public String getGenerateMainMethodBody() {

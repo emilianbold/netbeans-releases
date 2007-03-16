@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -48,6 +48,12 @@ public abstract class JUnitPluginTrampoline {
     
     /** Used by {@link JUnitPlugin}. */
     public JUnitPluginTrampoline() {}
+    
+    /**
+     */
+    public abstract boolean createTestActionCalled(
+            JUnitPlugin plugin,
+            FileObject[] filesToTest);
     
     /**
      * Returns a specification of a Java element or file representing test

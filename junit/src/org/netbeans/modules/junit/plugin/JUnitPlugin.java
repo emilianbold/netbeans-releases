@@ -21,6 +21,7 @@ package org.netbeans.modules.junit.plugin;
 
 //import java.util.Collections;
 //import java.util.EnumSet;
+import java.awt.EventQueue;
 import java.util.Map;
 //import java.util.Set;
 //import javax.lang.model.element.Element;
@@ -46,6 +47,10 @@ public abstract class JUnitPlugin {
     
     static {
         JUnitPluginTrampoline.DEFAULT = new JUnitPluginTrampoline() {
+            public boolean createTestActionCalled(JUnitPlugin plugin,
+                                                  FileObject[] filesToTest) {
+                return plugin.createTestActionCalled(filesToTest);
+            }
             public FileObject[] createTests(
                     JUnitPlugin plugin,
                     FileObject[] filesToTest,
@@ -98,14 +103,24 @@ public abstract class JUnitPlugin {
         INC_PKG_PRIVATE(99313),
         /**
          * key for the map of test creation parameters
-         * - generate method {@code setup()}?
+         * - generate test initializer method ({@code setup()}/{@code @Before})?
          */
         INC_SETUP(99314),
         /**
          * key for the map of test creation parameters
-         * - generate method {@code tearDown()}?
+         * - generate test finalizer method ({@code tearDown()}/{@code @After})?
          */
         INC_TEAR_DOWN(99315),
+        /**
+         * key for the map of test creation parameters
+         * - generate test class initializer method ({@code @BeforeClass})?
+         */
+        INC_CLASS_SETUP(99323),
+        /**
+         * key for the map of test creation parameters
+         * - generate test class finalizer method ({@code @AfterClass})?
+         */
+        INC_CLASS_TEAR_DOWN(99324),
         /**
          * key for the map of test creation parameters
          * - generate default test method bodies?
@@ -284,5 +299,39 @@ public abstract class JUnitPlugin {
             FileObject[] filesToTest,
             FileObject targetRoot,
             Map<CreateTestParam, Object> params);
+
+//    /**
+//     * Determines whether the &quot;create JUnit tests&quot; functionality
+//     * should be enabled.
+//     * Before this method is called, other common pre-requisites are checked
+//     * (only Java classes or folders selected, all of them from the same source
+//     * of a Java project, all of them being valid {@code DataObject}s).
+//     * If some of the pre-requisites are not met, the functionality is disabled
+//     * and this method is not called.
+//     *
+//     * @return  {@code true} if this action should be enabled,
+//     *          {@code false} otherwise;
+//     *          the default implementation returns always {@code true}
+//     */
+//    protected boolean canCreateTests() {
+//        return true;
+//    }
+
+    /**
+     * Called immediately after the <em>Create Test</em> action was called.
+     * It can be used as a trigger for additional checks and/or for displaying
+     * user dialogs etc. It is always called from the event-dispatching thread.
+     *
+     * @param  selectedFiles  files and folders/packages that were selected
+     *                        when the action was called
+     * @return  {@code true} if the action can continue,
+     *          {@code false} if the action should not continue;
+     *          the default implementation returns always {@code true}
+     */
+    protected boolean createTestActionCalled(FileObject[] selectedFiles) {
+        assert EventQueue.isDispatchThread();
+
+        return true;
+    }
 
 }
