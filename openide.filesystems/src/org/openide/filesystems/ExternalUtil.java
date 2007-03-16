@@ -133,8 +133,8 @@ final class ExternalUtil extends Object {
         private static final FileSystem MEMORY = FileUtil.createMemoryFileSystem();
         
         public MainFS() {
-            super(computeDelegates());
             ALL.addLookupListener(this);
+            resultChanged(null); // run after add listener - see PN1 in #26338
         }
         
         private static FileSystem[] computeDelegates() {

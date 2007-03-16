@@ -43,6 +43,8 @@ public class RepositoryTest extends TestCase {
         String dir = "/yarda/own/file";
         org.openide.filesystems.FileUtil.createFolder (mem.getRoot (), dir);
         
+        // XXX fails to test that Repo contents are right from *initial* lookup
+        // (try commenting out 'resultChanged(null);' in ExternalUtil.MainFS - still passes)
         assertNull ("File is not there yet", Repository.getDefault ().getDefaultFileSystem ().findResource (dir));
         MainLookup.ic.add(mem);
         try {
