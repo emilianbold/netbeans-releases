@@ -452,10 +452,10 @@ public class QueryBuilder extends TopComponent
 	this.vse = vse;
         this.qbMetaData = new QueryBuilderMetaData(metadata, this);
 	
-        //JDTODO - figure out the title
-        String title = "fix4";
-        
-                // Set the name to display
+	// It would be nice to have a short title, but there isn't a convenient one
+        String title = dbconn.getName();
+     
+        // Set the name to display
         setName(title);
         setDisplayName(title);
 
