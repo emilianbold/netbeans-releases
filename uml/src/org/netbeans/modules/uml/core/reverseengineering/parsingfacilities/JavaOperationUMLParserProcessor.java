@@ -77,6 +77,27 @@ public class JavaOperationUMLParserProcessor
         removeStateHandler(stateName);
     }
     
+    private static int indent = 0;
+    
+    //used only debugging parser tree, or reacting to it.
+    //there are System.out.println method calls commented out. To see the
+    //tokens and States coming from the parser, uncomment these calls.
+    private synchronized String getIndent(int n) {
+        StringBuffer sb = new StringBuffer(n);
+        for (int i=0; i<n; i++)
+            sb.append("   ") ;
+        
+        return sb.toString() ;
+    }
+    //used only debugging parser tree, or reacting to it.
+    private synchronized int addIndent() {
+        return indent++;
+    }
+    //used only debugging parser tree, or reacting to it.
+    private synchronized int removeIndent() {
+        return --indent;
+    }
+    
     protected void addStateHandler(String stateName, String language)
     {
         OperationHandlerData data = new OperationHandlerData();
@@ -96,12 +117,13 @@ public class JavaOperationUMLParserProcessor
                 if (data.handler != handler.handler && data.handler != null)
                     data.handler.initialize();
             }
+            
             // I always want to add the state handler to the list.  Even
             // if it is NULL.  Pushing a NULL state handler on the stack
             // is a way to filter out an entire state (and all of the 
             // tokens in the state).
             
-            Log.out("]]]] " + getName(data) + " for state " + stateName);
+            //System.out.println(getIndent(addIndent())+ "<"+ stateName +" handler="+ getName(data)+">" );
             m_StateHandlers.push( data );
         }
         else
@@ -119,7 +141,7 @@ public class JavaOperationUMLParserProcessor
             
                 // I only want to add NON-NULL state handlers to the 
                 // list.
-                Log.out(">>>> " + getName(data) + " for state " + stateName);
+                //System.out.println(getIndent(addIndent()) +"<"+ stateName +" handler="+ getName(data) +">" );
                 m_StateHandlers.push(data);
             }
         }
@@ -137,7 +159,8 @@ public class JavaOperationUMLParserProcessor
             // Remove the hander from the stack and notify the handler that
             // the state has ended.
             OperationHandlerData oldData = m_StateHandlers.pop();
-            Log.out("<<<< " + getName(oldData) + " for state " + stateName);
+            //System.out.println(getIndent(removeIndent()) + "</"+ stateName +">" );
+
             if (oldData.handler != null)
                 oldData.handler.stateComplete(stateName);
         }
@@ -180,14 +203,18 @@ public class JavaOperationUMLParserProcessor
             try
             {
                 OperationHandlerData data = m_StateHandlers.peek();
-                if (data.handler != null)
+                if (data.handler != null) {
                     data.handler.processToken(token, language);
+                    //System.out.println(getIndent(indent) + "<token value="+token.getValue() +" handler="+ getName(data)+"/>" );
+                } //else
+                    //System.out.println(getIndent(indent) + "<token value="+token.getValue() +" handler="+ getName(data)+"/>" );
             }
             catch (Exception e)
             {
                 e.printStackTrace();
             }
-        }
+        } //else
+            //System.out.println(getIndent(indent) + "<token value="+token.getValue() +" handler=NO_STATE_HANDLER/>" );
     }
 
     /**
