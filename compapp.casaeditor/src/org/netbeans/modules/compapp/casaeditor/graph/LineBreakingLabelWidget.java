@@ -34,8 +34,12 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
- *
-MultiLabelWidget_1
+ * A widget that supports multi-line text.
+ * The text is automatically centered horizontally.
+ * To center the text vertically, ensure this widget stretches to the full
+ * height of whatever widget contains this widget.
+ * 
+ * @author Josh Sandusky
  */
 public class LineBreakingLabelWidget extends Widget {
     
@@ -104,6 +108,9 @@ public class LineBreakingLabelWidget extends Widget {
         
         boolean isValidateRequired = false;
         String[] stringWithLineBreaks = calculateLineBreaks(mLabel);
+        if (stringWithLineBreaks == null) {
+            return false;
+        }
         
         if (
                 mLabelWidgets != null && 
@@ -141,6 +148,9 @@ public class LineBreakingLabelWidget extends Widget {
     private String[] calculateLineBreaks(String str) {
         // Only use 3/4 of the width for our text.
         float formatWidth = (float) getPreferredBounds().width * 0.75f;
+        if (formatWidth <= 0) {
+            return null;
+        }
         
         mLineMeasurer.setPosition(mParagraphStart);
         int oldPos = mParagraphStart;
