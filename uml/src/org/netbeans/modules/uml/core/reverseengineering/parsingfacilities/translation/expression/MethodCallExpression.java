@@ -229,7 +229,10 @@ public class MethodCallExpression extends ExpressionStateHandler
       InstanceInformation instRef = m_InstanceExpression.sendOperationEvents(null, pThisPtr, symbolTable, pClassLoader, pDispatcher, pParentNode);
       if(instRef == null)
       {
-         instRef = getThisInstance(pThisPtr);
+          if (isStringConstant())
+              instRef = getStringInstance(pThisPtr);
+          else
+              instRef = getThisInstance(pThisPtr);
       }
       ETList<ETPairT<InstanceInformation,String>> args = getArgumentInstances(retVal, pThisPtr, symbolTable, pClassLoader, pDispatcher, pParentNode);
       MethodDeclaration declaration = getMethodDeclaration(instRef, pThisPtr, pClassLoader, args);
@@ -268,6 +271,14 @@ public class MethodCallExpression extends ExpressionStateHandler
          e.printStackTrace();
       }
       return retVal;
+   }
+   
+   private boolean isStringConstant() {
+       String s = m_InstanceExpression.toString() ;
+       if (s.startsWith("\"") && s.endsWith("\""))
+           return true ;
+       
+       return false ;
    }
    
         /* (non-Javadoc)
@@ -491,6 +502,14 @@ public class MethodCallExpression extends ExpressionStateHandler
       }
    }
    
+   public InstanceInformation getStringInstance(IREClass pThis)
+   {
+      ObjectInstanceInformation retVal = new ObjectInstanceInformation();
+      retVal.setInstanceOwner(pThis);
+      retVal.setInstanceType(pThis);
+      retVal.setInstanceName("");
+      return retVal;
+   }
    public InstanceInformation getThisInstance(IREClass pThis)
    {
       ObjectInstanceInformation retVal = new ObjectInstanceInformation();
