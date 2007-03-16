@@ -625,8 +625,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 sb.append("${PAR"); //NOI18N
                                 sb.append(cnt++);
                                 if (ta.getKind() == TypeKind.TYPEVAR) {
-                                    sb.append(" type=\""); //NOI18N
-                                    ta = ((TypeVariable)ta).getUpperBound();
+                                    TypeVariable tv = (TypeVariable)ta;
+                                    if (elem == tv.asElement()) {
+                                        sb.append(" type=\""); //NOI18N
+                                        ta = tv.getUpperBound();
+                                    } else {
+                                        sb.append(" editable=false default=\""); //NOI18N
+                                        asTemplate = true;
+                                    }
                                     sb.append(Utilities.getTypeName(ta, true));
                                     sb.append("\"}"); //NOI18N
                                 } else if (ta.getKind() == TypeKind.WILDCARD) {
