@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="folding,all" name="Editor Actions">
+    <testbag testattribs="folding,all" name="Editor Folds">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="java_code_folding/JavaCodeFoldingTestSuite.class"/>            

@@ -92,6 +92,7 @@ import editor_actions.EditorActionsTest;
         try {
         
             EditorOperator editor = getDefaultSampleEditorOperator();
+            editor.requestFocus();
             JEditorPaneOperator txtOper = editor.txtEditorPane();            
 
             // 00 ---------------------- test insert action -----------------
