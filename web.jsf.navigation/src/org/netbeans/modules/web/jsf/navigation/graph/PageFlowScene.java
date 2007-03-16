@@ -61,7 +61,7 @@ import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvi
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
@@ -78,7 +78,7 @@ import org.openide.util.Utilities;
  * @author Joelle Lam
  */
 // TODO - remove popup menu action
-public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, String> {
+public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
     
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
@@ -125,7 +125,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
         //        getActions ().addAction (deleteAction);
         
         
-        GridGraphLayout gglayout = new GridGraphLayout<AbstractNode, NavigationCase> ();
+        GridGraphLayout gglayout = new GridGraphLayout<Node, NavigationCase> ();
         gglayout.setChecker(true);
         
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
@@ -166,7 +166,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
      * @param node the node
      * @return the widget attached to the node, will return null if
      */
-    protected Widget attachNodeWidget(AbstractNode node) {
+    protected Widget attachNodeWidget(Node node) {
         assert node != null;
         VMDNodeWidget nodeWidget = new VMDNodeWidget(this);
         nodeWidget.setNodeName(node.getName());
@@ -232,7 +232,7 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
      * @param pin the pin
      * @return the widget attached to the pin, null, if it is a default pin
      */
-    protected Widget attachPinWidget(AbstractNode node, String pin) {
+    protected Widget attachPinWidget(Node node, String pin) {
         assert node != null;
         
         if( node.equals(pin)){
@@ -369,32 +369,29 @@ public class PageFlowScene extends GraphPinScene<AbstractNode, NavigationCase, S
     }
     
     private final class PageFlowTextFieldInplaceEditor implements TextFieldInplaceEditor {
-            private VMDNodeWidget nodeWidget;
-            
-            public PageFlowTextFieldInplaceEditor (VMDNodeWidget nodeWidget ) {
-                this.nodeWidget = nodeWidget;
-            }
+        private VMDNodeWidget nodeWidget;
         
-            public boolean isEnabled(Widget widget) {
-                return true;
+        public PageFlowTextFieldInplaceEditor(VMDNodeWidget nodeWidget ) {
+            this.nodeWidget = nodeWidget;
+        }
+        
+        public boolean isEnabled(Widget widget) {
+            return true;
+        }
+        public String getText(Widget widget) {
+            Node pageNode = (Node)findObject(nodeWidget);
+//                return ((LabelWidget) widget).getLabel();
+//                if( pageNode instanceof DataNode ){
+            return pageNode.getName();
+        }
+        public void setText(Widget widget, String text) {
+            ((LabelWidget) widget).setLabel(text);
+            
+            Node pageNode = (Node)findObject(nodeWidget);
+            if ( pageNode.canRename() ) {
+                pageNode.setName(text);
             }
-            public String getText(Widget widget) {
-                return ((LabelWidget) widget).getLabel();
-            }
-            public void setText(Widget widget, String text) {
-                ((LabelWidget) widget).setLabel(text);                
-                AbstractNode pageNode = (AbstractNode)findObject(nodeWidget);
-                if( pageNode instanceof DataNode ){
-                    try {
-                        ((DataNode)pageNode).getDataObject().rename(text);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                } else {
-                    System.out.println("I need to reset the model for at least the page.");
-                    
-                }
-            }
+        }
         
     }
     

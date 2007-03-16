@@ -41,7 +41,7 @@ import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -153,8 +153,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
 //        scene.removeChildren();
         
         //Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
-        Collection<AbstractNode> nodes = new HashSet<AbstractNode>(scene.getNodes());
-        for( AbstractNode node : nodes ){
+        Collection<Node> nodes = new HashSet<Node>(scene.getNodes());
+        for( Node node : nodes ){
             scene.removeNodeWithEdges(node);
         }
         scene.validate();
@@ -178,7 +178,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
      * @param glyphs
      * @return
      */
-    protected VMDNodeWidget createNode( AbstractNode pageNode, String type, List<Image> glyphs) {
+    protected VMDNodeWidget createNode( Node pageNode, String type, List<Image> glyphs) {
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
         String pageName = pageNode.getName();
         if( pageNode instanceof DataNode ){
@@ -200,7 +200,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
      * @param navComp
      * @return
      */
-    protected VMDPinWidget createPin( AbstractNode pageNode, String navComp) {
+    protected VMDPinWidget createPin( Node pageNode, String navComp) {
         //        Pin pin = new Pin(page, navComp);
         VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, navComp);
         //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
@@ -224,6 +224,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         
         ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCase);
         
+        //Should this be moved to scene?
         LabelWidget label = new LabelWidget(scene, caseName);
         label.setOpaque(true);
         widget.addChild(label);
