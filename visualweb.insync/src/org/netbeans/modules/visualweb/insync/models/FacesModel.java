@@ -880,7 +880,7 @@ public class FacesModel extends Model {
         if (mb == null) {
             JavaClass javaClass = beansUnit.getThisClass();
             for(int i=0; i<managedBeanNames.length; i++) {
-                if(javaClass.isSubTypeOf(managedBeanNames[i])) {
+                if(beansUnit.getBaseBeanClassName().equals(managedBeanNames[i])) {
                     UndoEvent event = null;
                     try {
                         // No description - is this even an undoable event? In any case it should
@@ -918,7 +918,7 @@ public class FacesModel extends Model {
         if (type == null)
             return null;
         for(int i=0; i<managedBeanNames.length; i++) {
-            if(type.isSubTypeOf(managedBeanNames[i])) {
+            if(beansUnit.getBaseBeanClassName().equals(managedBeanNames[i])) {
                 return managedBeanScopes[i];
             }
         }

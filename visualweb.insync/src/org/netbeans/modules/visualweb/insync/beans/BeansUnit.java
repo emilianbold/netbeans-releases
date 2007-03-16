@@ -60,7 +60,7 @@ public class BeansUnit implements Unit {
     protected JavaUnit junit;     // underlying java source unit
     protected ClassLoader classLoader;  // classloader to use for loading bean and beaninfo classes
 
-    protected String packageName;  // package this unit resides in. Same as junit.getPackage().getName()
+    protected String packageName;  // package this unit resides in
 
     protected JavaClass javaClass;
 
@@ -77,20 +77,8 @@ public class BeansUnit implements Unit {
 
     // Hold onto my scanner
     protected BeanStructureScanner beanStructureScanner;
-
-    public String managedBeans[] = {
-        "com.sun.jsfcl.app.AbstractPageBean",        // NOI18N
-        "com.sun.jsfcl.app.AbstractRequestBean",     // NOI18N
-        "com.sun.jsfcl.app.AbstractSessionBean",     // NOI18N
-        "com.sun.jsfcl.app.AbstractApplicationBean", // NOI18N
-        //TODO: Refactor this array into specific to R1 and R2 page
-        "com.sun.rave.web.ui.appbase.AbstractPageBean",       // NOI18N
-        "com.sun.rave.web.ui.appbase.AbstractRequestBean",    // NOI18N
-        "com.sun.rave.web.ui.appbase.AbstractSessionBean",    // NOI18N
-        "com.sun.rave.web.ui.appbase.AbstractApplicationBean", // NOI18N
-        "com.sun.rave.web.ui.appbase.AbstractFragmentBean",       // NOI18N
-    };
-
+    
+    private String baseClassName;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -221,11 +209,12 @@ public class BeansUnit implements Unit {
     protected void scan() {
         // If the JavaUnit does not have a class defined in it, then I will re-use the same scanner
         // so that a similar class is re-created.
-        if (getJavaUnit().getJavaClass() != null) {
-            javaClass = getJavaUnit().getJavaClass();//new JavaClassAdapter(junit, getJavaUnit().getJavaClass());
+        javaClass = getJavaUnit().getJavaClass();
+        if (javaClass != null) {
             for(int i=0; i<FacesModel.managedBeanNames.length; i++) {
-                if(getThisClass().isSubTypeOf(FacesModel.managedBeanNames[i])) {
+                if(javaClass.isSubTypeOf(FacesModel.managedBeanNames[i])) {
                     isPageBean = FacesModel.managedBeanIsPage[i];
+                    baseClassName = FacesModel.managedBeanNames[i];
                     break;
                 }
             }
@@ -585,17 +574,20 @@ public class BeansUnit implements Unit {
      * @return the base bean class if the bean is a known managed bean
      */
     public Class getBaseBeanClass() {
-        for(int i = 0; i < managedBeans.length; i++) {
-            if(javaClass.isSubTypeOf(managedBeans[i])) {
-                try {
-                    return ClassUtil.getClass(managedBeans[i], classLoader);
-                }catch(ClassNotFoundException e) {
-                }
-            }
+        try {
+            return ClassUtil.getClass(getBaseBeanClassName(), classLoader);
+        }catch(ClassNotFoundException e) {
         }
-        
         return null;
     }    
+    
+    /**
+     * @return the base bean class name
+     */    
+    public String getBaseBeanClassName() {
+        return baseClassName;
+    }
+    
     
     /**
      * @return

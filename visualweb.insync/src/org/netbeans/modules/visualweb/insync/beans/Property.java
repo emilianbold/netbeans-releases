@@ -54,7 +54,7 @@ public class Property extends BeansNode {
         this.bean = bean;
         //this.name = name;
         this.descriptor = descriptor;
-        javaClass = unit.getJavaUnit().getJavaClass();
+        javaClass = unit.getThisClass();
     }
 
     /**

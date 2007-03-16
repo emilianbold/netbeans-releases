@@ -286,7 +286,7 @@ public class Bean extends BeansNode {
             for (int i=0; i < units.length; i++) {
                 fObjs.add(units[i].getBeansUnit().getJavaUnit().getFileObject());
              }
-            unit.getJavaUnit().getJavaClass().renameProperty(oldname, newname, fObjs);
+            unit.getThisClass().renameProperty(oldname, newname, fObjs);
         }
         return newname;
     }

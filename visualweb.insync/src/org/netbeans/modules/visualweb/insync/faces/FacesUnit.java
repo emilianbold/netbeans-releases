@@ -244,7 +244,7 @@ public class FacesUnit extends BeansUnit {
         Class scannerClass = null;
         for (int i=0; i < FacesModel.managedBeanNames.length; i++) {
             String name = FacesModel.managedBeanNames[i];
-            if(javaClass.isSubTypeOf(name)) {
+            if(getBaseBeanClassName().equals(name)) {
                 scannerClass = FacesModel.managedBeanScannerTypes[i];
                 break;
             }
