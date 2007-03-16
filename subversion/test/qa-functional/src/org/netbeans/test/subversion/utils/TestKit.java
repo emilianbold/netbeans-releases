@@ -70,8 +70,8 @@ public final class TestKit {
         
         // wait classpath scanning finished
         ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
+        //new QueueTool().waitEmpty(1000);
+        //ProjectSupport.waitScanFinished();
         
         return file;
     }
