@@ -11,7 +11,7 @@ package org.netbeans.modules.xml.wsdl.refactoring;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
@@ -25,7 +25,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
-import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -33,7 +32,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Sonali
  */
-public class WSDLRefactoringElement extends SimpleRefactoringElementImplementation {
+public class WSDLRefactoringElement extends SimpleRefactoringElementImpl {
     
     private FileObject source;
     Model model;
@@ -61,6 +60,11 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
             e.printStackTrace();
         }
         
+    }
+
+    public Object getComposite() {
+       return comp;
+       
     }
 
     public FileObject getParentFile() {
@@ -101,9 +105,5 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
 	 preferredAction.actionPerformed(ae);
      
      }
-
-    public Lookup getLookup() {
-        return Lookups.singleton(comp); 
-    }
      
 }

@@ -24,7 +24,7 @@ import java.util.List;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
 import org.netbeans.modules.xml.schema.model.GlobalElement;

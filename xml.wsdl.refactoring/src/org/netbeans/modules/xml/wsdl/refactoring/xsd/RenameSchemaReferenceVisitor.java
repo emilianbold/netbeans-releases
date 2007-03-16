@@ -31,7 +31,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -70,11 +69,9 @@ public class RenameSchemaReferenceVisitor extends DefaultVisitor implements WSDL
             }
          //   Collection<Usage> items = usage.getItems();
             for (RefactoringElementImplementation item:elements) {
-                Component comp = item.getLookup().lookup(Component.class);
-                if(comp == null)
-                    continue;
-                if (item.isEnabled() &&  comp instanceof WSDLComponent) {
-                    WSDLComponent referencing = (WSDLComponent)comp;
+                if (item.isEnabled() &&
+                    item.getComposite() instanceof WSDLComponent) {
+                    WSDLComponent referencing = (WSDLComponent)item.getComposite();
                     referencing.accept(this);
                 }
             }

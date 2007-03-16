@@ -41,10 +41,12 @@ public class WSDLTreeFactoryImpl implements TreeElementFactoryImplementation {
     public TreeElement getTreeElement(Object o) {
         TreeElement result = null;
         if (o instanceof RefactoringElement) {
-            Component comp = ((RefactoringElement)o).getLookup().lookup(Component.class);
-            if (comp != null && comp instanceof WSDLComponent) {
-               result = new WSDLTreeElement((RefactoringElement) o);
-            }
+            if (((RefactoringElement) o).getComposite() instanceof Component) {
+               Component u = (Component) ((RefactoringElement)o).getComposite();
+               if(u instanceof WSDLComponent) {
+                   result = new WSDLTreeElement((RefactoringElement) o);
+               } 
+           }
         }else if( o instanceof WSDLComponent){
             result = new WSDLTreeElement((WSDLComponent)o);
         }

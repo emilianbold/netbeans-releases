@@ -28,7 +28,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 
 import org.netbeans.modules.xml.schema.model.*;
 import org.netbeans.modules.xml.schema.model.visitor.*;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -72,11 +71,8 @@ class RenameReferenceVisitor extends DefaultSchemaVisitor {
             }
           //  Collection<Usage> items = usage.getItems();
             for (RefactoringElementImplementation item : elements) {
-                Component comp = item.getLookup().lookup(Component.class);
-                if(comp == null)
-                    continue;
-                if (item.isEnabled() && comp instanceof SchemaComponent) {
-                    currentComponent = (SchemaComponent)comp;
+                if (item.isEnabled() && item.getLookup().lookup(SchemaComponent.class)!=null) {
+                    currentComponent = item.getLookup().lookup(SchemaComponent.class);
                     currentComponent.accept(this);
                 }
             }

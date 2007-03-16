@@ -116,9 +116,8 @@ public class WSDLRefactoringEngine {//extends RefactoringEngine {
             }
         
             for (RefactoringElementImplementation u : elements) {
-                Component comp = u.getLookup().lookup(Component.class);
-                if (comp != null && comp instanceof Import) {
-                    Import ref = (Import) comp;
+                if (u.getComposite() instanceof Import) {
+                    Import ref = (Import) u.getComposite();
                     String newLocation = calculateNewLocationString(ref.getLocation(), request);
                     ref.setLocation(newLocation);
                 }
