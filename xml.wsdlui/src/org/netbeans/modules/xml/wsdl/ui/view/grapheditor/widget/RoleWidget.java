@@ -27,8 +27,10 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.util.List;
 import java.util.ListIterator;
+
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -48,7 +50,10 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.HoverActionProv
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortTypeNode;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xam.dom.Utils;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.NewAction;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -72,7 +77,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
      */
     public RoleWidget(Scene scene, Role role, Lookup lookup) {
         super(scene, role, lookup);
-        mPartnerLinkType = (PartnerLinkType) getLookup().lookup(PartnerLinkType.class);
+        mPartnerLinkType = getLookup().lookup(PartnerLinkType.class);
         init();
     }
 
@@ -176,6 +181,19 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         mLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
 
             public void setText(Widget widget, String text) {
+                String errorMessage = null;
+                if (text == null || text.trim().length() == 0) {
+                    errorMessage = NbBundle.getMessage(RoleWidget.class, "MSG_BlankRoleName", text);
+                } else if (!Utils.isValidNCName(text)) { 
+                    errorMessage = NbBundle.getMessage(RoleWidget.class, "MSG_InvalidRoleName", text);
+                }
+                
+                if (errorMessage != null) {
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(errorMessage, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
+                    return;
+                }
+                
                 WSDLModel model = mPartnerLinkType.getModel();
                 boolean newRoleCreated = false;
                 try {
