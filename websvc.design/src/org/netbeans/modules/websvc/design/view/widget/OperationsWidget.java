@@ -20,16 +20,12 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Paint;
-import java.awt.Rectangle;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.Action;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -44,18 +40,18 @@ import org.openide.util.Utilities;
  *
  * @author Ajit Bhate
  */
-public class OperationsWidget extends LayerWidget implements ExpandableWidget{
+public class OperationsWidget extends Widget implements ExpandableWidget{
     
-    private static final Color FILL_COLOR_DARK = new Color(255,255,102);
-    private static final Color FILL_COLOR_LIGHT = new Color(255,255,204);
-    private static final Color BORDER_COLOR = new Color(153,204,255);
-    private static final int radius = 10;
+    private static final Color FILL_COLOR_ORANGE4 = new Color(255,204,153);
+    private static final Color FILL_COLOR_PALEYELLOW = new Color(255,255,204);
+    private static final Color BORDER_COLOR_ORANGE3 = new Color(255,153,102);
     public  static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/operation.png"); // NOI18N   
 
     private transient WsdlService wsdlService;
     private transient Action addAction;
 
+    private transient RoundedRectangleWidget mainWidget;
     private transient Widget contentWidget;
     private transient HeaderWidget headerWidget;
     private transient Widget buttons;
@@ -72,7 +68,6 @@ public class OperationsWidget extends LayerWidget implements ExpandableWidget{
      */
     public OperationsWidget(Scene scene, Service service, FileObject implementationClass) {
         super(scene);
-        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 16));
         addAction = new AddOperationAction(service, implementationClass);
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
@@ -104,14 +99,16 @@ public class OperationsWidget extends LayerWidget implements ExpandableWidget{
     private void createContent() {
         if (wsdlService==null) return;
         
+        mainWidget = new RoundedRectangleWidget(getScene(),
+                FILL_COLOR_ORANGE4, FILL_COLOR_PALEYELLOW, BORDER_COLOR_ORANGE3);
+        mainWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 16));
+        addChild(mainWidget);
+
         boolean expanded = ExpanderWidget.isExpanded(this, true);
         expander = new ExpanderWidget(getScene(), this, expanded);
 
         headerWidget = new HeaderWidget(getScene(), expander);
         headerWidget.setLayout(new LeftRightLayout(32));
-
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, "Messages", "(1)");
-        headerWidget.addChild(headerLabelWidget);
 
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
@@ -126,14 +123,21 @@ public class OperationsWidget extends LayerWidget implements ExpandableWidget{
 
         headerWidget.addChild(buttons);
 
-        addChild(headerWidget);
+        mainWidget.addChild(headerWidget);
         
         contentWidget = new Widget(getScene());
+
+        int noOfOperations = 0;
         for(WsdlPort port:wsdlService.getPorts()) {
             for(WsdlOperation operation:port.getOperations()) {
                 contentWidget.addChild(new OperationContentWidget(getScene(),operation));
+                noOfOperations++;
             }
         }
+        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, "Operations", 
+                "("+noOfOperations+")");
+        headerWidget.addChild(0,headerLabelWidget);
+
         
         if(expanded) {
             expandWidget();
@@ -142,20 +146,9 @@ public class OperationsWidget extends LayerWidget implements ExpandableWidget{
         }
     }
 
-    protected void paintWidget() {
-        Rectangle bounds = getBounds();
-        Graphics2D g = getGraphics();
-        Paint oldPaint = g.getPaint();
-        g.setPaint(FILL_COLOR_LIGHT);
-        g.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, radius, radius);
-        g.setPaint(BORDER_COLOR);
-        g.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, radius, radius);
-        g.setPaint(oldPaint);
-    }
-    
     public void collapseWidget() {
         if(contentWidget.getParentWidget()!=null) {
-            removeChild(contentWidget);
+            mainWidget.removeChild(contentWidget);
             revalidate();
             repaint();
             getScene().repaint();
@@ -165,7 +158,7 @@ public class OperationsWidget extends LayerWidget implements ExpandableWidget{
 
     public void expandWidget() {
         if(contentWidget.getParentWidget()==null) {
-            addChild(contentWidget);
+            mainWidget.addChild(contentWidget);
             revalidate();
             repaint();
             getScene().repaint();
