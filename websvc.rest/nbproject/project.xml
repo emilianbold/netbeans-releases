@@ -135,7 +135,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.project</friend>
+                <package>org.netbeans.modules.websvc.rest</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
