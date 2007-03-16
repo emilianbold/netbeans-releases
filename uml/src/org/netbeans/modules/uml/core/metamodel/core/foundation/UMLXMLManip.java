@@ -21,7 +21,6 @@ package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
 import javax.xml.transform.TransformerException;
-
 import java.io.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -31,7 +30,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.Vector;
-//import org.apache.xpath.XPathAPI;
 import org.dom4j.Attribute;
 import org.dom4j.Branch;
 import org.dom4j.Document;
@@ -39,11 +37,9 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.dom4j.Node;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
@@ -65,6 +61,8 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
+import org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation;
+import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 
 /**
  * <p>Title: </p>
@@ -1935,6 +1933,10 @@ public class UMLXMLManip
             {
                IPresentationElement pEle = pElems.get(i);
                IPresentationElement pNewPE = pEle.transform(typeName);
+               // 87522
+               IGraphPresentation pres = TypeConversions.getETElement(pNewPE);
+               if (pres != null)
+                   pres.setModelElement(elem);
             }
          }
       }
