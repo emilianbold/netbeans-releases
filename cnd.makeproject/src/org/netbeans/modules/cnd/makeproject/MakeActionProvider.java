@@ -22,11 +22,11 @@ package org.netbeans.modules.cnd.makeproject;
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import java.util.Set;
 import javax.swing.JButton;
 import org.netbeans.api.project.ProjectInformation;
@@ -61,7 +61,6 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -179,7 +178,7 @@ public class MakeActionProvider implements ActionProvider {
         }
         
         // Add actions to do
-        Vector actionEvents = new Vector();
+        ArrayList actionEvents = new ArrayList();
         if (command.equals(COMMAND_BATCH_BUILD)) {
             BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(pd.getConfs().getConfs());
             String batchCommand = batchConfigurationSelector.getCommand();
@@ -251,7 +250,7 @@ public class MakeActionProvider implements ActionProvider {
         }
     }
     
-    public void addAction(Vector actionEvents, String projectName, MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context) throws IllegalArgumentException {
+    public void addAction(ArrayList actionEvents, String projectName, MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context) throws IllegalArgumentException {
         String[] targetNames;
         
         

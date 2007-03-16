@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.api.utils.HeaderSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.ResourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.SourceFileFilter;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
@@ -66,7 +66,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         filterComboBox.addItem(CSourceFileFilter.getInstance());
         filterComboBox.addItem(CCSourceFileFilter.getInstance());
         filterComboBox.addItem(HeaderSourceFileFilter.getInstance());
-        if (MakeOptions.getInstance().getFortran())
+        if (CppSettings.getDefault().isFortranEnabled())
             filterComboBox.addItem(FortranSourceFileFilter.getInstance());
         filterComboBox.addItem(ResourceFileFilter.getInstance());
         filterComboBox.addItem(AllSourceFileFilter.getInstance());

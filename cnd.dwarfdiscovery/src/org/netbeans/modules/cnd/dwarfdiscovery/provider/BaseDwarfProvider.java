@@ -25,10 +25,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
@@ -40,16 +42,16 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
  * @author Alexander Simon
  */
 public abstract class BaseDwarfProvider implements DiscoveryProvider {
-
+    
     private static final boolean TRACE_READ_EXCEPTIONS = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.errors"); // NOI18N
     
     public BaseDwarfProvider() {
     }
-
+    
     public boolean isApplicable(ProjectProxy project) {
         return true;
     }
-
+    
     public boolean canAnalyze(ProjectProxy project) {
         return true;
     }
@@ -174,9 +176,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
                             LANG.DW_LANG_C89.toString().equals(lang) ||
                             LANG.DW_LANG_C99.toString().equals(lang)) {
-                        list.add(new DwarfSource(cu,false));
+                        list.add(new DwarfSource(cu,false,getCommpilerSettings()));
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        list.add(new DwarfSource(cu,true));
+                        list.add(new DwarfSource(cu,true,getCommpilerSettings()));
                     } else {
                         // Ignore other languages
                     }
@@ -208,5 +210,43 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         }
         return list;
+    }
+
+    public CompilerSettings getCommpilerSettings(){
+        return myCommpilerSettings;
+    }
+
+    public void setCommpilerSettings(ProjectProxy project) {
+        myCommpilerSettings = new CompilerSettings(project);
+    }
+    private CompilerSettings myCommpilerSettings;
+    
+    public static class CompilerSettings{
+        private List<String> systemIncludePathsC;
+        private List<String> systemIncludePathsCpp;
+        private Map<String,String> systemMacroDefinitionsC;
+        private Map<String,String> systemMacroDefinitionsCpp;
+        public CompilerSettings(ProjectProxy project){
+            systemIncludePathsCpp = ProjectUtil.getSystemIncludePaths(project, true);
+            systemIncludePathsC = ProjectUtil.getSystemIncludePaths(project,false);
+            systemMacroDefinitionsCpp = ProjectUtil.getSystemMacroDefinitions(project, true);
+            systemMacroDefinitionsC = ProjectUtil.getSystemMacroDefinitions(project,false);
+        }
+
+        public List<String> getSystemIncludePaths(boolean isCPP) {
+            if (isCPP) {
+                return systemIncludePathsCpp;
+            } else {
+                return systemIncludePathsC;
+            }
+        }
+        
+        public Map<String,String> getSystemMacroDefinitions(boolean isCPP) {
+            if (isCPP) {
+                return systemMacroDefinitionsCpp;
+            } else {
+                return systemMacroDefinitionsC;
+            }
+        }
     }
 }

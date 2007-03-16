@@ -400,6 +400,19 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         }
     }
 
+    public boolean isBuiltInBased(boolean resolveTypeChain) {
+        CsmClassifier classifier;
+        if (resolveTypeChain) {
+            classifier = getClassifier();
+            if (CsmKindUtilities.isTypedef(classifier)) {
+                return ((CsmTypedef)classifier).getType().isBuiltInBased(true);
+            }
+        } else {
+            classifier = _getClassifier();
+        }
+        return CsmKindUtilities.isBuiltIn(classifier);
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     

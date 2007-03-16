@@ -21,13 +21,14 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 
 import java.util.Collection;
-import java.util.EventObject;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
@@ -46,7 +47,8 @@ public class ChangeEventImpl extends CsmChangeEvent {
     
     protected Set/*<CsmProject>*/   changedProjects;
     
-    protected Set/*<CsmNamespace>*/   newNamespaces;
+    protected Map<String, CsmNamespace>   newNamespaces;
+    protected Map<String, CsmNamespace>   removedNamespaces;
     
     public ChangeEventImpl(Object source) {
 	super(source);
@@ -102,13 +104,19 @@ public class ChangeEventImpl extends CsmChangeEvent {
     }
     
     public Collection/*<CsmNamespace>*/ getNewNamespaces() {
-        if( newNamespaces == null ) {
-            newNamespaces = new HashSet()/*<CsmNamespace>*/;
+        if( newNamespaces != null ) {
+            return newNamespaces.values();
         }
-        return newNamespaces;
+        return Collections.EMPTY_LIST;
     }
     
-        
+    public Collection/*<CsmNamespace>*/ getRemovedNamespaces() {
+        if( removedNamespaces != null ) {
+            return removedNamespaces.values();
+        }
+        return Collections.EMPTY_LIST;
+    }
+    
     public boolean isEmpty() {
         return 
             (changedProjects == null || changedProjects.isEmpty()) &&
@@ -117,7 +125,9 @@ public class ChangeEventImpl extends CsmChangeEvent {
             (removedFiles == null || removedFiles.isEmpty()) &&
             (newDeclarations == null || newDeclarations.isEmpty()) && 
             (removedDeclarations== null || removedDeclarations.isEmpty()) && 
-            (changedDeclarations == null || changedDeclarations.isEmpty());
+            (changedDeclarations == null || changedDeclarations.isEmpty()) &&
+            (newNamespaces == null || newNamespaces.isEmpty()) &&
+            (removedNamespaces == null || removedNamespaces.isEmpty());
     }    
     
     public void addChangedFile(CsmFile file) {
@@ -156,4 +166,33 @@ public class ChangeEventImpl extends CsmChangeEvent {
         }
     }
     
+    public void addNewNamespace(CsmNamespace ns) {
+        // remove from removed
+        if (_getRemovedNamespaces().remove(ns.getQualifiedName()) == null) {
+            _getNewNamespaces().put(ns.getQualifiedName(), ns);
+            getChangedProjects().add(ns.getProject());
+        }
+    }
+    
+    public void addRemovedNamespace(CsmNamespace ns) {
+        // put in removed only if not added as "new"
+        if (_getNewNamespaces().get(ns.getQualifiedName()) == null) {
+            _getRemovedNamespaces().put(ns.getQualifiedName(), ns);
+            getChangedProjects().add(ns.getProject());
+        }
+    }   
+    
+    private Map<String, CsmNamespace> _getRemovedNamespaces() {
+        if (removedNamespaces == null) {
+            removedNamespaces = new HashMap<String, CsmNamespace>();            
+        }
+        return removedNamespaces;
+    }
+    
+    private Map<String,CsmNamespace> _getNewNamespaces() {
+        if (newNamespaces == null) {
+            newNamespaces = new HashMap<String, CsmNamespace>();            
+        }
+        return newNamespaces;
+    }    
 }

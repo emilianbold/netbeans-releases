@@ -396,6 +396,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 return ast;
             }
         } finally {
+            if (TraceFlags.USE_REPOSITORY) {
+                RepositoryUtils.put(this);
+            }
             //Notificator.instance().endTransaction();
             Notificator.instance().registerChangedFile(this);
             Notificator.instance().flush();

@@ -22,13 +22,19 @@ package org.netbeans.modules.cnd.discovery.wizard.bridge;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
+import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -42,6 +48,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.openide.util.Utilities;
 
@@ -212,6 +220,7 @@ public class ProjectBridge {
     }
     
     public Set getResult(){
+        makeConfigurationDescriptor.checkForChangedItems(null, null);
         return resultSet;
     }
     
@@ -222,9 +231,13 @@ public class ProjectBridge {
             if (isCPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
+                extConf.getCCCompilerConfiguration().getIncludeDirectories().setDirty(true);
+                extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
             } else {
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
+                extConf.getCCompilerConfiguration().getIncludeDirectories().setDirty(true);
+                extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
             }
         }
         makeConfigurationDescriptor.setModified();
@@ -286,5 +299,91 @@ public class ProjectBridge {
             cccCompilerConfiguration.getPreprocessorConfiguration().setValue(macros);
             cccCompilerConfiguration.getInheritPreprocessor().setValue(inheriteMacros);
         }
+    }
+    
+    private List<String> systemIncludePathsC;
+    private List<String> systemIncludePathsCpp;
+    public List<String> getSystemIncludePaths(boolean isCPP) {
+        List<String> systemIncludePaths;
+        if (isCPP) {
+            systemIncludePaths = systemIncludePathsCpp;
+        } else {
+            systemIncludePaths = systemIncludePathsC;
+        }
+        if (systemIncludePaths == null) {
+            systemIncludePaths = new ArrayList<String>();
+            MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
+            Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
+            CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+            BasicCompiler compiler;
+            if (isCPP) {
+                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+            } else {
+                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+            }
+            for(Object o :compiler.getSystemIncludeDirectories(platform)){
+                String path = (String)o;
+                systemIncludePaths.add(fixWindowsPath(path));
+            }
+            if (isCPP) {
+                systemIncludePathsCpp = systemIncludePaths;
+            } else {
+                systemIncludePathsC = systemIncludePaths;
+            }
+        }
+        return systemIncludePaths;
+    }
+
+    private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N
+    private String fixWindowsPath(String path){
+        if (Utilities.isWindows()) {
+            // use unix style path 
+            path = path.replace('\\', '/');
+            // fix /cygdrive/d/gcc/bin/../lib/gcc/i686-pc-cygwin/3.4.4/include
+            int i = path.indexOf(CYG_DRIVE_UNIX);
+            if (i >= 0 && path.length() > i+CYG_DRIVE_UNIX.length()+1) {
+                path = Character.toUpperCase(path.charAt(i+CYG_DRIVE_UNIX.length()))+":"+ // NOI18N
+                        path.substring(i+CYG_DRIVE_UNIX.length()+1);
+            }
+        }
+        return path;
+    }
+    
+    private Map<String,String> systemMacroDefinitionsC;
+    private Map<String,String> systemMacroDefinitionsCpp;
+    public Map<String,String> getSystemMacroDefinitions(boolean isCPP) {
+        Map<String,String> systemMacroDefinitions;
+        if (isCPP) {
+            systemMacroDefinitions = systemMacroDefinitionsCpp;
+        } else {
+            systemMacroDefinitions = systemMacroDefinitionsC;
+        }
+        if (systemMacroDefinitions == null) {
+            systemMacroDefinitions = new HashMap<String,String>();
+            MakeConfiguration makeConfiguration = (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
+            Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
+            CompilerSet compilerSet = CompilerSets.getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+            BasicCompiler compiler;
+            if (isCPP) {
+                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+            } else {
+                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+            }
+            for(Object o :compiler.getSystemPreprocessorSymbols(platform)){
+                String macro = (String)o;
+                int i = macro.indexOf('=');
+                if (i>0){
+                    systemMacroDefinitions.put(macro.substring(0,i), macro.substring(i+1).trim());
+                } else {
+                    systemMacroDefinitions.put(macro, null);
+                }
+            }
+            if (isCPP) {
+                systemMacroDefinitionsCpp = systemMacroDefinitions;
+            } else {
+                systemMacroDefinitionsC = systemMacroDefinitions;
+            }
+        }
+        return systemMacroDefinitions;
     }
 }

@@ -90,6 +90,7 @@ public class DwarfProvider extends BaseDwarfProvider {
     }
     
     public List<Configuration> analyze(ProjectProxy project) {
+        setCommpilerSettings(project);
         Configuration conf = new Configuration(){
             private List<SourceFileProperties> myFileProperties;
             private List<String> myIncludedFiles;

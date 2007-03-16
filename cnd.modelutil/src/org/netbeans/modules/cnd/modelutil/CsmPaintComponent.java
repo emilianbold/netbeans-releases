@@ -19,14 +19,16 @@
 
 package org.netbeans.modules.cnd.modelutil;
 import java.util.Iterator;
-import org.netbeans.modules.cnd.api.model.CsmType;
+import javax.swing.border.Border;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.LayoutManager;
 import java.awt.font.TextAttribute;
 import java.text.AttributedString;
 import java.util.HashMap;
@@ -51,7 +53,8 @@ public abstract class CsmPaintComponent extends JPanel {
     
     protected Font drawFont;
            
-    private int iconTextGap = 5;
+    private static final int ICON_WIDTH = 16;
+    private static final int ICON_TEXT_GAP = 5;
             
     private int fontHeight;
     
@@ -82,11 +85,11 @@ public abstract class CsmPaintComponent extends JPanel {
     
     protected int modifiers = 0;
     
-    
+    private static Border BORDER = BorderFactory.createEmptyBorder(0, 3, 0, 3);
+    private static LayoutManager layout = new FlowLayout();
     public CsmPaintComponent(){
-        super();        
-        setOpaque(true);
-        setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
+        super(layout, true);        
+        setBorder(BORDER);
         postfixes = new ArrayList();        
     }
     
@@ -167,25 +170,16 @@ public abstract class CsmPaintComponent extends JPanel {
             if (g != null) {
                 icon.paintIcon(this, g, drawState.drawX, drawState.drawY);
             }
-            drawState.drawX += icon.getIconWidth() + iconTextGap;
             drawState.drawHeight = Math.max(fontHeight, icon.getIconHeight());
         } else {
             drawState.drawHeight = fontHeight;
         }
+        drawState.drawX += ICON_WIDTH + ICON_TEXT_GAP;
         if (i != null) {
             drawState.drawHeight += i.bottom;
         }
         drawState.drawHeight += drawState.drawY;
         drawState.drawY += ascent;
-    }
-    
-    protected void drawType(Graphics g, CsmType typ) {
-        drawType(g, typ, false);
-    }
-    
-    protected void drawType(Graphics g, CsmType typ, boolean strike) {
-        Color c = getTypeColor(typ.getClassifier().getName());
-        drawString(g, typ.getText(), c, null, strike);
     }
     
     protected void drawString(Graphics g, String s){
@@ -221,6 +215,25 @@ public abstract class CsmPaintComponent extends JPanel {
             g.setFont(drawFont);
         }
         
+    }
+    
+    protected void drawTypeName(Graphics g, String s, Color c) {
+        if (g == null) {
+            drawString(g, "   "); // NOI18N
+            drawString(g, s, c);
+        } else {
+            int w = getWidth() - getWidth(s) - drawState.drawX;
+            int spaceWidth = getWidth(" "); // NOI18N
+            if (w > spaceWidth * 2) {
+                drawState.drawX = getWidth() - 2 * spaceWidth - getWidth(s);
+            } else {
+                drawState.drawX = getWidth() - 2 * spaceWidth - getWidth(s) - getWidth("...   "); // NOI18N
+                g.setColor(getBackground());
+                g.fillRect(drawState.drawX, 0, getWidth() - drawState.drawX, getHeight());
+                drawString(g, "...   ", c); // NOI18N
+            }
+            drawString(g, s, c);
+        }
     }
     
     protected void drawStringToGraphics(Graphics g, String s) {
@@ -279,11 +292,7 @@ public abstract class CsmPaintComponent extends JPanel {
         for (int i = 0; i < frequentWords.length; i++) {
             storeWidth(frequentWords[i]);
         }
-//        Iterator i = CsmUtilities.getPrimitiveClassIterator();
-//        while (i.hasNext()) {
-//            storeWidth(((CsmClass)i.next()).getName());
-//        }
-         drawFont = font;
+        drawFont = font;
     }
     
     protected Font getDrawFont(){
@@ -301,6 +310,8 @@ public abstract class CsmPaintComponent extends JPanel {
         if (i != null) {
             drawState.drawX += i.right;
         }
+        if (drawState.drawX > getMaximumSize().width)
+            drawState.drawX = getMaximumSize().width;
         return new Dimension(drawState.drawX, drawState.drawHeight);
     }
     
@@ -560,6 +571,8 @@ public abstract class CsmPaintComponent extends JPanel {
         protected Color typeColor;
         protected String fldName;
         
+        private boolean drawTypeAsPrefix = false;
+        
         public FieldPaintComponent() {
             super();
         }
@@ -580,6 +593,18 @@ public abstract class CsmPaintComponent extends JPanel {
             this.typeName = typeName;
         }
         
+        public Color getTypeColor(){
+            return this.typeColor;
+        }
+        
+        public String getTypeName(){
+            return this.typeName;
+        }
+        
+        public void setDrawTypeAsPrefix(boolean asPrefix) {
+            this.drawTypeAsPrefix = asPrefix;
+        }
+        
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -587,13 +612,18 @@ public abstract class CsmPaintComponent extends JPanel {
             int level = CsmUtilities.getLevel(modifiers);
             drawIcon(g, getIcon());
             
-            drawString(g, typeName, typeColor, null, strike);
-            drawString(g, " ", strike); // NOI18N
+            if (drawTypeAsPrefix) {
+                drawString(g, getTypeName(), getTypeColor(), null, strike);
+                drawString(g, " ", strike); // NOI18N                   
+            }
             if ((modifiers & CsmUtilities.LOCAL_MEMBER_BIT) != 0){
                 // it is local field, draw as bold
                 drawString(g, fldName, getNameColor(), new Font(getDrawFont().getName(), getDrawFont().getStyle() | Font.BOLD, getDrawFont().getSize()), strike);
             }else{
                 drawString(g, fldName, getNameColor() , null, strike);
+            }
+            if (!drawTypeAsPrefix) {
+                drawTypeName(g, getTypeName(), getTypeColor());
             }
         }
 
@@ -603,9 +633,15 @@ public abstract class CsmPaintComponent extends JPanel {
          */
         public String toString() {
             StringBuffer buf = new StringBuffer();
-            buf.append(typeName);
-            buf.append(' ');
+            if (drawTypeAsPrefix) {
+                buf.append(typeName);
+                buf.append(' ');
+            }
             buf.append(fldName);
+            if (!drawTypeAsPrefix) {
+                buf.append(' ');
+                buf.append(typeName);
+            }
             return buf.toString();
         }        
     }
@@ -654,7 +690,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class MacroPaintComponent extends CsmPaintComponent{
         private Color MACRO_NAME_COLOR = Color.green.darker().darker();
         private Color MACRO_PARAMETER_NAME_COLOR = Color.magenta.darker();
-        private List params = new ArrayList();
+        private List params = null;
         private String name;
 
         public MacroPaintComponent(){
@@ -891,6 +927,7 @@ public abstract class CsmPaintComponent extends JPanel {
         private Color METHOD_COLOR = Color.red.darker().darker();
         private String typeName;
         private Color typeColor;
+        private boolean drawTypeAsPrefix = false;
         
         public MethodPaintComponent(){
             super();
@@ -916,6 +953,10 @@ public abstract class CsmPaintComponent extends JPanel {
             this.typeColor = typeColor;
         }
         
+        public void setDrawTypeAsPrefix(boolean asPrefix) {
+            this.drawTypeAsPrefix = asPrefix;
+        }
+        
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -923,15 +964,20 @@ public abstract class CsmPaintComponent extends JPanel {
             int level = CsmUtilities.getLevel(getModifiers());
             drawIcon(g, getIcon());
             
-            drawString(g, getTypeName(), getTypeColor(), null, strike);
-            drawString(g, " ", strike); // NOI18N
+            if (drawTypeAsPrefix) {
+                drawString(g, getTypeName(), getTypeColor(), null, strike);
+                drawString(g, " ", strike); // NOI18N                
+            }            
             if ((getModifiers() & CsmUtilities.LOCAL_MEMBER_BIT) != 0){
                 drawString(g, getName(), getNameColor() , new Font(getDrawFont().getName(), getDrawFont().getStyle() | Font.BOLD, getDrawFont().getSize()), strike);
             }else{
                 drawString(g, getName(), getNameColor(), null, strike);
             }
             drawParameterList(g, getParamList(), strike);
-            drawExceptions(g, getExceptionList(), strike);
+//            drawExceptions(g, getExceptionList(), strike);
+            if (!drawTypeAsPrefix) {
+                drawTypeName(g, getTypeName(), getTypeColor());
+            }
         }
 
         /**
@@ -940,15 +986,22 @@ public abstract class CsmPaintComponent extends JPanel {
          */
         public String toString() {
             StringBuffer buf = new StringBuffer();
-            //return type
-            buf.append(getTypeName());
-            buf.append(' '); // NOI18N
+            if (drawTypeAsPrefix) {
+                //return type
+                buf.append(getTypeName());                
+                buf.append(' '); // NOI18N
+            }
             //method name
             buf.append(getName());
             //method params
             buf.append(toStringParameterList(getParamList()));
             //method exceptions
-            buf.append(toStringExceptions(getExceptionList()));
+//            buf.append(toStringExceptions(getExceptionList()));
+            if (drawTypeAsPrefix) {
+                //return type
+                buf.append(' '); // NOI18N
+                buf.append(getTypeName());                
+            }
             return buf.toString();            
         }        
     }
@@ -967,7 +1020,8 @@ public abstract class CsmPaintComponent extends JPanel {
     
     public static class CsmPaintComponentWrapper extends CsmPaintComponent {    
         private CsmPaintComponent comp;
-
+        private boolean drawTypeAsPrefix = true;
+        
         public CsmPaintComponentWrapper() {
             super();        
         }
@@ -978,7 +1032,21 @@ public abstract class CsmPaintComponent extends JPanel {
 
         protected void draw(Graphics g) {
             if (comp != null) {
-                comp.draw(g);            
+                if (drawTypeAsPrefix) {
+                    if (comp instanceof CsmPaintComponent.FieldPaintComponent) {
+                        ((CsmPaintComponent.FieldPaintComponent)comp).setDrawTypeAsPrefix(true);
+                    } else if (comp instanceof CsmPaintComponent.MethodPaintComponent) {
+                        ((CsmPaintComponent.MethodPaintComponent)comp).setDrawTypeAsPrefix(true);
+                    }                
+                }
+                comp.draw(g);          
+                if (drawTypeAsPrefix) {
+                    if (comp instanceof CsmPaintComponent.FieldPaintComponent) {
+                        ((CsmPaintComponent.FieldPaintComponent)comp).setDrawTypeAsPrefix(false);
+                    } else if (comp instanceof CsmPaintComponent.MethodPaintComponent) {
+                        ((CsmPaintComponent.MethodPaintComponent)comp).setDrawTypeAsPrefix(false);
+                    }                
+                }
                 setDrawState(comp.getDrawState());
             }
         }

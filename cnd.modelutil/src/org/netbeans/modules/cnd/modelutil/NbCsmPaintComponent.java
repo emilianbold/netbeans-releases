@@ -33,7 +33,7 @@ import org.openide.util.Utilities;
 public abstract class NbCsmPaintComponent extends CsmPaintComponent {
 
 
-    public static class NbNamespacePaintComponent extends CsmPaintComponent.NamespacePaintComponent{
+    public final static class NbNamespacePaintComponent extends CsmPaintComponent.NamespacePaintComponent{
 
         public NbNamespacePaintComponent(){
             super();
@@ -49,7 +49,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
-    public static class NbEnumPaintComponent extends CsmPaintComponent.EnumPaintComponent{
+    public final static class NbEnumPaintComponent extends CsmPaintComponent.EnumPaintComponent{
         
         public NbEnumPaintComponent(){
             super();
@@ -65,7 +65,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
-    public static class NbEnumeratorPaintComponent extends CsmPaintComponent.EnumeratorPaintComponent {
+    public final static class NbEnumeratorPaintComponent extends CsmPaintComponent.EnumeratorPaintComponent {
         
         public NbEnumeratorPaintComponent(){
             super();
@@ -81,7 +81,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
-    public static class NbMacroPaintComponent extends CsmPaintComponent.MacroPaintComponent{
+    public final static class NbMacroPaintComponent extends CsmPaintComponent.MacroPaintComponent{
         
         public NbMacroPaintComponent(){
             super();
@@ -97,7 +97,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
 
-    public static class NbClassPaintComponent extends CsmPaintComponent.ClassPaintComponent{
+    public final static class NbClassPaintComponent extends CsmPaintComponent.ClassPaintComponent{
         
         public NbClassPaintComponent(){
             super();
@@ -113,7 +113,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
 
-    public static class NbTypedefPaintComponent extends CsmPaintComponent.TypedefPaintComponent{
+    public final static class NbTypedefPaintComponent extends CsmPaintComponent.TypedefPaintComponent{
         
         public NbTypedefPaintComponent(){
             super();
@@ -129,7 +129,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
-    public static class NbStructPaintComponent extends CsmPaintComponent.StructPaintComponent{
+    public final static class NbStructPaintComponent extends CsmPaintComponent.StructPaintComponent{
         
         public NbStructPaintComponent(){
             super();
@@ -146,7 +146,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         
     }
 
-    public static class NbUnionPaintComponent extends CsmPaintComponent.UnionPaintComponent{
+    public final static class NbUnionPaintComponent extends CsmPaintComponent.UnionPaintComponent{
         
         public NbUnionPaintComponent(){
             super();
@@ -162,7 +162,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
-    public static class NbGlobalVariablePaintComponent extends CsmPaintComponent.GlobalVariablePaintComponent {
+    public final static class NbGlobalVariablePaintComponent extends CsmPaintComponent.GlobalVariablePaintComponent {
         
         public NbGlobalVariablePaintComponent(){
             super();
@@ -174,7 +174,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
-    public static class NbLocalVariablePaintComponent extends CsmPaintComponent.LocalVariablePaintComponent {
+    public final static class NbLocalVariablePaintComponent extends CsmPaintComponent.LocalVariablePaintComponent {
         
         public NbLocalVariablePaintComponent(){
             super();
@@ -186,7 +186,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
-    public static class NbFileLocalVariablePaintComponent extends CsmPaintComponent.FileLocalVariablePaintComponent {
+    public final static class NbFileLocalVariablePaintComponent extends CsmPaintComponent.FileLocalVariablePaintComponent {
         
         public NbFileLocalVariablePaintComponent(){
             super();
@@ -198,7 +198,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }    
     
-    public static class NbFieldPaintComponent extends CsmPaintComponent.FieldPaintComponent{
+    public final static class NbFieldPaintComponent extends CsmPaintComponent.FieldPaintComponent{
 
         public NbFieldPaintComponent(){
             super();
@@ -211,7 +211,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
     
     }    
     
-    public static class NbGlobalFunctionPaintComponent extends CsmPaintComponent.GlobalFunctionPaintComponent{
+    public final static class NbGlobalFunctionPaintComponent extends CsmPaintComponent.GlobalFunctionPaintComponent{
         
         public NbGlobalFunctionPaintComponent(){
             super();
@@ -223,7 +223,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
-    public static class NbMethodPaintComponent extends CsmPaintComponent.MethodPaintComponent{
+    public final static class NbMethodPaintComponent extends CsmPaintComponent.MethodPaintComponent{
         
         public NbMethodPaintComponent(){
             super();
@@ -235,7 +235,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
-    public static class NbConstructorPaintComponent extends CsmPaintComponent.ConstructorPaintComponent{
+    public final static class NbConstructorPaintComponent extends CsmPaintComponent.ConstructorPaintComponent{
         
         public NbConstructorPaintComponent(){
             super();
@@ -249,7 +249,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         
     }    
     
-    public static class NbStringPaintComponent extends CsmPaintComponent.StringPaintComponent {
+    public final static class NbStringPaintComponent extends CsmPaintComponent.StringPaintComponent {
         
         public NbStringPaintComponent(){
             super();

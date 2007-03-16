@@ -121,14 +121,14 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return nsp;
     }
     
-    public NamespaceImpl findNamespace(NamespaceImpl parent, String name, boolean createIfNotFound) {
-        String qualifiedName = (parent == null || parent.isGlobal()) ? name : parent.getQualifiedName() + "::" + name; // NOI18N
+    public NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, String name) {
+        String qualifiedName = Utils.getNestedNamespaceQualifiedName(name, parent, true);
         NamespaceImpl nsp = _getNamespace(qualifiedName);
-        if( nsp == null && createIfNotFound ) {
+        if( nsp == null ) {
             synchronized (namespaceLock){
                 nsp = _getNamespace(qualifiedName);
                 if( nsp == null ) {
-                    nsp = new NamespaceImpl(this, parent, name);
+                    nsp = new NamespaceImpl(this, parent, name, qualifiedName);
                 }
             }
         }
@@ -136,7 +136,11 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     public void registerNamespace(NamespaceImpl namespace) {
-        _registerNamespace(namespace.getQualifiedName(),  namespace);
+        _registerNamespace(namespace);
+    }
+    
+    public void unregisterNamesace(NamespaceImpl namespace) {
+        _unregisterNamespace(namespace);
     }
     
     public CsmClassifier findClassifier(String qualifiedName, boolean findInLibraries) {
@@ -216,7 +220,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
 //    public void registerClassifier(ClassEnumBase ce) {
-//        classifiers.put(ce.getQualifiedName(), ce);
+//        classifiers.put(ce.getNestedNamespaceQualifiedName(), ce);
 //        registerDeclaration(ce);
 //    }
     
@@ -768,15 +772,30 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
     }
     
-    private void _registerNamespace( String key, NamespaceImpl ns ) {
-        assert (key != null);
+    private void _registerNamespace(NamespaceImpl ns ) {
         assert (ns != null);
+        String key = ns.getQualifiedName();  
+        assert (key != null);
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmNamespace> uid = RepositoryUtils.put(ns);
             assert uid != null;
             namespaces.put(key, uid);
         } else {
             namespacesOLD.put(key, ns);
+        }
+    }
+    
+    private void _unregisterNamespace(NamespaceImpl ns ) {
+        assert (ns != null);
+        assert !ns.isGlobal();
+        String key = ns.getQualifiedName();  
+        assert (key != null);
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmUID<CsmNamespace> uid = namespaces.remove(key);
+            assert uid != null;
+            RepositoryUtils.remove(uid);
+        } else {
+            namespacesOLD.remove(key);
         }
     }
     

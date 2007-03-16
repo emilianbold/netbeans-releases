@@ -210,7 +210,7 @@ public class TraceModel {
 	private boolean printUserFileList = false;
 	private boolean quiet = false;
 	private boolean memBySize = false;
-	private boolean doCleanRepository = false;
+	private boolean doCleanRepository = Boolean.getBoolean("cnd.clean.repository");
 	
 	private boolean testFolding = false;
 	
@@ -1496,9 +1496,12 @@ public class TraceModel {
 			print("AST stored; time: " + t2 + " ms"); // NOI18N
 		}
 		
-                if ( doCleanRepository )
-                {
-                    RepositoryAccessor.getRepository().flush();
+                if ( doCleanRepository ) {
+		    CsmProject project = fileImpl.getProject();
+		    String absPath = fileImpl.getAbsolutePath();
+		    fileImpl = null;
+                    RepositoryAccessor.getRepository().debugClear();
+		    fileImpl = (FileImpl) project.findFile(absPath);
                 }
                 
 		if( dumpModel ) {

@@ -201,8 +201,9 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         assert this.qualifiedName != null;
         output.writeUTF(this.qualifiedName);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        assert this.namespaceUID != null;
-        factory.writeUID(this.namespaceUID, output);
+        //assert this.namespaceUID != null;
+        // could be null for structs defined in method body
+        factory.writeUID(this.namespaceUID, output); 
         factory.writeUID(this.containingClassUID, output); // could be null
         output.writeBoolean(this._static);
         assert this.visibility != null;
@@ -218,7 +219,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         assert this.qualifiedName != null;
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.namespaceUID = factory.readUID(input);
-        assert this.namespaceUID != null;
+        // could be null for structs defined in method body
+        //assert this.namespaceUID != null;
         this.containingClassUID = factory.readUID(input); // could be null
         this._static = input.readBoolean();
         this.visibility = PersistentUtils.readVisibility(input);
@@ -227,5 +229,5 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         assert TraceFlags.USE_REPOSITORY;
         this.containingClassOLD = null;
         this.namespaceOLD = null;
-    }     
-}
+	}     
+    }

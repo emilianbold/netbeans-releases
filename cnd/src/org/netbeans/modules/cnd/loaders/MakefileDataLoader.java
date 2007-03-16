@@ -52,7 +52,7 @@ public class MakefileDataLoader extends UniFileLoader {
     private static MakefileDataLoader instance = null;
 
     public MakefileDataLoader() {
-	super(MakefileDataObject.class.getName());
+	super("org.netbeans.modules.cnd.loaders.MakefileDataObject"); // NOI18N
         init();
     }
     
@@ -61,6 +61,7 @@ public class MakefileDataLoader extends UniFileLoader {
         init();
     }
   
+    /** @deprecated Use {@link #MakefileDataLoader(String)} instead */
     public MakefileDataLoader(Class recognizedClass) {
 	super(recognizedClass);
         init();

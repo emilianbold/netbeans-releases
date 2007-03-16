@@ -38,6 +38,12 @@ public interface DiscoveryDescriptor {
     String getRootFolder();
     void setRootFolder(String root);
 
+    String getBuildResult();
+    void setBuildResult(String binaryPath);
+
+    String getAditionalLibraries();
+    void setAditionalLibraries(String binaryPath);
+
     String getLevel();
     void setLevel(String level);
 
@@ -49,6 +55,9 @@ public interface DiscoveryDescriptor {
 
     boolean isInvokeProvider();
     void setInvokeProvider(boolean invoke);
+    
+    boolean isSimpleMode();
+    void setSimpleMode(boolean simple);
     
     void setMessage(String message);
 

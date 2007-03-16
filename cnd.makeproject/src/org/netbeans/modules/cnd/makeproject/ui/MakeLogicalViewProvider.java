@@ -970,16 +970,16 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         fromNewToOriginal = FilePathAdaptor.normalize(fromNewToOriginal);
                         String newPath = fromNewToOriginal + item.getPath();
                         newPath = IpeUtils.trimDotDot(newPath);
-                        viewItemNode.getFolder().removeItem(item);
-                        toFolder.addItem(new Item(FilePathAdaptor.normalize(newPath)));
+                        viewItemNode.getFolder().removeItemAction(item);
+                        toFolder.addItemAction(new Item(FilePathAdaptor.normalize(newPath)));
                     } else {
                         Project toProject = toFolder.getProject();
                         FileObject fo = item.getFileObject();
                         FileObject copy = fo.copy(toProject.getProjectDirectory(), fo.getName(), fo.getExt());
                         String newPath = IpeUtils.toRelativePath(FileUtil.toFile(toProject.getProjectDirectory()).getPath(), FileUtil.toFile(copy).getPath());
-                        viewItemNode.getFolder().removeItem(item);
+                        viewItemNode.getFolder().removeItemAction(item);
                         fo.delete();
-                        toFolder.addItem(new Item(FilePathAdaptor.normalize(newPath)));
+                        toFolder.addItemAction(new Item(FilePathAdaptor.normalize(newPath)));
                     }
                 }
             } else if (type == DnDConstants.ACTION_COPY) {
@@ -998,7 +998,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         if (ext.length() > 0)
                             newPath = newPath + "." + ext; // NOI18N
                         newPath = IpeUtils.toRelativePath(FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath(), newPath);
-                        toFolder.addItem(new Item(FilePathAdaptor.normalize(newPath)));
+                        toFolder.addItemAction(new Item(FilePathAdaptor.normalize(newPath)));
                     }
                 } else {
                     Item item = viewItemNode.getItem();
@@ -1011,7 +1011,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         fromNewToOriginal = FilePathAdaptor.normalize(fromNewToOriginal);
                         String newPath = fromNewToOriginal + item.getPath();
                         newPath = IpeUtils.trimDotDot(newPath);
-                        toFolder.addItem(new Item(FilePathAdaptor.normalize(newPath)));
+                        toFolder.addItemAction(new Item(FilePathAdaptor.normalize(newPath)));
                     } else {
                         Project toProject = toFolder.getProject();
                         String parent = FileUtil.toFile(toProject.getProjectDirectory()).getPath();
@@ -1022,7 +1022,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         String newPath = newName;
                         if (ext.length() > 0)
                             newPath = newPath + "." + ext; // NOI18N
-                        toFolder.addItem(new Item(FilePathAdaptor.normalize(newPath))); // NOI18N
+                        toFolder.addItemAction(new Item(FilePathAdaptor.normalize(newPath))); // NOI18N
                     }
                 }
             }

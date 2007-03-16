@@ -48,7 +48,7 @@ public class TestObject implements SingleFileStorage.Reader, SingleFileStorage.W
     public void write(DataOutput out) throws IOException {
 	out.writeUTF(key);
 	if( sData == null ) {
-	    out.writeInt(0);
+	    out.writeInt(-1);
 	}
 	else {
 	    out.writeInt(sData.length);
@@ -63,27 +63,40 @@ public class TestObject implements SingleFileStorage.Reader, SingleFileStorage.W
     public void read(DataInput in) throws IOException {
 	key = in.readUTF();
 	int cnt = in.readInt();
-	sData = new String[cnt];
-	for (int i = 0; i < sData.length; i++) {
-	    sData[i] = in.readUTF();
+	if( cnt == -1 ) {
+	    sData = null;
+	}
+	else {
+	    sData = new String[cnt];
+	    for (int i = 0; i < sData.length; i++) {
+		sData[i] = in.readUTF();
+	    }
 	}
 	iData = in.readInt();
 	lData = in.readLong();
     }
     
     public String toString() {
-	StringBuilder sb = new StringBuilder("key=");
+	StringBuilder sb = new StringBuilder("key="); // NOI18N
 	sb.append(key);
-	sb.append(" sData=[");
-	for (int i = 0; i < sData.length; i++) {
-	    if( i > 0 ) {
-		sb.append(",");
-	    }
-	    sb.append(sData[i]);
+	sb.append(" sData="); // NOI18N
+	if( sData == null ) {
+	    sb.append("null"); // NOI18N
 	}
-	sb.append("] iData=");
+	else {
+	    for (int i = 0; i < sData.length; i++) {
+		if( i == 0) {
+		    sb.append('[');
+		}
+		else {
+		    sb.append(","); // NOI18N
+		}
+		sb.append(sData[i]);
+	    }
+	}
+	sb.append("] iData="); // NOI18N
 	sb.append(iData);
-	sb.append(" lData=");
+	sb.append(" lData="); // NOI18N
 	sb.append(lData);
 	return sb.toString();
     }

@@ -91,6 +91,16 @@ public class Unresolved {
         }
     }
     
+    private static class UnresolvedNamespace extends NamespaceImpl {
+        private UnresolvedNamespace(ProjectBase project) {
+            super(project, null, "$unresolved$","$unresolved$");
+        }
+
+        protected void notifyCreation() {
+            // skip registration
+        }
+    }
+    
     public static class UnresolvedFile implements CsmFile, Persistent, SelfPersistent  {
         // only one of project/projectUID must be used 
         private final ProjectBase project;
@@ -118,7 +128,7 @@ public class Unresolved {
             return _getProject(projectUID, project);
         }
         public String getName() {
-            return "<unresolved file>"; // NOI18N
+            return "$unresolved file$"; // NOI18N
         }
         public List getIncludes() {
             return Collections.EMPTY_LIST;
@@ -127,7 +137,7 @@ public class Unresolved {
             return Collections.EMPTY_LIST;
         }
         public String getAbsolutePath() {
-            return "<unresolved file>"; // NOI18N
+            return "$unresolved file$"; // NOI18N
         }
         public boolean isValid() {
             return getProject().isValid();
@@ -185,11 +195,8 @@ public class Unresolved {
             this.projectUID = null;
         }
         unresolvedFile = new UnresolvedFile(project);
-        unresolvedNamespace = new NamespaceImpl(project, null, "unresolved") { // NOI18N
-            protected void notifyCreation() {
-                // do NOT register
-            }
-        };
+        unresolvedNamespace = new UnresolvedNamespace(project);
+        
         if (TraceFlags.USE_REPOSITORY) {
             // TODO: hang or put unresolvedFile?
             RepositoryUtils.put(unresolvedFile);

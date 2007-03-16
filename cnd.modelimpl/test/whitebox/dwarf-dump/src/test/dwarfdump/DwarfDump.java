@@ -116,7 +116,7 @@ public class DwarfDump {
             return new ArrayList<CompilationUnit>();
         }
         
-        return result;
+        return (result == null) ? new ArrayList<CompilationUnit>() : result;
     }
     
     public void dump(PrintStream out) {

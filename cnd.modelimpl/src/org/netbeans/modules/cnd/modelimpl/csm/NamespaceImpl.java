@@ -22,15 +22,13 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -52,8 +50,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private CsmNamespace parentOLD;
     private CsmUID<CsmNamespace> parentUID;
     
-    private String name;
-    private String qualifiedName;
+    private final String name;
+    private final String qualifiedName;
 
     /** maps namespaces FQN to namespaces */
     private Map/*<String, CsmNamespaceImpl>*/ nestedMapOLD = Collections.synchronizedMap(new HashMap/*<String, CsmNamespaceImpl>*/());
@@ -67,7 +65,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private Map/*<String,CsmNamespaceDefinition>*/ definitionsOLD = Collections.synchronizedSortedMap(new TreeMap/*<String,CsmNamespaceDefinition>*/());
     private Map<String,CsmUID<CsmNamespaceDefinition>> nsDefinitions = Collections.synchronizedSortedMap(new TreeMap<String,CsmUID<CsmNamespaceDefinition>>());
 
-    private boolean global;
+    private final boolean global;
     
     /** Constructor used for global namespace */
     public NamespaceImpl(ProjectBase project) {
@@ -77,14 +75,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.global = true;
         this._setProject(project);
         project.registerNamespace(this);
-        notifyCreation();
     }
     
-    public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name) {
+    public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
         this.name = name;
         this.global = false;
         this._setProject(project);
-        this.qualifiedName = getQualifiedName(parent,  name);
+        this.qualifiedName = qualifiedName;
         // TODO: rethink once more
         // now all classes do have namespaces
 //        // TODO: this makes parent-child relationships assymetric, that's bad;
@@ -102,15 +99,29 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     protected void notifyCreation() {
-        if( ! isGlobal() ) {
-            Notificator.instance().registerNewNamespace(this);
-        }
+        assert !isGlobal();
+        Notificator.instance().registerNewNamespace(this);
     }
     
-    private static int unnamedNr = 0;
-    public static String getQualifiedName(NamespaceImpl parent, String name) {
-        return (parent == null || parent.isGlobal()) ? name : parent.getQualifiedName() + "::" + // NOI18N
-                (name.length()==0 ? ("<unnamed>"+unnamedNr++):name); // NOI18N
+    private static final String UNNAMED_PREFIX = "<unnamed>";  // NOI18N
+    private Set<Integer> unnamedNrs = new HashSet<Integer>();
+    public String getNameForUnnamedElement() {
+        String out = UNNAMED_PREFIX;
+        int minVal = getMinUnnamedValue();
+        if (minVal != 0) {
+            out = out + minVal;
+        }
+        unnamedNrs.add(new Integer(minVal));
+        return out;
+    }
+    
+    private int getMinUnnamedValue() {
+        for (int i = 0; i < unnamedNrs.size(); i++) {
+            if (!unnamedNrs.contains(new Integer(i))) {
+                return i;
+            }
+        }
+        return unnamedNrs.size();
     }
     
     public CsmNamespace getParent() {
@@ -145,13 +156,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 
     /** creates or gets (if already exists) namespace with the given name and current parent */
     public NamespaceImpl getNamespace(String name) {
-        String fqn = Utils.getQualifiedName(name,  this);
+        assert name != null && name.length() != 0 : "non empty namespace should be asked";
+        String fqn = Utils.getNestedNamespaceQualifiedName(name,  this, true);
         NamespaceImpl impl = _getNestedNamespace(fqn);
         if( impl == null ) {
-                impl = new NamespaceImpl(_getProject(), this, name);
+                impl = new NamespaceImpl(_getProject(), this, name, fqn);
                 // it would register automatically
-                //nestedMap.put(fqn, impl);
-                //nestedNamespaces.add(impl);
         }
         return impl;
     }
@@ -180,8 +190,37 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         } else {
             nestedMapOLD.put(nsp.getQualifiedName(), nsp);
         }
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.put(this);
+        }    
     }
      
+    private void removeNestedNamespace(NamespaceImpl nsp) {
+        if (TraceFlags.USE_REPOSITORY) {
+            assert nsp != null;
+            CsmUID<CsmNamespace> uid = nestedMap.remove(nsp.getQualifiedName());
+            assert uid != null;
+        } else {
+            nestedMapOLD.remove(nsp.getQualifiedName());
+        }
+        // handle unnamed namespace index
+        if (nsp.getName().length() == 0) {
+            String fqn = nsp.getQualifiedName();
+            int greaterInd = fqn.lastIndexOf('>');
+            assert greaterInd >= 0;
+            if (greaterInd + 1 < fqn.length()) {
+                try {
+                    Integer index = Integer.parseInt(fqn.substring(greaterInd+1));
+                    unnamedNrs.remove(index);
+                } catch (NumberFormatException ex) {
+                    ex.printStackTrace(System.err);
+                }
+            } else {
+                unnamedNrs.remove(new Integer(0));
+            }
+        }
+    }
+    
     public void addDeclaration(CsmOffsetableDeclaration declaration) {
         
         if( !ProjectBase.canRegisterDeclaration(declaration) ) {
@@ -277,10 +316,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public Collection/*<CsmNamespaceDefinition>*/ getDefinitions()  {
 //        return definitions;
         if (TraceFlags.USE_REPOSITORY) {
-//            if (false) {
-//                List<Key> keys = new ArrayList<Key>(nsDefinitions.values());
-//                List defs = RepositoryUtils.getDeclarations(keys);
-//            }
             List<CsmUID<CsmNamespaceDefinition>> uids = new ArrayList<CsmUID<CsmNamespaceDefinition>>(nsDefinitions.values());
             List<CsmNamespaceDefinition> defs = UIDCsmConverter.UIDsToDeclarations(uids);
             return defs;
@@ -289,16 +324,41 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
     }
     
-    public void addNamespaceDefinition(NamespaceDefinitionImpl def) {
+    public void addNamespaceDefinition(CsmNamespaceDefinition def) {
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmNamespaceDefinition> uid = RepositoryUtils.put(def);
             nsDefinitions.put(getSortKey(def), uid);
+            // update repository
+            RepositoryUtils.put(this);            
         } else {
             definitionsOLD.put(getSortKey(def), def);
         }
     }
     
-    public static String getSortKey(NamespaceDefinitionImpl def) {
+    public void removeNamespaceDefinition(CsmNamespaceDefinition def) {
+        assert !this.isGlobal();
+        boolean remove = false;
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmUID<CsmNamespaceDefinition> uid = nsDefinitions.remove(getSortKey(def));
+            // update repository
+            RepositoryUtils.remove(uid);
+            RepositoryUtils.put(this);  
+            remove =  (nsDefinitions.size() == 0);
+        } else {
+            definitionsOLD.remove(getSortKey(def));
+            remove = (definitionsOLD.size() == 0);
+        }
+        if (remove) {
+            NamespaceImpl parent = (NamespaceImpl) _getParentNamespace();
+            if (parent != null) {
+                parent.removeNestedNamespace(this);
+            }
+            _getProject().unregisterNamesace(this);
+            Notificator.instance().registerRemoveNamespace(this);
+        }
+    }
+    
+    public static String getSortKey(CsmNamespaceDefinition def) {
         StringBuffer sb = new StringBuffer(def.getContainingFile().getAbsolutePath());
         int start = ((CsmOffsetable) def).getStartOffset();
         String s = Integer.toString(start);
@@ -358,7 +418,16 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         } else {
             return parentOLD;
         }        
-    }    
+    }   
+    
+    public String toString() {
+	StringBuilder sb = new StringBuilder(getName());
+	sb.append(' ');
+	sb.append(getQualifiedName());
+	sb.append(" NamespaceImpl @");
+	sb.append(hashCode());
+	return sb.toString();
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent

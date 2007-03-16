@@ -33,7 +33,12 @@ public class RepositoryThreadManager {
     
     private static final String threadNameBase = "Repository writer"; // NOI18N
     private RequestProcessor processor;
-    private Set/*<Thread>*/ threads = Collections.synchronizedSet(new HashSet()/*<Thread>*/);
+    
+    private Object theadsLock = new String("theadsLock");
+    private Set<Thread> threads = new HashSet<Thread>();
+    private Object threadsWaitLock = new String("threadsWaitLock");
+    private boolean finished = false;
+    
     private int currThread = 0;
     private boolean standalone;
     private RepositoryWriter writer;
@@ -51,11 +56,21 @@ public class RepositoryThreadManager {
         public void run() {
             try {
                 Thread.currentThread().setName(threadNameBase + ' ' + currThread++);
-                threads.add(Thread.currentThread());
+		synchronized( theadsLock) {
+		    threads.add(Thread.currentThread());
+		}
                 delegate.run();
             }
             finally {
-                threads.remove(Thread.currentThread());
+		synchronized( theadsLock) {
+		    threads.remove(Thread.currentThread());
+		    if( threads.isEmpty() ) {
+			finished = true;
+			synchronized (threadsWaitLock) {
+			    threadsWaitLock.notifyAll();
+			}
+		    }
+		}
             }
         }
     }
@@ -94,11 +109,27 @@ public class RepositoryThreadManager {
     public void shutdown() {
 	if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager.shutdown\n"); // NOI18N
 	proceed = false;
-	queue.unblock();
+	queue.shutdown();
 //        for (Iterator it = new ArrayList(threads).iterator(); it.hasNext();) {
 //            Thread thread = (Thread) it.next();
 //            thread.interrupt();
 //        }
+	if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager waiting for threads to finish...\n"); // NOI18N
+	waitFinished();
+	if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager threads have finished.\n"); // NOI18N
+    }
+    
+    private void waitFinished() {
+	synchronized( threadsWaitLock ) {
+	    while( ! finished ) {
+		try {
+		    threadsWaitLock.wait();
+		} catch (InterruptedException ex) {
+		    ex.printStackTrace();
+		}
+	    }
+	}
+	
     }
     
     /*package*/

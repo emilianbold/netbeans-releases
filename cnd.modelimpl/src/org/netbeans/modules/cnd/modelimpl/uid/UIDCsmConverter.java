@@ -45,8 +45,23 @@ public class UIDCsmConverter {
     ////////////////////////////////////////////////////////////////////////////
     // UID -> Object
     
+    private static int lastHash = 0;
+	    
     public static CsmFile UIDtoFile(CsmUID<CsmFile> uid) {
-        return uid == null ? null : uid.getObject();
+        CsmFile result = uid == null ? null : uid.getObject();
+//	if( result != null ) {
+//	    if( uid.toString().indexOf("unresolved") == -1 ) {
+//		if( lastHash != 0 && result.hashCode() != lastHash ) {
+//		    System.err.printf("SHIT: got another file for %s\n", uid.toString());
+//		    CsmFile res2 = uid.getObject();
+//		    CsmFile res3 = uid.getObject();
+//		    CsmFile res4 = uid.getObject();
+//		    CsmFile res5 = uid.getObject();
+//		}
+//		lastHash = result.hashCode();
+//	    }
+//	}
+	return result;
     }
     
     public static CsmObject UIDtoCsmObject(CsmUID uid) {

@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeListener;
@@ -44,6 +44,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -216,7 +217,7 @@ final class MakeProject implements Project, AntProjectListener {
 	};
 
 	public String[] getRecommendedTypes() {
-            if (MakeOptions.getInstance().getFortran())
+            if (CppSettings.getDefault().isFortranEnabled())
                 return RECOMMENDED_TYPES_FORTRAN;
             else
                 return RECOMMENDED_TYPES;
@@ -444,7 +445,7 @@ final class MakeProject implements Project, AntProjectListener {
     private final class MakeArtifactProviderImpl implements MakeArtifactProvider {
 
         public MakeArtifact[] getBuildArtifacts() {
-	    Vector artifacts = new Vector();
+	    ArrayList artifacts = new ArrayList();
 	    
 	    MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor();
 	    Configuration[] confs = projectDescriptor.getConfs().getConfs();

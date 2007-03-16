@@ -50,18 +50,21 @@ public class CppSettingsBeanInfo extends SimpleBeanInfo {
 	int i = 0;
 	PropertyDescriptor[] desc = null;
 	try {
-	    desc = new PropertyDescriptor[] {
+            desc = new PropertyDescriptor[] {
 		new PropertyDescriptor(CppSettings.PROP_REPLACEABLE_STRINGS_TABLE, CppSettings.class),
 		new PropertyDescriptor(CppSettings.PROP_FREE_FORMAT_FORTRAN, CppSettings.class),
-		new PropertyDescriptor(CppSettings.PROP_PARSING_DELAY, CppSettings.class)
+		new PropertyDescriptor(CppSettings.PROP_PARSING_DELAY, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_FORTRAN_ENABLED, CppSettings.class)
 	    };
 
 	    desc[i].setDisplayName(CppSettings.getString( "PROP_REPLACEABLE_STRINGS"));	    //NOI18N
 	    desc[i++].setShortDescription(CppSettings.getString( "HINT_REPLACEABLE_STRINGS"));	    //NOI18N
 	    desc[i].setDisplayName(CppSettings.getString( "PROP_FREE_FORMAT_FORTRAN"));	    //NOI18N
- 	    desc[i++].setShortDescription(CppSettings.getString( "HINT_FREE_FORMAT_FORTRAN"));	    //NOI18N            
+ 	    desc[i++].setShortDescription(CppSettings.getString( "HINT_FREE_FORMAT_FORTRAN"));	    //NOI18N
 	    desc[i].setDisplayName(CppSettings.getString( "PROP_AUTO_PARSING_DELAY"));	    //NOI18N
- 	    desc[i++].setShortDescription(CppSettings.getString( "HINT_AUTO_PARSING_DELAY"));	    //NOI18N            
+ 	    desc[i++].setShortDescription(CppSettings.getString( "HINT_AUTO_PARSING_DELAY"));	    //NOI18N
+	    desc[i].setDisplayName(CppSettings.getString("PROP_FORTRAN_ENABLED")); //NOI18N
+ 	    desc[i++].setShortDescription(CppSettings.getString("HINT_FORTRAN_ENABLED")); //NOI18N
 	} catch (IntrospectionException ex) {
 	    throw new InternalError();
 	}

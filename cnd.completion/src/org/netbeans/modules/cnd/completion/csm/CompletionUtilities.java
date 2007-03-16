@@ -95,7 +95,7 @@ public class CompletionUtilities {
         }
         return out;
     }
-    
+
     public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos){
         Completion completion = ExtUtilities.getCompletion(target);
         if (completion != null) {
@@ -118,14 +118,14 @@ public class CompletionUtilities {
                     }
 
                     for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
-                        CompletionQuery.Result result = query.query(target, idFunBlk[ind], sup, true);
+                        CompletionQuery.Result result = query.query(target, idFunBlk[ind], sup, true, false);
                         if (result != null && result.getData().size() > 0) {
                             CsmObject itm = getAssociatedObject(result.getData().get(0));
                             if (result.getData().size() > 1 && (CsmKindUtilities.isFunction(itm))) {
                                 // It is overloaded method, lets check for the right one
                                 int endOfMethod = findEndOfMethod(target, idFunBlk[ind]);
                                 if (endOfMethod > -1){
-                                    CompletionQuery.Result resultx = query.query(target, endOfMethod, sup, true);
+                                    CompletionQuery.Result resultx = query.query(target, endOfMethod, sup, true, false);
                                     if (resultx != null && resultx.getData().size() > 0) {
                                         return getAssociatedObject(resultx.getData().get(0));
                                     }

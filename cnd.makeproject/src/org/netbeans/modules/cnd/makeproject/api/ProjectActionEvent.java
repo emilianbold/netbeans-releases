@@ -80,6 +80,10 @@ public class ProjectActionEvent {
 	return executable;
     }
 
+    public void setExecutable(String executable) {
+        this.executable = executable;
+    }
+
     public Configuration getConfiguration() {
 	return configuration;
     }

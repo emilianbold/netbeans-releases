@@ -45,7 +45,6 @@ public class OptionsConfiguration {
 
     // Options
     public void setValue(String commandLine) {
-        setDirty(!this.commandLine.equals(commandLine));
 	this.commandLine = commandLine;
 	setModified(!commandLine.equals(getDefault()));
     }
@@ -97,9 +96,10 @@ public class OptionsConfiguration {
 
     // Clone and assign
     public void assign(OptionsConfiguration conf) {
+        setDirty(!conf.getValue().equals(getValue()));
 	setValue(conf.getValue());
 	setModified(conf.getModified());
-	setDirty(conf.getDirty());
+	//setDirty(conf.getDirty());
 	setPreDefined(conf.getPreDefined());
     }
 

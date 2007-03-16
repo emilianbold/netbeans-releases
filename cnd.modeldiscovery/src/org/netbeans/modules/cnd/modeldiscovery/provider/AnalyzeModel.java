@@ -168,7 +168,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         if (project.getProject() instanceof Project){
             Project makeProject = (Project)project.getProject();
             CsmProject langProject = CsmModelAccessor.getModel().getProject(makeProject);
-            if (langProject != null && langProject.isStable(null)){
+            if (langProject != null/* && langProject.isStable(null)*/){
                 return true;
             }
         }

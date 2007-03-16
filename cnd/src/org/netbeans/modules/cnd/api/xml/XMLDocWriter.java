@@ -22,8 +22,6 @@ package org.netbeans.modules.cnd.api.xml;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-
 /**
  * Drive the writing of an XML document.
  * <p>
@@ -60,7 +58,7 @@ abstract public class XMLDocWriter implements XMLEncoder {
      */
 
     protected String encoding() {
-	String lang = IpeUtils.getenv("LANG");	// NOI18N
+	String lang = System.getenv("LANG");	// NOI18N
 	String encoding = "UTF-8";		// NOI18N
 	if (lang != null) {
 	    if (lang.equals("zh") ||		// NOI18N

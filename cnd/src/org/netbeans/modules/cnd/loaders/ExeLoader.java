@@ -48,15 +48,16 @@ public class ExeLoader extends UniFileLoader {
 	    "org.netbeans.modules.cnd.ExeLoader.KNOWN_EXEFILE_TYPE"; // NOI18N
 
     public ExeLoader() {
-	super(ExeObject.class.getName());
-    }
-
-    public ExeLoader(Class recognizedClass) {
-	super(recognizedClass);
+	super("org.netbeans.modules.cnd.loaders.ExeObject"); // NOI18N
     }
 
     public ExeLoader(String representationClassName) {
 	super(representationClassName);
+    }
+
+    /** @deprecated Use {@link #ExeLoader(String)} instead */
+    public ExeLoader(Class recognizedClass) {
+	super(recognizedClass);
     }
     
     protected String actionsContext() {

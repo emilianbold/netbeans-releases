@@ -153,10 +153,11 @@ public class ClassViewUpdater implements Runnable {
                     long end = System.nanoTime();
                     long time = (end-start)/1000000;
                     System.out.println("Compose change event contains "+compose.getCount()+ // NOI18N
-                                       " events and +"+compose.getNewDeclarations().size()+ // NOI18N
-                                       "-"+compose.getRemovedDeclarations().size()+ // NOI18N
-                                       "/"+compose.getChangedDeclarations().size()+ // NOI18N
-                                       "*"+compose.getNewNamespaces().size()+ // NOI18N
+                                       " events and Nd"+compose.getNewDeclarations().size()+ // NOI18N
+                                       ", Rd"+compose.getRemovedDeclarations().size()+ // NOI18N
+                                       ", Ud"+compose.getChangedDeclarations().size()+ // NOI18N
+                                       ", Nn"+compose.getNewNamespaces().size()+ // NOI18N
+                                       ", Rn"+compose.getRemovedNamespaces().size()+ // NOI18N
                                        " declarations. Time = "+((float)(time)/1000.)); // NOI18N
                 }
             }

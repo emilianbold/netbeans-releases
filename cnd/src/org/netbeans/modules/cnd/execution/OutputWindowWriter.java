@@ -325,11 +325,11 @@ public class OutputWindowWriter extends Writer {
         }
     }
 
-    private static final Pattern GCC_ERROR_SCANNER = Pattern.compile("([^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)"); // NOI18N
+    private static final Pattern GCC_ERROR_SCANNER = Pattern.compile("([A-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)"); // NOI18N
     private static final Pattern GCC_DIRECTORY_ENTER = Pattern.compile("make\\[[0-9]+\\]: Entering directory `([^']*)'"); // NOI18N
     private static final Pattern GCC_DIRECTORY_LEAVE = Pattern.compile("make\\[[0-9]+\\]: Leaving directory `([^']*)'"); // NOI18N
-    private static final Pattern GCC_STACK_HEADER = Pattern.compile("In file included from ([^:\n]*):([^:^,]*)"); // NOI18N
-    private static final Pattern GCC_STACK_NEXT =   Pattern.compile("                 from ([^:\n]*):([^:^,]*)"); // NOI18N
+    private static final Pattern GCC_STACK_HEADER = Pattern.compile("In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"); // NOI18N
+    private static final Pattern GCC_STACK_NEXT =   Pattern.compile("                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"); // NOI18N
     
     
     private static final class GCCErrorParser implements ErrorParser {
@@ -463,7 +463,7 @@ public class OutputWindowWriter extends Writer {
 
         
         public Pattern[] getPattern() {
-            return new Pattern[] {GCC_ERROR_SCANNER, GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_STACK_HEADER, GCC_STACK_NEXT};
+            return new Pattern[] {GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER};
         }
         
     }

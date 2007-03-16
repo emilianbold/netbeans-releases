@@ -1,3 +1,21 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
 package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
@@ -11,21 +29,19 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListener, WizardDescriptor.FinishablePanel {
+/**
+ *
+ * @author Alexander Simon
+ */
+public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListener {
     
     private DiscoveryDescriptor wizardDescriptor;
     private SelectProviderPanel component;
     private String name;
     private boolean inited = false;
-    private boolean finishable = true;
 
     public SelectProviderWizard(){
-        this(true);
-    }
-
-    public SelectProviderWizard(boolean finishable){
-        this.finishable = finishable;
-        name = NbBundle.getMessage(SelectProviderPanel.class, "SelectProviderName"); // NOI18N
+        name = NbBundle.getMessage(SelectProviderWizard.class, "SelectProviderName"); // NOI18N
     }
     
     // Get the visual component for the panel. In this template, the component
@@ -41,14 +57,11 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     }
     
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT);
     }
     
     public boolean isValid() {
-	boolean valid = ((SelectProviderPanel)getComponent()).valid();
+	boolean valid = ((SelectProviderPanel)getComponent()).valid(wizardDescriptor);
 	if (valid) {
 	    wizardDescriptor.setMessage(""); // NOI18N
         }
@@ -96,10 +109,6 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
-    }
-
-    public boolean isFinishPanel() {
-        return finishable;
     }
 }
 

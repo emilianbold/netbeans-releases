@@ -22,6 +22,8 @@ package org.netbeans.modules.cnd.classview.model;
 import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.SmartChangeEvent;
 import org.netbeans.modules.cnd.classview.model.CVUtil.FillingDone;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  * @author Vladimir Kvasihn
@@ -30,16 +32,27 @@ public class NamespaceNode extends NPNode {
     private String id;
     private CsmProject project;
     
-    public NamespaceNode(CsmProject prj, CsmNamespace ns) {
-        super(prj, ns, new FillingDone());
+    public NamespaceNode(CsmNamespace ns) {
+        super(ns, new FillingDone());
         //this.ns = ns;
         id = ns.getQualifiedName();
-        project = prj;
-        setName(ns.getQualifiedName());
-        setDisplayName(ns./*getName*/getQualifiedName());
+        project = ns.getProject();
+        String name = ns.getQualifiedName();
+        String displayName = ns.getName();
+        if (displayName.length() == 0) {
+            displayName = ns.getQualifiedName();
+            int scope = displayName.lastIndexOf("::"); // NOI18N
+            if (scope != -1) {
+                displayName = displayName.substring(scope + 2);
+            }
+            displayName = displayName.replace('<', ' ').replace('>', ' '); // NOI18N
+        }
+        setName(name);
+        setDisplayName(displayName);
         setShortDescription(ns.getQualifiedName());
     }
 
+    
     public CsmNamespace getNamespace() {
         return project.findNamespace(id);
     }
@@ -49,8 +62,21 @@ public class NamespaceNode extends NPNode {
     }
 
     public boolean update(SmartChangeEvent e) {
-	if( !isDismissed() && isInited()) {
-            return super.update(e);
+	if( !isDismissed()){
+            for (CsmNamespace ns : e.getRemovedNamespaces()){
+                if (ns.getProject() == project && id.equals(ns.getQualifiedName())){
+                    final Children children = getParentNode().getChildren();
+                    children.MUTEX.writeAccess(new Runnable(){
+                        public void run() {
+                            children.remove(new Node[] { NamespaceNode.this });
+                        }
+                    });
+                    return true;
+                }
+            }
+            if (isInited()){
+                return super.update(e);
+            }
 	}
         return false;
     }
@@ -60,6 +86,15 @@ public class NamespaceNode extends NPNode {
         if (isInited()){
             super.dismiss();
         }
+    }
+
+    public String getHtmlDisplayName() {
+        String retValue = getDisplayName();
+        // make unnamed namespace bold and italic
+        if (retValue.startsWith(" ")) { // NOI18N
+            retValue = "<i>" + retValue; // NOI18N
+        }
+        return retValue;
     }
 
 }

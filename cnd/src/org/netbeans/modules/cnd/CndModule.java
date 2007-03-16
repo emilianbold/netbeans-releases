@@ -34,7 +34,6 @@ import org.netbeans.modules.cnd.editor.makefile.MakefileSettingsInitializer;
 import org.netbeans.modules.cnd.editor.shell.ShellKit;
 import org.netbeans.modules.cnd.editor.shell.ShellPrintOptions;
 import org.netbeans.modules.cnd.editor.shell.ShellSettingsInitializer;
-import org.netbeans.modules.editor.NbLocalizer;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.options.SystemOption;
@@ -44,6 +43,7 @@ public class CndModule extends ModuleInstall {
 
     private static final long serialVersionUID = -8877465721852434693L;
 
+    // Used in other CND sources...
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.cnd"); // NOI18N
 
     public void uninstalled() {
@@ -60,11 +60,8 @@ public class CndModule extends ModuleInstall {
     /** Module is being opened (NetBeans startup, or enable-toggled) */
     public void restored() {
 
-	// Settings for CCKit
+	// Settings for editor kits
         Settings.addInitializer(new CCSettingsInitializer(CCKit.class));
-
-	// XXX todo: make the C++ editor become a C/C++ editor and
-	// get rid of the dummy CKit class
 	Settings.addInitializer(new CCSettingsInitializer(CKit.class));
 	Settings.addInitializer(new FSettingsInitializer(FKit.class));
 	Settings.addInitializer(new MakefileSettingsInitializer(MakefileKit.class));

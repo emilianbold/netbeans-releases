@@ -144,7 +144,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 	Vector controls = new Vector();
 	controls.add(options[OPTION_OK]);
         MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, controls);
-        ActionListener optionsListener = new OptionListener( project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, antProjectHelper, innerPane);
+        ActionListener optionsListener = new OptionListener( project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, antProjectHelper, innerPane, folder, item);
         options[ OPTION_OK ].addActionListener( optionsListener );
         options[ OPTION_CANCEL ].addActionListener( optionsListener );
         options[ OPTION_APPLY ].addActionListener( optionsListener );
@@ -181,13 +181,17 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 	private ConfigurationDescriptor clonedProjectdescriptor;
 	private AntProjectHelper antProjectHelper;
 	private MakeCustomizer makeCustomizer;
+        private Folder folder;
+        private Item item;
         
-        OptionListener( Project project, ConfigurationDescriptor projectDescriptor, ConfigurationDescriptor clonedProjectdescriptor, AntProjectHelper antProjectHelper, MakeCustomizer makeCustomizer) {
+        OptionListener( Project project, ConfigurationDescriptor projectDescriptor, ConfigurationDescriptor clonedProjectdescriptor, AntProjectHelper antProjectHelper, MakeCustomizer makeCustomizer, Folder folder, Item item) {
             this.project = project;
 	    this.projectDescriptor = projectDescriptor;
 	    this.clonedProjectdescriptor = clonedProjectdescriptor;
 	    this.antProjectHelper = antProjectHelper;
 	    this.makeCustomizer = makeCustomizer;
+            this.folder = folder;
+            this.item = item;
         }
         
         public void actionPerformed( ActionEvent e ) {
@@ -197,7 +201,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 		//projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
 		projectDescriptor.assign(clonedProjectdescriptor);
 		projectDescriptor.setModified();
-                ((MakeConfigurationDescriptor)projectDescriptor).checkForChangedItems();
+                ((MakeConfigurationDescriptor)projectDescriptor).checkForChangedItems(folder, item);
 
 		((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
                 

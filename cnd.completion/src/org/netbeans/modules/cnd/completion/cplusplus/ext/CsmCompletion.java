@@ -41,6 +41,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
 /**
@@ -827,6 +828,10 @@ abstract public class CsmCompletion extends Completion {
 
         public CsmOffsetable.Position getEndPosition() {
             return null;
+        }
+
+        public boolean isBuiltInBased(boolean resolveTypeChain) {
+            return CsmKindUtilities.isBuiltIn(clazz);
         }
 
     }

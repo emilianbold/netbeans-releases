@@ -53,6 +53,15 @@ public class CompletionResolverImpl implements CompletionResolver {
     
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
+    private boolean sort = false;
+
+    public boolean isSortNeeded() {
+        return sort;
+    }
+
+    public void setSortNeeded(boolean sort) {
+        this.sort = sort;
+    }
     
     public boolean isCaseSensitive() {
         return caseSensitive;
@@ -64,18 +73,19 @@ public class CompletionResolverImpl implements CompletionResolver {
     
     /** Creates a new instance of CompletionResolver */
     public CompletionResolverImpl(CsmFile file) {
-        this(file, false, true);
+        this(file, false, false, false);
     }
     
-    public CompletionResolverImpl(CsmFile file, boolean caseSensitive, boolean naturalSort) {
-        this(file, RESOLVE_CONTEXT, caseSensitive, naturalSort);
+    public CompletionResolverImpl(CsmFile file, boolean caseSensitive, boolean sort, boolean naturalSort) {
+        this(file, RESOLVE_CONTEXT, caseSensitive, sort, naturalSort);
     }
     
-    public CompletionResolverImpl(CsmFile file, int resolveTypes, boolean caseSensitive, boolean naturalSort) {
+    public CompletionResolverImpl(CsmFile file, int resolveTypes, boolean caseSensitive, boolean sort, boolean naturalSort) {
         this.file = file;
         this.resolveTypes = resolveTypes;
         this.caseSensitive = caseSensitive;
         this.naturalSort = naturalSort;
+        this.sort = sort;
     }
     
     public void setResolveTypes(int resolveTypes) {
@@ -119,6 +129,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     private void resolveContext(CsmContext context, int offset, String strPrefix, boolean match) {
+        
         List classes        = null;
         List localVars      = null;
         List fileLocalVars  = null;
@@ -291,12 +302,12 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     protected CsmProjectContentResolver createContentResolver(CsmProject prj) {
-        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(prj, isCaseSensitive(), isNaturalSort());
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(prj, isCaseSensitive(), isSortNeeded(), isNaturalSort());
         return contResolver;
     }
     
     protected CsmProjectContentResolver createLibraryResolver(CsmProject lib) {
-        CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isNaturalSort());
+        CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort());
         return libResolver;
     }
     
@@ -309,12 +320,12 @@ public class CompletionResolverImpl implements CompletionResolver {
             return null;
         }
         CsmNamespace globNS = prj.getGlobalNamespace();
-        List res = contResolver.getNamespaceClassesEnums(globNS, strPrefix, match, true);
+        List res = contResolver.getNamespaceClassesEnums(globNS, strPrefix, match);
         return res;
     }
     
     private List getGlobalVariables(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getGlobalVariables(strPrefix, match, true);
+        List res = contResolver.getGlobalVariables(strPrefix, match);
         return res;
     }
     
@@ -323,22 +334,22 @@ public class CompletionResolverImpl implements CompletionResolver {
             return null;
         }
         CsmNamespace globNS = prj.getGlobalNamespace();
-        List res = contResolver.getNamespaceEnumerators(globNS, strPrefix, match, true);
+        List res = contResolver.getNamespaceEnumerators(globNS, strPrefix, match);
         return res;
     }
     
     private List getGlobalFunctions(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getGlobalFunctions(strPrefix, match, true);
+        List res = contResolver.getGlobalFunctions(strPrefix, match);
         return res;
     }
     
     private List getLibClassesEnums(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getLibClassesEnums(strPrefix, match, true);
+        List res = contResolver.getLibClassesEnums(strPrefix, match);
         return res;
     }
     
     private List getLibVariables(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getLibVariables(strPrefix, match, true);
+        List res = contResolver.getLibVariables(strPrefix, match);
         return res;
     }
     
@@ -348,7 +359,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     private List getLibFunctions(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getLibFunctions(strPrefix, match, true);
+        List res = contResolver.getLibFunctions(strPrefix, match);
         return res;
     }
     

@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 
@@ -52,14 +53,27 @@ public class Utils {
     
     public static String getQualifiedName(String name, CsmNamespace parent) {
 	StringBuffer sb = new StringBuffer(name);
-	while(parent != null ) {
-	    if( ! parent.isGlobal() ) {
+        if (parent != null) {
+            if (!parent.isGlobal()) {
 		sb.insert(0, "::"); // NOI18N
-		sb.insert(0, parent.getName());
-	    }
-	    parent = parent.getParent();
-	}
-	return sb.toString();
+		sb.insert(0, parent.getQualifiedName());
+            }
+        }
+        return sb.toString();
+    }
+      
+    public static String getNestedNamespaceQualifiedName(String name, NamespaceImpl parent, boolean createForEmptyNames) {
+	StringBuffer sb = new StringBuffer(name);
+        if (parent != null) {
+            if (name.length() == 0 && createForEmptyNames) {
+                sb.append(parent.getNameForUnnamedElement());
+            }
+            if (!parent.isGlobal()) {
+		sb.insert(0, "::"); // NOI18N
+		sb.insert(0, parent.getQualifiedName());
+            }
+        }
+        return sb.toString();
     }
     
     public static String toString(String[] a) {

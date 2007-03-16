@@ -33,16 +33,18 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor{
-    private static final String PROJECT = "project"; // NOI18N
-    private static final String PRIVIDER = "provider"; // NOI18N
-    private static final String ROOT_FOLDER = "rootFolder"; // NOI18N
-    private static final String CONSOLIDATION_STRATEGY = "consolidationLevel"; // NOI18N
-    private static final String CONFIGURATIONS = "configurations"; // NOI18N
-    private static final String INCLUDED = "included"; // NOI18N
-    private static final String ADDITIONAL = "additionalFiles"; // NOI18N
-    private static final String INVOKE_PROVIDER = "invokeProvider"; // NOI18N
+    private static final String PROJECT = "DW:project"; // NOI18N
+    private static final String PRIVIDER = "DW:provider"; // NOI18N
+    private static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
+    private static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
+    private static final String ADDITIONAL_LIBRARIES = "DW:libraries"; // NOI18N
+    private static final String CONSOLIDATION_STRATEGY = "DW:consolidationLevel"; // NOI18N
+    private static final String CONFIGURATIONS = "DW:configurations"; // NOI18N
+    private static final String INCLUDED = "DW:included"; // NOI18N
+    private static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
     
     private boolean stateChanged = true;
+    private boolean simple = true;
     
     public DiscoveryWizardDescriptor(WizardDescriptor.Iterator panels){
         super(panels);
@@ -65,12 +67,29 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public String getRootFolder(){
         return (String) getProperty(ROOT_FOLDER);
     }
+    
     public void setRootFolder(String root){
         stateChanged = true;
         if (root != null && Utilities.isWindows()) {
             root = root.replace('\\','/');
         }
         putProperty(ROOT_FOLDER, root);
+    }
+    
+    public String getBuildResult() {
+        return (String) getProperty(BUILD_RESULT);
+    }
+    
+    public void setBuildResult(String binaryPath) {
+        putProperty(BUILD_RESULT, binaryPath);
+    }
+    
+    public String getAditionalLibraries() {
+        return (String) getProperty(ADDITIONAL_LIBRARIES);
+    }
+    
+    public void setAditionalLibraries(String binaryPath) {
+        putProperty(ADDITIONAL_LIBRARIES, binaryPath);
     }
     
     public DiscoveryProvider getProvider(){
@@ -102,13 +121,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         putProperty(INCLUDED, includedFiles);
     }
     
-    public List<String> getAdditionalFiles(){
-        return (List<String>) getProperty(ADDITIONAL);
-    }
-    public void setAdditionalFiles(List<String> additionalFiles){
-        putProperty(ADDITIONAL, additionalFiles);
-    }
-    
     public boolean isInvokeProvider(){
         return stateChanged;
     }
@@ -116,20 +128,30 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public void setInvokeProvider(boolean invoke){
         stateChanged = invoke;
     }
-
+    
     public void setMessage(String message) {
         putProperty("WizardPanel_errorMessage", message); // NOI18N
     }
-
+    
     public void clean() {
         setProject(null);
         setProvider(null);
         setRootFolder(null);
+        setBuildResult(null);
+        setAditionalLibraries(null);
         setLevel(null);
         setConfigurations(null);
         setIncludedFiles(null);
-        setAdditionalFiles(null);
     }
+    
+    public boolean isSimpleMode() {
+        return simple;
+    }
+    
+    public void setSimpleMode(boolean simple) {
+        this.simple = simple;
+    }
+    
     
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
         private WizardDescriptor wizard;
@@ -163,6 +185,22 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             wizard.putProperty(ROOT_FOLDER, root);
         }
         
+        public String getBuildResult() {
+            return (String) wizard.getProperty(BUILD_RESULT);
+        }
+        
+        public void setBuildResult(String binaryPath) {
+            wizard.putProperty(BUILD_RESULT, binaryPath);
+        }
+        
+        public String getAditionalLibraries() {
+            return (String) wizard.getProperty(ADDITIONAL_LIBRARIES);
+        }
+        
+        public void setAditionalLibraries(String binaryPath) {
+            wizard.putProperty(ADDITIONAL_LIBRARIES, binaryPath);
+        }
+        
         public DiscoveryProvider getProvider(){
             return (DiscoveryProvider) wizard.getProperty(PRIVIDER);
         }
@@ -192,13 +230,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             wizard.putProperty(INCLUDED, includedFiles);
         }
         
-        public List<String> getAdditionalFiles(){
-            return (List<String>) wizard.getProperty(ADDITIONAL);
-        }
-        public void setAdditionalFiles(List<String> additionalFiles){
-            wizard.putProperty(ADDITIONAL, additionalFiles);
-        }
-        
         public boolean isInvokeProvider(){
             Boolean res = (Boolean)wizard.getProperty(INVOKE_PROVIDER);
             if (res == null) {
@@ -215,18 +246,26 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             }
         }
         
+        public boolean isSimpleMode() {
+            return true;
+        }
+        
+        public void setSimpleMode(boolean simple) {
+        }
+        
         public void setMessage(String message) {
             wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
         }
-
+        
         public void clean() {
             setProject(null);
             setProvider(null);
             setRootFolder(null);
+            setBuildResult(null);
+            setAditionalLibraries(null);
             setLevel(null);
             setConfigurations(null);
             setIncludedFiles(null);
-            setAdditionalFiles(null);
         }
     }
 }

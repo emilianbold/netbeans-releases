@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
+import org.openide.util.NbBundle;
+
 public class GNUFortranCompiler extends BasicCompiler {
     private static final String[] DEVELOPMENT_MODE_OPTIONS = {
 	"",  // Fast Build // NOI18N
@@ -43,7 +45,7 @@ public class GNUFortranCompiler extends BasicCompiler {
     
     /** Creates a new instance of GNUCCompiler */
     public GNUFortranCompiler() {
-        super(FortranCompiler, "g77", "GNU Fortran Compiler"); // NOI18N
+        super(FortranCompiler, "g77", getString("GNU_FORTRAN_COMPILER")); // NOI18N
     }
     
     public String getWarningLevelOptions(int value) {

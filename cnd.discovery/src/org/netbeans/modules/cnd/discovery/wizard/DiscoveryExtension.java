@@ -54,9 +54,9 @@ public class DiscoveryExtension implements IteratorExtension {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.clean();
     }
-    
-    public boolean isApplicable(WizardDescriptor wizard) {
-        String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
+
+    public boolean isApplicable(DiscoveryDescriptor descriptor) {
+        String selectedExecutable = descriptor.getBuildResult();
         if (selectedExecutable == null) {
             return false;
         }
@@ -64,7 +64,6 @@ public class DiscoveryExtension implements IteratorExtension {
         if (!file.exists()) {
             return false;
         }
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         DiscoveryProvider provider = descriptor.getProvider();
         if (provider== null){
             provider = findProvider();
@@ -86,7 +85,7 @@ public class DiscoveryExtension implements IteratorExtension {
         });
     }
     
-    public boolean canApply(WizardDescriptor wizard) {
+    public boolean isApplicable(WizardDescriptor wizard) {
         String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
         if (selectedExecutable == null) {
             return false;
@@ -95,13 +94,19 @@ public class DiscoveryExtension implements IteratorExtension {
         if (!file.exists()) {
             return false;
         }
-        String additional = (String)wizard.getProperty("additionalLibraries"); // NOI18N
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
+        descriptor.setBuildResult(selectedExecutable);
+        return isApplicable(descriptor);
+    }
+
+    public boolean canApply(DiscoveryDescriptor descriptor) {
         String level = descriptor.getLevel();
         if (level == null || level.length() == 0){
             return false;
         }
-        
+        String selectedExecutable = descriptor.getBuildResult();
+        String additional = descriptor.getAditionalLibraries();
+
         DiscoveryProvider provider = descriptor.getProvider();
         if (provider== null){
             provider = findProvider();
@@ -123,8 +128,27 @@ public class DiscoveryExtension implements IteratorExtension {
         descriptor.setProvider(provider);
         SelectConfigurationPanel.buildModel(descriptor);
         return !descriptor.isInvokeProvider()
-        && descriptor.getConfigurations() != null
-                && descriptor.getIncludedFiles() != null;
+            && descriptor.getConfigurations() != null
+            && descriptor.getIncludedFiles() != null;
+    }
+    
+    public boolean canApply(WizardDescriptor wizard, Project project) {
+        String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
+        if (selectedExecutable == null) {
+            return false;
+        }
+        File file = new File(selectedExecutable);
+        if (!file.exists()) {
+            return false;
+        }
+        String additional = (String)wizard.getProperty("additionalLibraries"); // NOI18N
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
+        String level = (String)wizard.getProperty("consolidationLevel"); // NOI18N
+        descriptor.setBuildResult(selectedExecutable);
+        descriptor.setAditionalLibraries(additional);
+        descriptor.setLevel(level);
+        descriptor.setProject(project);
+        return canApply(descriptor);
     }
     
     private DiscoveryProvider findProvider(){

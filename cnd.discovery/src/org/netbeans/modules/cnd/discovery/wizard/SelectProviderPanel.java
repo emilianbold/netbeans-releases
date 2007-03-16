@@ -1,11 +1,37 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
 package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
@@ -13,8 +39,11 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public final class SelectProviderPanel extends JPanel {
-    private boolean ignoreEvent = false;
+/**
+ *
+ * @author Alexander Simon
+ */
+public final class SelectProviderPanel extends JPanel implements CsmProgressListener {
     private SelectProviderWizard wizard;
     /** Creates new form SelectProviderVisualPanel1 */
     public SelectProviderPanel(SelectProviderWizard wizard) {
@@ -22,7 +51,7 @@ public final class SelectProviderPanel extends JPanel {
         initComponents();
         addListeners();
     }
-
+    
     private void addListeners(){
         DocumentListener documentListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -38,6 +67,7 @@ public final class SelectProviderPanel extends JPanel {
             }
         };
         rootFolder.getDocument().addDocumentListener(documentListener);
+        CsmModelAccessor.getModel().addProgressListener(this);
     }
     
     /** This method is called from within the constructor to
@@ -78,6 +108,7 @@ public final class SelectProviderPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(rootFolderButton, gridBagConstraints);
 
         instructionPanel.setLayout(new java.awt.GridBagLayout());
@@ -106,6 +137,7 @@ public final class SelectProviderPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
 
+        labelForRoot.setLabelFor(rootFolder);
         org.openide.awt.Mnemonics.setLocalizedText(labelForRoot, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("ProjectRootFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -129,6 +161,7 @@ public final class SelectProviderPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(prividersComboBox, gridBagConstraints);
 
+        labelForProviders.setLabelFor(prividersComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(labelForProviders, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("SelectDiscoveryProviderText"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -138,7 +171,7 @@ public final class SelectProviderPanel extends JPanel {
         add(labelForProviders, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void prividersComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_prividersComboBoxItemStateChanged
         Object item = evt.getItem();
         if (item instanceof ProviderItem) {
@@ -147,19 +180,11 @@ public final class SelectProviderPanel extends JPanel {
             wizard.stateChanged(null);
         }
     }//GEN-LAST:event_prividersComboBoxItemStateChanged
-
+    
     private void update(DocumentEvent e) {
-        if (ignoreEvent) {
-            // side-effect of changes done in this handler
-            return;
-        }
-        // start ignoring events
-        ignoreEvent = true;
-        // stop ignoring events
-        ignoreEvent = false;
         wizard.stateChanged(null);
     }
-
+    
     private void rootFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rootFolderButtonActionPerformed
         String seed = null;
         if (rootFolder.getText().length() > 0) {
@@ -173,7 +198,7 @@ public final class SelectProviderPanel extends JPanel {
         JFileChooser fileChooser = new FileChooser(
                 getString("ROOT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
-                JFileChooser.DIRECTORIES_ONLY, false, 
+                JFileChooser.DIRECTORIES_ONLY, false,
                 null,
                 seed,
                 false
@@ -196,7 +221,7 @@ public final class SelectProviderPanel extends JPanel {
     private javax.swing.JTextField rootFolder;
     private javax.swing.JButton rootFolderButton;
     // End of variables declaration//GEN-END:variables
-
+    
     void read(final DiscoveryDescriptor wizardDescriptor) {
         Lookup.Result providers = Lookup.getDefault().lookup(new Lookup.Template(DiscoveryProvider.class));
         DefaultComboBoxModel model = (DefaultComboBoxModel)prividersComboBox.getModel();
@@ -209,12 +234,21 @@ public final class SelectProviderPanel extends JPanel {
                 return wizardDescriptor.getProject();
             }
         };
+        List<ProviderItem> list = new ArrayList<ProviderItem>();
         for(Object p : providers.allInstances()){
             DiscoveryProvider provider = (DiscoveryProvider)p;
             provider.clean();
             if (provider.isApplicable(proxy)) {
-                model.addElement(new ProviderItem(provider));
+                list.add(new ProviderItem(provider));
             }
+        }
+        Collections.sort(list);
+        for(ProviderItem item:list){
+            model.addElement(item);
+        }
+        ProviderItem def = getDefaultProvider(list,proxy,wizardDescriptor);
+        if (def != null){
+            prividersComboBox.setSelectedItem(def);
         }
         String path = wizardDescriptor.getRootFolder();
         if (Utilities.isWindows()) {
@@ -223,26 +257,85 @@ public final class SelectProviderPanel extends JPanel {
         rootFolder.setText(path);
     }
     
+    private ProviderItem getDefaultProvider(List<ProviderItem> list, ProjectProxy proxy, DiscoveryDescriptor wizardDescriptor){
+        ProviderItem def = null;
+        for(ProviderItem item:list){
+            if ("model-folder".equals(item.getID())){
+                // select model if no other variants
+                def = item;
+            } else if ("dwarf-executable".equals(item.getID())){
+                // select executable if make project has output
+                // and output has debug information.
+                item.getProvider().getProperty("executable").setValue(wizardDescriptor.getBuildResult());
+                if (item.getProvider().canAnalyze(proxy)) {
+                    return item;
+                }
+            } else if ("dwarf-folder".equals(item.getID())){
+                // select executable if make project has output
+                // and output has debug information.
+                item.getProvider().getProperty("folder").setValue(wizardDescriptor.getRootFolder());
+                if (item.getProvider().canAnalyze(proxy)) {
+                    return item;
+                }
+            }
+        }
+        return def;
+    }
+    
     void store(DiscoveryDescriptor wizardDescriptor) {
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
         wizardDescriptor.setProvider(provider.getProvider());
         wizardDescriptor.setRootFolder(rootFolder.getText());
     }
-
-    boolean valid() {
+    
+    boolean valid(DiscoveryDescriptor wizardDescriptor) {
         String path = rootFolder.getText();
         File file = new File(path);
-        if (file.exists() && file.isDirectory()) {
-            return true;
+        if (!(file.exists() && file.isDirectory())) {
+            return false;
         }
-        return false;
+        ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
+        if ("model-folder".equals(provider.getID())){
+            Project project = wizardDescriptor.getProject();
+            if (project != null){
+                CsmProject langProject = CsmModelAccessor.getModel().getProject(project);
+                if (langProject != null && langProject.isStable(null)){
+                    return true;
+                }
+            }
+      	    wizardDescriptor.setMessage(getString("ModelNotFinishParsing")); // NOI18N
+            return false;
+        }
+        return true;
     }
-
+    
     private String getString(String key) {
         return NbBundle.getBundle(SelectProviderPanel.class).getString(key);
     }
 
-    private static class ProviderItem {
+    public void projectParsingStarted(CsmProject project) {
+    }
+
+    public void projectFilesCounted(CsmProject project, int filesCount) {
+    }
+
+    public void projectParsingFinished(CsmProject project) {
+        wizard.stateChanged(null);
+    }
+
+    public void projectParsingCancelled(CsmProject project) {
+    }
+
+    public void fileParsingStarted(CsmFile file) {
+    }
+
+    public void fileParsingFinished(CsmFile file) {
+    }
+
+    public void parserIdle() {
+    }
+    
+    private static class ProviderItem implements Comparable {
         private DiscoveryProvider provider;
         private ProviderItem(DiscoveryProvider provider){
             this.provider = provider;
@@ -258,6 +351,10 @@ public final class SelectProviderPanel extends JPanel {
         }
         public DiscoveryProvider getProvider(){
             return provider;
+        }
+        
+        public int compareTo(Object o) {
+            return toString().compareTo( ((ProviderItem)o).toString() );
         }
     }
 }

@@ -46,7 +46,7 @@ public class RemoveItemAction extends NodeAction {
 	    Project project = (Project)n.getValue("Project"); // NOI18N
 	    Folder folder = (Folder)n.getValue("Folder"); // NOI18N
 	    Item item = (Item)n.getValue("Item"); // NOI18N
-	    folder.removeItem(item);
+	    folder.removeItemAction(item);
 	    if (IpeUtils.isPathAbsolute(item.getPath()))
 		((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
 	}

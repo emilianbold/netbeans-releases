@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.settings.CppSettings;
 
 public class MakeProjectOptions {
 
@@ -48,11 +49,11 @@ public class MakeProjectOptions {
     }
     
     public static void setFortranSupport(boolean fortran) {
-        MakeOptions.getInstance().setFortran(fortran);
+        CppSettings.getDefault().setFortranEnabled(fortran);
     }
     
     public static boolean getFortranSupport() {
-        return MakeOptions.getInstance().getFortran();
+        return CppSettings.getDefault().isFortranEnabled();
     }
     
     public static void setDepencyChecking(boolean val) {

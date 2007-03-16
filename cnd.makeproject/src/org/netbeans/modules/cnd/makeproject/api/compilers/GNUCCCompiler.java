@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -62,7 +61,7 @@ public class GNUCCCompiler extends CCCCompiler {
     
     /** Creates a new instance of GNUCCompiler */
     public GNUCCCompiler() {
-        super(CCCompiler, "g++", "GNU C++ Compiler"); // NOI18N
+        super(CCCompiler, "g++", getString("GNU_CPP_COMPILER")); // NOI18N
     }
     
     public String getDevelopmentModeOptions(int value) {

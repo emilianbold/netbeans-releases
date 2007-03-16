@@ -83,7 +83,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return baseDocument;
     }
     
-    abstract protected  CompletionResolver getCompletionResolver(boolean openingSource);
+    abstract protected  CompletionResolver getCompletionResolver(boolean openingSource, boolean sort);
 
     abstract protected CsmFinder getFinder();
 
@@ -99,7 +99,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     
     public CompletionQuery.Result query(JTextComponent component, int offset,
                                         SyntaxSupport support) {
-        return query(component, offset, support, false);
+        boolean sort = false; // TODO: review
+        return query(component, offset, support, false, sort);
     }
 
     /** Perform the query on the given component. The query usually
@@ -115,7 +116,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     * @return result of the query or null if there's no result.
     */
     public CompletionQuery.Result query(JTextComponent component, int offset,
-                                        SyntaxSupport support, boolean openingSource) {
+                                        SyntaxSupport support, boolean openingSource, boolean sort) {
         BaseDocument doc = (BaseDocument)component.getDocument();
         
         // remember document here. it is accessible by getBaseDocument()
@@ -169,7 +170,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 sup.refreshClassInfo();
 
                 CsmCompletionExpression exp = tp.getResultExp();
-                ret = getResult(component, sup, openingSource, offset, exp);
+                ret = getResult(component, sup, openingSource, offset, exp, sort);
             }
         } catch (BadLocationException e) {
             e.printStackTrace();
@@ -181,11 +182,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
     abstract protected boolean isProjectBeeingParsed(boolean openingSource);
         
-    protected CompletionQuery.Result getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp) {
-	CompletionResolver resolver = getCompletionResolver(openingSource);
+    protected CompletionQuery.Result getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort) {
+	CompletionResolver resolver = getCompletionResolver(openingSource, sort);
         if (resolver != null) {
             CsmOffsetableDeclaration context = sup.getDefinition(offset);
-            Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context);
+            Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort);
             ctx.resolveExp(exp);
             return ctx.result;
         } else {
@@ -369,10 +370,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //    }
     
     static List findFieldsAndMethods(CsmFinder finder, CsmOffsetableDeclaration context, CsmClassifier classifier, String name,
-                                     boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses) {
+                                     boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort) {
         // Find inner classes
         List ret = new ArrayList();
-        classifier = CsmKindUtilities.isTypedef(classifier) ? CsmBaseUtilities.getTypedefBaseClassifier((CsmTypedef) classifier) : classifier;
+        classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
         if (!CsmKindUtilities.isClass(classifier)) {
             return ret;
         }
@@ -399,7 +400,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             staticOnly = false;
         }
             // Add fields
-            List res = finder.findFields(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses);
+            List res = finder.findFields(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, sort);
             if (res != null) {
                 ret.addAll(res);
             }
@@ -410,7 +411,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 context = cls;
             }
             // Add methods
-            res = finder.findMethods(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses);
+            res = finder.findMethods(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, sort);
             if (res != null) {
                 ret.addAll(res);
             }
@@ -455,6 +456,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     
     class Context {
 
+        private boolean sort;
+        
         /** Text component */
         private JTextComponent component;
 
@@ -507,14 +510,15 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public Context(JTextComponent component,
                        CsmSyntaxSupport sup, boolean openingSource, int endOffset,
                        CsmFinder finder,
-                        CompletionResolver compResolver, CsmOffsetableDeclaration contextElement) {
+                        CompletionResolver compResolver, CsmOffsetableDeclaration contextElement, boolean sort) {
             this.component = component;
             this.sup = sup;
             this.openingSource = openingSource;
             this.endOffset = endOffset;
 	    this.finder = finder;
             this.compResolver = compResolver;
-            this.contextElement = contextElement;            
+            this.contextElement = contextElement;      
+            this.sort = sort;
         }
         
 //        public Context(JTextComponent component,
@@ -534,7 +538,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         protected Object clone() {
 //            return new Context(component, sup, openingSource, endOffset, jcFinder, finder);
-            return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement);
+            return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, sort);
         }
 
         private CsmType resolveType(CsmCompletionExpression exp) {
@@ -594,7 +598,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), 
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true, sort); // NOI18N
                         }
                         // Get all fields and methods of the cls
                         result = new CsmCompletionResult(component, res, formatType(lastType, true, true, true),
@@ -666,7 +670,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), 
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, false); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, false, sort); // NOI18N
                         }
                         // Get all fields and methods of the cls
                         result = new CsmCompletionResult(component, res, formatType(lastType, true, true, true),
@@ -859,7 +863,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         if (ad == 0) { // zero array depth
                                             if (CsmKindUtilities.isClass(lastType.getClassifier())) {
                                                 CsmClass clazz = (CsmClass)lastType.getClassifier();
-                                                List fldList = finder.findFields(clazz, clazz, var, true, staticOnly, true, true);
+                                                List fldList = finder.findFields(clazz, clazz, var, true, staticOnly, true, true, this.sort);
                                                 if (fldList != null && fldList.size() > 0) { // match found
                                                     CsmField fld = (CsmField)fldList.get(0);
                                                     lastType = fld.getType();
@@ -887,7 +891,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     result = new CsmCompletionResult(
                                                  component,
 //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
-                                                 findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true),
+                                                 findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true, sort),
                                                  formatType(lastType, true, true, false) + var + '*',
                                                  item,
                                                  cls.getName().length() + 1,
@@ -1189,7 +1193,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 }
                                 // try to find method in last resolved class appropriate for current context
                                 if (CsmKindUtilities.isClass(classifier)) {
-                                    mtdList = finder.findMethods(this.contextElement, (CsmClass)classifier, mtdName, true, false, first, true);
+                                    mtdList = finder.findMethods(this.contextElement, (CsmClass)classifier, mtdName, true, false, first, true, this.sort);
                                 }
                             }
                         }
@@ -1647,77 +1651,82 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     }
  
     public interface CsmItemFactory{
-        public CsmResultItem.NamespaceResultItem createNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath);
-        public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN);
-        public CsmResultItem.EnumeratorResultItem createEnumeratorResultItem(CsmEnumerator enm, int enumtrDisplayOffset, boolean displayFQN);
-        public CsmResultItem.ClassResultItem createClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN);
-        public CsmResultItem.FieldResultItem createFieldResultItem(CsmField fld);
-        public CsmResultItem.GlobalVariableResultItem createGlobalVariableResultItem(CsmVariable var);
         public CsmResultItem.LocalVariableResultItem createLocalVariableResultItem(CsmVariable var);
-        public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var);
+        public CsmResultItem.FieldResultItem createFieldResultItem(CsmField fld);
         public CsmResultItem.MethodResultItem createMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp);
-        public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp);
         public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp);
-        public CsmResultItem.MacroResultItem createMacroResultItem(CsmMacro mac);
+
+        public CsmResultItem.ClassResultItem createClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN);
+        public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN);
         public CsmResultItem.TypedefResultItem createTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN);
+
+        public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var);
+        public CsmResultItem.EnumeratorResultItem createEnumeratorResultItem(CsmEnumerator enm, int enumtrDisplayOffset, boolean displayFQN);
+
+        public CsmResultItem.GlobalVariableResultItem createGlobalVariableResultItem(CsmVariable var);
+        public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp);
+        public CsmResultItem.MacroResultItem createMacroResultItem(CsmMacro mac);
+
+        public CsmResultItem.NamespaceResultItem createNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath);
         public CsmResultItem.StringResultItem createStringResultItem(String str);
     }
     
+    private static final int FAKE_PRIORITY = 1000;
     public static class DefaultCsmItemFactory implements CsmItemFactory{
         public DefaultCsmItemFactory(){
         }
 
         public CsmResultItem.NamespaceResultItem createNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath) {
-            return new CsmResultItem.NamespaceResultItem(pkg, displayFullNamespacePath);
+            return new CsmResultItem.NamespaceResultItem(pkg, displayFullNamespacePath, FAKE_PRIORITY);
         }
     
         public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN) {
-            return new CsmResultItem.EnumResultItem(enm, enumDisplayOffset, displayFQN);  
+            return new CsmResultItem.EnumResultItem(enm, enumDisplayOffset, displayFQN, FAKE_PRIORITY);  
         }  
         
         public CsmResultItem.EnumeratorResultItem createEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN) {
-            return new CsmResultItem.EnumeratorResultItem(enmtr, enumtrDisplayOffset, displayFQN);  
+            return new CsmResultItem.EnumeratorResultItem(enmtr, enumtrDisplayOffset, displayFQN, FAKE_PRIORITY);  
         }
         
         public CsmResultItem.ClassResultItem createClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN){
-            return new CsmResultItem.ClassResultItem(cls, classDisplayOffset, displayFQN);
+            return new CsmResultItem.ClassResultItem(cls, classDisplayOffset, displayFQN, FAKE_PRIORITY);
         }
         public CsmResultItem.FieldResultItem createFieldResultItem(CsmField fld){
-            return new CsmResultItem.FieldResultItem(fld);
+            return new CsmResultItem.FieldResultItem(fld, FAKE_PRIORITY);
         }
         public CsmResultItem.MethodResultItem createMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp){
-            return new CsmResultItem.MethodResultItem(mtd, substituteExp); 
+            return new CsmResultItem.MethodResultItem(mtd, substituteExp, FAKE_PRIORITY); 
         }
         public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp){
-            return new CsmResultItem.ConstructorResultItem(ctr, substituteExp);
+            return new CsmResultItem.ConstructorResultItem(ctr, substituteExp, FAKE_PRIORITY);
         }
 
         public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
-            return new CsmResultItem.GlobalFunctionResultItem(fun, substituteExp); 
+            return new CsmResultItem.GlobalFunctionResultItem(fun, substituteExp, FAKE_PRIORITY); 
         }
         
         public CsmResultItem.GlobalVariableResultItem createGlobalVariableResultItem(CsmVariable var) {
-            return new CsmResultItem.GlobalVariableResultItem(var); 
+            return new CsmResultItem.GlobalVariableResultItem(var, FAKE_PRIORITY); 
         }
 
         public CsmResultItem.LocalVariableResultItem createLocalVariableResultItem(CsmVariable var) {
-            return new CsmResultItem.LocalVariableResultItem(var); 
+            return new CsmResultItem.LocalVariableResultItem(var, FAKE_PRIORITY); 
         }        
 
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var) {
-            return new CsmResultItem.FileLocalVariableResultItem(var); 
+            return new CsmResultItem.FileLocalVariableResultItem(var, FAKE_PRIORITY); 
         }        
 
         public CsmResultItem.MacroResultItem createMacroResultItem(CsmMacro mac) {
-            return new CsmResultItem.MacroResultItem(mac); 
+            return new CsmResultItem.MacroResultItem(mac, FAKE_PRIORITY); 
         }
 
         public CsmResultItem.TypedefResultItem createTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN) {
-            return new CsmResultItem.TypedefResultItem(def, classDisplayOffset, displayFQN); 
+            return new CsmResultItem.TypedefResultItem(def, classDisplayOffset, displayFQN, FAKE_PRIORITY); 
         }
 
         public CsmResultItem.StringResultItem createStringResultItem(String str) {
-            return new CsmResultItem.StringResultItem(str);
+            return new CsmResultItem.StringResultItem(str, FAKE_PRIORITY);
         }
     }
 

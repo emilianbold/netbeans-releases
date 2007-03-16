@@ -30,7 +30,7 @@ public class BufferDataInput implements DataInput {
     
     public static class NotImplementedException extends Error {
 	public NotImplementedException() {
-	    super("Not implemented");
+	    super("Not implemented"); // NOI18N
 	}
     }
     

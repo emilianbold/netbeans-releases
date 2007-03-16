@@ -45,7 +45,7 @@ public class CCDataLoader extends CndAbstractDataLoader {
 				{ "cc", "cpp", "c++", "cxx", "C", "mm" }; // NOI18N
 
     protected CCDataLoader() {
-	super(CCDataObject.class.getName());
+	super("org.netbeans.modules.cnd.loaders.CCDataObject"); // NOI18N
         instance = this;
         createExtentions(cppExtensions);
     }
@@ -56,6 +56,7 @@ public class CCDataLoader extends CndAbstractDataLoader {
         createExtentions(cppExtensions);
     }
 
+    /** @deprecated Use {@link #CCDataLoader(String)} instead */
     protected CCDataLoader(Class representationClass) {
 	super(representationClass);
         instance = this;

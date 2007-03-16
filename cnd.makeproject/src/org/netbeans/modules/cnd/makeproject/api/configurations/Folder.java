@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.event.ChangeEvent;
@@ -151,6 +152,14 @@ public class Folder {
         fireChangeEvent();
     }
     
+    public Item addItemAction(Item item) {
+        addItem(item);
+        ArrayList list = new ArrayList(1);
+        list.add(item);
+        ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesAdded(list);
+        return item;
+    }
+    
     public Item addItem(Item item) {
         if (item == null)
             return item;
@@ -255,6 +264,13 @@ public class Folder {
         return newFolder;
     }
     
+    public boolean removeItemAction(Item item) {
+        ArrayList list = new ArrayList(1);
+        list.add(item);
+        ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(list);
+        return removeItem(item);
+    }
+    
     public boolean removeItem(Item item) {
         boolean ret = false;
         if (item == null)
@@ -296,6 +312,11 @@ public class Folder {
         boolean ret = false;
         Item item = findItemByPath(path);
         return removeItem(item);
+    }
+    
+    public boolean removeFolderAction(Folder folder) {
+        ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(folder.getAllItemsAsList());
+        return removeFolder(folder);
     }
     
     public boolean removeFolder(Folder folder) {
@@ -387,6 +408,27 @@ public class Folder {
                 found.add(o);
         }
         return (Item[])found.toArray(new Item[found.size()]);
+    }
+    
+    public List getAllItemsAsList() {
+        ArrayList found = new ArrayList();
+        Iterator iter = new ArrayList(getElements()).iterator();
+        while (iter.hasNext()) {
+            Object o = iter.next();
+            if (o instanceof Item)
+                found.add(o);
+            if (o instanceof Folder) {
+                List items = ((Folder)o).getAllItemsAsList();
+                found.addAll(items);
+            }
+        }
+        return found;
+    }
+    
+    
+    public Item[] getAllItemsAsArray() {
+        List list = getAllItemsAsList();
+        return (Item[])list.toArray(new Item[list.size()]);
     }
     
     /*

@@ -44,7 +44,7 @@ public class CDataLoader extends CndAbstractDataLoader {
     private static final String[] cExtensions = { "c", "i", "m" }; // NOI18N
 
     protected CDataLoader() {
-	super(CDataObject.class.getName());
+	super("org.netbeans.modules.cnd.loaders.CDataObject"); // NOI18N
         instance = this;
         createExtentions(cExtensions);
     }
@@ -55,6 +55,7 @@ public class CDataLoader extends CndAbstractDataLoader {
         createExtentions(cExtensions);
     }
 
+    /** @deprecated Use {@link #CDataLoader(String)} instead */
     protected CDataLoader(Class representationClass) {
 	super(representationClass);
         instance = this;

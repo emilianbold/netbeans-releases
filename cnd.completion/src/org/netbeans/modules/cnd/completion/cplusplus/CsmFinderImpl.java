@@ -225,7 +225,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch) {
         List ret = new ArrayList();
 
-        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive(), getNaturalSort());
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
 
         if (csmFile != null && csmFile.getProject() != null) {
             CsmProject prj = csmFile.getProject();
@@ -247,7 +247,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
                 ret.addAll(classes);
             }
             if (prj.getGlobalNamespace() != ns) {
-                classes =  contResolver.getLibClassesEnums(name, exactMatch, false);
+                classes =  contResolver.getLibClassesEnums(name, exactMatch);
                 if (classes != null) {
                     ret.addAll(classes);
                 }
@@ -268,7 +268,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         
         List ret = new ArrayList();
 
-        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive(), getNaturalSort());
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
 
         if (csmFile != null && csmFile.getProject() != null) {
             CsmProject prj = csmFile.getProject();
@@ -277,7 +277,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
             if (classes != null) {
                 ret.addAll(classes);
             }
-            classes = prj.getGlobalNamespace() == ns ? null : contResolver.getLibClassesEnums(name, exactMatch, false);
+            classes = prj.getGlobalNamespace() == ns ? null : contResolver.getLibClassesEnums(name, exactMatch);
             if (classes != null) {
                 ret.addAll(classes);
             }
@@ -683,12 +683,12 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   added or not. This should be false when searching for 'this.'
     * @return list of the matching fields
     */    
-    public List findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses) {
+    public List findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort) {
         TreeSet ts = naturalSort ? new TreeSet(CsmSortUtilities.NATURAL_MEMBER_NAME_COMPARATOR) : new TreeSet();
         
         // get class variables visible in this method
         CsmClass clazz = c;
-        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive(), getNaturalSort());
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
 //        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);        
         List classFields = contResolver.getFields(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses);
         return classFields;        
@@ -705,9 +705,9 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   added or not. This should be false when searching for 'this.'
     * @return list of the matching methods
     */
-    public List findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses) {
+    public List findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort) {
         CsmClass clazz = c;
-        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive(), getNaturalSort());
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
 //        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);
         List classFields = contResolver.getMethods(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses);
         return classFields;          

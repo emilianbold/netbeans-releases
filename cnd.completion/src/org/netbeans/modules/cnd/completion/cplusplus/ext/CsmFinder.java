@@ -104,7 +104,7 @@ public interface CsmFinder {
     * @return list of the matching fields
     */
     public List findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
-                           boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses);
+                           boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort);
 
     /** Find methods by name in a given class.
     * @param contextDeclaration declaration which defines context (class or function)
@@ -118,5 +118,5 @@ public interface CsmFinder {
     * @return list of the matching methods
     */
     public List findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
-                            boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses);    
+                            boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort);    
 }

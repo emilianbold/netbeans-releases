@@ -65,10 +65,6 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
     static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
     static private boolean dependencyChecking = false;
     
-    // Fortran
-    static final String FORTRAN = "fortran"; // NOI18N
-    static private boolean fortran = false;
-    
     // Save
     static final String SAVE = "save";  // NOI18N
     static private boolean save = true;
@@ -163,17 +159,6 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
     
     public boolean getDepencyChecking() {
         return dependencyChecking;
-    }
-    
-    public void setFortran(boolean fortran) {
-        boolean oldValue = getFortran();
-        this.fortran = fortran;
-        if (oldValue != fortran)
-            firePropertyChange(FORTRAN, new Boolean(oldValue), new Boolean(fortran));
-    }
-    
-    public boolean getFortran() {
-        return fortran;
     }
     
     public boolean getSave() {

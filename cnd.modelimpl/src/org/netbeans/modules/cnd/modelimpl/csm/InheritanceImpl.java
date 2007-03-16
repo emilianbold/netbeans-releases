@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
@@ -43,9 +44,13 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     private CsmVisibility visibility;
     private boolean virtual;
     
-    // only one of ancestorCacheOLD/ancestorCacheUID must be used (based on USE_REPOSITORY) 
-    private CsmClass ancestorCacheOLD;
-    private CsmUID<CsmClass> ancestorCacheUID;
+    // only one of resolvedAncestorClassCacheOLD/resolvedAncestorClassCacheUID must be used (based on USE_REPOSITORY) 
+    private CsmClass resolvedAncestorClassCacheOLD;
+    private CsmUID<CsmClass> resolvedAncestorClassCacheUID;
+    
+    // only one of classifierCacheOLD/classifierCacheUID must be used (based on USE_REPOSITORY) 
+    private CsmClassifier classifierCacheOLD;
+    private CsmUID<CsmClassifier> classifierCacheUID;
     
     private String ancestorName;
     
@@ -66,10 +71,25 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         CsmClass ancestorCache = _getAncestorCache();
         if (ancestorCache == null || !ancestorCache.isValid())
         {
-            ancestorCache = renderClass(ancestorName);
+            ancestorCache = null;
+            CsmClassifier classifier = getCsmClassifier();
+            classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
+            if (CsmKindUtilities.isClass(classifier)) {
+                ancestorCache = (CsmClass)classifier;
+            }
             _setAncestorCache(ancestorCache);
         }
         return ancestorCache;
+    }
+    
+    public CsmClassifier getCsmClassifier() {
+        CsmClassifier classifierCache = _getClassifierCache();
+        if (classifierCache == null || 
+                ((classifierCache instanceof CsmValidable) && !((CsmValidable)classifierCache).isValid())) {
+            classifierCache = renderClassifier(ancestorName);
+            _setClassifierCache(classifierCache);
+        }
+        return classifierCache;        
     }
     
     private void render(AST node) {
@@ -113,37 +133,52 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         }
     }
 
-    private CsmClass renderClass(String ancName) {
-        CsmClass result = null;
+    private CsmClassifier renderClassifier(String ancName) {
+        CsmClassifier result = null;
         CsmObject o = ResolverFactory.createResolver(this).resolve(ancName);
-        if( CsmKindUtilities.isClass(o) ) {
-            result = (CsmClass) o;
-        } else if (o != null) {
-            while (CsmKindUtilities.isTypedef(o)) {
-                o = ((CsmTypedef)o).getType().getClassifier();
-            }
-            result = (CsmClass)o;
+        if( CsmKindUtilities.isClassifier(o) ) {
+            result = (CsmClassifier) o;
         }
         return result;
     }
     
     public CsmClass _getAncestorCache() {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmClass ancestorCache = UIDCsmConverter.UIDtoDeclaration(ancestorCacheUID);
-            assert (ancestorCache != null || ancestorCacheUID == null);
+            CsmClass ancestorCache = UIDCsmConverter.UIDtoDeclaration(resolvedAncestorClassCacheUID);
+            assert (ancestorCache != null || resolvedAncestorClassCacheUID == null);
             return ancestorCache;            
         } else {
-            return ancestorCacheOLD;
+            return resolvedAncestorClassCacheOLD;
         }        
     }
 
     public void _setAncestorCache(CsmClass ancestorCache) {
         if (TraceFlags.USE_REPOSITORY) {
-            ancestorCacheUID = UIDCsmConverter.declarationToUID(ancestorCache);
-            assert (ancestorCacheUID != null || ancestorCache == null);
+            resolvedAncestorClassCacheUID = UIDCsmConverter.declarationToUID(ancestorCache);
+            assert (resolvedAncestorClassCacheUID != null || ancestorCache == null);
         } else {
-            this.ancestorCacheOLD = ancestorCache;
+            this.resolvedAncestorClassCacheOLD = ancestorCache;
         }        
+    }
+    
+
+    private CsmClassifier _getClassifierCache() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmClassifier classifierCache = UIDCsmConverter.UIDtoDeclaration(classifierCacheUID);
+            assert (classifierCache != null || classifierCacheUID == null);
+            return classifierCache;            
+        } else {
+            return classifierCacheOLD;
+        } 
+    }
+
+    private void _setClassifierCache(CsmClassifier classifierCache) {
+        if (TraceFlags.USE_REPOSITORY) {
+            classifierCacheUID = UIDCsmConverter.declarationToUID(classifierCache);
+            assert (classifierCacheUID != null || classifierCacheUID == null);
+        } else {
+            this.classifierCacheOLD = classifierCache;
+        }  
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -157,7 +192,12 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         output.writeUTF(ancestorName);        
 
         // save cache
-        UIDObjectFactory.getDefaultFactory().writeUID(ancestorCacheUID, output);        
+        UIDObjectFactory.getDefaultFactory().writeUID(classifierCacheUID, output);     
+        boolean theSame = ((CsmUID)resolvedAncestorClassCacheUID == (CsmUID)classifierCacheUID);
+        output.writeBoolean(theSame);
+        if (!theSame) {
+            UIDObjectFactory.getDefaultFactory().writeUID(resolvedAncestorClassCacheUID, output);        
+        }
     }
 
     public InheritanceImpl(DataInput input) throws IOException {
@@ -169,7 +209,13 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         assert this.ancestorName != null;
 
         // restore cached value
-        this.ancestorCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
+        this.classifierCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        boolean theSame = input.readBoolean();
+        if (!theSame) {
+            this.resolvedAncestorClassCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        } else {
+            this.resolvedAncestorClassCacheUID = (CsmUID)this.classifierCacheUID;
+        }
     }    
     
 }

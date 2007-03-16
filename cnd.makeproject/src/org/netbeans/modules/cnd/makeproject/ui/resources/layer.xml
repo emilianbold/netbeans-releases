@@ -203,18 +203,13 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="OptionsDialog">
-        <attr name="Keymaps.instance/MakeProjectOption.instance" boolvalue="true"/> 
-        <file name="MakeProjectOption.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.MakeProjectEditorOptions"/>
-        </file> 
-        <attr name="MakeProjectOption.instance/Advanced.instance" boolvalue="true"/>       
-<!--        
-        <folder name="Advanced">
-            <file name="MakeProjectEditor.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.MakeProjectEditorOptions"/>
+        <folder name="CPlusPlus">
+            <attr name="ToolsPanelController.instance/MakeProjectEditorPanelController.instance" boolvalue="true"/>
+            <file name="MakeProjectEditorPanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.MakeProjectEditorPanelController"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
             </file>
         </folder>
--->
     </folder>
     
     <folder name="Loaders">

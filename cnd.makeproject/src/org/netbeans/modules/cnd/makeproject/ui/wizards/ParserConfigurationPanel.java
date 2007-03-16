@@ -26,16 +26,18 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ElfDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PeDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PeExecutableFileFilter;
+import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -63,6 +65,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         configurationComboBox.addItem(new ConfigutationItem("folder",getString("CONFIGURATION_LEVEL_folder"))); // NOI18N
         configurationComboBox.addItem(new ConfigutationItem("file",getString("CONFIGURATION_LEVEL_file"))); // NOI18N
         configurationComboBox.setSelectedIndex(2);
+        addListeners();
     }
     
     public HelpCtx getHelpCtx() {
@@ -76,7 +79,28 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         }
         return false;
     }
+
+    private void addListeners(){
+        DocumentListener documentListener = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                update(e);
+            }
+            
+            public void removeUpdate(DocumentEvent e) {
+                update(e);
+            }
+            
+            public void changedUpdate(DocumentEvent e) {
+                update(e);
+            }
+        };
+        librariesTextField.getDocument().addDocumentListener(documentListener);
+    }
     
+    private void update(DocumentEvent e) {
+        sourceFoldersDescriptorPanel.stateChanged(null);
+    }
+
     void read(WizardDescriptor settings) {
         if (isApplicable(settings)){
             manualButton.setEnabled(true);
@@ -113,6 +137,16 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     }
     
     boolean valid(WizardDescriptor settings) {
+        if (automaticButton.isSelected()){
+            StringTokenizer st = new StringTokenizer(librariesTextField.getText());
+            while(st.hasMoreTokens()){
+                String path = st.nextToken();
+                File file = new File(path);
+                if (!(file.exists() && file.isFile())){
+                    return false;
+                }
+            }
+        }
         return true;
     }
     
@@ -138,9 +172,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         instructionPanel = new javax.swing.JPanel();
         instructionsTextArea = new javax.swing.JTextArea();
         manualButton = new javax.swing.JRadioButton();
-        manualLabel = new javax.swing.JLabel();
         automaticButton = new javax.swing.JRadioButton();
-        automaticLabel = new javax.swing.JLabel();
         discoveryPanel = new javax.swing.JPanel();
         configurationComboBox = new javax.swing.JComboBox();
         configurationLabel = new javax.swing.JLabel();
@@ -228,13 +260,12 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         codeModelPanel.add(macroEditButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
         add(codeModelPanel, gridBagConstraints);
 
         instructionPanel.setLayout(new java.awt.GridBagLayout());
@@ -253,7 +284,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -261,6 +291,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         add(instructionPanel, gridBagConstraints);
 
         buttonGroup1.add(manualButton);
+        org.openide.awt.Mnemonics.setLocalizedText(manualButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ParserManualConfiguration"));
         manualButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         manualButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         manualButton.addActionListener(new java.awt.event.ActionListener() {
@@ -275,15 +306,8 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(manualButton, gridBagConstraints);
 
-        manualLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ParserManualConfiguration"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        add(manualLabel, gridBagConstraints);
-
         buttonGroup1.add(automaticButton);
+        org.openide.awt.Mnemonics.setLocalizedText(automaticButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ParserAutomaticConfiguration"));
         automaticButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         automaticButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         automaticButton.addActionListener(new java.awt.event.ActionListener() {
@@ -296,15 +320,8 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(automaticButton, gridBagConstraints);
-
-        automaticLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ParserAutomaticConfiguration"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        add(automaticLabel, gridBagConstraints);
 
         discoveryPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -312,19 +329,20 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         discoveryPanel.add(configurationComboBox, gridBagConstraints);
 
-        configurationLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ConfigurationLevelLabel"));
+        configurationLabel.setLabelFor(configurationComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(configurationLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ConfigurationLevelLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         discoveryPanel.add(configurationLabel, gridBagConstraints);
 
-        librariesLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("AdditionalLibrariesLabel"));
+        librariesLabel.setLabelFor(librariesTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("AdditionalLibrariesLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -335,12 +353,11 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         discoveryPanel.add(librariesTextField, gridBagConstraints);
 
-        additionalLibrariesButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("INCLUDE_BROWSE_BUTTON_TXT"));
+        org.openide.awt.Mnemonics.setLocalizedText(additionalLibrariesButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("LIBRARY_EDIT_BUTTON_TXT"));
         additionalLibrariesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 additionalLibrariesButtonActionPerformed(evt);
@@ -355,22 +372,25 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         discoveryPanel.add(additionalLibrariesButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
         add(discoveryPanel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
     
     private void automaticButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_automaticButtonActionPerformed
         togglePanel(false);
+        update((DocumentEvent)null);
     }//GEN-LAST:event_automaticButtonActionPerformed
     
     private void manualButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manualButtonActionPerformed
         togglePanel(true);
+        update((DocumentEvent)null);
     }//GEN-LAST:event_manualButtonActionPerformed
     
     private void togglePanel(boolean manual){
@@ -379,6 +399,11 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         }
         for (Component component : discoveryPanel.getComponents()){
             component.setEnabled(!manual);
+        }
+        if (manual) {
+            instructionsTextArea.setText(getString("SourceFoldersInstructions")); // NOI18N
+        } else {
+            instructionsTextArea.setText(getString("DiscoveryInstructions")); // NOI18N
         }
     }
     
@@ -500,10 +525,10 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         }
         
         public String getListLabelText() {
-            return getString("DIR_LIST_TXT");
+            return getString("LIBRARY_LIST_TXT");
         }
         public char getListLabelMnemonic() {
-            return getString("DIR_LIST_MN").charAt(0);
+            return getString("LIBRARY_LIST_MN").charAt(0);
         }
         
         public String getAddButtonText() {
@@ -691,7 +716,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton additionalLibrariesButton;
     private javax.swing.JRadioButton automaticButton;
-    private javax.swing.JLabel automaticLabel;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel codeModelLabel;
     private javax.swing.JPanel codeModelPanel;
@@ -709,7 +733,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     private javax.swing.JButton macroEditButton;
     private javax.swing.JTextField macroTextField;
     private javax.swing.JRadioButton manualButton;
-    private javax.swing.JLabel manualLabel;
     // End of variables declaration//GEN-END:variables
     
     private static String getString(String s) {

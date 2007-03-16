@@ -147,8 +147,8 @@ public class TestDataInputOutput {
     
     private void testLine(DataInput in, DataOutput out) throws IOException {
 	System.err.printf("Testing readLine\n");
-	String toWrite = "1\n22\r333\r\n4444\n\naaa\r\r";
-	String[] reference = new String[] { "1", "22", "333", "4444", "", "aaa", "" };	
+	String toWrite = "1\n22\r333\r\n4444\n\naaa\r\r"; // NOI18N
+	String[] reference = new String[] { "1", "22", "333", "4444", "", "aaa", "" }; // NOI18N
 	for (int i = 0; i < toWrite.length(); i++) {
 	    char c = toWrite.charAt(i);
 	    byte b = (byte) (c & 0x00FF);
@@ -206,7 +206,7 @@ public class TestDataInputOutput {
     
     private void testUTF(DataInput in, DataOutput out) throws IOException {
 	System.err.printf("Testing UTF\n");
-	String[] reference = new String[] { "First", "Second", "Третья", "Четвертая", "С переводом \r\n каретки" };
+	String[] reference = new String[] { "First", "Second", "Третья", "Четвертая", "С переводом \r\n каретки" }; // NOI18N
 	for (int i = 0; i < reference.length; i++) {
 	    if( VERBOSE )  System.err.printf("Testng %s\n", reference[i]);
 	    out.writeUTF(reference[i]);
@@ -247,7 +247,7 @@ public class TestDataInputOutput {
 	System.err.printf("Testing skipping bytes\n");
 	out.writeInt(1);
 	out.writeInt(2);
-	String reference = "qwe";
+	String reference = "qwe"; // NOI18N
 	out.writeUTF(reference);
 	in.skipBytes(8); // skip 2 integers
 	String res = in.readUTF();

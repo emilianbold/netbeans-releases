@@ -54,7 +54,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         super(ast, file);
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
         name = ast.getText();
-        NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespace(parent, name, true);
+        NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
         if (TraceFlags.USE_REPOSITORY) {
@@ -145,7 +145,10 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             declarations.clear();            
         } else {
             declarationsOLD.clear();
-        }    
+        }  
+        NamespaceImpl ns = _getNamespaceImpl();
+        assert ns != null;
+        ns.removeNamespaceDefinition(this);
     }
 
     private NamespaceImpl _getNamespaceImpl() {

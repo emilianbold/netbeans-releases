@@ -34,19 +34,13 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectConfigurationWizard implements WizardDescriptor.Panel, ChangeListener, WizardDescriptor.FinishablePanel {
+public class SelectConfigurationWizard implements WizardDescriptor.Panel, ChangeListener {
     
     private DiscoveryDescriptor wizardDescriptor;
     private SelectConfigurationPanel component;
     private String name;
-    private boolean finishable = true;
 
     public SelectConfigurationWizard(){
-        this(true);
-    }
-
-    public SelectConfigurationWizard(boolean finishable){
-        this.finishable = finishable;
 	name = NbBundle.getMessage(SelectObjectFilesPanel.class, "SelectConfigurationName"); // NOI18N
     }
     
@@ -59,10 +53,7 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
     }
 
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT);
     }
     
     public boolean isValid() {
@@ -105,10 +96,6 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
     
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
-    }
-
-    public boolean isFinishPanel() {
-        return finishable;
     }
 }
 

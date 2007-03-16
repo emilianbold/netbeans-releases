@@ -30,7 +30,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
  * @author vk155633
  */
 public class SmartChangeEvent {
-    protected Map<CsmNamespace,CsmProject>  newNamespaces = new HashMap<CsmNamespace,CsmProject>();
+    protected Set<CsmNamespace>  newNamespaces = new HashSet<CsmNamespace>();
+    protected Set<CsmNamespace>  removedNamespaces = new HashSet<CsmNamespace>();
     protected Set<CsmDeclaration> newDeclarations = new HashSet<CsmDeclaration>();
     protected Set<CsmDeclaration> removedDeclarations = new HashSet<CsmDeclaration>();
     protected Set<CsmDeclaration> changedDeclarations = new HashSet<CsmDeclaration>();
@@ -44,16 +45,8 @@ public class SmartChangeEvent {
     public SmartChangeEvent(CsmChangeEvent e){
         //super(e.getSource());
         changedProjects.addAll(e.getChangedProjects());
-        //CsmProject project = (CsmProject)e.getChangedProjects().iterator().next();
-        for(Iterator it = e.getNewNamespaces().iterator(); it.hasNext();){
-            CsmNamespace ns = (CsmNamespace)it.next();
-            for(Iterator it2 = e.getChangedProjects().iterator(); it2.hasNext();){
-                CsmProject project = (CsmProject)it2.next();
-                if (project.findNamespace(ns.getQualifiedName())!=null) {
-                    newNamespaces.put(ns, project);
-                }
-            }
-        }
+        newNamespaces.addAll(e.getNewNamespaces());
+        removedNamespaces.addAll(e.getRemovedNamespaces());
         newDeclarations.addAll(e.getNewDeclarations());
         removedDeclarations.addAll(e.getRemovedDeclarations());
         changedDeclarations.addAll(e.getChangedDeclarations());
@@ -77,16 +70,8 @@ public class SmartChangeEvent {
     
     private void doAdd(CsmChangeEvent e){
         getChangedProjects().addAll(e.getChangedProjects());
-        //CsmProject project = (CsmProject)e.getChangedProjects().iterator().next();
-        for(Iterator it = e.getNewNamespaces().iterator(); it.hasNext();){
-            CsmNamespace ns = (CsmNamespace)it.next();
-            for(Iterator it2 = e.getChangedProjects().iterator(); it2.hasNext();){
-                CsmProject project = (CsmProject)it2.next();
-                if (project.findNamespace(ns.getQualifiedName())!=null) {
-                    newNamespaces.put(ns, project);
-                }
-            }
-        }
+        getNewNamespaces().addAll(e.getNewNamespaces());
+        getRemovedNamespaces().addAll(e.getRemovedNamespaces());
         getNewDeclarations().addAll(e.getNewDeclarations());
         getChangedDeclarations().addAll(e.getChangedDeclarations());
         getChangedDeclarations().removeAll(getNewDeclarations());
@@ -103,8 +88,7 @@ public class SmartChangeEvent {
     public Collection<String> getRemovedUniqueNames() {
         if (removedUniqNames == null){
             removedUniqNames = new HashSet();
-            for (Iterator<CsmDeclaration> it = getRemovedDeclarations().iterator(); it.hasNext();){
-                CsmDeclaration decl = it.next();
+            for (CsmDeclaration decl : getRemovedDeclarations()){
                 removedUniqNames.add(decl.getUniqueName());
             }
         }
@@ -118,8 +102,7 @@ public class SmartChangeEvent {
     public Collection<String> getChangedUniqueNames() {
         if (changedUniqNames == null){
             changedUniqNames = new HashSet();
-            for (Iterator<CsmDeclaration> it = getChangedDeclarations().iterator(); it.hasNext();){
-                CsmDeclaration decl = it.next();
+            for (CsmDeclaration decl : getChangedDeclarations()){
                 changedUniqNames.add(decl.getUniqueName());
             }
         }
@@ -130,8 +113,11 @@ public class SmartChangeEvent {
         return changedProjects;
     }
     
-    public Map<CsmNamespace,CsmProject> getNewNamespaces() {
+    public Collection<CsmNamespace> getNewNamespaces() {
         return newNamespaces;
     }
     
+    public Collection<CsmNamespace> getRemovedNamespaces() {
+        return removedNamespaces;
+    }
 }

@@ -21,9 +21,7 @@ package org.netbeans.modules.cnd.classview.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
@@ -39,8 +37,8 @@ import org.netbeans.modules.cnd.classview.model.CVUtil.LazyNamespaceSorteddArray
 public abstract class NPNode extends BaseNode  {
     private FillingDone inited;
     
-    protected NPNode(CsmProject prj, CsmNamespace ns, FillingDone init) {
-        super(new  LazyNamespaceSorteddArray(prj, ns, init));
+    protected NPNode(CsmNamespace ns, FillingDone init) {
+        super(new  LazyNamespaceSorteddArray(ns, init));
         inited = init;
     }
 
@@ -68,12 +66,10 @@ public abstract class NPNode extends BaseNode  {
 
         if (!isDismissed()) {
             if( ! e.getNewNamespaces().isEmpty() ) {
-                List<Entry<CsmNamespace,CsmProject>> namespaces = new ArrayList<Entry<CsmNamespace,CsmProject>>();
-                for( Iterator<Entry<CsmNamespace,CsmProject>> iter = e.getNewNamespaces().entrySet().iterator(); iter.hasNext(); ) {
-                    Entry<CsmNamespace,CsmProject> entry = iter.next();
-                    CsmNamespace ns = entry.getKey();
+                List<CsmNamespace> namespaces = new ArrayList<CsmNamespace>();
+                for(CsmNamespace ns : e.getNewNamespaces()){
                     if( isSubNamspace(ns) ) {
-                        namespaces.add(entry);
+                        namespaces.add(ns);
                     }
                 }
                 if( ! namespaces.isEmpty() ) {
@@ -82,11 +78,10 @@ public abstract class NPNode extends BaseNode  {
                 }
             }
             List decls = new ArrayList();
-            for( Iterator<CsmDeclaration> iter = e.getNewDeclarations().iterator(); iter.hasNext(); ) {
+            for( CsmDeclaration decl : e.getNewDeclarations()) {
                 if(isDismissed()){
                     break;
                 }
-                CsmDeclaration decl = iter.next();
                 CsmDeclaration.Kind kind = decl.getKind();
                 if( kind == CsmDeclaration.Kind.CLASS || kind == CsmDeclaration.Kind.STRUCT || kind == CsmDeclaration.Kind.UNION ) {
                     if( ((CsmClass) decl).getContainingNamespace() == getNamespace() ) {
@@ -131,8 +126,8 @@ public abstract class NPNode extends BaseNode  {
             for( int i = 0; i < decls.size(); i++) {
                 BaseNode node;
                 if (isNamespaces) {
-                    Entry entry = (Entry)decls.get(i);
-                    node = new NamespaceNode((CsmProject)entry.getValue(), (CsmNamespace)entry.getKey());
+                    CsmNamespace ns = (CsmNamespace)decls.get(i);
+                    node = new NamespaceNode(ns);
                 } else {
                     node = NodeUtil.createNode((CsmDeclaration)decls.get(i));
                 }

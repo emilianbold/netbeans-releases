@@ -34,20 +34,14 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, ChangeListener, WizardDescriptor.FinishablePanel {
+public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, ChangeListener {
 
     private DiscoveryDescriptor wizardDescriptor;
     private ConsolidationStrategyPanel component;
     private String name;
     private boolean initialized = false;
-    private boolean finishable = true;
     
     public ConsolidationStrategyWizard(){
-        this(true);
-    }
-
-    public ConsolidationStrategyWizard(boolean finishable){
-        this.finishable = finishable;
 	name = NbBundle.getMessage(SelectObjectFilesPanel.class, "SelectConsolidationStrategyName"); // NOI18N
     }
     
@@ -60,10 +54,7 @@ public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, Chan
     }
 
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+        return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT);
     }
     
     public boolean isValid() {
@@ -115,10 +106,6 @@ public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, Chan
     
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
-    }
-
-    public boolean isFinishPanel() {
-        return finishable;
     }
 }
 

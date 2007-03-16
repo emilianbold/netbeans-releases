@@ -37,7 +37,6 @@ import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -53,6 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -793,12 +793,12 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             descriptions.add(createCCompilerDescription(project, compilerSet, item, folder, isCompilerConfiguration));
         if (tool < 0 || tool == Tool.CCCompiler)
             descriptions.add(createCCCompilerDescription(project, compilerSet, item, folder, isCompilerConfiguration));
-        if (((tool < 0 && MakeOptions.getInstance().getFortran() && folder == null) || tool == Tool.FortranCompiler) && isCompilerConfiguration)
+        if (((tool < 0 && CppSettings.getDefault().isFortranEnabled() && folder == null) || tool == Tool.FortranCompiler) && isCompilerConfiguration)
             descriptions.add(createFortranCompilerDescription(project, compilerSet, item, isCompilerConfiguration));
         
         String nodeLabel;
         if (isCompilerConfiguration) {
-            nodeLabel = MakeOptions.getInstance().getFortran() ? getString("LBL_CCPPFORTRAN_NODE") : getString("LBL_CCPP_NODE");
+            nodeLabel = CppSettings.getDefault().isFortranEnabled() ? getString("LBL_CCPPFORTRAN_NODE") : getString("LBL_CCPP_NODE");
         } else {
             nodeLabel = getString("LBL_PARSER_NODE");
         }

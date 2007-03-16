@@ -42,7 +42,13 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
     
     /** Returns this queue name; used for tracing/debugging purposes */
     protected String getTraceName() {
-	return "RepositoryQueue" + '@' + hashCode();
+	return "RepositoryQueue" + '@' + hashCode(); // NOI18N
     }
+    
+    protected void doReplaceAddLast(Key key, Persistent value, Entry existent) {
+	super.doReplaceAddLast(key, value, existent);
+	queue.remove(existent);
+	queue.addLast(existent);
+    }    
     
 }

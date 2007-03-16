@@ -68,7 +68,7 @@ public class UTF {
 
 	if (utflen > 65535)
 	    throw new UTFDataFormatException(
-                "encoded string too long: " + utflen + " bytes");
+                "encoded string too long: " + utflen + " bytes"); // NOI18N
 
         byte[] bytearr = null;
 //        if (out instanceof DataOutputStream) {

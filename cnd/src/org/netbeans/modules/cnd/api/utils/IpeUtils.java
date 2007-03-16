@@ -45,7 +45,7 @@ import org.openide.nodes.Node;
 public class IpeUtils {
     
     /** Store the real environment here */
-    static private WeakReference wrEnv;
+//    static private WeakReference wrEnv;
     
     /**
      * Global flag which when set, generated additional diagnostic messages
@@ -379,8 +379,7 @@ public class IpeUtils {
                 }
                 
                 if (endIndex > beginIndex) {
-                    String value = IpeUtils.getenv(
-                            filename.substring(beginIndex, endIndex));
+                    String value = System.getenv(filename.substring(beginIndex, endIndex));
                     
                     if (value != null) {
                         dp.append(value);
@@ -413,62 +412,62 @@ public class IpeUtils {
     }
     
     
-    /** Get the value of an environment variable */
-    public static String getenv(String name) {
-        return getUnixEnv().getenv(name);
-    }
-    
-    
-    /** Same as getenv() */
-    public static String valueOf(String name) {
-        return IpeUtils.getenv(name);
-    }
-    
-    
-    /** Returns the whole name=value string */
-    public static String entryFor(String name) {
-        return getUnixEnv().entryFor(name);
-    }
-    
-    
-    /** Put the environment variable into the environment */
-    public static void putenv(String entry) {
-        getUnixEnv().putenv(entry);
-    }
-    
-    
-    /** Similar to putenv but takes separate arguments for name and value */
-    public static void setValueOf(String name, String value) {
-        getUnixEnv().setValueOf(name, value);
-    }
-    
-    
-    /** Return the whole environment in an array of Strings */
-    public static String[] environ() {
-        return getUnixEnv().environ();
-    }
-    
-    
-    /** The UnixEnv.dump() method */
-    public static void envDump() {
-        getUnixEnv().dump();
-    }
-    
-    private static UnixEnv getUnixEnv() {
-        UnixEnv env;
-        
-        if (wrEnv == null) {
-            env = null;
-        } else {
-            env = (UnixEnv) wrEnv.get();
-        }
-        
-        if (env == null) {
-            env = new UnixEnv();
-            wrEnv = new WeakReference(env);
-        }
-        return env;
-    }
+//    /** Get the value of an environment variable */
+//    public static String getenv(String name) {
+//        return getUnixEnv().getenv(name);
+//    }
+//    
+//    
+//    /** Same as getenv() */
+//    public static String valueOf(String name) {
+//        return IpeUtils.getenv(name);
+//    }
+//    
+//    
+//    /** Returns the whole name=value string */
+//    public static String entryFor(String name) {
+//        return getUnixEnv().entryFor(name);
+//    }
+//    
+//    
+//    /** Put the environment variable into the environment */
+//    public static void putenv(String entry) {
+//        getUnixEnv().putenv(entry);
+//    }
+//    
+//    
+//    /** Similar to putenv but takes separate arguments for name and value */
+//    public static void setValueOf(String name, String value) {
+//        getUnixEnv().setValueOf(name, value);
+//    }
+//    
+//    
+//    /** Return the whole environment in an array of Strings */
+//    public static String[] environ() {
+//        return getUnixEnv().environ();
+//    }
+//    
+//    
+//    /** The UnixEnv.dump() method */
+//    public static void envDump() {
+//        getUnixEnv().dump();
+//    }
+//    
+//    private static UnixEnv getUnixEnv() {
+//        UnixEnv env;
+//        
+//        if (wrEnv == null) {
+//            env = null;
+//        } else {
+//            env = (UnixEnv) wrEnv.get();
+//        }
+//        
+//        if (env == null) {
+//            env = new UnixEnv();
+//            wrEnv = new WeakReference(env);
+//        }
+//        return env;
+//    }
     
     /** Trim trailing slashes */
     public static String trimSlashes(String dir) {

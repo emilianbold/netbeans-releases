@@ -40,13 +40,13 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.loaders.FortranDataLoader;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
 import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -169,7 +169,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         else if (evt.getPropertyName().equals("valid")) { // NOI18N
             // File has been deleted
             if (!((Boolean)evt.getNewValue()).booleanValue()) {
-              getFolder().removeItem(this);
+              getFolder().removeItemAction(this);
     }
         }
         else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
@@ -247,7 +247,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             tool = Tool.CustomTool;
         else if (dataObject instanceof CCDataObject)
             tool = Tool.CCCompiler;
-        else if (MakeOptions.getInstance().getFortran() && dataObject instanceof FortranDataObject)
+        else if (CppSettings.getDefault().isFortranEnabled() && dataObject instanceof FortranDataObject)
             tool = Tool.FortranCompiler;
         else
             tool = Tool.CustomTool;

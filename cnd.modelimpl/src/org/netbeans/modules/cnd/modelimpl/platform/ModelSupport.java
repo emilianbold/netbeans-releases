@@ -142,16 +142,39 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     private NativeProjectItemsListener projectItemListener = new NativeProjectItemsListener() {
-        public void fileAdded(NativeFileItem file) {
-            onProjectItemAdded(file);
+        public void fileAdded(NativeFileItem fileItem) {
+            onProjectItemAdded(fileItem);
         }
-        public void filePropertiesChanged(NativeFileItem file) {
-            onProjectItemChanged(file);
+
+        public void filesAdded(List<NativeFileItem> fileItems) {
+            for(NativeFileItem item : fileItems){
+                onProjectItemAdded(item);
+            }
+        }
+
+        public void fileRemoved(NativeFileItem fileItem) {
+            onProjectItemRemoved(fileItem);
+        }
+
+        public void filesRemoved(List<NativeFileItem> fileItems) {
+            for(NativeFileItem item : fileItems){
+                onProjectItemRemoved(item);
+            }
+        }
+
+        public void filePropertiesChanged(NativeFileItem fileItem) {
+            onProjectItemChanged(fileItem);
+        }
+
+        public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
+            for(NativeFileItem item : fileItems){
+                onProjectItemChanged(item);
+            }
+        }
+
+        public void filesPropertiesChanged() {
         }
         
-        public void fileRemoved(NativeFileItem file) {
-            onProjectItemRemoved(file);
-        }
     };
     
     protected void onProjectItemAdded(final NativeFileItem item) {

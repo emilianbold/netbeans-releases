@@ -45,6 +45,10 @@ public class RepositoryWritingThread implements Runnable {
 		RepositoryQueue.Entry entry = queue.poll();
 		if( entry == null ) {
 		    if( RepositoryThreadManager.proceed() ) {
+			if( Stats.sleepOnEmptyWriteQueue > 0 ) {
+			    if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.sleepOnEmptyWriteQueue); // NOI18N
+			    Thread.currentThread().sleep(Stats.sleepOnEmptyWriteQueue);
+			}
 			if( Stats.queueTrace ) System.err.printf("%s: waiting...\n", getName()); // NOI18N
 			queue.waitReady();
 		    }

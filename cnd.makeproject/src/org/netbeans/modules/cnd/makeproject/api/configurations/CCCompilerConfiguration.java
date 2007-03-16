@@ -115,7 +115,13 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
-        master = (CCCompilerConfiguration)getMaster();
+        options += getPreprocessorOptions();
+        options += getIncludeDirectoriesOptions();
+        return CppUtils.reformatWhitespaces(options);
+    }
+    public String getPreprocessorOptions() {
+        CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
+        String options = getPreprocessorConfiguration().getOptions("-D") + " " ; // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
             options += master.getPreprocessorConfiguration().getOptions("-D") + " "; // NOI18N
             if (master.getInheritPreprocessor().getValue())
@@ -123,8 +129,12 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             else
                 master = null;
         }
-        options += getPreprocessorConfiguration().getOptions("-D") + " " ; // NOI18N
-        master = (CCCompilerConfiguration)getMaster();
+        return options;
+    }
+    
+    public String getIncludeDirectoriesOptions() {
+        CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
+        String options = getIncludeDirectories().getOption("-I") + " "; // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
             options += master.getIncludeDirectories().getOption("-I") + " "; // NOI18N
             if (master.getInheritIncludes().getValue())
@@ -132,9 +142,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             else
                 master = null;
         }
-        options += getIncludeDirectories().getOption("-I") + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
-    }
+        return options;
+    } 
     
     // Sheet
     public Sheet getSheet(MakeConfiguration conf, Folder folder) {

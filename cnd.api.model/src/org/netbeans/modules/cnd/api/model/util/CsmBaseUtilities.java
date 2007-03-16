@@ -94,14 +94,14 @@ public class CsmBaseUtilities {
             fun = (CsmFunction)contextDeclaration;
         }
         return fun;
-    }    
+    }      
     
-    public static CsmClassifier getTypedefBaseClassifier(CsmTypedef orig) {
-        CsmClassifier out = orig;
-        do {
-            out = ((CsmTypedef)out).getType().getClassifier();
-        } while (CsmKindUtilities.isTypedef(out));
+    public static CsmClassifier getOriginalClassifier(CsmClassifier orig) {
         assert orig != null;
+        CsmClassifier out = orig;
+        while (CsmKindUtilities.isTypedef(out)) {
+            out = ((CsmTypedef)out).getType().getClassifier();
+        }
         return out;
-    }    
+    }     
 }

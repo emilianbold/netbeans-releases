@@ -34,12 +34,20 @@ public class Stats {
     public static int debugGotFromHardCache = 0;
     public static final boolean isDebug = getBoolean("cnd.repository.use.dev", false); //NOI18N
     public static final boolean verbosePut = getBoolean("cnd.repository.verbose.put", false); //NOI18N
+    public static final boolean validatePut = getBoolean("cnd.repository.validate.put", false); //NOI18N
+    public static final boolean validateKeys = getBoolean("cnd.repository.validate.keys", false); //NOI18N
+    public static final boolean rememberKeys = getBoolean("cnd.repository.remember.keys", false); //NOI18N
     
+    public static final boolean useHardCache = getBoolean("cnd.repository.use.hardcache", false); //NOI18N
     public static final boolean queueTiming = getBoolean("cnd.repository.queue.timing", false); //NOI18N
     public static final boolean queueTrace = getBoolean("cnd.repository.queue.trace", false); //NOI18N
     public static final boolean useThreading = getBoolean("cnd.repository.threading", false); //NOI18N
     
     public static final boolean writeToASingleFile = getBoolean("cnd.repository.1file", false); //NOI18N
+
+    public static final int fileStatisticsLevel = getInteger("cnd.repository.file.stat", 0); //NOI18N
+    public static final boolean dumoFileOnExit = getBoolean("cnd.repository.dump.on.exit", false); //NOI18N
+    public static final int sleepOnEmptyWriteQueue = getInteger("cnd.repository.write.queue.sleep", 0); //NOI18N
             
     public static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
@@ -47,19 +55,36 @@ public class Stats {
             result = Boolean.parseBoolean(text);
         }
         return result;
-    } 
+    }
+    
+    public static int getInteger(String name, int result) {
+        String text = System.getProperty(name);
+        if( text != null ) {
+            result = Integer.parseInt(text);
+        }
+        return result;
+    }
+    
+    public static void report(String st) {
+        log(
+                "Put: " + debugPut + //NOI18N
+                "; Got: " + debugGot + //NOI18N
+                "; Read: " + debugReadFromFile + //NOI18N
+                "; N/A: " + debugNotFound //NOI18N
+                + "; Hard: " + debugGotFromHardCache //NOI18N
+                + st);
+    }
     
     public static void report() {
-        log(
-            "Put: " + debugPut + //NOI18N
-            "; Got: " + debugGot + //NOI18N
-            "; Read: " + debugReadFromFile + //NOI18N
-            "; N/A: " + debugNotFound //NOI18N
-            + "; Hard: " + debugGotFromHardCache //NOI18N
-            );
+        report("");
     }
-   public static void log (String st)
-   {
-       if (isDebug) System.err.println("DEBUG [Repository] " + st); //NOI18N
-   }
+    
+    public static void report(int hard, int soft) {
+        report("; in Hard cache: " + hard + "; in Soft cache ~"+soft); // NOI18N
+    }
+    
+    public static void log(String st) {
+        if (isDebug) System.err.println("DEBUG [Repository] " + st); //NOI18N
+    }
+    
 }

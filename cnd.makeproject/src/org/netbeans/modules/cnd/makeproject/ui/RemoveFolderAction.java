@@ -42,7 +42,7 @@ public class RemoveFolderAction extends NodeAction {
 	    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
 		Folder parentFolder = folder.getParent();
 		assert parentFolder != null;
-		parentFolder.removeFolder(folder);
+		parentFolder.removeFolderAction(folder);
 	    }
 	}
     }

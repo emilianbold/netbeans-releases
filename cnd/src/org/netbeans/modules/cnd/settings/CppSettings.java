@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-/** Settings for the C/C++/Fortran. The compile/build options stored
+/**
+ * Settings for the C/C++/Fortran. The compile/build options stored
  * in this class are <B>default</B> options which will be applied to new files.
  * Once a file has been created its options may diverge from the defaults. A
  * files options do not change if these default options are changed.
@@ -37,19 +38,17 @@ import org.openide.util.NbBundle;
 
 public class CppSettings extends SystemOption {
 
-    /** The singleton instance */
-    //static CppSettings cppSettings;
-
     /** serial uid */
     static final long serialVersionUID = -2942467713237077336L;
 
     public static final int DEFAULT_PARSING_DELAY = 2000;
+    private static final boolean DEFAULT_FORTRAN_ENABLED = false;   // disable Fortran by default
 
     // Option labels
-    public static final String
-		PROP_PARSING_DELAY	= "parsingDelay",		//NOI18N
-		PROP_REPLACEABLE_STRINGS_TABLE = "replaceableStringsTable",	//NOI18N
-                PROP_FREE_FORMAT_FORTRAN = "freeFormatFortran"; // NOI18N
+    public static final String PROP_PARSING_DELAY = "parsingDelay"; //NOI18N
+    public static final String PROP_REPLACEABLE_STRINGS_TABLE = "replaceableStringsTable"; //NOI18N
+    public static final String PROP_FREE_FORMAT_FORTRAN = "freeFormatFortran"; // NOI18N
+    public static final String PROP_FORTRAN_ENABLED = "fortranEnabled"; // NOI18N
     
     /** The resource bundle for the form editor */
     public static ResourceBundle bundle;
@@ -68,9 +67,10 @@ public class CppSettings extends SystemOption {
 	return (CppSettings) findObject(CppSettings.class, true);
     }
 
-    /** Gets the delay time for the start of the parsing.
-    * @return The time in milis
-    */
+    /**
+     * Gets the delay time for the start of the parsing.
+     * @return The time in milis
+     */
     public int getParsingDelay() {
         Integer delay = (Integer)getProperty(PROP_PARSING_DELAY);
         if (delay == null)
@@ -78,9 +78,10 @@ public class CppSettings extends SystemOption {
         return delay.intValue();
     }
 
-    /** Sets the delay time for the start of the parsing.
-    * @param delay The time in milis
-    */
+    /**
+     * Sets the delay time for the start of the parsing.
+     * @param delay The time in milis
+     */
     public void setParsingDelay(int delay) {
         if (delay != 0 && delay < 1000) {
             IllegalArgumentException e = new IllegalArgumentException();
@@ -91,24 +92,10 @@ public class CppSettings extends SystemOption {
         putProperty(PROP_PARSING_DELAY, new Integer(delay));
     }
 
-
     /**
-     * Get the display name.
-     *
-     *  @return value of OPTION_CPP_SETTINGS_NAME
+     * Sets the replaceable strings table - used during instantiating
+     * from template.
      */
-    public String displayName () {
-	return getString("OPTION_CPP_SETTINGS_NAME");		        //NOI18N
-    }
-    
-    public HelpCtx getHelpCtx () {
-	return new HelpCtx ("Welcome_opt_editing_sources");	        //NOI18N
-    }
-
-
-    /** Sets the replaceable strings table - used during instantiating
-    * from template.
-    */
     public void setReplaceableStringsTable(String table) {
         String t = getReplaceableStringsTable();
         if (t.equals(table))
@@ -116,9 +103,10 @@ public class CppSettings extends SystemOption {
         putProperty(PROP_REPLACEABLE_STRINGS_TABLE, table, true);
     }
 
-    /** Gets the replacable strings table - used during instantiating
-    * from template.
-    */
+    /**
+     * Gets the replacable strings table - used during instantiating
+     * from template.
+     */
     public String getReplaceableStringsTable() {
         String table = (String)getProperty(PROP_REPLACEABLE_STRINGS_TABLE);
         if (table == null) {
@@ -129,9 +117,10 @@ public class CppSettings extends SystemOption {
     }
 
 
-    /** Gets the replaceable table as the Properties class.
-    * @return the properties
-    */
+    /**
+     * Gets the replaceable table as the Properties class.
+     * @return the properties
+     */
     public Properties getReplaceableStringsProps() {
         Properties props = new Properties();
         // PENDING: don't use StringBufferInputStream, it does not encode characters
@@ -143,14 +132,24 @@ public class CppSettings extends SystemOption {
         }
         return props;
     }
-
     
-    /** @return localized string */
-    static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(CppSettings.class);
-	}
-	return bundle.getString(s);
+    /**
+     * Find out if Fortran is enabled
+     *
+     * @return true if its enabled
+     */
+    public boolean isFortranEnabled() {
+        Boolean b = (Boolean) getProperty(PROP_FORTRAN_ENABLED);
+        return b == null ? DEFAULT_FORTRAN_ENABLED :b.booleanValue();
+    }
+    
+    /**
+     * Set value of PROP_FORTRAN_ENABLED property.
+     *
+     * @param enabled Value to set property to
+     */
+    public void setFortranEnabled(boolean enabled) {
+        putProperty(PROP_FORTRAN_ENABLED, Boolean.valueOf(enabled), true);
     }
     
 
@@ -177,5 +176,30 @@ public class CppSettings extends SystemOption {
 
      public void setFreeFormatFortran(boolean state){
          putProperty(PROP_FREE_FORMAT_FORTRAN,state ? Boolean.TRUE : Boolean.FALSE);
-      }    
+     }
+
+    /**
+     * Get the display name.
+     *
+     *  @return value of OPTION_CPP_SETTINGS_NAME
+     */
+    public String displayName () {
+	return getString("OPTION_CPP_SETTINGS_NAME");		        //NOI18N
+    }
+    
+    public HelpCtx getHelpCtx () {
+	return new HelpCtx ("Welcome_opt_editing_sources");	        //NOI18N
+    }
+
+    public ResourceBundle getBundle() {
+        return bundle;
+    }
+    
+    /** @return localized string */
+    static String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(CppSettings.class);
+	}
+	return bundle.getString(s);
+    }
 }

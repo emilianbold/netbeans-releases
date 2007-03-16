@@ -21,11 +21,13 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -36,6 +38,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
@@ -293,21 +296,28 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
     public void addProjectItem(Item item) {
         projectItems.put(item.getPath(), item);
         fireProjectItemsChangeEvent(item, ProjectItemChangeEvent.ITEM_ADDED);
-        getNativeProject().fireFileAdded(item);
+        //getNativeProject().fireFileAdded(item);
         setModified(true);
+    }
+    
+    public void fireFilesAdded(List<NativeFileItem> fileItems) {
+        getNativeProject().fireFilesAdded(fileItems);
     }
     
     public void removeProjectItem(Item item) {
         projectItems.remove(item.getPath());
         fireProjectItemsChangeEvent(item, ProjectItemChangeEvent.ITEM_REMOVED);
-        getNativeProject().fireFileRemoved(item);
+        //getNativeProject().fireFileRemoved(item);
         setModified(true);
     }
     
-    public void checkForChangedItems() {
-        getNativeProject().checkForChangedItems();
+    public void fireFilesRemoved(List<NativeFileItem> fileItems) {
+        getNativeProject().fireFilesRemoved(fileItems);
     }
     
+    public void checkForChangedItems(Folder folder, Item item) {
+        getNativeProject().checkForChangedItems(folder, item);
+    }
     
     public void copyFromProjectDescriptor(ConfigurationDescriptor copyProjectDescriptor) {
         MakeConfigurationDescriptor copyExtProjectDescriptor = (MakeConfigurationDescriptor)copyProjectDescriptor;
@@ -479,10 +489,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
             new AddFilesThread(sourceFileFoldersIterator, folder).start();
         else {
             while (sourceFileFoldersIterator.hasNext()) {
+                ArrayList filesAdded = new ArrayList();
                 FolderEntry folderEntry = (FolderEntry)sourceFileFoldersIterator.next();
                 Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
-                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null);
+                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded);
                 folder.addFolder(top);
+                getNativeProject().fireFilesAdded(filesAdded);
             }
         }
     }
@@ -500,17 +512,19 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         public void run() {
             handle.setInitialDelay(500);
             handle.start();
+            ArrayList filesAdded = new ArrayList();
             while (iterator.hasNext()) {
                 FolderEntry folderEntry = (FolderEntry)iterator.next();
                 Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
-                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle);
+                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle, filesAdded);
                 folder.addFolder(top);
             }
             handle.finish();
+            getNativeProject().fireFilesAdded(filesAdded);
         }
     }
     
-    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle) {
+    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList filesAdded) {
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; i++) {
             if (!filter.accept(files[i]))
@@ -527,12 +541,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
                 if (addSubFolders) {
                     dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
                 }
-                addFiles(dirfolder, files[i], addSubFolders, filter, handle);
+                addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded);
                 if (dirfolder.size() == 0)
                     folder.removeFolder(dirfolder);
             } else {
                 String filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
-                folder.addItem(new Item(FilePathAdaptor.normalize(filePath)));
+                Item item = new Item(FilePathAdaptor.normalize(filePath));
+                filesAdded.add(item);
+                folder.addItem(item);
                 if (handle != null) {
                     handle.progress(filePath);
                 }

@@ -132,6 +132,15 @@ function params() {
 		    echo "profile using YourKit Profiler with CPU sampling"
 		    DEBUG_PROFILE="-agentlib:yjpagent=sampling,noj2ee,dir=${HOME}/yjp_data"
 		    ;;
+	    --ycpu|-ycpu)
+		    echo "profile using YourKit Profiler with CPU sampling"
+		    DEBUG_PROFILE="-agentlib:yjpagent=sampling,noj2ee,dir=${HOME}/yjp_data"
+		    ;;
+	    --rep)
+		    echo "testing repository; threading is off "
+		    DEFS="${DEFS} -Dcnd.modelimpl.use.repository=true -Dcnd.repository.use.dev=true -Dcnd.repository.1file=true -Dcnd.repository.threading=false"
+		    PARAMS="${PARAMS} --cleanrepository"
+		    ;;
 	    *)
 		    PARAMS="${PARAMS} $1"
 		    ;;

@@ -30,7 +30,10 @@ import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -266,29 +269,50 @@ public class DefaultProjectActionHandler implements ActionListener {
         
         private boolean checkExecutable(ProjectActionEvent pae) {
             // Check if something is specified
-            if (pae.getExecutable().length() == 0) {
+            String executable = pae.getExecutable();
+            if (executable.length() == 0) {
                 String errormsg;
                 if (((MakeConfiguration)pae.getConfiguration()).isMakefileConfiguration()) {
-                    errormsg = getString("NO_BUILD_RESULT_MAKE"); // NOI18N
+                    SelectExecutablePanel panel = new SelectExecutablePanel((MakeConfiguration)pae.getConfiguration());
+                    DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
+                    panel.setDialogDescriptor(descriptor);
+                    DialogDisplayer.getDefault().notify(descriptor);
+                    if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                        MakeConfiguration makeConfiguration = (MakeConfiguration)pae.getConfiguration();
+                        executable = panel.getExecutable();
+                        executable = FilePathAdaptor.naturalize(executable);
+                        executable = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                        executable = FilePathAdaptor.normalize(executable);
+                        makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
+                        
+                        if (pae.getID() == ProjectActionEvent.RUN) {
+                            executable = FilePathAdaptor.naturalize(executable);
+                            pae.setExecutable(executable);
+                        }
+                        else {
+                            pae.setExecutable(makeConfiguration.getMakefileConfiguration().getAbsOutput());
+                        }
+                    }
+                    else
+                        return false;
                 } else {
                     errormsg = getString("NO_BUILD_RESULT"); // NOI18N
-                }
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                 return false;
-            } else {
-                if (IpeUtils.isPathAbsolute(pae.getExecutable())) {
+                }
+            }
+            if (IpeUtils.isPathAbsolute(executable)) {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.
-                    File file = new File(pae.getExecutable());
+                File file = new File(executable);
                     if (!file.exists())
-                        file = new File(pae.getExecutable() + ".exe"); // NOI18N
+                    file = new File(executable + ".exe"); // NOI18N
                     if (!file.exists() || file.isDirectory()) {
                         String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", pae.getExecutable()); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                         return false;
                     }
                 }
-            }
             return true;
         }
     }

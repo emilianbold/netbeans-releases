@@ -44,7 +44,7 @@ public class AsmDataLoader extends CndAbstractDataLoader{
     private static final String[] asmExtensions = { "s", "as", "asm" };	// NOI18N
 
     protected AsmDataLoader() {
-	super(AsmDataObject.class.getName());
+	super("org.netbeans.modules.cnd.loaders.AsmDataObject"); // NOI18N
         instance = this;
         createExtentions(asmExtensions);
     }
@@ -55,6 +55,7 @@ public class AsmDataLoader extends CndAbstractDataLoader{
         createExtentions(asmExtensions);
     }
 
+    /** @deprecated Use {@link #AsmDataLoader(String)} instead */
     protected AsmDataLoader(Class representationClass) {
 	super(representationClass);
         instance = this;

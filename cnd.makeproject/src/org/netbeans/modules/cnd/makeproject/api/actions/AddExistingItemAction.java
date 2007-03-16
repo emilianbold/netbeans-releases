@@ -120,7 +120,7 @@ public class AddExistingItemAction extends NodeAction {
                 return;
 	    }
 	    else {
-		folder.addItem(items[i] = new Item(itemPath));
+		folder.addItemAction(items[i] = new Item(itemPath));
 		if (IpeUtils.isPathAbsolute(itemPath))
 		    notifySources = true;
 	    }

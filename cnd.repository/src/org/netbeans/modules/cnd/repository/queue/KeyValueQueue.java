@@ -50,6 +50,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     }
 
     private Map<K, Entry> map = new HashMap<K, Entry>();
+    private boolean active = true;
 	    
     public KeyValueQueue() {
 	queue = new BaseQueue.Queue();
@@ -121,6 +122,10 @@ public class KeyValueQueue<K, V> extends BaseQueue {
 	}
     }
     
+    public boolean contains(K key) {
+        return map.containsKey(key);
+    }
+    
     public void remove(K key) {
 	if( needsTrace() ) System.err.printf("%s: Removing %s\n", getTraceName(), key);
 	synchronized( lock ) {
@@ -133,7 +138,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     
     public void waitReady() throws InterruptedException {
         synchronized ( lock ) {
-            while( queue.isEmpty() ) {
+            while( active && queue.isEmpty() ) {
 		if( needsTrace() ) System.err.printf("%s: waitReady() ...\n", getTraceName());
                 lock.wait();
 		if( needsTrace() ) System.err.printf("%s: waiting finished\n", getTraceName());
@@ -141,10 +146,15 @@ public class KeyValueQueue<K, V> extends BaseQueue {
         }
     }
     
-    public void unblock() {
+    public void shutdown() {
+	active = false;
 	synchronized ( lock ) {
 	    lock.notifyAll();
 	}
+    }
+    
+    public boolean isEmpty() {
+        return queue.isEmpty();
     }
     
 }

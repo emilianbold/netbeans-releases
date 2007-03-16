@@ -201,7 +201,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
                 Project p = ProjectManager.getDefault().findProject(dir);
-                if (extension.canApply(wiz)){
+                if (extension.canApply(wiz, p)){
                     extension.apply(wiz, p);
                 }
                 extension.uninitialize(wiz);

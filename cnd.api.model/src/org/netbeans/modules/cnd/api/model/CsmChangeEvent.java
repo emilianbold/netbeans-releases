@@ -48,4 +48,9 @@ public abstract class CsmChangeEvent extends EventObject {
     
     public abstract Collection/*<CsmNamespace>*/ getNewNamespaces();
     
+    public abstract Collection/*<CsmNamespace>*/ getRemovedNamespaces();
+    
+    public abstract void addNewNamespace(CsmNamespace ns);
+    
+    public abstract void addRemovedNamespace(CsmNamespace ns);
 }

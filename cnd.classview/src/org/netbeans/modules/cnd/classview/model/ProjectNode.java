@@ -40,7 +40,7 @@ import org.netbeans.modules.cnd.classview.model.CVUtil.FillingDone;
 public class ProjectNode extends NPNode {
     
     public ProjectNode(final CsmProject project) {
-        super(project, project.getGlobalNamespace(), new FillingDone());
+        super(project.getGlobalNamespace(), new FillingDone());
         this.project = project;
         setName(project.getName());
         setDisplayName(project.getName());

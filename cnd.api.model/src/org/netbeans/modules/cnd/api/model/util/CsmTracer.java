@@ -114,7 +114,7 @@ public class CsmTracer {
         StringBuffer sb = new StringBuffer();
         
         sb.append("CLASS="); // NOI18N
-        CsmClass cls = inh.getCsmClass();
+        CsmClassifier cls = inh.getCsmClassifier();
         //sb.append(isDummyUnresolved(cls) ? "<unresolved>" : cls.getQualifiedName());
         sb.append(cls == null ? "null" : cls.getQualifiedName()); // NOI18N
         
@@ -698,6 +698,7 @@ public class CsmTracer {
         dumpDeclarationsCollection(e.getRemovedDeclarations(), "Removed declarations"); // NOI18N
         dumpDeclarationsCollection(e.getChangedDeclarations(), "Changed declarations"); // NOI18N
         dumpNamespacesCollection(e.getNewNamespaces(), "New namespaces"); // NOI18N
+        dumpNamespacesCollection(e.getRemovedNamespaces(), "Removed namespaces"); // NOI18N
         print("");
     }
     

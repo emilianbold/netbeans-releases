@@ -40,7 +40,7 @@ public class TestMain {
 	
 	List<String> params = new ArrayList<String>();
 	for (int i = 0; i < args.length; i++) {
-	    if( "-s".equals(args[i]) ) {
+	    if( "-s".equals(args[i]) ) { // NOI18N
 		testDataIO = true;
 	    }
 	    else {

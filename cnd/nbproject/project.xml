@@ -34,6 +34,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.3.22</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -170,6 +179,7 @@
                 <package>org.netbeans.modules.cnd.loaders</package>
                 <package>org.netbeans.modules.cnd.makewizard</package>
                 <package>org.netbeans.modules.cnd.settings</package>
+                <package>org.netbeans.spi.cnd.options</package>
             </public-packages>
         </data>
     </configuration>

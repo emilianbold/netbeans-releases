@@ -61,7 +61,7 @@ public class CsmContextUtilities {
 
     public static List/*<CsmDeclaration*/ findGlobalVariables(CsmProject prj) {
         CsmProjectContentResolver resolver = new CsmProjectContentResolver(prj);
-        return resolver.getGlobalVariables("", false, false);
+        return resolver.getGlobalVariables("", false);
     }
     
     public static List/*<CsmDeclaration*/ findLocalDeclarations(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {

@@ -99,5 +99,8 @@ public class NoType implements CsmType {
     public static NoType instance() {
         return instance;
     }
-    
+
+    public boolean isBuiltInBased(boolean resolveTypeChain) {
+        return false;
+    }
 }

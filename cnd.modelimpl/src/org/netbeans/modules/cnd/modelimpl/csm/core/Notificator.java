@@ -127,9 +127,15 @@ public class Notificator {
 
     public void registerNewNamespace(CsmNamespace ns) {
 	synchronized( this ) {
-            getEvent().getNewNamespaces().add(ns);
+            getEvent().addNewNamespace(ns);
         }
     }
+    
+    public void registerRemoveNamespace(CsmNamespace ns) {
+	synchronized( this ) {
+            getEvent().addRemovedNamespace(ns);
+        }
+    }    
 
     /**
      * Generally, we should rely on hashCode() and equals()

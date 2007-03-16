@@ -129,8 +129,8 @@ public class CVUtil {
         private FillingDone inited;
         private CsmProject project;
         
-        public LazyNamespaceSorteddArray(CsmProject prj, CsmNamespace obj, FillingDone init){
-            project = prj;
+        public LazyNamespaceSorteddArray(CsmNamespace obj, FillingDone init){
+            project = obj.getProject();
             id = obj.getQualifiedName();
             inited = init;
         }
@@ -160,7 +160,7 @@ public class CVUtil {
             List res = new LinkedList();
             if (namespace != null){
                 for( Iterator/*<CsmNamespace>*/ iter = namespace.getNestedNamespaces().iterator(); iter.hasNext(); ) {
-                    res.add(new NamespaceNode(project, (CsmNamespace) iter.next()));
+                    res.add(new NamespaceNode( (CsmNamespace) iter.next()));
                 }
                 Collection/*<CsmDeclaration>*/ decl = namespace.getDeclarations();
                 if (decl != null) {

@@ -25,8 +25,15 @@ package org.netbeans.modules.cnd.api.model;
  */
 public interface CsmInheritance extends CsmOffsetable, CsmObject {
 
-    /** Gets base class */
+    /** 
+     * Gets base class information;
+     * NOTE: if inheritance was constructed for typedef => chain of typedef is resolved
+     * and the original class is returned
+     */
     CsmClass getCsmClass();
+
+    /** Gets base classifer (class or typedef) */
+    CsmClassifier getCsmClassifier();
 
     /** gets visibility */
     CsmVisibility getVisibility();

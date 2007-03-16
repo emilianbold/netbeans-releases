@@ -259,6 +259,11 @@ public class Resolver3 implements Resolver {
         CsmDeclaration.Kind kind = (element instanceof CsmDeclaration) ? ((CsmDeclaration) element).getKind() : null;
         if( kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
             CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) element;
+            if (nsd.getName().length() == 0) {
+                // this is unnamed namespace and it should be considered as 
+                // it declares using itself
+                usedNamespaces.add(nsd.getQualifiedName());
+            }
             if( this.offset < end ) {
                 //currentNamespace = nsd.getNamespace();
                 gatherMaps(nsd.getDeclarations());

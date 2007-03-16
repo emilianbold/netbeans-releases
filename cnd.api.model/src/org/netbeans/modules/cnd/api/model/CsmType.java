@@ -60,4 +60,10 @@ public interface CsmType extends CsmObject, CsmOffsetable {
     // TODO: how to get from CsmType (int[][]) CsmType (int[]) ?
     
     // TODO: how to get from CsmType (int*) CsmType (int**) ?
+    
+    /** 
+     * checks wether type is reference to built-in type or not
+     * @param resolveTypeChain if true then resolve all typedefs (slow down)
+     */
+    boolean isBuiltInBased(boolean resolveTypeChain);
 }

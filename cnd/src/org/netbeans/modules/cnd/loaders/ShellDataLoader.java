@@ -55,7 +55,7 @@ public class ShellDataLoader extends CndAbstractDataLoader {
      *  Default constructor
      */
     public ShellDataLoader() {
-	super(ShellDataObject.class.getName());
+	super("org.netbeans.modules.cnd.loaders.ShellDataObject"); // NOI18N
 	instance = this;
 	createExtentions(shellExtensions);
     }
@@ -66,6 +66,7 @@ public class ShellDataLoader extends CndAbstractDataLoader {
 	createExtentions(shellExtensions);
     }
   
+    /** @deprecated Use {@link #ShellDataLoader(String)} instead */
     public ShellDataLoader(Class recognizedClass) {
 	super(recognizedClass);
 	instance = this;

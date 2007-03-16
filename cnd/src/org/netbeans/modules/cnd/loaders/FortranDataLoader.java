@@ -45,7 +45,7 @@ public class FortranDataLoader extends CndAbstractDataLoader {
 	   { "f", "F", "f90", "F90", "f95", "F95", "for", "il", "mod" };// NOI18N
 
     protected FortranDataLoader() {
-	super(FortranDataObject.class.getName());
+	super("org.netbeans.modules.cnd.loaders.FortranDataObject"); // NOI18N
         instance = this;
         createExtentions(fortranExtensions);
     }
@@ -56,6 +56,7 @@ public class FortranDataLoader extends CndAbstractDataLoader {
         createExtentions(fortranExtensions);
     }
 
+    /** @deprecated Use {@link #FortranDataLoader(String)} instead */
     protected FortranDataLoader(Class representationClass) {
 	super(representationClass);
         instance = this;

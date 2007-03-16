@@ -38,6 +38,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
+import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.CompilerSettings;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -59,11 +60,32 @@ public class DwarfSource implements SourceFileProperties{
     private ItemProperties.LanguageKind language;
     private List<String> userIncludes;
     private List<String> systemIncludes;
+    private boolean haveSystemIncludes;
     private Map<String, String> userMacros;
+    private Map<String, String> systemMacros;
+    private boolean haveSystemMacros;
     private Set<String> includedFiles;
     
-    DwarfSource(CompilationUnit cu, boolean isCPP){
-        init(cu, isCPP);
+    DwarfSource(CompilationUnit cu, boolean isCPP, CompilerSettings compilerSettings){
+        initCompilerSettings(compilerSettings, isCPP);
+        initSourceSettings(cu, isCPP);
+    }
+    
+    private void initCompilerSettings(CompilerSettings compilerSettings, boolean isCPP){
+        List<String> list = compilerSettings.getSystemIncludePaths(isCPP);
+        if (list != null){
+            systemIncludes = new ArrayList<String>(list);
+        } else {
+            systemIncludes = new ArrayList<String>();
+        }
+        haveSystemIncludes = systemIncludes.size() > 0;
+        Map<String, String> map = compilerSettings.getSystemMacroDefinitions(isCPP);
+        if (map != null){
+            systemMacros = new HashMap<String,String>(map);
+        } else {
+            systemMacros = new HashMap<String,String>();
+        }
+        haveSystemMacros = systemMacros.size() > 0;
     }
     
     public String getCompilePath() {
@@ -95,7 +117,7 @@ public class DwarfSource implements SourceFileProperties{
     }
     
     public Map<String, String> getSystemMacros() {
-        return null;
+        return systemMacros;
     }
     
     public ItemProperties.LanguageKind getLanguageKind() {
@@ -132,23 +154,26 @@ public class DwarfSource implements SourceFileProperties{
                 fileName = fileName.substring(CYG_DRIVE_UNIX.length()); // NOI18N
                 fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1); // NOI18N
                 fileName = fileName.replace('\\', '/');
-                cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH;
+                if (cygwinPath == null) {
+                    cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH;
+                }
             } else {
                 int i = fileName.indexOf(CYG_DRIVE_WIN);
                 if (i > 0) {
                     //replace C:\cygdrive\c\<something> prefix with <something>:\ prefix:
                     fileName = fileName.substring(0,i)+fileName.substring(i+CYG_DRIVE_UNIX.length()+1);
                     fileName = fileName.replace('\\', '/');
-                    cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH; // NOI18N
+                    if (cygwinPath == null) {
+                        cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH; // NOI18N
+                    }
                 }
             }
         }
         return fileName;
     }
     
-    private void init(CompilationUnit cu, boolean isCPP){
+    private void initSourceSettings(CompilationUnit cu, boolean isCPP){
         userIncludes = new ArrayList<String>();
-        systemIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
         File file = new File(cu.getSourceFileAbsolutePath());
@@ -200,6 +225,49 @@ public class DwarfSource implements SourceFileProperties{
         }
     }
     
+    private String fixCygwinPath(String path){
+        if (cygwinPath != null) {
+            if (path.startsWith("/usr/lib/")){// NOI18N
+                path = cygwinPath+path.substring(4);
+            } else if (path.startsWith("/usr")) { // NOI18N
+                path = cygwinPath+path;
+            }
+        }
+        if (path.startsWith(CYG_DRIVE_UNIX)){
+            path = fixFileName(path);
+        }
+        if (Utilities.isWindows()) {
+            path = path.replace('\\', '/');
+        }
+        return path;
+    }
+    
+    private void addpath(String path){
+        if (haveSystemIncludes) {
+            path = fixCygwinPath(path);
+            boolean system = false;
+            if (path.startsWith("/") ||
+                path.length()>2 && path.charAt(1)==':'){
+                for (String cp : systemIncludes){
+                    if (path.startsWith(cp)){
+                        system = true;
+                        break;
+                    }
+                }
+            }
+            if (!system){
+                userIncludes.add(PathCache.getString(path));
+            }
+        } else {
+            if (path.startsWith("/usr")) { // NOI18N
+                path = fixCygwinPath(path);
+                systemIncludes.add(PathCache.getString(path));
+            } else {
+                userIncludes.add(PathCache.getString(path));
+            }
+        }
+    }
+    
     private void gatherIncludes(final CompilationUnit cu) {
         if (!ourGatherIncludes) {
             return;
@@ -209,22 +277,7 @@ public class DwarfSource implements SourceFileProperties{
             return;
         }
         for (Iterator<String> it = dwarfTable.getIncludeDirectories().iterator(); it.hasNext();) {
-            String path = it.next();
-            if (path.startsWith("/usr")) { // NOI18N
-                if (cygwinPath != null) {
-                    if (path.startsWith("/usr/lib/")){// NOI18N
-                        path = cygwinPath+path.substring(4);
-                    } else {
-                        path = cygwinPath+path;
-                    }
-                }
-                if (Utilities.isWindows()) {
-                    path = path.replace('\\', '/');
-                }
-                systemIncludes.add(PathCache.getString(path));
-            } else {
-                userIncludes.add(PathCache.getString(path));
-            }
+            addpath(it.next());
         }
         List<String> list = grepSourceFile(fullName);
         for(String path : list){
@@ -252,13 +305,7 @@ public class DwarfSource implements SourceFileProperties{
             } else if (!path.startsWith("/")){ // NOI18N
                 fullName = compilePath+File.separator+path;
             } else {
-                if (cygwinPath != null && path.startsWith("/usr")) { // NOI18N
-                    if (path.startsWith("/usr/lib/")){ // NOI18N
-                        fullName = cygwinPath+path.substring(4);
-                    } else {
-                        fullName = cygwinPath+path;
-                    }
-                }
+                fullName = fixCygwinPath(path);
             }
             if (Utilities.isWindows()) {
                 fullName = fullName.replace('\\', '/');
@@ -302,11 +349,23 @@ public class DwarfSource implements SourceFileProperties{
             DwarfMacinfoEntry entry = it.next();
             String def = entry.definition;
             int i = def.indexOf(' ');
+            String macro;
+            String value = null;
             if (i>0){
-                userMacros.put(PathCache.getString(def.substring(0,i)), PathCache.getString(def.substring(i+1).trim()));
+                macro = PathCache.getString(def.substring(0,i));
+                value = PathCache.getString(def.substring(i+1).trim());
             } else {
-                userMacros.put(PathCache.getString(def), null);
+                macro = PathCache.getString(def);
             }
+            if (haveSystemMacros && systemMacros.containsKey(macro)){
+                // filter out system macros
+                // For example gcc windows dwarf contains following system macros as user:
+                // unix=1 __unix=1 __unix__=1 __CYGWIN__=1 __CYGWIN32__=1
+                if (value == null || "1".equals(value)){
+                    continue;
+                }
+            }
+            userMacros.put(macro,value);
         }
     }
     

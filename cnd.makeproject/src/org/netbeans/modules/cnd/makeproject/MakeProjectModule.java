@@ -73,6 +73,10 @@ public class MakeProjectModule extends ModuleInstall {
 
 	//see issue #64393
         DataLoaderPool.getDefault().addOperationListener(new L());
+        
+    }
+    
+    public void uninstall() {
     }
     
     public void close() {
@@ -281,7 +285,7 @@ public class MakeProjectModule extends ModuleInstall {
                 itemPath = FilePathAdaptor.normalize(itemPath);
                 Item item = new Item(itemPath);
 
-                folder.addItem(item);
+                folder.addItemAction(item);
                 
                 if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                     ERR.log(ErrorManager.INFORMATIONAL, "folder: " + folder + ", added: " + file); // NOI18N

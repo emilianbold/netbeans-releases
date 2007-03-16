@@ -58,7 +58,7 @@ public class HashMapRepository implements Repository {
         put(key, obj);
     }
 
-    public void flush() {
+    public void debugClear() {
         // do nothing
     }
     

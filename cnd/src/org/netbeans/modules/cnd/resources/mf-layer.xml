@@ -30,6 +30,23 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Menu -->
 
     <folder name="OptionsDialog">
+        <attr name="Keymaps.instance/CndOptionsCategory.instance" boolvalue="true"/> 
+        <file name="CndOptionsCategory.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.CndOptionsCategory"/>
+        </file>
+        <attr name="CndOptionsCategory.instance/Advanced.instance" boolvalue="true"/> 
+        <folder name="CPlusPlus">
+            <file name="ToolsPanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.ToolsPanelController"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+            </file>
+            
+            <attr name="ToolsPanelController.instance/CodeAssistancePanelController.instance" boolvalue="true"/>
+            <file name="CodeAssistancePanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.CodeAssistancePanelController"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+            </file>
+        </folder>     
         <folder name="PreviewExamples">
             <folder name="text">
                 <file name="x-c++" url="cplusplus/CCExample"/>

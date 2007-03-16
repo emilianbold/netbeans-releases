@@ -53,7 +53,7 @@ public final class HDataLoader extends CndAbstractDataLoader {
 				{ "h", "H", "hpp", "hxx", "SUNWCCh" }; // NOI18N
 
     public HDataLoader() {
-        super(HDataObject.class.getName());
+        super("org.netbeans.modules.cnd.loaders.HDataObject"); // NOI18N
         instance = this;
         createExtentions(hdrExtensions);
     }
@@ -64,6 +64,7 @@ public final class HDataLoader extends CndAbstractDataLoader {
 	createExtentions(hdrExtensions);
     }
 
+    /** @deprecated Use {@link #HDataLoader(String)} instead */
     public HDataLoader(Class representationClass) {
 	super(representationClass);
         instance = this;
