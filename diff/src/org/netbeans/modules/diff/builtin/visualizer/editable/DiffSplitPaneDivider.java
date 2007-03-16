@@ -28,6 +28,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseListener;
+import java.awt.geom.CubicCurve2D;
+import java.awt.geom.GeneralPath;
 import java.util.*;
 import java.util.List;
 
@@ -186,39 +188,20 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             DiffViewManager.DecoratedDifference [] decoratedDiffs = master.getManager().getDecorations();
-            int [] xCoords = new int[4];
-            int [] yCoords = new int[4];
             for (DiffViewManager.DecoratedDifference dd : decoratedDiffs) {
                 g.setColor(master.getColor(dd.getDiff()));
                 if (dd.getBottomLeft() == -1) {
-                    xCoords[0] = 0;             yCoords[0] = dd.getTopLeft() + leftOffset; 
-                    xCoords[1] = rightY;        yCoords[1] = dd.getTopRight() + rightOffset;
-                    xCoords[2] = rightY;        yCoords[2] = dd.getBottomRight() + rightOffset;
-                    g.fillPolygon(xCoords, yCoords, 3);
-                    g.setColor(master.getColorLines());
-                    g.drawLine(0, dd.getTopLeft() + leftOffset, rightY, dd.getTopRight() + rightOffset);
-                    g.drawLine(0, dd.getTopLeft() + leftOffset, rightY, dd.getBottomRight() + rightOffset);
+                    paintMatcher(g, master.getColor(dd.getDiff()), 0, rightY,
+                            dd.getTopLeft() + leftOffset, dd.getTopRight() + rightOffset, 
+                            dd.getBottomRight() + rightOffset, dd.getTopLeft() + leftOffset);
                 } else if (dd.getBottomRight() == -1) {
-                    xCoords[0] = 0;             yCoords[0] = dd.getTopLeft() + leftOffset; 
-                    xCoords[1] = rightY;        yCoords[1] = dd.getTopRight() + rightOffset;
-                    xCoords[2] = 0;             yCoords[2] = dd.getBottomLeft() + leftOffset;
-                    g.fillPolygon(xCoords, yCoords, 3);
-                    g.setColor(Color.LIGHT_GRAY);
-                    g.drawLine(0, yCoords[0], 0, yCoords[2]);
-                    g.setColor(master.getColorLines());
-                    g.drawLine(0, dd.getTopLeft() + leftOffset, rightY, dd.getTopRight() + rightOffset);
-                    g.drawLine(0, dd.getBottomLeft() + leftOffset, rightY, dd.getTopRight() + rightOffset);
+                    paintMatcher(g, master.getColor(dd.getDiff()), 0, rightY,
+                            dd.getTopLeft() + leftOffset, dd.getTopRight() + rightOffset, 
+                            dd.getTopRight() + rightOffset, dd.getBottomLeft() + leftOffset);
                 } else {
-                    xCoords[0] = 0;             yCoords[0] = dd.getTopLeft() + leftOffset; 
-                    xCoords[1] = rightY;        yCoords[1] = dd.getTopRight() + rightOffset;
-                    xCoords[2] = rightY;        yCoords[2] = dd.getBottomRight() + rightOffset;
-                    xCoords[3] = 0;             yCoords[3] = dd.getBottomLeft() + leftOffset;
-                    g.fillPolygon(xCoords, yCoords, 4);
-                    g.setColor(Color.LIGHT_GRAY);
-                    g.drawLine(0, yCoords[0], 0, yCoords[3]);
-                    g.setColor(master.getColorLines());
-                    g.drawLine(0, dd.getTopLeft() + leftOffset, rightY, dd.getTopRight() + rightOffset);
-                    g.drawLine(0, dd.getBottomLeft() + leftOffset, rightY, dd.getBottomRight() + rightOffset);
+                    paintMatcher(g, master.getColor(dd.getDiff()), 0, rightY,
+                            dd.getTopLeft() + leftOffset, dd.getTopRight() + rightOffset, 
+                            dd.getBottomRight() + rightOffset, dd.getBottomLeft() + leftOffset);
                 }
             }
             
@@ -234,6 +217,27 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
                 hotspots = newActionIcons;
             }
             g.dispose();
+        }
+        
+        private void paintMatcher(Graphics2D g, Color fillClr, 
+                int leftX, int rightX, int upL, int upR, int doR, int doL) {
+            CubicCurve2D upper = new CubicCurve2D.Float(leftX, upL,
+                    (rightX -leftX)*.3f, upL,
+                    (rightX -leftX)*.7f, upR,
+                    rightX, upR);
+            CubicCurve2D bottom = new CubicCurve2D.Float(rightX, doR,
+                    (rightX - leftX)*.7f, doR,
+                    (rightX -leftX)*.3f, doL,
+                    leftX, doL);
+            GeneralPath path = new GeneralPath();
+            path.append(upper, false);
+            path.append(bottom, true);
+            path.closePath();
+            g.setColor(fillClr);
+            g.fill(path);
+            g.setColor(master.getColorLines());
+            g.draw(upper);
+            g.draw(bottom);
         }
     }    
 }
