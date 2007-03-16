@@ -19,7 +19,25 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 
-<project basedir="." default="netbeans" name="enterprise/performancetests">
-    <description>Builds, tests, and runs the project entpackperftests</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
-</project>
+<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+  <listener>
+    <description>ServletContextListener</description>
+    <listener-class>simple.webapp.AppCtxListener</listener-class>
+  </listener>
+  <session-config>
+    <session-timeout>
+            30
+        </session-timeout>
+  </session-config>
+  <welcome-file-list>
+    <welcome-file>
+            index.jsp
+        </welcome-file>
+    <welcome-file>
+            index.html
+        </welcome-file>
+    <welcome-file>
+            index.htm
+        </welcome-file>
+  </welcome-file-list>
+</web-app>

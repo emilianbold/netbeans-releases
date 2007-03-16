@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
-The contents of this file are subject to the terms of the Common Development
-and Distribution License (the License). You may not use this file except in
-compliance with the License.
-
-You can obtain a copy of the License at http://www.netbeans.org/cddl.html
-or http://www.netbeans.org/cddl.txt.
-
-When distributing Covered Code, include this CDDL Header Notice in each file
-and include the License file at http://www.netbeans.org/cddl.txt.
-If applicable, add the following below the CDDL Header, with the fields
-enclosed by brackets [] replaced by your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
 -->
 
 
 <mconfig name="core qa-performance test config">
-    
+
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="all or menus or dialogs or actions or setup or memory_usage or memory_dialog or memory_action or memory_menu or editor_related or java_related or apisupport_related or temp or memory_temp" prio="1"
+    <testbag testattribs="all or menus or dialogs or actions or setup or editor_related or java_related or apisupport_related or temp" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
@@ -116,29 +116,28 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 
-                <include name="gui/scanclasspath/ScanClasspath.class"/>
+                <include name="gui/scanclasspath/EntScanClasspath.class"/>
             </patternset>
         </testset>
     </testbag>
-    
+   
     <!-- Temp -->    
-    <testbag testattribs="temp" prio="1000"
+    <testbag testattribs="temp" prio="100"
              executor="ide_performance" name="Temp" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/MeasureTemp.class"/>
-            </patternset>
-        </testset>
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureTemp.class"/>
+	    </patternset>
+	</testset>
     </testbag>
-    
-    
+
 <!-- Memory Footprint Testbags -->
     <!-- Out Of The Box -->
-    <testbag testattribs="footprint_all or out_of_the_box_startup or footprint_temp" prio="300"
+    <testbag testattribs="footprint_all or out_of_the_box_startup" prio="300"
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
+                <include name="footprint/EPFootprintTests.class/testOutOfTheBoxStartup"/>
             </patternset>
         </testset>
     </testbag>
@@ -147,7 +146,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
+                <include name="footprint/EPFootprintTests.class/testOutOfTheBoxStartup"/>
             </patternset>
         </testset>
     </testbag>
@@ -156,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
+                <include name="footprint/EPFootprintTests.class/testOutOfTheBoxStartup"/>
             </patternset>
         </testset>
     </testbag>
@@ -166,7 +165,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
+                <include name="footprint/EPFootprintTests.class/testJ2SEProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
@@ -175,7 +174,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
+                <include name="footprint/EPFootprintTests.class/testJ2SEProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
@@ -184,17 +183,17 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - J2SE project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
+                <include name="footprint/EPFootprintTests.class/testJ2SEProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
     
     <!-- Web Project workflow -->
-<!--TODO tomcat is no more part of the build    <testbag testattribs="footprint_all or web_project" prio="320"
+    <testbag testattribs="footprint_all or web_project" prio="320"
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
+                <include name="footprint/EPFootprintTests.class/testWebProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
@@ -203,7 +202,7 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
+                <include name="footprint/EPFootprintTests.class/testWebProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
@@ -212,74 +211,45 @@ Microsystems, Inc. All Rights Reserved.
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
-                <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
-            </patternset>
-        </testset>
-    </testbag>
--->    
-    <!-- Find Usages -->
-    <testbag testattribs="footprint_all or find_usages" prio="330"
-             executor="ide_footprint" name="Footprint - Find usages" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testFindUsages"/>
+                <include name="footprint/EPFootprintTests.class/testWebProjectWorkflow"/>
             </patternset>
         </testset>
     </testbag>
     
-    <testbag testattribs="(footprint_all or find_usages) and NOT once" prio="331"
-             executor="ide_footprint" name="Footprint - Find usages" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testFindUsages"/>
-            </patternset>
-        </testset>
+    <!-- J2EE Project workflow -->
+    <testbag testattribs="all or j2ee_project or j2ee_project_once" prio="330"
+             executor="ide_footprint" name="Footprint - J2EE project workflow" >
+	<testset dir="footprint/src">
+	    <patternset>
+		<include name="footprint/EPFootprintTests.class/testJ2EEProjectWorkflow"/>
+	    </patternset>
+	</testset>
     </testbag>
-    
-    <testbag testattribs="(footprint_all or find_usages) and NOT once" prio="332"
-             executor="ide_footprint" name="Footprint - Find usages" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testFindUsages"/>
-            </patternset>
-        </testset>
+
+    <testbag testattribs="all or j2ee_project" prio="331"
+             executor="ide_footprint" name="Footprint - J2EE project workflow" >
+	<testset dir="footprint/src">
+	    <patternset>
+		<include name="footprint/EPFootprintTests.class/testJ2EEProjectWorkflow"/>
+	    </patternset>
+	</testset>
     </testbag>
-    
-    <!-- Refactor Rename -->
-    <testbag testattribs="footprint_all or rename_class" prio="340"
-             executor="ide_footprint" name="Footprint - Rename class" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testRefactoringRename"/>
-            </patternset>
-        </testset>
+
+    <testbag testattribs="all or j2ee_project" prio="332"
+             executor="ide_footprint" name="Footprint - J2EE project workflow" >
+	<testset dir="footprint/src">
+	    <patternset>
+		<include name="footprint/EPFootprintTests.class/testJ2EEProjectWorkflow"/>
+	    </patternset>
+	</testset>
     </testbag>
-    
-    <testbag testattribs="(footprint_all or rename_class)) and NOT once" prio="341"
-             executor="ide_footprint" name="Footprint - Rename class" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testRefactoringRename"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(footprint_all or rename_class) and NOT once" prio="342"
-             executor="ide_footprint" name="Footprint - Rename class" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/FootprintTests.class/testRefactoringRename"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    
+
     <!-- executors & compilers -->
     <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
     <executor name="ide_performance" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide_performance_scan" antfile="build-qa-functional.xml" target="runidetest_scan" />
     <executor name="ide_footprint" antfile="build-qa-functional.xml" target="runidetest_footprint"/>
     
-    <compiler name="compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
+    <compiler name="qa-performance-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
     
 </mconfig>

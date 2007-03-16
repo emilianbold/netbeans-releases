@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+<%--
  The contents of this file are subject to the terms of the Common Development
  and Distribution License (the License). You may not use this file except in
  compliance with the License.
@@ -17,9 +15,16 @@
  The Original Software is NetBeans. The Initial Developer of the Original
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
--->
+--%>
 
-<project basedir="." default="netbeans" name="enterprise/performancetests">
-    <description>Builds, tests, and runs the project entpackperftests</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
-</project>
+<%@page contentType="text/html"%>
+<%@page pageEncoding="UTF-8"%>
+<html>
+    <head><title>JSP Page</title></head>
+    <body>
+
+        <%-- <jsp:useBean id="beanInstanceName" scope="session" class="beanPackage.BeanClassName" /> --%>
+        <%-- <jsp:getProperty name="beanInstanceName"  property="propertyName" /> --%>
+
+    </body>
+</html>
