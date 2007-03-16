@@ -58,7 +58,6 @@ Help#com.sun.corba.se.impl.activation.Help
 HelperNodeList#com.sun.org.apache.xml.internal.security.utils.HelperNodeList
 HexBin#com.sun.org.apache.xerces.internal.impl.dv.util.HexBin
 HexBinaryAdapter#javax.xml.bind.annotation.adapters.HexBinaryAdapter
-HexBinaryAdapter#javax.xml.bind.annotation.adapters.HexBinaryAdapter
 HexBinaryDV#com.sun.org.apache.xerces.internal.impl.dv.xs.HexBinaryDV
 HexCharacter#javax.swing.text.MaskFormatter.HexCharacter
 HexDumpEncoder#sun.misc.HexDumpEncoder

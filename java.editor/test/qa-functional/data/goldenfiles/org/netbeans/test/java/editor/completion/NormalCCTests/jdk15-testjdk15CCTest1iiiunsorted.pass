@@ -1,4 +1,4 @@
-public abstract boolean add(String arg0)
-public abstract boolean addAll(Collection<? extends String> arg0)
-public abstract boolean addAll(int arg0, Collection<? extends String> arg1)
-public abstract void add(int arg0, String arg1)
+add#01#(String)
+add#02#(int,String)
+addAll#01#(Collection<? extends String>)
+addAll#02#(int,Collection<? extends String>)

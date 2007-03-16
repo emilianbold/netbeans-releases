@@ -1,2 +1,2 @@
-public String get(int index)
-public final native Class<?> getClass()
+get#01#(int)
+getClass#00#()

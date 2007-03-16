@@ -1,17 +1,147 @@
-String
-String s1
-public String getName()
-public String toString()
-public static String String.copyValueOf(char[] arg0)
-public static String String.copyValueOf(char[] arg0, int arg1, int arg2)
-public static String String.format(Locale arg0, String arg1, Object... arg2)
-public static String String.format(String arg0, Object... arg1)
-public static String String.valueOf(Object arg0)
-public static String String.valueOf(boolean arg0)
-public static String String.valueOf(char arg0)
-public static String String.valueOf(char[] arg0)
-public static String String.valueOf(char[] arg0, int arg1, int arg2)
-public static String String.valueOf(double arg0)
-public static String String.valueOf(float arg0)
-public static String String.valueOf(int arg0)
-public static String String.valueOf(long arg0)
+AbstractMethodError#java.lang.AbstractMethodError
+Appendable#java.lang.Appendable
+ArithmeticException#java.lang.ArithmeticException
+ArrayIndexOutOfBoundsException#java.lang.ArrayIndexOutOfBoundsException
+ArrayStoreException#java.lang.ArrayStoreException
+AssertionError#java.lang.AssertionError
+Assign#org.netbeans.test.editor.smartcompletion.Assign
+Boolean#java.lang.Boolean
+Byte#java.lang.Byte
+CharSequence#java.lang.CharSequence
+Character#java.lang.Character
+Class#java.lang.Class
+ClassCastException#java.lang.ClassCastException
+ClassCircularityError#java.lang.ClassCircularityError
+ClassFormatError#java.lang.ClassFormatError
+ClassLoader#java.lang.ClassLoader
+ClassNotFoundException#java.lang.ClassNotFoundException
+CloneNotSupportedException#java.lang.CloneNotSupportedException
+Cloneable#java.lang.Cloneable
+Comparable#java.lang.Comparable
+Compiler#java.lang.Compiler
+Deprecated#java.lang.Deprecated
+Double#java.lang.Double
+Enum#java.lang.Enum
+EnumConstantNotPresentException#java.lang.EnumConstantNotPresentException
+Error#java.lang.Error
+Exception#java.lang.Exception
+ExceptionInInitializerError#java.lang.ExceptionInInitializerError
+Float#java.lang.Float
+IllegalAccessError#java.lang.IllegalAccessError
+IllegalAccessException#java.lang.IllegalAccessException
+IllegalArgumentException#java.lang.IllegalArgumentException
+IllegalMonitorStateException#java.lang.IllegalMonitorStateException
+IllegalStateException#java.lang.IllegalStateException
+IllegalThreadStateException#java.lang.IllegalThreadStateException
+IncompatibleClassChangeError#java.lang.IncompatibleClassChangeError
+IndexOutOfBoundsException#java.lang.IndexOutOfBoundsException
+InheritableThreadLocal#java.lang.InheritableThreadLocal
+InstantiationError#java.lang.InstantiationError
+InstantiationException#java.lang.InstantiationException
+Integer#java.lang.Integer
+InternalError#java.lang.InternalError
+InterruptedException#java.lang.InterruptedException
+Iterable#java.lang.Iterable
+LinkageError#java.lang.LinkageError
+List#java.util.List
+Long#java.lang.Long
+Math#java.lang.Math
+NegativeArraySizeException#java.lang.NegativeArraySizeException
+NoClassDefFoundError#java.lang.NoClassDefFoundError
+NoSuchFieldError#java.lang.NoSuchFieldError
+NoSuchFieldException#java.lang.NoSuchFieldException
+NoSuchMethodError#java.lang.NoSuchMethodError
+NoSuchMethodException#java.lang.NoSuchMethodException
+NullPointerException#java.lang.NullPointerException
+Number#java.lang.Number
+NumberFormatException#java.lang.NumberFormatException
+Object#java.lang.Object
+OutOfMemoryError#java.lang.OutOfMemoryError
+Override#java.lang.Override
+Package#java.lang.Package
+Process#java.lang.Process
+ProcessBuilder#java.lang.ProcessBuilder
+Readable#java.lang.Readable
+Runnable#java.lang.Runnable
+Runtime#java.lang.Runtime
+RuntimeException#java.lang.RuntimeException
+RuntimePermission#java.lang.RuntimePermission
+SecurityException#java.lang.SecurityException
+SecurityManager#java.lang.SecurityManager
+Short#java.lang.Short
+SmartCC#org.netbeans.test.editor.smartcompletion.SmartCC
+StackOverflowError#java.lang.StackOverflowError
+StackTraceElement#java.lang.StackTraceElement
+StrictMath#java.lang.StrictMath
+String#java.lang.String
+StringBuffer#java.lang.StringBuffer
+StringBuilder#java.lang.StringBuilder
+StringIndexOutOfBoundsException#java.lang.StringIndexOutOfBoundsException
+SuppressWarnings#java.lang.SuppressWarnings
+System#java.lang.System
+Thread#java.lang.Thread
+ThreadDeath#java.lang.ThreadDeath
+ThreadGroup#java.lang.ThreadGroup
+ThreadLocal#java.lang.ThreadLocal
+Throwable#java.lang.Throwable
+TypeNotPresentException#java.lang.TypeNotPresentException
+Types#org.netbeans.test.editor.smartcompletion.Types
+UnknownError#java.lang.UnknownError
+UnsatisfiedLinkError#java.lang.UnsatisfiedLinkError
+UnsupportedClassVersionError#java.lang.UnsupportedClassVersionError
+UnsupportedOperationException#java.lang.UnsupportedOperationException
+VerifyError#java.lang.VerifyError
+VirtualMachineError#java.lang.VirtualMachineError
+Void#java.lang.Void
+boolean
+byte
+char
+clone#00#()
+com#com
+copyValueOf#01#(char[])#String
+copyValueOf#03#(char[],int,int)#String
+d1
+d2
+double
+equals#01#(Object)
+false
+finalize#00#()
+float
+format#02#(String,Object...)#String
+format#03#(Locale,String,Object...)#String
+getClass#00#()
+getName#00#()
+hashCode#00#()
+int
+java#java
+javax#javax
+long
+method#02#(Double,Number)
+n1
+new
+notify#00#()
+notifyAll#00#()
+null
+org#org
+p1
+p2
+s1
+short
+sun#sun
+sunw#sunw
+super
+this
+toString#00#()
+true
+valueOf#01#(Object)#String
+valueOf#01#(boolean)#String
+valueOf#01#(char)#String
+valueOf#01#(char[])#String
+valueOf#01#(double)#String
+valueOf#01#(float)#String
+valueOf#01#(int)#String
+valueOf#01#(long)#String
+valueOf#03#(char[],int,int)#String
+wait#00#()
+wait#01#(long)
+wait#02#(long,int)

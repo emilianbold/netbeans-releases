@@ -1,2 +1,2 @@
-public abstract String get(int arg0)
-public final native Class<? extends Object> getClass()
+get#01#(int)
+getClass#00#()

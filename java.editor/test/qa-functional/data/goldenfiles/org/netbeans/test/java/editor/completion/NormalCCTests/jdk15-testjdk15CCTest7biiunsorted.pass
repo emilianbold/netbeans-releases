@@ -1,1 +1,1 @@
-public static void testStatic(String permanent, String... variable)
+testStatic#02#(String,String...)

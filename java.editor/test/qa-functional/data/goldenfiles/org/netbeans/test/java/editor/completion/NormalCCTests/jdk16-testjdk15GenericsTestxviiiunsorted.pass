@@ -1,14 +1,14 @@
-public Integer getElement()
-public Integer[] elements
-public MyGenericClass<Integer> instance()
-public String toString()
-public boolean equals(Object arg0)
-public final native Class<?> getClass()
-public final native void notify()
-public final native void notifyAll()
-public final native void wait(long arg0)
-public final void wait()
-public final void wait(long arg0, int arg1)
-public native int hashCode()
-public static final String CONST
-public void setElement(Integer element)
+CONST
+elements
+equals#01#(Object)
+getClass#00#()
+getElement#00#()
+hashCode#00#()
+instance#00#()
+notify#00#()
+notifyAll#00#()
+setElement#01#(Integer)
+toString#00#()
+wait#00#()
+wait#01#(long)
+wait#02#(long,int)

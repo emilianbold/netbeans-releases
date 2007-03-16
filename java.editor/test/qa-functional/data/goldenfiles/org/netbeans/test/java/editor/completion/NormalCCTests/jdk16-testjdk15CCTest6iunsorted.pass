@@ -1,1 +1,1 @@
-public void test(String permanent, String... variable)
+test#02#(String,String...)

@@ -1,3 +1,3 @@
-List
-ListIterator
-ListResourceBundle
+List#java.util.List
+ListIterator#java.util.ListIterator
+ListResourceBundle#java.util.ListResourceBundle

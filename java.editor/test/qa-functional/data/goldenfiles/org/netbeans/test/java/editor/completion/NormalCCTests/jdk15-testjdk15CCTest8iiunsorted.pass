@@ -1,7 +1,7 @@
+A
+B
+C
 class
-public static InnerEnum valueOf(String name)
-public static InnerEnum[] values()
-public static T valueOf(Class<T> arg0, String arg1)
-public static final InnerEnum A
-public static final InnerEnum B
-public static final InnerEnum C
+valueOf#01#(String)
+valueOf#02#(Class<T>,String)
+values#00#()

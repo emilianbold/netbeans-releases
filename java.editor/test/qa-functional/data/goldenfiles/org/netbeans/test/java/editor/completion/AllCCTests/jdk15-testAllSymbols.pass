@@ -35,7 +35,6 @@ HeightSpring#javax.swing.Spring.HeightSpring
 HelloRequest#com.sun.net.ssl.internal.ssl.HandshakeMessage.HelloRequest
 Help#com.sun.corba.se.impl.activation.Help
 HexBin#com.sun.org.apache.xerces.internal.impl.dv.util.HexBin
-HexBinaryAdapter#javax.xml.bind.annotation.adapters.HexBinaryAdapter
 HexBinaryDV#com.sun.org.apache.xerces.internal.impl.dv.xs.HexBinaryDV
 HexCharacter#javax.swing.text.MaskFormatter.HexCharacter
 HexDumpEncoder#sun.misc.HexDumpEncoder

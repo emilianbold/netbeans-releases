@@ -21,7 +21,6 @@ package org.netbeans.test.java.editor.completion;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -34,9 +33,6 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.FileObject;
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.Completion;
-import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionResultSetImpl;
@@ -44,9 +40,7 @@ import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.editor.java.LazyTypeCompletionItem;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
-import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
@@ -152,16 +146,19 @@ public class CompletionTest extends java.lang.Object {
         if(!unsorted) {
             Arrays.sort(array, new Comparator<CompletionItem>(){
                 public int compare(CompletionItem arg0, CompletionItem arg1) {
-                    String a0 = (arg0 instanceof LazyTypeCompletionItem)? arg0.getSortText().toString():arg0.toString();
-                    String a1 = (arg1 instanceof LazyTypeCompletionItem)? arg1.getSortText().toString():arg1.toString();
+                    Integer p1 = arg0.getSortPriority();
+                    Integer p2 = arg0.getSortPriority();
+                    if(p1.intValue()!=p2.intValue()) return p1.compareTo(p2);
+                    String a0 = arg0.getSortText().toString();
+                    String a1 = arg1.getSortText().toString();
                     return a0.compareTo(a1);
                 }
             });
         }
         for (int i = 0; i < array.length; i++) {
             CompletionItem completionItem = array[i];
-            if(completionItem instanceof LazyTypeCompletionItem) out.println(completionItem.getSortText().toString());
-            else out.println(completionItem.toString());            
+            out.println(completionItem.getSortText().toString());
+            
         }
         /*Completion completion = ExtUtilities.getCompletion(editor);
         if (completion != null) {

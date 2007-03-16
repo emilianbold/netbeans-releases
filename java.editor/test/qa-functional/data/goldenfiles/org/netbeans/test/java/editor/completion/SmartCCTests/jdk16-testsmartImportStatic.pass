@@ -1,36 +1,36 @@
-public static Color decode(String arg0)
-public static Color getColor(String arg0)
-public static Color getColor(String arg0, Color arg1)
-public static Color getColor(String arg0, int arg1)
-public static Color getHSBColor(float arg0, float arg1, float arg2)
-public static final Color BLACK
-public static final Color BLUE
-public static final Color CYAN
-public static final Color DARK_GRAY
-public static final Color GRAY
-public static final Color GREEN
-public static final Color LIGHT_GRAY
-public static final Color MAGENTA
-public static final Color ORANGE
-public static final Color PINK
-public static final Color RED
-public static final Color WHITE
-public static final Color YELLOW
-public static final Color black
-public static final Color blue
-public static final Color cyan
-public static final Color darkGray
-public static final Color gray
-public static final Color green
-public static final Color lightGray
-public static final Color magenta
-public static final Color orange
-public static final Color pink
-public static final Color red
-public static final Color white
-public static final Color yellow
-public static final int BITMASK
-public static final int OPAQUE
-public static final int TRANSLUCENT
-public static float[] RGBtoHSB(int arg0, int arg1, int arg2, float[] arg3)
-public static int HSBtoRGB(float arg0, float arg1, float arg2)
+BITMASK
+BLACK
+BLUE
+CYAN
+DARK_GRAY
+GRAY
+GREEN
+HSBtoRGB#03#(float,float,float)
+LIGHT_GRAY
+MAGENTA
+OPAQUE
+ORANGE
+PINK
+RED
+RGBtoHSB#04#(int,int,int,float[])
+TRANSLUCENT
+WHITE
+YELLOW
+black
+blue
+cyan
+darkGray
+decode#01#(String)
+getColor#01#(String)
+getColor#02#(String,Color)
+getColor#02#(String,int)
+getHSBColor#03#(float,float,float)
+gray
+green
+lightGray
+magenta
+orange
+pink
+red
+white
+yellow
