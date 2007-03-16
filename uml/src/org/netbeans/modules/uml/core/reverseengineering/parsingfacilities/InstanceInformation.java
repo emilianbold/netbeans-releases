@@ -128,6 +128,10 @@ abstract public class InstanceInformation implements Cloneable
      */
     public void setInstanceName(String value)
     {
+        //kris - in response to is 78375. When an array expression contains an integer 
+        // constant index, this will filter off the []. The needs to be revisited 
+        // and determined if this is this action is even appropriate.
+        if (value.indexOf("[") != -1) value="" ;
         m_InstanceName = value;
     }
 
