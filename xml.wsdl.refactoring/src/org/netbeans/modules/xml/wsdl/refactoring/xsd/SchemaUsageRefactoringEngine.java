@@ -134,12 +134,15 @@ public class SchemaUsageRefactoringEngine {
                 model.startTransaction();
             }
             for (RefactoringElementImplementation u:elements) {
-                if (u.getComposite() instanceof Import) {
-                    Import im = (Import) u.getComposite();
+                Component comp = u.getLookup().lookup(Component.class);
+                if(comp == null)
+                    continue;
+                if (comp instanceof Import) {
+                    Import im = (Import) comp;
                     String newLocation = calculateNewLocationString(im.getLocation(), request);
                     im.setLocation(newLocation);
-                } else if (u.getComposite() instanceof SchemaModelReference) {
-                    SchemaModelReference ref = (SchemaModelReference) u.getComposite();
+                } else if (comp instanceof SchemaModelReference) {
+                    SchemaModelReference ref = (SchemaModelReference) comp;
                     String newLocation = calculateNewLocationString(ref.getSchemaLocation(), request);
                     ref.setSchemaLocation(newLocation);
                 }

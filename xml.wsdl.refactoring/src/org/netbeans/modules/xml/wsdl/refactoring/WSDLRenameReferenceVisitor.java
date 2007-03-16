@@ -50,6 +50,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeaderFault;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 import org.netbeans.modules.xml.wsdl.model.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -81,8 +82,9 @@ public class WSDLRenameReferenceVisitor extends DefaultVisitor implements WSDLVi
                 model.startTransaction();
             }
             for (RefactoringElementImplementation element: elements) {
-                assert element.getComposite() instanceof WSDLComponent : "Wrong component type in WSDL usage group"; //NOI18N
-                ((WSDLComponent) element.getComposite()).accept(this);
+                Component comp = element.getLookup().lookup(Component.class);
+                assert comp instanceof WSDLComponent : "Wrong component type in WSDL usage group"; //NOI18N
+                ((WSDLComponent)comp).accept(this);
             }
         } finally {
             if (startTransaction && model.isIntransaction())
