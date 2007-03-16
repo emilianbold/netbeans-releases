@@ -12,7 +12,21 @@
             </sequence>
         </complexType>
     </element>
+<element name="GetLastTradePrice2">
+        <complexType>
+            <sequence>
+                <element name="tickerSymbol" type="xsd:string"/>
+            </sequence>
+        </complexType>
+    </element>
     <element name="GetLastTradePriceResponse">
+        <complexType>
+            <sequence>
+                <element name="price" type="xsd:float"/>
+            </sequence>
+        </complexType>
+    </element>
+<element name="GetLastTradePriceResponse2">
         <complexType>
             <sequence>
                 <element name="price" type="xsd:float"/>
