@@ -2,7 +2,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
-    <folder name="Loaders">
+<!--    <folder name="Loaders">
         <folder name="xml">
             <folder name="sun-dd">
                 <folder name="Actions">
@@ -30,7 +30,7 @@
                     <attr name="org-openide-actions-DeleteAction.instance/sep-3.instance" boolvalue="true"/>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
+                    </file>-->
  <!--    TODO Retoche Migration
                     <attr name="sep-3.instance/org-netbeans-modules-xml-tools-actions-CheckAction.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
@@ -38,7 +38,7 @@
                     <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
                     <attr name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance/sep-5.instance" boolvalue="true"/>
                     -->
-                    <file name="sep-4.instance">
+<!--                    <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file> 
                     <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
@@ -48,7 +48,7 @@
                 </folder>
             </folder>
         </folder>
-    </folder>   
+    </folder>   -->
     <folder name="Templates">
         <folder name="J2EE">
             <file name="sunDD">
