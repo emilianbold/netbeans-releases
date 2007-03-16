@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.websvc.rest;
 
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -28,6 +29,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 
@@ -46,6 +50,9 @@ public class RestUtils {
      */
     public static void addSwdpLibrary(FileObject source, String[] classPathTypes) throws IOException {
         Project project = FileOwnerQuery.getOwner(source);
+        if (project == null || jeePlatformAlreadyHasSwdpLibrary(project)) {
+            return;
+        }
         // check if the wsimport class is already present - this means we don't need to add the library
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
@@ -54,15 +61,40 @@ public class RestUtils {
             return;
         }
         
-        ProjectClassPathModifier pce = (ProjectClassPathModifier)project.getLookup().lookup(ProjectClassPathExtender.class);
         Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
-        if (pce != null && swdpLibrary != null) {
-            for (String type : classPathTypes) {
-                pce.addLibraries(new Library[] { swdpLibrary }, source, type);
-            }
-        } else{
-            throw new IllegalStateException("Current project does not support " +
-                    "ProjectClassPathModifier or SWDP library not found");
+        if (swdpLibrary == null) {
+            throw new IllegalStateException("SWDP library not found");
         }
+        ProjectClassPathExtender pce = project.getLookup().lookup(ProjectClassPathExtender.class);
+        ProjectClassPathModifier pcm = project.getLookup().lookup(ProjectClassPathModifier.class);
+        if (pcm != null) {
+            for (String type : classPathTypes) {
+                pcm.addLibraries(new Library[] { swdpLibrary }, source, type);
+            }
+        } else if (pce != null) {
+            pce.addLibrary(swdpLibrary);
+        } else{
+            throw new IllegalStateException("Current project does not have support " +
+                    "for ProjectClassPathModifier or ProjectClassPathExtender");
+        }
+    }
+    
+    public static boolean jeePlatformAlreadyHasSwdpLibrary(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider == null){
+            return false;
+        }
+        
+        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+        if (platform == null){
+            return false;
+        }
+        
+        for (File file : platform.getClasspathEntries()) {
+            if (file.getName().equals("restbeans-impl.jar")) { //NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 }
