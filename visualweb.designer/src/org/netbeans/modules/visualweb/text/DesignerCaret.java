@@ -229,7 +229,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 
         Point pt = new Point(e.getX(), e.getY());
 //        Position pos = component.getUI().viewToModel(component, pt);
-        WebForm webform = component.getDocument().getWebForm();
+//        WebForm webform = component.getDocument().getWebForm();
+        WebForm webform = component.getWebForm();
+        
         Position pos = webform.viewToModel(pt);
 
         if ((webform.getManager().getInlineEditor() == null) ||
@@ -253,7 +255,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
     private /*protected*/ void moveCaret(MouseEvent e) {
         Point pt = new Point(e.getX(), e.getY());
 //        Position pos = component.getUI().viewToModel(component, pt);
-        WebForm webform = component.getDocument().getWebForm();
+//        WebForm webform = component.getDocument().getWebForm();
+        WebForm webform = component.getWebForm();
+        
         Position pos = webform.viewToModel(pt);
 
         if ((webform.getManager().getInlineEditor() == null) ||
@@ -522,7 +526,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 
             Position dot = range.getDot();
 //            Rectangle r = mapper.modelToView(/*component,*/ dot);
-            WebForm webForm = component.getDocument().getWebForm();
+//            WebForm webForm = component.getDocument().getWebForm();
+            WebForm webForm = component.getWebForm();
+            
             Rectangle r = webForm.modelToView(dot);
 
             if ((r == null) || ((r.width == 0) && (r.height == 0))) {
@@ -684,7 +690,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
                 if (range != null) {
                     Position dot = range.getDot();
 //                    Rectangle loc = mapper.modelToView(/*component,*/ dot);
-                    WebForm webForm = component.getDocument().getWebForm();
+//                    WebForm webForm = component.getDocument().getWebForm();
+                    WebForm webForm = component.getWebForm();
+                    
                     Rectangle loc = webForm.modelToView(dot);
                     damage(loc);
                 }
@@ -826,10 +834,15 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         
         // XXX Very suspicious assertion.
 //        assert component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() == component.getDocument().getWebForm().getJspDom();
-        if (component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getDocument().getWebForm().getHtmlDom()) {
+//        if (component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getDocument().getWebForm().getHtmlDom()) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                    new IllegalStateException("Owner document is expected to be html dom=" + component.getDocument().getWebForm().getHtmlDom() // NOI18N
+//                    + ", but it is dom=" + component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
+//        }
+        if (component.getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getWebForm().getHtmlDom()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException("Owner document is expected to be html dom=" + component.getDocument().getWebForm().getHtmlDom() // NOI18N
-                    + ", but it is dom=" + component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
+                    new IllegalStateException("Owner document is expected to be html dom=" + component.getWebForm().getHtmlDom() // NOI18N
+                    + ", but it is dom=" + component.getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
         }
 
         changeCaretPosition(dot);
@@ -861,17 +874,23 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 //        assert !dot.isRendered() ||
 //        component.getDocument().getWebForm().getManager().isInlineEditing() : dot;
         if (MarkupService.isRenderedNode(dot.getNode())
-        && !component.getDocument().getWebForm().getManager().isInlineEditing()) {
+//        && !component.getDocument().getWebForm().getManager().isInlineEditing()) {
+        && !component.getWebForm().getManager().isInlineEditing()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("It is not in inline editing, and node is rendered node=" + dot.getNode())); // NOI18N
         }
         
         // XXX Very suspicious assertion.
 //        assert component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() == component.getDocument().getWebForm().getJspDom();
-        if (component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getDocument().getWebForm().getHtmlDom()) {
+//        if (component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getDocument().getWebForm().getHtmlDom()) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                    new IllegalStateException("Owner document is expected to be html dom=" + component.getDocument().getWebForm().getHtmlDom() // NOI18N
+//                    + ", but it is dom=" + component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
+//        }
+        if (component.getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getWebForm().getHtmlDom()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException("Owner document is expected to be html dom=" + component.getDocument().getWebForm().getHtmlDom() // NOI18N
-                    + ", but it is dom=" + component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
+                    new IllegalStateException("Owner document is expected to be html dom=" + component.getWebForm().getHtmlDom() // NOI18N
+                    + ", but it is dom=" + component.getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
         }
 
         Node node = dot.getNode();
@@ -882,7 +901,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 
         if (range == null) {
 //            range = new Range(component.getDocument().getWebForm(), node, offset, node, offset);
-            range = Range.create(component.getDocument().getWebForm(), node, offset, node, offset);
+//            range = Range.create(component.getDocument().getWebForm(), node, offset, node, offset);
+            range = Range.create(component.getWebForm(), node, offset, node, offset);
+            
             dotChanged = true;
         } else {
             range.setMark(node, offset, dot.getBias());
@@ -930,7 +951,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         if (range == null) {
             // XXX Log the problem?
 //            range = new Range(component.getDocument().getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
-            range = Range.create(component.getDocument().getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
+//            range = Range.create(component.getDocument().getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
+            range = Range.create(component.getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
         } else {
             range.setDot(dot.getNode(), dot.getOffset(), dot.getBias());
         }
@@ -968,7 +990,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
                 // not visible.
                 Position dot = range.getDot();
 //                Rectangle newLoc = mapper.modelToView(/*component,*/ dot);
-                WebForm webForm = component.getDocument().getWebForm();
+//                WebForm webForm = component.getDocument().getWebForm();
+                WebForm webForm = component.getWebForm();
+                
                 Rectangle newLoc = webForm.modelToView(dot);
 
                 if (newLoc != null) {
@@ -1163,7 +1187,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      * Replace the selection. Beep if within a read-only region.
      */
     public void replaceSelection(String content) {
-        WebForm webform = component.getDocument().getWebForm();
+//        WebForm webform = component.getDocument().getWebForm();
+        WebForm webform = component.getWebForm();
+        
         InlineEditor editor = webform.getManager().getInlineEditor();
 
         if ((content.equals("\n") || content.equals("\r\n")) && // NOI18N
@@ -1221,9 +1247,10 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             return true;
         }
 
-        Document doc = component.getDocument();
+//        Document doc = component.getDocument();
         Position mark = range.getMark();
-        Position dot = ModelViewMapper.computeArrowRight(doc.getWebForm(), mark);
+//        Position dot = ModelViewMapper.computeArrowRight(doc.getWebForm(), mark);
+        Position dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
 
         if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
             UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
@@ -1252,9 +1279,10 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             return true;
         }
 
-        Document doc = component.getDocument();
+//        Document doc = component.getDocument();
         Position mark = range.getMark();
-        Position dot = ModelViewMapper.computeArrowLeft(doc.getWebForm(), mark);
+//        Position dot = ModelViewMapper.computeArrowLeft(doc.getWebForm(), mark);
+        Position dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
 
         if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
             UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
@@ -1285,7 +1313,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 
     /** Return true iff the position is within the editable portion of the document. */
     public boolean isWithinEditableRegion(Position pos) {
-        WebForm webform = component.getDocument().getWebForm();
+//        WebForm webform = component.getDocument().getWebForm();
+        WebForm webform = component.getWebForm();
 
         InlineEditor editor = webform.getManager().getInlineEditor();
 
@@ -1374,7 +1403,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
                     if (range != null) {
                         Position dot = range.getDot();
 //                        Rectangle r = mapper.modelToView(/*component,*/ dot);
-                        WebForm webForm = component.getDocument().getWebForm();
+//                        WebForm webForm = component.getDocument().getWebForm();
+                        WebForm webForm = component.getWebForm();
+                        
                         Rectangle r = webForm.modelToView(dot);
 
                         if ((r != null) && (r.width != 0) && (r.height != 0)) {

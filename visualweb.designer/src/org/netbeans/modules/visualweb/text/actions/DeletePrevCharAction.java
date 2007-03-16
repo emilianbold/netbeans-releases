@@ -63,8 +63,9 @@ public class DeletePrevCharAction extends TextAction {
         boolean beep = true;
 
         if ((target != null) /* && (target.isEditable()) */) {
-            Document doc = target.getDocument();
-            WebForm webform = doc.getWebForm();
+//            Document doc = target.getDocument();
+//            WebForm webform = doc.getWebForm();
+            WebForm webform = target.getWebForm();
 
 //            if (webform.getModel().getLiveUnit() == null) {
             // XXX This seems to be wrong. Model should handle it.

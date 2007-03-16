@@ -60,7 +60,9 @@ public class BeginWordAction extends TextAction {
                 return;
             }
 
-            WebForm webform = target.getDocument().getWebForm();
+//            WebForm webform = target.getDocument().getWebForm();
+            WebForm webform = target.getWebForm();
+            
 //            ModelViewMapper mapper = webform.getMapper();
             Position begPos = ModelViewMapper.getWordStart(webform.getPane().getPageBox(), dot);
 

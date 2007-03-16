@@ -669,8 +669,9 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         // paint the box hierarchy
         Graphics2D g2d = (Graphics2D)g;
         
-        Document doc = editor.getDocument();
-        WebForm webform = doc.getWebForm();
+//        Document doc = editor.getDocument();
+//        WebForm webform = doc.getWebForm();
+        WebForm webform = editor.getWebForm();
         
         g.getClipBounds(DesignerPane.clip);
         DesignerPane.clipBr.x = DesignerPane.clip.x + DesignerPane.clip.width;
@@ -842,8 +843,9 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
      */
     public final void paint(Graphics g, JComponent c) {
         if (pageBox != null) {
-            Document doc = editor.getDocument();
-            WebForm webform = doc.getWebForm();
+//            Document doc = editor.getDocument();
+//            WebForm webform = doc.getWebForm();
+            WebForm webform = editor.getWebForm();
             
 //            if (webform.getMarkup() == null) {
 //                return;
@@ -1156,7 +1158,7 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             throw(new IllegalArgumentException("Null position."));
         }
         
-        Document doc = editor.getDocument();
+//        Document doc = editor.getDocument();
         
         // XXX Lock insync
 //        doc.readLock();
@@ -1170,16 +1172,17 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
                 
                 switch (direction) {
                     case SwingConstants.WEST:
-                        return ModelViewMapper.computeArrowLeft(doc.getWebForm(), pos);
-                        
+//                        return ModelViewMapper.computeArrowLeft(doc.getWebForm(), pos);
+                        return ModelViewMapper.computeArrowLeft(webform, pos);
                     case SwingConstants.EAST:
-                        return ModelViewMapper.computeArrowRight(doc.getWebForm(), pos);
-                        
+//                        return ModelViewMapper.computeArrowRight(doc.getWebForm(), pos);
+                        return ModelViewMapper.computeArrowRight(webform, pos);                        
                     case SwingConstants.NORTH:
-                        return ModelViewMapper.computeArrowUp(doc.getWebForm(), pos);
-                        
+//                        return ModelViewMapper.computeArrowUp(doc.getWebForm(), pos);
+                        return ModelViewMapper.computeArrowUp(webform, pos);
                     case SwingConstants.SOUTH:
-                        return ModelViewMapper.computeArrowDown(doc.getWebForm(), pos);
+//                        return ModelViewMapper.computeArrowDown(doc.getWebForm(), pos);
+                        return ModelViewMapper.computeArrowDown(webform, pos);
                 }
                 
                 return Position.NONE;

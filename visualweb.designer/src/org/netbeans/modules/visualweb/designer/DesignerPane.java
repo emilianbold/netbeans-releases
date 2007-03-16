@@ -129,7 +129,9 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
     
     private boolean grid = false;
     private DropTargetListener gridDropListener = null;
-    private WebForm webform = null;
+    
+    private final WebForm webform;
+    
     private FontMetrics metrics;
     private FontMetrics boldMetrics;
 
@@ -207,11 +209,11 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
                             RenderingHints.VALUE_ANTIALIAS_ON);
         */
 
-        // Draw "here's what you need to do" explanation on the canvas
-        // when the document is "empty".
-        Document doc = getDocument();
-
-        if (isDocumentEmpty(doc)) {
+//        // Draw "here's what you need to do" explanation on the canvas
+//        // when the document is "empty".
+//        Document doc = getDocument();
+//        if (isDocumentEmpty(doc)) {
+        if (isDocumentEmpty(webform.getHtmlBody())) {
             // Document is probably empty. TODO: Find a better and more
             // accurate way to quickly determine this! For now, if you
             // go and remove the title and header tags, you can end up
@@ -672,20 +674,21 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
      * or if it contains any tags below the body which is not a <XXXform> tag
      * (typically <h:form>) or more than one form tag (<XXXform>).
      * Also, the form tag can not contain any other elements. */
-    private static boolean isDocumentEmpty(Document doc) {
+    private static boolean isDocumentEmpty(/*Document doc*/ Element body) {
         if(DesignerUtils.DEBUG) {
             DesignerUtils.debugLog(DesignerUtils.class.getName() + ".isDocumentEmpty(Document)");
         }
-        if(doc == null) {
-            throw(new IllegalArgumentException("Null document"));
-        }
+//        if(doc == null) {
+//            throw(new IllegalArgumentException("Null document"));
+//        }
 	// TODO Better would be if document can tell whether it is modified or not (comparing
 	// to the original template).
 	
-	WebForm webform = doc.getWebForm();
+//	WebForm webform = doc.getWebForm();
 	
 //        RaveElement b = webform.getBody();
-        Element b = webform.getHtmlBody();
+//        Element b = webform.getHtmlBody();
+        Element b = body;
 
         if (b == null) {
             return true;

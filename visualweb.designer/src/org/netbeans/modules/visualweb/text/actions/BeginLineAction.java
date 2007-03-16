@@ -66,7 +66,9 @@ public class BeginLineAction extends TextAction {
                 // #6316151 No position no move.
                 return;
             }
-            WebForm webform = target.getDocument().getWebForm();
+//            WebForm webform = target.getDocument().getWebForm();
+            WebForm webform = target.getWebForm();
+            
 //            ModelViewMapper mapper = webform.getMapper();
             Position begPos = ModelViewMapper.getLineBegin(webform, pos);
 

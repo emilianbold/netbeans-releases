@@ -60,7 +60,9 @@ public class EndWordAction extends TextAction {
                 return;
             }
 
-            WebForm webform = target.getDocument().getWebForm();
+//            WebForm webform = target.getDocument().getWebForm();
+            WebForm webform = target.getWebForm();
+            
 //            ModelViewMapper mapper = webform.getMapper();
             Position endPos = ModelViewMapper.getWordEnd(webform.getPane().getPageBox(), dot);
 

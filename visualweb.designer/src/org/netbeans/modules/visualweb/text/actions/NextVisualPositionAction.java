@@ -82,7 +82,8 @@ public class NextVisualPositionAction extends TextAction {
 
                 // (we do snapdisabled for selection forward/backward etc.
 //                target.getDocument().getWebForm().getActions().moveSelection(direction, snapDisabled);
-                moveSelection(target.getDocument().getWebForm(), direction, snapDisabled);
+//                moveSelection(target.getDocument().getWebForm(), direction, snapDisabled);
+                moveSelection(target.getWebForm(), direction, snapDisabled);
 
                 return;
             }
@@ -93,7 +94,9 @@ public class NextVisualPositionAction extends TextAction {
             if ((magicPosition == null) &&
                     ((direction == SwingConstants.NORTH) || (direction == SwingConstants.SOUTH))) {
 //                Rectangle r = target.modelToView(dot);
-                WebForm webForm = target.getDocument().getWebForm();
+//                WebForm webForm = target.getDocument().getWebForm();
+                WebForm webForm = target.getWebForm();
+                
                 Rectangle r = webForm.modelToView(dot);
                 magicPosition = new Point(r.x, r.y);
             }

@@ -55,7 +55,9 @@ public class SelectAllAction extends TextAction {
         DesignerPaneBase target = getTextComponent(e);
 
         if (target != null) {
-            WebForm webform = target.getDocument().getWebForm();
+//            WebForm webform = target.getDocument().getWebForm();
+            WebForm webform = target.getWebForm();
+            
             Position pos = target.getCaretPosition();
 
             if (pos == Position.NONE) {

@@ -19,6 +19,7 @@
 package org.netbeans.modules.visualweb.text;
 
 import java.util.HashMap;
+import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.actions.SelectLineAction;
 import java.awt.AWTEvent;
 import java.awt.Color;
@@ -375,6 +376,10 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
         //updateUI();
     }
 
+    
+    // XXX Temp only.
+    public abstract WebForm getWebForm();
+    
     /**
      * Fetches the user-interface factory for this text-oriented editor.
      *
