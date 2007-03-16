@@ -222,7 +222,7 @@ public class FolderNodeFactory implements NodeFactory {
                     return null;
                 }
                 if (!style.equals("tree")) { // NOI18N
-                    Logger.getLogger(FolderNodeFactory.class.getName()).log(Level.WARNING, "Unrecognized <source-folder> style '{0}' on {1}", new Object[] {style, file});
+                    Logger.getLogger(FolderNodeFactory.class.getName()).log(Level.WARNING, "Unrecognized <source-folder> style {0} on {1}", new Object[] {style, file});
                     // ... but show it as a tree anyway (at least ViewTest cares)
                 }
                 DataObject fileDO;
