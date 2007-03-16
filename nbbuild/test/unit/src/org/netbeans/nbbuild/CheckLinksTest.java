@@ -69,7 +69,7 @@ public class CheckLinksTest extends NbTestCase {
     }
 
     
-    public void testForbidenExternalURLsAreCorrectlyReported () throws Exception {
+    public void testForbiddenExternalURLsAreCorrectlyReported () throws Exception {
         java.io.File html = extractHTMLFile (
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
