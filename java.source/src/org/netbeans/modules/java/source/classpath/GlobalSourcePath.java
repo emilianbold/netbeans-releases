@@ -621,6 +621,8 @@ public class GlobalSourcePath {
     
     private class Listener implements GlobalPathRegistryListener, PropertyChangeListener, ChangeListener {
         
+            private Object lastPropagationId;
+        
             public void pathsAdded(GlobalPathRegistryEvent event) {
                 resetCacheAndFire ();
             }
@@ -636,8 +638,12 @@ public class GlobalSourcePath {
                 }
                 else if (ClassPath.PROP_INCLUDES.equals(propName)) {
                     if (excludesListener != null) {
-                        PropertyChangeEvent event = new PropertyChangeEvent (this,PROP_INCLUDES,evt.getSource(),evt.getSource());
-                        excludesListener.propertyChange(event);
+                        final Object newPropagationId = evt.getPropagationId();
+                        if (newPropagationId == null || lastPropagationId != newPropagationId) {                                                    
+                            PropertyChangeEvent event = new PropertyChangeEvent (this,PROP_INCLUDES,evt.getSource(),evt.getSource());
+                            excludesListener.propertyChange(event);
+                        }                        
+                        lastPropagationId = newPropagationId;
                     }
                 }
             }

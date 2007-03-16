@@ -533,8 +533,10 @@ public final class ClassPath {
      * @param oldV old value
      * @param newV new value
      */
-    final void firePropertyChange(String what, Object oldV, Object newV) {	
-	propSupport.firePropertyChange(what, oldV, newV);
+    final void firePropertyChange(final String what, final Object oldV, final Object newV, final Object propagationId) {	
+        final PropertyChangeEvent event = new PropertyChangeEvent (this, what, oldV, newV);
+        event.setPropagationId(propagationId);
+	propSupport.firePropertyChange(event);
     }
 
     public String toString() {
@@ -841,8 +843,8 @@ public final class ClassPath {
                     invalidEntries++;
                     invalidRoots++;
                 }
-                firePropertyChange (PROP_ENTRIES,null,null);
-                firePropertyChange (PROP_ROOTS,null,null);
+                firePropertyChange (PROP_ENTRIES,null,null,null);
+                firePropertyChange (PROP_ROOTS,null,null,null);
             } else if (FilteringPathResourceImplementation.PROP_INCLUDES.equals(prop)) {
                 boolean fire;
                 synchronized (this) {
@@ -851,7 +853,7 @@ public final class ClassPath {
                     propIncludesPropagationId = id;
                 }
                 if (fire) {
-                    firePropertyChange(PROP_INCLUDES, null, null);
+                    firePropertyChange(PROP_INCLUDES, null, null, evt.getPropagationId());
                 }
             }
             if (ClassPathImplementation.PROP_RESOURCES.equals(prop)) {
@@ -943,7 +945,7 @@ public final class ClassPath {
                         cp.invalidRoots++;
                         this.removeAllRoots();  //No need to listen
                     }
-                    cp.firePropertyChange(PROP_ROOTS,null,null);
+                    cp.firePropertyChange(PROP_ROOTS,null,null,null);
                }
             }
         }
@@ -993,7 +995,7 @@ public final class ClassPath {
                 }            
             }
             if (fire) {
-                cp.firePropertyChange(PROP_ROOTS,null,null);
+                cp.firePropertyChange(PROP_ROOTS,null,null,null);
             }
         }
 
