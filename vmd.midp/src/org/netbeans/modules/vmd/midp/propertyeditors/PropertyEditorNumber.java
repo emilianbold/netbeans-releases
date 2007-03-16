@@ -256,7 +256,9 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return result
      */
     protected boolean isTextCorrect(String text) {
-        return Pattern.matches("[\\d\\-]+", text); // NOI18N
+        return Pattern.matches("[\\d\\-]+", text);// || // NOI18N
+               // hexadecimal support
+//               Pattern.matches("-?0x[d\\abcdefABCDEF]+", text); // NOI18N
     }
     
     /**
@@ -267,6 +269,10 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return result text
      */
     protected String prepareText(String text) {
+         // hex
+//        if (text.matches("-?0x[d\\abcdefABCDEF]+")) { // NOI18N
+//            return text.replaceAll("[^0-9\\-0xabcdefABCDEF]+", ""); // NOI18N
+//        }
         return text.replaceAll("[^0-9\\-]+", ""); // NOI18N
     }
     
