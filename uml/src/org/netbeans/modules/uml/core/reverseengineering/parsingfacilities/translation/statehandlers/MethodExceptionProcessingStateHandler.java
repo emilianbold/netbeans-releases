@@ -178,6 +178,7 @@ public class MethodExceptionProcessingStateHandler
             if(m_ExceptionParameter)
             {
                 m_ExceptionName.addToken(pToken);
+                
             }
         }
     }
@@ -372,27 +373,23 @@ public class MethodExceptionProcessingStateHandler
         }
     }
 
-    public void addParameterToSymbolTable()
-	{   
-    	try
-		{
-    		IREClassLoader  pLoader = getClassLoader();
-    		IREClass pClass = getClassBeingProcessed();
-      
-    		String typeName = m_ExceptionName.getIdentifierAsUML();
-    		IREClass  pExceptionClass = pLoader.loadClass(typeName, pClass);
-    		InstanceInformation ref = new ObjectInstanceInformation(m_ExceptionInstance, 
-      		                                            typeName, 
-														pExceptionClass);
-    		getSymbolTable().addInstance(ref, false);
-    		m_ExceptionName.clear();
-    		m_ExceptionInstance = "";
-		}
-    	catch(Exception e)
-		{
-    		Log.stackTrace(e);
-		}
-	}
+    public void addParameterToSymbolTable() {
+        try {
+            IREClassLoader  pLoader = getClassLoader();
+            IREClass pClass = getClassBeingProcessed();
+            
+            String typeName = m_ExceptionName.getIdentifierAsUML();
+            IREClass  pExceptionClass = pLoader.loadClass(typeName, pClass);
+            InstanceInformation ref = new ObjectInstanceInformation(m_ExceptionInstance,
+                    typeName,
+                    pExceptionClass);
+            getSymbolTable().addInstance(ref, false);
+            //m_ExceptionName.clear();
+            //m_ExceptionInstance = "";
+        } catch(Exception e) {
+            Log.stackTrace(e);
+        }
+    }
 
 
 

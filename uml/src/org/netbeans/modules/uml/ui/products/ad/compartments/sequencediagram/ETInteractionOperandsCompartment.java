@@ -347,7 +347,10 @@ public class ETInteractionOperandsCompartment extends ETZonesCompartment impleme
         IMessage nextMsg = findNextMessages(fragment);
         
         // get location of message and adjust for the combined fragment.
-        List < IPresentationElement > presentations = nextMsg.getPresentationElements();
+        List < IPresentationElement > presentations = null ;
+        if (nextMsg != null)
+            presentations = nextMsg.getPresentationElements();
+        
         if((presentations != null) && (presentations.size() > 0))
         {
             IEdgePresentation p = (IEdgePresentation)presentations.get(0);
