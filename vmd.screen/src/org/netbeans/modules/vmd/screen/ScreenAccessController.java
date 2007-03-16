@@ -45,58 +45,58 @@ import java.util.ArrayList;
  * @author David Kaspar
  */
 public final class ScreenAccessController implements AccessController {
-
+    
     private final DesignDocument document;
-
+    
     private final JPanel mainPanel;
     private final DevicePanel devicePanel;
     private final ResourcePanel resourcePanel;
-
+    
     private final JComboBox editedScreenCombo;
     private final ActionListener editedScreenComboListener;
-
+    
     private DesignComponent editedScreen;
-    private List<DesignComponent> allEditableScreens = Collections.emptyList ();
-
+    private List<DesignComponent> allEditableScreens = Collections.emptyList();
+    
     // Called in document transaction
-    public ScreenAccessController (DesignDocument document) {
+    public ScreenAccessController(DesignDocument document) {
         this.document = document;
-
-        devicePanel = new DevicePanel (this);
-        resourcePanel = new ResourcePanel (this);
-        mainPanel = new MainPanel (devicePanel, resourcePanel);
-
-        editedScreenCombo = new JComboBox ();
-        editedScreenCombo.setRenderer (new EditedComboRenderer ());
+        
+        devicePanel = new DevicePanel(this);
+        resourcePanel = new ResourcePanel(this);
+        mainPanel = new MainPanel(devicePanel, resourcePanel);
+        
+        editedScreenCombo = new JComboBox();
+        editedScreenCombo.setRenderer(new EditedComboRenderer());
         editedScreenComboListener = new ActionListener() {
-            public void actionPerformed (ActionEvent e) {
-                ScreenAccessController.this.document.getTransactionManager ().readAccess (new Runnable() {
-                    public void run () {
-                        setEditedScreen ((DesignComponent) editedScreenCombo.getSelectedItem ());
-                        refreshPanels ();
-                    }
-                });
+            public void actionPerformed(ActionEvent e) {
+                setEditedComponent((DesignComponent) editedScreenCombo.getSelectedItem());
             }
         };
-        editedScreenCombo.addActionListener (editedScreenComboListener);
+        editedScreenCombo.addActionListener(editedScreenComboListener);
     }
-
-    // Called in document transaction
-    public void writeAccess (Runnable runnable) {
-        runnable.run ();
+    
+    public void setEditedComponent(DesignComponent component) {
+        setEditedScreen(component);
+        refreshPanels();
     }
-
+    
     // Called in document transaction
-    public void notifyEventFiring (DesignEvent event) {
+    public void writeAccess(Runnable runnable) {
+        runnable.run();
     }
-
+    
     // Called in document transaction
-    public void notifyEventFired (DesignEvent event) {
-        SwingUtilities.invokeLater (new Runnable() {
-            public void run () {
+    public void notifyEventFiring(DesignEvent event) {
+    }
+    
+    // Called in document transaction
+    public void notifyEventFired(DesignEvent event) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
                 document.getTransactionManager().readAccess(new Runnable() {
                     public void run() {
-                        refreshModel ();
+                        refreshModel();
                     }
                 });
             }
@@ -104,98 +104,98 @@ public final class ScreenAccessController implements AccessController {
     }
     
     // called in AWT and document transaction
-    private void refreshModel () {
-        allEditableScreens = getEditableScreens ();
-
-        editedScreenCombo.removeActionListener (editedScreenComboListener);
-        editedScreenCombo.setModel (new DefaultComboBoxModel (allEditableScreens.toArray ()));
-        editedScreenCombo.setSelectedItem (editedScreen);
-        editedScreenCombo.addActionListener (editedScreenComboListener);
-
-        if (editedScreen == null  ||  ! allEditableScreens.contains (editedScreen))
-            setEditedScreen (allEditableScreens.size () > 0 ? allEditableScreens.get (0) : null);
-
-        refreshPanels ();
+    private void refreshModel() {
+        allEditableScreens = getEditableScreens();
+        
+        editedScreenCombo.removeActionListener(editedScreenComboListener);
+        editedScreenCombo.setModel(new DefaultComboBoxModel(allEditableScreens.toArray()));
+        editedScreenCombo.setSelectedItem(editedScreen);
+        editedScreenCombo.addActionListener(editedScreenComboListener);
+        
+        if (editedScreen == null  ||  ! allEditableScreens.contains(editedScreen))
+            setEditedScreen(allEditableScreens.size() > 0 ? allEditableScreens.get(0) : null);
+        
+        refreshPanels();
     }
-
-    private List<DesignComponent> getEditableScreens () {
+    
+    private List<DesignComponent> getEditableScreens() {
         ArrayList<DesignComponent> screens = new ArrayList<DesignComponent> ();
-        for (DesignComponent component : DocumentSupport.gatherAllComponentsContainingPresenterClass (document, ScreenDisplayPresenter.class)) {
-            if (component.getPresenter (ScreenDisplayPresenter.class).isTopLevelDisplay ())
-                screens.add (component);
+        for (DesignComponent component : DocumentSupport.gatherAllComponentsContainingPresenterClass(document, ScreenDisplayPresenter.class)) {
+            if (component.getPresenter(ScreenDisplayPresenter.class).isTopLevelDisplay())
+                screens.add(component);
         }
         return screens;
     }
-
+    
     // called in AWT and document transaction
-    public void setEditedScreen (DesignComponent component) {
+    private void setEditedScreen(DesignComponent component) {
         // TODO - hideNotify
         editedScreen = component;
-        editedScreenCombo.removeActionListener (editedScreenComboListener);
-        editedScreenCombo.setSelectedItem (component);
-        editedScreenCombo.addActionListener (editedScreenComboListener);
+        editedScreenCombo.removeActionListener(editedScreenComboListener);
+        editedScreenCombo.setSelectedItem(component);
+        editedScreenCombo.addActionListener(editedScreenComboListener);
         // TODO - reload
     }
-
-    private void refreshPanels () {
-        devicePanel.reload ();
-        resourcePanel.reload ();
-        mainPanel.validate ();
+    
+    public void refreshPanels() {
+        devicePanel.reload();
+        resourcePanel.reload();
+        mainPanel.validate();
     }
-
+    
     // Called in document transaction
-    public void notifyComponentsCreated (Collection<DesignComponent> createdComponents) {
+    public void notifyComponentsCreated(Collection<DesignComponent> createdComponents) {
     }
-
+    
     // Called in AWT
-    void showNotify () {
+    void showNotify() {
         // TODO
     }
-
+    
     // Called in AWT
-    void hideNotify () {
+    void hideNotify() {
         // TODO
     }
-
-    JComponent getMainPanel () {
+    
+    JComponent getMainPanel() {
         return mainPanel;
     }
-
-    JComponent getToolBar () {
+    
+    JComponent getToolBar() {
         return editedScreenCombo;
     }
-
-    public DesignDocument getDocument () {
+    
+    public DesignDocument getDocument() {
         return document;
     }
-
+    
     // called in AWT and document transaction
-    public DesignComponent getEditedScreen () {
-        assert SwingUtilities.isEventDispatchThread ();
-        assert document.getTransactionManager ().isAccess ();
+    public DesignComponent getEditedScreen() {
+        assert SwingUtilities.isEventDispatchThread();
+        assert document.getTransactionManager().isAccess();
         return editedScreen;
     }
-
+    
     private class EditedComboRenderer extends DefaultListCellRenderer {
-
+        
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             final Image[] image = new Image[1];
             final String[] label = new String[1];
             if (value != null) {
                 final DesignComponent dc = (DesignComponent) value;
-                document.getTransactionManager ().readAccess (new Runnable() {
-                    public void run () {
-                        InfoPresenter presenter = dc.getPresenter (InfoPresenter.class);
-                        label[0] = presenter.getDisplayName (InfoPresenter.NameType.PRIMARY);
-                        image[0] = presenter.getIcon (InfoPresenter.IconType.COLOR_16x16);
+                document.getTransactionManager().readAccess(new Runnable() {
+                    public void run() {
+                        InfoPresenter presenter = dc.getPresenter(InfoPresenter.class);
+                        label[0] = presenter.getDisplayName(InfoPresenter.NameType.PRIMARY);
+                        image[0] = presenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
                     }
                 });
             }
-            super.getListCellRendererComponent (list, label[0], index, isSelected, cellHasFocus);
+            super.getListCellRendererComponent(list, label[0], index, isSelected, cellHasFocus);
             if (image[0] != null)
-                setIcon (new ImageIcon (image[0]));
+                setIcon(new ImageIcon(image[0]));
             return this;
         }
     }
-
+    
 }
