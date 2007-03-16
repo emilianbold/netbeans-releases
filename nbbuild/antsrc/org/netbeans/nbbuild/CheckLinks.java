@@ -310,6 +310,7 @@ public class CheckLinks extends MatchingTask {
             }
         if (! okurls.contains(u)) {
             task.log(normalize(referrer, mappers) + referrerLocation + ": broken link: " + u, Project.MSG_WARN);
+            badurls.add(u); // #97784
         }
         if (others != null) {
             Iterator it = others.entrySet().iterator();
