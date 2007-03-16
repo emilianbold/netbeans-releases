@@ -122,9 +122,20 @@ public class MethodLoopStateHandler extends MethodCompositeStateHandler
         }
         else if(m_IsInInitialize)
         {
+            //Kris - issue 78409 - the pOptions was a dead call. The addInitializerState
+            //seemed to correctly add the new StateHandler to the stack, but then
+            //this (MehodLoopStateHandler) was returned. So added the call to
+            //retrieveStatementHandler to retrieve the handler created to handle the 
+            //variable definition. Also, of course, removed the retVal=this line.
             IOpParserOptions pOptions = getOpParserOptions();
+            
             addInitializerState(stateName, language);
-            retVal = this;
+            retVal = StatementFactory.retrieveStatementHandler(
+                                                    stateName, 
+                                                    language, 
+                                                    pOptions, 
+                                                    getSymbolTable());
+            
         }
         else if(m_IsInPostProcessing)
         {      
