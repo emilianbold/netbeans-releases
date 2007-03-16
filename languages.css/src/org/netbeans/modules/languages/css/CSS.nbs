@@ -105,9 +105,9 @@ declarations = ;
 declaration = key ":" expr [prio];
 key = <css_identifier>;
 expr = term (operator term)*;
-term = ["-" | "+"] (<css_number> | <css_identifier> | <css_string> | <css_url> | <css_hash> | function);
+term = ["-" | "+"] (<css_number> | <css_string> | <css_url> | <css_hash> | function);
 operator = "/" | "," |;
-function = <css_identifier> "(" expr ")";
+function = <css_identifier> ["(" expr ")"];
 prio = "!" "important";
 
 ########### color ##############################################################
