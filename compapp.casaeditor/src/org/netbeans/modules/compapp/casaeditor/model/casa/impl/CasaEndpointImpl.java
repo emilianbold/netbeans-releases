@@ -72,6 +72,10 @@ public class CasaEndpointImpl extends CasaComponentImpl
     }
     
     public void setInterfaceQName(QName qname) { // REFACTOR ME
+        if (qname == null) {
+            qname = new QName(""); // NOI18N
+        }
+        
         String namespace = qname.getNamespaceURI();
         String prefix = qname.getPrefix();
         String localPart = qname.getLocalPart();
@@ -111,8 +115,11 @@ public class CasaEndpointImpl extends CasaComponentImpl
         return getQName(attrValue);
     }
         
-    public void setServiceQName(QName qname) {        
-                        
+    public void setServiceQName(QName qname) {     
+        if (qname == null) {
+            qname = new QName(""); // NOI18N
+        }
+        
         String namespace = qname.getNamespaceURI();
         String prefix = qname.getPrefix();
         String localPart = qname.getLocalPart();

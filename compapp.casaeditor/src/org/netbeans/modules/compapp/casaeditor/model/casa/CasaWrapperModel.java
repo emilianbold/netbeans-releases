@@ -256,7 +256,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             Matcher matcher = pattern.matcher(linkHref);
             
             if (! matcher.matches()) {
-                throw new IllegalArgumentException("Invalid xlink href: " + linkHref);
+                throw new IllegalArgumentException("Invalid xlink href: " + linkHref); // NOI18N
             }
             
             String uriString = matcher.group(1);
@@ -271,7 +271,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                         new FindWSDLComponent().findComponent(root, xpathString);
                 cachedReferences.put(linkHref, wsdlComponent);
             } else {
-                System.out.println("WARNING: WSDL model for " + linkHref + " is (temporarily) unavailable.");
+                System.out.println("WARNING: WSDL model for " + linkHref + " is (temporarily) unavailable.");   // NOI18N
             }
         }
         
@@ -292,6 +292,9 @@ public class CasaWrapperModel extends CasaModelImpl {
         return getCasaEndpointRef(casaEndpoint, isConsumes);
     }
     
+    /**
+     * Gets the CasaConsumes or CasaProvides that links to the given endpoint.
+     */
     private CasaEndpointRef getCasaEndpointRef(CasaEndpoint casaEndpoint, 
             boolean isConsumes) {
         
@@ -625,15 +628,33 @@ public class CasaWrapperModel extends CasaModelImpl {
             if (casaPort != null) {
                 if (isDefinedInCompApp(casaPort)) {
                     if (getConnections(casaPort, false).size() == 1) { // this is the only visible connection left
-                        /*CasaConsumes casaPortConsumes = casaPort.getConsumes();
-                        if (casaPortConsumes != null) {
-                            clearCasaEndpointInterfaceName(casaPortConsumes);
+                        setEndpointInterfaceQName(endpointRef, null);
+                        
+                        // Here we also need to clean up casa.wsdl:
+                        Port port = getLinkedWSDLPort(casaPort);
+                        WSDLModel casaWSDLModel = port.getModel();
+                        casaWSDLModel.startTransaction();
+                        try {
+                            // (1) remove wsdl port children
+                            for (ExtensibilityElement ex : port.getExtensibilityElements()) {
+                                port.removeExtensibilityElement(ex);
+                            }
+                            // (2) remove binding children
+                            Binding binding = port.getBinding().get();
+                            for (BindingOperation op : binding.getBindingOperations()) {
+                                binding.removeBindingOperation(op);
+                            }
+                            for (ExtensibilityElement ex : binding.getExtensibilityElements()) {
+                                binding.removeExtensibilityElement(ex);
+                            }
+                            // (3) change binding type to dummy porttype
+                            PortType dummyPT = getDummyPortType(casaWSDLModel, true);
+                            binding.setType(binding.createReferenceTo(dummyPT, PortType.class));
+                        } finally {
+                            if (casaWSDLModel.isIntransaction()) {
+                                casaWSDLModel.endTransaction();
+                            }
                         }
-                        CasaProvides casaPortProvides = casaPort.getProvides();
-                        if (casaPortProvides != null) {
-                            clearCasaEndpointInterfaceName(casaPortProvides);
-                        }*/
-                        clearCasaEndpointInterfaceName(endpointRef);
                     }
                 }
             } else {
@@ -641,7 +662,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                         getCasaEngineServiceUnit(endpointRef);
                 if (sesu != null && !sesu.isInternal()) { // endpoint belongs to external SESU
                     if (getConnections(endpointRef, false).size() == 1) { // this is the only visible connection left
-                        clearCasaEndpointInterfaceName(endpointRef);
+                        setEndpointInterfaceQName(endpointRef, null);
                     }
                 }
             }
@@ -999,6 +1020,35 @@ public class CasaWrapperModel extends CasaModelImpl {
         return casaSESU;
     }
     
+    private PortType getDummyPortType(WSDLModel casaWSDLModel, boolean create) {
+        
+        Definitions definitions = casaWSDLModel.getDefinitions();
+        for (PortType pt : definitions.getPortTypes()) {
+            if (pt.getName().equals(DUMMY_PORTTYPE_NAME)) {
+                return pt;
+            }
+        }
+        
+        PortType pt = null;
+        
+        if (create) {
+            WSDLComponentFactory wsdlFactory = casaWSDLModel.getFactory();
+            pt = wsdlFactory.createPortType();
+            pt.setName(DUMMY_PORTTYPE_NAME);
+            
+            casaWSDLModel.startTransaction();
+            try {
+                definitions.addPortType(pt);
+            } finally {
+                if (casaWSDLModel.isIntransaction()) {
+                    casaWSDLModel.endTransaction();
+                }
+            }
+        }
+        
+        return pt;
+    }
+    
     /**
      * Adds a new WSDL endpoint.
      */
@@ -1010,20 +1060,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         Definitions definitions = casaWSDLModel.getDefinitions();
         
         // 1.0. create dummy porttype (need this to avoid NPE when building compapp)
-        PortType portType = null;
-        boolean dummyPortTypeExists = false;
-        for (PortType pt : definitions.getPortTypes()) {
-            if (pt.getName().equals(DUMMY_PORTTYPE_NAME)) {
-                dummyPortTypeExists = true;
-                portType = pt;
-                break;
-            }
-        }
-        if (!dummyPortTypeExists) {
-            portType = wsdlFactory.createPortType();
-            String newPortTypeName = DUMMY_PORTTYPE_NAME; //getUniquePortTypeName(casaWSDLModel);
-            portType.setName(newPortTypeName);
-        }
+        PortType portType = getDummyPortType(casaWSDLModel, true);
         
         // 1.1. create new binding
         Binding binding = wsdlFactory.createBinding();
@@ -1046,9 +1083,6 @@ public class CasaWrapperModel extends CasaModelImpl {
         try {
             port.setBinding(port.createReferenceTo(binding, Binding.class));
             binding.setType(binding.createReferenceTo(portType, PortType.class));
-            if (!dummyPortTypeExists) {
-                definitions.addPortType(portType);
-            }
             definitions.addBinding(binding);
             definitions.addService(service);
         } finally {
@@ -2339,12 +2373,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
     }
-    
-    // TMP
-    private void clearCasaEndpointInterfaceName(CasaEndpointRef endpointRef) {
-        setEndpointInterfaceQName(endpointRef, new QName(""));
-    }
-    
+      
     public void setEndpointInterfaceQName(CasaEndpointRef endpointRef,
             QName interfaceQName) {
         CasaEndpoint endpoint = endpointRef.getEndpoint().get();
