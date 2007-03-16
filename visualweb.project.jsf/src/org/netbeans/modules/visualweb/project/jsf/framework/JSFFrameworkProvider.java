@@ -60,6 +60,9 @@ import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
+import org.openide.loaders.DataObject;
+import org.openide.cookies.OpenCookie;
+
 /**
  *
  * @author Po-Ting Wu
@@ -75,8 +78,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     }
 
     public Set extend (final WebModule webModule) {
-        Set result = new HashSet();
-        FileObject fileObject = webModule.getDocumentBase();;
+        final FileObject fileObject = webModule.getDocumentBase();;
         final Project project = FileOwnerQuery.getOwner(fileObject);
         final ProjectTemplate template = new JsfProjectTemplateJakarta();
 
@@ -91,17 +93,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         final String pageName = preSetName;
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, pageName); // NOI18N
         JsfProjectUtils.setProjectVersion(project, "4.0"); // NOI18N
-
-        // Create Visual Web files
-        ProjectManager.mutex().postReadRequest(new Runnable() {
-            public void run() {
-                try{ 
-                    template.create(project, webModule.getJ2eePlatformVersion(), pageName);
-                } catch (IOException ioe){
-                    ErrorManager.getDefault().notify(ioe);
-                }
-           }
-        }); 
 
         // <RAVE> Add the VWP libraries to the project
         try {
@@ -140,16 +131,30 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, pageName));
 
-            FileObject pagejsp = fileObject.getFileObject(pageName);
-            if (pagejsp != null) {
-                result.add(pagejsp);
-            }
+            // Create Visual Web files and open the created visual page
+            ProjectManager.mutex().postReadRequest(new Runnable() {
+                public void run() {
+                    try {
+                        template.create(project, webModule.getJ2eePlatformVersion(), pageName);
+                        FileObject pagejsp = fileObject.getFileObject(pageName);
+                        if (pagejsp != null) {
+                            DataObject obj = DataObject.find(pagejsp);
+                            OpenCookie open = (OpenCookie) obj.getCookie(OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            }
+                        }
+                    } catch (IOException ioe){
+                        ErrorManager.getDefault().notify(ioe);
+                    }
+                }
+            });
         } catch (FileNotFoundException exc) {
             ErrorManager.getDefault().notify(exc);
         } catch (IOException exc) {
             ErrorManager.getDefault().notify(exc);
         }
-        return result;
+        return null;
     }
 
     public static String readResource(InputStream is, String encoding) throws IOException {
