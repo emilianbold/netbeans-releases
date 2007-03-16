@@ -355,7 +355,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
                     // Adjust the path to the startpage based on JSF parameters
                     WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
-                    wfl.setWelcomeFile(new String[] { "faces/index.jsp" });
+                    wfl.setWelcomeFile(new String[] { "faces/" + pageName });
 
                     // Catch ServletException
                     ErrorPage errorPage = (ErrorPage)ddRoot.createBean("ErrorPage");
