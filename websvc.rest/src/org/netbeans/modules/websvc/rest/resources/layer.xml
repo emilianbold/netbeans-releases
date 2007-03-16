@@ -1,4 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+       <folder name="Templates">
+        <attr name="Classes/RESTServices" boolvalue="true"/>      
+        <folder name="RESTServices">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
+            <file name="RESTServicesFromEntities">         
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.RESTServicesFromEntitiesIterator" />
+                <!--attr name="templateCategory" stringvalue="web-services"/-->
+                <attr name="templateWizardURL"
+                      urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromEntities.html"/>
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
+            </file>
+            
+            <file name="RESTServicesFromPatterns">
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.RESTServicesFromPatternsIterator" />
+                <!--attr name="templateCategory" stringvalue="web-services"/-->
+                <attr name="templateWizardURL"
+                      urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromPatterns.html"/>
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
+            </file>
+        </folder>
+    </folder>
 </filesystem>
