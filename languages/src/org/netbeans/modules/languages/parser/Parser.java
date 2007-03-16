@@ -92,9 +92,8 @@ public class Parser {
         cookie.setProperties (tokenType.getProperties ());
         String endState = tokenType.getEndState ();
         int state = -1;
-        if (endState != null) {
-            state = nameToState.get (endState);
-        }
+        if (endState != null)
+            state = getState (endState);
         cookie.setState (state);
         return ASTToken.create (
             mimeType,
@@ -103,6 +102,13 @@ public class Parser {
             originalIndex
         );
     }
+    
+    public int getState (String stateName) {
+        Integer i = nameToState.get (stateName);
+        if (i == null)
+            throw new IllegalArgumentException ("Unknown lexer state: " + stateName);
+        return i.intValue ();
+    } 
     
     private Map<String,Pattern> patterns = new HashMap<String,Pattern> ();
     

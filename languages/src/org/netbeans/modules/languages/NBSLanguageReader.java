@@ -24,6 +24,7 @@ import java.util.Iterator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.CharInput;
+import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTToken;
 import java.io.BufferedReader;
@@ -160,6 +161,8 @@ public class NBSLanguageReader {
             startState = (String) properties.getValue ("start_state");
             endState = (String) properties.getValue ("end_state");
             pattern = properties.getPattern ("pattern");
+            if (pattern == null && properties.getType("call") == Type.METHOD_CALL)
+                pattern = Pattern.create (".");
         } else {
             String patternString = node.getNode ("token2.regularExpression").getAsText ().trim ();
             endState = node.getTokenTypeIdentifier ("token2.token3.state.identifier");

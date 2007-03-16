@@ -103,7 +103,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             Object[] r = (Object[]) tokenProperties.getValue ("call", new Object[] {input});
             token = (ASTToken) r [0];
             if (r [1] != null)
-                setState (((Integer) r [1]).intValue ());
+                setState (parser.getState((String) r [1]));
         }
         
         if (token == null) {
