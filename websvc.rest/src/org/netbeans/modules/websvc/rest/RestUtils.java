@@ -29,9 +29,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 
@@ -50,7 +47,7 @@ public class RestUtils {
      */
     public static void addSwdpLibrary(FileObject source, String[] classPathTypes) throws IOException {
         Project project = FileOwnerQuery.getOwner(source);
-        if (project == null || jeePlatformAlreadyHasSwdpLibrary(project)) {
+        if (project == null /*|| jeePlatformAlreadyHasSwdpLibrary(project)*/) {
             return;
         }
         // check if the wsimport class is already present - this means we don't need to add the library
@@ -79,7 +76,7 @@ public class RestUtils {
         }
     }
     
-    public static boolean jeePlatformAlreadyHasSwdpLibrary(Project project) {
+    /*public static boolean jeePlatformAlreadyHasSwdpLibrary(Project project) {
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider == null){
             return false;
@@ -96,5 +93,5 @@ public class RestUtils {
             }
         }
         return false;
-    }
+    }*/
 }
