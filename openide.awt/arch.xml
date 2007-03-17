@@ -679,7 +679,7 @@ Microsystems, Inc. All Rights Reserved.
       <api group="lookup" name="ButtonActionConnectorSPI" type="export" category="friend">
           <p>
               Objects implementing 
-              <a href="@org-openide-awt@/org/openide/awt/Actions.html#ButtonActionConnector">ButtonActionConnector</a> are
+              <a href="@org-openide-awt@/org/openide/awt/Actions.ButtonActionConnector.html">ButtonActionConnector</a> are
               looked up. Only the first instance found in the loookup is used to provide an alternative implementation
               of connection between Actions and GUI components. If there isn't one
               in the lookup the default implementation is used (it means there does
