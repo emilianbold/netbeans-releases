@@ -9,17 +9,10 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
-import java.awt.Image;
-import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
-import java.beans.BeanInfo;
-import java.beans.EventSetDescriptor;
 import java.beans.IntrospectionException;
-import java.beans.MethodDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyDescriptor;
-import java.beans.SimpleBeanInfo;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -43,7 +36,6 @@ import org.openide.nodes.BeanNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.PropertySet;
 import org.openide.util.Exceptions;
 
 /**
