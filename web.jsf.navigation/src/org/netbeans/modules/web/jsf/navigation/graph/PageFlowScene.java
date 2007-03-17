@@ -196,7 +196,6 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         //        nodeWidget.getActions().addAction(deleteAction);
         //        nodeWidget.getHeader  ().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
-        //        nodeWidget.getActions().addAction(createSelectAction());
         //        nodeWidget.getActions ().addAction (popupGraphAction);
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
@@ -260,13 +259,18 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         assert edge != null;
         
         VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, router);
-        connectionLayer.addChild(connectionWidget);
+        //Should this be moved to scene?
+        LabelWidget label = new LabelWidget(this, edge.getFromOuctome());
+        label.setOpaque(true);
+        connectionWidget.addChild(label);
+        connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
         
+        connectionLayer.addChild(connectionWidget);
         //        String navCaseName = link.getFromOutcome();
         
         //        connectionWidget.getActions().addAction(deleteAction);
         connectionWidget.getActions().addAction(createObjectHoverAction());
-//        connectionWidget.getActions().addAction(createSelectAction());
+        //        connectionWidget.getActions().addAction(createSelectAction());
         connectionWidget.getActions().addAction(selectAction);
         connectionWidget.getActions().addAction(moveControlPointAction);
         //        connectionWidget.getActions ().addAction (deleteAction);
@@ -414,7 +418,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         }
         Collection<NavigationCaseNode> navSourceCases = findPinEdges(oldPinName, true, false);
         Collection<NavigationCaseNode> navTargetCases = findPinEdges(oldPinName, false, true);
-        removePin(oldPinName);        
+        removePin(oldPinName);
         addPin(pageNode, newPinName);
         
         //Doing this to make sure the associate pins are taken care of.
@@ -426,7 +430,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
             attachEdgeTargetAnchor(navTargetCase, oldPinName, newPinName);
         }
         
-
+        
     }
     
     

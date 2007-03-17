@@ -211,24 +211,19 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     
     /**
      * Creates an Edge or Connection in the Graph Scene
-     * @param rule
-     * @param navCase
+     * @param navCaseNode
      */
     protected void createEdge( NavigationCaseNode navCaseNode) {
         
 
         String toPage = navCaseNode.getToViewId();
-        String caseName = navCaseNode.getFromOuctome();
+//        String caseName = navCaseNode.getFromOuctome();
         String action = navCaseNode.getFromAction();        
         String fromPage = navCaseNode.getFromViewId();
         
         ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);
         
-        //Should this be moved to scene?
-        LabelWidget label = new LabelWidget(scene, caseName);
-        label.setOpaque(true);
-        widget.addChild(label);
-        widget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+
         
         //        graphScene.setEdgeSource(navCase, label);
         
