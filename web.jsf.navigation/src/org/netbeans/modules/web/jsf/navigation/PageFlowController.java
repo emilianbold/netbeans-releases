@@ -160,7 +160,7 @@ public class PageFlowController {
         FileObject parentFolder = project.getProjectDirectory();
         FileObject webFileObject = parentFolder.getFileObject("web");
         Collection<FileObject> webFiles = getProjectJSPFileOjbects(webFileObject);
-        System.out.println("Web Files: " + webFiles);
+//        System.out.println("Web Files: " + webFiles);
         return webFiles;
         
         //Add a listener to the Filesystem that listens to fileDelete, fileCreated, etc.
@@ -334,7 +334,7 @@ public class PageFlowController {
 //          
             }else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
                 view.warnUserMalFormedFacesConfig();
-                System.out.println("NOT WELL FORMED!!!");
+//                System.out.println("NOT WELL FORMED!!!");
             }
             //            System.out.println("New Value: " + ev.getNewValue());
             //            System.out.println("Old Value: " + ev.getOldValue());
@@ -374,21 +374,21 @@ public class PageFlowController {
             String oldDisplayName = getDisplayName();
             String oldName = getName();
             super.setName(s);
-            System.out.println("About to rename node.");
-            System.out.println("Old Display Name: " + oldDisplayName + " New Display Name: " + getDisplayName() );
-            System.out.println("Old Name: " + oldName + " New Name: " + getName() );
+//            System.out.println("About to rename node.");
+//            System.out.println("Old Display Name: " + oldDisplayName + " New Display Name: " + getDisplayName() );
+//            System.out.println("Old Name: " + oldName + " New Name: " + getName() );
             configModel.startTransaction();
             FacesConfig facesConfig = configModel.getRootComponent();
             List<NavigationRule> navRules = facesConfig.getNavigationRules();
             for( NavigationRule navRule : navRules ){
                 if ( navRule.getFromViewId().equals(oldDisplayName) ){
-                    System.out.println("Switching Rule From-View: " + oldDisplayName + " To From-View: " + getDisplayName());
+//                    System.out.println("Switching Rule From-View: " + oldDisplayName + " To From-View: " + getDisplayName());
                     navRule.setFromViewId(getDisplayName());
                 }
                 List<NavigationCase> navCases = navRule.getNavigationCases();
                 for( NavigationCase navCase : navCases ) {
                     if ( navCase.getToViewId().equals(oldDisplayName) ) {
-                        System.out.println("Switching Case To-View: " + oldDisplayName + " To To-View: " + getDisplayName());
+//                        System.out.println("Switching Case To-View: " + oldDisplayName + " To To-View: " + getDisplayName());
                         navCase.setToViewId(getDisplayName());
                     }
                 }
