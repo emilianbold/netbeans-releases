@@ -14,6 +14,11 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
@@ -32,8 +37,7 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.navigation.PageFlowController.NavigationCaseNode;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
@@ -216,14 +220,15 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param rule
      * @param navCase
      */
-    protected void createEdge( NavigationRule rule, NavigationCase navCase) {
+    protected void createEdge( NavigationCaseNode navCaseNode) {
         
-        String toPage = navCase.getToViewId();
-        String caseName = navCase.getFromOutcome();
-        String action = navCase.getFromAction();
-        String fromPage = rule.getFromViewId();
+
+        String toPage = navCaseNode.getToViewId();
+        String caseName = navCaseNode.getFromOuctome();
+        String action = navCaseNode.getFromAction();        
+        String fromPage = navCaseNode.getFromViewId();
         
-        ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCase);
+        ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);
         
         //Should this be moved to scene?
         LabelWidget label = new LabelWidget(scene, caseName);
@@ -234,8 +239,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         //        graphScene.setEdgeSource(navCase, label);
         
         //I need to remove extension so it matches the DataNode's pins.
-        scene.setEdgeSource(navCase, fromPage+"pin");
-        scene.setEdgeTarget(navCase, toPage+"pin");
+        scene.setEdgeSource(navCaseNode, fromPage+"pin");
+        scene.setEdgeTarget(navCaseNode, toPage+"pin");
         
         //        Collection<String> pins = graphScene.getPins();
         //        String targetPin = null;
@@ -357,4 +362,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         super.addNotify();
         explorer = ExplorerManager.find(this);
     }
+    
+    
+   
 }

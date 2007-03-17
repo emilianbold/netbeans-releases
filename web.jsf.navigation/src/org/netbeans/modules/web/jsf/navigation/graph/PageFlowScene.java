@@ -60,7 +60,7 @@ import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.navigation.PageFlowController.NavigationCaseNode;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
@@ -81,7 +81,7 @@ import org.openide.util.Utilities;
  * @author Joelle Lam
  */
 // TODO - remove popup menu action
-public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
+public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, String> {
     
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
@@ -128,7 +128,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
         //        getActions ().addAction (deleteAction);
         
         
-        GridGraphLayout gglayout = new GridGraphLayout<Node, NavigationCase> ();
+        GridGraphLayout gglayout = new GridGraphLayout<Node, NavigationCaseNode> ();
         gglayout.setChecker(true);
         
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
@@ -260,7 +260,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
      * @param edge
      * @return the widget attached to the edge
      */
-    protected Widget attachEdgeWidget(NavigationCase edge) {
+    protected Widget attachEdgeWidget(NavigationCaseNode edge) {
         assert edge != null;
         
         VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, router);
@@ -284,7 +284,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
      * @param oldSourcePin the old source pin
      * @param sourcePin the new source pin
      */
-    protected void attachEdgeSourceAnchor(NavigationCase edge, String oldSourcePin, String sourcePin) {
+    protected void attachEdgeSourceAnchor(NavigationCaseNode edge, String oldSourcePin, String sourcePin) {
         ((ConnectionWidget) findWidget(edge)).setSourceAnchor(getPinAnchor(sourcePin));
     }
     
@@ -296,7 +296,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
      * @param oldTargetPin the old target pin
      * @param targetPin the new target pin
      */
-    protected void attachEdgeTargetAnchor(NavigationCase edge, String oldTargetPin, String targetPin) {
+    protected void attachEdgeTargetAnchor(NavigationCaseNode edge, String oldTargetPin, String targetPin) {
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(getPinAnchor(targetPin));
     }
     
@@ -415,17 +415,17 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
             //Don't do anything if they have the same name.
             return;
         }
-        Collection<NavigationCase> navSourceCases = findPinEdges(oldPinName, true, false);
-        Collection<NavigationCase> navTargetCases = findPinEdges(oldPinName, false, true);
+        Collection<NavigationCaseNode> navSourceCases = findPinEdges(oldPinName, true, false);
+        Collection<NavigationCaseNode> navTargetCases = findPinEdges(oldPinName, false, true);
         removePin(oldPinName);        
         addPin(pageNode, newPinName);
         
         //Doing this to make sure the associate pins are taken care of.
-        for( NavigationCase navSourceCase : navSourceCases){
+        for( NavigationCaseNode navSourceCase : navSourceCases){
             attachEdgeSourceAnchor(navSourceCase, oldPinName, newPinName);
         }
         
-        for( NavigationCase navTargetCase : navTargetCases){
+        for( NavigationCaseNode navTargetCase : navTargetCases){
             attachEdgeTargetAnchor(navTargetCase, oldPinName, newPinName);
         }
         

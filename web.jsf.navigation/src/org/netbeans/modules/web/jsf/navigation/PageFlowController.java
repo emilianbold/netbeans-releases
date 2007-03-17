@@ -9,8 +9,17 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
+import java.awt.Image;
+import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
+import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
+import java.beans.IntrospectionException;
+import java.beans.MethodDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,9 +39,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.BeanNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.PropertySet;
 import org.openide.util.Exceptions;
 
 /**
@@ -160,7 +171,7 @@ public class PageFlowController {
         FileObject parentFolder = project.getProjectDirectory();
         FileObject webFileObject = parentFolder.getFileObject("web");
         Collection<FileObject> webFiles = getProjectJSPFileOjbects(webFileObject);
-//        System.out.println("Web Files: " + webFiles);
+        //        System.out.println("Web Files: " + webFiles);
         return webFiles;
         
         //Add a listener to the Filesystem that listens to fileDelete, fileCreated, etc.
@@ -219,7 +230,12 @@ public class PageFlowController {
         for( NavigationRule rule : rules ) {
             List<NavigationCase> navCases = rule.getNavigationCases();
             for( NavigationCase navCase : navCases ){
-                view.createEdge(rule, navCase);
+                try             {
+                    NavigationCaseNode node = new NavigationCaseNode(navCase);
+                    view.createEdge(node);
+                } catch (IntrospectionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -272,7 +288,7 @@ public class PageFlowController {
         }
     }
     
-    /** 
+    /**
      * Givena pageName, look through the list of predefined webFiles and return the matching fileObject
      * @return FileObject for which the match was found or null of none was found.
      **/
@@ -280,7 +296,7 @@ public class PageFlowController {
         for( FileObject webFile : webFiles ) {
             String webFileName = webFile.getNameExt();
             if( webFileName.equals(pageName)) {
-               return webFile;
+                return webFile;
             }
         }
         return null;
@@ -294,11 +310,11 @@ public class PageFlowController {
             Node wrapNode = null;
             if( file == null ) {
                 wrapNode = new AbstractNode(Children.LEAF);
-                wrapNode.setName(pageName);                
+                wrapNode.setName(pageName);
                 
             } else {
                 try {
-                wrapNode = new PageFlowNode((DataObject.find(file)).getNodeDelegate());
+                    wrapNode = new PageFlowNode((DataObject.find(file)).getNodeDelegate());
                 } catch(DataObjectNotFoundException donfe ){
                     donfe.printStackTrace();
                 }
@@ -316,25 +332,30 @@ public class PageFlowController {
         
         public void propertyChange(PropertyChangeEvent ev) {
             if ( ev.getPropertyName() == "navigation-case"){
-                NavigationCase myNavCase = (NavigationCase)ev.getNewValue();
-                view.createEdge((NavigationRule)myNavCase.getParent(), myNavCase);
+                NavigationCase myNavCase = (NavigationCase)ev.getNewValue();                
+                try {
+                    NavigationCaseNode node = new NavigationCaseNode(myNavCase);
+                    view.createEdge(node);
+                } catch(IntrospectionException ie){
+                    ie.printStackTrace();
+                }
             } else if (ev.getPropertyName() == "navigation-rule" ) {
                 NavigationRule myNavRule = (NavigationRule)ev.getNewValue();
                 //You can actually do nothing.
             } else if ( ev.getNewValue() == State.VALID ) {
                 setupGraph();
-//            } else if ( ev.getPropertyName("to-view-id")) {
-//                String newToView = (String)ev.getNewValue();
-//                String oldToView = (String)ev.getOldValue();
-//                NavigationCase navCase = (NavigationCase)ev.getSource();
-//                     } else if ( ev.getPropertyName("from-view-id")) {
-//                String newFromView = (String)ev.getNewValue();
-//                String oldFromView = (String)ev.getOldValue();
-//                NavigationRule navRule = (NavigationRule)ev.getSource();
-//          
+                //            } else if ( ev.getPropertyName("to-view-id")) {
+                //                String newToView = (String)ev.getNewValue();
+                //                String oldToView = (String)ev.getOldValue();
+                //                NavigationCase navCase = (NavigationCase)ev.getSource();
+                //                     } else if ( ev.getPropertyName("from-view-id")) {
+                //                String newFromView = (String)ev.getNewValue();
+                //                String oldFromView = (String)ev.getOldValue();
+                //                NavigationRule navRule = (NavigationRule)ev.getSource();
+                //
             }else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
                 view.warnUserMalFormedFacesConfig();
-//                System.out.println("NOT WELL FORMED!!!");
+                //                System.out.println("NOT WELL FORMED!!!");
             }
             //            System.out.println("New Value: " + ev.getNewValue());
             //            System.out.println("Old Value: " + ev.getOldValue());
@@ -374,21 +395,21 @@ public class PageFlowController {
             String oldDisplayName = getDisplayName();
             String oldName = getName();
             super.setName(s);
-//            System.out.println("About to rename node.");
-//            System.out.println("Old Display Name: " + oldDisplayName + " New Display Name: " + getDisplayName() );
-//            System.out.println("Old Name: " + oldName + " New Name: " + getName() );
+            //            System.out.println("About to rename node.");
+            //            System.out.println("Old Display Name: " + oldDisplayName + " New Display Name: " + getDisplayName() );
+            //            System.out.println("Old Name: " + oldName + " New Name: " + getName() );
             configModel.startTransaction();
             FacesConfig facesConfig = configModel.getRootComponent();
             List<NavigationRule> navRules = facesConfig.getNavigationRules();
             for( NavigationRule navRule : navRules ){
                 if ( navRule.getFromViewId().equals(oldDisplayName) ){
-//                    System.out.println("Switching Rule From-View: " + oldDisplayName + " To From-View: " + getDisplayName());
+                    //                    System.out.println("Switching Rule From-View: " + oldDisplayName + " To From-View: " + getDisplayName());
                     navRule.setFromViewId(getDisplayName());
                 }
                 List<NavigationCase> navCases = navRule.getNavigationCases();
                 for( NavigationCase navCase : navCases ) {
                     if ( navCase.getToViewId().equals(oldDisplayName) ) {
-//                        System.out.println("Switching Case To-View: " + oldDisplayName + " To To-View: " + getDisplayName());
+                        //                        System.out.println("Switching Case To-View: " + oldDisplayName + " To To-View: " + getDisplayName());
                         navCase.setToViewId(getDisplayName());
                     }
                 }
@@ -404,15 +425,55 @@ public class PageFlowController {
         }
         
         /**
-         * 
-         * @return 
+         *
+         * @return
          */
         @Override
         public boolean canRename() {
             return true;
         }
+    }
+    
+    public final class NavigationCaseNode extends BeanNode<NavigationCase>  {
         
+        public NavigationCaseNode(NavigationCase navCase) throws IntrospectionException {
+            super(navCase, Children.LEAF);
+            //            createProperties(navCase, new NavigationCaseBeanInfo());
+        }
         
+        public String getToViewId() {
+            return getBean().getToViewId();
+        }
+        
+        public String getFromOuctome() {
+            return getBean().getFromOutcome();
+        }
+        
+        public String getFromAction() {
+            return getBean().getFromAction();
+        }
+        
+        public boolean isRedirected() {
+            return getBean().isRedirected();
+        }
+        
+        public String getFromViewId() {
+            NavigationRule navRule = (NavigationRule)(getBean().getParent());
+            return navRule.getFromViewId();
+        }
+        
+        //        public final class NavigationCaseBeanInfo extends SimpleBeanInfo{
+        //
+        //            @Override
+        //            public PropertyDescriptor[] getPropertyDescriptors() {
+        //                PropertyDescriptor[] pd = {
+        //                    new PropertyDescriptor("toViewId", NavigationCase.class),
+        //                    new PropertyDescriptor("fromOutcome", NavigationCase.class),
+        //                    new PropertyDescriptor("fromAction", NavigationCase.class)};
+        //
+        //                return super.getPropertyDescriptors();
+        //            }
+        //        }
         
         
         
