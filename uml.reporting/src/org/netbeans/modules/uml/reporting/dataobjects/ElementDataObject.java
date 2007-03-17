@@ -645,7 +645,7 @@ public class ElementDataObject implements Report
             {
                 INamedElement dependent = dependencies.get(i).getSupplier();
                 // filter out self
-                if (!dependent.getXMIID().equals(getElement().getXMIID()))
+                if (dependent != null && !dependent.getXMIID().equals(getElement().getXMIID()))
                 {
                     suppliers.add(dependent);
                     map.put(dependent, dependencies.get(i).getExpandedElementType());
@@ -661,7 +661,7 @@ public class ElementDataObject implements Report
             {
                 INamedElement dependent = dependencies.get(i).getClient();
                 // filter out self
-                if (!dependent.getXMIID().equals(getElement().getXMIID()))
+                if (dependent != null && !dependent.getXMIID().equals(getElement().getXMIID()))
                 {
                     clients.add(dependent);
                     map.put(dependent, dependencies.get(i).getExpandedElementType());
