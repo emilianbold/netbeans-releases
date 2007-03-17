@@ -20,9 +20,11 @@
 package org.netbeans.api.java.source;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -71,7 +73,7 @@ public final class ModificationResult {
         }
     }
     
-    private void commit(FileObject fo, List<Difference> differences, Writer out) throws IOException {
+    private void commit(final FileObject fo, final List<Difference> differences, Writer out) throws IOException {
         DataObject dObj = DataObject.find(fo);
         EditorCookie ec = dObj != null ? (EditorCookie) dObj.getCookie(EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
@@ -116,6 +118,7 @@ public final class ModificationResult {
         ByteArrayOutputStream baos = null;           
         Reader in = null;
         try {
+            Charset encoding = FileEncodingQuery.getEncoding(fo);
             ins = fo.getInputStream();
             baos = new ByteArrayOutputStream();
             FileUtil.copy(ins, baos);
@@ -125,11 +128,11 @@ public final class ModificationResult {
             byte[] arr = baos.toByteArray();
             baos.close();
             baos = null;
-            in = new InputStreamReader(new ByteArrayInputStream(arr));
+            in = new InputStreamReader(new ByteArrayInputStream(arr), encoding);
             // initialize standard commit output stream, if user
             // does not provide his own writer
             if (out == null) {
-                out = new OutputStreamWriter(fo.getOutputStream());
+                out = new OutputStreamWriter(fo.getOutputStream(), encoding);
             }
             int offset = 0;                
             for (Difference diff : differences) {

@@ -162,19 +162,20 @@ public class VeryPretty extends JCTree.Visitor {
     public void print(String s) {
 	if (s == null)
 	    return;
-	int limit = s.length();
-	for (int i = 0; i < limit; i++) {
-	    char c = s.charAt(i);
-	    if (c <= 255)
-		out.append(c);
-	    else {
-		out.append("\\u");
-		out.append(hex[(c >> (3 * 4)) & 0xF]);
-		out.append(hex[(c >> (2 * 4)) & 0xF]);
-		out.append(hex[(c >> (1 * 4)) & 0xF]);
-		out.append(hex[(c >> (0 * 4)) & 0xF]);
-	    }
-	}
+        out.append(s);
+//	int limit = s.length();
+//	for (int i = 0; i < limit; i++) {
+//	    char c = s.charAt(i);
+//	    if (c <= 255)
+//		out.append(c);
+//	    else {
+//		out.append("\\u");
+//		out.append(hex[(c >> (3 * 4)) & 0xF]);
+//		out.append(hex[(c >> (2 * 4)) & 0xF]);
+//		out.append(hex[(c >> (1 * 4)) & 0xF]);
+//		out.append(hex[(c >> (0 * 4)) & 0xF]);
+//	    }
+//	}
     }
     public final void print(char c) {
 	out.append(c);
