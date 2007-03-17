@@ -56,7 +56,7 @@ import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.modules.web.jsf.navigation.PageFlowController.NavigationCaseNode;
+import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;

@@ -9,8 +9,6 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -28,21 +26,15 @@ import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model.State;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.BeanNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.PropertySupport.Reflection;
-import org.openide.nodes.Sheet;
-import org.openide.nodes.Sheet.Set;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 
 /**
  *
@@ -432,84 +424,7 @@ public class PageFlowController {
         }
     }
     
-    public final class NavigationCaseNode extends AbstractNode  {
-        NavigationCase navCase = null;
-        
-        public NavigationCaseNode(NavigationCase navCase) {
-            super(Children.LEAF);
-            this.navCase = navCase;
-            //            createProperties(navCase, new NavigationCaseBeanInfo());
-        }
-        
-        public String getToViewId() {
-            return navCase.getToViewId();
-        }
-        
-        public String getFromOuctome() {
-            return navCase.getFromOutcome();
-        }
-        
-        public String getFromAction() {
-            return navCase.getFromAction();
-        }
-        
-        public boolean isRedirected() {
-            return navCase.isRedirected();
-        }
-        
-        public String getFromViewId() {
-            NavigationRule navRule = (NavigationRule)(navCase.getParent());
-            return navRule.getFromViewId();
-        }
-        
-        protected Sheet createSheet() {
-            Sheet s = Sheet.createDefault();
-            Set ss = s.get("general"); // NOI18N
-            if (ss == null) {
-                ss = new Sheet.Set();
-                ss.setName("general"); // NOI18N
-                ss.setDisplayName(NbBundle.getMessage(PageFlowController.class, "General")); // NOI18N
-                ss.setShortDescription(NbBundle.getMessage(PageFlowController.class, "GeneralHint")); // NOI18N
-                s.put(ss);
-            }
-            Set gs = ss;
-            
-            try {
-                PropertySupport.Reflection p;
-                
-                p = new Reflection(navCase, String.class, "getFromOutcome", "setFromOutcome"); // NOI18N
-                p.setName("fromOutcome"); // NOI18N
-                p.setDisplayName(NbBundle.getMessage(PageFlowController.class, "Outcome")); // NOI18N
-                p.setShortDescription(NbBundle.getMessage(PageFlowController.class, "OutcomeHint")); // NOI18N
-                ss.put(p);
-                
-                p = new Reflection(navCase, String.class, "getFromAction", "setFromAction"); // NOI18N
-                p.setName("fromView"); // NOI18N
-                p.setDisplayName(NbBundle.getMessage(PageFlowController.class, "FromAction")); // NOI18N
-                p.setShortDescription(NbBundle.getMessage(PageFlowController.class, "FromActionHint")); // NOI18N
-//                p.setValue(PageSelector.PROPERTY_NAVDOC, document);
-//                p.setPropertyEditorClass(PageSelector.class);
-                ss.put(p);
-                
-                p = new Reflection(navCase, String.class, "getToViewId", "setToViewId"); // NOI18N
-                p.setName("toViewId"); // NOI18N
-                p.setDisplayName(NbBundle.getMessage(PageFlowController.class, "ToViewId")); // NOI18N
-                p.setShortDescription(NbBundle.getMessage(PageFlowController.class, "ToViewHint")); // NOI18N
-//                p.setValue(PageSelector.PROPERTY_NAVDOC, document);
-//                p.setPropertyEditorClass(PageSelector.class);
-                ss.put(p);
-                
-            } catch (NoSuchMethodException nsme) {
-                ErrorManager.getDefault().notify(nsme);
-            }
-            
-            return s;
-        }
-        
-        
-        
-        
-    }
+
     
     
 }
