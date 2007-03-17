@@ -184,18 +184,30 @@ public class CasaWrapperModel extends CasaModelImpl {
         return ret;
     }
     
-    public String getEndpointName(CasaPort casaPort) { // Move me to CasaPort
+    /** 
+     * Gets the target binding component name of a casa port.
+     */ 
+    public String getBindingComponentName(CasaPort casaPort) { 
+        CasaBindingComponentServiceUnit bcSU =
+                (CasaBindingComponentServiceUnit) casaPort.getParent().getParent();
+        return bcSU.getComponentName();
+    }
+    
+    /**
+     * Gets the endpoint name of a casa port.
+     */
+    public String getEndpointName(CasaPort casaPort) { 
         CasaEndpointRef endpointRef = casaPort.getConsumes();
         if (endpointRef == null) {
             endpointRef = casaPort.getProvides();
         }
-        //assert endpoint != null;
-        if (endpointRef == null) // TMP
-            return "getEndpointName=null, Uh?";         // NOI18N
         return endpointRef.getEndpoint().get().getEndpointName();
     }
 
-    public void setEndpointName(CasaPort casaPort, String endpointName) { // Move me to CasaPort
+    /**
+     * Sets the endpoint name of a casa port.
+     */
+    public void setEndpointName(CasaPort casaPort, String endpointName) { 
         CasaEndpointRef endpointRef = casaPort.getConsumes();
         if (endpointRef == null) {
             endpointRef = casaPort.getProvides();
@@ -204,15 +216,13 @@ public class CasaWrapperModel extends CasaModelImpl {
         setEndpointName(casaPort, endpointRef, endpointName);
     }
 
+    /**
+     * Sets the endpoint name of a casa consumes or casa provides.
+     */
     public void setEndpointName(CasaEndpointRef endpointRef, String endpointName) {
         setEndpointName(endpointRef, endpointRef, endpointName);
     }
     
-    public String getBindingComponentName(CasaPort casaPort) { // Move me to CasaPort
-        CasaBindingComponentServiceUnit bcSU =
-                (CasaBindingComponentServiceUnit) casaPort.getParent().getParent();
-        return bcSU.getComponentName();
-    }
     
     /**
      * Gets the WSDL port linked by the casaport
@@ -2361,13 +2371,54 @@ public class CasaWrapperModel extends CasaModelImpl {
             CasaEndpointRef endpointRef, String endpointName) {
         CasaEndpoint casaEndpoint = endpointRef.getEndpoint().get();
        
-        if (!casaEndpoint.getEndpointName().equals(endpointName)) {
+        String oldEndpointName = casaEndpoint.getEndpointName();
+        
+        if (casaEndpoint.getEndpointName().equals(endpointName)) {
+            return;
+        }
+        
+        startTransaction();
+        try {
+            casaEndpoint.setEndpointName(endpointName);
+        } finally {
+            if (isIntransaction()) {
+                fireCasaEndpointRenamed(component);
+                endTransaction();
+            }
+        }
+        
+        // If the corresponding port is defined in casa.wsdl, 
+        // update the port name in casa.wsdl and also the xlink in casa.
+        CasaPort casaPort = null;
+        if (component instanceof CasaPort) {
+            casaPort = (CasaPort) component;
+        } else {
+            casaPort = getCasaPort((CasaEndpointRef) component);            
+        }
+        if (casaPort != null) {
+            Port port = getLinkedWSDLPort(casaPort);
+            // The port must be defined in casa.wsdl because otherwise 
+            // the endpoint is not editable.
+            WSDLModel casaWSDLModel = port.getModel();
+            casaWSDLModel.startTransaction();
+            try {
+                port.setName(endpointName);
+            } finally {
+                if (casaWSDLModel.isIntransaction()) {
+                    casaWSDLModel.endTransaction();
+                }
+            }
+            
+            CasaLink link = casaPort.getLink();
+            String linkHref = link.getHref();
+            linkHref = linkHref.replaceAll(
+                    "/port\\[@name='" + oldEndpointName + "'\\]", // NOI18N
+                    "/port[@name='" + endpointName + "']"); // NOI18N
             startTransaction();
             try {
-                casaEndpoint.setEndpointName(endpointName);
+                link.setHref(linkHref);
             } finally {
                 if (isIntransaction()) {
-                    fireCasaEndpointRenamed(component);
                     endTransaction();
                 }
             }
