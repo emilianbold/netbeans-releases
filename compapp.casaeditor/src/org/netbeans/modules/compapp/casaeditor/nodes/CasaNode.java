@@ -114,15 +114,26 @@ public abstract class CasaNode<T> extends AbstractNode
         return false;
     }
     
-    public Action[] getActions(boolean context) {
+    public void addCustomActions(List actions) {
+        // Subclasses can override this to provide custom actions.
+    }
+    
+    public final Action[] getActions(boolean context) {
         List actions = new ArrayList();
-        Action[] parentActions = super.getActions(context);
-        for (Action parentAction : parentActions) {
-            actions.add(parentAction);
+        
+        addCustomActions(actions);
+        if (actions.size() > 0) {
+            actions.add(null);
         }
         
         if (isDeletable()) {
             actions.add(new NodeDeleteAction(this));
+            actions.add(null);
+        }
+        
+        Action[] parentActions = super.getActions(context);
+        for (Action parentAction : parentActions) {
+            actions.add(parentAction);
         }
         
         return (Action[]) actions.toArray(new Action[actions.size()]);

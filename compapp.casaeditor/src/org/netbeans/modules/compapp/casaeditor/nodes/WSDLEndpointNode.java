@@ -89,21 +89,6 @@ public class WSDLEndpointNode extends CasaNode {
         }
     }
     
-    public Action[] getActions(boolean context) {
-        List actions = new ArrayList();
-        Action[] parentActions = super.getActions(context);
-        for (Action parentAction : parentActions) {
-            actions.add(parentAction);
-        }
-
-        // todo: 02/23/07 disable WSIT action until run-time is ready...
-        /*
-        actions.add(null);
-        actions.add(SystemAction.get(WSDLEndpointAction.class));
-        */
-        return (Action[]) actions.toArray(new Action[actions.size()]);
-    }
-    
     protected void setupPropertySheet(Sheet sheet) {
         final CasaPort casaPort = (CasaPort) getData();
         if (casaPort == null) {
@@ -132,7 +117,12 @@ public class WSDLEndpointNode extends CasaNode {
         identificationProperties.put(componentNameSupport);
         
         // Add all concrete child properties, as a convenience to the user.
-        addPortChildrenProperties(sheet, getChildren());
+        for (Node child : getChildren().getNodes()) {
+            if (child instanceof PortNode) {
+                addPortChildrenProperties(sheet, child.getChildren());
+                break;
+            }
+        }
     }
     
     private static void addPortChildrenProperties(Sheet sheet, Children children) {

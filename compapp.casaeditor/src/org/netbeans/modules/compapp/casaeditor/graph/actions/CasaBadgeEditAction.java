@@ -24,8 +24,10 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetBinding;
@@ -34,19 +36,26 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 
 
 public class CasaBadgeEditAction extends WidgetAction.Adapter {
     
     private CasaModelGraphScene mScene;
+    private Node mEditNode;
     
     
     public CasaBadgeEditAction(CasaModelGraphScene scene) {
         mScene = scene;
     }
     
-    public State mouseClicked(Widget widget, WidgetMouseEvent event) {
+    public State mousePressed(Widget widget, WidgetMouseEvent event) {
+        mEditNode = null;
+        
+        if (event.getButton () != MouseEvent.BUTTON1) {
+            return State.REJECTED;
+        }
         
         CasaNodeWidgetBinding nodeWidget = (CasaNodeWidgetBinding) widget;
         Rectangle badgeBounds = nodeWidget.getEditBadgeBoundsForNode();
@@ -59,17 +68,64 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
             return State.REJECTED;
         }
         
-        Node node = mScene.getNodeFactory().createNodeFor(endpoint);
-        if (node == null) {
+        mEditNode = mScene.getNodeFactory().createNodeFor(endpoint);
+        if (mEditNode == null) {
+            return State.REJECTED;
+        }
+        
+        nodeWidget.setEditBadgePressed(true);
+        
+        return State.CONSUMED;
+    }
+
+    // If the mouse is ever moved off of the widget, either from a drag/move, then
+    // we must lock the state so that we get the mouseReleased event.
+    public WidgetAction.State dragExit(Widget widget, WidgetAction.WidgetMouseEvent event) {
+        if (mEditNode == null) {
+            return State.REJECTED;
+        }
+        return State.createLocked(widget, this);
+    }
+    
+    // If the mouse is ever moved off of the widget, either from a drag/move, then
+    // we must lock the state so that we get the mouseReleased event.
+    public WidgetAction.State mouseExited(Widget widget, WidgetAction.WidgetMouseEvent event) {
+        if (mEditNode == null) {
+            return State.REJECTED;
+        }
+        return State.createLocked(widget, this);
+    }
+    
+    // If the mouse is ever moved off of the widget, either from a drag/move, then
+    // we must lock the state so that we get the mouseReleased event.
+    public WidgetAction.State mouseDragged(Widget widget, WidgetAction.WidgetMouseEvent event) {
+        if (mEditNode == null) {
+            return State.REJECTED;
+        }
+        return State.createLocked (widget, this);
+    }
+    
+    protected boolean isLocked() {
+        return mEditNode != null;
+    }
+    
+    public State mouseReleased(Widget widget, WidgetMouseEvent event) {
+        if (mEditNode == null) {
             return State.REJECTED;
         }
         
         final PropertySheet propertySheetPanel = new PropertySheet();
-        propertySheetPanel.setNodes(new Node[] { node });
+        final Node editNodeRef = mEditNode;
+        mEditNode = null;
+        
+        CasaNodeWidgetBinding nodeWidget = (CasaNodeWidgetBinding) widget;
+        nodeWidget.setEditBadgePressed(false);
+        
+        propertySheetPanel.setNodes(new Node[] { editNodeRef });
         
         final DialogDescriptor descriptor = new DialogDescriptor(
                 propertySheetPanel,
-                "Test Foo",
+                NbBundle.getMessage(getClass(), "STR_PROPERTIES", editNodeRef.getDisplayName()),
                 true,
                 new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -78,7 +134,6 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
             }
         });
         final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        dlg.setPreferredSize(new Dimension(500, 700));
         
         // The dialog is modal, allow the action chain to continue while
         // we open the dialog later.
@@ -90,5 +145,4 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         
         return State.CONSUMED;
     }
-
 }

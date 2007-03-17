@@ -76,8 +76,10 @@ public class CasaPopupMenuProvider implements PopupMenuProvider {
                         // Cannot add a NodeAction directly to a popup menu.
                         JMenuItem menuItem = new JMenuItem();
                         popupMenu.add(menuItem);
-                        Actions.connect(menuItem, action);
+                        Actions.connect(menuItem, action, true);
                         hasActions = true;
+                    } else if (action == null) {
+                        popupMenu.addSeparator();
                     }
                 }
             }

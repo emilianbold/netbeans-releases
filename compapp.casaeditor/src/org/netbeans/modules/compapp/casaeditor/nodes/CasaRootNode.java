@@ -25,6 +25,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
@@ -115,16 +117,13 @@ public class CasaRootNode extends CasaNode {
         return true;
     }
     
-    public Action[] getActions(boolean context) {
+    public void addCustomActions(List actions) {
         try {
             final Project jbiProject = getModel().getJBIProject();
-            return new Action[] { 
-                new AddJBIModuleAction(jbiProject)
-            };
+            actions.add(new AddJBIModuleAction(jbiProject));
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
-        return super.getActions(context);
     }
     
     

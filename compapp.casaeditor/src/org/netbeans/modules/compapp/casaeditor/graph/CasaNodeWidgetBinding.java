@@ -366,6 +366,10 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mHeaderHolder.repaint();
     }
     
+    public void setEditBadgePressed(boolean isPressed) {
+        mEditWidget.setPaintAsDisabled(isPressed);
+    }
+    
     public Rectangle getEditBadgeBoundsForNode() {
         Point location = mEditWidget.getLocation();
         Widget parent = mEditWidget.getParentWidget();

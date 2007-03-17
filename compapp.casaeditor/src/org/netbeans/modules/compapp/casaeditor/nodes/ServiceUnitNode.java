@@ -56,15 +56,8 @@ public class ServiceUnitNode extends CasaNode {
     }
     
     
-    public Action[] getActions(boolean context) {
-        List actions = new ArrayList();
-        Action[] parentActions = super.getActions(context);
-        for (Action parentAction : parentActions) {
-            actions.add(parentAction);
-        }
-        actions.add(null);
+    public void addCustomActions(List actions) {
         actions.add(SystemAction.get(ServiceUnitAction.class));
-        return (Action[]) actions.toArray(new Action[actions.size()]);
     }
 
     @Override
