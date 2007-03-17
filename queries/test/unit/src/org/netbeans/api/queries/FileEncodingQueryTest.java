@@ -20,16 +20,21 @@ package org.netbeans.api.queries;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -64,11 +69,20 @@ public class FileEncodingQueryTest extends NbTestCase {
     
     private final String expectedEncoding;
     private final File file;
+    private final Method testMethod;
     
     public FileEncodingQueryTest (final String name, final File file, final String expectedEncoding) {
         super (name);
         this.file = file;
         this.expectedEncoding = expectedEncoding;
+        this.testMethod = null;
+    }
+    
+    public FileEncodingQueryTest (final Method testMethod) {
+        super (testMethod.getName());
+        this.testMethod = testMethod;
+        this.file = null;
+        this.expectedEncoding = null;
     }
     
     @Override
@@ -101,29 +115,73 @@ public class FileEncodingQueryTest extends NbTestCase {
                 suite.addTest(new FileEncodingQueryTest(FileEncodingQueryTest.class.getSimpleName()+" "+c.getName(),c,encoding));
             }
         }
+        Method testMethod = FileEncodingQueryTest.class.getDeclaredMethod("testPartialRead");
+        if (testMethod != null) {
+            testMethod.setAccessible(true);
+            suite.addTest (new FileEncodingQueryTest(testMethod));
+        }
         return suite;
     }
     
     @Override
     protected void runTest() throws Throwable {
-        final Listener listener = new Listener ();
-        Logger.getLogger(FileEncodingQuery.class.getName()).setLevel(Level.FINEST);
-        Logger.getLogger(FileEncodingQuery.class.getName()).addHandler(listener);
-        try {
-            listener.reset();
-            performTest(this.file, this.expectedEncoding);
-            CharsetDecoder decoder = listener.getDecoder();
-            assertNotNull(decoder);
-            String usedEncoding = getRealCharsetName(decoder);
-            assertEquals(usedEncoding, this.expectedEncoding);
-            CharsetEncoder encoder = listener.getEncoder();
-            assertNotNull(encoder);
-            usedEncoding = getRealCharsetName(encoder);
-            assertEquals(usedEncoding, this.expectedEncoding);
-        } finally {
-            Logger.getLogger(FileEncodingQuery.class.getName()).removeHandler(listener);
+        if (testMethod != null) {
+            testMethod.invoke(this);
+        }
+        else {
+            final Listener listener = new Listener ();
+            Logger.getLogger(FileEncodingQuery.class.getName()).setLevel(Level.FINEST);
+            Logger.getLogger(FileEncodingQuery.class.getName()).addHandler(listener);
+            try {
+                listener.reset();
+                performTest(this.file, this.expectedEncoding);
+                CharsetDecoder decoder = listener.getDecoder();
+                assertNotNull(decoder);
+                String usedEncoding = getRealCharsetName(decoder);
+                assertEquals(usedEncoding, this.expectedEncoding);
+                CharsetEncoder encoder = listener.getEncoder();
+                assertNotNull(encoder);
+                usedEncoding = getRealCharsetName(encoder);
+                assertEquals(usedEncoding, this.expectedEncoding);
+            } finally {
+                Logger.getLogger(FileEncodingQuery.class.getName()).removeHandler(listener);
+            }
         }
     } 
+    
+    
+    public void testPartialRead () throws IOException {
+        final String testString = "test-1test-2test-3test-4";
+        final File test = new File(getWorkDir(), "testPartialRead.orig");
+        PrintWriter _out = new PrintWriter (new FileWriter (test));
+        _out.print (testString);
+        _out.close();        
+        FileObject fo = FileUtil.toFileObject(test);        
+        assertNotNull(fo);
+        
+        
+        Charset encoding = FileEncodingQuery.getEncoding(fo);
+        InputStream ins = fo.getInputStream();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copy(ins, baos);
+        ins.close();
+        byte[] arr = baos.toByteArray();
+        baos.close();
+        baos = null;
+        
+        final Reader in = new InputStreamReader (new ByteArrayInputStream(arr),encoding);
+        final ByteArrayOutputStream outbs = new ByteArrayOutputStream();
+        final Writer out = new OutputStreamWriter (outbs,encoding);
+        char[] buffer = new char[6];
+        int len;
+        while ( (len = in.read(buffer)) >0) {
+            out.write (buffer);
+        }        
+        in.close();
+        out.close();
+        assertEquals(testString, new String(outbs.toByteArray()));
+        
+    }
     
     private void performTest(File templ, String expectedEncoding) throws Exception {
         File test = new File(getWorkDir(), templ.getName() +".orig");

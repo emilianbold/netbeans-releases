@@ -130,6 +130,7 @@ public class FileEncodingQuery {
             
             private CharsetDecoder currentDecoder;
             private ByteBuffer buffer = ByteBuffer.allocate(BUFSIZ);
+            private ByteBuffer remainder;
             private CodingErrorAction malformedInputAction;
             private CodingErrorAction unmappableCharAction;
             private String replace;
@@ -145,7 +146,16 @@ public class FileEncodingQuery {
             protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
                 lastCharBuffer = out;
                 if (buffer == null) {
-                    return currentDecoder.decode(in, out, false);
+                    if (remainder!=null) {
+                        CoderResult result = currentDecoder.decode(remainder,out,false);
+                        if (!remainder.hasRemaining()) {
+                            remainder = null;
+                        }
+                        return result;
+                    }
+                    else {
+                        return currentDecoder.decode(in, out, false);
+                    }
                 }
                 if (buffer.remaining() == 0) {
                     return decodeHead(in, out, false);
@@ -177,7 +187,8 @@ public class FileEncodingQuery {
                     }
                     int outPos = out.position();
                     try {
-                        result = currentDecoder.decode(buffer.asReadOnlyBuffer(), out, in==null);
+                        ByteBuffer view = buffer.asReadOnlyBuffer();
+                        result = currentDecoder.decode(view, out, in==null);                        
                         if (in != null) {
                             result = currentDecoder.decode(in, out, false);
                         }
@@ -185,6 +196,9 @@ public class FileEncodingQuery {
                             result = currentDecoder.flush(out);
                         }
                         LOG.log (Level.FINEST,DECODER_SELECTED,currentDecoder);
+                        if (view.hasRemaining()) {
+                            remainder = view;
+                        }
                         buffer = null;
                         return result;
                     } catch (UnknownEncoding e) {
@@ -257,6 +271,7 @@ public class FileEncodingQuery {
             
             private CharsetEncoder currentEncoder;
             private CharBuffer buffer = CharBuffer.allocate(BUFSIZ);
+            private CharBuffer remainder;
             private CodingErrorAction malformedInputAction;
             private CodingErrorAction unmappableCharAction;
             private byte[] replace;
@@ -272,7 +287,16 @@ public class FileEncodingQuery {
             protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
                 lastByteBuffer = out;
                 if (buffer == null) {
-                    return currentEncoder.encode(in, out, false);
+                    if (remainder!=null) {
+                        CoderResult result = currentEncoder.encode(remainder,out,false);
+                        if (!remainder.hasRemaining()) {
+                            remainder = null;
+                        }
+                        return result;
+                    }
+                    else {
+                        return currentEncoder.encode(in, out, false);
+                    }
                 }
                 if (buffer.remaining() == 0) {
                     return encodeHead(in, out, false);
@@ -304,14 +328,18 @@ public class FileEncodingQuery {
                     }
                     int outPos = out.position();
                     try {
-                        result = currentEncoder.encode(buffer.asReadOnlyBuffer(), out, in==null);
+                        CharBuffer view = buffer.asReadOnlyBuffer();
+                        result = currentEncoder.encode(view, out, in==null);
                         if (in != null) {
                             result = currentEncoder.encode(in, out, false);
                         }
                         if (flush) {
                             result = currentEncoder.flush(out);
                         }
-                        LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);                        
+                        LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);   
+                        if (view.hasRemaining()) {
+                            remainder = view;
+                        }
                         buffer = null;
                         return result;
                     } catch (UnknownEncoding e) {
