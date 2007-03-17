@@ -456,7 +456,7 @@ public class CasaModelGraphUtilities {
             if(node instanceof CasaServiceEngineServiceUnit) {
                 toolTip += model.getEndpointName(endPointRef);
             } else {
-                toolTip += endPointRef.getEndpoint().getQName().getLocalPart().toString();
+                toolTip += endPointRef.getEndpoint().get().getEndpointName();
             }
         }
         return toolTip;
