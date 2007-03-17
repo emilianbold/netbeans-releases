@@ -98,7 +98,7 @@
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="init-cp,copy_unzip_jedit_project,copy_unzip_j2ee_project,copy_unzip_soa_project,check-appserver">
+    <target name="runidesetup" depends="init-cp, copy_unzip_test_projects, copy_unzip_ent_test_projects, check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
 
         <executeTests pluginName="ide">
@@ -124,7 +124,7 @@
     </target>
 
     
-    <target name="runidetest" depends="init-cp,check-appserver,ide_command_line_suffix">
+    <target name="runidetest" depends="init-cp, check-appserver, ide_command_line_suffix">
         <delete dir="${xtest.workdir}/sys/ide"/>
         <copy todir="${xtest.workdir}/sys/ide">
             <fileset dir="${xtest.workdir}/sys/ide_backup"/>
@@ -153,7 +153,7 @@
     </target>
     
     
-    <target name="runidetest_scan" depends="init-cp,check-appserver,copy_unzip_j2ee_project">
+    <target name="runidetest_scan" depends="init-cp, check-appserver, copy_unzip_ent_test_projects">
         <antcall target="copy_released_ide_cfg_file"/>
        
         <executeTests pluginName="ide">
@@ -172,7 +172,7 @@
     </target>
     
     
-    <target name="runidetest_footprint" depends="init-cp,prepare_measure_footprint,copy_unzip_jedit_project,ide_command_line_suffix,check-appserver">
+    <target name="runidetest_footprint" depends="init-cp, prepare_measure_footprint, copy_unzip_test_projects, copy_unzip_ent_test_projects, ide_command_line_suffix, check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <!-- Opens project at specified location -->
@@ -208,38 +208,6 @@
         <chmod perm="ugo+rx" file="${xtest.tmpdir}/measure_footprint"/>
     </target>
 
-    <!-- ================ -->
-    <!-- Run in IDE's JVM -->
-    <!-- ================ -->
-
-    <target name="internal-execution">
-        <taskdef name="internalExecution" classname="org.netbeans.xtest.plugin.ide.IdeInternalExecutionTask" 
-        classpath="${xtest.home}/plugins/ide/lib/xtest-ide-plugin.jar"/>
-
-        <!-- Root directory where tests are built in. It means there will be
-        separate folder for each test type: ${compile.destdir.root}/${xtest.testtype}/classes.
-        Originally defined in module_harness.xml.             
-        -->
-        <property name="compile.destdir.root" location="../build/test"/>
-        <!-- Destination directory for compiled tests. Used in basic_compiler_targets.xml. -->
-        <property name="compile.destdir" location="${compile.destdir.root}/${xtest.testtype}/classes"/>
-        <!-- JUnit, NbJUnit and NBJUnit-ide should be in classpath by default -->
-        <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/nbjunit-ide.jar"/>        
-
-        <!-- This target runs main method of given class in IDE's JVM. 
-        You have -->
-        <internalExecution classname="${classname}">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>
-                <path refid="performance.testutilities.path"/>
-                <pathelement path="${compile.destdir}"/>
-                <pathelement path="${junit.classpath}"/>
-                <pathelement location="${nball.dir}/performance/insanelib/dist/insanelib.jar"/>
-            </classpath>
-        </internalExecution>
-    </target>
-    
-    
     <!-- =================== -->
     <!-- Work with Appserver -->
     <!-- =================== -->
@@ -272,5 +240,10 @@
         <unzip src="${nbextra.dir}/qa/projectized/SOATestProject.zip" dest="${xtest.tmpdir}/"/>
     </target>
     
+    <!-- Copy and unzip all Enteprise test projects from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_ent_test_projects">
+        <antcall target="copy_unzip_j2ee_project"/>
+        <antcall target="copy_unzip_soa_project"/>
+    </target>
 
 </project>
