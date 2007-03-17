@@ -18,7 +18,10 @@
  */
 package org.netbeans.modules.web.jsf.navigation.graph;
 
+import java.awt.Image;
+import java.awt.Point;
 import java.io.IOException;
+import java.util.Collection;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.DeleteAction;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.GraphPopupProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
@@ -37,10 +40,12 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.EventProcessingType;
-import javax.swing.*;
-import java.awt.*;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
 import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
@@ -378,20 +383,53 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCase, String> {
         }
         public String getText(Widget widget) {
             Node pageNode = (Node)findObject(nodeWidget);
-//                return ((LabelWidget) widget).getLabel();
-//                if( pageNode instanceof DataNode ){
+            //                return ((LabelWidget) widget).getLabel();
+            //                if( pageNode instanceof DataNode ){
             return pageNode.getName();
         }
         public void setText(Widget widget, String text) {
             
             Node pageNode = (Node)findObject(nodeWidget);
-            if ( pageNode.canRename() ) {
+            if ( pageNode.canRename() && !text.equals(pageNode.getName())) {
+                
+                //Explicitly declared oldName and newName for ease of reading.
+                String oldName = pageNode.getDisplayName();
+                String newName;
+                
                 pageNode.setName(text);
+                newName = pageNode.getDisplayName();
+                
+                renamePin(pageNode, oldName + "pin", newName + "pin");
+                
+                ((LabelWidget) widget).setLabel(newName);
+                validate();
             }
             
-            ((LabelWidget) widget).setLabel(pageNode.getDisplayName());
+            
         }
         
+    }
+    
+    private void renamePin( Node pageNode, String oldPinName, String newPinName ){
+        if( oldPinName.equals(newPinName) ){
+            //Don't do anything if they have the same name.
+            return;
+        }
+        Collection<NavigationCase> navSourceCases = findPinEdges(oldPinName, true, false);
+        Collection<NavigationCase> navTargetCases = findPinEdges(oldPinName, false, true);
+        removePin(oldPinName);        
+        addPin(pageNode, newPinName);
+        
+        //Doing this to make sure the associate pins are taken care of.
+        for( NavigationCase navSourceCase : navSourceCases){
+            attachEdgeSourceAnchor(navSourceCase, oldPinName, newPinName);
+        }
+        
+        for( NavigationCase navTargetCase : navTargetCases){
+            attachEdgeTargetAnchor(navTargetCase, oldPinName, newPinName);
+        }
+        
+
     }
     
     

@@ -12,7 +12,6 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +27,6 @@ import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -265,46 +263,48 @@ public class PageFlowController {
         
         //Create any pages that don't actually exist but are defined specified by the config file.
         for( String pageName : pages ){
-            //                Node tmpPageNode = new AbstractNode(Children.LEAF);
-            //                tmpPageNode.setName(pageName);
-            //                Node node = new PageFlowNode(tmpPageNode);
-            Node node = new AbstractNode(Children.LEAF);
-            node.setName(pageName);
+            Node tmpNode = new AbstractNode(Children.LEAF);
+            tmpNode.setName(pageName);
+            Node node = new PageFlowNode(tmpNode);
+            //            Node node = new AbstractNode(Children.LEAF);
+            //            node.setName(pageName);
             view.createNode(node, null, null);
         }
+    }
+    
+    /** 
+     * Givena pageName, look through the list of predefined webFiles and return the matching fileObject
+     * @return FileObject for which the match was found or null of none was found.
+     **/
+    private FileObject getFileObject(String pageName){
+        for( FileObject webFile : webFiles ) {
+            String webFileName = webFile.getNameExt();
+            if( webFileName.equals(pageName)) {
+               return webFile;
+            }
+        }
+        return null;
     }
     
     private void createFacesConfigPageNodes(Collection<String> pagesInConfig) {
         Collection<String> pages = new HashSet(pagesInConfig);
         
         for( String pageName : pages ) {
-            boolean isFound = false;
-            for( FileObject webFile : webFiles ) {
-                String webFileName = webFile.getNameExt();
-                if( webFileName.equals(pageName)) {
-                    Node node = null;
-                    try {
-                        //                        node = (DataNode)DataObject.find(webFile).getNodeDelegate();
-                        node = new PageFlowNode((DataObject.find(webFile)).getNodeDelegate());
-                    } catch ( DataObjectNotFoundException ex ) {
-                        ex.printStackTrace();
-                    } catch( ClassCastException cce ){
-                        cce.printStackTrace();
-                    }
-                    view.createNode(node, null, null);
-                    isFound = true;
+            FileObject file = getFileObject(pageName);
+            Node wrapNode = null;
+            if( file == null ) {
+                wrapNode = new AbstractNode(Children.LEAF);
+                wrapNode.setName(pageName);                
+                
+            } else {
+                try {
+                wrapNode = new PageFlowNode((DataObject.find(file)).getNodeDelegate());
+                } catch(DataObjectNotFoundException donfe ){
+                    donfe.printStackTrace();
                 }
             }
-            if( !isFound ) {
-                //                Node tmpPageNode = new AbstractNode(Children.LEAF);
-                //                tmpPageNode.setName(pageName);
-                //                Node node = new PageFlowNode(tmpPageNode);
-                Node node = new AbstractNode(Children.LEAF);
-                node.setName(pageName);
-                
-                view.createNode(node, null, null);
-            }
-            isFound = false;
+            Node node = new PageFlowNode(wrapNode);
+            view.createNode(node, null, null);
         }
     }
     
@@ -323,7 +323,16 @@ public class PageFlowController {
                 //You can actually do nothing.
             } else if ( ev.getNewValue() == State.VALID ) {
                 setupGraph();
-            } else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
+//            } else if ( ev.getPropertyName("to-view-id")) {
+//                String newToView = (String)ev.getNewValue();
+//                String oldToView = (String)ev.getOldValue();
+//                NavigationCase navCase = (NavigationCase)ev.getSource();
+//                     } else if ( ev.getPropertyName("from-view-id")) {
+//                String newFromView = (String)ev.getNewValue();
+//                String oldFromView = (String)ev.getOldValue();
+//                NavigationRule navRule = (NavigationRule)ev.getSource();
+//          
+            }else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
                 view.warnUserMalFormedFacesConfig();
                 System.out.println("NOT WELL FORMED!!!");
             }
@@ -393,6 +402,17 @@ public class PageFlowController {
             }
             
         }
+        
+        /**
+         * 
+         * @return 
+         */
+        @Override
+        public boolean canRename() {
+            return true;
+        }
+        
+        
         
         
         
