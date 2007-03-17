@@ -17,7 +17,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
-import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -26,8 +26,8 @@ import org.openide.nodes.AbstractNode;
 public class LinkCreateProvider implements ConnectProvider {
     
     private PageFlowScene graphScene;
-    AbstractNode source = null;
-    AbstractNode target = null;
+    Node source = null;
+    Node target = null;
     String navComp = null;
     
     /**
@@ -52,7 +52,7 @@ public class LinkCreateProvider implements ConnectProvider {
 //            source = (Page)object;
 //        }
         if( graphScene.isNode(object)){
-            source = (AbstractNode)object;
+            source = (Node)object;
         }
         
         return source != null;
@@ -62,7 +62,7 @@ public class LinkCreateProvider implements ConnectProvider {
     public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
         target = null;
         Object object = graphScene.findObject(targetWidget);
-        target = graphScene.isNode(object) ? (AbstractNode) object : null;
+        target = graphScene.isNode(object) ? (Node) object : null;
         if (target != null)
             return ConnectorState.ACCEPT;
         return object != null ? ConnectorState.REJECT_AND_STOP : ConnectorState.REJECT;
@@ -91,6 +91,7 @@ public class LinkCreateProvider implements ConnectProvider {
         PageFlowController pfc = graphScene.getPageFlowView().getPageFlowController();
         if ( pfc != null && sourceWidget != null && targetWidget != null ) {
             pfc.createLink(source, target, navComp);
+            graphScene.validate();
         }
 //            addEdge (edge);
 //            setEdgeSource (edge, source);
