@@ -3135,15 +3135,27 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case RETURN:
                         TreePath methodPath = Utilities.getPathElementOfKind(Tree.Kind.METHOD, path);
                         Tree retTree = methodPath != null ? ((MethodTree)methodPath.getLeaf()).getReturnType() : null;
-                        return retTree != null ? Collections.singleton(controller.getTrees().getTypeMirror(new TreePath(methodPath, retTree))) : null;
+                        type = controller.getTrees().getTypeMirror(new TreePath(methodPath, retTree));
+                        if (type == null && JavaSource.Phase.RESOLVED.compareTo(controller.getPhase()) > 0) {
+                            controller.toPhase(Phase.RESOLVED);
+                            type = controller.getTrees().getTypeMirror(new TreePath(methodPath, retTree));
+                        }
+                        return type != null ? Collections.singleton(type) : null;
                     case THROW:
                         methodPath = Utilities.getPathElementOfKind(Tree.Kind.METHOD, path);
                         if (methodPath == null)
                             return null;
                         HashSet<TypeMirror> ret = new HashSet<TypeMirror>();
                         Trees trees = controller.getTrees();
-                        for (ExpressionTree thr : ((MethodTree)methodPath.getLeaf()).getThrows())
-                            ret.add(trees.getTypeMirror(new TreePath(methodPath, thr)));
+                        for (ExpressionTree thr : ((MethodTree)methodPath.getLeaf()).getThrows()) {
+                            type = trees.getTypeMirror(new TreePath(methodPath, thr));
+                            if (type == null && JavaSource.Phase.RESOLVED.compareTo(controller.getPhase()) > 0) {
+                                controller.toPhase(Phase.RESOLVED);
+                                type = trees.getTypeMirror(new TreePath(methodPath, thr));
+                            }
+                            if (type != null)
+                                ret.add(type);
+                        }
                         return ret;
                     case IF:
                         IfTree iff = (IfTree)tree;
