@@ -180,7 +180,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         
         LabelWidget lblWidget = nodeWidget.getNodeNameWidget();
         lblWidget.getActions().addAction(
-                ActionFactory.createInplaceEditorAction( new PageFlowTextFieldInplaceEditor(nodeWidget) ));
+                ActionFactory.createInplaceEditorAction( new PageNodeTextFieldInplaceEditor(nodeWidget) ));
         
         
         //        Widget widget = new Widget(this);
@@ -259,9 +259,13 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         assert edge != null;
         
         VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, router);
-        //Should this be moved to scene?
+        
+
         LabelWidget label = new LabelWidget(this, edge.getFromOuctome());
         label.setOpaque(true);
+        label.getActions().addAction(
+                ActionFactory.createInplaceEditorAction(new CaseNodeTextFieldInplaceEditor()));
+        
         connectionWidget.addChild(label);
         connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
         
@@ -372,10 +376,33 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         }
     }
     
-    private final class PageFlowTextFieldInplaceEditor implements TextFieldInplaceEditor {
+    
+    private final class CaseNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
+        
+        
+        public boolean isEnabled(Widget arg0) {
+            return true;
+        }
+        
+        public String getText(Widget widget) {
+            Node caseNode = (Node)findObject(widget.getParentWidget());
+            return ((LabelWidget)widget).getLabel();
+        }
+        
+        public void setText(Widget widget, String newName) {            
+            Node caseNode = (Node)findObject(widget.getParentWidget());
+            if ( caseNode.canRename() ) {
+                caseNode.setName(newName);
+            }
+            ((LabelWidget)widget).setLabel(newName);
+        }
+    }
+    
+    
+    private final class PageNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
         private VMDNodeWidget nodeWidget;
         
-        public PageFlowTextFieldInplaceEditor(VMDNodeWidget nodeWidget ) {
+        public PageNodeTextFieldInplaceEditor(VMDNodeWidget nodeWidget ) {
             this.nodeWidget = nodeWidget;
         }
         
