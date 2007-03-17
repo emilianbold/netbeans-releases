@@ -57,17 +57,14 @@ public class CompletionItemComparator implements Comparator<CompletionItem> {
             if (importanceDiff != 0)
                 return importanceDiff;
             int alphabeticalDiff = compareText(i1.getSortText(), i2.getSortText());
-            if (alphabeticalDiff != 0)
-                return alphabeticalDiff;
+            return alphabeticalDiff;
         } else {
             int alphabeticalDiff = compareText(i1.getSortText(), i2.getSortText());
             if (alphabeticalDiff != 0)
                 return alphabeticalDiff;
             int importanceDiff = i1.getSortPriority() - i2.getSortPriority();
-            if (importanceDiff != 0)
-                return importanceDiff;
+            return importanceDiff;
         }
-        return -1;
     }
     
     private static int compareText(CharSequence text1, CharSequence text2) {
