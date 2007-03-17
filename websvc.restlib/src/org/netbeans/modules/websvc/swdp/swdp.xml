@@ -27,7 +27,13 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/swdp/restbeans-impl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/swdp/wadl2java.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/activation.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/jsr250-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/swdp/localizer.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxrpc16/mail.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/swdp/wadl2java.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/api/jaxb-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/jaxb-impl.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr173_api.jar!/</resource>
     </volume>  
 </library>
