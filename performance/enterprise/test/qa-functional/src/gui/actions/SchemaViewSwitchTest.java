@@ -51,13 +51,14 @@ public class SchemaViewSwitchTest extends org.netbeans.performance.test.utilitie
     public SchemaViewSwitchTest(String testName) {
         super(testName);
         //TODO: Adjust expectedTime value        
-        expectedTime = 1000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;           
     }
+    
     public SchemaViewSwitchTest(String testName, String  performanceDataName) {
         super(testName, performanceDataName);
         //TODO: Adjust expectedTime value
-        expectedTime = 1000;
+        expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;                
     }    
 

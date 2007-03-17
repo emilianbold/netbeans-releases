@@ -22,11 +22,10 @@ package gui.actions;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.BuildProjectAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.junit.ide.ProjectSupport;
 
 
 /**
@@ -35,7 +34,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author  rashid@netbeans.org, mmirilovic@netbeans.org
  */
 public class BuildComplexProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    private String project_name;
+    private String project_name = "TravelReservationServiceApplication";
     
     /**
      * Creates a new instance of Build Complex Project
@@ -58,24 +57,16 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
         WAIT_AFTER_OPEN=10000;
     }
     
-    public void initialize(){
-        project_name = "TravelReservationServiceApplication";
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + java.io.File.separator + "TravelReservationService" + java.io.File.separator + project_name);
+    public void prepare(){
         new CloseAllDocumentsAction().performAPI();
     }
     
-    public void prepare(){
-    }
-    
     public ComponentOperator open(){
-        Node ProjectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
-        ProjectNode.performPopupActionNoBlock("Build Project"); // NOI18N
+        Node projectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
+        new BuildProjectAction().performPopup(projectNode);
+        
         MainWindowOperator.getDefault().waitStatusText("Finished building"); // NOI18N
         return null;
-    }
-    
-    public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static void main(java.lang.String[] args) {

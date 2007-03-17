@@ -39,7 +39,7 @@ public class CreateCompositeApplication extends org.netbeans.performance.test.ut
     
     private NewProjectNameLocationStepOperator wizard_location;
     
-    private String category, project, project_name, project_type;
+    private String category, project, project_name;
     
     private int index;
     
@@ -67,8 +67,7 @@ public class CreateCompositeApplication extends org.netbeans.performance.test.ut
     public void initialize(){
         category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA"); // "Service Oriented Architecture"
 //        project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA/emptyBpelpro.xml"); // "Composite Application"
-        project = "Composite Application";
-        project_type="CompositeApp";
+        project = "Composite Application"; // NOI18N
         index=1;
     }
     
@@ -85,7 +84,7 @@ public class CreateCompositeApplication extends org.netbeans.performance.test.ut
         new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().setText(directory);
         
-        project_name = project_type + "_" + (index++);
+        project_name = "CompositeApp_" + (index++);
         log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
         new EventTool().waitNoEvent(1000);

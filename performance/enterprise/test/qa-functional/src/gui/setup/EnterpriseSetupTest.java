@@ -45,4 +45,7 @@ public class EnterpriseSetupTest extends IDESetupTest {
         EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "TravelReservationService" + java.io.File.separator + "TravelReservationServiceApplication");
     }
     
+    public void openSoaTestProject() {
+        EPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "SOATestProject");
+    }
 }

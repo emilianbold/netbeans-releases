@@ -21,63 +21,69 @@ package gui.actions;
 
 import gui.EPUtilities;
 
-import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
+import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-
 /**
  *
- * @author  rashid@netbeans.org, mmirilovic@netbeans.org
+ * @author rashid@netbeans.org, mmirilovic@netbeans.org
  */
-public class SchemaNavigatorDesignView  extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class SwitchToDesignView  extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
+    XMLSchemaComponentOperator schemaComponentOperator;
+            
     private static String testSchemaName = "fields";
     
-    private Node processNode, schemaNode;
-    
-    /** Creates a new instance of SchemaNavigatorDesignView */
-    public SchemaNavigatorDesignView(String testName) {
+    /** Creates a new instance of SwitchSchemaView */
+    public SwitchToDesignView(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        //   WAIT_AFTER_OPEN=4000;
     }
     
-    /** Creates a new instance of SchemaNavigatorDesignView */
-    public SchemaNavigatorDesignView(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
+    /** Creates a new instance of SwitchSchemaView */
+    public SwitchToDesignView(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
-        //   WAIT_AFTER_OPEN=4000;
     }
     
     protected void initialize() {
         log(":: initialize");
-        processNode = EPUtilities.getProcessFilesNode("SOATestProject");
-        processNode.select();
-        
-        schemaNode = new Node(processNode, testSchemaName+".xsd");
+        Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaName + ".xsd");
+        doc.select();
+        new OpenAction().perform(doc);
     }
-    
+        
     public void prepare() {
         log(":: prepare");
+        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaName+".xsd");
+        schemaComponentOperator.getSchemaButton().pushNoBlock();
     }
     
     public ComponentOperator open() {
         log(":: open");
-        schemaNode.select();
-        new TopComponentOperator("Navigator"); // NOI18N
-        return null;
+        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaName+".xsd");
+        schemaComponentOperator.getDesignButton().push();
+        
+        return new XMLSchemaComponentOperator(testSchemaName+".xsd");
+    }
+    
+    public void close() {
+        log("::close");
+        ((XMLSchemaComponentOperator)testedComponentOperator).close();
     }
     
     @Override
-    public void close() {
-        processNode.select();
-        new EventTool().waitNoEvent(1000);
+    protected void shutdown() {
+        new CloseAllDocumentsAction().performAPI();
     }
+
+    
     
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(new SchemaNavigatorDesignView("measureTime"));
+        repeat = 3;
+        junit.textui.TestRunner.run(new SwitchToDesignView("measureTime"));
     }
 }

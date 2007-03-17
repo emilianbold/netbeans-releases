@@ -20,16 +20,15 @@
 package gui.actions;
 
 
+import gui.EPUtilities;
+
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -39,8 +38,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class ValidateSchema extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private static String testProjectName ;
-    private Node doc;
+    private Node schemaNode;
     
     /** Creates a new instance of ValidateSchema */
     public ValidateSchema(String testName) {
@@ -59,16 +57,9 @@ public class ValidateSchema extends org.netbeans.performance.test.utilities.Perf
     
     public void initialize(){
         log(":: initialize");
-        
-        testProjectName = "SOATestProject";
-        String testSchemaName = "fields"; // NOI18N
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+java.io.File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
-        
-        doc = new Node(new ProjectsTabOperator().getProjectRootNode(testProjectName),"Process Files"+"|"+testSchemaName+".xsd"); // NOI18N
-        doc.select();
-        new OpenAction().perform(doc);
+        schemaNode = new Node(EPUtilities.getProcessFilesNode("SOATestProject"),"fields.xsd");
+        schemaNode.select();
+        new OpenAction().perform(schemaNode);
     }
     
     public void prepare() {
@@ -78,18 +69,17 @@ public class ValidateSchema extends org.netbeans.performance.test.utilities.Perf
     public ComponentOperator open() {
         log("::open");
         
-        doc.performPopupAction("Validate XML"); // NOI18N
+        schemaNode.performPopupAction("Validate XML"); // NOI18N
         
         OutputOperator oot = new OutputOperator();
         OutputTabOperator asot = oot.getOutputTab("XML check"); // NOI18N
         asot.waitText("XML validation finished"); // NOI18N
-        
         return oot;
     }
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(testProjectName);
+        new CloseAllDocumentsAction().perform();
     }
     
 }

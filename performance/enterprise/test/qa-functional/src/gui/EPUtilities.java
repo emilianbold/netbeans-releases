@@ -19,6 +19,9 @@
 
 package gui;
 
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+
 /**
  * Utilities for Performance tests, workarrounds, often used methods, ...
  *
@@ -28,6 +31,11 @@ public class EPUtilities extends gui.Utilities{
 
     public static void waitForPendingBackgroundTasks() {
         waitForPendingBackgroundTasks(5);
+    }
+    
+    public static Node getProcessFilesNode(String project){
+        String processNode = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.bpel.project.ui.Bundle", "LBL_Node_Sources");
+        return new Node(new ProjectsTabOperator().getProjectRootNode(project),processNode);
     }
     
     public static void waitForPendingBackgroundTasks(int n) {

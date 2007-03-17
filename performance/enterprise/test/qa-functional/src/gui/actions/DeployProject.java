@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -32,8 +32,7 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.EventTool;
-
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.jemmy.JemmyProperties;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -43,68 +42,68 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class DeployProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-   private String  project_name;
-   
+    private static String  project_name = "ReservationPartnerServices";
+    private static String TIMEOUT_NAME = "ComponentOperator.WaitStateTimeout";
+    private static long timeout;
+    
     /** Creates a new instance of DeployProject */
     public DeployProject(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
+        //TODO: Adjust expectedTime value
         expectedTime = 60000;
-        WAIT_AFTER_OPEN=4000;    
-        project_name = "ReservationPartnerServices";    
+        WAIT_AFTER_OPEN=60000;
     }
-
+    
     public DeployProject(String testName, String  performanceDataName) {
         super(testName,performanceDataName);
         //TODO: Adjust expectedTime value
         expectedTime = 60000;
-        WAIT_AFTER_OPEN=4000;                
-        project_name = "ReservationPartnerServices";    
+        WAIT_AFTER_OPEN=60000;
     }
     
     public void initialize(){
         log(":: initialize");
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/TravelReservationService/ReservationPartnerServices");
         RuntimeTabOperator rto = new RuntimeTabOperator().invoke();
-        TreePath path = rto.tree().findPath("Servers|Sun Java System Application Server");
+        TreePath path = rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
         rto.tree().selectPath(path);
         new EventTool().waitNoEvent(5000);
-        new Node(rto.tree(),path).performPopupAction("Start");
+        
+        new Node(rto.tree(),path).performPopupAction("Start"); // NOI18N
         new EventTool().waitNoEvent(80000);
-
+        
         OutputOperator oot = new OutputOperator();
-        oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-        OutputTabOperator asot = oot.getOutputTab("Sun Java System Application Server 9");
-        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-
-        asot.waitText("Application server startup complete");
-
-        new CloseAllDocumentsAction().performAPI(); 
+        timeout = JemmyProperties.getCurrentTimeout(TIMEOUT_NAME);
+        JemmyProperties.setCurrentTimeout(TIMEOUT_NAME,300000);
+        
+        OutputTabOperator asot = oot.getOutputTab("Sun Java System Application Server 9"); // NOI18N
+        asot.waitText("Application server startup complete"); // NOI18N
+        
+        new CloseAllDocumentsAction().performAPI();
     }
-   
+    
     public void prepare() {
         log(":: prepare");
     }
-
+    
     public ComponentOperator open() {
         log("::open");
-     
-       Node ProjectNode = new ProjectsTabOperator().getProjectRootNode(project_name);        
-        ProjectNode.performPopupActionNoBlock("Deploy Project");
-        new EventTool().waitNoEvent(10000);
-        MainWindowOperator.getDefault().waitStatusText("Finished building "+project_name);
-
+        
+        Node projectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
+        projectNode.performPopupActionNoBlock("Deploy Project"); // NOI18N
+        new EventTool().waitNoEvent(60000);
+        MainWindowOperator.getDefault().waitStatusText("Finished building "+project_name); // NOI18N
+        
         return null;
     }
     
     protected void shutdown() {
         log("::shutdown");
-        ProjectSupport.closeProject(project_name);
+        JemmyProperties.setCurrentTimeout(TIMEOUT_NAME,timeout);
     }
-
-  public void close(){
+    
+    public void close(){
         log("::close");
         new CloseAllDocumentsAction().performAPI();
-     } 
+    }
     
 }

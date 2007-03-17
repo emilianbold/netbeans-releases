@@ -19,14 +19,14 @@
 
 package gui.actions;
 
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import gui.EPUtilities;
+
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-
-import org.netbeans.junit.ide.ProjectSupport;
 
 
 /**
@@ -35,41 +35,28 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class SchemaNavigatorSchemaView  extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private static String testProjectName = "SOATestProject";
     private static String testSchemaName = "fields";
-    private static String testSchemaName1 = "batch";
     
-    private Node projectNode, schemaNode, schema1Node;
+    private Node processNode, schemaNode;
     
-    /** Creates a new instance of SchemaNavigatorSchemaView */
+    /** Creates a new instance of SchemaNavigatorDesignView */
     public SchemaNavigatorSchemaView(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
-        //   WAIT_AFTER_OPEN=4000;
+        expectedTime = UI_RESPONSE;
     }
     
-    /** Creates a new instance of SchemaNavigatorSchemaView */
+    /** Creates a new instance of SchemaNavigatorDesignView */
     public SchemaNavigatorSchemaView(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
-        //   WAIT_AFTER_OPEN=4000;
+        expectedTime = UI_RESPONSE;
     }
     
     protected void initialize() {
         log(":: initialize");
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+java.io.File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
+        processNode = EPUtilities.getProcessFilesNode("SOATestProject");
+        processNode.select();
         
-        projectNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        
-        schema1Node = new Node(projectNode,"Process Files"+"|"+testSchemaName1+".xsd"); // NOI18N
-        schema1Node.select();
-        
-        SchemaOperator tco = new SchemaOperator(testSchemaName1+".xsd");
-        JComboBoxOperator NavCombo = new JComboBoxOperator(tco,0);
-        NavCombo.selectItem("Schema View"); // NOI18N
-        
-        schemaNode = new Node(projectNode,"Process Files"+"|"+testSchemaName+".xsd"); //NOI18N
+        schemaNode = new Node(processNode, testSchemaName+".xsd");
     }
     
     public void prepare() {
@@ -79,16 +66,15 @@ public class SchemaNavigatorSchemaView  extends org.netbeans.performance.test.ut
     public ComponentOperator open() {
         log(":: open");
         schemaNode.select();
-        return new SchemaOperator(testSchemaName+".xsd");
+        JComboBoxOperator combo = new JComboBoxOperator(new TopComponentOperator("Navigator")); // NOI18N
+        combo.selectItem("Schema View"); // NOI18N
+        return null;
     }
     
+    @Override
     public void close() {
-        log("::close");
-        schema1Node.select();
-    }
-    
-    protected void shutdown() {
-        ProjectSupport.closeProject(testProjectName);
+        processNode.select();
+        new EventTool().waitNoEvent(1000);
     }
     
     public static void main(String[] args) {

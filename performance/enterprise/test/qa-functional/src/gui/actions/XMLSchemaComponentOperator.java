@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class XMLSchemaComponentOperator extends TopComponentOperator {
     
@@ -33,6 +33,7 @@ public class XMLSchemaComponentOperator extends TopComponentOperator {
     public XMLSchemaComponentOperator(String topComponentName) {
         this(topComponentName,0);
     }
+    
     /** Creates a new instance of XMLSchemaComponentOperator */
     public XMLSchemaComponentOperator(String topComponentName, int Index) {
         super(topComponentName,Index);
@@ -41,12 +42,15 @@ public class XMLSchemaComponentOperator extends TopComponentOperator {
     private JToggleButtonOperator getViewButton(String viewName) {
         return new JToggleButtonOperator(this,viewName);
     }
+    
     public JToggleButtonOperator getSourceButton() {
         return getViewButton("Source"); // NOI18N
     }
+    
     public JToggleButtonOperator getSchemaButton() {
         return getViewButton("Schema"); // NOI18N
     }
+    
     public JToggleButtonOperator getDesignButton() {
         return getViewButton("Design"); // NOI18N
     }
