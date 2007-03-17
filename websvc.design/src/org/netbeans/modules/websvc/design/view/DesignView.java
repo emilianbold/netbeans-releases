@@ -25,16 +25,15 @@ import java.awt.Point;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 import org.openide.filesystems.FileObject;
 
@@ -45,7 +44,12 @@ import org.openide.filesystems.FileObject;
  */
 public class DesignView extends JPanel  {
     /** Manages the state of the widgets and corresponding objects. */
-    private Scene scene;
+    private transient Scene scene;
+    /** Manages the zoom level. */
+    private ZoomManager zoomer;
+    private transient Widget mMainLayer;
+    private transient Widget contentWidget;
+    private transient OperationsWidget operationsWidget;
     /**
      * Creates a new instance of GraphView.
      */
@@ -53,39 +57,42 @@ public class DesignView extends JPanel  {
         super(new BorderLayout());
 
         scene = new Scene();
-        // initialize configuration
+        zoomer = new ZoomManager(scene);
         // add actions
         scene.getActions().addAction(ActionFactory.createZoomAction ());
         scene.getActions().addAction(ActionFactory.createPanAction ());
-        scene.getActions().addAction(ActionFactory.createPopupMenuAction(
-                new DesignViewPopupProvider(new Action [] {
-            new AddOperationAction(service, implementationClass),
-        })));
 
-        Widget mMainLayer = new LayerWidget(scene);
+        mMainLayer = new LayerWidget(scene);
         mMainLayer.setPreferredLocation(new Point(0, 0));
         mMainLayer.setBackground(Color.WHITE);
         scene.addChild(mMainLayer);
-        Widget contentWidget = new Widget(scene);
+        contentWidget = new Widget(scene);
         contentWidget.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 16));
         mMainLayer.addChild(contentWidget);
         //add operations widget
-        Widget opWidget = new OperationsWidget(scene,service,implementationClass);
-        contentWidget.addChild(opWidget);
+        operationsWidget = new OperationsWidget(scene,service,implementationClass);
+        contentWidget.addChild(operationsWidget);
 
-
-        add(scene.createView(),BorderLayout.CENTER);
+        JComponent sceneView = scene.createView();
+        JScrollPane panel = new JScrollPane(sceneView);
+        panel.getVerticalScrollBar().setUnitIncrement(16);
+        panel.getHorizontalScrollBar().setUnitIncrement(16);
+        panel.setBorder(null);
+        add(panel, BorderLayout.CENTER);
     }
 
     /**
-     * Adds the graph actions to the given toolbar (no separators are
-     * added to either the beginning or end).
+     * Adds the graph actions to the given toolbar.
      *
      * @param  toolbar  to which the actions are added.
      */
     public void addToolbarActions(JToolBar toolbar) {
+        toolbar.addSeparator();
+        zoomer.addToolbarActions(toolbar);
+        toolbar.addSeparator();
+        operationsWidget.addToolbarActions(toolbar);
     }
 
     /**

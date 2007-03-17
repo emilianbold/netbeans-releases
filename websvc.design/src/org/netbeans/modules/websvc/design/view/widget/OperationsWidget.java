@@ -24,6 +24,8 @@ import java.awt.Image;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.JToolBar;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
@@ -34,24 +36,23 @@ import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
 import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Ajit Bhate
  */
-public class OperationsWidget extends Widget implements ExpandableWidget{
+public class OperationsWidget extends RoundedRectangleWidget implements ExpandableWidget{
     
-    private static final Color FILL_COLOR_ORANGE4 = new Color(255,204,153);
-    private static final Color FILL_COLOR_PALEYELLOW = new Color(255,255,204);
-    private static final Color BORDER_COLOR_ORANGE3 = new Color(255,153,102);
-    public  static final Image IMAGE  = Utilities.loadImage
+    private static final Color BORDER_COLOR = new Color(204,204,204);
+    private static final Color FILL_COLOR = new Color(230,230,230);
+    private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/operation.png"); // NOI18N   
 
     private transient WsdlService wsdlService;
     private transient Action addAction;
 
-    private transient RoundedRectangleWidget mainWidget;
     private transient Widget contentWidget;
     private transient HeaderWidget headerWidget;
     private transient Widget buttons;
@@ -67,8 +68,9 @@ public class OperationsWidget extends Widget implements ExpandableWidget{
      * @param implementationClass 
      */
     public OperationsWidget(Scene scene, Service service, FileObject implementationClass) {
-        super(scene);
+        super(scene,FILL_COLOR,BORDER_COLOR);
         addAction = new AddOperationAction(service, implementationClass);
+        addAction.putValue(Action.SMALL_ICON, new ImageIcon(IMAGE));
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
             addAction,
@@ -99,10 +101,7 @@ public class OperationsWidget extends Widget implements ExpandableWidget{
     private void createContent() {
         if (wsdlService==null) return;
         
-        mainWidget = new RoundedRectangleWidget(getScene(),
-                FILL_COLOR_ORANGE4, FILL_COLOR_PALEYELLOW, BORDER_COLOR_ORANGE3);
-        mainWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 16));
-        addChild(mainWidget);
+        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 16));
 
         boolean expanded = ExpanderWidget.isExpanded(this, true);
         expander = new ExpanderWidget(getScene(), this, expanded);
@@ -114,27 +113,27 @@ public class OperationsWidget extends Widget implements ExpandableWidget{
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
 
-        ButtonWidget addButton = new ButtonWidget(getScene(), 
-                addAction.getValue(Action.NAME).toString());
-        addButton.getButton().setAction(addAction);
+        ButtonWidget addButton = new ButtonWidget(getScene(), addAction);
 
         buttons.addChild(addButton);
         buttons.addChild(expander);
 
         headerWidget.addChild(buttons);
 
-        mainWidget.addChild(headerWidget);
+        addChild(headerWidget);
         
         contentWidget = new Widget(getScene());
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 16));
 
         int noOfOperations = 0;
         for(WsdlPort port:wsdlService.getPorts()) {
             for(WsdlOperation operation:port.getOperations()) {
-                contentWidget.addChild(new OperationContentWidget(getScene(),operation));
+                contentWidget.addChild(new OperationWidget(getScene(),operation));
                 noOfOperations++;
             }
         }
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, "Operations", 
+        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
+                NbBundle.getMessage(OperationWidget.class, "LBL_Operations"), 
                 "("+noOfOperations+")");
         headerWidget.addChild(0,headerLabelWidget);
 
@@ -148,7 +147,7 @@ public class OperationsWidget extends Widget implements ExpandableWidget{
 
     public void collapseWidget() {
         if(contentWidget.getParentWidget()!=null) {
-            mainWidget.removeChild(contentWidget);
+            removeChild(contentWidget);
             revalidate();
             repaint();
             getScene().repaint();
@@ -158,7 +157,7 @@ public class OperationsWidget extends Widget implements ExpandableWidget{
 
     public void expandWidget() {
         if(contentWidget.getParentWidget()==null) {
-            mainWidget.addChild(contentWidget);
+            addChild(contentWidget);
             revalidate();
             repaint();
             getScene().repaint();
@@ -169,5 +168,14 @@ public class OperationsWidget extends Widget implements ExpandableWidget{
     public Object hashKey() {
         return wsdlService==null?null:wsdlService.getName();
     }
-
+    
+    /**
+     * Adds the widget actions to the given toolbar (no separators are
+     * added to either the beginning or end).
+     *
+     * @param  toolbar  to which the actions are added.
+     */
+    public void addToolbarActions(JToolBar toolbar) {
+        toolbar.add(addAction);
+    }
 }

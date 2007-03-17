@@ -28,56 +28,116 @@ import org.netbeans.api.visual.widget.Scene;
 
 /**
  * @author Ajit Bhate
- * @author anjeleevich
  */
 public class ButtonWidget extends ComponentWidget {
 
+    /**
+     * 
+     * @param scene 
+     * @param text 
+     */
     public ButtonWidget(Scene scene, String text) {
         this(scene, null, text);
     }
     
     
+    /**
+     * 
+     * @param scene 
+     * @param icon 
+     */
     public ButtonWidget(Scene scene, Icon icon) {
         this(scene, icon, null);
     }
     
     
+    /**
+     * 
+     * @param scene 
+     * @param icon 
+     * @param text 
+     */
     public ButtonWidget(Scene scene, Icon icon, String text) {
-        super(scene,new JButton(text,icon));
+        this(scene,new JButton(text,icon));
+    }
+    
+    
+    /**
+     * 
+     * @param scene 
+     * @param action 
+     */
+    public ButtonWidget(Scene scene, Action action) {
+        this(scene,new JButton(action));
+    }
+    
+    
+    /**
+     * 
+     * @param scene 
+     * @param button 
+     */
+    public ButtonWidget(Scene scene, JButton button) {
+        super(scene,button);
         setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory
                 .SerialAlignment.CENTER, 4));
     }
     
     
+    /**
+     * 
+     * @return 
+     */
     protected JButton getButton() {
         return (JButton)super.getComponent();
     }
 
+    /**
+     * 
+     * @param action 
+     */
     public void setAction(Action action) {
         getButton().setAction(action);
     }
 
+    /**
+     * 
+     * @return 
+     */
     public String getText() {
         return getButton().getText();
     }
     
     
+    /**
+     * 
+     * @return 
+     */
     public Icon getIcon() {
         return getButton().getIcon();
     }
     
     
+    /**
+     * 
+     * @param text 
+     */
     public void setText(String text) {
         getButton().setText(text);
     }
     
     
+    /**
+     * 
+     * @param icon 
+     */
     public void setIcon(Icon icon) {
         getButton().setIcon(icon);
     }
     
-    /*
+    /**
      * Changed method name so that it doesnt clash with Widget.setEnabled.
+     * @param v 
      */
     public void setButtonEnabled(boolean v) {
         JButton button = getButton();
@@ -87,7 +147,11 @@ public class ButtonWidget extends ComponentWidget {
     }
     
     /*
+     * 
+     */
+    /**
      * Changed method name so that it doesnt clash with Widget.isEnabled.
+     * @return 
      */
     public boolean isButtonEnabled() {
         return getButton().isEnabled();

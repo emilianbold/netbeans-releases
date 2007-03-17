@@ -20,12 +20,11 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.util.Map;
@@ -115,6 +114,7 @@ public class ExpanderWidget extends ButtonWidget {
     public ExpanderWidget(Scene scene, ExpandableWidget expandable,
             boolean expanded) {
         super(scene, expanded ? new ImageIcon(IMAGE_COLLAPSE) : new ImageIcon(IMAGE_EXPAND));
+        getButton().setPreferredSize(new Dimension(20, 20));
         this.expandable = expandable;
         isExpanded = expanded;
         setAction(new AbstractAction() {

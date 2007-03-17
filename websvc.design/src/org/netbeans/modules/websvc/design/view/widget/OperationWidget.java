@@ -20,30 +20,48 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Polygon;
-import java.awt.Rectangle;
+import java.awt.Image;
+import javax.swing.Action;
+import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
+import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Ajit Bhate
  */
-public class OperationWidget extends Widget{
+public class OperationWidget extends RoundedRectangleWidget implements ExpandableWidget{
     
-    private static final Color FILL_COLOR_DARK = new Color(102,255,255);
-    private static final Color FILL_COLOR_LIGHT = new Color(204,255,255);
-    private static final Color BORDER_COLOR = new Color(153,204,255);
-    private LabelWidget label;
-    private OperationMessageWidget inputWidget;
-    private OperationMessageWidget outputWidget;
-    private OperationMessageWidget faultWidget;
+    private static final Color FILL_COLOR_YELLOW3 = new Color(255,255,153);
+    private static final Color FILL_COLOR_YELLOW4 = new Color(255,255,204);
+    private static final Color BORDER_COLOR_YELLOW2 = new Color(255,255,102);
+
+    private static final Image IMAGE_ONE_WAY  = Utilities.loadImage
+            ("org/netbeans/modules/websvc/design/view/resources/oneway_operation.png"); // NOI18N   
+    private static final Image IMAGE_REQUEST_RESPONSE  = Utilities.loadImage
+            ("org/netbeans/modules/websvc/design/view/resources/requestresponse_operation.png"); // NOI18N   
+    private static final Image IMAGE_NOTIFICATION  = Utilities.loadImage
+            ("org/netbeans/modules/websvc/design/view/resources/notification_operation.png"); // NOI18N   
+
+    private WsdlOperation operation;
+    
+    private transient Widget contentWidget;
+    private transient HeaderWidget headerWidget;
+    private transient Widget buttons;
+    private transient ExpanderWidget expander;
+    private transient ImageLabelWidget headerLabelWidget;
+
+    private Widget inputWidget;
+    private Widget outputWidget;
+    private Widget faultWidget;
+    private Widget descriptionWidget;
 
     /**
      * Creates a new instance of OperationWidget
@@ -51,39 +69,89 @@ public class OperationWidget extends Widget{
      * @param operation
      */
     public OperationWidget(Scene scene, WsdlOperation operation) {
-        super(scene);
-        setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 4));
-        if(operation.getReturnTypeName()!=null) {
-            outputWidget = new OperationMessageWidget(scene,operation,
-                    OperationMessageWidget.MessageType.OUTPUT);
-            addChild(outputWidget);
-        }
-        label = new LabelWidget(scene,operation.getName());
-        addChild(label);
-        if(!operation.getParameters().isEmpty()) {
-            inputWidget = new OperationMessageWidget(scene,operation,
-                    OperationMessageWidget.MessageType.INPUT);
-            addChild(inputWidget);
-        }
+        super(scene,FILL_COLOR_YELLOW3,FILL_COLOR_YELLOW4,BORDER_COLOR_YELLOW2);
+        this.operation=operation;
+        getActions().addAction(ActionFactory.createPopupMenuAction(
+                new DesignViewPopupProvider(new Action [] {
+        })));
+        createContent();
     }
     
-    protected void paintWidget() {
-        Rectangle bounds = getBounds();
-        Polygon polygon = new Polygon();
-        polygon.addPoint(bounds.x+bounds.height/2, bounds.y);
-        polygon.addPoint(bounds.x+bounds.width-bounds.height/2, bounds.y);
-        polygon.addPoint(bounds.x+bounds.width, bounds.y+bounds.height/2);
-        polygon.addPoint(bounds.x+bounds.width-bounds.height/2, bounds.y+bounds.height);
-        polygon.addPoint(bounds.x+bounds.height/2, bounds.y+bounds.height);
-        polygon.addPoint(bounds.x, bounds.y+bounds.height/2);
-        Graphics2D g = getGraphics();
-        Paint oldPaint = g.getPaint();
-        g.setPaint(new GradientPaint(bounds.x, bounds.y, FILL_COLOR_DARK,
-                bounds.x, bounds.y + bounds.height, FILL_COLOR_LIGHT));
-        g.fillPolygon(polygon);
-        g.setPaint(BORDER_COLOR);
-        g.drawPolygon(polygon);
-        g.setPaint(oldPaint);
+    private void createContent() {
+        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 16));
+
+        boolean expanded = ExpanderWidget.isExpanded(this, true);
+        expander = new ExpanderWidget(getScene(), this, expanded);
+
+        headerWidget = new HeaderWidget(getScene(), expander);
+        headerWidget.setLayout(new LeftRightLayout(32));
+
+        buttons = new Widget(getScene());
+        buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+
+        buttons.addChild(expander);
+
+        headerWidget.addChild(buttons);
+
+        addChild(headerWidget);
+        
+        contentWidget = new Widget(getScene());
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 16));
+
+        String typeOfOperation ="";
+        Image image = null;
+        if(operation.getReturnTypeName()==null) {
+            typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_OneWay");
+            image = IMAGE_ONE_WAY;
+        } else if (!operation.getParameters().isEmpty()) {
+            typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_RequestResponse");
+            image = IMAGE_REQUEST_RESPONSE;
+        } else {
+            typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_Notification");
+            image = IMAGE_NOTIFICATION;
+        }
+        headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getName(), 
+                "("+typeOfOperation+")");
+        headerWidget.addChild(0,headerLabelWidget);
+
+        inputWidget = new LabelWidget(getScene(),"parameters");
+        outputWidget = new LabelWidget(getScene(),"return type : "+operation.getReturnTypeName());
+        faultWidget = new LabelWidget(getScene(),"faults");
+        descriptionWidget = new LabelWidget(getScene(),"description");
+        contentWidget.addChild(inputWidget);
+        contentWidget.addChild(outputWidget);
+        contentWidget.addChild(faultWidget);
+        contentWidget.addChild(descriptionWidget);
+        if(expanded) {
+            expandWidget();
+        } else {
+            collapseWidget();
+        }
     }
-    
+
+    public void collapseWidget() {
+        if(contentWidget.getParentWidget()!=null) {
+            removeChild(contentWidget);
+            revalidate();
+            repaint();
+            getScene().repaint();
+            getScene().revalidate();
+        }
+    }
+
+    public void expandWidget() {
+        if(contentWidget.getParentWidget()==null) {
+            addChild(contentWidget);
+            revalidate();
+            repaint();
+            getScene().repaint();
+            getScene().revalidate();
+        }
+    }
+
+    public Object hashKey() {
+        return operation==null?null:operation.getName();
+    }
+
 }
