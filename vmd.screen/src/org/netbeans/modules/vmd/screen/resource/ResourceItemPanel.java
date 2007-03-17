@@ -29,24 +29,26 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.vmd.screen.GradientBorder;
 
 /**
  * @author breh
  */
 public class ResourceItemPanel extends JLabel implements MouseListener {
 
-    private static Border SELECTED_RESOURCE_BORDER = BorderFactory.createCompoundBorder(
-            BorderFactory.createEtchedBorder(EtchedBorder.RAISED),
-            BorderFactory.createLineBorder(Color.BLUE, 3));
-    private static Border RESOURCE_BODER = BorderFactory.createCompoundBorder(
-            BorderFactory.createEtchedBorder(EtchedBorder.RAISED),
-            BorderFactory.createEmptyBorder(3, 3, 3, 3));
+    private static Border SELECTED_RESOURCE_BORDER = new GradientBorder(true);
+//            BorderFactory.createCompoundBorder(
+//            BorderFactory.createEtchedBorder(EtchedBorder.RAISED),
+//            BorderFactory.createLineBorder(Color.BLUE, 3));
+    private static Border RESOURCE_BORDER = new GradientBorder(false);
+//            BorderFactory.createCompoundBorder(
+//            BorderFactory.createEtchedBorder(EtchedBorder.RAISED),
+//            BorderFactory.createEmptyBorder(3, 3, 3, 3));
 
     private DesignComponent component;
 
@@ -68,7 +70,7 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
         if (component.getDocument ().getSelectedComponents ().contains (component))
             setBorder (SELECTED_RESOURCE_BORDER);
         else
-            setBorder (RESOURCE_BODER);
+            setBorder (RESOURCE_BORDER);
     }
 
     public JPopupMenu getComponentPopupMenu () {
