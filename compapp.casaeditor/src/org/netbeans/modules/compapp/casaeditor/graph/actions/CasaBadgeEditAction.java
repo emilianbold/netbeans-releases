@@ -20,7 +20,6 @@
 package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,6 +29,7 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaBindingBadges;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetBinding;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.openide.DialogDescriptor;
@@ -58,7 +58,9 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         }
         
         CasaNodeWidgetBinding nodeWidget = (CasaNodeWidgetBinding) widget;
-        Rectangle badgeBounds = nodeWidget.getEditBadgeBoundsForNode();
+        Rectangle badgeBounds = nodeWidget.getBadges().getBadgeBoundsForParent(
+                CasaBindingBadges.Badge.IS_EDITABLE, 
+                nodeWidget);
         if (!badgeBounds.contains(event.getPoint())) {
             return State.REJECTED;
         }
@@ -73,7 +75,7 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
             return State.REJECTED;
         }
         
-        nodeWidget.setEditBadgePressed(true);
+        nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, true);
         
         return State.CONSUMED;
     }
@@ -119,7 +121,7 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         mEditNode = null;
         
         CasaNodeWidgetBinding nodeWidget = (CasaNodeWidgetBinding) widget;
-        nodeWidget.setEditBadgePressed(false);
+        nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, false);
         
         propertySheetPanel.setNodes(new Node[] { editNodeRef });
         

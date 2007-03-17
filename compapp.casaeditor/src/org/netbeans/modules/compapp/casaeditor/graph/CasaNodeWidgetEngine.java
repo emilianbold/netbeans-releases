@@ -91,7 +91,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                 return CasaFactory.getCasaCustomizer().getCOLOR_BC_TITLE_BACKGROUND();
             }
             public Rectangle getClipRect() {
-                Rectangle clientArea = mHeader.getClientArea();
+                Rectangle clientArea = mContainerWidget.getClientArea();
                 Rectangle gradientRect = new Rectangle();
 
                 gradientRect.x = clientArea.x + MARGIN_SE_ROUNDED_RECTANGLE;
@@ -130,15 +130,15 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
             }
         };
 
-        mHeader = new org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget(scene,
+        mContainerWidget = new org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget(scene,
                                                                                       new org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter(provider,
                                                                                                                                                                        customWidgetPainter));
-        mHeader.setOpaque(false);
-        mHeader.addChild(mTitleWidget);
+        mContainerWidget.setOpaque(false);
+        mContainerWidget.addChild(mTitleWidget);
         
-        mHeader.setLayout(org.netbeans.api.visual.layout.LayoutFactory.createVerticalLayout(org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment.LEFT_TOP,
+        mContainerWidget.setLayout(org.netbeans.api.visual.layout.LayoutFactory.createVerticalLayout(org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment.LEFT_TOP,
                                                                   PIN_VERTICAL_GAP));
-        addChild(mHeader);
+        addChild(mContainerWidget);
         
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
         
@@ -152,7 +152,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                     return;
                 }
                 
-                Rectangle bounds = mHeader.getClientArea().getBounds();
+                Rectangle bounds = mContainerWidget.getClientArea().getBounds();
                 if (!bounds.getSize().equals(mPreviousHolderSize))
                 {
                     mPreviousHolderSize = bounds.getSize();
@@ -166,11 +166,11 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                         bounds.height = MINIMUM_SE_NODE_HEIGHT;
                     }
                     
-                    mHeader.setPreferredBounds(bounds);
+                    mContainerWidget.setPreferredBounds(bounds);
 
                     /* All pins bounds need to be set so that the Anchor will be calculated correctly */
                     Rectangle childBounds;
-                    for (Widget child : mHeader.getChildren ()) {
+                    for (Widget child : mContainerWidget.getChildren ()) {
                         if (child.getBounds() != null) {
                             childBounds = child.getPreferredBounds();
                             childBounds.width = bounds.width;
@@ -211,15 +211,15 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     
     public void readjustBounds() {
         boolean isMinimized = mStateModel.getBooleanState();
-        for (Widget child : mHeader.getChildren()) {
+        for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaPinWidget) {
                 ((CasaPinWidget) child).updateBounds(isMinimized);
             }
         }
         mTitleWidget.updateBounds(isMinimized);
-        mHeader.setPreferredBounds(null);
+        mContainerWidget.setPreferredBounds(null);
         setPreferredBounds(null);
-        mHeader.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
+        mContainerWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
         mPreviousHolderSize = new Dimension();
         getScene().revalidate();
         getScene().validate();
@@ -274,7 +274,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         addPinWithOrdering(widget);
         setPinFont(getPinFont());
         setPinColor(getPinColor());
-        mHeader.setPreferredBounds(null);
+        mContainerWidget.setPreferredBounds(null);
     }
 
     /*
@@ -287,17 +287,17 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
      *  
      */
     private void addPinWithOrdering(CasaPinWidget widget) {
-        if(mHeader.getChildren().size() <= 1) {       //Add cushoningWidget only once!
+        if(mContainerWidget.getChildren().size() <= 1) {       //Add cushoningWidget only once!
             Widget cushioningWidget = new Widget(getScene());   //mTitlewidget is already present and thus checking the size with "1"
             cushioningWidget.setPreferredBounds(new Rectangle(0,PIN_VERTICAL_GAP));
-            mHeader.addChild(cushioningWidget);
+            mContainerWidget.addChild(cushioningWidget);
         }
         int insertionIndex = 1;    //TitleWidget is already there
         boolean isProvides = false;
         if (widget instanceof CasaPinWidgetEngineProvides) {
             isProvides = true;
         }
-        for (Widget child : mHeader.getChildren()) {
+        for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaPinWidget) {
                 if (child instanceof CasaPinWidgetEngineProvides) {
                     insertionIndex++;
@@ -311,7 +311,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                 //insertionIndex++;
             }
         }
-        mHeader.addChild(insertionIndex, widget);
+        mContainerWidget.addChild(insertionIndex, widget);
     }
     
     /**
@@ -354,14 +354,14 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         return null;
     }
     public void setPinFont(Font font) {
-        for (Widget child : mHeader.getChildren()) {
+        for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaPinWidgetEngine) {
                 ((CasaPinWidgetEngine)child).setLabelFont(font);
             }
         }
     }
     public void setPinColor(Color color) {
-        for (Widget child : mHeader.getChildren()) {
+        for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaPinWidgetEngine) {
                 ((CasaPinWidgetEngine)child).setLabelColor(color);
             }

@@ -50,17 +50,13 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
     
     private static final int BORDER_WIDTH             =  2;
     
-    private ImageWidget mImageWidget;
-    private Widget mIconsWidget;
-    
+    private Widget mBodyWidget;
+    private ImageWidget mVerticalTextImageWidget;
+    private CasaBindingBadges mBadges;
     private LabelWidget mNameWidget;
-    private Widget mTopWidgetHolder;
     private Widget mPinsHolderWidget;
     private String mVertTextBarText;
     
-    private ImageWidget mEditWidget;
-    private ImageWidget mWSPolicyWidget; 
-
     // Used for determining when we need to regenerate the vertical text image.
     // It must be regenerated any time we alter the node's height.
     private int mPreviousVertTextBarHeight;
@@ -73,55 +69,39 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
         setLayout(LayoutFactory.createVerticalLayout());
         
-        mEditWidget = new ImageWidget(scene);
-        mWSPolicyWidget = new ImageWidget(scene);
-        Widget emptyWidget = new Widget(scene);
-        emptyWidget.setPreferredBounds(new Rectangle(16,0));
-        
-        mIconsWidget = new Widget(scene);
-        mIconsWidget.setOpaque(false);
-        mIconsWidget.setLayout(
-                LayoutFactory.createVerticalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 1));
-        mIconsWidget.addChild(emptyWidget);
-        mIconsWidget.addChild(mEditWidget);
-        mIconsWidget.addChild(mWSPolicyWidget);
-        
-        mImageWidget = new ImageWidget(scene);
-        
-        mPinsHolderWidget = new Widget(scene);
-        mPinsHolderWidget.setLayout(new BindingPinsLayout());
-        
-        mImageWidget.setMinimumSize(new Dimension(VERT_TEXT_BAR_WIDTH, 0));
-        mPinsHolderWidget.setMinimumSize(new Dimension(44, VERT_TEXT_BAR_MIN_HEIGHT));
-        
-        mTopWidgetHolder = new Widget(scene);
-        mTopWidgetHolder.setOpaque(true);
-        mTopWidgetHolder.setLayout(LayoutFactory.createHorizontalLayout(
-                LayoutFactory.SerialAlignment.LEFT_TOP, 0));
-        mTopWidgetHolder.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
-        
-        regenerateHeaderBorder();
+        mBadges = new CasaBindingBadges(scene);
+        mVerticalTextImageWidget = new ImageWidget(scene);
+        mVerticalTextImageWidget.setMinimumSize(new Dimension(VERT_TEXT_BAR_WIDTH, 0));
         
         mHeaderHolder = new Widget(scene);
         mHeaderHolder.setOpaque(true);
-        
         mHeaderHolder.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_TITLE_BACKGROUND());
         mHeaderHolder.setLayout(LayoutFactory.createHorizontalLayout(
                 LayoutFactory.SerialAlignment.LEFT_TOP, 0));
-        mHeaderHolder.addChild(mIconsWidget);
-        mHeaderHolder.addChild(mImageWidget);
-        mTopWidgetHolder.addChild(mHeaderHolder);
+        mHeaderHolder.addChild(mBadges.getContainerWidget());
+        mHeaderHolder.addChild(mVerticalTextImageWidget);
 
-        mTopWidgetHolder.addChild(mPinsHolderWidget);
+        mPinsHolderWidget = new Widget(scene);
+        mPinsHolderWidget.setLayout(new BindingPinsLayout());
+        mPinsHolderWidget.setMinimumSize(new Dimension(44, VERT_TEXT_BAR_MIN_HEIGHT));
         
-        mHeader = new Widget(scene);
-        mHeader.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
-        mHeader.setLayout(LayoutFactory.createVerticalLayout(
+        mBodyWidget = new Widget(scene);
+        mBodyWidget.setOpaque(true);
+        mBodyWidget.setLayout(LayoutFactory.createHorizontalLayout(
+                LayoutFactory.SerialAlignment.LEFT_TOP, 0));
+        mBodyWidget.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
+        mBodyWidget.addChild(mHeaderHolder);
+        mBodyWidget.addChild(mPinsHolderWidget);
+        
+        mContainerWidget = new Widget(scene);
+        mContainerWidget.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
+        mContainerWidget.setLayout(LayoutFactory.createVerticalLayout(
                 LayoutFactory.SerialAlignment.CENTER, 0));
+        mContainerWidget.addChild(mBodyWidget);
         
-        mHeader.addChild(mTopWidgetHolder);
+        addChild(mContainerWidget);
         
-        addChild(mHeader);
+        regenerateHeaderBorder();
         
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
 
@@ -134,9 +114,9 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
                     return;
                 }
                 // Maintain the height of the vertical text bar.
-                if (mTopWidgetHolder.getClientArea().getBounds().height != mPreviousVertTextBarHeight) {
+                if (mBodyWidget.getClientArea().getBounds().height != mPreviousVertTextBarHeight) {
                     regenerateVerticalTextBarImage();
-                    mPreviousVertTextBarHeight = mTopWidgetHolder.getClientArea().getBounds().height;
+                    mPreviousVertTextBarHeight = mBodyWidget.getClientArea().getBounds().height;
                 }
             }
         };
@@ -232,7 +212,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
                 getBounds().height + mNameWidget.getBounds().height);
 
         int bodyHeight = VERT_TEXT_BAR_MIN_HEIGHT;
-        bodyHeight = Math.max(bodyHeight, mImageWidget.getPreferredBounds().height);
+        bodyHeight = Math.max(bodyHeight, mVerticalTextImageWidget.getPreferredBounds().height);
         if (mPinsHolderWidget.getChildren().size() == 2) {
             CasaPinWidgetBinding bindingPinChild = (CasaPinWidgetBinding) 
                 mPinsHolderWidget.getChildren().get(0);
@@ -273,25 +253,25 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         BorderDefinition definition = null;
         if (getState().isSelected()) {
             definition = BorderDefinition.createSelectedDefinition();
-            mTopWidgetHolder.setBorder(BorderFactory.createSwingBorder(
+            mBodyWidget.setBorder(BorderFactory.createSwingBorder(
                     getScene(), 
                     definition.getBorder()));
-            mImageWidget.setBorder(BorderFactory.createSwingBorder(
+            mVerticalTextImageWidget.setBorder(BorderFactory.createSwingBorder(
                     getScene(), 
                     javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, definition.getBorderColor())));
         } else {
             definition = BorderDefinition.createDefaultDefinition();
-            mTopWidgetHolder.setBorder(BorderFactory.createSwingBorder(
+            mBodyWidget.setBorder(BorderFactory.createSwingBorder(
                     getScene(), 
                     definition.getBorder()));
-            mImageWidget.setBorder(BorderFactory.createSwingBorder(
+            mVerticalTextImageWidget.setBorder(BorderFactory.createSwingBorder(
                     getScene(), 
                     javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, definition.getBorderColor())));
         }
     }
     
     public void regenerateVerticalTextBarImage() {
-        mImageWidget.setImage(getVerticalTextBarImage());
+        mVerticalTextImageWidget.setImage(getVerticalTextBarImage());
     }
     
     public BufferedImage getVerticalTextBarImage() {
@@ -338,27 +318,27 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         
         graphics.dispose();
         
-        Rectangle iconsRect = mIconsWidget.getPreferredBounds();
+        Rectangle iconsRect = mBadges.getContainerWidget().getPreferredBounds();
         iconsRect.height = barHeight;
-        mIconsWidget.setPreferredBounds(iconsRect);
+        mBadges.getContainerWidget().setPreferredBounds(iconsRect);
 
         return image;
     }
 
     public void setEditable(boolean bValue) {
         super.setEditable(bValue);
-        mEditWidget.setImage(bValue ? RegionUtilities.IMAGE_EDIT_16_ICON : null);
+        mBadges.setBadge(CasaBindingBadges.Badge.IS_EDITABLE, bValue);
     }
 
     public void setWSPolicyAttached(boolean bValue) {
         super.setWSPolicyAttached(bValue);
-        mWSPolicyWidget.setImage(bValue ? RegionUtilities.IMAGE_WS_POLICY_16_ICON : null);
+        mBadges.setBadge(CasaBindingBadges.Badge.WS_POLICY, bValue);
     }
 
     public void setBackgroundColor(Color color) {
         setBackground(color);
-        mTopWidgetHolder.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
-        mHeader.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
+        mBodyWidget.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
+        mContainerWidget.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
     }
     
     public void setTitleBackgroundColor(Color color) {
@@ -366,19 +346,8 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mHeaderHolder.repaint();
     }
     
-    public void setEditBadgePressed(boolean isPressed) {
-        mEditWidget.setPaintAsDisabled(isPressed);
-    }
-    
-    public Rectangle getEditBadgeBoundsForNode() {
-        Point location = mEditWidget.getLocation();
-        Widget parent = mEditWidget.getParentWidget();
-        while (parent != null && parent != this) {
-            location.x += parent.getLocation().x;
-            location.y += parent.getLocation().y;
-            parent = parent.getParentWidget();
-        }
-        return new Rectangle(location, mEditWidget.getBounds().getSize());
+    public CasaBindingBadges getBadges() {
+        return mBadges;
     }
     
     

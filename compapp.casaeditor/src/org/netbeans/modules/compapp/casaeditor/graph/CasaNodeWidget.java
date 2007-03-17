@@ -42,16 +42,13 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
  */
 public abstract class CasaNodeWidget extends Widget {
     
-    protected Widget mHeader;
+    protected Widget mContainerWidget;
     protected List<Widget.Dependency> mDependencies = new ArrayList<Widget.Dependency>();
     
     private boolean mEditable = false;
     private boolean mWSPolicyAttached = false;
     
-    /**
-     * Creates a node widget.
-     * @param scene the scene
-     */
+    
     public CasaNodeWidget(Scene scene) {
         super(scene);
     }
@@ -103,6 +100,14 @@ public abstract class CasaNodeWidget extends Widget {
      */
     public abstract void setNodeProperties(String nodeName, String nodeType);
     
+    /**
+     * Returns an anchor for the given pin anchor.
+     * Subclasses may return a proxy anchor or the same anchor passed-in.
+     * @param anchor the original pin anchor
+     * @return the extended pin anchor
+     */
+    protected abstract Anchor createAnchorPin(Anchor pinAnchor);
+    
     
     public Anchor getPinAnchor(Widget pinMainWidget) {
         Anchor anchor = null;
@@ -114,20 +119,8 @@ public abstract class CasaNodeWidget extends Widget {
         return anchor;
     }
     
-    /**
-     * Returns an anchor for the given pin anchor.
-     * Subclasses may return a proxy anchor or the same anchor passed-in.
-     * @param anchor the original pin anchor
-     * @return the extended pin anchor
-     */
-    protected abstract Anchor createAnchorPin(Anchor pinAnchor);
-    
-    /**
-     * Returns a header widget.
-     * @return the header widget
-     */
-    public Widget getHeader() {
-        return mHeader;
+    public Widget getContainerWidget() {
+        return mContainerWidget;
     }
     
     /**

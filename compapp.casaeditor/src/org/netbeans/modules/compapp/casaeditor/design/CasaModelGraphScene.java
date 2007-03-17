@@ -326,7 +326,7 @@ implements PropertyChangeListener {
             mBindingRegion.addChild(widget);
             moveAction = mMoveActionBindingRegion;
             
-            widget.getHeader().getActions().addAction(createObjectHoverAction());
+            widget.getContainerWidget().getActions().addAction(createObjectHoverAction());
             widget.getActions().addAction(new CasaBadgeEditAction(this));
 
         } else if (node instanceof CasaServiceEngineServiceUnit) {
@@ -345,7 +345,7 @@ implements PropertyChangeListener {
             ((CasaNodeWidgetEngine) widget).setConfigurationStatus(su.isDefined());
             widget.initializeGlassLayer(mGlassLayer);
             
-            widget.getHeader().getActions().addAction(createObjectHoverAction());
+            widget.getContainerWidget().getActions().addAction(createObjectHoverAction());
         }
         
         widget.getActions().addAction(createSelectAction());
