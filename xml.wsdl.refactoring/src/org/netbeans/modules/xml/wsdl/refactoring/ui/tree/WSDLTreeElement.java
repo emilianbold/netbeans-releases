@@ -59,7 +59,7 @@ public class WSDLTreeElement implements TreeElement {
        
     WSDLTreeElement(RefactoringElement element) {
         this.element = element;
-        this.comp = (WSDLComponent)element.getComposite();
+        this.comp = element.getLookup().lookup(WSDLComponent.class);
                 
         assert comp instanceof WSDLComponent:"This TreeElement handles WSDLComponents only";
         

@@ -81,8 +81,8 @@ public class WSDLRenameReferenceVisitor extends DefaultVisitor implements WSDLVi
                 model.startTransaction();
             }
             for (RefactoringElementImplementation element: elements) {
-                assert element.getComposite() instanceof WSDLComponent : "Wrong component type in WSDL usage group"; //NOI18N
-                ((WSDLComponent) element.getComposite()).accept(this);
+                assert element.getLookup().lookup(WSDLComponent.class)!=null : "Wrong component type in WSDL usage group"; //NOI18N
+                element.getLookup().lookup(WSDLComponent.class).accept(this);
             }
         } finally {
             if (startTransaction && model.isIntransaction())

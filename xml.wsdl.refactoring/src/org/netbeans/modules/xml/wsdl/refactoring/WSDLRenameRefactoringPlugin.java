@@ -37,7 +37,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;

@@ -55,11 +55,10 @@ public class Tree implements TreeElementFactoryImplementation {
     public TreeElement getTreeElement(Object o) {
         TreeElement result = null;
         if (o instanceof RefactoringElement) {
-            if (((RefactoringElement) o).getComposite() instanceof Component) {
+            BpelEntity comp = ((RefactoringElement)o).getLookup().lookup(BpelEntity.class);
+            if (comp!=null) {
                 FileObject fo = ((RefactoringElement)o).getParentFile();
-                Component comp = (Component)((RefactoringElement)o).getComposite();
-                if(comp instanceof BpelEntity)
-                    result = new Element((RefactoringElement) o);
+                result = new Element((RefactoringElement) o);
              } 
         } if( o instanceof BpelEntity){
             result = new Element((BpelEntity)o);
@@ -81,7 +80,7 @@ public class Tree implements TreeElementFactoryImplementation {
     private BpelEntity component;
    
     Element(RefactoringElement element) {
-        this((BpelEntity) element.getComposite());
+        this((BpelEntity) element.getLookup().lookup(BpelEntity.class));
         this.element = element;
     }
     

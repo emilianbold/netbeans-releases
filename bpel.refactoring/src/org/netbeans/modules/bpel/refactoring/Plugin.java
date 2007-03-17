@@ -95,7 +95,7 @@ abstract class Plugin extends ProgressProviderAdapter implements RefactoringPlug
      public List<Model> getModels(List<Element> elements){
          List<Model> models = new ArrayList<Model>();
          for(Element element : elements) {
-             models.add( ((Component)element.getComposite()).getModel());
+             models.add((element.getLookup().lookup(Component.class)).getModel());
          }
          return models;
      }
@@ -103,7 +103,7 @@ abstract class Plugin extends ProgressProviderAdapter implements RefactoringPlug
      public Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements){
         Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
         for(RefactoringElementImplementation element:elements){
-           Model model = ((Component)element.getComposite()).getModel();
+           Model model = (element.getLookup().lookup(Component.class)).getModel();
            Set<RefactoringElementImplementation> elementsInModel = results.get(model);
            if(elementsInModel == null){
                elementsInModel = new HashSet<RefactoringElementImplementation>();

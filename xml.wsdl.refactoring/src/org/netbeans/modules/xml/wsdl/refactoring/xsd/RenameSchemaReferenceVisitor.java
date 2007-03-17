@@ -70,8 +70,8 @@ public class RenameSchemaReferenceVisitor extends DefaultVisitor implements WSDL
          //   Collection<Usage> items = usage.getItems();
             for (RefactoringElementImplementation item:elements) {
                 if (item.isEnabled() &&
-                    item.getComposite() instanceof WSDLComponent) {
-                    WSDLComponent referencing = (WSDLComponent)item.getComposite();
+                    item.getLookup().lookup(WSDLComponent.class)!=null) {
+                    WSDLComponent referencing = item.getLookup().lookup(WSDLComponent.class);
                     referencing.accept(this);
                 }
             }

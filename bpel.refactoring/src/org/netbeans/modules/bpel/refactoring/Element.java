@@ -20,7 +20,7 @@ package org.netbeans.modules.bpel.refactoring;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Component;
@@ -29,6 +29,7 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
 
@@ -36,7 +37,7 @@ import org.openide.util.actions.SystemAction;
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
-public class Element extends SimpleRefactoringElementImpl {
+public class Element extends SimpleRefactoringElementImplementation {
     
     Component comp;
     Node node;
@@ -49,8 +50,8 @@ public class Element extends SimpleRefactoringElementImpl {
     }
 
    
-    public Object getComposite() {
-       return comp;
+    public Lookup getLookup() {
+       return Lookups.singleton(comp);
     }
 
     public FileObject getParentFile() {
