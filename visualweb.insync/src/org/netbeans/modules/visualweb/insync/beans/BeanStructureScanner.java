@@ -39,10 +39,8 @@ import java.lang.reflect.Modifier;
  *
  */
 public class BeanStructureScanner {
-    public static String ENSURE_INITBLOCK = "ensureInitBlock";
-    public static String ENSURE_EMPTYBLOCK = "ensureBlock";
     public static String CTOR = "<init>";
-
+    public static String ENSURE_INITBLOCK = "ensureInitBlock";
     // TODO: add code to read the user preference over explicit and
     // implicit imports.
     protected boolean explicitImport = true;
@@ -69,52 +67,34 @@ public class BeanStructureScanner {
         return new MethodInfo[]{ctorInfo};
     }
 
-    /**
+   /**
     *
     */
-   protected Object/*BlockTree*/ ensureInitBlock(MethodInfo mi) {
-/*//NB6.0
+   protected void ensureInitBlock(MethodInfo mi) {
        UndoEvent event = null;
        try {
            String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureInitBlock"); //NOI18N
            event = beansUnit.getModel().writeLock(eventName);
-           boolean rollback = true;
-           try {
-               JMIUtils.beginTrans(true);
-               StatementBlock body = mi.getMethod().getBody();
-
-               List stats = body.getStatements();
-               ListIterator iter = stats.listIterator();
-               while(iter.hasNext()) {
-                   Statement s = (Statement)iter.next();
-                   if(s instanceof TryStatement)
-                       return null;
-               }
-
-               String bodyText = "// "+ NbBundle.getMessage(BeansUnit.class, "COMMENT_InitMethodToDoMarker") + "\n" + //NOI18N
-                       "// <editor-fold defaultstate=\"collapsed\" desc=\"" +
-                       NbBundle.getMessage(BeansUnit.class, "COMMENT_InitDescription") + "\">" + //NOI18N
-                       "try {\n" + //NOI18N
-                       "} catch (Exception e) {\n" +
-                       "log(\"Page1 Initialization Failure\", e);\n" + //NOI18N
-                       "throw e instanceof FacesException ? (FacesException) e: new FacesException(e);\n" + //NOI18N
-                       "}\n" + //NOI18N
-                       "// </editor-fold>\n" + //NOI18N
-                       "// " + NbBundle.getMessage(BeanStructureScanner.class, "COMMENT_AdditionalCode"); //NOI18N
-               JMIMethodUtils.replaceMethodBody(mi.getMethod(), bodyText);
-               rollback = false;
-               return body;
-           }finally {
-               JMIUtils.endTrans(rollback);
+           if(mi.getMethod().hasInitBlock()) {
+               return;
            }
+           String bodyText = "// "+ NbBundle.getMessage(BeansUnit.class, "COMMENT_InitMethodToDoMarker") + "\n" + //NOI18N
+                   "// <editor-fold defaultstate=\"collapsed\" desc=\"" +
+                   NbBundle.getMessage(BeansUnit.class, "COMMENT_InitDescription") + "\">" + //NOI18N
+                   "try {\n" + //NOI18N
+                   "} catch (Exception e) {\n" +
+                   "log(\"Page1 Initialization Failure\", e);\n" + //NOI18N
+                   "throw e instanceof FacesException ? (FacesException) e: new FacesException(e);\n" + //NOI18N
+                   "}\n" + //NOI18N
+                   "// </editor-fold>\n" + //NOI18N
+                   "// " + NbBundle.getMessage(BeanStructureScanner.class, "COMMENT_AdditionalCode"); //NOI18N
+           mi.getMethod().replaceBody(bodyText);
        }finally {
            if(event != null) {
                beansUnit.getModel().writeUnlock(event);
            }
        }
- //*/
-       return null;
-   }
+   }   
 
     /**
      * Add as needed an event method with a given name and event type, and return type. Do nothing
@@ -181,20 +161,6 @@ public class BeanStructureScanner {
         }
     }
 
-   protected Object/*BlockTree*/ ensureBlock(MethodInfo mi) {
-//NB60        return mi.getMethod().getBody();
-       return null;
-   }   
-
-    /**
-    *
-    */
-   protected Object/*BlockTree*/ ensurePropertiesInitBlock() {
-//NB60        return getPropertiesInitMethod().getBody();
-       return null;
-   }
-
-   
    protected Method ensureMethod(Object location, MethodInfo mi) {
         org.netbeans.modules.visualweb.insync.java.MethodInfo info = 
                 new org.netbeans.modules.visualweb.insync.java.MethodInfo(mi.getName(), 
@@ -226,9 +192,12 @@ public class BeanStructureScanner {
             m = ensureMethod(null, methodInfos[i]);
             methodInfos[i].setMethod(m);
             try {
-                java.lang.reflect.Method m1 = BeanStructureScanner.class.getDeclaredMethod(
-                        methodInfos[i].getEnsureMethodName(), new Class[]{MethodInfo.class});
-                m1.invoke(this, new Object[]{methodInfos[i]});
+                String ensureMethodName = methodInfos[i].getEnsureMethodName();
+                if(ensureMethodName != null) {
+                    java.lang.reflect.Method m1 = BeanStructureScanner.class.getDeclaredMethod(
+                            ensureMethodName, new Class[]{MethodInfo.class});
+                    m1.invoke(this, new Object[]{methodInfos[i]});
+                }
             }catch(Exception e){
                 //This should not happen
                assert Trace.trace("insync.beans", e.getMessage()); //NOI18N
@@ -464,13 +433,17 @@ public class BeanStructureScanner {
        public MethodInfo(String name, int modifiers, Class retType, String comment, String ensureMethodName) {
            this(name, modifiers, retType, comment, ensureMethodName, null);
        }
+       
+       public MethodInfo(String name, int modifiers, Class retType, String comment) {
+           this(name, modifiers, retType, comment, null, null);
+       }       
 
        public MethodInfo(String name, String comment) {
-           this(name, Modifier.PUBLIC, Void.TYPE, comment, ENSURE_EMPTYBLOCK, null); //NOI18N
+           this(name, Modifier.PUBLIC, Void.TYPE, comment, null, null); //NOI18N
        }
        
        public MethodInfo(String name) {
-           this(name, Modifier.PUBLIC, Void.TYPE, "", ENSURE_EMPTYBLOCK, null); //NOI18N
+           this(name, Modifier.PUBLIC, Void.TYPE, "", null, null); //NOI18N
        }
        
        public String getName() {

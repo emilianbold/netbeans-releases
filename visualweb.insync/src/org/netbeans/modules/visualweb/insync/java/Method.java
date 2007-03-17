@@ -322,12 +322,29 @@ public class Method {
      * Returns true if the method represents a constructor
      */ 
     public boolean isConstructor() {
-        if(name.equals(CTOR)) {
-            return true;
-        }
-        return false;
+        return name.equals(CTOR) ? true : false;
     }
     
+    /**
+     * Check if the method has the initialization block. Should revisit this implementation.
+     * Copying the old logic for time being
+     * 
+     */ 
+    public boolean hasInitBlock() {
+        return (Boolean)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                ExecutableElement execElement = execElementHandle.resolve(cinfo);
+                BlockTree block = cinfo.getTrees().getTree(execElement).getBody();
+                for(StatementTree stmtTree : block.getStatements()){
+                    if(stmtTree.getKind() == Tree.Kind.TRY) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }, javaClass.getFileObject());
+    }
+        
     /*
      * Returns the body as text
      */ 

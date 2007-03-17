@@ -19,6 +19,7 @@
 package org.netbeans.modules.visualweb.insync.faces;
 
 
+import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.beans.BeanStructureScanner;
 import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.java.MethodInfo;
@@ -33,16 +34,17 @@ public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner
     public static String INITMETHOD = "init";
     public static String DESTROYMETHOD = "destroy";
 
-    protected MethodInfo initInfo = new MethodInfo(INITMETHOD, Modifier.PUBLIC, Void.TYPE, getInitMethodComment(), ENSURE_INITBLOCK);
+    protected MethodInfo initInfo = new MethodInfo(INITMETHOD, Modifier.PUBLIC, Void.TYPE, 
+            getInitMethodComment(), ENSURE_INITBLOCK);
 
     public ThresherFacesBeanStructureScanner(BeansUnit unit) {
         super(unit);
         ctorInfo.setComment(getConstructorComment());
-        ctorInfo.setEnsureMethodName(ENSURE_EMPTYBLOCK);
+        ctorInfo.setEnsureMethodName(null);
         destroyInfo = new MethodInfo(DESTROYMETHOD);
         destroyInfo.setComment(getDestroyMethodComment());
-        propertiesInitInfo = new MethodInfo(PROP_INITMETHOD, Modifier.PRIVATE, Void.TYPE,
-                getComment("COMMENT_PropInitMethodComment"), ENSURE_EMPTYBLOCK, "Exception");
+        propertiesInitInfo = new MethodInfo(INITMETHOD, Modifier.PRIVATE, Void.TYPE,
+                getComment("COMMENT_PropInitMethodComment"), null, "Exception");
     }
 
    public List<Statement> getPropertiesInitStatements() {
@@ -51,45 +53,35 @@ public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner
        return stmts;
    }
 
-   protected Object/*BlockTree*/ ensureInitBlock(MethodInfo mi) {
-/*//NB6.0
-       StatementBlock body = mi.getMethod().getBody();
- 
-       List stats = body.getStatements();
-       ListIterator iter = stats.listIterator();
-       while(iter.hasNext()) {
-           Statement s = (Statement)iter.next();
-           if(s instanceof TryStatement)
-               return null;
-       }
- 
-       String bodyText = "// " + getComment("COMMENT_InitSuperCall") + "\n" +
-               "super.init();\n" +
-               "// " + getComment("COMMENT_UserPreInit") + "\n\n" +
-               "// <editor-fold defaultstate=\"collapsed\" desc=\"" +
-               getComment("COMMENT_InitDescription") + "\">\n" +
-               "// " + getComment("COMMENT_PropInit") + "\n" +
-               "try {\n" +
-               "_init();\n" +
-               "} catch (Exception e) {\n" +
-               "log(\"Page1 Initialization Failure\", e);\n" +
-               "throw e instanceof FacesException ? (FacesException) e: new FacesException(e);\n" +
-               "}\n\n" +
-               "// </editor-fold>\n" +
-               "// " + getComment("COMMENT_UserPostInit");
-       JMIUtils.beginTrans(true);
-       boolean rollback = true;
+   protected void ensureInitBlock(MethodInfo mi) {
+       UndoEvent event = null;
        try {
-           JMIMethodUtils.replaceMethodBody(mi.getMethod(), bodyText);
-           JMIUtils.addImport(javaUnit.getJavaClass(), "javax.faces.FacesException");
-           rollback = false;
+           String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureInitBlock"); //NOI18N
+           event = beansUnit.getModel().writeLock(eventName);
+           if(mi.getMethod().hasInitBlock()) {
+               return;
+           }
+           String bodyText = "// " + getComment("COMMENT_InitSuperCall") + "\n" +
+                   "super.init();\n" +
+                   "// " + getComment("COMMENT_UserPreInit") + "\n\n" +
+                   "// <editor-fold defaultstate=\"collapsed\" desc=\"" +
+                   getComment("COMMENT_InitDescription") + "\">\n" +
+                   "// " + getComment("COMMENT_PropInit") + "\n" +
+                   "try {\n" +
+                   "_init();\n" +
+                   "} catch (Exception e) {\n" +
+                   "log(\"Page1 Initialization Failure\", e);\n" +
+                   "throw e instanceof FacesException ? (FacesException) e: new FacesException(e);\n" +
+                   "}\n\n" +
+                   "// </editor-fold>\n" +
+                   "// " + getComment("COMMENT_UserPostInit");
+           mi.getMethod().replaceBody(bodyText);
+           javaUnit.ensureImport("javax.faces.FacesException");
        }finally {
-           JMIUtils.endTrans(rollback);
+           if(event != null) {
+               beansUnit.getModel().writeUnlock(event);
+           }
        }
- 
-       return body;
-//*/
-       return null;
    }
 
    public String getConstructorComment() {
