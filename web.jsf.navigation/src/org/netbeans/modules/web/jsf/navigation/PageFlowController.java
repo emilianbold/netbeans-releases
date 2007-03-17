@@ -220,12 +220,12 @@ public class PageFlowController {
         for( NavigationRule rule : rules ) {
             List<NavigationCase> navCases = rule.getNavigationCases();
             for( NavigationCase navCase : navCases ){
-//                try             {
-                    NavigationCaseNode node = new NavigationCaseNode(navCase);
-                    view.createEdge(node);
-//                } catch (IntrospectionException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
+                //                try             {
+                NavigationCaseNode node = new NavigationCaseNode(navCase);
+                view.createEdge(node);
+                //                } catch (IntrospectionException ex) {
+                //                    Exceptions.printStackTrace(ex);
+                //                }
             }
         }
     }
@@ -323,12 +323,12 @@ public class PageFlowController {
         public void propertyChange(PropertyChangeEvent ev) {
             if ( ev.getPropertyName() == "navigation-case"){
                 NavigationCase myNavCase = (NavigationCase)ev.getNewValue();
-//                try {
-                    NavigationCaseNode node = new NavigationCaseNode(myNavCase);
-                    view.createEdge(node);
-//                } catch(IntrospectionException ie){
-//                    ie.printStackTrace();
-//                }
+                //                try {
+                NavigationCaseNode node = new NavigationCaseNode(myNavCase);
+                view.createEdge(node);
+                //                } catch(IntrospectionException ie){
+                //                    ie.printStackTrace();
+                //                }
             } else if (ev.getPropertyName() == "navigation-rule" ) {
                 NavigationRule myNavRule = (NavigationRule)ev.getNewValue();
                 //You can actually do nothing.
@@ -368,10 +368,36 @@ public class PageFlowController {
     //        }
     //    }
     
+    
+    public void renamePageInModel(String oldDisplayName, String newDisplayName ) {
+        configModel.startTransaction();
+        FacesConfig facesConfig = configModel.getRootComponent();
+        List<NavigationRule> navRules = facesConfig.getNavigationRules();
+        for( NavigationRule navRule : navRules ){
+            if ( navRule.getFromViewId().equals(oldDisplayName) ){
+                navRule.setFromViewId(newDisplayName);
+            }
+            List<NavigationCase> navCases = navRule.getNavigationCases();
+            for( NavigationCase navCase : navCases ) {
+                if ( navCase.getToViewId().equals(oldDisplayName) ) {
+                    navCase.setToViewId(newDisplayName);
+                }
+            }
+        }
+        
+        configModel.endTransaction();
+        try {
+            configModel.sync();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
     /**
      * A Filter Node for a given DataNode or non File Node.
      */
     public final class PageFlowNode extends FilterNode {
+        
         /**
          *
          * @param original
@@ -383,35 +409,9 @@ public class PageFlowController {
         @Override
         public void setName(String s) {
             String oldDisplayName = getDisplayName();
-            String oldName = getName();
+            
             super.setName(s);
-            //            System.out.println("About to rename node.");
-            //            System.out.println("Old Display Name: " + oldDisplayName + " New Display Name: " + getDisplayName() );
-            //            System.out.println("Old Name: " + oldName + " New Name: " + getName() );
-            configModel.startTransaction();
-            FacesConfig facesConfig = configModel.getRootComponent();
-            List<NavigationRule> navRules = facesConfig.getNavigationRules();
-            for( NavigationRule navRule : navRules ){
-                if ( navRule.getFromViewId().equals(oldDisplayName) ){
-                    //                    System.out.println("Switching Rule From-View: " + oldDisplayName + " To From-View: " + getDisplayName());
-                    navRule.setFromViewId(getDisplayName());
-                }
-                List<NavigationCase> navCases = navRule.getNavigationCases();
-                for( NavigationCase navCase : navCases ) {
-                    if ( navCase.getToViewId().equals(oldDisplayName) ) {
-                        //                        System.out.println("Switching Case To-View: " + oldDisplayName + " To To-View: " + getDisplayName());
-                        navCase.setToViewId(getDisplayName());
-                    }
-                }
-            }
-            
-            configModel.endTransaction();
-            try {
-                configModel.sync();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            
+            renamePageInModel(oldDisplayName, getDisplayName());
         }
         
         /**
@@ -424,7 +424,7 @@ public class PageFlowController {
         }
     }
     
-
+    
     
     
 }
