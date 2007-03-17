@@ -266,7 +266,8 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         
         //        connectionWidget.getActions().addAction(deleteAction);
         connectionWidget.getActions().addAction(createObjectHoverAction());
-        connectionWidget.getActions().addAction(createSelectAction());
+//        connectionWidget.getActions().addAction(createSelectAction());
+        connectionWidget.getActions().addAction(selectAction);
         connectionWidget.getActions().addAction(moveControlPointAction);
         //        connectionWidget.getActions ().addAction (deleteAction);
         return connectionWidget;
