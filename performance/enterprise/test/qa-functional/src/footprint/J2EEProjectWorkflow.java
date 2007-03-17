@@ -73,18 +73,18 @@ public class J2EEProjectWorkflow extends MemoryFootprintTestCase {
     public ComponentOperator open(){
         // Create, edit, build and execute a sample J2EE project
         // Create, edit, build and execute a sample J2EE project
-        j2eeproject = EPFootprintUtilities.creatJ2EEeproject("Enterprise", "Enterprise Application", true);
+        j2eeproject = EPFootprintUtilities.creatJ2EEeproject("Enterprise", "Enterprise Application", true);  // NOI18N
         j2eeproject_ejb = j2eeproject + "-ejb";
         j2eeproject_war = j2eeproject + "-war";
         j2eeproject_app = j2eeproject + "-app-client";
-        EPFootprintUtilities.openFile(j2eeproject_war,"Web Pages","index.jsp",true);
+        EPFootprintUtilities.openFile(j2eeproject_war, EPFootprintUtilities.WEB_PAGES, "index.jsp", true);
         EPFootprintUtilities.insertToFile("index.jsp", 23, "Hello World", true);
         
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), "Configuration Files|sun-web.xml"));
+        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), "Configuration Files|sun-web.xml")); // NOI18N
         TopComponentOperator xmlEditor = new TopComponentOperator("sun-web.xml");
         new JButtonOperator(xmlEditor, "New...", 0).push();
         
-        NbDialogOperator dialog = new NbDialogOperator("JSP Configuration Property");
+        NbDialogOperator dialog = new NbDialogOperator("JSP Configuration Property"); // NOI18N
         JComboBoxOperator combo = new JComboBoxOperator(dialog, 0);
         combo.selectItem("javaEncoding");
         combo.waitItemSelected("javaEncoding");
