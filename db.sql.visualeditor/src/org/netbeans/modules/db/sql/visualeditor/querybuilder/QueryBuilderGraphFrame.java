@@ -56,7 +56,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JLabel;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
-import javax.swing.JTextPane;
+import javax.swing.JEditorPane;
 import javax.swing.JDesktopPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -139,7 +139,7 @@ public class QueryBuilderGraphFrame extends JPanel
     private QBGFJPanel                  _canvas = null;
     private QueryBuilderInputTable      _queryBuilderInputTable;
     private DefaultTableModel           _inputTableModel;
-    private JTextPane                   _sqlTextArea;
+    private JEditorPane                   _sqlTextArea;
     private DefaultTableModel           _resultTableModel;
     private JGraph                      _graph = null;
     private DefaultGraphModel           _graphModel = null;
@@ -194,7 +194,7 @@ public class QueryBuilderGraphFrame extends JPanel
     // listened to is inputTableModel
     public QueryBuilderGraphFrame(QueryBuilder queryBuilder,
             QueryBuilderInputTable queryBuilderInputTable,
-            JTextPane sqlTextArea,
+            JEditorPane sqlTextArea,
             DefaultTableModel resultTableModel) {
         super(new BorderLayout());
         

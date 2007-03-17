@@ -26,21 +26,26 @@ package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
 import java.awt.*;
 import java.awt.event.*;
-
 import java.awt.event.ActionEvent;
+
 import java.util.ArrayList;
-import javax.swing.text.*;
 
 import javax.swing.JTextPane;
-
+import javax.swing.JEditorPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-// import org.netbeans.modules.db.sql.editor.SQLEditorKit;
+
+import javax.swing.text.*;
+import javax.swing.text.EditorKit;
 
 import org.openide.util.NbBundle;
 
-public class QueryBuilderSqlTextArea extends JTextPane
+// import org.openide.text.CloneableEditorSupport;
+// import org.netbeans.modules.db.sql.editor.SQLEditorKit;
+
+// public class QueryBuilderSqlTextArea extends JTextPane
+public class QueryBuilderSqlTextArea extends JEditorPane
         implements ActionListener,  KeyListener {
 
     private boolean                     DEBUG = false;
@@ -79,8 +84,8 @@ public class QueryBuilderSqlTextArea extends JTextPane
     private SimpleAttributeSet column   = new SimpleAttributeSet();
     private SimpleAttributeSet normal   = new SimpleAttributeSet();
 
-    private DefaultStyledDocument dsDocument   = (DefaultStyledDocument)
-    getStyledDocument();
+//     private DefaultStyledDocument dsDocument   =  (DefaultStyledDocument) getStyledDocument();
+
     private static ArrayList   keywords        = null;
     // SQL 92 keywords
     // http://sqlzoo.net/sql92.html
@@ -141,8 +146,10 @@ public class QueryBuilderSqlTextArea extends JTextPane
         super();
         _queryBuilder = queryBuilder;
         _sqlTextPopup = createSqlTextPopup();
-        // setEditorKit(new SQLEditorKit());        
-        
+	// Set MIME type, which will cause SQLEditorKit to be used
+	setContentType("text/x-sql");
+	// Alternative method -- not necessary
+	// setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql"));
         
         if ( SYNTAX_HIGHLIGHT ) {
             addKeyListener(this);
@@ -170,313 +177,310 @@ public class QueryBuilderSqlTextArea extends JTextPane
     
     
     public void keyTyped(KeyEvent e) {
-        if ( SYNTAX_HIGHLIGHT
-                // we don't recognize the syntax, no highlighting.
-                && (_queryBuilder.getParseErrorMessage() == null ) ) {
-            this.currentPosition         = this.getCaretPosition();
-            processChar(e.getKeyChar());                      
-        }
-        
-        
+//         if ( SYNTAX_HIGHLIGHT
+//                 // we don't recognize the syntax, no highlighting.
+//                 && (_queryBuilder.getParseErrorMessage() == null ) ) {
+//             this.currentPosition         = this.getCaretPosition();
+//             processChar(e.getKeyChar());                      
+//         }
     }
     
     /** ignore */
     public void keyReleased(KeyEvent e) {
-        
     }
     
     /** Handle the key pressed event and change the focus if a particular
      * key combination is pressed. */
     public void keyPressed(KeyEvent e) {
-        if( e.isShiftDown() ) {
-            int code = e.getKeyCode();
-            switch(code) {
-                // diagram pane
-                case KeyEvent.VK_F10:
-                    // this check is added to fix a bug where the popup menu
-                    // remains disabled when the user has removed the last table
-                    // from the graph and then added (typed/pasted) text query.
-                    // First check if the text is not just white spaces.
-                    if ( ((JTextPane)(e.getComponent())).getText().trim().length() != 0 ) {
-                        parseQueryMenuItem.setEnabled(true);
-                        runQueryMenuItem.setEnabled(true);
-                    } else {
-                        // user may have just typed white spaces or may have typed
-                        // a wrong query which got restored after he 'cancel'ed
-                        // the warning dialog about non-standard query, which
-                        // restored the previous 'blank' query.
-                        parseQueryMenuItem.setEnabled(false);
-                        runQueryMenuItem.setEnabled(false);
-                    }
-                    _maybeShowPopup = true;
-                    _sqlTextPopup.show(e.getComponent(), 0, 0);
-                    break;
-            }
-        }
-        _queryBuilder.handleKeyPress(e);
+//         if( e.isShiftDown() ) {
+//             int code = e.getKeyCode();
+//             switch(code) {
+//                 // diagram pane
+//                 case KeyEvent.VK_F10:
+//                     // this check is added to fix a bug where the popup menu
+//                     // remains disabled when the user has removed the last table
+//                     // from the graph and then added (typed/pasted) text query.
+//                     // First check if the text is not just white spaces.
+//                     if ( ((JTextPane)(e.getComponent())).getText().trim().length() != 0 ) {
+//                         parseQueryMenuItem.setEnabled(true);
+//                         runQueryMenuItem.setEnabled(true);
+//                     } else {
+//                         // user may have just typed white spaces or may have typed
+//                         // a wrong query which got restored after he 'cancel'ed
+//                         // the warning dialog about non-standard query, which
+//                         // restored the previous 'blank' query.
+//                         parseQueryMenuItem.setEnabled(false);
+//                         runQueryMenuItem.setEnabled(false);
+//                     }
+//                     _maybeShowPopup = true;
+//                     _sqlTextPopup.show(e.getComponent(), 0, 0);
+//                     break;
+//             }
+//         }
+//         _queryBuilder.handleKeyPress(e);
     }
     
     // code related to syntax highlighting
     
-    // Replace the document string at the given position  ( pos )
-    // with the string ( str ) and with the given attributes ( attr )
-    private void replaceString( String str, int pos,
-            SimpleAttributeSet attr ) {
-        try {
-            dsDocument.remove( pos - str.length(), str.length() );
-            dsDocument.insertString(pos - str.length(), str, attr);
-        } catch (Exception ex){
-            // should never happen !!!
-            // ex.printStackTrace();
-        }
-    }
+//     // Replace the document string at the given position  ( pos )
+//     // with the string ( str ) and with the given attributes ( attr )
+//     private void replaceString( String str, int pos,
+//             SimpleAttributeSet attr ) {
+//         try {
+//             dsDocument.remove( pos - str.length(), str.length() );
+//             dsDocument.insertString(pos - str.length(), str, attr);
+//         } catch (Exception ex){
+//             // should never happen !!!
+//             // ex.printStackTrace();
+//         }
+//     }
     
-    // function which checks if the current paragraph element is
-    // either a SQL keyword, a schema name , a table name or a column name.
-    private void checkKeyword() {
-        int offset = this.currentPosition;
-        Element element = dsDocument.getParagraphElement( offset );
-        String elementText = "";
-        try {
-            elementText = dsDocument.getText( element.getStartOffset(),
-                    element.getEndOffset() - element.getStartOffset() );
-        } catch ( Exception ex ) {
-            // should never happen !!!
-            // ex.printStackTrace();
-        }
-        int elementTextLength = elementText.length();
-        if ( elementTextLength == 0 ) return;
+//     // function which checks if the current paragraph element is
+//     // either a SQL keyword, a schema name , a table name or a column name.
+//     private void checkKeyword() {
+//         int offset = this.currentPosition;
+//         Element element = dsDocument.getParagraphElement( offset );
+//         String elementText = "";
+//         try {
+//             elementText = dsDocument.getText( element.getStartOffset(),
+//                     element.getEndOffset() - element.getStartOffset() );
+//         } catch ( Exception ex ) {
+//             // should never happen !!!
+//             // ex.printStackTrace();
+//         }
+//         int elementTextLength = elementText.length();
+//         if ( elementTextLength == 0 ) return;
         
-        int i = 0;
+//         int i = 0;
         
-        if ( element.getStartOffset() > 0 ) {
-            offset = offset - element.getStartOffset();
-        }
-        if ( ( offset >= 0 ) && ( offset <= elementTextLength-1 ) ) {
-            i = offset;
-            while ( i > 0 ){
-                // traverse back until a delimiter is found
-                i--;
-                char charAt = elementText.charAt( i );
-                if ( (charAt == ' ') || (i == 0) ||             // NOI18N
-                        (charAt == '.') || (charAt == '"') ||      // NOI18N
-                        (charAt == '\'') ||      // NOI18N
-                        (charAt == '\t') ||      // NOI18N
-                        (charAt == ',') ) {      // NOI18N
-                    if (i != 0) {
-                        i++;
-                    }
-                    keywordString =
-                            elementText.substring(i, offset);//skip the period
+//         if ( element.getStartOffset() > 0 ) {
+//             offset = offset - element.getStartOffset();
+//         }
+//         if ( ( offset >= 0 ) && ( offset <= elementTextLength-1 ) ) {
+//             i = offset;
+//             while ( i > 0 ){
+//                 // traverse back until a delimiter is found
+//                 i--;
+//                 char charAt = elementText.charAt( i );
+//                 if ( (charAt == ' ') || (i == 0) ||             // NOI18N
+//                         (charAt == '.') || (charAt == '"') ||      // NOI18N
+//                         (charAt == '\'') ||      // NOI18N
+//                         (charAt == '\t') ||      // NOI18N
+//                         (charAt == ',') ) {      // NOI18N
+//                     if (i != 0) {
+//                         i++;
+//                     }
+//                     keywordString =
+//                             elementText.substring(i, offset);//skip the period
                     
-                    String s = keywordString.trim().toUpperCase();
-                    String db_element = keywordString.trim();
-                    // check if it is a keyword
-                    if (keywords.contains(s)){
-                        replaceString(s, currentPosition, keyword);
-                    }
-                    // check if it is schema name
-                    else if ( _queryBuilder.isSchemaName( db_element ) ) {
-                        replaceString(db_element, currentPosition, schema);
-                    }
-                    // check if it is table name
-                    else if ( _queryBuilder.isTableName( db_element ) ) {
-                        replaceString(db_element, currentPosition, table);
-                    }
-                    // check if it is column name
-                    else if ( _queryBuilder.isColumnName( db_element ) ) {
-                        replaceString(db_element, currentPosition, column);
-                    }
-                    // if none of the above is true, insert the text string
-                    // with normal attributes.
-                    else {
-                        replaceString( keywordString, currentPosition, normal);
-                    }
-                    break;
-                }
-            }
-        }
-    }
+//                     String s = keywordString.trim().toUpperCase();
+//                     String db_element = keywordString.trim();
+//                     // check if it is a keyword
+//                     if (keywords.contains(s)){
+//                         replaceString(s, currentPosition, keyword);
+//                     }
+//                     // check if it is schema name
+//                     else if ( _queryBuilder.isSchemaName( db_element ) ) {
+//                         replaceString(db_element, currentPosition, schema);
+//                     }
+//                     // check if it is table name
+//                     else if ( _queryBuilder.isTableName( db_element ) ) {
+//                         replaceString(db_element, currentPosition, table);
+//                     }
+//                     // check if it is column name
+//                     else if ( _queryBuilder.isColumnName( db_element ) ) {
+//                         replaceString(db_element, currentPosition, column);
+//                     }
+//                     // if none of the above is true, insert the text string
+//                     // with normal attributes.
+//                     else {
+//                         replaceString( keywordString, currentPosition, normal);
+//                     }
+//                     break;
+//                 }
+//             }
+//         }
+//     }
     
     
-    // function which checks if the current paragraph element is
-    // either a SQL keyword, a schema name , a table name or a column name.
-    private void checkString() {
-        int offset = this.currentPosition;
-        Element element = dsDocument.getParagraphElement( offset );
-        String elementText = "";
-        try {
-            elementText = dsDocument.getText( element.getStartOffset(),
-                    element.getEndOffset() - element.getStartOffset() );
-        } catch ( Exception ex ) {
-            // should never happen !!!
-            // ex.printStackTrace();
-        }
-        int elementTextLength = elementText.length();
-        if ( elementTextLength == 0 ) return;
+//     // function which checks if the current paragraph element is
+//     // either a SQL keyword, a schema name , a table name or a column name.
+//     private void checkString() {
+//         int offset = this.currentPosition;
+//         Element element = dsDocument.getParagraphElement( offset );
+//         String elementText = "";
+//         try {
+//             elementText = dsDocument.getText( element.getStartOffset(),
+//                     element.getEndOffset() - element.getStartOffset() );
+//         } catch ( Exception ex ) {
+//             // should never happen !!!
+//             // ex.printStackTrace();
+//         }
+//         int elementTextLength = elementText.length();
+//         if ( elementTextLength == 0 ) return;
         
-        int i = 0;
+//         int i = 0;
         
-        if ( element.getStartOffset() > 0 ) {
-            offset = offset - element.getStartOffset();
-        }
-        if ( ( offset >= 0 ) && ( offset <= elementTextLength ) ) {
-            i = offset;
-            while ( i > 0 ){
-                // traverse back until a delimiter is found
-                i--;
-                char charAt = elementText.charAt( i );
-                if ( (charAt == '"') || (charAt == '\'' ) ) {      // NOI18N
-                    keywordString =
-                            elementText.substring(i, offset);//skip the period
+//         if ( element.getStartOffset() > 0 ) {
+//             offset = offset - element.getStartOffset();
+//         }
+//         if ( ( offset >= 0 ) && ( offset <= elementTextLength ) ) {
+//             i = offset;
+//             while ( i > 0 ){
+//                 // traverse back until a delimiter is found
+//                 i--;
+//                 char charAt = elementText.charAt( i );
+//                 if ( (charAt == '"') || (charAt == '\'' ) ) {      // NOI18N
+//                     keywordString =
+//                             elementText.substring(i, offset);//skip the period
                     
-                    String s = keywordString.toUpperCase();
-                    String db_element = keywordString;
-                    String db_element_wo_quotes;
-                    if ( keywordString.length() > 2 &&
-                            ( (keywordString.startsWith("\"") &&  keywordString.endsWith("\"") ) ||
-                            (keywordString.startsWith("\'") &&  keywordString.endsWith("\'") ) ) ) {
-                        db_element_wo_quotes =
-                                keywordString.substring(1, keywordString.length()-1);
-                    } else if (keywordString.length() > 2 && ( keywordString.startsWith("\"") || keywordString.startsWith("\'") ) ) {
-                        db_element_wo_quotes =
-                                keywordString.substring(1, keywordString.length());
-                    } else
-                        db_element_wo_quotes = keywordString;
-                    // check if it is schema name
-                    if ( _queryBuilder.isSchemaName( db_element_wo_quotes ) ) {
-                        replaceString(db_element, currentPosition, schema);
-                    }
-                    // check if it is table name
-                    else if ( _queryBuilder.isTableName( db_element_wo_quotes ) ) {
-                        replaceString(db_element, currentPosition, table);
-                    }
-                    // check if it is column name
-                    else if ( _queryBuilder.isColumnName( db_element_wo_quotes ) ) {
-                        replaceString(db_element, currentPosition, column);
-                    }
-                    // if none of the above is true, insert the text string
-                    // with normal attributes.
-                    else {
-                        replaceString( keywordString, currentPosition, normal);
-                    }
-                    break;
-                }
-            }
-        }
-    }
+//                     String s = keywordString.toUpperCase();
+//                     String db_element = keywordString;
+//                     String db_element_wo_quotes;
+//                     if ( keywordString.length() > 2 &&
+//                             ( (keywordString.startsWith("\"") &&  keywordString.endsWith("\"") ) ||
+//                             (keywordString.startsWith("\'") &&  keywordString.endsWith("\'") ) ) ) {
+//                         db_element_wo_quotes =
+//                                 keywordString.substring(1, keywordString.length()-1);
+//                     } else if (keywordString.length() > 2 && ( keywordString.startsWith("\"") || keywordString.startsWith("\'") ) ) {
+//                         db_element_wo_quotes =
+//                                 keywordString.substring(1, keywordString.length());
+//                     } else
+//                         db_element_wo_quotes = keywordString;
+//                     // check if it is schema name
+//                     if ( _queryBuilder.isSchemaName( db_element_wo_quotes ) ) {
+//                         replaceString(db_element, currentPosition, schema);
+//                     }
+//                     // check if it is table name
+//                     else if ( _queryBuilder.isTableName( db_element_wo_quotes ) ) {
+//                         replaceString(db_element, currentPosition, table);
+//                     }
+//                     // check if it is column name
+//                     else if ( _queryBuilder.isColumnName( db_element_wo_quotes ) ) {
+//                         replaceString(db_element, currentPosition, column);
+//                     }
+//                     // if none of the above is true, insert the text string
+//                     // with normal attributes.
+//                     else {
+//                         replaceString( keywordString, currentPosition, normal);
+//                     }
+//                     break;
+//                 }
+//             }
+//         }
+//     }
     
     
-    private void processString( String str ) {
-        char strChar = str.charAt(0);
-        // if '"' is encontered keep processing till the next one is found
-        if ( strChar ==  '"'  || strChar == '\'') { // NOI18N
-            if ( stringIsParsed ) {
-                checkString();
-                stringIsParsed = false;
-            } else
-                stringIsParsed = true;
-        }
-        if ( ! stringIsParsed ) {
-            // if a white-space character or a '.' or ',' is encountered
-            // check if it is a keyword
-            if ( strChar ==  ' '  || strChar == '\n' ||               // NOI18N
-                    strChar == '\t' || strChar ==  '.'  ||               // NOI18N
-                    strChar == ',' ) {                                   // NOI18N
-                checkKeyword();
-            }
-        } else {
-            checkString();
-        }
-    }
+//     private void processString( String str ) {
+//         char strChar = str.charAt(0);
+//         // if '"' is encontered keep processing till the next one is found
+//         if ( strChar ==  '"'  || strChar == '\'') { // NOI18N
+//             if ( stringIsParsed ) {
+//                 checkString();
+//                 stringIsParsed = false;
+//             } else
+//                 stringIsParsed = true;
+//         }
+//         if ( ! stringIsParsed ) {
+//             // if a white-space character or a '.' or ',' is encountered
+//             // check if it is a keyword
+//             if ( strChar ==  ' '  || strChar == '\n' ||               // NOI18N
+//                     strChar == '\t' || strChar ==  '.'  ||               // NOI18N
+//                     strChar == ',' ) {                                   // NOI18N
+//                 checkKeyword();
+//             }
+//         } else {
+//             checkString();
+//         }
+//     }
     
-    private void processChar(char strChar) {
-        char[] chrstr = new char[1];
-        chrstr[0] = strChar;
-        String str = new String(chrstr);
-        //this.keysTyped = str;
-        processString(str);
-    }
+//     private void processChar(char strChar) {
+//         char[] chrstr = new char[1];
+//         chrstr[0] = strChar;
+//         String str = new String(chrstr);
+//         //this.keysTyped = str;
+//         processString(str);
+//     }
     
-    private void processWords(String str){
-        StringBuffer wordBuffer = new StringBuffer();;
-        stringIsParsed = false;
-        for ( int i =0; i < str.length(); i++ ) {
-            char strChar = str.charAt(i);
-            if ( strChar ==  '"'  || strChar == '\'') { // NOI18N
-                if ( stringIsParsed ) {
-                    stringIsParsed = false;
-                    wordBuffer.append(strChar);
-                    processWord( i, wordBuffer.toString());
-                    wordBuffer = null;
-                    wordBuffer = new StringBuffer();
-                } else {
-                    stringIsParsed = true;
-                }
-            }
-            if (!stringIsParsed) {
-                if ( strChar ==  ' '  || strChar == '\n' ||           // NOI18N
-                        strChar == '\t' || strChar ==  '.'  ||               // NOI18N
-                        strChar == ',' ) {                                   // NOI18N
-                    processWord( i, wordBuffer.toString());
-                    wordBuffer = null;
-                    wordBuffer = new StringBuffer();
-                } else
-                    wordBuffer.append(strChar);
-            } else {
-                wordBuffer.append(strChar);
-            }
-        }
-    }
+//     private void processWords(String str){
+//         StringBuffer wordBuffer = new StringBuffer();;
+//         stringIsParsed = false;
+//         for ( int i =0; i < str.length(); i++ ) {
+//             char strChar = str.charAt(i);
+//             if ( strChar ==  '"'  || strChar == '\'') { // NOI18N
+//                 if ( stringIsParsed ) {
+//                     stringIsParsed = false;
+//                     wordBuffer.append(strChar);
+//                     processWord( i, wordBuffer.toString());
+//                     wordBuffer = null;
+//                     wordBuffer = new StringBuffer();
+//                 } else {
+//                     stringIsParsed = true;
+//                 }
+//             }
+//             if (!stringIsParsed) {
+//                 if ( strChar ==  ' '  || strChar == '\n' ||           // NOI18N
+//                         strChar == '\t' || strChar ==  '.'  ||               // NOI18N
+//                         strChar == ',' ) {                                   // NOI18N
+//                     processWord( i, wordBuffer.toString());
+//                     wordBuffer = null;
+//                     wordBuffer = new StringBuffer();
+//                 } else
+//                     wordBuffer.append(strChar);
+//             } else {
+//                 wordBuffer.append(strChar);
+//             }
+//         }
+//     }
     
-    private void processWord(int position, String str)  {
-        String s = str.toUpperCase();
-        String db_element = str;
-        String db_element_wo_quotes;
-        if (str.length() > 2 &&
-                ( (str.startsWith("\"") &&  str.endsWith("\"") ) ||
-                (str.startsWith("\'") &&  str.endsWith("\'") ) ) ) {
-            db_element_wo_quotes = str.substring(1, str.length()-1);
-            position = position+1;
-        } else if ( str.length() > 2 &&
-                ( str.startsWith("\"")  ||
-                str.startsWith("\'") ) )  {
-            db_element_wo_quotes = str.substring(1, str.length());
-            position = position+1;
-        } else {
-            db_element_wo_quotes = str;
-        }
+//     private void processWord(int position, String str)  {
+//         String s = str.toUpperCase();
+//         String db_element = str;
+//         String db_element_wo_quotes;
+//         if (str.length() > 2 &&
+//                 ( (str.startsWith("\"") &&  str.endsWith("\"") ) ||
+//                 (str.startsWith("\'") &&  str.endsWith("\'") ) ) ) {
+//             db_element_wo_quotes = str.substring(1, str.length()-1);
+//             position = position+1;
+//         } else if ( str.length() > 2 &&
+//                 ( str.startsWith("\"")  ||
+//                 str.startsWith("\'") ) )  {
+//             db_element_wo_quotes = str.substring(1, str.length());
+//             position = position+1;
+//         } else {
+//             db_element_wo_quotes = str;
+//         }
         
-        boolean checkMore = true ;
-        // check if it is a keyword
-        if (keywords.contains(s)){
-            replaceString(s, position, keyword);
-            checkMore = false ;
-        }
-        // check if it is schema name
+//         boolean checkMore = true ;
+//         // check if it is a keyword
+//         if (keywords.contains(s)){
+//             replaceString(s, position, keyword);
+//             checkMore = false ;
+//         }
+//         // check if it is schema name
         
-        while ( checkMore ) {
-            if ( _queryBuilder.isSchemaName( db_element_wo_quotes ) ) {
-                replaceString(db_element, position, schema);
-                break ;
-            }
-            if ( _queryBuilder.isTableName( db_element_wo_quotes ) ) {
-                replaceString(db_element, position, table);
-                break ;
-            }
+//         while ( checkMore ) {
+//             if ( _queryBuilder.isSchemaName( db_element_wo_quotes ) ) {
+//                 replaceString(db_element, position, schema);
+//                 break ;
+//             }
+//             if ( _queryBuilder.isTableName( db_element_wo_quotes ) ) {
+//                 replaceString(db_element, position, table);
+//                 break ;
+//             }
             
-            // check if it is column name
-            if ( _queryBuilder.isColumnName( db_element_wo_quotes ) ) {
-                replaceString(db_element, position, column);
-                break ;
-            }
+//             // check if it is column name
+//             if ( _queryBuilder.isColumnName( db_element_wo_quotes ) ) {
+//                 replaceString(db_element, position, column);
+//                 break ;
+//             }
             
             
-            replaceString( str, position, normal);
+//             replaceString( str, position, normal);
             
-            break ;
-        }
-    }
+//             break ;
+//         }
+//     }
     
     // Create a background menu, with entries for parsing or executing the query.
     
@@ -536,7 +540,7 @@ public class QueryBuilderSqlTextArea extends JTextPane
                 // remains disabled when the user has removed the last table
                 // from the graph and then added (typed/pasted) text query.
                 // First check if the text is not just white spaces.
-                if ( ((JTextPane)(e.getComponent())).getText().trim().length() != 0 ) {
+                if ( ((JEditorPane)(e.getComponent())).getText().trim().length() != 0 ) {
                     parseQueryMenuItem.setEnabled(true);
                     runQueryMenuItem.setEnabled(true);
                 } else {
@@ -637,11 +641,11 @@ public class QueryBuilderSqlTextArea extends JTextPane
         }
          */
         
-        if ( SYNTAX_HIGHLIGHT
-                // we don't recognize the syntax, no highlighting.
-                && (_queryBuilder.getParseErrorMessage() == null ) ) {
-            processWords(text);
-        }
+//         if ( SYNTAX_HIGHLIGHT
+//                 // we don't recognize the syntax, no highlighting.
+//                 && (_queryBuilder.getParseErrorMessage() == null ) ) {
+//             processWords(text);
+//         }
         
         /*
         if (DEBUG)
