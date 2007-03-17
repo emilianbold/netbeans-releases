@@ -34,19 +34,19 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     }
     
     public void openDataProject() {
-        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestData");
+        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "PerformanceTestData");
     }
     
     public void openWebProject() {
-        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
+        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "PerformanceTestWebApplication");
     }
     
     public void openFoldersProject() {
-        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/PerformanceTestFoldersData");
+        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "PerformanceTestFoldersData");
     }
     
     public void openNBProject() {
-        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/SystemProperties");
+        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "SystemProperties");
     }
     
     /**

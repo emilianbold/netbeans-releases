@@ -47,10 +47,30 @@ Microsystems, Inc. All Rights Reserved.
         <unzip src="${nbextra.dir}/qa/projectized/PerformanceTestFoldersData.zip" dest="${xtest.tmpdir}/"/>
     </target>
     
-    <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
+    <!-- Copy and unzip project NB Project from close source path, will be used for Performance tests -->
     <target name="copy_unzip_nb_project">
         <unzip src="${nbextra.dir}/qa/projectized/SystemProperties.zip" dest="${xtest.tmpdir}/"/>
     </target>
+
+    <!-- Copy and unzip project PerformanceTestData from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_test_data_project">
+        <unzip src="${nbextra.dir}/qa/projectized/PerformanceTestData.zip" dest="${xtest.tmpdir}/"/>
+    </target>
+
+    <!-- Copy and unzip project PerformanceTestWebApplication from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_test_web_app_project">
+        <unzip src="${nbextra.dir}/qa/projectized/PerformanceTestWebApplication.zip" dest="${xtest.tmpdir}/"/>
+    </target>
+    
+    <!-- Copy and unzip all test projects from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_test_projects">
+        <antcall target="copy_unzip_jedit_project"/>
+        <antcall target="copy_unzip_test_folder_project"/>
+        <antcall target="copy_unzip_nb_project"/>
+        <antcall target="copy_unzip_test_data_project"/>
+        <antcall target="copy_unzip_test_web_app_project"/>
+    </target>
+    
 
     <!-- =========================== -->
     <!-- IDE Command Line Suffix     -->
