@@ -38,6 +38,7 @@ import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
+import org.openide.explorer.ExplorerManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node;
@@ -50,7 +51,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Joelle Lam
  */
-public class PageFlowView  extends TopComponent implements Lookup.Provider {
+public class PageFlowView  extends TopComponent implements Lookup.Provider, ExplorerManager.Provider {
     private JSFConfigEditorContext context;
     private PageFlowScene scene;
     private JSFConfigModel configModel;
@@ -81,6 +82,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
     //    }
     /** Weak reference to the lookup. */
     private WeakReference lookupWRef = new WeakReference(null);
+    
     
     public Lookup getLookup() {
         Lookup lookup = (Lookup)lookupWRef.get();
@@ -178,11 +180,11 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
      */
     protected VMDNodeWidget createNode( Node pageNode, String type, List<Image> glyphs) {
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
-//        String pageName = pageNode.getName();
-//        if( pageNode instanceof DataNode ){
-//            pageName = ((DataNode)pageNode).getDataObject().getPrimaryFile().getNameExt();
-//            System.out.println("PageName : " + pageName);
-//        }
+        //        String pageName = pageNode.getName();
+        //        if( pageNode instanceof DataNode ){
+        //            pageName = ((DataNode)pageNode).getDataObject().getPrimaryFile().getNameExt();
+        //            System.out.println("PageName : " + pageName);
+        //        }
         String pageName = pageNode.getDisplayName();
         
         widget.setNodeProperties(IMAGE_LIST, pageName, type, glyphs);
@@ -344,6 +346,15 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider {
         }
         return null;
     }
-
     
+    public ExplorerManager getExplorerManager() {
+        return explorer;
+    }
+    
+    private ExplorerManager explorer;
+    
+    public void addNotify() {
+        super.addNotify();
+        explorer = ExplorerManager.find(this);
+    }
 }
