@@ -19,9 +19,9 @@
 
 package gui.action;
 
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 /**
  * Test of opening files if Editor is already opened.
@@ -59,7 +59,7 @@ public class OpenFormFileWithOpenedEditor extends OpenFormFile {
      */
     public void initialize(){
         super.initialize();
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
     }
  
     public static void main(java.lang.String[] args) {

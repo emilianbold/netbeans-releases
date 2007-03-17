@@ -28,7 +28,7 @@ import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -45,15 +45,8 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
     /** Name of the folder which test creates and expands */
     private static String folderToBeDeleted;
     
-    /** Fodlers node represantation*/
-    private static Node foldersNode;
-    
     /** Node represantation of the folder which test creates and delete */
     private static Node nodeToBeDeleted;
-    
-    /** File represantation of the folder which test creates and delete */
-    private static File folderToBeDeletedFile;
-    
     
     /**
      * Creates a new instance of DeleteFolder
@@ -73,7 +66,6 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
-    
     
     public void testDeleteFolderWith50JavaFiles(){
         WAIT_AFTER_PREPARE = 10000;
@@ -99,8 +91,6 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
         repaintManager().setOnlyExplorer(true);
         turnBadgesOff();
     }
-        
-    
     
     public ComponentOperator open(){
         new DeleteAction().performPopup(nodeToBeDeleted);
@@ -114,10 +104,10 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
     
     public void prepare(){
         try {
-            String projectPath = System.getProperty("xtest.tmpdir")+"/"+"PerformanceTestFoldersData";
+            String projectPath = System.getProperty("xtest.tmpdir") + File.separator + "PerformanceTestFoldersData";
             log("========== Projects path =" + projectPath);
             
-            File foldersDir = new File(projectPath + "/" + "src" + "/" + "folders");
+            File foldersDir = new File(projectPath + File.separator + "src" + File.separator + "folders");
             log("========== Folders path ="+foldersDir.getPath());
             
             
@@ -131,16 +121,17 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
             gui.Utilities.copyFile(new File (foldersDir, "Test.java"),new File (copyDeleteDir, "Test.java"));
             waitNoEvent(1000);
             
-            ProjectRootNode projectNode = projectTab.getProjectRootNode("PerformanceTestFoldersData");
+            SourcePackagesNode sourcePackagesNode = new SourcePackagesNode("PerformanceTestFoldersData");
             
-            foldersNode = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders");
+            Node foldersNode = new Node(sourcePackagesNode, "|folders");
+            foldersNode.expand();
             
             /* no more present after retouche merge
             new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File")+"|"+Bundle.getStringTrimmed("org.netbeans.modules.javacore.Bundle","LBL_RescanAction"),"|"); //File|Refresh All Files
             waitNoEvent(500);
              */
 
-            nodeToBeDeleted = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders." + folderToBeDeleted + "_delete");
+            nodeToBeDeleted = new Node(sourcePackagesNode, "folders." + folderToBeDeleted + "_delete");
             
             File[] files = originalDir.listFiles();
             log("=============== There is [" + files.length + "] number of files in directory = "+ originalDir.getPath());
@@ -193,7 +184,6 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
      * @param args arguments from command line
      */
     public static void main(String[] args) {
-        System.setProperty("xtest.tmpdir", "/local_export/sources/nb_all/performance/test/qa-functional/data");
         junit.textui.TestRunner.run(new DeleteFolder("testDeleteFolderWith50JavaFiles"));
     }
 }

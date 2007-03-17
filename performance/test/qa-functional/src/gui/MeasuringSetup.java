@@ -43,14 +43,13 @@ public class MeasuringSetup extends NbTestSuite {
         
         suite.addTest(new IDESetupTest("closeWelcome"));
         
-        // replaced by close all documents suite.addTest(new gui.setup.IDESetupTest("closeBluePrints"));
-        suite.addTest(new IDESetupTest("closeAllDocuments"));
-        
         suite.addTest(new IDESetupTest("openFoldersProject"));
         suite.addTest(new IDESetupTest("openDataProject"));
         suite.addTest(new IDESetupTest("openWebProject"));
         suite.addTest(new IDESetupTest("openNBProject"));
 
+        suite.addTest(new IDESetupTest("closeAllDocuments"));
+        
         return suite;
     }
     

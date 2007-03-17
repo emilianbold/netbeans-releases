@@ -80,14 +80,14 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
     public ComponentOperator open(){
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
-            new java.lang.Error("Cannot get context menu for node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            new java.lang.Error("Cannot get context menu for node [" + openNode.getPath() + "]");
         }
         log("------------------------- after popup invocation ------------");
         try {
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error ("Cannot push menu item "+this.menuItem+" of node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error ("Cannot push menu item "+this.menuItem+" of node [" + openNode.getPath() + "]");
         }
         log("------------------------- after open ------------");
         return new FormDesignerOperator("JFrame20kB");

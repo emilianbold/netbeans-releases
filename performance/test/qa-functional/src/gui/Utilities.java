@@ -29,7 +29,6 @@ import java.io.OutputStream;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -39,6 +38,7 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.QueueTool;
@@ -174,8 +174,10 @@ public class Utilities {
     public static void openFiles(String project, String[][] files_path){
         Node[] openFileNodes = new Node[files_path.length];
         
+        SourcePackagesNode sourcePackagesNode = new SourcePackagesNode(project);
+        
         for(int i=0; i<files_path.length; i++) {
-            openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode(project),SOURCE_PACKAGES + '|' +  files_path[i][0] + '|' + files_path[i][1]);
+            openFileNodes[i] = new Node(sourcePackagesNode, files_path[i][0] + '|' + files_path[i][1]);
             
             // open file one by one, opening all files at once causes never ending loop (java+mdr)
             // new OpenAction().performAPI(openFileNodes[i]);
@@ -208,7 +210,7 @@ public class Utilities {
      * @return Editor tab with opened java file
      */
     public static EditorOperator openJavaFile(){
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),SOURCE_PACKAGES + "|bsh|Parser.java");
+        Node openFile = new Node(new SourcePackagesNode("jEdit"),"bsh|Parser.java");
         new OpenAction().performAPI(openFile);
         return EditorWindowOperator.getEditor("Parser.java");
         
@@ -219,7 +221,7 @@ public class Utilities {
      * @return Editor tab with opened file
      */
     public static EditorOperator openSmallJavaFile(){
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java");
+        Node openFile = new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|Main20kB.java");
         new OpenAction().performAPI(openFile);
         return EditorWindowOperator.getEditor("Main20kB.java");
         
@@ -230,7 +232,7 @@ public class Utilities {
      * @return Form Designer
      */
     public static FormDesignerOperator openSmallFormFile(){
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),SOURCE_PACKAGES + "|org.netbeans.test.performance|JFrame20kB.java");
+        Node openFile = new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|JFrame20kB.java");
         new OpenAction().performAPI(openFile);
         return new FormDesignerOperator("JFrame20kB");
         

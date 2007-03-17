@@ -19,19 +19,21 @@
 
 package gui.action;
 
-import java.io.PrintStream;
+import org.netbeans.performance.test.guitracker.ActionTracker;
 import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
+
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.java.editor.options.JavaOptions;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.performance.test.guitracker.ActionTracker;
 
 /**
  * Test of java completion in opened source editor.
@@ -64,7 +66,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         setCompletionForMeasuringOn();
         
         // open a java file in the editor
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
         editorOperator = EditorWindowOperator.getEditor("Main.java");
         
         // scroll to the place where we start
@@ -167,7 +169,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
             };
 
     public static void main(java.lang.String[] args) {
-        System.setProperty("org.netbeans.performance.repeat", "3");
+        repeat =3;
         junit.textui.TestRunner.run(new JavaCompletionInEditor("measureTime"));
     }
     

@@ -23,9 +23,10 @@ import org.netbeans.modules.editor.options.BaseOptions;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -74,7 +75,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         caretPositionY = 1;
         kitClass = org.netbeans.modules.editor.plain.PlainKit.class;
         optionsClass = org.netbeans.modules.editor.plain.options.PlainOptions.class;
-        fileToBeOpened = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|" + fileName);
+        fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
     }
     
@@ -84,7 +85,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         caretPositionY = 19;
         kitClass = org.netbeans.modules.editor.java.JavaKit.class;
         optionsClass = org.netbeans.modules.java.editor.options.JavaOptions.class;
-        fileToBeOpened = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|" + fileName);
+        fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
     }
    
@@ -94,7 +95,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         caretPositionY = 9;
         kitClass = org.netbeans.modules.web.core.syntax.JSPKit.class;
         optionsClass = org.netbeans.modules.web.core.syntax.settings.JSPOptions.class;
-        fileToBeOpened = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestWebApplication"),gui.Utilities.WEB_PAGES + '|' + fileName);
+        fileToBeOpened = new Node(new WebPagesNode("PerformanceTestData"), fileName);
         doMeasurement();
     }
    

@@ -13,17 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -65,7 +65,7 @@ public class SaveModifiedFile extends org.netbeans.performance.test.utilities.Pe
     
     public void initialize(){
         EditorOperator.closeDiscardAll();
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorOperator("Main.java");
         waitNoEvent(2000);
     }

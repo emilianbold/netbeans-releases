@@ -13,19 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
-import gui.Utilities;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.PropertiesAction;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -61,7 +59,7 @@ public class RefactorFindUsages extends org.netbeans.performance.test.utilities.
         NEXT = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.api.ui.Bundle","CTL_Finish");  // "Next >"
         TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_WhereUsed");  // "Find Usages"
         ACTION = Bundle.getStringTrimmed(BUNDLE,"LBL_WhereUsedAction"); // "Find Usages..."
-        testNode = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),Utilities.SOURCE_PACKAGES + "|org.gjt.sp.jedit|jEdit.java");
+        testNode = new Node(new SourcePackagesNode("jEdit"),"org.gjt.sp.jedit|jEdit.java");
     }
     
     public void prepare() {
@@ -75,7 +73,7 @@ public class RefactorFindUsages extends org.netbeans.performance.test.utilities.
         
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 360000);
-        usagesWindow = new TopComponentOperator("Usages");
+        usagesWindow = new TopComponentOperator("Usages"); // NOI18N
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
         
         return usagesWindow;

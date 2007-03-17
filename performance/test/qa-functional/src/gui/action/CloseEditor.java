@@ -20,11 +20,11 @@
 package gui.action;
 
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.CloseViewAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -91,7 +91,7 @@ public class CloseEditor extends org.netbeans.performance.test.utilities.Perform
     }
     
     public void prepare(){
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName));
+        new OpenAction().performAPI(new Node(new SourcePackagesNode(fileProject),filePackage + '|' + fileName));
         
         new EventTool().waitNoEvent(5000);
     }

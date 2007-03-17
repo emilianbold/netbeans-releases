@@ -20,9 +20,9 @@
 package gui.action;
 
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -64,12 +64,8 @@ public class OpenJspFile extends OpenFiles {
     }
     
     public void prepare(){
-        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),gui.Utilities.WEB_PAGES + '|' + fileName);
+        this.openNode = new Node(new WebPagesNode(fileProject),fileName);
         this.openNode.select();
-        
-        if (this.openNode == null) {
-            throw new Error("Cannot find node [" + openNode.getPath() + "] in project [" + fileProject + "]");
-        }
         log("========== Open file path ="+this.openNode.getPath());
     }
     

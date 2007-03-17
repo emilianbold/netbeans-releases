@@ -13,17 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseViewAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -33,7 +33,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author  mmirilovic@netbeans.org
  */
 public class CloseEditorTab extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-
+    
     /** File to be closed */
     private String closeFile;
     
@@ -59,17 +59,11 @@ public class CloseEditorTab extends org.netbeans.performance.test.utilities.Perf
         expectedTime = WINDOW_OPEN;
     }
     
-    
-    public void testClosingTab(){
-        closeFile = "EditServer.java";
-        doMeasurement();
-    }
-    
     public void initialize(){
         EditorOperator.closeDiscardAll();
         prepareFiles();
     }
-
+    
     public void shutdown(){
         EditorOperator.closeDiscardAll();
     }
@@ -81,9 +75,9 @@ public class CloseEditorTab extends org.netbeans.performance.test.utilities.Perf
     }
     
     public ComponentOperator open(){
-        //TODO issue 44593 new CloseViewAction().performPopup(new EditorOperator(closeFile)); 
-        new CloseViewAction().performMenu(new EditorOperator(closeFile)); 
-
+        //TODO issue 44593 new CloseViewAction().performPopup(new EditorOperator(closeFile));
+        new CloseViewAction().performMenu(new EditorOperator("EditServer.java"));
+        
         return null;
     }
     
@@ -98,9 +92,10 @@ public class CloseEditorTab extends org.netbeans.performance.test.utilities.Perf
         String[][] files_path = gui.Utilities.getTenSelectedFiles();
         
         openFileNodes = new Node[files_path.length];
-            
+        SourcePackagesNode sourcePackagesNode = new SourcePackagesNode("jEdit");
+        
         for(int i=0; i<files_path.length; i++) {
-                openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"), gui.Utilities.SOURCE_PACKAGES + '|' +  files_path[i][0] + '|' + files_path[i][1]);
+            openFileNodes[i] = new Node(sourcePackagesNode, files_path[i][0] + '|' + files_path[i][1]);
         }
     }
     

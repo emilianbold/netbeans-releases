@@ -19,8 +19,8 @@
 
 package gui.action;
 
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.actions.OpenAction;
 
 /**
@@ -63,7 +63,7 @@ public class OpenJspFileWithOpenedEditor extends OpenJspFile {
      */
     public void initialize(){
         super.initialize();
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|Main.java"));
     }
     
 }

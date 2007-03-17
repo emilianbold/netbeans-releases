@@ -19,9 +19,9 @@
 
 package gui.action;
 
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 
 /**
@@ -78,7 +78,7 @@ public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoClone
      */
     public void initialize(){
         super.initialize();
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|" + fileName_preopen));
+        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|" + fileName_preopen));
     }
     
 }
