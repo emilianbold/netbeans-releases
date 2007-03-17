@@ -76,7 +76,7 @@ public class PageFlowController {
     }
     
     /**
-     *
+     * Set From outcome by default.
      * @param source
      * @param target
      * @param comp
@@ -98,9 +98,7 @@ public class PageFlowController {
         if (navRule == null) {
             navRule = configModel.getFactory().createNavigationRule();
             navRule.setFromViewId(source.getDisplayName());
-            //            configModel.startTransaction();T
             facesConfig.addNavigationRule(navRule);
-            //            configModel.endTransaction();
         } else {
             caseNum = getNewCaseNumber(navRule);
         }
@@ -125,6 +123,7 @@ public class PageFlowController {
         List<NavigationCase> navCases = navRule.getNavigationCases();
         for( NavigationCase navCase : navCases ){
             caseOutcomes.add(navCase.getFromOutcome());
+            caseOutcomes.add(navCase.getFromAction());
         }
         
         int caseNum = 1;
@@ -404,6 +403,7 @@ public class PageFlowController {
          */
         public PageFlowNode( Node original ){
             super(original, Children.LEAF);
+            
         }
         
         @Override
@@ -422,6 +422,14 @@ public class PageFlowController {
         public boolean canRename() {
             return true;
         }
+        
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+        
+
+        
     }
     
     

@@ -261,7 +261,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, router);
         
 
-        LabelWidget label = new LabelWidget(this, edge.getFromOuctome());
+        LabelWidget label = new LabelWidget(this, edge.getName());
         label.setOpaque(true);
         label.getActions().addAction(
                 ActionFactory.createInplaceEditorAction(new CaseNodeTextFieldInplaceEditor()));
@@ -270,7 +270,6 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
         
         connectionLayer.addChild(connectionWidget);
-        //        String navCaseName = link.getFromOutcome();
         
         //        connectionWidget.getActions().addAction(deleteAction);
         connectionWidget.getActions().addAction(createObjectHoverAction());
