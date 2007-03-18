@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- Executor for Measure Startup Time with empty userdir -->
-    <target name="runcodetest_measure_startup" depends="make_netbeans_executable">
+    <target name="runcodetest_measure_startup" depends="make_netbeans_executable,check-appserver">
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
         <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
         
