@@ -22,6 +22,9 @@ package org.netbeans.modules.visualweb.project.jsfloader;
 
 
 
+import java.util.Dictionary;
+import java.util.Hashtable;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfPortletSupport;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfPortletSupportException;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
@@ -42,6 +45,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -49,12 +53,12 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.api.portlet.dd.PortletModeType;
-import java.util.ArrayList;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
-import org.openide.actions.DeleteAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * Node that represents JSF JSP data object.
@@ -237,14 +241,20 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
         if (name.equals(currentName)) {
             return;
         }
-        // Pass on the rename to the Java object, at some point we need to handle it from the JSP itself, but lets do this and get it working
-        // for now
-        JsfJavaDataObject javaDataObject = Utils.findCorrespondingJsfJavaDataObject(getDataObject().getPrimaryFile(), true);
-        if (javaDataObject == null) {
+
+        InstanceContent ic = new InstanceContent();
+        ic.add(this);
+        Dictionary d = new Hashtable();
+        d.put("name", name);
+        ic.add(d);
+        Lookup l = new AbstractLookup(ic);
+        DataObject dob = getCookie(DataObject.class);
+        Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);
+        if (a.isEnabled()) {
+            a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+        } else {
             super.setName(name);
-            return;
         }
-        javaDataObject.getNodeDelegate().setName(name);
     }
 
 }

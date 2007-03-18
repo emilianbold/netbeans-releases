@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="CreatorJavaPalette">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
         <attr name="ApplicationData/WebAppFunctions" boolvalue="true"/>
-        <attr name="WebAppFunctions/JavaBasics" boolvalue="true"/>        
+        <attr name="WebAppFunctions/JavaBasics" boolvalue="true"/>
         
         <folder name="ApplicationData">    
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
@@ -241,15 +241,6 @@ Microsystems, Inc. All Rights Reserved.
                   <file name="DeleteAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
                   </file>
-		  <!-- Disable Rename action for M7 -->
-                  <!-- attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" / -->
-                  <!-- file name="RenameAction.instance" -->
-                    <!-- <RAVE> Replacing the original action instance by insync impl -->
-                    <!-- <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" /> -->
-                    <!-- attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.insync.faces.refactoring.JsfJspRenameAction" / -->
-                    <!-- </RAVE> -->
-                  <!-- /file -->
-                  <!-- attr boolvalue="true" name="RenameAction.instance/jsp-project-separator-6.instance" / -->
                   <attr boolvalue="true" name="DeleteAction.instance/jsp-project-separator-6.instance" />             
                   <file name="jsp-project-separator-6.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
@@ -262,7 +253,15 @@ Microsystems, Inc. All Rights Reserved.
                   <file name="jsp-project-separator-7.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                   </file>
-                  <attr boolvalue="true" name="jsp-project-separator-7.instance/ToolsAction.instance" />
+                  <attr boolvalue="true" name="jsp-project-separator-7.instance/RefactoringAll.instance"/>
+                  <file name="RefactoringAll.instance">
+                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                  </file>
+                  <attr boolvalue="true" name="RefactoringAll.instance/jsp-project-separator-8.instance"/>
+                  <file name="jsp-project-separator-8.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                  </file>
+                   <attr boolvalue="true" name="jsp-project-separator-8.instance/ToolsAction.instance" />
                   <file name="ToolsAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
                   </file>
