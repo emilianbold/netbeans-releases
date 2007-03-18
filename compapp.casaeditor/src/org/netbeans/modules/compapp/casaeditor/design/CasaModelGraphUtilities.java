@@ -101,8 +101,8 @@ public class CasaModelGraphUtilities {
         
         // add connections
         for (CasaConnection connection : model.getCasaConnectionList(false)) {
-            CasaConsumes consumes = (CasaConsumes) model.getCasaEndpoint(connection, true);
-            CasaProvides provides = (CasaProvides) model.getCasaEndpoint(connection, false);
+            CasaConsumes consumes = (CasaConsumes) model.getCasaEndpointRef(connection, true);
+            CasaProvides provides = (CasaProvides) model.getCasaEndpointRef(connection, false);
             if (consumes != null && provides != null) {
                 createEdge(connection, consumes, provides, scene, false);
             }

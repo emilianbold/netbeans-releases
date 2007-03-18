@@ -99,8 +99,8 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
                 ConsumesProvides info = new ConsumesProvides(mScene, sourceWidget, targetWidget);
                 if (info.mConsumes != null && info.mProvides != null) {
                     for (CasaConnection connection : mScene.getModel().getCasaConnectionList(false)) {
-                        CasaEndpointRef iterConsumes = mScene.getModel().getCasaEndpoint(connection, true);
-                        CasaEndpointRef iterProvides = mScene.getModel().getCasaEndpoint(connection, false);
+                        CasaEndpointRef iterConsumes = mScene.getModel().getCasaEndpointRef(connection, true);
+                        CasaEndpointRef iterProvides = mScene.getModel().getCasaEndpointRef(connection, false);
                         if (iterConsumes == null || iterProvides == null) {
                             continue;
                         }
