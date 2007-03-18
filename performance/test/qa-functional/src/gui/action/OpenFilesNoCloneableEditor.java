@@ -56,7 +56,7 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "Bundle20kB.properties";
-        compName = "Bundle";
+        compName = "Bundle20kB.properties";
         menuItem = OPEN;
         doMeasurement();
     }
