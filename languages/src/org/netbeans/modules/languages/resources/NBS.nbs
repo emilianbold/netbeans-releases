@@ -73,8 +73,8 @@ S = grammarRule S;
 S = command S;
 S = ;
                     
-token = "TOKEN" ":" <identifier> token2;
-token2 = ":" "(" regularExpression ")" token3;
+token = "TOKEN" ":" <identifier> ":" token2;
+token2 = "(" regularExpression ")" token3;
 token2 = "{" properties "}";
 token3 = ":" state;
 token3 = ;
@@ -131,22 +131,16 @@ tokenDef1 = "," <string>;
 tokenDef1 = ;
                     
 command = <keyword> command0;
-command0 = "{" properties "}";
-command0 = ":" class command1;
-command0 = class;
-command0 = <string>;
-command1 = "{" properties "}";
-command1 = ":" command2;
-command1 = ;
-command2 = class;
-command2 = <string>;
+command0 = ":" selector [":" value];
+command0 = value;
+value = class | <string> | "{" properties "}" | "(" regularExpression ")";
 properties = property properties;
 properties = ;
 property = <identifier> ":" propertyValue ";";
 propertyValue = <string>;
 propertyValue = class;
 propertyValue = "(" regularExpression ")";
-                    
+selector = class;                    
 class = <identifier> class1;
 class1 = "." <identifier> class1;
 class1 = ;
@@ -237,3 +231,13 @@ COMPLETION:importKey: {
     description3: "<html><b><font color=blue>icon</font></b> <font color=#aaaaaa> Icon.</font></html>";
 }
 
+
+MARK:ERROR: {
+    type:"Error";
+    message:"Syntax error.";
+}
+
+MARK:error: {
+    type:"Error";
+    message:"Unexpected character.";
+}
