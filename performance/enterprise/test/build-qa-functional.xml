@@ -134,6 +134,9 @@
         
         <antcall target="copy_released_ide_cfg_file"/>
        
+        <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
+        <copy file="${nball.dir}/performance/performancetestutilities/dist/ActionTracker.xsl" tofile="${xtest.results.testrun.dir}/ActionTracker.xsl" />
+        
         <executeTests pluginName="ide">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
