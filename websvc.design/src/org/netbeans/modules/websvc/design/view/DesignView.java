@@ -22,7 +22,6 @@ package org.netbeans.modules.websvc.design.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Point;
-import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;

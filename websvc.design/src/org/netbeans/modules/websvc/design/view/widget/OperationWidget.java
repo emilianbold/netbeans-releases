@@ -39,9 +39,10 @@ import org.openide.util.Utilities;
  */
 public class OperationWidget extends RoundedRectangleWidget implements ExpandableWidget{
     
-    private static final Color FILL_COLOR_YELLOW3 = new Color(255,255,153);
-    private static final Color FILL_COLOR_YELLOW4 = new Color(255,255,204);
-    private static final Color BORDER_COLOR_YELLOW2 = new Color(255,255,102);
+    private static final Color TITLE_COLOR = new Color(180,180,255);
+    private static final Color TITLE_COLOR2 = new Color(204,204,255);
+    private static final Color BORDER_COLOR = new Color(153,153,255);
+    private static final int GAP = 16;
 
     private static final Image IMAGE_ONE_WAY  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/oneway_operation.png"); // NOI18N   
@@ -69,7 +70,10 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
      * @param operation
      */
     public OperationWidget(Scene scene, WsdlOperation operation) {
-        super(scene,FILL_COLOR_YELLOW3,FILL_COLOR_YELLOW4,BORDER_COLOR_YELLOW2);
+        super(scene);
+        setBorderColor(BORDER_COLOR);
+        setTitleColor(TITLE_COLOR,TITLE_COLOR2);
+        setRadius(GAP);
         this.operation=operation;
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
@@ -78,7 +82,7 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
     }
     
     private void createContent() {
-        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 16));
+        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
         boolean expanded = ExpanderWidget.isExpanded(this, true);
         expander = new ExpanderWidget(getScene(), this, expanded);
@@ -95,9 +99,10 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
         headerWidget.addChild(buttons);
 
         addChild(headerWidget);
+        setTitleWidget(headerWidget);
         
         contentWidget = new Widget(getScene());
-        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 16));
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
         String typeOfOperation ="";
         Image image = null;
@@ -133,20 +138,12 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
     public void collapseWidget() {
         if(contentWidget.getParentWidget()!=null) {
             removeChild(contentWidget);
-            revalidate();
-            repaint();
-            getScene().repaint();
-            getScene().revalidate();
         }
     }
 
     public void expandWidget() {
         if(contentWidget.getParentWidget()==null) {
             addChild(contentWidget);
-            revalidate();
-            repaint();
-            getScene().repaint();
-            getScene().revalidate();
         }
     }
 

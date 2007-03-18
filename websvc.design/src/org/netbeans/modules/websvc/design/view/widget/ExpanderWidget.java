@@ -88,8 +88,8 @@ public class ExpanderWidget extends ButtonWidget {
         g2 = ((BufferedImage) IMAGE_COLLAPSE).createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
-        w = IMAGE_EXPAND.getWidth(null);
-        h = IMAGE_EXPAND.getHeight(null);
+        w = IMAGE_COLLAPSE.getWidth(null);
+        h = IMAGE_COLLAPSE.getHeight(null);
         r = Math.min(w, h) * 0.5f * 0.75f;
         gp = new GeneralPath();
         dx = (float) (r * Math.cos(Math.toRadians(30)));
@@ -113,13 +113,15 @@ public class ExpanderWidget extends ButtonWidget {
      */
     public ExpanderWidget(Scene scene, ExpandableWidget expandable,
             boolean expanded) {
-        super(scene, expanded ? new ImageIcon(IMAGE_COLLAPSE) : new ImageIcon(IMAGE_EXPAND));
+        super(scene, (ImageIcon)null);
         getButton().setPreferredSize(new Dimension(20, 20));
         this.expandable = expandable;
         isExpanded = expanded;
         setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 setExpanded(!isExpanded());
+                //validate scene as called from ActionListeners
+                getScene().validate();
             }
         });
     }
@@ -164,4 +166,15 @@ public class ExpanderWidget extends ButtonWidget {
             expandable.collapseWidget();
         }
     }
+
+    /**
+     * Just to show the icon initially.
+     */
+    protected void paintChildren () {
+        super.paintChildren();
+        if(getButton().getIcon()==null) {
+            setIcon(isExpanded ? new ImageIcon(IMAGE_COLLAPSE) : new ImageIcon(IMAGE_EXPAND));
+        }
+    }
+
 }
