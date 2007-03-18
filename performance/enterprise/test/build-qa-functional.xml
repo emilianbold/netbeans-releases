@@ -187,10 +187,7 @@
             
             <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.memory.repeat=1 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
             <property name="xtest.enable.assertions" value="false" /> 
-            <property name="xtest.timeout" value="3600000" />
-            <property name="xtest.test.duration" value="60min" />
-            <property name="xtest.test.timeout" value="3600000" />
-            <property name="xtest.test.one-test-timeout" value="60min" />
+            <property name="xtest.timeout" value="2400000" />
 	    <property name="xtest.userdata|com.sun.aas.installRoot" value="${j2ee.appserver.path}" />
         </executeTests>
         
