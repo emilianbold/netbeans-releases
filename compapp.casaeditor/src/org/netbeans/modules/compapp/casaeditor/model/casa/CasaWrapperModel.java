@@ -1800,7 +1800,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         for (CasaEndpoint casaEndpoint : 
                 model.getRootComponent().getEndpoints().getEndpoints()) {
-            String name = casaEndpoint.getName();
+            String name = casaEndpoint.getEndpointName();
             existingNames.add(name);
         }
         
@@ -2087,7 +2087,11 @@ public class CasaWrapperModel extends CasaModelImpl {
             } else {
                 // For WSDL port, we need to check both consumes and provides.
                 CasaPort casaPort = getCasaPort(endpointRef);
-                if (casaPort != null && getConnections(casaPort, false).size() > 0) {
+                // Do not allow interface qname to be editable for wsdl port.
+                // This is to avoid problem updating casa.wsdl. Interface qname 
+                // will be set automatically when connection is made.
+                if (casaPort != null 
+                        /*&& getConnections(casaPort, false).size() > 0*/) {
                     return false;
                 }
             }
