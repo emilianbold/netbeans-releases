@@ -548,8 +548,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                 Collections.<VariableTree>emptyList(),      //parameters
                 Collections.<ExpressionTree>emptyList(),    //throws ...
                 maker.Block(bodyContent, false),            //body
-                null,                                       //default value
-                (TypeElement) tstClassElem);
+                null);                                       //default value
 
         int targetIndex;
         if (clsMap.containsMethods()) {

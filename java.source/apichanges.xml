@@ -75,7 +75,7 @@ is the proper place.
 
     <!-- First, a list of API names you may use: -->
     <apidefs>
-        <apidef name="completion">Java Source API</apidef>
+        <apidef name="general">Java Source API</apidef>
         <!-- etc. -->
     </apidefs>
 
@@ -83,6 +83,26 @@ is the proper place.
 
     <changes>
 
+        <change id="type-utilities">
+            <api name="general"/>
+            <summary>Removing CommentUtilities, adjusting TreeMaker and introducing TypeUtilities</summary>
+            <version major="0" minor="6"/>
+            <date day="18" month="3" year="2007"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible">
+            </compatibility>
+            <description>
+                <ul>
+                    <li>removed org.netbeans.api.java.source.CommentUtilities</li>
+                    <li>removed org.netbeans.api.java.source.TreeMaker.Variable(..., TypeElement)</li>
+                    <li>removed org.netbeans.api.java.source.TreeMaker.Method(..., TypeElement)</li>
+                    <li>added org.netbeans.api.java.source.TypeUtilities</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.api.java.source" name="TypeUtilities"/>
+            <issue number="97542"/>
+        </change>
+        
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->

@@ -579,32 +579,6 @@ public final class TreeMaker {
     }
     
     /**
-     * Creates a new MethodTree.
-     *
-     * @param modifiers the modifiers of this method.
-     * @param name the name of the method.
-     * @param returnType the return type for this method.
-     * @param typeParameters the list of generic type parameters, or an empty list.
-     * @param parameters the list of parameters, or an empty list.
-     * @param throwsList the list of throws clauses, or an empty list.
-     * @param body the method's code block.
-     * @param defaultValue the default value, used by annotation types.
-     * @param enclosingElement the type instance this method is a member of.
-     * @see com.sun.source.tree.MethodTree
-     */
-    public MethodTree Method(ModifiersTree modifiers,
-                      CharSequence name,
-                      Tree returnType,
-                      List<? extends TypeParameterTree> typeParameters,
-                      List<? extends VariableTree> parameters,
-                      List<? extends ExpressionTree> throwsList,
-                      BlockTree body,
-                      ExpressionTree defaultValue,
-                      TypeElement enclosingElement) {
-        return delegate.Method(modifiers, name, returnType, typeParameters, parameters, throwsList, body, defaultValue, enclosingElement);
-    }
-    
-    /**
      * Creates a new MethodTree from an ExecutableElement and a BlockTree.
      *
      * @param element the executable element of this method.
@@ -852,24 +826,6 @@ public final class TreeMaker {
                           Tree type,
                           ExpressionTree initializer) {
         return delegate.Variable(modifiers, name, type, initializer);
-    }
-    
-    /**
-     * Creates a new VariableTree.
-     *
-     * @param modifiers the modifiers of this variable.
-     * @param name the name of the variable.
-     * @param type the type of this variable.
-     * @param initializer the initialization expression for this variable, or null.
-     * @param enclosingElement the type instance this variable is a member of.
-     * @see com.sun.source.tree.VariableTree
-     */
-    public VariableTree Variable(ModifiersTree modifiers,
-                          CharSequence name,
-                          Tree type,
-                          ExpressionTree initializer,
-                          TypeElement enclosingElement) {
-        return delegate.Variable(modifiers, name, type, initializer, enclosingElement);
     }
     
     /**

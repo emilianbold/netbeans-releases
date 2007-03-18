@@ -386,34 +386,6 @@ public class TreeFactory implements TreeMakerInt {
                               (JCBlock)body, (JCExpression)defaultValue);
     }
     
-    public MethodTree Method(ModifiersTree modifiers,
-                             CharSequence name,
-                             Tree returnType,
-                             List<? extends TypeParameterTree> typeParameters,
-                             List<? extends VariableTree> parameters,
-                             List<? extends ExpressionTree> throwsList,
-                             BlockTree body,
-                             ExpressionTree defaultValue,
-                             TypeElement owner) {
-        MethodTree method = Method(modifiers, name, returnType, typeParameters, 
-                                   parameters, throwsList, body, defaultValue);
-        TypeMirror restype = model.getType(returnType);
-        if (restype == null && returnType != null) {
-            TypeElement e = elements.getTypeElement(returnType.toString());
-            if (e != null)
-                restype = e.asType();
-        }
-        Element newElement = Executable(method.getModifiers().getFlags(), 
-                                               method.getName(),
-                                               typesFromTrees(method.getParameters()),
-                                               restype,
-                                               typesFromTrees(method.getThrows()),
-                                               owner);
-        model.setElement(method, newElement);
-        model.setType(method, newElement.asType());
-        return method;
-    }
-    
     public MethodTree Method(ExecutableElement element, BlockTree body) {
         return make.MethodDef((Symbol.MethodSymbol)element, (JCBlock)body);
     }
@@ -653,24 +625,6 @@ public class TreeFactory implements TreeMakerInt {
                                  ExpressionTree initializer) {
         return make.VarDef((JCModifiers)modifiers, names.fromString(name), 
                            (JCExpression)type, (JCExpression)initializer);
-    }
-    
-    public VariableTree Variable(ModifiersTree modifiers,
-                                 CharSequence name,
-                                 Tree vartype,
-                                 ExpressionTree initializer,
-                                 TypeElement enclosingElement) {
-        VariableTree n = Variable(modifiers, name, vartype, initializer);
-        TypeMirror type = model.getType(vartype);
-        if (type == null) {
-            TypeElement e = elements.getTypeElement(vartype.toString());
-            if (e != null)
-                type = e.asType();
-        }
-        Element newElement = Variable(modifiers.getFlags(), name, type, enclosingElement);
-        model.setElement(n, newElement);
-        model.setType(n, type);
-        return n;
     }
     
     public VariableTree Variable(VariableElement variable, ExpressionTree initializer) {
@@ -1451,44 +1405,6 @@ public class TreeFactory implements TreeMakerInt {
         for (Tree t : trees)
             types.add(model.getType(t));
         return types;
-    }
-    
-    private ExecutableElement Executable(Set<Modifier> modifiers, 
-                                        CharSequence simpleName,
-                                        List<? extends TypeMirror> argtypes,
-                                        TypeMirror restype,
-                                        List<? extends TypeMirror> thrownTypes,
-                                        TypeElement owner) {
-        Symbol.ClassSymbol tsym = (Symbol.ClassSymbol)owner;
-        ListBuffer<Type> args = new ListBuffer<Type>();
-        for (TypeMirror t : argtypes)
-            args.append((Type)t);
-        ListBuffer<Type> thrown = new ListBuffer<Type>();
-        for (TypeMirror t : thrownTypes)
-            thrown.append((Type)t);
-        Type.MethodType tp = new Type.MethodType(args.toList(), 
-                                                (Type)restype,
-                                                thrown.toList(),
-                                                tsym);
-        long flags = TreeFactory.modifiersToFlags(modifiers);
-        Name name = names.fromString(simpleName);
-        Symbol.MethodSymbol sym = new Symbol.MethodSymbol(flags, name, tp, tsym);
-        tsym.members_field.enter(sym);
-        return sym;
-    }
-    
-    private VariableElement Variable(Set<Modifier> modifiers, 
-                                    CharSequence simpleName,
-                                    TypeMirror type,
-                                    Element owner) {
-        ListBuffer<Type> args = new ListBuffer<Type>();
-        long flags = TreeFactory.modifiersToFlags(modifiers);
-        Name name = names.fromString(simpleName);
-        Symbol.VarSymbol sym = 
-            new Symbol.VarSymbol(flags, name, (Type)type, (Symbol)owner);
-        if (owner instanceof Symbol.ClassSymbol)
-            ((Symbol.ClassSymbol)owner).members_field.enter(sym);
-        return sym;
     }
     
     private ClassTree Class(long modifiers, 

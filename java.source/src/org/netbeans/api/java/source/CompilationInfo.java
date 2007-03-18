@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -58,7 +58,7 @@ public class CompilationInfo {
     
     private ElementUtilities elementUtilities;
     private TreeUtilities treeUtilities;
-    private CommentUtilities commentUtilities;
+    private TypeUtilities typeUtilities;
     
     CompilationInfo () {
         this.javaSource = null;
@@ -196,11 +196,17 @@ public class CompilationInfo {
         return elementUtilities;
     }
     
-    public synchronized CommentUtilities getCommentUtilities() {
-        if (commentUtilities == null) {
-            commentUtilities = new CommentUtilities(this);
+    /**Get the TypeUtilities.
+     * 
+     * @return an instance of TypeUtilities
+     * 
+     * @since 0.6
+     */
+    public synchronized TypeUtilities getTypeUtilities() {
+        if (typeUtilities == null) {
+            typeUtilities = new TypeUtilities(this);
         }
-        return commentUtilities;
+        return typeUtilities;
     }
     
     // Package private methods -------------------------------------------------
