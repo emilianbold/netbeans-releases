@@ -114,7 +114,7 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     }
         
     public void testToolsJavaDBMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", " org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase");
+        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", "org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase");
     }
     
     public void testToolsI18nMenu(){
@@ -134,7 +134,7 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     }
     
     public void testHelpTutorials(){
-        testSubMenu("org.netbeans.core.Bundle", "Menu/Help", " org.netbeans.modules.url.Bundle", "Menu/Help/Tutorials");
+        testSubMenu("org.netbeans.core.Bundle", "Menu/Help", "org.netbeans.modules.url.Bundle", "Menu/Help/Tutorials");
     }
 
     public void testHelpJavadoc(){
