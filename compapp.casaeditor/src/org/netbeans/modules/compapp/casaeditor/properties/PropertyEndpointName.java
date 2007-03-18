@@ -49,9 +49,9 @@ public class PropertyEndpointName extends BaseCasaProperty {
     throws IllegalAccessException, InvocationTargetException {
         CasaComponent component = getComponent();
         if        (component instanceof CasaEndpointRef) {
-            return getModel().getEndpointName((CasaEndpointRef) component);
+            return ((CasaEndpointRef) component).getEndpointName();
         } else if (component instanceof CasaPort) {
-            return getModel().getEndpointName((CasaPort) component);
+            return ((CasaPort) component).getEndpointName();
         }
         return null;
     }

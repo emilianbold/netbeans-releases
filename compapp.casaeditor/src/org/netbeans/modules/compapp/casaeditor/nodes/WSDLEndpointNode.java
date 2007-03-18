@@ -63,7 +63,7 @@ public class WSDLEndpointNode extends CasaNode {
     public String getName() {
         CasaPort endpoint = (CasaPort) getData();
         if (endpoint != null) {
-            return ((CasaWrapperModel)endpoint.getModel()).getEndpointName(endpoint);
+            return endpoint.getEndpointName();
             //return endpoint.getQName().getLocalPart(); // TMP FIXME
         }
         return super.getName();
@@ -77,7 +77,7 @@ public class WSDLEndpointNode extends CasaNode {
             String decoration = null;
             if (endpoint != null) {
                 decoration = NbBundle.getMessage(WSDLEndpointNode.class, "LBL_NameAttr",    // NOI18N
-                        ((CasaWrapperModel)endpoint.getModel()).getEndpointName(endpoint));
+                        endpoint.getEndpointName());
             }
             if (decoration == null) {
                 return htmlDisplayName;

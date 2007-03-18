@@ -78,7 +78,7 @@ public class ProvidesNode extends CasaNode {
         CasaProvides provides = (CasaProvides) getData();
         if (provides != null) {
             try {
-                return provides.getEndpoint().get().getEndpointName();
+                return provides.getEndpointName();
             } catch (Throwable t) {
                 // getName MUST recover gracefully.
                 return getBadName();

@@ -224,10 +224,10 @@ public class CasaModelGraphUtilities {
         CasaNodeWidget widget = (CasaNodeWidget) scene.addNode(su);
         updateNodeProperties(model, su, widget);
         for (CasaProvides provides : su.getProvides()) {
-            createPin(su, provides, model.getEndpointName(provides), scene, false);
+            createPin(su, provides, provides.getEndpointName(), scene, false);
         }
         for (CasaConsumes consumes : su.getConsumes()) {
-            createPin(su, consumes, model.getEndpointName(consumes), scene, false);
+            createPin(su, consumes, consumes.getEndpointName(), scene, false);
         }
 
         // set the location
@@ -250,7 +250,7 @@ public class CasaModelGraphUtilities {
             CasaPort casaPort, 
             CasaNodeWidget widget)
     {
-        String name = getShortNameInUpperCase(model.getEndpointName(casaPort));
+        String name = getShortNameInUpperCase(casaPort.getEndpointName());
 
         String bcCompName = model.getBindingComponentName(casaPort);
         if (bcCompName == null || bcCompName.length() == 0) {
@@ -281,7 +281,7 @@ public class CasaModelGraphUtilities {
             CasaNodeWidget widget)
     {
         String name = su.getUnitName();
-        String type = model.getServiceUnitComponentName(su);
+        String type = su.getComponentName();
         type = JbiDefaultComponentInfo.getDisplayName(type).toUpperCase();
         widget.setNodeProperties(name, type);
     }
@@ -448,16 +448,12 @@ public class CasaModelGraphUtilities {
         String toolTip = "";
         if(pin instanceof CasaEndpointRef) {
             CasaEndpointRef endPointRef = (CasaEndpointRef) pin;
-            toolTip = model.getServiceQName(endPointRef).toString();
+            toolTip = endPointRef.getServiceQName().toString();
 
             if(toolTip != null && toolTip.trim().length() > 0) {
                 toolTip += Constants.PERIOD;
             }
-            if(node instanceof CasaServiceEngineServiceUnit) {
-                toolTip += model.getEndpointName(endPointRef);
-            } else {
-                toolTip += endPointRef.getEndpoint().get().getEndpointName();
-            }
+            toolTip += endPointRef.getEndpointName();
         }
         return toolTip;
     }

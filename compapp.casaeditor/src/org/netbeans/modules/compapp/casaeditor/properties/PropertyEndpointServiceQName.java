@@ -44,12 +44,12 @@ public class PropertyEndpointServiceQName extends PropertyQName {
 
     
     protected QName getCurrentQName() {
-         return getModel().getServiceQName((CasaEndpointRef) getComponent());
+         return ((CasaEndpointRef) getComponent()).getServiceQName();
     }
     
     public Object getValue()
     throws IllegalAccessException, InvocationTargetException {
-        return getModel().getServiceQName((CasaEndpointRef) getComponent());
+        return ((CasaEndpointRef) getComponent()).getServiceQName();
     }
 
     public void setValue(Object object)

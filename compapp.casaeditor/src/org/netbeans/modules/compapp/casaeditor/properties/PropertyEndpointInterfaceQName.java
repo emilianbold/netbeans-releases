@@ -44,12 +44,12 @@ public class PropertyEndpointInterfaceQName extends PropertyQName {
 
     
     protected QName getCurrentQName() { 
-        return getModel().getInterfaceQName((CasaEndpointRef) getComponent());
+        return ((CasaEndpointRef) getComponent()).getInterfaceQName();
     }
     
     public Object getValue()
     throws IllegalAccessException, InvocationTargetException {
-        return getModel().getInterfaceQName((CasaEndpointRef) getComponent());
+        return ((CasaEndpointRef) getComponent()).getInterfaceQName();
     }
 
     public void setValue(Object object)

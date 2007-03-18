@@ -46,7 +46,7 @@ public class PropertyEndpointEndpointName extends BaseCasaProperty {
     
     public Object getValue()
     throws IllegalAccessException, InvocationTargetException {
-        return getModel().getEndpointName((CasaEndpointRef) getComponent());
+        return ((CasaEndpointRef) getComponent()).getEndpointName();
     }
 
     public void setValue(Object object)

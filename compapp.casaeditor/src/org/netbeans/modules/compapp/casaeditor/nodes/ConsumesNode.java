@@ -78,7 +78,7 @@ public class ConsumesNode extends CasaNode {
         CasaConsumes consumes = (CasaConsumes) getData();
         if (consumes != null) {
             try {
-                return consumes.getEndpoint().get().getEndpointName();
+                return consumes.getEndpointName();
             } catch (Throwable t) {
                 // getName MUST recover gracefully.
                 return getBadName();

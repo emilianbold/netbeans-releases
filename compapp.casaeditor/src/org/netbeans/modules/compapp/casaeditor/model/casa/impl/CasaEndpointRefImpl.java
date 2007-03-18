@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
@@ -45,50 +46,21 @@ public abstract class CasaEndpointRefImpl extends CasaComponentImpl
         setAttribute(ENDPOINT_PROPERTY, CasaAttribute.ENDPOINT, endpoint);
     }
       
-//    public String getEndpoint() { // REFACTOR ME: use NamedReference from XAM model
-//        return getAttribute(CasaAttribute.ENDPOINT);        
-//    }
-//    
-//    private CasaEndpoint getCasaEndpoint() { // TMP
-//        String endpoint = getEndpoint();
-//        
-//        CasaWrapperModel model = (CasaWrapperModel) getModel();
-//        for (CasaEndpoint casaEndpoint : model.getEndpoints().getEndpoints()) {
-//            if (casaEndpoint.getName().equals(endpoint)) {
-//                return casaEndpoint;
-//            }
-//        }
-//    }
-//    
-//    public String getName() {
-//        return getCasaEndpoint().getName(); 
-//    }
-//    
-//    public void setName(String name) {
-//        setAttribute(NAME_PROPERTY, CasaAttribute.NAME, name);
-//    }
-//    
-//    public String getEndpointName() {
-//        return getCasaEndpoint().getEndpointName(); 
-//    }
-//
-//    public void setEndpointName(String endpointName) {
-//        getCasaEndpoint().setEndpointName(endpointName);          
-//    }
-//    
-//    public QName getInterfaceQName() {
-//        return getCasaEndpoint().getInterfaceQName(); 
-//    }
-//    
-//    public void setInterfaceQName(QName qname) { // REFACTOR ME
-//        getCasaEndpoint().setInterfaceQName(qname);    
-//    }
-//
-//    public QName getServiceQName() {
-//        return getCasaEndpoint().getServiceQName(); 
-//    }
-//        
-//    public void setServiceQName(QName qname) {
-//        getCasaEndpoint().setServiceQName(qname);
-//    }
+    // Convenience methods
+    
+    public String getEndpointName() {
+        return getCasaEndpoint().getEndpointName();
+    }
+    
+    public QName getInterfaceQName() {
+        return getCasaEndpoint().getInterfaceQName();
+    }
+    
+    public QName getServiceQName() {
+        return getCasaEndpoint().getServiceQName();
+    }
+    
+    private CasaEndpoint getCasaEndpoint() {
+        return getEndpoint().get();
+    }
 }

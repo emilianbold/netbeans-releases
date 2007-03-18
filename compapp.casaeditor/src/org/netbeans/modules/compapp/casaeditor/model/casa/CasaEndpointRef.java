@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
@@ -30,4 +31,9 @@ public interface CasaEndpointRef extends CasaComponent {
         
     NamedComponentReference<CasaEndpoint> getEndpoint();
     void setEndpoint(NamedComponentReference<CasaEndpoint> endpoint);
+    
+    // Convenience methods
+    String getEndpointName();
+    QName getInterfaceQName();
+    QName getServiceQName();
 }

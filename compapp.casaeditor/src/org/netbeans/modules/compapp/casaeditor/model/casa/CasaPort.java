@@ -57,4 +57,7 @@ public interface CasaPort extends CasaComponent {
     
     CasaProvides getProvides();
     void setProvides(CasaProvides casaProvides);
+    
+    // Convenience methods
+    String getEndpointName();
 }
