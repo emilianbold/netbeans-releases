@@ -60,7 +60,7 @@ public class HttpMonitorWindow extends org.netbeans.performance.test.utilities.P
     
     public ComponentOperator open() {
         // invoke Window / HTTP Monitor from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
         return new TopComponentOperator(TITLE);
     }
     

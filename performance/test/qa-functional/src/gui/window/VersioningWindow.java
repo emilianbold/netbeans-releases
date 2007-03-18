@@ -59,7 +59,7 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     
     public ComponentOperator open() {
         // invoke Versioning from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
         return new VersioningOperator();
     }
     

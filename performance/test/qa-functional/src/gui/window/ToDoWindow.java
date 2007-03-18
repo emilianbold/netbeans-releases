@@ -59,7 +59,7 @@ public class ToDoWindow extends org.netbeans.performance.test.utilities.Performa
     
     public ComponentOperator open() {
         // invoke Window / To Do from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
         return new TopComponentOperator(TITLE);
     }
     

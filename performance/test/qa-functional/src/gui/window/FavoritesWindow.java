@@ -13,13 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
 import org.netbeans.jellytools.FavoritesOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.FavoritesAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -48,7 +49,7 @@ public class FavoritesWindow extends org.netbeans.performance.test.utilities.Per
     
     public ComponentOperator open() {
         // invoke Favorites from the main menu
-        new FavoritesAction().performMenu();
+        new ActionNoBlock(new FavoritesAction().getMenuPath(), null).performMenu();
         return new FavoritesOperator();
     }
 
