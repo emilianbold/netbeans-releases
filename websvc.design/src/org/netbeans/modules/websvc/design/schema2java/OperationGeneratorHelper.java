@@ -22,7 +22,19 @@ package org.netbeans.modules.websvc.design.schema2java;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
@@ -31,7 +43,13 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
+import org.netbeans.modules.websvc.design.util.SourceUtils;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -41,9 +59,15 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
 
@@ -53,18 +77,20 @@ import org.openide.filesystems.FileObject;
  */
 public class OperationGeneratorHelper {
     File wsdlFile;
+    FileObject implementationClass;
     
     /** Creates a new instance of MethodGeneratorHelper */
     public OperationGeneratorHelper(File wsdlFile) {
         this.wsdlFile=wsdlFile;
     }
     
-    /** This method adds new operation to wsdl file 
+    /** This method adds new operation to wsdl file
      */
-    public void addWsOperation(WSDLModel wsdlModel, 
-            String operationName, 
-            GlobalElement parameterType, 
-            GlobalElement returnType, 
+    public void addWsOperation(WSDLModel wsdlModel,
+            String portTypeName,
+            String operationName,
+            GlobalElement parameterType,
+            GlobalElement returnType,
             GlobalElement faultType) {
         
         WSDLComponentFactory factory = wsdlModel.getFactory();
@@ -78,12 +104,14 @@ public class OperationGeneratorHelper {
         wsdlModel.startTransaction();
         //for(int i = 0; i < inputParms.length; i++){
         //assume one parameter for now
-
+        //TODO: for now, assume user selects schema element
+        //TODO: need to support selection of types (complex, simple, primitive)
+        
         Message inputMessage=null;
         if (parameterType!=null) {
             inputMessage = factory.createMessage();
             inputMessage.setName(messageName);
-
+            
             Part part = factory.createPart();
             part.setName(partName);
             NamedComponentReference<GlobalElement> ref = part.createSchemaReference(parameterType, GlobalElement.class);
@@ -92,9 +120,6 @@ public class OperationGeneratorHelper {
             definitions.addMessage(inputMessage);
         }
         
-        //messageName = messageNameBase + "_" + ++counter;
-        //partName = partNameBase + "_" + counter;
-        //}
         
         Message outputMessage=null;
         if (returnType!=null) {
@@ -107,8 +132,8 @@ public class OperationGeneratorHelper {
             outputMessage.addPart(outpart);
             definitions.addMessage(outputMessage);
         }
-
         
+        //TODO: Need to determine if it is request-response or one-way
         RequestResponseOperation operation = factory.createRequestResponseOperation();
         operation.setName(operationName);
         
@@ -128,9 +153,83 @@ public class OperationGeneratorHelper {
             operation.setOutput(output);
         }
         
-        //this is bogus: need to get the correct porttype
-        PortType portType = definitions.getPortTypes().iterator().next();
-        portType.addOperation(operation);
+        Collection<PortType> portTypes = definitions.getPortTypes();
+        PortType portType = null;
+        for(PortType p : portTypes){
+            if(p.getName().equals(portTypeName)){
+                portType = p;
+                break;
+            }
+        }
+        if(portType != null){
+            portType.addOperation(operation);
+        } else{
+            //TODO: what will we do if portType is not found?
+        }
+        
+        //Add binding section for operation, if there is a binding section
+        Collection<Binding> bindings = definitions.getBindings();
+        Binding binding = null;
+        if(portType != null && bindings.size() > 0){
+            //find binding for portType
+            for(Binding b : bindings){
+                NamedComponentReference<PortType> portTypeRef = b.getType();
+                if(portTypeRef.references(portType)){
+                    binding = b;
+                    break;
+                }
+            }
+            if(binding != null){
+                //determine if it is soap binding
+                List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
+                if(soapBindings.size() > 0){  //it is SOAP binding
+                    //get the SOAP Binding
+                    SOAPBinding soapBinding = soapBindings.iterator().next();
+                    //is style specified at the soap binding level?
+                    Style style = soapBinding.getStyle();
+                    BindingOperation bOp = factory.createBindingOperation();
+                    bOp.setName(operation.getName());
+                    
+                    SOAPOperation soapOperation = factory.createSOAPOperation();
+                    soapOperation.setSoapAction("");  //TODO: have user set this in UI?
+                    //if style is not specified at the SOAP binding level, specify it
+                    //at the SOAP operation level.
+                    //TODO: For now, assume it is document style. We need to determine
+                    //style based on the message.
+                    if(style == null){
+                        soapOperation.setStyle(Style.DOCUMENT);
+                    }
+                    bOp.addExtensibilityElement(soapOperation);
+                    //create input binding to SOAP
+                    if(inputMessage != null){
+                        //For now, assume all parms are to be put in the body
+                        //TODO: based on the WebParm annotation, we need to determine
+                        //if a certain part is for a header
+                        BindingInput bindingInput = factory.createBindingInput();
+                        SOAPBody soapBody = factory.createSOAPBody();
+                        //TODO: for multiple messages, need to specify parts
+                        //Always has to be literal
+                        soapBody.setUse(SOAPMessageBase.Use.LITERAL);
+                        bindingInput.addExtensibilityElement(soapBody);
+                        bOp.setBindingInput(bindingInput);
+                    }
+                    //create output binding to SOAP
+                    if(outputMessage != null){
+                        //TODO: same comments as in InputMessage
+                        BindingOutput bindingOutput = factory.createBindingOutput();
+                        SOAPBody soapBody = factory.createSOAPBody();
+                        soapBody.setUse(SOAPMessageBase.Use.LITERAL);
+                        bindingOutput.addExtensibilityElement(soapBody);
+                        bOp.setBindingOutput(bindingOutput);
+                    }
+                    binding.addBindingOperation(bOp);
+                    //TODO: Need to handle faults!!!
+                }else{
+                    return; //Not SOAP binding, we cannot do anything
+                }
+                
+            }
+        }
         wsdlModel.endTransaction();
     }
     /** call wsimport to generate java artifacts
@@ -154,21 +253,87 @@ public class OperationGeneratorHelper {
         }
     }
     
+    public String getPortTypeName(FileObject implBean){
+        JavaSource javaSource = JavaSource.forFileObject(implBean);
+        final String[] endpointInterface = new String[1];
+        if (javaSource!=null) {
+            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                    if(srcUtils != null && wsElement != null){
+                        List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
+                        for (AnnotationMirror anMirror : annotations) {
+                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                            for(ExecutableElement ex:expressions.keySet()) {
+                                if (ex.getSimpleName().contentEquals("endpointInterface")) {
+                                    String interfaceName =  (String)expressions.get(ex).getValue();
+                                    if(interfaceName != null){
+                                        endpointInterface[0] = URLEncoder.encode(interfaceName,"UTF-8"); //NOI18N
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                        } // end if
+                    } // end for
+                }
+                public void cancel() {}
+            };
+            try {
+                javaSource.runUserActionTask(task, true);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            String seiName = endpointInterface[0];
+            if(seiName != null){
+                int index = seiName.lastIndexOf(".");
+                if(index != -1){
+                    seiName = seiName.substring(index + 1);
+                }
+                System.out.println("seiName: " + seiName);
+                return seiName;
+            }
+        }
+        return null;
+    }
+    
+    public FileObject getWsdlFolderForService(FileObject fo, String name) throws IOException {
+        JAXWSSupport jaxwssupport = JAXWSSupport.getJAXWSSupport(fo);
+        FileObject globalWsdlFolder = jaxwssupport.getWsdlFolder(true);
+        FileObject oldWsdlFolder = globalWsdlFolder.getFileObject(name);
+        if (oldWsdlFolder!=null) {
+            FileLock lock = oldWsdlFolder.lock();
+            try {
+                oldWsdlFolder.delete(lock);
+            } finally {
+                lock.releaseLock();
+            }
+        }
+        return globalWsdlFolder.createFolder(name);
+    }
+    
+    public FileObject getLocalWsdlFolderForService(FileObject fo, String serviceName){
+        JAXWSSupport jaxwssupport = JAXWSSupport.getJAXWSSupport(fo);
+        return jaxwssupport.getLocalWsdlFolderForService(serviceName, false);
+    }
+    
     private void invokeWsImport(Project project, org.netbeans.modules.websvc.api.jaxws.project.config.Service service) {
-         if (project!=null) {
+        if (project!=null) {
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
             try {
                 String name = service.getName();
                 ExecutorTask wsimportTask =
-                    ActionUtils.runTarget(buildImplFo,
+                        ActionUtils.runTarget(buildImplFo,
                         new String[]{"wsimport-service-clean-"+name,"wsimport-service-"+name},null); //NOI18N
                 wsimportTask.waitFinished();
             } catch (IOException ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
             } catch (IllegalArgumentException ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            } 
+            }
         }
     }
 }
-    
+

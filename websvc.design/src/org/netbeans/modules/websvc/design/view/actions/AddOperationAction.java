@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.IOException;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core._RetoucheUtil;
@@ -95,9 +96,21 @@ public class AddOperationAction extends AbstractAction {
                         GlobalElement parameterType = panel.getParameterType();
                         GlobalElement returnType = panel.getReturnType();
                         GlobalElement faultType = panel.getFaultType();
-                        
-                        generatorHelper.addWsOperation(wsdlModel, operationName, parameterType, returnType, faultType);
+                        generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
+                                operationName, parameterType, returnType, faultType);
                         generatorHelper.generateJavaArtifacts(service, implementationClass, operationName);
+                        
+                        //TODO:this will go away when the recopying of the changed wsdls and schemas
+                        //from the src/conf to the WEB-INF/wsdl directory is done in the build script.
+                        try{
+                            FileObject wsdlFolder = generatorHelper.
+                                    getWsdlFolderForService(implementationClass, service.getName());
+                            FileObject localWsdlFolder = generatorHelper.
+                                    getLocalWsdlFolderForService(implementationClass, service.getName());
+                            WSUtils.copyFiles(localWsdlFolder, wsdlFolder);
+                        }catch(IOException e){
+                            ErrorManager.getDefault().notify(e);
+                        }
                     }
                 }
             });
