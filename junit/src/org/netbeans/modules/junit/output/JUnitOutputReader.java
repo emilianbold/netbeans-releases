@@ -51,9 +51,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 import static java.util.Calendar.MILLISECOND;
+import static org.netbeans.modules.junit.output.RegexpUtils.END_OF_TEST_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.NESTED_EXCEPTION_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.OUTPUT_DELIMITER_PREFIX;
+import static org.netbeans.modules.junit.output.RegexpUtils.START_OF_TEST_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTCASE_PREFIX;
+import static org.netbeans.modules.junit.output.RegexpUtils.TEST_LISTENER_PREFIX;
+import static org.netbeans.modules.junit.output.RegexpUtils.TESTS_COUNT_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTSUITE_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTSUITE_STATS_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.XML_DECL_PREFIX;
@@ -71,7 +75,9 @@ final class JUnitOutputReader {
     
     private static final int MAX_REPORT_FILE_SIZE = 1 << 19;    //512 kBytes
     /** number of progress bar workunits */
-    private static final int PROGRESS_WORKUNITS = 1000;
+    private static final int PROGRESS_WORKUNITS = 1 << 15;   //sqrt(Integer.MAX)
+    /** */
+    private static final int INITIAL_PROGRESS = PROGRESS_WORKUNITS / 100;
     /** */
     private static final int UPDATE_DELAY = 300;    //milliseconds
     
@@ -79,6 +85,18 @@ final class JUnitOutputReader {
     private static final String XML_FORMATTER_CLASS_NAME
             = "org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter";//NOI18N
     
+    /**
+     * number of tests to be executed in the current test suite
+     * 
+     * @see  #executedOneSuiteTests
+     */
+    private int expectedOneSuiteTests = 0;
+    /**
+     * number of tests executed within the current suite so far
+     * 
+     * @see  #expectedOneSuiteTests
+     */
+    private int executedOneSuiteTests = 0;
     /**
      * number of test suites that are going to be executed
      *
@@ -121,6 +139,8 @@ final class JUnitOutputReader {
     private final File antScript;
     /** */
     private final long timeOfSessionStart;
+    
+    private final Logger progressLogger;
     
     /** */
     private RegexpUtils regexp = RegexpUtils.getInstance();
@@ -169,6 +189,15 @@ final class JUnitOutputReader {
         this.sessionType = sessionType;
         this.antScript = session.getOriginatingScript();
         this.timeOfSessionStart = timeOfSessionStart;
+        
+        this.progressLogger = Logger.getLogger(
+                "org.netbeans.modules.junit.outputreader.progress");    //NOI18N
+    }
+    
+    /**
+     */
+    private void log(String msg) {
+        progressLogger.log(Level.FINER, msg);
     }
     
     /**
@@ -177,6 +206,42 @@ final class JUnitOutputReader {
         final String msg = event.getMessage();
         if (msg == null) {
             return;
+        }
+        
+        log("VERBOSE: " + msg);
+        if (msg.startsWith(TEST_LISTENER_PREFIX)) {
+            String testListenerMsg = msg.substring(TEST_LISTENER_PREFIX.length());
+            if (testListenerMsg.startsWith(TESTS_COUNT_PREFIX)) {
+                String countStr = testListenerMsg.substring(TESTS_COUNT_PREFIX.length());
+                try {
+                    int count = parseNonNegativeInteger(countStr);
+                    if (count > 0) {
+                        expectedOneSuiteTests = count;
+                        log("number of tests: " + expectedOneSuiteTests);
+                    }
+                } catch (NumberFormatException ex) {
+                    assert expectedOneSuiteTests == 0;
+                }
+                return;
+            }
+            if (testListenerMsg.startsWith(START_OF_TEST_PREFIX)) {
+                String restOfMsg = testListenerMsg.substring(START_OF_TEST_PREFIX.length());
+                if ((restOfMsg.length() == 0)
+                        || !Character.isLetterOrDigit(restOfMsg.charAt(0))) {
+                    log("test started");
+                }
+                return;
+            }
+            if (testListenerMsg.startsWith(END_OF_TEST_PREFIX)) {
+                String restOfMsg = testListenerMsg.substring(END_OF_TEST_PREFIX.length());
+                if ((restOfMsg.length() == 0)
+                        || !Character.isLetterOrDigit(restOfMsg.charAt(0))) {
+                    log("test finished");
+                    executedOneSuiteTests++;
+                    updateProgress();
+                }
+                return;
+            }
         }
         
         /* Look for classpaths: */
@@ -207,6 +272,7 @@ final class JUnitOutputReader {
         if (msg == null) {
             return;
         }
+        log("NORMAL:  " + msg);
         
         //<editor-fold defaultstate="collapsed" desc="if (waitingForIssueStatus) ...">
         if (waitingForIssueStatus) {
@@ -585,7 +651,7 @@ final class JUnitOutputReader {
             if (willBeDeterminateProgress) {
                 this.expectedSuitesCount = expectedSuitesCount;
                 progressHandle.start(PROGRESS_WORKUNITS);
-                progressHandle.progress(PROGRESS_WORKUNITS / 100);
+                progressHandle.progress(INITIAL_PROGRESS);      // 1 %
             } else {
                 progressHandle.start();
             }
@@ -628,7 +694,13 @@ final class JUnitOutputReader {
     private void updateProgress() {
         assert progressHandle != null;
         
-        progressHandle.progress(getProcessedWorkunits());
+        int progress = getProcessedWorkunits();
+        if (progressLogger.isLoggable(Level.FINER)) {
+            log("------ Progress: "                                     //NOI18N
+                + String.format("%3d%%",
+                                100 * progress / PROGRESS_WORKUNITS));  //NOI18N
+        }
+        progressHandle.progress(progress);
     }
     
     /**
@@ -677,7 +749,15 @@ final class JUnitOutputReader {
      */
     private int getProcessedWorkunits() {
         try {
-        return executedSuitesCount * PROGRESS_WORKUNITS / expectedSuitesCount;
+            log("--- Suites: " + executedSuitesCount + " / " + expectedSuitesCount);
+            log("--- Tests:  " + executedOneSuiteTests + " / " + expectedOneSuiteTests);
+            int units = executedSuitesCount * PROGRESS_WORKUNITS
+                        / expectedSuitesCount;
+            if (expectedOneSuiteTests > 0) {
+                units += (executedOneSuiteTests * PROGRESS_WORKUNITS)
+                         / (expectedSuitesCount * expectedOneSuiteTests);
+            }
+            return units;
         } catch (Exception ex) {
             return 0;
         }
@@ -706,6 +786,8 @@ final class JUnitOutputReader {
         report = createReport(suiteName);
         
         String stepMessage = getProgressStepMessage(suiteName);
+        expectedOneSuiteTests = 0;
+        executedOneSuiteTests = 0;
         if (expectedSuitesCount <= executedSuitesCount) {
             expectedSuitesCount = executedSuitesCount + 1;
         }
@@ -959,6 +1041,33 @@ final class JUnitOutputReader {
 //         * non-negative, now that we only check seconds:
 //         */
 //        return lastModified >= (timeOfSessionStart - sessStartMillis);
+    }
+    
+    /**
+     */
+    private static int parseNonNegativeInteger(String str)
+            throws NumberFormatException {
+        final int len = str.length();
+        if ((len == 0) || (len > 8)) {
+            throw new NumberFormatException();
+        }
+        
+        char c = str.charAt(0);
+        if ((c < '0') || (c > '9')) {
+            throw new NumberFormatException();
+        }
+        int result = c - '0';
+        
+        if (len > 1) {
+            for (char d : str.substring(1).toCharArray()) {
+                if ((d < '0') || (d > '9')) {
+                    throw new NumberFormatException();
+                }
+                result = 10 * result + (d - '0');
+            }
+        }
+        
+        return result;
     }
     
 }

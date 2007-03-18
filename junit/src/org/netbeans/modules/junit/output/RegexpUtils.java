@@ -121,6 +121,16 @@ final class RegexpUtils {
               + ")?"                                                    //NOI18N
                   + XML_SPACE_REGEX + '*' + "\\?>";                     //NOI18N
     
+    /** */
+    static final String TEST_LISTENER_PREFIX
+            = "junit.framework.TestListener: ";                         //NOI18N
+    /** */
+    static final String TESTS_COUNT_PREFIX = "tests to run: ";          //NOI18N
+    /** */
+    static final String START_OF_TEST_PREFIX = "startTest";             //NOI18N
+    /** */
+    static final String END_OF_TEST_PREFIX = "endTest";                 //NOI18N
+    
     /**
      * Regexp matching part of a Java task's invocation debug message
      * that specificies the classpath.
