@@ -130,7 +130,7 @@ public class Language {
     
     public static TokenType createTokenType (
         String              startState,
-        Pattern<TokenType>  pattern,
+        Pattern             pattern,
         String              type,
         String              endState,
         int                 priority,
@@ -561,7 +561,7 @@ public class Language {
     public static final class TokenType {
         
         private String  startState;
-        private Pattern<TokenType> pattern;
+        private Pattern pattern;
         private String  type;
         private String  endState;
         private int     priority;
@@ -569,7 +569,7 @@ public class Language {
         
         private TokenType (
             String      startState,
-            Pattern<TokenType>     pattern,
+            Pattern     pattern,
             String      type,
             String      endState,
             int         priority,
@@ -595,7 +595,7 @@ public class Language {
             return endState;
         }
         
-        public Pattern<TokenType> getPattern () {
+        public Pattern getPattern () {
             return pattern;
         }
         

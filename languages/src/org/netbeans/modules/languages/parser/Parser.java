@@ -37,17 +37,17 @@ public class Parser {
     private Parser () {
     }
     
-    public static Parser create (List rules) {
+    public static Parser create (List<TokenType> rules) {
         Parser p = new Parser ();
-        Iterator it = rules.iterator ();
+        Iterator<TokenType> it = rules.iterator ();
         while (it.hasNext ()) {
-            TokenType r = (TokenType) it.next ();
+            TokenType r = it.next ();
             p.add (r);
         }
         return p;
     }
     
-    private Map<Integer,Pattern<TokenType>> stateToPattern = new HashMap<Integer,Pattern<TokenType>> ();
+    private Map<Integer,Pattern> stateToPattern = new HashMap<Integer,Pattern> ();
     private Map<String,Integer> nameToState = new HashMap<String,Integer> ();
     private Map<Integer,String> stateToName = new HashMap<Integer,String> ();
     private int counter = 1;
@@ -69,7 +69,7 @@ public class Parser {
             nameToState.put (startState, state);
             stateToName.put (state, startState);
         }
-        Pattern<TokenType> pattern = tt.getPattern (); 
+        Pattern pattern = tt.getPattern (); 
         pattern.mark (tt.getPriority (), tt);
         if (stateToPattern.containsKey (state))
             stateToPattern.put (

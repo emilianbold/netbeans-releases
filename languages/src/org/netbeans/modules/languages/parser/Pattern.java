@@ -29,7 +29,7 @@ import java.util.Set;
 import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.modules.languages.parser.StringInput;
 
-public class Pattern <V> {
+public class Pattern {
     
     private static final Character STAR = new Character ((char) 0);
     private static NodeFactory<Integer> nodeFactory = new NodeFactory<Integer> () {
@@ -39,24 +39,24 @@ public class Pattern <V> {
         }
     };
     
-    public static <V> Pattern<V> create () {
-        return new Pattern<V> ();
+    public static Pattern create () {
+        return new Pattern ();
     }
     
-    public static <V> Pattern<V> create (String input) throws ParseException {
+    public static Pattern create (String input) throws ParseException {
         if (input.length () == 0) throw new ParseException ();
         return create (new StringInput (input, ""));
     }
     
-    public static <V> Pattern<V> create (CharInput input) throws ParseException {
-        Pattern<V> p = createIn (input);
-        DG<Integer,Character,Integer,V> ndg = DGUtils.<Integer,Character,Integer,V>reduce (p.dg, nodeFactory);
-        return new Pattern<V> (ndg);
+    public static Pattern create (CharInput input) throws ParseException {
+        Pattern p = createIn (input);
+        DG<Integer,Character,Integer,TokenType> ndg = DGUtils.<Integer,Character,Integer,TokenType>reduce (p.dg, nodeFactory);
+        return new Pattern (ndg);
     }
     
-    private static <V> Pattern<V> createIn (CharInput input) throws ParseException {
-        Pattern<V> pattern = new Pattern<V> ();
-        Pattern<V> last = null;
+    private static Pattern createIn (CharInput input) throws ParseException {
+        Pattern pattern = new Pattern ();
+        Pattern last = null;
         char ch = input.next ();
         while (ch != 0) {
             switch (ch) {
@@ -110,42 +110,42 @@ public class Pattern <V> {
                             switch (input.next ()) {
                                 case '\\':
                                     input.read ();
-                                    last = last.append (new Pattern<V> (
+                                    last = last.append (new Pattern (
                                         new Character ('\\')
                                     ));
                                     sb.append ('\\');
                                     break;
                                 case 'n':
                                     input.read ();
-                                    last = last.append (new Pattern<V> (
+                                    last = last.append (new Pattern (
                                         new Character ('\n')
                                     ));
                                     sb.append ('\n');
                                     break;
                                 case 'r':
                                     input.read ();
-                                    last = last.append (new Pattern<V> (
+                                    last = last.append (new Pattern (
                                         new Character ('\r')
                                     ));
                                     sb.append ('\r');
                                     break;
                                 case 't':
                                     input.read ();
-                                    last = last.append (new Pattern<V> (
+                                    last = last.append (new Pattern (
                                         new Character ('\t')
                                     ));
                                     sb.append ('\t');
                                     break;
                                 case '"':
                                     input.read ();
-                                    last = last.append (new Pattern<V> (
+                                    last = last.append (new Pattern (
                                         new Character ('"')
                                     ));
                                     sb.append ('"');
                                     break;
                                 case '\'':
                                     input.read ();
-                                    last = last.append (new Pattern<V> (
+                                    last = last.append (new Pattern (
                                         new Character ('\'')
                                     ));
                                     sb.append ('\'');
@@ -155,7 +155,7 @@ public class Pattern <V> {
                             }
                         } else {
                             Character charr = new Character (input.read ());
-                            last = last.append (new Pattern<V> (charr));
+                            last = last.append (new Pattern (charr));
                             sb.append (charr.charValue ());
                         }
                         ch = input.next ();
@@ -166,7 +166,7 @@ public class Pattern <V> {
                     input.read ();
                     if (last != null) pattern = pattern.append (last);
                     last = null;
-                    pattern = pattern.merge (Pattern.<V>createIn (input));
+                    pattern = pattern.merge (Pattern.createIn (input));
                     return pattern;
                 case '-':
                     if (last != null) pattern = pattern.append (last);
@@ -180,8 +180,8 @@ public class Pattern <V> {
                     if (ch == '\'' || ch == '"')
                         throw new ParseException (input.toString ());
                     Character edge = new Character (input.next ());
-                    last = new Pattern<V> (true, Collections.<Character>singleton (edge));
-                    last = last.star ().append (new Pattern<V> (edge));
+                    last = new Pattern (true, Collections.<Character>singleton (edge));
+                    last = last.star ().append (new Pattern (edge));
                     input.read ();
                     ch = input.next ();
                     while (ch != '\'' && ch != '"') {
@@ -204,7 +204,7 @@ public class Pattern <V> {
                 case '.':
                     input.read ();
                     if (last != null) pattern = pattern.append (last);
-                    last = new Pattern<V> (Pattern.STAR);
+                    last = new Pattern (Pattern.STAR);
                     break;
                 case '[':
                     input.read ();
@@ -296,7 +296,7 @@ public class Pattern <V> {
                     if (l != 0) 
                         set.add (new Character (l));
                     input.read ();
-                    last = new Pattern<V> (not, set);
+                    last = new Pattern (not, set);
                     break;
                 default:
                     throw new ParseException ("Unexpected char '" + input.next () + ":" + input.toString ());
@@ -379,27 +379,27 @@ public class Pattern <V> {
         } while (from <= to);
     }
     
-    private DG<Integer,Character,Integer,V> dg;// = DG.<Integer,Character,K,V>createDG ();
+    private DG<Integer,Character,Integer,TokenType> dg;// = DG.<Integer,Character,K,TokenType>createDG ();
     
-    private Pattern (DG<Integer,Character,Integer,V> dg) {
+    private Pattern (DG<Integer,Character,Integer,TokenType> dg) {
         this.dg = dg;
     }
     
     private Pattern () {
-        dg = DG.<Integer,Character,Integer,V>createDG (nodeFactory.createNode ());
+        dg = DG.<Integer,Character,Integer,TokenType>createDG (nodeFactory.createNode ());
 //        Integer start = nodeFactory.createNode ();
 //        dg.addNode (start);
 //        dg.setStart (start);
 //        dg.addEnd (start);
     }
 
-    private Pattern (Pattern<V> p) {
-        dg = DGUtils.<Integer,Character,Integer,V>cloneDG (p.dg, false, nodeFactory);
+    private Pattern (Pattern p) {
+        dg = DGUtils.<Integer,Character,Integer,TokenType>cloneDG (p.dg, false, nodeFactory);
     }
     
     private Pattern (Character edge) {
         Integer start = nodeFactory.createNode ();
-        dg = DG.<Integer,Character,Integer,V>createDG (start);
+        dg = DG.<Integer,Character,Integer,TokenType>createDG (start);
         Integer end = nodeFactory.createNode ();
         dg.addNode (end);
         dg.addEdge (start, end, edge);
@@ -408,7 +408,7 @@ public class Pattern <V> {
 
     private Pattern (boolean not, Set<Character> edges) {
         Integer start = nodeFactory.createNode ();
-        dg = DG.<Integer,Character,Integer,V>createDG (start);
+        dg = DG.<Integer,Character,Integer,TokenType>createDG (start);
         Integer end = nodeFactory.createNode ();
         dg.addNode (end);
         dg.setStart (start);
@@ -427,39 +427,39 @@ public class Pattern <V> {
             dg.addEnd (end);
     }
     
-    public Pattern<V> clonePattern () {
-        return new Pattern<V> (this);
+    public Pattern clonePattern () {
+        return new Pattern (this);
     }
 
-    public Pattern<V> star () {
-        DG<Integer,Character,Integer,V> ndg = DGUtils.<Integer,Character,Integer,V>plus (dg, STAR, nodeFactory);
-        ndg = DGUtils.<Integer,Character,Integer,V>merge (DG.<Integer,Character,Integer,V>createDG (nodeFactory.createNode ()), ndg, STAR, nodeFactory);
-        Pattern<V> p = new Pattern<V> (ndg);
+    public Pattern star () {
+        DG<Integer,Character,Integer,TokenType> ndg = DGUtils.<Integer,Character,Integer,TokenType>plus (dg, STAR, nodeFactory);
+        ndg = DGUtils.<Integer,Character,Integer,TokenType>merge (DG.<Integer,Character,Integer,TokenType>createDG (nodeFactory.createNode ()), ndg, STAR, nodeFactory);
+        Pattern p = new Pattern (ndg);
         return p;
     }
 
-    public Pattern<V> plus () {
-        DG<Integer,Character,Integer,V> ndg = DGUtils.<Integer,Character,Integer,V>plus (dg, STAR, nodeFactory);
-        Pattern<V> p = new Pattern<V> (ndg);
+    public Pattern plus () {
+        DG<Integer,Character,Integer,TokenType> ndg = DGUtils.<Integer,Character,Integer,TokenType>plus (dg, STAR, nodeFactory);
+        Pattern p = new Pattern (ndg);
         return p;
     }
 
-    public Pattern<V> question () {
-        DG<Integer,Character,Integer,V> ndg = DGUtils.<Integer,Character,Integer,V>cloneDG (dg, true, nodeFactory);
+    public Pattern question () {
+        DG<Integer,Character,Integer,TokenType> ndg = DGUtils.<Integer,Character,Integer,TokenType>cloneDG (dg, true, nodeFactory);
         ndg.addEnd (ndg.getStartNode ());
-        Pattern<V> p = new Pattern<V> (ndg);
+        Pattern p = new Pattern (ndg);
         return p;
     }
 
-    public Pattern<V> merge (Pattern<V> parser) {
-        DG<Integer,Character,Integer,V> ndg = DGUtils.<Integer,Character,Integer,V>merge (dg, parser.dg, STAR, nodeFactory);
-        Pattern<V> p = new Pattern<V> (ndg);
+    public Pattern merge (Pattern parser) {
+        DG<Integer,Character,Integer,TokenType> ndg = DGUtils.<Integer,Character,Integer,TokenType>merge (dg, parser.dg, STAR, nodeFactory);
+        Pattern p = new Pattern (ndg);
         return p;
     }
 
-    public Pattern<V> append (Pattern<V> parser) {
-        DG<Integer,Character,Integer,V> ndg = DGUtils.<Integer,Character,Integer,V>append (dg, parser.dg, STAR, nodeFactory);
-        Pattern<V> p = new Pattern<V> (ndg);
+    public Pattern append (Pattern parser) {
+        DG<Integer,Character,Integer,TokenType> ndg = DGUtils.<Integer,Character,Integer,TokenType>append (dg, parser.dg, STAR, nodeFactory);
+        Pattern p = new Pattern (ndg);
         return p;
     }
 
@@ -505,7 +505,7 @@ public class Pattern <V> {
 //        return dg.getProperty (state, key);
 //    }
     
-//    DG<Integer,Character,K,V> getDG () {
+//    DG<Integer,Character,K,TokenType> getDG () {
 //        return dg;
 //    }
     
@@ -572,7 +572,7 @@ public class Pattern <V> {
         return best;
     }
     
-    void mark (int priority, V r) {
+    void mark (int priority, TokenType r) {
         Iterator<Integer> it = dg.getEnds ().iterator ();
         while (it.hasNext ()) {
             Integer s = it.next ();
