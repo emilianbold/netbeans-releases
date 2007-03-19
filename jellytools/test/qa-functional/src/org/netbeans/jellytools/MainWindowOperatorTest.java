@@ -25,12 +25,10 @@ import java.util.ArrayList;
 import junit.textui.TestRunner;
 import org.netbeans.jemmy.ComponentChooser;
 
-import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JFrameOperator;
 
 import org.netbeans.junit.NbTestSuite;
 import org.openide.awt.StatusDisplayer;
@@ -87,101 +85,6 @@ public class MainWindowOperatorTest extends JellyTestCase {
     public void testMenuBar() {
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.menuBar();
-    }
-    
-    /** Test of isMDI method. Tries to find second JFrame to decide whether IDE
-     * is in joined mode. If not found then only main window exists. */
-    public void testIsMDI() {
-        final boolean isMDI = JFrameOperator.findJFrame(ComponentSearcher.getTrueChooser("JFrame"), 1) == null;
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                assertEquals("Wrong value from isMDI().", MainWindowOperator.getDefault().isMDI(), isMDI);
-            }
-        });
-    }
-    
-    /** Test of isMDI method. Tries to find second JFrame to decide whether IDE
-     * is in joined mode. If not found then only main window exists. */
-    public void testIsCompactMode() {
-        boolean isCompact = JFrameOperator.findJFrame(ComponentSearcher.getTrueChooser("JFrame"), 1) == null;
-        assertEquals("Wrong value from isCompactMode().", mainWindowOper.isCompactMode(), isCompact);
-    }
-
-    /** Test of setMDI method. 
-     * @deprecated setMDI() method replaced by setCompactMode() in recent builds
-     */
-    public void testSetMDI() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                MainWindowOperator mainWindowOper = MainWindowOperator.getDefault();
-                boolean wasMDI = mainWindowOper.isMDI();
-                // switch to SDI, if MDI is current
-                if(mainWindowOper.isMDI()) {
-                    mainWindowOper.setSDI();
-                }
-                mainWindowOper.setMDI();
-                boolean isMDI = mainWindowOper.isMDI();
-                // if at the beggining of the test was IDE in SDI, switch back
-                if(!wasMDI) {
-                    mainWindowOper.setSDI();
-                }
-                assertTrue("Not switched to MDI", isMDI);
-            }
-        });
-    }
-
-    /** Test of setMDI method. */
-    public void testSetCompactMode() {
-        boolean wasCompact = mainWindowOper.isCompactMode();
-        // switch to Separate, if Compact is current
-        if(mainWindowOper.isCompactMode()) {
-            mainWindowOper.setSeparateMode();
-        }
-        mainWindowOper.setCompactMode();
-        boolean isCompact = mainWindowOper.isCompactMode();
-        // if at the beggining of the test was IDE in Separate, switch back
-        if(!wasCompact) {
-            mainWindowOper.setSeparateMode();
-        }
-        assertTrue("Not switched to Compact Window Mode", isCompact);
-    }
-    
-    /** Test of setSDI method. 
-     * @deprecated setSDI() method replaced by setSeparateMode() in recent builds
-     */
-    public void testSetSDI() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                boolean wasMDI = mainWindowOper.isMDI();
-                // switch to MDI, if SDI is current
-                if(!mainWindowOper.isMDI()) {
-                    mainWindowOper.setMDI();
-                }
-                mainWindowOper.setSDI();
-                boolean isMDI = mainWindowOper.isMDI();
-                // if at the beggining of the test was IDE in MDI, switch back
-                if(wasMDI) {
-                    mainWindowOper.setMDI();
-                }
-                assertTrue("Not switched to SDI", !isMDI);
-            }
-        });
-    }
-
-    /** Test of setSeparateMode method. */
-    public void testSetSeparateMode() {
-        boolean wasCompact = mainWindowOper.isCompactMode();
-        // switch to Compact, if Separate is current
-        if(!mainWindowOper.isCompactMode()) {
-            mainWindowOper.setCompactMode();
-        }
-        mainWindowOper.setSeparateMode();
-        boolean isCompact = mainWindowOper.isCompactMode();
-        // if at the beggining of the test was IDE in Compact, switch back
-        if(wasCompact) {
-            mainWindowOper.setCompactMode();
-        }
-        assertTrue("Not switched to Separate Window Mode", !isCompact);
     }
     
     /** Test of getStatusText method. */
