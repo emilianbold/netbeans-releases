@@ -37,6 +37,7 @@ import org.netbeans.modules.bpel.core.helper.impl.BusinessProcessHelperImpl;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
 import org.netbeans.modules.bpel.core.util.BadgedIconCache;
 import org.netbeans.modules.bpel.core.validation.BPELValidationController;
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.TransformableSupport;
@@ -61,7 +62,7 @@ import org.xml.sax.InputSource;
 /**
  * @author ads
  */
-public class BPELDataObject extends MultiDataObject implements Lookup.Provider {
+public class BPELDataObject extends MultiDataObject {
     
     private static final long serialVersionUID = 1L;
     
@@ -146,18 +147,57 @@ public class BPELDataObject extends MultiDataObject implements Lookup.Provider {
             Lookup lookup;
             List<Lookup> list = new LinkedList<Lookup>();
 
-            list.add(Lookups.fixed( new Object[]{this ,
+            list.add(Lookups.fixed( new Object[]{
+                    super.getLookup(), 
+                    this ,
                     // getEditorSupport() is needed for retrieving Editor Support as PrintProvider.
                     // This lookup will be put into Design Nodes, so they will have the same lookup. 
                     getEditorSupport(),
                     // Model is needed by all design. Design is used lookup for accessing to model.
-                    getEditorSupport().getBpelModel(),
+////                    getEditorSupport().getBpelModel(),
                     // Helper is also needed by design. It used in property editors.
                     new BusinessProcessHelperImpl(this),
                     // Add Validation Controller.
-                    new BPELValidationController(getEditorSupport().getBpelModel())
+////                    new BPELValidationController(getEditorSupport().getBpelModel())
                     }));
 
+            // add lazy initialization
+            InstanceContent.Convertor<Class, Object> conv =
+                    new InstanceContent.Convertor<Class, Object>() {
+                private AtomicReference<BPELValidationController> valControllerRef = 
+                        new AtomicReference<BPELValidationController>();
+                
+                public Object convert(Class obj) {
+                    if (obj == BpelModel.class) {
+                        return getEditorSupport().getBpelModel();
+                    }
+                    
+                    if (obj == BPELValidationController.class) {
+                        valControllerRef.compareAndSet(null, 
+                                new BPELValidationController(getEditorSupport().getBpelModel()));
+                        return valControllerRef.get();
+                    }
+                    return null;
+                }
+
+                public Class type(Class obj) {
+                    return obj;
+                }
+
+                public String id(Class obj) {
+                    return obj.toString();
+                }
+
+                public String displayName(Class obj) {
+                    return obj.getName();
+                }
+            };
+            
+            list.add(Lookups.fixed(
+                    new Class[] {BpelModel.class, BPELValidationController.class}
+                    , conv));
+            //
+                    
             //
             // WARNING
             // CANNOT add Lookups.singleton(getNodeDelegate()) or will stack
