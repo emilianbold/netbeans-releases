@@ -121,8 +121,8 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
         headerWidget.addChild(0,headerLabelWidget);
 
         inputWidget = new LabelWidget(getScene(),"parameters");
-        outputWidget = new LabelWidget(getScene(),"return type : "+operation.getReturnTypeName());
-        faultWidget = new LabelWidget(getScene(),"faults");
+        outputWidget = new OutputWidget(getScene(),operation);
+        faultWidget = new FaultsWidget(getScene(),operation);
         descriptionWidget = new LabelWidget(getScene(),"description");
         contentWidget.addChild(inputWidget);
         contentWidget.addChild(outputWidget);
