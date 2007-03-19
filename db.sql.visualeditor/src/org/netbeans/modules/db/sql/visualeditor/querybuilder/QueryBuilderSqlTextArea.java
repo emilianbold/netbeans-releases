@@ -41,7 +41,7 @@ import javax.swing.text.EditorKit;
 
 import org.openide.util.NbBundle;
 
-// import org.openide.text.CloneableEditorSupport;
+import org.openide.text.CloneableEditorSupport;
 // import org.netbeans.modules.db.sql.editor.SQLEditorKit;
 
 // public class QueryBuilderSqlTextArea extends JTextPane
@@ -146,10 +146,11 @@ public class QueryBuilderSqlTextArea extends JEditorPane
         super();
         _queryBuilder = queryBuilder;
         _sqlTextPopup = createSqlTextPopup();
-	// Set MIME type, which will cause SQLEditorKit to be used
-	setContentType("text/x-sql");
-	// Alternative method -- not necessary
-	// setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql"));
+	// Get Netbeans-registered EditorKit for SQL content
+	setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql"));
+        // Works for now, but not long-term - see 52657
+        // setContentType("text/x-sql");  
+
         
         if ( SYNTAX_HIGHLIGHT ) {
             addKeyListener(this);
