@@ -292,7 +292,7 @@ public class PageFlowController {
     }
     
     private void createFacesConfigPageNodes(Collection<String> pagesInConfig) {
-        Collection<String> pages = new HashSet(pagesInConfig);
+        Collection<String> pages = new HashSet<String>(pagesInConfig);
         
         for( String pageName : pages ) {
             FileObject file = getFileObject(pageName);

@@ -102,7 +102,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
                 lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
             }
             
-            lookupWRef = new WeakReference(lookup);
+            lookupWRef = new WeakReference<Lookup>(lookup);
         }
         
         return lookup;

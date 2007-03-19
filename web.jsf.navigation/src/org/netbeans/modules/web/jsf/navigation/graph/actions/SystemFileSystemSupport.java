@@ -60,7 +60,7 @@ public final class SystemFileSystemSupport {
     };
 
     /** Maps <code>DataFolder</code> to <code>ActionsProvider</code>. */
-    private static final Map dataFolder2actionsProvider = new WeakHashMap();
+    private static final Map<DataFolder,ActionsProvider> dataFolder2actionsProvider = new WeakHashMap<DataFolder,ActionsProvider>();
 
 
     private SystemFileSystemSupport() {
@@ -130,7 +130,7 @@ public final class SystemFileSystemSupport {
         /** Creates the actions. */
         protected Object createInstance(InstanceCookie[] cookies)
         throws IOException, ClassNotFoundException {
-            List actions = new ArrayList();
+            List<Action> actions = new ArrayList<Action>();
             for (int i = 0; i < cookies.length; i++) {
                 Class clazz = cookies[i].instanceClass();
                 if (JSeparator.class.isAssignableFrom(clazz)) {
@@ -151,7 +151,7 @@ public final class SystemFileSystemSupport {
                 }
                 
                 if (object instanceof Action) {
-                    actions.add(object);
+                    actions.add((Action)object);
                     continue;
                 } else {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,

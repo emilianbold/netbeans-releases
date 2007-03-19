@@ -72,7 +72,7 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     
     
     /** Weak reference to the lookup. */
-    private WeakReference lookupWRef = new WeakReference(null);
+    private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
     
     /** Adds <code>NavigatorLookupHint</code> into the original lookup,
      * for the navigator. */
@@ -84,7 +84,7 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
             //                ic.add(firstObject);
             ic.add(graphScene);
             lookup = new AbstractLookup(ic);
-            lookupWRef = new WeakReference(lookup);
+            lookupWRef = new WeakReference<Lookup>(lookup);
         }
         
         return lookup;

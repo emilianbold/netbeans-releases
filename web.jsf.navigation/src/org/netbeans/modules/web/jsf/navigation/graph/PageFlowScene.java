@@ -117,14 +117,11 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         Chain actions = getActions();
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
-        actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
-        
+        actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));        
         actions.addAction(popupGraphAction);
         actions.addAction(dragNdropAction);
-        //        getActions ().addAction (deleteAction);
         
-        
-        GridGraphLayout gglayout = new GridGraphLayout<Node, NavigationCaseNode> ();
+        GridGraphLayout<Node, NavigationCaseNode> gglayout = new GridGraphLayout<Node, NavigationCaseNode> ();
         gglayout.setChecker(true);
         
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, gglayout);
@@ -144,12 +141,8 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         return tc;
     }
     
-    //    protected PageFlowController getPageFlowController() {
-    //        return tc.getPageFlowController();
-    //    }
-    //
-    private static final Image POINT_SHAPE_IMAGE = Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"); // NOI18N
-    
+
+    private static final Image POINT_SHAPE_IMAGE = Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"); // NOI18N    
     private static final int PAGE_WIDGET_INDEX = 0;
     private static final int DEFAULT_PIN_WIDGET_INDEX = 1;
     
@@ -182,23 +175,15 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         lblWidget.getActions().addAction(
                 ActionFactory.createInplaceEditorAction( new PageNodeTextFieldInplaceEditor(nodeWidget) ));
         
-        
-        //        Widget widget = new Widget(this);
-        //        ImageWidget imageWidget = new ImageWidget(this, POINT_SHAPE_IMAGE);
-        //        widget.setLayout(new NodePinLayout(0) );
-        //
-        //        widget.addChild(nodeWidget);
-        //        widget.addChild(imageWidget);
+
         
         mainLayer.addChild(nodeWidget);
         
-        
-        //        nodeWidget.getActions().addAction(deleteAction);
-        //        nodeWidget.getHeader  ().getActions().addAction(createObjectHoverAction());
+        nodeWidget.getHeader  ().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
-        //        nodeWidget.getActions ().addAction (popupGraphAction);
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
+        //        nodeWidget.getActions ().addAction (popupGraphAction);
         //        imageWidget.getActions().addAction(connectAction);
         
         return nodeWidget;
