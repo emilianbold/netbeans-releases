@@ -78,12 +78,15 @@ public class PageFlowController {
     PropertyChangeListener pcl;
     
     private void registerListeners() {
-        pcl = new FacesModelPropertyChangeListener(view);
-        configModel.addPropertyChangeListener(pcl);
+        if( pcl == null ) {
+            pcl = new FacesModelPropertyChangeListener(view);
+            configModel.addPropertyChangeListener(pcl);
+        }
     }
     
     public void unregisterListeners() {
-        configModel.removePropertyChangeListener(pcl);
+        if ( pcl != null )
+            configModel.removePropertyChangeListener(pcl);
     }
     
     /**
@@ -331,6 +334,10 @@ public class PageFlowController {
         }
         
         public void propertyChange(PropertyChangeEvent ev) {
+            if( ev.getOldValue() == State.NOT_WELL_FORMED ){
+                view.removeUserMalFormedFacesConfig();
+            }
+            
             if ( ev.getPropertyName() == "navigation-case"){
                 NavigationCase myNavCase = (NavigationCase)ev.getNewValue();
                 //                try {

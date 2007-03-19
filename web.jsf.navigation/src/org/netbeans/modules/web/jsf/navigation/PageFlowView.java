@@ -143,8 +143,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     
     
     public void warnUserMalFormedFacesConfig() {
-        clearGraph();
+//        clearGraph();
         scene.createMalFormedWidget();
+    }
+    
+    public void removeUserMalFormedFacesConfig() {        
+        scene.removeMalFormedWidget();
     }
     
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
