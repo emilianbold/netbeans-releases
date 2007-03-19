@@ -29,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.script.ScriptContext;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
@@ -55,7 +56,13 @@ final class RsrcLoader extends Configuration implements TemplateLoader {
     } 
 
     private FileObject getFolder() {
-        return fo != null ? fo.getParent() : Repository.getDefault().getDefaultFileSystem().getRoot();
+        try {
+            return fo.getFileSystem().getRoot();
+        }
+        catch (FileStateInvalidException ex) {
+            // ok
+        }
+        return Repository.getDefault().getDefaultFileSystem().getRoot();
     }
 
     public Object findTemplateSource(String string) throws IOException {

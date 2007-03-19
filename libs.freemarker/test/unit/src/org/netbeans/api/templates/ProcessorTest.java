@@ -28,7 +28,9 @@ import java.util.Map;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import junit.framework.Test;
 import junit.framework.TestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -42,6 +44,11 @@ public class ProcessorTest extends TestCase {
     
     public ProcessorTest(String testName) {
         super(testName);
+    }
+    
+    public static Test suite() throws Exception {
+        return new NbTestSuite(ProcessorTest.class);
+        //return new ProcessorTest("testCanImportSubpkgOfParentPkg");
     }
 
     protected void setUp() throws Exception {
@@ -86,6 +93,52 @@ public class ProcessorTest extends TestCase {
         apply(template, w);
         
         String exp = "<html><h1>0 0 255</h1></html>";
+        assertEquals(exp, w.toString());
+    }
+    public void testCanImportSubpkgOfParentPkg() throws Exception {
+        FileObject imp = FileUtil.createData(root, "Templates/Licenses/gpl.txt");
+        {
+            OutputStream os = imp.getOutputStream();
+            String txt = "GPL";
+            os.write(txt.getBytes());
+            os.close();
+        }
+        
+        FileObject template = FileUtil.createData(root, "Templates/Others/some.txt");
+        {
+            OutputStream os = template.getOutputStream();
+            String txt = "<html><h1><#include \"*/Licenses/gpl.txt\"></h1></html>";
+            os.write(txt.getBytes());
+            os.close();
+        }        
+        StringWriter w = new StringWriter();
+        
+        apply(template, w);
+        
+        String exp = "<html><h1>GPL</h1></html>";
+        assertEquals(exp, w.toString());
+    }
+    public void testCanImportRelative() throws Exception {
+        FileObject imp = FileUtil.createData(root, "Templates/Licenses/gpl.txt");
+        {
+            OutputStream os = imp.getOutputStream();
+            String txt = "GPL";
+            os.write(txt.getBytes());
+            os.close();
+        }
+        
+        FileObject template = FileUtil.createData(root, "Templates/Others/some.txt");
+        {
+            OutputStream os = template.getOutputStream();
+            String txt = "<html><h1><#include \"../Licenses/gpl.txt\"></h1></html>";
+            os.write(txt.getBytes());
+            os.close();
+        }        
+        StringWriter w = new StringWriter();
+        
+        apply(template, w);
+        
+        String exp = "<html><h1>GPL</h1></html>";
         assertEquals(exp, w.toString());
     }
     

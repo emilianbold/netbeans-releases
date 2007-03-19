@@ -101,7 +101,14 @@ class FreemarkerEngine extends AbstractScriptEngine {
     // internals only below this point  
     private static String getFilename(ScriptContext ctx) {
         Object fileName = ctx.getAttribute(ScriptEngine.FILENAME);
-        return fileName != null? fileName.toString() : "<unknown>";
+        if (fileName != null) {
+            return fileName.toString();
+        }
+        Object tfo = ctx.getAttribute(FREEMARKER_TEMPLATE);
+        if (tfo instanceof FileObject) {
+            return ((FileObject)tfo).getPath();
+        }
+        return "unknown";
     }
 
     private static boolean isStringOutputMode(ScriptContext ctx) {
