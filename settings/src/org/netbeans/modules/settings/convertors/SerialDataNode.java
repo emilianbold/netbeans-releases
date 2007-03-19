@@ -13,18 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.settings.convertors;
 
-import java.awt.Graphics;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Transparency;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
@@ -53,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.openide.actions.ToolsAction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileStateInvalidException;
@@ -284,9 +278,6 @@ public final class SerialDataNode extends DataNode {
 
             if (bi != null) {
                 beanInfoIcon = bi.getIcon (type);
-                if (beanInfoIcon != null) {
-                    beanInfoIcon = toBufferedImage(beanInfoIcon, true);
-                }
             }
             // Also specially handle SystemAction's.
             if (SystemAction.class.isAssignableFrom (clazz)) {
@@ -528,32 +519,6 @@ public final class SerialDataNode extends DataNode {
             }
         }
     }        
-    
-    /** The method creates a BufferedImage which represents the same Image as the
-     * parameter but consumes less memory.
-     */
-    private static final Image toBufferedImage(Image img, boolean load) {
-        // load the image
-        if (load) {
-            new ImageIcon(img);
-        }
-        
-        BufferedImage rep = createBufferedImage();
-        Graphics g = rep.createGraphics();
-        g.drawImage(img, 0, 0, null);
-        g.dispose();
-        img.flush();
-        return rep;
-    }
-
-    /** Creates BufferedImage 16x16 and Transparency.BITMASK */
-    private static final BufferedImage createBufferedImage() {
-        ColorModel model = GraphicsEnvironment.getLocalGraphicsEnvironment().
-                                          getDefaultScreenDevice().getDefaultConfiguration().getColorModel(Transparency.BITMASK);
-        BufferedImage buffImage = new BufferedImage(model,
-                model.createCompatibleWritableRaster(16, 16), model.isAlphaPremultiplied(), null);
-        return buffImage;
-    }
     
     /** Indicate whether the node may be renamed.
      * @return tests {@link DataObject#isRenameAllowed}
