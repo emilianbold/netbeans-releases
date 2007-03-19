@@ -21,7 +21,7 @@ package org.netbeans.modules.visualweb.project.jsf.framework;
 
 // <RAVE>
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
-import org.openide.util.Utilities;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 // </RAVE>
 
 import javax.swing.event.DocumentListener;
@@ -211,7 +211,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     boolean valid(WizardDescriptor wizardDescriptor) {
         // <RAVE> Checking default Bean Package
         String beanPkg = beanPackageTextField.getText();
-        if (wizardDescriptor != null && !isValidPkg(beanPkg)) {
+        if (wizardDescriptor != null && !JsfProjectUtils.isValidJavaPackageName(beanPkg)) {
             String errMsg = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_InvalidPackage");
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
             return false;
@@ -237,18 +237,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     // <RAVE> Default Bean Package
     protected boolean isBeanPackageModified() {
          return beanPackageModified;
-    }
-
-    boolean isValidPkg(String pkgName) {
-        if (pkgName == null)
-            return false;
-        String[] pkg = pkgName.split("\\.");
-        for (int i = 0; i < pkg.length; i++) {
-            if (!Utilities.isJavaIdentifier(pkg[i])) {
-                return false;
-            }
-        }
-        return true;
     }
     // </RAVE>
 

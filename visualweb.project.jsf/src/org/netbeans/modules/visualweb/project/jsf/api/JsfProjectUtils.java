@@ -1346,6 +1346,24 @@ public class JsfProjectUtils {
         return true;
     }
     
+    /** Reports whether the given name is a valid Java package name.
+     * @param name The Java package name to be checked
+     * @return true iff the name parameter is a valid Java package name
+     */
+    public static boolean isValidJavaPackageName(String pkgName) {
+        if (pkgName == null)
+            return false;
+
+        String[] pkg = pkgName.split("\\.");
+        for (int i = 0; i < pkg.length; i++) {
+            if (!Utilities.isJavaIdentifier(pkg[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Derive an identifier suitable for a java package name or context path
      * @param sourceName Original name from which to derive the name

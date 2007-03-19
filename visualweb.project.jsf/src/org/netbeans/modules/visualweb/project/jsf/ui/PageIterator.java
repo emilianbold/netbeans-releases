@@ -90,7 +90,8 @@ public class PageIterator implements TemplateWizard.Iterator {
         Project project = Templates.getProject( wizard );
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
 
-        WizardDescriptor.Panel javaPanel = new SimpleTargetChooserPanel(project, sourceGroups, null, false, fileType);
+        WizardDescriptor.Panel packagePanel = new PagebeanPackagePanel(project);
+        WizardDescriptor.Panel javaPanel = new SimpleTargetChooserPanel(project, sourceGroups, packagePanel, false, fileType);
         panels = new WizardDescriptor.Panel[] { javaPanel };
 
         // Creating steps.
@@ -195,7 +196,11 @@ public class PageIterator implements TemplateWizard.Iterator {
                 if (framework.getName().equals(name)) {
                     FileObject projDir = project.getProjectDirectory();
                     WebModule webModule = WebModule.getWebModule(projDir);
-                    String beanPackage = JsfProjectUtils.deriveSafeName(projDir.getName());
+
+                    String beanPackage = (String) wizard.getProperty(JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
+                    if (beanPackage == null) {
+                        beanPackage = JsfProjectUtils.deriveSafeName(projDir.getName());
+                    }
                     JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, beanPackage);
                     if ("jsp".equals(template.getExt())) {
                         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, targetName+".jsp");
