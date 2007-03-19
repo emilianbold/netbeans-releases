@@ -40,11 +40,11 @@ public class NBSTest extends TestCase {
             List r = l.getAnalyser ().getRules ();
 //            AnalyserAnalyser.printRules (r, null);
 //            AnalyserAnalyser.printUndefinedNTs (r, null);
-            Map f = Petra.first2 (r);
+            Map first = Petra.first2 (r);
 //            AnalyserAnalyser.printDepth (f, null);
 //            AnalyserAnalyser.printConflicts (f, null);
 //            AnalyserAnalyser.printF (f, null);
-            assertFalse (AnalyserAnalyser.hasConflicts (f));
+            assertFalse (AnalyserAnalyser.hasConflicts (first));
         } catch (ParseException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {

@@ -16,6 +16,7 @@ import java.util.List;
 import junit.framework.*;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.modules.languages.parser.Parser.Cookie;
 
 /**
@@ -116,7 +117,7 @@ public class ParserTest extends TestCase {
     
     
     private static Parser create (String[] l) throws ParseException {
-        List rules = new ArrayList ();
+        List<TokenType> rules = new ArrayList<TokenType> ();
         int i, k = l.length;
         for (i = 0; i < k; i+=4) {
             String tokenName = (String) l [i + 1];
@@ -126,7 +127,7 @@ public class ParserTest extends TestCase {
                 Pattern.create (pattern),
                 tokenName,
                 (String) l [i + 3],
-                i / 4,
+                (int) i / 4,
                 null
             ));
         }
