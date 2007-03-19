@@ -19,21 +19,18 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
-import java.awt.Rectangle;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.ComponentWidget;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
  * @author Ajit Bhate
  */
-public class ButtonWidget extends Widget {
-    
-    private JButton button;
+public class ButtonWidget extends ComponentWidget {
     
     /**
      *
@@ -82,8 +79,7 @@ public class ButtonWidget extends Widget {
      * @param button
      */
     public ButtonWidget(Scene scene, JButton button) {
-        super(scene);
-        this.button = button;
+        super(scene,button);
         getButton().setContentAreaFilled(false);
         getButton().setBorder(BorderFactory.createRaisedBevelBorder());
         setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory
@@ -96,18 +92,9 @@ public class ButtonWidget extends Widget {
      * @return
      */
     public JButton getButton() {
-        return button;
+        return (JButton)super.getComponent();
     }
     
-    protected Rectangle calculateClientArea () {
-        return new Rectangle (getButton().getPreferredSize ());
-    }
-
-    protected void paintWidget () {
-        getButton().setSize (getBounds ().getSize ());
-        getButton().paint (getGraphics ());
-    }
-
     /**
      *
      * @param action
