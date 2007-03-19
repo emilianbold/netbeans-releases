@@ -283,6 +283,7 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
             }
             return ecb.getEncoding ();
         } catch (IOException ioe) {
+            ErrorManager.getDefault().annotate(ioe, fo.toString());
             ErrorManager.getDefault().notify (ioe);
         }
         return null;
