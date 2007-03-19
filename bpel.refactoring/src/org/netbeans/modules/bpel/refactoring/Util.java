@@ -129,8 +129,4 @@ public final class Util {
     }
     return component.getClass().getName();
   }
-
-  public static Node getDisplayNode(Component component) {
-    return FactoryAccess.getRefactoringNodeFactory().createNode(component);
-  }
 }

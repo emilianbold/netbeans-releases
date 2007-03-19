@@ -32,7 +32,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
-import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
@@ -43,7 +42,7 @@ import org.openide.nodes.Node;
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
-class Finder extends Plugin  {
+class Finder extends Plugin {
     
     public Finder(WhereUsedQuery refactoring) {
         this.query = refactoring;
@@ -84,7 +83,6 @@ class Finder extends Plugin  {
      * @return Problems found or null (if no problems were identified)
      */
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-    //    System.out.println("BPELWhereusedRefactoring:: prepare called");
         Referenceable ref = query.getRefactoringSource().lookup(Referenceable.class);
         if (ref == null)
             return null;
@@ -120,8 +118,4 @@ class Finder extends Plugin  {
         
       return null;
     }
-    
-      
-    
 }
-

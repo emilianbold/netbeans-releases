@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.bpel.model.api.BpelEntity;
 
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
@@ -53,83 +52,28 @@ import org.openide.filesystems.FileObject;
 public class Tree implements TreeElementFactoryImplementation {
 
     public TreeElement getTreeElement(Object o) {
+/*
         TreeElement result = null;
         if (o instanceof RefactoringElement) {
-            BpelEntity comp = ((RefactoringElement)o).getLookup().lookup(BpelEntity.class);
-            if (comp!=null) {
-                FileObject fo = ((RefactoringElement)o).getParentFile();
+System.out.println();
+System.out.println("!!!!!!!: RefactoringElement");
+System.out.println();
+            Component comp = ((RefactoringElement)o).getLookup().lookup(Component.class);
+
+            if (comp != null) {
+                FileObject fo = ((RefactoringElement) o).getParentFile();
                 result = new Element((RefactoringElement) o);
              } 
-        } if( o instanceof BpelEntity){
-            result = new Element((BpelEntity)o);
+        } 
+        else */
+        if (o instanceof Component) {
+//System.out.println();
+//System.out.println("!!!!!!!: Component " + o);
+//System.out.println();
+            return new Element((Component) o);
         }
-        
-        return result;
+        return null;
     }
 
-    public void cleanUp() {
-              
-    }
-
-
-  // --------------------------------------------------
-  private static class Element implements TreeElement { 
-    
-    private RefactoringElement element;
-    private Node node;
-    private BpelEntity component;
-   
-    Element(RefactoringElement element) {
-        this((BpelEntity) element.getLookup().lookup(BpelEntity.class));
-        this.element = element;
-    }
-    
-    Element(BpelEntity comp){
-        this.component = comp;
-        node = Util.getDisplayNode(comp);
-    }
-    
-    public TreeElement getParent(boolean isLogical) {
-         TreeElement result = null;
-         if(component.getParent() != null)
-             return TreeElementFactory.getTreeElement(component.getParent());
-         else {
-             FileObject fo = (FileObject) component.getModel().getModelSource().getLookup().lookup(FileObject.class);
-             return TreeElementFactory.getTreeElement(fo);
-         }
-    }
-                
-         
- 
-    public Icon getIcon() {
-       return new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
-        
-    }
-
-    public String getText(boolean isLogical) {
-    /*
-        if(element!= null){ 
-            String htmlDisplayName = node.getHtmlDisplayName();
-            String usageTreeNodeLabel =
-                            MessageFormat.format(
-                            NbBundle.getMessage(
-                            BPELRefactoringTreeElement.class,
-                            "LBL_Usage_Node"),
-                            new Object[] {
-                        node.getName(),
-                        node.getShortDescription(),  // comp type
-                        htmlDisplayName==null?"":htmlDisplayName
-                    });
-             return usageTreeNodeLabel;
-        } else*/
-            return node.getName();
-    }
-
-    public Object getUserObject() {
-        if(element != null)
-            return element;
-        else 
-            return component;
-    }
-    }
+    public void cleanUp() {}
 }

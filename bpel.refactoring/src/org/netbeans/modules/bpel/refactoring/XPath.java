@@ -27,7 +27,6 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Variable;
 
-import org.netbeans.modules.xml.refactoring.XMLRefactoringElement;
 import org.netbeans.modules.xml.schema.model.Choice;
 import org.netbeans.modules.xml.schema.model.ComplexContent;
 import org.netbeans.modules.xml.schema.model.ComplexContentDefinition;
