@@ -100,27 +100,17 @@ public class PagebeanPackagePanelGUI extends javax.swing.JPanel implements Docum
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
         packageLabel = new javax.swing.JLabel();
         packageTextField = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PagebeanPackagePanelGUI.class).getString("AD_PagebeanPackagePanelGUI"));
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
-        add(jPanel1, gridBagConstraints);
-
         packageLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PagebeanPackagePanelGUI.class, "MNE_PagebeanPackage_Label").charAt(0));
         packageLabel.setLabelFor(packageTextField);
         packageLabel.setText(org.openide.util.NbBundle.getMessage(PagebeanPackagePanelGUI.class, "LBL_PagebeanPackage_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(packageLabel, gridBagConstraints);
 
@@ -136,7 +126,6 @@ public class PagebeanPackagePanelGUI extends javax.swing.JPanel implements Docum
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel packageLabel;
     private javax.swing.JTextField packageTextField;
     // End of variables declaration//GEN-END:variables
