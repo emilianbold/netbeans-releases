@@ -191,7 +191,7 @@ public class Occurrences {
         public PositionBounds getClassDefinitionPosition() {
             PositionBounds position = null;
             try{
-                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
                 int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
                 String text = document.getText(offsets);
@@ -210,7 +210,7 @@ public class Occurrences {
         public PositionBounds getElementDefinitionPosition() {
             PositionBounds position = null;
             try {
-                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
                 int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
                 position =  createPosition(offsets[0], offsets[1]);
@@ -294,7 +294,7 @@ public class Occurrences {
         public PositionBounds getClassDefinitionPosition() {
             PositionBounds position = null;
             try{
-                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
                 int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
                 
@@ -314,7 +314,7 @@ public class Occurrences {
         public PositionBounds getElementDefinitionPosition() {
             PositionBounds position = null;
             try{
-                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
                 int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
                 position =  createPosition(offsets[0], offsets[1]);
@@ -399,7 +399,7 @@ public class Occurrences {
         public PositionBounds getClassDefinitionPosition() {
             PositionBounds position = null;
             try{
-                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
                 int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
                 String text = document.getText(offsets);
@@ -418,7 +418,7 @@ public class Occurrences {
         public PositionBounds getElementDefinitionPosition() {
             PositionBounds position = null;
             try{
-                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
                 int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
                 position =  createPosition(offsets[0], offsets[1]);

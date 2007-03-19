@@ -20,23 +20,20 @@
 package org.netbeans.modules.web.jsf.editor;
 
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.netbeans.modules.web.jsf.JSFConfigDataObject;
-import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Task;
 
 /**
  *
@@ -365,34 +362,22 @@ public class JSFEditorUtilities {
     }
     
     /** This method returns a BaseDocument for the configuration file. If the configuration
-     *  file is not opened, then the document is not created yet and this method returns
-     *  in this case fake document. 
+     *  file is not opened, then the document is not created yet and this method push to load 
+     *  the document to the memory. 
      */
-    public static BaseDocument getBaseDocument(JSFConfigDataObject config){
+    public static BaseDocument getBaseDocument(DataObject dataObject){
         BaseDocument document = null;
-        CloneableEditorSupport editor = JSFEditorUtilities.findCloneableEditorSupport(config);
-        if (editor != null){
-            document = (BaseDocument)editor.getDocument();
-            if (document == null) {
-                JEditorPane ep = null;
-                CreateXMLPane run = new CreateXMLPane();
-                try {
-                    SwingUtilities.invokeAndWait(run);
-                    document = new BaseDocument(run.getPane().getEditorKit().getClass(), false);
-                    String text = "";
-                    text = JSFFrameworkProvider.readResource(config.getPrimaryFile().getInputStream(), "UTF-8");
-                    document.remove(0, document.getLength());
-                    document.insertString(0, text, null);
-                } catch (InterruptedException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                } catch (InvocationTargetException ex) {
-                    ErrorManager.getDefault().notify(ex);   
-                } catch (FileNotFoundException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);    
-                } catch (BadLocationException ex) {
-                    ErrorManager.getDefault().notify(ex);
+        
+        if (dataObject != null){
+            synchronized (dataObject){
+                EditorCookie editor = dataObject.getLookup().lookup(EditorCookie.class);
+                if (editor != null){
+                    document = (BaseDocument)editor.getDocument();
+                    if (document == null){
+                        Task preparing = editor.prepareDocument();
+                        preparing.waitFinished();
+                        document = (BaseDocument)editor.getDocument();
+                    }
                 }
             }
         }
