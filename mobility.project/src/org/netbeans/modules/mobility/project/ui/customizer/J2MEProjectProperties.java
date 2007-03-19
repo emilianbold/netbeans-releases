@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.mobility.project.ui.customizer;
 import java.io.File;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,7 +34,6 @@ import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
@@ -44,8 +42,6 @@ import org.netbeans.spi.mobility.project.PropertyParser;
 import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.mobility.project.ui.CyclicDependencyWarningPanel;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
