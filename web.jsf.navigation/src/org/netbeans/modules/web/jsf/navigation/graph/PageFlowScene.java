@@ -161,11 +161,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         }
     }
     
-    
-    public void unregisterListener() {
-        
-    }
-    
+
     
     
     /**

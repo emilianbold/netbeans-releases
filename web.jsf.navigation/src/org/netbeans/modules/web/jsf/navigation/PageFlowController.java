@@ -57,6 +57,7 @@ public class PageFlowController {
         project = FileOwnerQuery.getOwner(configFile);
         webFiles = getAllProjectRelevantFilesObjects();
         setupGraph();
+        registerListeners();
         
         
 //        configModel.addComponentListener(new ComponentListener(){
