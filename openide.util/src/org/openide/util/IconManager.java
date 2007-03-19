@@ -66,6 +66,10 @@ final class IconManager extends Object {
     
     private static final Logger ERR = Logger.getLogger(IconManager.class.getName());
 
+    static {
+        ImageIO.setUseCache(false);
+    }
+    
     /**
      * Get the class loader from lookup.
      * Since this is done very frequently, it is wasteful to query lookup each time.
