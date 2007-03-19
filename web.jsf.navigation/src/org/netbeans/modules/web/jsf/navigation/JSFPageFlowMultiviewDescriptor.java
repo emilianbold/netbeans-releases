@@ -28,6 +28,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -140,26 +141,19 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         
         public Lookup getLookup() {
             return tc.getLookup();
-            //            try {
-            //
-            //                /* I needed to add the top component's lookup to the multiview elements lookup inorder to have an associated palette.*/
-            //                DataObject dataObject = org.openide.loaders.DataObject.find(context.getFacesConfigFile());
-            //                return new ProxyLookup(new Lookup[] {dataObject.getLookup(), tc.getLookup()});
-            //
-            //            } catch (DataObjectNotFoundException ex) {
-            //                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-            //                        ex.getMessage(),
-            //                        ex);
-            //            }
-            //            return null;
         }
         
         public void componentOpened() {
-            
+            //Add Properties Window
+            WindowManager wm = WindowManager.getDefault();
+            TopComponent properties = wm.findTopComponent("properties"); // NOI18N
+            if (properties != null && !properties.isOpened()) {
+                properties.open();
+            }
         }
         
         public void componentClosed() {
-            
+            tc.unregstierListeners();
         }
         
         public void componentShowing() {

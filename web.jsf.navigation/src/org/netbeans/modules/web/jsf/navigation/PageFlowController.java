@@ -58,21 +58,31 @@ public class PageFlowController {
         webFiles = getAllProjectRelevantFilesObjects();
         setupGraph();
         
-        configModel.addPropertyChangeListener(new FacesModelPropertyChangeListener(view));
         
-        configModel.addComponentListener(new ComponentListener(){
-            public void valueChanged(ComponentEvent evt) {
-                //                System.out.println("ValueChanged: " + evt);
-            }
-            
-            public void childrenAdded(ComponentEvent evt) {
-                //                System.out.println("childrenAdded: " + evt);
-            }
-            
-            public void childrenDeleted(ComponentEvent evt) {
-                //                System.out.println("\n\n\n\n\n\nchildrenDeleted: " + evt);
-            }
-        });
+//        configModel.addComponentListener(new ComponentListener(){
+//            public void valueChanged(ComponentEvent evt) {
+//                //                System.out.println("ValueChanged: " + evt);
+//            }
+//            
+//            public void childrenAdded(ComponentEvent evt) {
+//                //                System.out.println("childrenAdded: " + evt);
+//            }
+//            
+//            public void childrenDeleted(ComponentEvent evt) {
+//                //                System.out.println("\n\n\n\n\n\nchildrenDeleted: " + evt);
+//            }
+//        });
+    }
+    
+    PropertyChangeListener pcl;
+    
+    private void registerListeners() {
+        pcl = new FacesModelPropertyChangeListener(view);
+        configModel.addPropertyChangeListener(pcl);
+    }
+    
+    public void unregisterListeners() {
+        configModel.removePropertyChangeListener(pcl);
     }
     
     /**

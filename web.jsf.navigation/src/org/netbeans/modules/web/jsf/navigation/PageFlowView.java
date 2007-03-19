@@ -58,6 +58,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         pfc = new PageFlowController( context,  this );
         
         //        this(context, new InstanceContent());
+        
+
     }
     
     
@@ -109,6 +111,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
     }
     
+    
+    public void unregstierListeners() {
+        if ( pfc != null ) {
+            pfc.unregisterListeners();
+        }
+    }
     
     /*
      * Initializes the Panel and the graph
@@ -213,15 +221,15 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      */
     protected void createEdge( NavigationCaseNode navCaseNode) {
         
-
+        
         String toPage = navCaseNode.getToViewId();
 //        String caseName = navCaseNode.getFromOuctome();
-        String action = navCaseNode.getFromAction();        
+        String action = navCaseNode.getFromAction();
         String fromPage = navCaseNode.getFromViewId();
         
         ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);
         
-
+        
         
         //        graphScene.setEdgeSource(navCase, label);
         
@@ -351,5 +359,5 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     
-   
+    
 }
