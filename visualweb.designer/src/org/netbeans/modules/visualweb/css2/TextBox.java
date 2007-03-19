@@ -18,22 +18,24 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import org.openide.ErrorManager;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.Position;
+import org.netbeans.modules.visualweb.text.DesignerPaneBase;
+
+import org.openide.ErrorManager;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 
@@ -233,13 +235,17 @@ public final class TextBox extends CssBox {
         assert (caret != null) && caret.hasSelection();
 
         // Determine if the range intersects our line box group
-        Position sourceCaretBegin = caret.getFirstPosition();
+//        Position sourceCaretBegin = caret.getFirstPosition();
+        DomPosition sourceCaretBegin = caret.getFirstPosition();
 
         // XXX I ought to have a cached method on the caret for obtaining the rendered
         // location!
-        Position caretBegin = sourceCaretBegin.getRenderedPosition();
-        Position sourceCaretEnd = caret.getLastPosition();
-        Position caretEnd = sourceCaretEnd.getRenderedPosition();
+//        Position caretBegin = sourceCaretBegin.getRenderedPosition();
+//        Position sourceCaretEnd = caret.getLastPosition();
+//        Position caretEnd = sourceCaretEnd.getRenderedPosition();
+        DomPosition caretBegin = sourceCaretBegin.getRenderedPosition();
+        DomPosition sourceCaretEnd = caret.getLastPosition();
+        DomPosition caretEnd = sourceCaretEnd.getRenderedPosition();
         Node caretBeginNode = caretBegin.getNode();
 
         if (caretBeginNode == null) {
@@ -261,12 +267,14 @@ public final class TextBox extends CssBox {
             renderNode = MarkupService.getRenderedTextForText(renderNode);
         }
 
-        int r1 =
-            Position.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), renderNode,
-                endOffset);
-        int r2 =
-            Position.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), renderNode,
-                beginOffset);
+//        int r1 =
+//            Position.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), renderNode,
+//                endOffset);
+//        int r2 =
+//            Position.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), renderNode,
+//                beginOffset);
+        int r1 = DesignerPaneBase.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), renderNode, endOffset);
+        int r2 = DesignerPaneBase.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), renderNode, beginOffset);
 
         if (!((r1 >= 0) && (r2 <= 0))) {
             // No overlap - just do normal painting
@@ -404,29 +412,36 @@ public final class TextBox extends CssBox {
     }
 
     /** Return the first position in the document of this text node */
-    public Position getFirstPosition() {
+//    public Position getFirstPosition() {
+    public DomPosition getFirstPosition() {
         if (node != null) {
 //            return new Position(node, getDomStartOffset(), Bias.FORWARD);
-            return Position.create(node, getDomStartOffset(), Bias.FORWARD);
+//            return Position.create(node, getDomStartOffset(), Bias.FORWARD);
+            return DesignerPaneBase.createDomPosition(node, getDomStartOffset(), Bias.FORWARD);
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
     /** Return the last position in the document of this text node */
-    public Position getLastPosition() {
+//    public Position getLastPosition() {
+    public DomPosition getLastPosition() {
         if (node != null) {
 //            return new Position(node, getDomEndOffset(), Bias.BACKWARD);
-            return Position.create(node, getDomEndOffset(), Bias.BACKWARD);
+//            return Position.create(node, getDomEndOffset(), Bias.BACKWARD);
+            return DesignerPaneBase.createDomPosition(node, getDomEndOffset(), Bias.BACKWARD);
         } else {
-            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
     /** TODO: rename to computePosition */
-    public Position computePosition(int px) {
+//    public Position computePosition(int px) {
+    public DomPosition computePosition(int px) {
         if (node == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         // XXX what about ' ' ?
@@ -466,7 +481,8 @@ public final class TextBox extends CssBox {
         }
 
 //        return new Position(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
-        return Position.create(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
+//        return Position.create(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
+        return DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
     }
     
     // XXX Moved from DesignerUtils.
@@ -517,7 +533,8 @@ public final class TextBox extends CssBox {
 
 
     /** Return the bounding box of the character at the given position */
-    public Rectangle getBoundingBox(Position pos) {
+//    public Rectangle getBoundingBox(Position pos) {
+    public Rectangle getBoundingBox(DomPosition pos) {
         // This is not always true, because for example if you're pointing to
         // a paragraph in the position, we adjust the visual location search to
         // refer to the first text node child in that paragraph instead
@@ -611,9 +628,11 @@ public final class TextBox extends CssBox {
      * Given the position, return the previous position within this textbox if available
      * or Position.NONE if not.
      */
-    public Position getPrev(Position pos) {
+//    public Position getPrev(Position pos) {
+    public DomPosition getPrev(DomPosition pos) {
         if (node == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         if (pos.getOffset() > getDomStartOffset()) {
@@ -647,9 +666,11 @@ public final class TextBox extends CssBox {
             }
 
 //            return new Position(node, offset, Bias.BACKWARD);
-            return Position.create(node, offset, Bias.BACKWARD);
+//            return Position.create(node, offset, Bias.BACKWARD);
+            return DesignerPaneBase.createDomPosition(node, offset, Bias.BACKWARD);
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
@@ -657,9 +678,11 @@ public final class TextBox extends CssBox {
      * Given the position, return the next position within this textbox if available
      * or Position.NONE if not.
      */
-    public Position getNext(Position pos) {
+//    public Position getNext(Position pos) {
+    public DomPosition getNext(DomPosition pos) {
         if (node == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         if (pos.getOffset() < getDomEndOffset()) {
@@ -693,9 +716,11 @@ public final class TextBox extends CssBox {
             }
 
 //            return new Position(node, offset, Bias.FORWARD);
-            return Position.create(node, offset, Bias.FORWARD);
+//            return Position.create(node, offset, Bias.FORWARD);
+            return DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD);
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 

@@ -16,9 +16,12 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.visualweb.designer;
 
+
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -38,7 +41,6 @@ import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /**
@@ -83,8 +85,11 @@ public abstract class InlineEditor {
     protected WebForm webform;
 //    protected MarkupDesignBean bean;
 //    protected DesignProperty property;
-    protected Position begin;
-    protected Position end;
+//    protected Position begin;
+//    protected Position end;
+    protected DomPosition begin;
+    protected DomPosition end;
+
     
     protected final HtmlDomProvider.InlineEditorSupport inlineEditorSupport;
 //    protected String propertyName;
@@ -539,7 +544,8 @@ public abstract class InlineEditor {
      * Report the start position being edited in the inline editor
      * (or Position.NONE if we're not inline editing.)
      */
-    public Position getBegin() {
+//    public Position getBegin() {
+    public DomPosition getBegin() {
         return begin;
     }
 
@@ -547,7 +553,8 @@ public abstract class InlineEditor {
      * Report the end position being edited in the inline editor
      * (or Position.NONE if we're not inline editing.)
      */
-    public Position getEnd() {
+//    public Position getEnd() {
+    public DomPosition getEnd() {
         return end;
     }
 
@@ -619,7 +626,8 @@ public abstract class InlineEditor {
      */
 
     // TODO
-    public abstract boolean checkPosition(Position pos);
+//    public abstract boolean checkPosition(Position pos);
+    public abstract boolean checkPosition(DomPosition pos);
 
     /** Get the currently edited & selected text in the editor */
     public abstract Transferable copyText(boolean cut);

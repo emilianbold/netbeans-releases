@@ -28,11 +28,11 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.UIManager;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /**
@@ -58,9 +58,11 @@ public class SelectAllAction extends TextAction {
 //            WebForm webform = target.getDocument().getWebForm();
             WebForm webform = target.getWebForm();
             
-            Position pos = target.getCaretPosition();
+//            Position pos = target.getCaretPosition();
+            DomPosition pos = target.getCaretPosition();
 
-            if (pos == Position.NONE) {
+//            if (pos == Position.NONE) {
+            if (pos == DomPosition.NONE) {
                 webform.getSelection().selectAll();
 
                 return;
@@ -75,10 +77,13 @@ public class SelectAllAction extends TextAction {
             }
 
 //            ModelViewMapper mapper = webform.getMapper();
-            Position begPos = ModelViewMapper.getFirstDocumentPosition(webform, false);
-            Position endPos = ModelViewMapper.getLastDocumentPosition(webform, false);
+//            Position begPos = ModelViewMapper.getFirstDocumentPosition(webform, false);
+//            Position endPos = ModelViewMapper.getLastDocumentPosition(webform, false);
+            DomPosition begPos = ModelViewMapper.getFirstDocumentPosition(webform, false);
+            DomPosition endPos = ModelViewMapper.getLastDocumentPosition(webform, false);
 
-            if ((begPos != Position.NONE) && (endPos != Position.NONE)) {
+//            if ((begPos != Position.NONE) && (endPos != Position.NONE)) {
+            if ((begPos != DomPosition.NONE) && (endPos != DomPosition.NONE)) {
                 target.select(begPos, endPos);
                 // Need to select all the components too
                 webform.getSelection().selectAll();

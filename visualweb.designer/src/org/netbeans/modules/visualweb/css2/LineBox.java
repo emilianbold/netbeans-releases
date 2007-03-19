@@ -16,21 +16,25 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.visualweb.css2;
 
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
-import org.netbeans.modules.visualweb.designer.DesignerSettings;
+
 import java.awt.Color;
 import java.awt.Graphics;
 
-import org.openide.ErrorManager;
-import org.w3c.dom.Element;
-
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
+import org.netbeans.modules.visualweb.designer.DesignerSettings;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
-import org.netbeans.modules.visualweb.text.Position;
+import org.netbeans.modules.visualweb.text.DesignerPaneBase;
+
+import org.openide.ErrorManager;
+
+import org.w3c.dom.Element;
 
 
 /**
@@ -656,7 +660,8 @@ public class LineBox extends ContainerBox {
     /** Return a position within this line box that the given x coordinate
      * points to in the document.
      */
-    public Position computePosition(int px) {
+//    public Position computePosition(int px) {
+    public DomPosition computePosition(int px) {
         if (getBoxCount() > 0) {
             // Ensure that we're not pointing to a position further out on
             // the line than the last box
@@ -672,7 +677,8 @@ public class LineBox extends ContainerBox {
             CssBox box = getBox(i);
 
             if (box.getBoxType() == BoxType.LINEBREAK) {
-                Position pos = Position.create(box.getSourceElement(), false);
+//                Position pos = Position.create(box.getSourceElement(), false);
+                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), false);
 
 //                if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
                 if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
@@ -711,7 +717,8 @@ public class LineBox extends ContainerBox {
                     // Text boxes: we support positions (offsets)
                     // within the text
                     TextBox tb = (TextBox)closest;
-                    Position pos = tb.getFirstPosition();
+//                    Position pos = tb.getFirstPosition();
+                    DomPosition pos = tb.getFirstPosition();
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
                     if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
@@ -721,14 +728,16 @@ public class LineBox extends ContainerBox {
                     // Space boxes: we support positions (offsets)
                     // within the text
                     SpaceBox tb = (SpaceBox)closest;
-                    Position pos = tb.getFirstPosition();
+//                    Position pos = tb.getFirstPosition();
+                    DomPosition pos = tb.getFirstPosition();
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
                     if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
                         return pos;
                     }
                 } else {
-                    Position pos = Position.create(closest.getSourceElement(), after);
+//                    Position pos = Position.create(closest.getSourceElement(), after);
+                    DomPosition pos = DesignerPaneBase.createDomPosition(closest.getSourceElement(), after);
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
                     if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
@@ -739,7 +748,8 @@ public class LineBox extends ContainerBox {
                 if (box.getBoxType() == BoxType.TEXT) {
                     // Text boxes: we support positions (offsets)
                     // within the text
-                    Position pos = ((TextBox)box).computePosition(px - left);
+//                    Position pos = ((TextBox)box).computePosition(px - left);
+                    DomPosition pos = ((TextBox)box).computePosition(px - left);
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
                     if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
@@ -748,7 +758,8 @@ public class LineBox extends ContainerBox {
                 } else if (box.getBoxType() == BoxType.SPACE) {
                     // Text boxes: we support positions (offsets)
                     // within the text
-                    Position pos = ((SpaceBox)box).computePosition(px - left);
+//                    Position pos = ((SpaceBox)box).computePosition(px - left);
+                    DomPosition pos = ((SpaceBox)box).computePosition(px - left);
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
                     if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
@@ -776,7 +787,8 @@ public class LineBox extends ContainerBox {
                 // left or right edge to decide which side it goes
                 // on.
                 boolean after = px > ((left + right) / 2);
-                Position pos = Position.create(box.getSourceElement(), after);
+//                Position pos = Position.create(box.getSourceElement(), after);
+                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), after);
 
 //                if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
                 if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
@@ -785,6 +797,7 @@ public class LineBox extends ContainerBox {
             }
         }
 
-        return Position.NONE; // happens when we have no place to put the caret -- all JSF elements
+//        return Position.NONE; // happens when we have no place to put the caret -- all JSF elements
+        return DomPosition.NONE; // happens when we have no place to put the caret -- all JSF elements
     }
 }

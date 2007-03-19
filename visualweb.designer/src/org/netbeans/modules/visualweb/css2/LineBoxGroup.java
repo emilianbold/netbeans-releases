@@ -18,9 +18,6 @@
  */
 package org.netbeans.modules.visualweb.css2;
 
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
-import org.netbeans.modules.visualweb.designer.CssUtilities;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -28,15 +25,20 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openide.ErrorManager;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
+import org.netbeans.modules.visualweb.designer.CssUtilities;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.Position;
+import org.netbeans.modules.visualweb.text.DesignerPaneBase;
+
+import org.openide.ErrorManager;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 
 /**
@@ -1146,13 +1148,18 @@ public class LineBoxGroup extends ContainerBox {
 
         if ((caret != null) && caret.hasSelection()) {
             // Determine if the range intersects our line box group
-            Position sourceCaretBegin = caret.getFirstPosition();
+//            Position sourceCaretBegin = caret.getFirstPosition();
+            DomPosition sourceCaretBegin = caret.getFirstPosition();
 
             // XXX I ought to have a cached method on the caret for obtaining the rendered
             // location!
-            Position caretBegin = sourceCaretBegin.getRenderedPosition();
-            Position sourceCaretEnd = caret.getLastPosition();
-            Position caretEnd = sourceCaretEnd.getRenderedPosition();
+//            Position caretBegin = sourceCaretBegin.getRenderedPosition();
+//            Position sourceCaretEnd = caret.getLastPosition();
+//            Position caretEnd = sourceCaretEnd.getRenderedPosition();
+            DomPosition caretBegin = sourceCaretBegin.getRenderedPosition();
+            DomPosition sourceCaretEnd = caret.getLastPosition();
+            DomPosition caretEnd = sourceCaretEnd.getRenderedPosition();
+
             Node firstNode = findFirstNode();
 
             if (firstNode == null) {
@@ -1172,11 +1179,14 @@ public class LineBoxGroup extends ContainerBox {
                 return;
             }
 
-            int r1 =
-                Position.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), lastNode,
-                    10000);
-            int r2 =
-                Position.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), firstNode, 0);
+//            int r1 =
+//                Position.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), lastNode,
+//                    10000);
+            int r1 = DesignerPaneBase.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), lastNode, 10000);
+            
+//            int r2 =
+//                Position.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), firstNode, 0);
+            int r2 = DesignerPaneBase.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), firstNode, 0);
 
             if ((r1 >= 0) && (r2 <= 0)) {
                 PageBox pageBox = pane.getPageBox();

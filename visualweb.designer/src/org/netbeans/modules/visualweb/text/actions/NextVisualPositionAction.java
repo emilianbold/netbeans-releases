@@ -38,9 +38,9 @@ import java.util.ArrayList;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
-import org.netbeans.modules.visualweb.text.Position;
 import org.w3c.dom.Element;
 
 
@@ -88,7 +88,8 @@ public class NextVisualPositionAction extends TextAction {
                 return;
             }
 
-            Position dot = caret.getDot();
+//            Position dot = caret.getDot();
+            DomPosition dot = caret.getDot();
             Point magicPosition = caret.getMagicCaretPosition();
 
             if ((magicPosition == null) &&
@@ -101,10 +102,12 @@ public class NextVisualPositionAction extends TextAction {
                 magicPosition = new Point(r.x, r.y);
             }
 
-            Position originalDot = dot;
+//            Position originalDot = dot;
+            DomPosition originalDot = dot;
             dot = target.getUI().getNextVisualPositionFrom(target, dot, direction);
 
-            if ((dot == Position.NONE) || !caret.isWithinEditableRegion(dot)) {
+//            if ((dot == Position.NONE) || !caret.isWithinEditableRegion(dot)) {
+            if ((dot == DomPosition.NONE) || !caret.isWithinEditableRegion(dot)) {
                 // Can't move caret that way, but I should still clear the selection
                 // if any
                 caret.setDot(originalDot);
@@ -222,7 +225,8 @@ public class NextVisualPositionAction extends TextAction {
             break;
         }
 
-        gm.move(webform.getPane(), /*beans,*/ rectangles, boxes, Position.NONE, offsetX, offsetY,
-            snapDisabled);
+//        gm.move(webform.getPane(), /*beans,*/ rectangles, boxes, Position.NONE, offsetX, offsetY,
+//            snapDisabled);
+        gm.move(webform.getPane(), /*beans,*/ rectangles, boxes, DomPosition.NONE, offsetX, offsetY, snapDisabled);
     }
 }

@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -30,11 +28,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.css2.ModelViewMapper;
+import org.netbeans.modules.visualweb.css2.CssBox;
+import org.netbeans.modules.visualweb.text.DesignerCaret;
 
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -48,10 +51,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import org.netbeans.modules.visualweb.css2.CssBox;
-import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.Document;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /**
@@ -132,7 +131,8 @@ public class DndHandler /*extends TransferHandler*/ {
     private transient String lastMessage;
     private transient Point dropPoint;
     private transient Dimension dropSize;
-    private transient Position insertPos = Position.NONE;
+//    private transient Position insertPos = Position.NONE;
+    private transient DomPosition insertPos = DomPosition.NONE;
     private transient int dropAction;
 
     public DndHandler(WebForm webform) {
@@ -291,7 +291,8 @@ public class DndHandler /*extends TransferHandler*/ {
         }
         
         // XXX
-        if (dropPoint == null && insertPos == Position.NONE) {
+//        if (dropPoint == null && insertPos == Position.NONE) {
+        if (dropPoint == null && insertPos == DomPosition.NONE) {
             DesignerTopComp designerTC;
             if (comp instanceof DesignerTopComp) {
                 designerTC = (DesignerTopComp)comp;
@@ -360,14 +361,16 @@ public class DndHandler /*extends TransferHandler*/ {
         InteractionManager.stopCnCForWebForm(webform); // Item already in transferable
         
         // Disambiguate drop position
-        if (insertPos != Position.NONE) {
+//        if (insertPos != Position.NONE) {
+        if (insertPos != DomPosition.NONE) {
 //            if (insertPos.isRendered()) {
 //            if (MarkupService.isRenderedNode(insertPos.getNode())) {
             if (insertPos.isRenderedPosition()) {
                 insertPos = insertPos.getSourcePosition();
             }
 
-            if (insertPos != Position.NONE) {
+//            if (insertPos != Position.NONE) {
+            if (insertPos != DomPosition.NONE) {
                 dropPoint = null;
             }
         }
@@ -396,8 +399,11 @@ public class DndHandler /*extends TransferHandler*/ {
   
 //        HtmlDomProvider.Location location = computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
         Point canvasPos = getDropPoint();
-        Position documentPos = insertPos;
-        Position computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
+//        Position documentPos = insertPos;
+//        Position computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
+        DomPosition documentPos = insertPos;
+        DomPosition computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
+        
         Node documentPosNode = computedDocumentPos.getNode();
         int documentPosOffset = computedDocumentPos.getOffset();
 
@@ -418,7 +424,8 @@ public class DndHandler /*extends TransferHandler*/ {
                 droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement , coordinateTranslator, dropAction);
         
         dropSize = null;
-        insertPos = Position.NONE;
+//        insertPos = Position.NONE;
+        insertPos = DomPosition.NONE;
         dropPoint = null;
         clearDropMatch();
     }
@@ -755,8 +762,11 @@ public class DndHandler /*extends TransferHandler*/ {
 //        HtmlDomProvider.Location location =
 //            computeLocationForPositions(DROP_CENTER, null, getDropPoint(), insertPos, true);
         Point canvasPos = getDropPoint();
-        Position documentPos = insertPos;
-        Position computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
+//        Position documentPos = insertPos;
+//        Position computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
+        DomPosition documentPos = insertPos;
+        DomPosition computedDocumentPos = computeDocumentPosition(canvasPos, documentPos);
+        
         Node documentPosNode = computedDocumentPos.getNode();
         int documentPosOffset = computedDocumentPos.getOffset();
 
@@ -1245,7 +1255,8 @@ public class DndHandler /*extends TransferHandler*/ {
         return origDropeeComponentRootElement;
     }
 
-    private Position computeDocumentPosition(Point canvasPos, Position documentPos) {
+//    private Position computeDocumentPosition(Point canvasPos, Position documentPos) {
+    private DomPosition computeDocumentPosition(Point canvasPos, DomPosition documentPos) {
         if (canvasPos == null && documentPos == null && webform.getPane().getCaret() != null) {
             // The user is trying to insert a component without
             // dropping in a particular location; use the caret
@@ -1260,14 +1271,16 @@ public class DndHandler /*extends TransferHandler*/ {
         Node documentPosNode;
         int documentPosOffset;
 //        if (documentPos != null && documentPos != Position.NONE && !Document.isReadOnlyRegion(documentPos)) {
-        if (documentPos != null && documentPos != Position.NONE && !InteractionManager.isReadOnlyRegion(documentPos)) {
+//        if (documentPos != null && documentPos != Position.NONE && !InteractionManager.isReadOnlyRegion(documentPos)) {
+        if (documentPos != null && documentPos != DomPosition.NONE && !InteractionManager.isReadOnlyRegion(documentPos)) {
 //            documentPosNode = documentPos.getNode();
 //            documentPosOffset = documentPos.getOffset();
             return documentPos;
         } else {
 //            documentPosNode = null;
 //            documentPosOffset = -1;
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
     
@@ -3732,7 +3745,8 @@ public class DndHandler /*extends TransferHandler*/ {
 
     /** Set the element to insert this tag immediately preeceding
      *  in the DOM */
-    public void setInsertPosition(Position insertPos) {
+//    public void setInsertPosition(Position insertPos) {
+    public void setInsertPosition(DomPosition insertPos) {
         this.insertPos = insertPos;
     }
 

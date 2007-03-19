@@ -26,10 +26,12 @@ package org.netbeans.modules.visualweb.text.actions;
 
 import java.awt.event.ActionEvent;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.*;
+import org.netbeans.modules.visualweb.text.DesignerCaret;
+import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 
 /*
@@ -54,9 +56,11 @@ public class EndWordAction extends TextAction {
         DesignerPaneBase target = getTextComponent(e);
 
         if (target != null) {
-            Position dot = target.getCaretPosition();
+//            Position dot = target.getCaretPosition();
+            DomPosition dot = target.getCaretPosition();
 
-            if (dot == Position.NONE) {
+//            if (dot == Position.NONE) {
+            if (dot == DomPosition.NONE) {
                 return;
             }
 
@@ -64,9 +68,11 @@ public class EndWordAction extends TextAction {
             WebForm webform = target.getWebForm();
             
 //            ModelViewMapper mapper = webform.getMapper();
-            Position endPos = ModelViewMapper.getWordEnd(webform.getPane().getPageBox(), dot);
+//            Position endPos = ModelViewMapper.getWordEnd(webform.getPane().getPageBox(), dot);
+            DomPosition endPos = ModelViewMapper.getWordEnd(webform.getPane().getPageBox(), dot);
 
-            if (endPos == Position.NONE) {
+//            if (endPos == Position.NONE) {
+            if (endPos == DomPosition.NONE) {
                 return;
             }
 

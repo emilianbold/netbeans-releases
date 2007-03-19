@@ -16,11 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.visualweb.designer;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService.ResizeConstraint;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+
 import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Container;
@@ -42,21 +41,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import javax.swing.JTable;
 import javax.swing.JViewport;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.table.TableModel;
 
-import org.openide.ErrorManager;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.w3c.dom.Element;
-
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService.ResizeConstraint;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.css2.BoxType;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
@@ -64,10 +59,17 @@ import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.Position;
+import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.netbeans.modules.visualweb.text.actions.DefaultKeyTypedAction;
-import javax.swing.SwingConstants;
 
+import org.openide.ErrorManager;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+
+import org.w3c.dom.Element;
 
 /**
  * This class is the central point for handling selections, mouse interactions,
@@ -975,7 +977,9 @@ public class SelectionManager {
                                 pane.setCaret(dc);
 
 //                                Position newPos = new Position(text, 0, Bias.FORWARD);
-                                Position newPos = Position.create(text, 0, Bias.FORWARD);
+//                                Position newPos = Position.create(text, 0, Bias.FORWARD);
+                                DomPosition newPos = DesignerPaneBase.createDomPosition(text, 0, Bias.FORWARD);
+                                
                                 pane.setCaretPosition(newPos);
 
 //                                Document doc = webform.getDocument();
@@ -2161,7 +2165,10 @@ public class SelectionManager {
     }
     
     private void selectTextBetweenSelectedNodes() {
-        Position start = null, end = null;
+//        Position start = null, end = null;
+        DomPosition start = null;
+        DomPosition end = null;
+        
 //        if ((selected != null) && (selected.size() > 0)) {
 ////            Iterator it = selected.iterator();
 //            Position startNode, endNode;
@@ -2170,23 +2177,32 @@ public class SelectionManager {
 //            for (FormObject fo : selected) {
 //                startNode = Position.create(fo.component.getElement(), false);
         if (!selectedComponents.isEmpty()) {
-            Position startNode, endNode;
+//            Position startNode, endNode;
+            DomPosition startNode;
+            DomPosition endNode;
+            
             for (SelectedComponent sc : selectedComponents) {
 //                Element sourceElement = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement).getElement();
                 Element sourceElement = WebForm.getHtmlDomProviderService().getSourceElement(sc.componentRootElement);
-                startNode = Position.create(sourceElement, false);
+//                startNode = Position.create(sourceElement, false);
+                startNode = DesignerPaneBase.createDomPosition(sourceElement, false);
+                
                 if(start == null || startNode.isEarlierThan(start)) {
                     start = startNode;
                 }
 //                endNode = Position.create(fo.component.getElement(), true);
-                endNode = Position.create(sourceElement, true);
+//                endNode = Position.create(sourceElement, true);
+                endNode = DesignerPaneBase.createDomPosition(sourceElement, true);
+                
                 if(end == null || end.isEarlierThan(endNode)) {
                     end = endNode;
                 }
             }
         } else {
-            start = Position.NONE;
-            end   = Position.NONE;
+//            start = Position.NONE;
+//            end   = Position.NONE;
+            start = DomPosition.NONE;
+            end   = DomPosition.NONE;
         }
         if(webform.getPane().getCaret() != null) {
             webform.getPane().getCaret().setDot(start);

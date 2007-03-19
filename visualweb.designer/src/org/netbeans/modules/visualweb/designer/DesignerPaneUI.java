@@ -59,14 +59,13 @@ import javax.swing.text.Keymap;
 import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.netbeans.modules.visualweb.text.DesignerPaneBaseUI;
-import org.netbeans.modules.visualweb.text.Document;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /**
@@ -1147,7 +1146,8 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
      * @exception BadLocationException
      * @exception IllegalArgumentException for an invalid direction
      */
-    public Position getNextVisualPositionFrom(DesignerPaneBase t, Position pos, int direction) {
+//    public Position getNextVisualPositionFrom(DesignerPaneBase t, Position pos, int direction) {
+    public DomPosition getNextVisualPositionFrom(DesignerPaneBase t, DomPosition pos, int direction) {
         if(DesignerUtils.DEBUG) {
             DesignerUtils.debugLog(getClass().getName() + ".getNextVisualPositionFrom(DesignerPaneBase, Position, int)");
         }
@@ -1185,7 +1185,8 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
                         return ModelViewMapper.computeArrowDown(webform, pos);
                 }
                 
-                return Position.NONE;
+//                return Position.NONE;
+                return DomPosition.NONE;
             }
         } finally {
 //            doc.readUnlock();
@@ -1193,7 +1194,8 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             webform.readUnlock();
         }
         
-        return Position.NONE;
+//        return Position.NONE;
+        return DomPosition.NONE;
     }
     
     /** Check the parent and see if we have a view port - if so, notify
@@ -1255,14 +1257,17 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
                     return false;
                 }
                 
-                Position dot = caret.getDot();
-                Position mark = caret.getMark();
+//                Position dot = caret.getDot();
+//                Position mark = caret.getMark();
+                DomPosition dot = caret.getDot();
+                DomPosition mark = caret.getMark();
                 
                 if (!dot.equals(mark)) {
                     Point p = new Point(e.getX(), e.getY());
 //                    Position pos = c.viewToModel(p);
                     WebForm webform = ((DesignerPane)c).getWebForm();
-                    Position pos = webform.viewToModel(p);
+//                    Position pos = webform.viewToModel(p);
+                    DomPosition pos = webform.viewToModel(p);
                     
                     if ((webform.getManager().getInlineEditor() == null) ||
                             !webform.getManager().getInlineEditor().isDocumentEditor()) {
@@ -1271,8 +1276,10 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
                         pos = ModelViewMapper.findValidPosition(pos, findNearest, /*webform*/webform.getManager().getInlineEditor());
                     }
                     
-                    Position p0 = Position.first(dot, mark);
-                    Position p1 = Position.last(dot, mark);
+//                    Position p0 = Position.first(dot, mark);
+//                    Position p1 = Position.last(dot, mark);
+                    DomPosition p0 = DesignerPaneBase.first(dot, mark);
+                    DomPosition p1 = DesignerPaneBase.last(dot, mark);
                     
                     if ((pos.isLaterThan(p0)) && (pos.isStrictlyEarlierThan(p1))) {
                         return true;
@@ -1343,8 +1350,11 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         //            }
         //            return pos;
         //        }
-        Position dot = Position.NONE; // XXX Shouldn't that be startPos instead?
-        Position mark = Position.NONE; // XXX Shouldn't that be startPos instead?
+//        Position dot = Position.NONE; // XXX Shouldn't that be startPos instead?
+//        Position mark = Position.NONE; // XXX Shouldn't that be startPos instead?
+        DomPosition dot = DomPosition.NONE; // XXX Shouldn't that be startPos instead?
+        DomPosition mark = DomPosition.NONE; // XXX Shouldn't that be startPos instead?
+
         boolean visible;
         
         /**

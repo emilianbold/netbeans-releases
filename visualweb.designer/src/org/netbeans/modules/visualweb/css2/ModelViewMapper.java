@@ -16,8 +16,11 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.visualweb.css2;
 
+
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
@@ -31,6 +34,7 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 import org.openide.ErrorManager;
 import org.w3c.dom.Element;
@@ -41,7 +45,6 @@ import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /**
@@ -75,7 +78,9 @@ public final class ModelViewMapper {
      * there is no such position in the document (e.g. when you're at the
      * first visual position in the document.)
      */
-    public static Position computeArrowLeft(WebForm webform, Position sourcePos) {
+//    public static Position computeArrowLeft(WebForm webform, Position sourcePos) {
+    public static DomPosition computeArrowLeft(WebForm webform, DomPosition sourcePos) {
+    
 //        assert !sourcePos.isRendered();
 //        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
         if (sourcePos.isRenderedPosition()) {
@@ -83,7 +88,8 @@ public final class ModelViewMapper {
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
 
-        Position pos = sourcePos.getRenderedPosition();
+//        Position pos = sourcePos.getRenderedPosition();
+        DomPosition pos = sourcePos.getRenderedPosition();
 
         // TODO: in a table, use special case such that we handle the
         // first-cell-in-a-row scenario correctly
@@ -94,12 +100,16 @@ public final class ModelViewMapper {
             // in inline editing mode we can delete backwards until we have no caret position
             assert webform.getManager().isInlineEditing() : pos;
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
-        Position p = findPrevPosition(lb, pos, webform.getManager().getInlineEditor());
+//        Position p = findPrevPosition(lb, pos, webform.getManager().getInlineEditor());
+        DomPosition p = findPrevPosition(lb, pos, webform.getManager().getInlineEditor());
 
-        if (p != Position.NONE) {
+//        if (p != Position.NONE) {
+        if (p != DomPosition.NONE) {
+            
 //            if (p.isRendered()) {
 //            if (MarkupService.isRenderedNode(p.getNode())) {
             if (p.isRenderedPosition()) {
@@ -120,7 +130,8 @@ public final class ModelViewMapper {
      * there is no such position in the document (e.g. when you're at the
      * last visual position in the document.)
      */
-    public static Position computeArrowRight(WebForm webform, Position sourcePos) {
+//    public static Position computeArrowRight(WebForm webform, Position sourcePos) {
+    public static DomPosition computeArrowRight(WebForm webform, DomPosition sourcePos) {
 //        assert !sourcePos.isRendered();
 //        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
         if (sourcePos.isRenderedPosition()) {
@@ -128,21 +139,26 @@ public final class ModelViewMapper {
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
 
-        Position pos = sourcePos.getRenderedPosition();
+//        Position pos = sourcePos.getRenderedPosition();
+        DomPosition pos = sourcePos.getRenderedPosition();
 
         // TODO: in a table, use special case such that we handle the
         // last-cell-in-a-row scenario correctly
         LineBox lb = findLineBox(webform.getPane().getPageBox(), pos);
 
         if (lb == null) {
-            assert false : pos; // Caret positions should always be in a linebox!!
+//            assert false : pos; // Caret positions should always be in a linebox!!
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
-        Position p = findNextPosition(lb, pos, webform.getManager().getInlineEditor());
+//        Position p = findNextPosition(lb, pos, webform.getManager().getInlineEditor());
+        DomPosition p = findNextPosition(lb, pos, webform.getManager().getInlineEditor());
 
-        if (p != Position.NONE) {
+//        if (p != Position.NONE) {
+        if (p != DomPosition.NONE) {
+            
 //            if (p.isRendered()) {
 //            if (MarkupService.isRenderedNode(p.getNode())) {
             if (p.isRenderedPosition()) {
@@ -161,7 +177,8 @@ public final class ModelViewMapper {
      * there is no such position in the document (e.g. when you're on the first line
      *  in the document.)
      */
-    public static Position computeArrowUp(WebForm webform, Position sourcePos) {
+//    public static Position computeArrowUp(WebForm webform, Position sourcePos) {
+    public static DomPosition computeArrowUp(WebForm webform, DomPosition sourcePos) {
         // TODO: If in a table, figure out the current position (I could stash these right 
         // on the cellboxes), subtract one, and if still within the table, look for the first
         // cell root (e.g. skip spans) and use that. Otherwise (if we're outside of the table), 
@@ -173,14 +190,16 @@ public final class ModelViewMapper {
                 new IllegalStateException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
 
-        Position pos = sourcePos.getRenderedPosition();
+//        Position pos = sourcePos.getRenderedPosition();
+        DomPosition pos = sourcePos.getRenderedPosition();
 
         LineBox lb = findLineBox(webform.getPane().getPageBox(), pos);
 
         if (lb == null) {
-            assert false : pos; // Caret positions should always be in a linebox!!
+//            assert false : pos; // Caret positions should always be in a linebox!!
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;            
         }
 
         DesignerCaret caret = webform.getPane().getCaret();
@@ -194,14 +213,18 @@ public final class ModelViewMapper {
             prev = findPrevLineBox(prev);
 
             if (prev == null) {
-                return Position.NONE;
+//                return Position.NONE;
+                return DomPosition.NONE;
             }
 
-            Position p = prev.computePosition(magicPosition.x - prev.getAbsoluteX());
+//            Position p = prev.computePosition(magicPosition.x - prev.getAbsoluteX());
+            DomPosition p = prev.computePosition(magicPosition.x - prev.getAbsoluteX());
 
 //            if (DesignerUtils.checkPosition(p, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
             if (isValidPosition(p, false, /*webform*/webform.getManager().getInlineEditor())) {
-                if (p != Position.NONE) {
+//                if (p != Position.NONE) {
+                if (p != DomPosition.NONE) {
+                    
 //                    if (p.isRendered()) {
 //                    if (MarkupService.isRenderedNode(p.getNode())) {
                     if (p.isRenderedPosition()) {
@@ -222,7 +245,8 @@ public final class ModelViewMapper {
      * there is no such position in the document (e.g. when you're on the last line
      *  in the document.)
      */
-    public static Position computeArrowDown(WebForm webform, Position sourcePos) {
+//    public static Position computeArrowDown(WebForm webform, Position sourcePos) {
+    public static DomPosition computeArrowDown(WebForm webform, DomPosition sourcePos) {
         // TODO: If in a table, figure out the current position (I could stash these right 
         // on the cellboxes), add one, and if still within the table, look for the first
         // cell root (e.g. skip spans) and use that. Otherwise (if we're outside of the table), 
@@ -234,14 +258,16 @@ public final class ModelViewMapper {
                     new IllegalStateException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
 
-        Position pos = sourcePos.getRenderedPosition();
+//        Position pos = sourcePos.getRenderedPosition();
+        DomPosition pos = sourcePos.getRenderedPosition();
 
         LineBox lb = findLineBox(webform.getPane().getPageBox(), pos);
 
         if (lb == null) {
-            assert false : pos; // Caret positions should always be in a linebox!!
+//            assert false : pos; // Caret positions should always be in a linebox!!
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         DesignerCaret caret = webform.getPane().getCaret();
@@ -255,14 +281,18 @@ public final class ModelViewMapper {
             next = findNextLineBox(next);
 
             if (next == null) {
-                return Position.NONE;
+//                return Position.NONE;
+                return DomPosition.NONE;
             }
 
-            Position p = next.computePosition(magicPosition.x - next.getAbsoluteX());
+//            Position p = next.computePosition(magicPosition.x - next.getAbsoluteX());
+            DomPosition p = next.computePosition(magicPosition.x - next.getAbsoluteX());
 
 //            if (DesignerUtils.checkPosition(p, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
             if (isValidPosition(p, false, /*webform*/webform.getManager().getInlineEditor())) {
-                if (p != Position.NONE) {
+//                if (p != Position.NONE) {
+                if (p != DomPosition.NONE) {
+                    
 //                    if (p.isRendered()) {
 //                    if (MarkupService.isRenderedNode(p.getNode())) {
                     if (p.isRenderedPosition()) {
@@ -280,7 +310,8 @@ public final class ModelViewMapper {
      * Note that the position may be in a different line box (this happens if the
      * position you passed in was the last caret position in the linebox).
      */
-    private static Position findNextPosition(LineBox lb, Position pos, InlineEditor inlineEditor) {
+//    private static Position findNextPosition(LineBox lb, Position pos, InlineEditor inlineEditor) {
+    private static DomPosition findNextPosition(LineBox lb, DomPosition pos, InlineEditor inlineEditor) {
 //        assert pos.isRendered();
 //        if (!MarkupService.isRenderedNode(pos.getNode())) {
         if (pos.isSourcePosition()) {
@@ -325,9 +356,11 @@ public final class ModelViewMapper {
                        the dom forwards however, I don't need this extra check.
                     tb.getDomStartOffset() <= offset && */
                     offset <= tb.getDomEndOffset())) {
-                    Position p = tb.getNext(pos);
+//                    Position p = tb.getNext(pos);
+                    DomPosition p = tb.getNext(pos);
 
-                    if (p != Position.NONE) {
+//                    if (p != Position.NONE) {
+                    if (p != DomPosition.NONE) {
                         return p;
                     }
 
@@ -342,9 +375,11 @@ public final class ModelViewMapper {
                        the dom forwards however, I don't need this extra check.
                     tb.getDomStartOffset() <= offset && */
                     offset <= tb.getDomEndOffset())) {
-                    Position p = tb.getNext(pos);
+//                    Position p = tb.getNext(pos);
+                    DomPosition p = tb.getNext(pos);
 
-                    if (p != Position.NONE) {
+//                    if (p != Position.NONE) {
+                    if (p != DomPosition.NONE) {
                         return p;
                     }
 
@@ -358,8 +393,9 @@ public final class ModelViewMapper {
                     // We can resolve this one quickly! Just pick position after
 //                    return Position.create(getElement(box).getSource(), true);
 //                    return Position.create(MarkupService.getSourceElementForElement(getElement(box)), true);
-                    return Position.create(MarkupService.getSourceElementForElement(
-                            getComponentRootElementParentForCssBox(box)), true);
+//                    return Position.create(MarkupService.getSourceElementForElement(
+//                            getComponentRootElementParentForCssBox(box)), true);
+                    return DesignerPaneBase.createDomPosition(MarkupService.getSourceElementForElement(getComponentRootElementParentForCssBox(box)), true);
                 }
 
                 if (i >= (n - 1)) {
@@ -381,7 +417,8 @@ public final class ModelViewMapper {
         if (i == n) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("Next position not found, lb=" + lb + ", pos=" + pos)); // NOI18N
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
 
@@ -408,7 +445,8 @@ public final class ModelViewMapper {
                 // We know it SHOULD have one position since all text and space boxes
                 // must have at least one character
                 TextBox tb = (TextBox)next;
-                Position p = tb.getNext(tb.getFirstPosition());
+//                Position p = tb.getNext(tb.getFirstPosition());
+                DomPosition p = tb.getNext(tb.getFirstPosition());
 
 //                if (DesignerUtils.checkPosition(p, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(p, false, inlineEditor)) {
@@ -421,7 +459,8 @@ public final class ModelViewMapper {
                 }
             } else if (next.getBoxType() == BoxType.SPACE) {
                 SpaceBox tb = (SpaceBox)next;
-                Position p = tb.getNext(tb.getFirstPosition());
+//                Position p = tb.getNext(tb.getFirstPosition());
+                DomPosition p = tb.getNext(tb.getFirstPosition());
 
 //                if (DesignerUtils.checkPosition(p, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(p, false, inlineEditor)) {
@@ -453,7 +492,8 @@ public final class ModelViewMapper {
      * Given a LineBox, compute the NEXT linebox and return its first
      * position. Used as part of getNextPosition for various cases.
      */
-    private static Position getFirstPosNextLine(LineBox lb, InlineEditor inlineEditor) {
+//    private static Position getFirstPosNextLine(LineBox lb, InlineEditor inlineEditor) {
+    private static DomPosition getFirstPosNextLine(LineBox lb, InlineEditor inlineEditor) {
         // Jump to the next line: Find Next Line Box and if not null,
         // Find First Position in it and return that.
         LineBox nextLine = findNextLineBox(lb);
@@ -461,7 +501,8 @@ public final class ModelViewMapper {
         if (nextLine != null) {
             return findFirstLineboxPosition(nextLine, 0, inlineEditor);
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
@@ -470,7 +511,8 @@ public final class ModelViewMapper {
      * position. Used as part of getPrevPosition for various cases.
      * @param inlineEditor (XXX suspicious) InlineEditor which is active in the page (or <code>null</code>).
      */
-    private static Position getLastPosPrevLine(LineBox lb, InlineEditor inlineEditor) {
+//    private static Position getLastPosPrevLine(LineBox lb, InlineEditor inlineEditor) {
+    private static DomPosition getLastPosPrevLine(LineBox lb, InlineEditor inlineEditor) {
         // Jump to the previous line:
         // Find Previous Line Box and if not null, Find Last Position in it
         // and return that.
@@ -479,7 +521,8 @@ public final class ModelViewMapper {
         if (prevLine != null) {
             return findLastLineboxPosition(prevLine, inlineEditor);
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
@@ -489,7 +532,8 @@ public final class ModelViewMapper {
      * you passed in was the first caret position in the linebox).
      * @param inlineEditor (XXX suspicious) InlineEditor which is active in the page (or <code>null</code>).
      */
-    private static Position findPrevPosition(LineBox lb, Position pos, InlineEditor inlineEditor) {
+//    private static Position findPrevPosition(LineBox lb, Position pos, InlineEditor inlineEditor) {
+    private static DomPosition findPrevPosition(LineBox lb, DomPosition pos, InlineEditor inlineEditor) {
 //        assert pos.isRendered();
 //        if (!MarkupService.isRenderedNode(pos.getNode())) {
         if (pos.isSourcePosition()) {
@@ -534,9 +578,11 @@ public final class ModelViewMapper {
                        the dom forwards however, I don't need this extra check.
                     tb.getDomStartOffset() <= offset && */
                     offset <= tb.getDomEndOffset())) {
-                    Position p = tb.getPrev(pos);
+//                    Position p = tb.getPrev(pos);
+                    DomPosition p = tb.getPrev(pos);
 
-                    if (p != Position.NONE) {
+//                    if (p != Position.NONE) {
+                    if (p != DomPosition.NONE) {
                         return p;
                     }
 
@@ -551,9 +597,11 @@ public final class ModelViewMapper {
                        the dom forwards however, I don't need this extra check.
                     tb.getDomStartOffset() <= offset && */
                     offset <= tb.getDomEndOffset())) {
-                    Position p = tb.getPrev(pos);
+//                    Position p = tb.getPrev(pos);
+                    DomPosition p = tb.getPrev(pos);
 
-                    if (p != Position.NONE) {
+//                    if (p != Position.NONE) {
+                    if (p != DomPosition.NONE) {
                         return p;
                     }
 
@@ -567,8 +615,9 @@ public final class ModelViewMapper {
                     // We can resolve this one quickly! Just pick position before
 //                    return Position.create(getElement(box).getSource(), false);
 //                    return Position.create(MarkupService.getSourceElementForElement(getElement(box)), false);
-                    return Position.create(MarkupService.getSourceElementForElement(
-                            getComponentRootElementParentForCssBox(box)), false);
+//                    return Position.create(MarkupService.getSourceElementForElement(
+//                            getComponentRootElementParentForCssBox(box)), false);
+                    return DesignerPaneBase.createDomPosition(MarkupService.getSourceElementForElement(getComponentRootElementParentForCssBox(box)), false);
                 }
 
                 if (i == 0) {
@@ -590,7 +639,8 @@ public final class ModelViewMapper {
         if (i == n) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("Previous position not found, lb=" + lb + ", pos=" + pos)); // NOI18N
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
 
@@ -609,7 +659,8 @@ public final class ModelViewMapper {
                 // We know it SHOULD have one position since all text and space boxes
                 // must have at least one character
                 TextBox tb = (TextBox)prev;
-                Position p = tb.getPrev(tb.getLastPosition());
+//                Position p = tb.getPrev(tb.getLastPosition());
+                DomPosition p = tb.getPrev(tb.getLastPosition());
 
 //                if (DesignerUtils.checkPosition(p, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(p, false, inlineEditor)) {
@@ -622,7 +673,8 @@ public final class ModelViewMapper {
                 }
             } else if (prev.getBoxType() == BoxType.SPACE) {
                 SpaceBox tb = (SpaceBox)prev;
-                Position p = tb.getPrev(tb.getLastPosition());
+//                Position p = tb.getPrev(tb.getLastPosition());
+                DomPosition p = tb.getPrev(tb.getLastPosition());
 
 //                if (DesignerUtils.checkPosition(p, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(p, false, inlineEditor)) {
@@ -657,11 +709,13 @@ public final class ModelViewMapper {
      * @param lb The line box
      * @return The first legal caret position in the line box
      */
-    private static Position findFirstLineboxPosition(LineBox lb, int index, InlineEditor inlineEditor) {
+//    private static Position findFirstLineboxPosition(LineBox lb, int index, InlineEditor inlineEditor) {
+    private static DomPosition findFirstLineboxPosition(LineBox lb, int index, InlineEditor inlineEditor) {
         if (lb.getBoxCount() <= index) {
-            assert false : lb;
+//            assert false : lb;
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         while (true) {
@@ -669,7 +723,8 @@ public final class ModelViewMapper {
 
             if (box.getBoxType() == BoxType.TEXT) {
                 TextBox tb = (TextBox)box;
-                Position pos = tb.getFirstPosition();
+//                Position pos = tb.getFirstPosition();
+                DomPosition pos = tb.getFirstPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
@@ -677,7 +732,8 @@ public final class ModelViewMapper {
                 }
             } else if (box.getBoxType() == BoxType.SPACE) {
                 SpaceBox tb = (SpaceBox)box;
-                Position pos = tb.getFirstPosition();
+//                Position pos = tb.getFirstPosition();
+                DomPosition pos = tb.getFirstPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
@@ -686,7 +742,8 @@ public final class ModelViewMapper {
             } else {
                 // assert that this is a simple inline, noncontainer box,
                 // such as an image, a StringBox, an iframe, etc.
-                Position pos = Position.create(box.getSourceElement(), false);
+//                Position pos = Position.create(box.getSourceElement(), false);
+                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), false);
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
@@ -701,7 +758,8 @@ public final class ModelViewMapper {
                     lb = findNextLineBox(lb);
 
                     if (lb == null) {
-                        return Position.NONE;
+//                        return Position.NONE;
+                        return DomPosition.NONE;
                     }
 
                     index = 0;
@@ -720,11 +778,13 @@ public final class ModelViewMapper {
      * @param inlineEditor (XXX suspicious) InlineEditor which is active in the page (or <code>null</code>).
      * @return The last legal caret position in the line box
      */
-    private static Position findLastLineboxPosition(LineBox lb, int index, InlineEditor inlineEditor) {
+//    private static Position findLastLineboxPosition(LineBox lb, int index, InlineEditor inlineEditor) {
+    private static DomPosition findLastLineboxPosition(LineBox lb, int index, InlineEditor inlineEditor) {
         if (lb.getBoxCount() <= index) {
             assert false : lb;
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         while (true) {
@@ -732,7 +792,8 @@ public final class ModelViewMapper {
 
             if (box.getBoxType() == BoxType.TEXT) {
                 TextBox tb = (TextBox)box;
-                Position pos = tb.getLastPosition();
+//                Position pos = tb.getLastPosition();
+                DomPosition pos = tb.getLastPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
@@ -740,7 +801,8 @@ public final class ModelViewMapper {
                 }
             } else if (box.getBoxType() == BoxType.SPACE) {
                 SpaceBox tb = (SpaceBox)box;
-                Position pos = tb.getLastPosition();
+//                Position pos = tb.getLastPosition();
+                DomPosition pos = tb.getLastPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
@@ -754,7 +816,8 @@ public final class ModelViewMapper {
 
                     if (prev.getBoxType() == BoxType.TEXT) {
                         TextBox tb = (TextBox)prev;
-                        Position pos = tb.getLastPosition();
+//                        Position pos = tb.getLastPosition();
+                        DomPosition pos = tb.getLastPosition();
 
 //                        if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                         if (isValidPosition(pos, false, inlineEditor)) {
@@ -762,7 +825,8 @@ public final class ModelViewMapper {
                         }
                     } else if (prev.getBoxType() == BoxType.SPACE) {
                         SpaceBox tb = (SpaceBox)prev;
-                        Position pos = tb.getLastPosition();
+//                        Position pos = tb.getLastPosition();
+                        DomPosition pos = tb.getLastPosition();
 
 //                        if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                         if (isValidPosition(pos, false, inlineEditor)) {
@@ -771,7 +835,8 @@ public final class ModelViewMapper {
                     }
                 }
 
-                Position pos = Position.create(box.getSourceElement(), false);
+//                Position pos = Position.create(box.getSourceElement(), false);
+                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), false);
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
@@ -786,7 +851,8 @@ public final class ModelViewMapper {
                     lb = findPrevLineBox(lb);
 
                     if (lb == null) {
-                        return Position.NONE;
+//                        return Position.NONE;
+                        return DomPosition.NONE;
                     }
 
                     index = lb.getBoxCount() - 1;
@@ -806,11 +872,13 @@ public final class ModelViewMapper {
      * @param inlineEditor (XXX suspicious) InlineEditor which is active in the page (or <code>null</code>).
      * @return The last legal caret position in the line box
      */
-    private static Position findLastLineboxPosition(LineBox lb, InlineEditor inlineEditor) {
+//    private static Position findLastLineboxPosition(LineBox lb, InlineEditor inlineEditor) {
+    private static DomPosition findLastLineboxPosition(LineBox lb, InlineEditor inlineEditor) {
         if (lb.getBoxCount() == 0) {
-            assert false : lb;
+//            assert false : lb;
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         int index = lb.getBoxCount() - 1;
@@ -819,7 +887,8 @@ public final class ModelViewMapper {
             CssBox box = lb.getBox(index);
 
             if (box.getBoxType() == BoxType.LINEBREAK) {
-                Position pos = Position.create(box.getSourceElement(), false);
+//                Position pos = Position.create(box.getSourceElement(), false);
+                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), false);
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
@@ -829,7 +898,8 @@ public final class ModelViewMapper {
 
             if (box.getBoxType() == BoxType.TEXT) {
                 TextBox tb = (TextBox)box;
-                Position pos = tb.getLastPosition();
+//                Position pos = tb.getLastPosition();
+                DomPosition pos = tb.getLastPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
@@ -837,14 +907,16 @@ public final class ModelViewMapper {
                 }
             } else if (box.getBoxType() == BoxType.SPACE) {
                 SpaceBox tb = (SpaceBox)box;
-                Position pos = tb.getLastPosition();
+//                Position pos = tb.getLastPosition();
+                DomPosition pos = tb.getLastPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
                     return pos;
                 }
             } else {
-                Position pos = Position.create(box.getSourceElement(), true);
+//                Position pos = Position.create(box.getSourceElement(), true);
+                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), true);
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
                 if (isValidPosition(pos, false, inlineEditor)) {
@@ -860,7 +932,8 @@ public final class ModelViewMapper {
                     lb = findPrevLineBox(lb);
 
                     if (lb == null) {
-                        return Position.NONE;
+//                        return Position.NONE;
+                        return DomPosition.NONE;
                     }
 
                     index = lb.getBoxCount() - 1;
@@ -1062,7 +1135,8 @@ public final class ModelViewMapper {
     }
 
     /** Find the LineBox corresponding to the given position */
-    private static LineBox findLineBox(PageBox pageBox, Position pos) {
+//    private static LineBox findLineBox(PageBox pageBox, Position pos) {
+    private static LineBox findLineBox(PageBox pageBox, DomPosition pos) {
 //        CssBox box = findBox(webform.getPane().getPageBox(), pos);
         CssBox box = findBox(pageBox, pos);
 
@@ -1296,9 +1370,11 @@ public final class ModelViewMapper {
     }
 
     /** Find the CssBox corresponding to a given position */
-    private static CssBox findBox(PageBox root, Position pos) { // HACK ALERT
+//    private static CssBox findBox(PageBox root, Position pos) { // HACK ALERT
+    private static CssBox findBox(PageBox root, DomPosition pos) { // HACK ALERT
 
-        if (pos == Position.NONE) {
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
             return null;
         }
 
@@ -1423,9 +1499,11 @@ public final class ModelViewMapper {
      * it needs to point inside a LineBox (e.g. be a valid caret position).
      * @param A position in the source dom (where carets live for example)
      */
-    public static Rectangle modelToView(PageBox pageBox, Position sourcePos) {
+//    public static Rectangle modelToView(PageBox pageBox, Position sourcePos) {
+    public static Rectangle modelToView(PageBox pageBox, DomPosition sourcePos) {
         // assert that the position is a valid position here?
-        if (sourcePos == Position.NONE) {
+//        if (sourcePos == Position.NONE) {
+        if (sourcePos == DomPosition.NONE) {
             return null;
         }
 
@@ -1436,9 +1514,11 @@ public final class ModelViewMapper {
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
 
-        Position pos = sourcePos.getRenderedPosition();
+//        Position pos = sourcePos.getRenderedPosition();
+        DomPosition pos = sourcePos.getRenderedPosition();
 
-        if (pos == Position.NONE) {
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
             return null; // not yet rendered
         }
 
@@ -1524,7 +1604,8 @@ public final class ModelViewMapper {
                 } else if (node.getNodeType() == Node.ELEMENT_NODE) {
                     return modelToView(pageBox,
 //                        new Position(node, node.getChildNodes().getLength(), Bias.FORWARD));
-                            Position.create(node, node.getChildNodes().getLength(), Bias.FORWARD));
+//                            Position.create(node, node.getChildNodes().getLength(), Bias.FORWARD));
+                            DesignerPaneBase.createDomPosition(node, node.getChildNodes().getLength(), Bias.FORWARD));
                 } else {
                     offset = 1; // XXX ?
                 }
@@ -1583,9 +1664,10 @@ public final class ModelViewMapper {
 
                 if (box.getBoxType() == BoxType.TEXT) {
 //                    return ((TextBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
-                    return ((TextBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
+//                    return ((TextBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
+                    return ((TextBox)box).getBoundingBox(DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD));
                 } else if (box.getBoxType() == BoxType.SPACE) {
-                    return ((SpaceBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
+                    return ((SpaceBox)box).getBoundingBox(DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD));
 
                     /*
                     } else if (box instanceof FormComponentBox) {
@@ -1608,13 +1690,15 @@ public final class ModelViewMapper {
 
                     if (box.getBoxType() == BoxType.TEXT) {
 //                        r = ((TextBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
-                        r = ((TextBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
+//                        r = ((TextBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
+                        r = ((TextBox)box).getBoundingBox(DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD));
                         r.width += ((TextBox)box).getMetrics().charWidth(' ');
 
                         return r;
                     } else if (box.getBoxType() == BoxType.SPACE) {
 //                        r = ((SpaceBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
-                        r = ((SpaceBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
+//                        r = ((SpaceBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
+                        r = ((SpaceBox)box).getBoundingBox(DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD));
                         r.width += ((SpaceBox)box).getMetrics().charWidth(' ');
 
                         return r;
@@ -1838,12 +1922,15 @@ public final class ModelViewMapper {
      * @return the location within the model that best represents the
      *  given point in the view >= 0.
      */
-    public static Position viewToModel(WebForm webform, int x, int y) {
+//    public static Position viewToModel(WebForm webform, int x, int y) {
+    public static DomPosition viewToModel(WebForm webform, int x, int y) {
         try {
-            Position pos = findClosestPosition(webform, x, y);
+//            Position pos = findClosestPosition(webform, x, y);
+            DomPosition pos = findClosestPosition(webform, x, y);
 
 //            if ((pos != Position.NONE) && pos.isRendered()) {
-            if ((pos != Position.NONE)
+//            if ((pos != Position.NONE)
+            if ((pos != DomPosition.NONE)
 //            && MarkupService.isRenderedNode(pos.getNode())) {
             && pos.isRenderedPosition()) {
                 return pos.getSourcePosition();
@@ -1856,17 +1943,20 @@ public final class ModelViewMapper {
         } catch (Throwable t) {
             ErrorManager.getDefault().notify(t);
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
     /** For the given box, locate the position closest to the given x position
      */
-    private static Position findClosestPosition(WebForm webform, int x, int y) {
+//    private static Position findClosestPosition(WebForm webform, int x, int y) {
+    private static DomPosition findClosestPosition(WebForm webform, int x, int y) {
         CssBox box = webform.getPane().getPageBox().findCssBox((int)x, (int)y);
 
         if (box == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         assert !box.isPlaceHolder();
@@ -1875,9 +1965,11 @@ public final class ModelViewMapper {
             // We have clicked on a line that is not covered by a LineBox but
             // is inside a group of line boxes - e.g. this line is shorter than
             // others. Find it.
-            Position pos = findLineBoxClosestTo(box, y, webform.getManager().getInlineEditor());
+//            Position pos = findLineBoxClosestTo(box, y, webform.getManager().getInlineEditor());
+            DomPosition pos = findLineBoxClosestTo(box, y, webform.getManager().getInlineEditor());
 
-            if (pos != Position.NONE) {
+//            if (pos != Position.NONE) {
+            if (pos != DomPosition.NONE) {
                 return pos;
             }
         }
@@ -1886,7 +1978,8 @@ public final class ModelViewMapper {
         LineBox lb = findLineBox(box, true);
 
         if (lb != null) {
-            Position p = lb.computePosition(x - lb.getAbsoluteX());
+//            Position p = lb.computePosition(x - lb.getAbsoluteX());
+            DomPosition p = lb.computePosition(x - lb.getAbsoluteX());
 
 //            if (DesignerUtils.checkPosition(p, false, webform.getManager().getInlineEditor()) != Position.NONE) {
             if (isValidPosition(p, false, webform.getManager().getInlineEditor())) {
@@ -1894,9 +1987,11 @@ public final class ModelViewMapper {
             }
         }
 
-        Position pos = findLineBoxClosestTo(box, y, webform.getManager().getInlineEditor());
+//        Position pos = findLineBoxClosestTo(box, y, webform.getManager().getInlineEditor());
+        DomPosition pos = findLineBoxClosestTo(box, y, webform.getManager().getInlineEditor());
 
-        if (pos != Position.NONE) {
+//        if (pos != Position.NONE) {
+        if (pos != DomPosition.NONE) {
             return pos;
         }
 
@@ -1909,12 +2004,14 @@ public final class ModelViewMapper {
         }
 
         Rectangle prev = null;
-        Position prevPos = null;
+//        Position prevPos = null;
+        DomPosition prevPos = null;
 
         if (prevLine != null) {
             prevPos = findLastLineboxPosition(prevLine, webform.getManager().getInlineEditor());
 
-            if (prevPos != Position.NONE) {
+//            if (prevPos != Position.NONE) {
+            if (prevPos != DomPosition.NONE) {
 //                if (prevPos.isRendered()) {
 //                if (MarkupService.isRenderedNode(prevPos.getNode())) {
                 if (prevPos.isRenderedPosition()) {
@@ -1932,12 +2029,14 @@ public final class ModelViewMapper {
         }
 
         Rectangle next = null;
-        Position nextPos = null;
+//        Position nextPos = null;
+        DomPosition nextPos = null;
 
         if (nextLine != null) {
             nextPos = findFirstLineboxPosition(nextLine, 0, webform.getManager().getInlineEditor());
 
-            if (nextPos != Position.NONE) {
+//            if (nextPos != Position.NONE) {
+            if (nextPos != DomPosition.NONE) {
 //                if (nextPos.isRendered()) {
 //                if (MarkupService.isRenderedNode(nextPos.getNode())) {
                 if (nextPos.isRenderedPosition()) {
@@ -1981,11 +2080,13 @@ public final class ModelViewMapper {
              */
 
             //assert prevPos == Position.NONE && nextPos == Position.NONE : prevPos + "," + nextPos;
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
-    private static Position findLineBoxClosestTo(CssBox box, int y, InlineEditor inlineEditor) {
+//    private static Position findLineBoxClosestTo(CssBox box, int y, InlineEditor inlineEditor) {
+    private static DomPosition findLineBoxClosestTo(CssBox box, int y, InlineEditor inlineEditor) {
         if ((box.getBoxType() == BoxType.LINEBOX) && box instanceof LineBox) {
             LineBox lb = (LineBox)box;
             int cy = lb.getAbsoluteY();
@@ -1999,7 +2100,8 @@ public final class ModelViewMapper {
             // We've clicked outside of any of the children; see
             // if we can find a closer one
             for (int i = 0, n = box.getBoxCount(); i < n; i++) {
-                Position match = findLineBoxClosestTo(box.getBox(i), y, inlineEditor);
+//                Position match = findLineBoxClosestTo(box.getBox(i), y, inlineEditor);
+                DomPosition match = findLineBoxClosestTo(box.getBox(i), y, inlineEditor);
 
                 if (match != null) {
                     return match;
@@ -2007,11 +2109,13 @@ public final class ModelViewMapper {
             }
         }
 
-        return Position.NONE;
+//        return Position.NONE;
+        return DomPosition.NONE;
     }
 
     /** Return the position at the beginning of the line containing the given position */
-    public static Position getLineBegin(WebForm webform, Position sourcePos) {
+//    public static Position getLineBegin(WebForm webform, Position sourcePos) {
+    public static DomPosition getLineBegin(WebForm webform, DomPosition sourcePos) {
 //        assert !sourcePos.isRendered();
 //        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
         if (sourcePos.isRenderedPosition()) {
@@ -2019,23 +2123,27 @@ public final class ModelViewMapper {
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
 
-        Position pos = sourcePos.getRenderedPosition();
+//        Position pos = sourcePos.getRenderedPosition();
+        DomPosition pos = sourcePos.getRenderedPosition();
 
         LineBox lb = findLineBox(webform.getPane().getPageBox(), pos);
 
         if (lb == null) {
             assert false : pos; // Caret positions should always be in a linebox!!
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
-        Position p = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
+//        Position p = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
+        DomPosition p = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
 
         return p.getSourcePosition();
     }
 
     /** Return the position at the end of the line containing the given position */
-    public static Position getLineEnd(WebForm webform, Position sourcePos) {
+//    public static Position getLineEnd(WebForm webform, Position sourcePos) {
+    public static DomPosition getLineEnd(WebForm webform, DomPosition sourcePos) {
 //        assert !sourcePos.isRendered();
 //        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
         if (sourcePos.isRenderedPosition()) {
@@ -2043,23 +2151,27 @@ public final class ModelViewMapper {
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode())); // NOI18N
         }
 
-        Position pos = sourcePos.getRenderedPosition();
+//        Position pos = sourcePos.getRenderedPosition();
+        DomPosition pos = sourcePos.getRenderedPosition();
 
         LineBox lb = findLineBox(webform.getPane().getPageBox(), pos);
 
         if (lb == null) {
-            assert false : pos; // Caret positions should always be in a linebox!!
+//            assert false : pos; // Caret positions should always be in a linebox!!
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
-        Position p = findLastLineboxPosition(lb, webform.getManager().getInlineEditor());
+//        Position p = findLastLineboxPosition(lb, webform.getManager().getInlineEditor());
+        DomPosition p = findLastLineboxPosition(lb, webform.getManager().getInlineEditor());
 
         return p.getSourcePosition();
     }
 
     /** Find the beginning of the word from the given position */
-    public static Position getWordStart(PageBox pageBox, Position sourcePos) {
+//    public static Position getWordStart(PageBox pageBox, Position sourcePos) {
+    public static DomPosition getWordStart(PageBox pageBox, DomPosition sourcePos) {
 //        assert !sourcePos.isRendered();
 //        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
         if (sourcePos.isRenderedPosition()) {
@@ -2067,7 +2179,8 @@ public final class ModelViewMapper {
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode()));
         }
 
-        Position pos = sourcePos.getRenderedPosition();
+//        Position pos = sourcePos.getRenderedPosition();
+        DomPosition pos = sourcePos.getRenderedPosition();
 
 //        PageBox pageBox = webform.getPane().getPageBox();
         CssBox box = findBox(pageBox, pos);
@@ -2075,22 +2188,26 @@ public final class ModelViewMapper {
         if (box.getBoxType() == BoxType.TEXT) {
             TextBox tb = (TextBox)box;
 //            Position p = new Position(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
-            Position p = Position.create(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+//            Position p = Position.create(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+            DomPosition p = DesignerPaneBase.createDomPosition(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
 
             return p.getSourcePosition();
         } else if (box.getBoxType() == BoxType.SPACE) {
             SpaceBox tb = (SpaceBox)box;
 //            Position p = new Position(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
-            Position p = Position.create(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+//            Position p = Position.create(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+            DomPosition p = DesignerPaneBase.createDomPosition(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
 
             return p.getSourcePosition();
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
     /** Find the end of the word from the given position */
-    public static Position getWordEnd(PageBox pageBox, Position sourcePos) {
+//    public static Position getWordEnd(PageBox pageBox, Position sourcePos) {
+    public static DomPosition getWordEnd(PageBox pageBox, DomPosition sourcePos) {
 //        assert !sourcePos.isRendered();
 //        if (MarkupService.isRenderedNode(sourcePos.getNode())) {
         if (sourcePos.isRenderedPosition()) {
@@ -2098,7 +2215,8 @@ public final class ModelViewMapper {
                     new IllegalArgumentException("Node is expected to be not rendered, node=" + sourcePos.getNode()));
         }
 
-        Position pos = sourcePos.getRenderedPosition();
+//        Position pos = sourcePos.getRenderedPosition();
+        DomPosition pos = sourcePos.getRenderedPosition();
 
 //        PageBox pageBox = webform.getPane().getPageBox();
         CssBox box = findBox(pageBox, pos);
@@ -2106,17 +2224,20 @@ public final class ModelViewMapper {
         if (box.getBoxType() == BoxType.TEXT) {
             TextBox tb = (TextBox)box;
 //            Position p = new Position(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
-            Position p = Position.create(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+//            Position p = Position.create(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+            DomPosition p = DesignerPaneBase.createDomPosition(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
 
             return p.getSourcePosition();
         } else if (box.getBoxType() == BoxType.SPACE) {
             SpaceBox tb = (SpaceBox)box;
 //            Position p = new Position(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
-            Position p = Position.create(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+//            Position p = Position.create(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+            DomPosition p = DesignerPaneBase.createDomPosition(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
 
             return p.getSourcePosition();
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
@@ -2124,7 +2245,8 @@ public final class ModelViewMapper {
      * Return the first caret position in the document. If create is true,
      * create one if necessary.
      */
-    public static Position getFirstDocumentPosition(WebForm webform, boolean create) {
+//    public static Position getFirstDocumentPosition(WebForm webform, boolean create) {
+    public static DomPosition getFirstDocumentPosition(WebForm webform, boolean create) {
         // XXX Very suspicious assertion.
 //        assert webform.getPane().getPageBox().getElement().getOwnerDocument() == webform.getJspDom();
         if (webform.getPane().getPageBox().getElement().getOwnerDocument() != webform.getHtmlDom()) {
@@ -2164,9 +2286,11 @@ public final class ModelViewMapper {
                     LineBox lb = findFirstLineBox(box);
 
                     if (lb != null) {
-                        Position pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
+//                        Position pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
+                        DomPosition pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
 
-                        if (pos != Position.NONE) {
+//                        if (pos != Position.NONE) {
+                        if (pos != DomPosition.NONE) {
 //                            if (pos.isRendered()) {
 //                            if (MarkupService.isRenderedNode(pos.getNode())) {
                             if (pos.isRenderedPosition()) {
@@ -2184,9 +2308,11 @@ public final class ModelViewMapper {
             LineBox lb = findFirstLineBox(webform.getPane().getPageBox());
 
             if (lb != null) {
-                Position pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
+//                Position pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
+                DomPosition pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
 
-                if (pos != Position.NONE) {
+//                if (pos != Position.NONE) {
+                if (pos != DomPosition.NONE) {
 //                    if (pos.isRendered()) {
 //                    if (MarkupService.isRenderedNode(pos.getNode())) {
                     if (pos.isRenderedPosition()) {
@@ -2204,7 +2330,8 @@ public final class ModelViewMapper {
         // TODO; this is tricky. We've gotta make sure we only use
         // normal flow children, not absolutely positioned children etc.
         //        assert false : "need layout tree to set caret";
-        return Position.NONE;
+//        return Position.NONE;
+        return DomPosition.NONE;
 
         /*
         Element body = webform.getMarkup().getBody();
@@ -2231,7 +2358,8 @@ public final class ModelViewMapper {
      * Return the last caret position in the document. If create is true,
      * create one if necessary.
      */
-    public static Position getLastDocumentPosition(WebForm webform, boolean create) {
+//    public static Position getLastDocumentPosition(WebForm webform, boolean create) {
+    public static DomPosition getLastDocumentPosition(WebForm webform, boolean create) {
         // XXX Very suspicious assertion.
 //        assert webform.getPane().getPageBox().getElement().getOwnerDocument() == webform.getJspDom();
         if (webform.getPane().getPageBox().getElement().getOwnerDocument() != webform.getHtmlDom()) {
@@ -2244,9 +2372,11 @@ public final class ModelViewMapper {
             LineBox lb = findLastLineBox(webform.getPane().getPageBox());
 
             if (lb != null) {
-                Position pos = findLastLineboxPosition(lb, lb.getBoxCount() - 1, webform.getManager().getInlineEditor());
+//                Position pos = findLastLineboxPosition(lb, lb.getBoxCount() - 1, webform.getManager().getInlineEditor());
+                DomPosition pos = findLastLineboxPosition(lb, lb.getBoxCount() - 1, webform.getManager().getInlineEditor());
 
-                if (pos != Position.NONE) {
+//                if (pos != Position.NONE) {
+                if (pos != DomPosition.NONE) {
 //                    if (pos.isRendered()) {
 //                    if (MarkupService.isRenderedNode(pos.getNode())) {
                     if (pos.isRenderedPosition()) {
@@ -2264,7 +2394,8 @@ public final class ModelViewMapper {
         // TODO; this is tricky. We've gotta make sure we only use
         // normal flow children, not absolutely positioned children etc.
         //        assert false : "need layout tree to set caret";
-        return Position.NONE;
+//        return Position.NONE;
+        return DomPosition.NONE;
 
         /*
         Element body = webform.getMarkup().getBody();
@@ -2288,8 +2419,10 @@ public final class ModelViewMapper {
     }
     
 
-    public static boolean isValidPosition(Position pos, boolean adjust, InlineEditor inline) {
-        return findValidPosition(pos, adjust, inline) != Position.NONE;
+//    public static boolean isValidPosition(Position pos, boolean adjust, InlineEditor inline) {
+    public static boolean isValidPosition(DomPosition pos, boolean adjust, InlineEditor inline) {
+//        return findValidPosition(pos, adjust, inline) != Position.NONE;
+        return findValidPosition(pos, adjust, inline) != DomPosition.NONE;
     }
     
     // XXX Moved from DesignerUtils.
@@ -2309,7 +2442,8 @@ public final class ModelViewMapper {
      * @param dom The JSPX document DOM
      */
 //    public static Position checkValidPosition(Position pos, boolean adjust, /*WebForm webform*/InlineEditor inline) {
-    public static Position findValidPosition(Position pos, boolean adjust, /*WebForm webform*/InlineEditor inline) {
+//    public static Position findValidPosition(Position pos, boolean adjust, /*WebForm webform*/InlineEditor inline) {
+    public static DomPosition findValidPosition(DomPosition pos, boolean adjust, /*WebForm webform*/InlineEditor inline) {
 //        if(DEBUG) {
 //            debugLog(DesignerUtils.class.getName() + ".checkPosition(Position, boolean, WebForm)");
 //        }
@@ -2317,7 +2451,8 @@ public final class ModelViewMapper {
         if (pos == null) {
             return null;
         }
-        if (pos == Position.NONE) {
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
             return pos;
         }
         
@@ -2330,7 +2465,8 @@ public final class ModelViewMapper {
                 if (inline.checkPosition(pos)) {
                     return pos;
                 } else {
-                    return Position.NONE;
+//                    return Position.NONE;
+                    return DomPosition.NONE;
                 }
             }
         }
@@ -2350,7 +2486,8 @@ public final class ModelViewMapper {
                 if (CssProvider.getValueService().isAbsoluteValue(cssValue)
                 || CssProvider.getValueService().isRelativeValue(cssValue)
                 || CssProvider.getValueService().isFixedValue(cssValue)) {
-                    return Position.NONE;
+//                    return Position.NONE;
+                    return DomPosition.NONE;
                 }
             }
         }
@@ -2384,18 +2521,21 @@ public final class ModelViewMapper {
                                         e = se;
                                     }
                                     
-                                    return Position.create(e, pos.getOffset() > 0);
+//                                    return Position.create(e, pos.getOffset() > 0);
+                                    return DesignerPaneBase.createDomPosition(e, pos.getOffset() > 0);
                                 }
                             }
                             
                             curr = curr.getParentNode();
                             
                             if (curr == null) {
-                                return Position.NONE;
+//                                return Position.NONE;
+                                return DomPosition.NONE;
                             }
                         }
                     } else {
-                        return Position.NONE;
+//                        return Position.NONE;
+                        return DomPosition.NONE;
                     }
 //                }
             }
@@ -2424,9 +2564,11 @@ public final class ModelViewMapper {
 //                            Element parentElement = parent.getElement();
                             Element parentElement = se;
                             
-                            return Position.create(parentElement, pos.getOffset() > 0);
+//                            return Position.create(parentElement, pos.getOffset() > 0);
+                            return DesignerPaneBase.createDomPosition(parentElement, pos.getOffset() > 0);
                         } else {
-                            return Position.NONE;
+//                            return Position.NONE;
+                            return DomPosition.NONE;
                         }
                     }
                     
@@ -2439,7 +2581,8 @@ public final class ModelViewMapper {
         
 //        InlineEditor inline = webform.getManager().getInlineEditor();
         
-        if (((pos != Position.NONE) && ((inline != null) && inline.checkPosition(pos))) ||
+//        if (((pos != Position.NONE) && ((inline != null) && inline.checkPosition(pos))) ||
+        if (((pos != DomPosition.NONE) && ((inline != null) && inline.checkPosition(pos))) ||
 //                !pos.isRendered()) {
 //        !MarkupService.isRenderedNode(pos.getNode())) {
         pos.isSourcePosition()) {
@@ -2465,14 +2608,16 @@ public final class ModelViewMapper {
 //                        Element el = Util.getElement(bean);
 //                        Element el = WebForm.getHtmlDomProviderService().getElement(bean);
                         Element sourceElement = MarkupService.getSourceElementForElement(componentRootElement);
-                        return Position.create(sourceElement, pos.getOffset() > 0);
+//                        return Position.create(sourceElement, pos.getOffset() > 0);
+                        return DesignerPaneBase.createDomPosition(sourceElement, pos.getOffset() > 0);
                     }
                 }
                 
                 node = node.getParentNode();
             }
             
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         } else {
             //            // XXX shouldn't this be return pos; ? Try to click somewhere in BoxModelTest
             //            // layout-floats3.html
@@ -2545,7 +2690,8 @@ public final class ModelViewMapper {
             return box;
         }
 
-        Position pos = Position.create(element, false);
+//        Position pos = Position.create(element, false);
+        DomPosition pos = DesignerPaneBase.createDomPosition(element, false);
 
 //        if (!pos.isRendered()) {
 //        if (!MarkupService.isRenderedNode(pos.getNode())) {
@@ -2553,7 +2699,8 @@ public final class ModelViewMapper {
             pos = pos.getRenderedPosition();
         }
 
-        if (pos == Position.NONE) {
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
             return null;
         }
 

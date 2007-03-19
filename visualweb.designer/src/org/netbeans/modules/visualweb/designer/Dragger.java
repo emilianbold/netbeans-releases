@@ -16,10 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.visualweb.designer;
 
-import java.util.List;
-import org.netbeans.modules.visualweb.css2.ModelViewMapper;
+
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -40,15 +40,18 @@ import java.awt.image.BufferedImage;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
-
+import java.util.List;
 import javax.swing.ImageIcon;
+
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.css2.CssBox;
+import org.netbeans.modules.visualweb.css2.ModelViewMapper;
+import org.netbeans.modules.visualweb.css2.PageBox;
+import org.openide.ErrorManager;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import org.netbeans.modules.visualweb.css2.CssBox;
-import org.netbeans.modules.visualweb.css2.PageBox;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /**
@@ -82,7 +85,10 @@ public class Dragger extends Interaction implements KeyListener {
 //    private List<MarkupDesignBean> beans;
     private Element[] componentRootElements;
     private List<Image> images;
-    private Position pos;
+    
+//    private Position pos;
+    private DomPosition pos;
+    
     private int prevX = -500;
     private int prevY = -500;
     private int prevAction;
@@ -326,12 +332,14 @@ public class Dragger extends Interaction implements KeyListener {
                     boolean grid = isOverGrid(prevX, prevY);
 
                     if (grid) {
-                        pos = Position.NONE;
+//                        pos = Position.NONE;
+                        pos = DomPosition.NONE;
                     } else {
                         pos = getPosition(prevX, prevY);
 
 //                        if ((pos == Position.NONE) && webform.getDocument().isGridMode()) {
-                        if ((pos == Position.NONE) && webform.isGridModeDocument()) {
+//                        if ((pos == Position.NONE) && webform.isGridModeDocument()) {
+                        if ((pos == DomPosition.NONE) && webform.isGridModeDocument()) {
                             // Safety net: in page grid mode, if we
                             // can't find a valid position, position
                             // it at the absolute position instead
@@ -339,7 +347,8 @@ public class Dragger extends Interaction implements KeyListener {
                         }
                     }
 
-                    if ((pos != Position.NONE) || (grid && hasMoved(prevX, prevY))) {
+//                    if ((pos != Position.NONE) || (grid && hasMoved(prevX, prevY))) {
+                    if ((pos != DomPosition.NONE) || (grid && hasMoved(prevX, prevY))) {
                         gm.move(pane, /*beans,*/ selections, boxes, pos, prevX, prevY,
                             action == DRAG_FREE);
                     } // else: didn't really move ...
@@ -409,7 +418,8 @@ public class Dragger extends Interaction implements KeyListener {
             return;
         }
 
-        if (pos != Position.NONE) {
+//        if (pos != Position.NONE) {
+        if (pos != DomPosition.NONE) {
             // We're over a text flow area - simply show the caret
             return;
         }
@@ -669,7 +679,8 @@ public class Dragger extends Interaction implements KeyListener {
     /** Compute a potential drop position under the pointer, if one
      * is allowed. Otherwise returns Position.NONE.
      */
-    private Position getPosition(int px, int py) {
+//    private Position getPosition(int px, int py) {
+    private DomPosition getPosition(int px, int py) {
         // Update caret if over a text area. But not if it's over
         // one of the being-dragged areas!
 //        CssBox box = webform.getMapper().findBox(px, py);
@@ -677,11 +688,13 @@ public class Dragger extends Interaction implements KeyListener {
 
         if (box.getWebForm() != webform) {
             // XXX #6366584 The box is from different DOM, e.g. it is over fragment.
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
         
         if (isBelowDragged(box)) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
 
             /*
             } else if (!(box instanceof TextBox) && box.isReplacedBox()) {
@@ -690,22 +703,32 @@ public class Dragger extends Interaction implements KeyListener {
              */
         } else {
             if (box.isGrid()) {
-                return Position.NONE;
+//                return Position.NONE;
+                return DomPosition.NONE;
             }
 
-            Position pos = webform.getManager().findTextPosition(px, py);
+//            Position pos = webform.getManager().findTextPosition(px, py);
+            DomPosition pos = webform.getManager().findTextPosition(px, py);
 
-            if ((pos == Position.NONE) || canDropAt(pos)) {
+//            if ((pos == Position.NONE) || canDropAt(pos)) {
+            if ((pos == DomPosition.NONE) || canDropAt(pos)) {
                 return pos;
             }
 
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
-    private boolean canDropAt(Position pos) {
+//    private boolean canDropAt(Position pos) {
+    private boolean canDropAt(DomPosition pos) {
         // Look up the nearest parent bean at the position
-        assert pos != Position.NONE;
+//        assert pos != Position.NONE;
+        if (pos == DomPosition.NONE) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new IllegalArgumentException("Invalid position, pos=" + pos)); // NOI18N
+            return false;
+        }
 //
 //        DesignBean parent = null;
         Node curr = pos.getNode();
@@ -954,12 +977,14 @@ public class Dragger extends Interaction implements KeyListener {
             boolean grid = isOverGrid(px, py);
 
             if (grid) {
-                pos = Position.NONE;
+//                pos = Position.NONE;
+                pos = DomPosition.NONE;
             } else {
                 pos = getPosition(px, py);
 
 //                if ((pos == Position.NONE) && webform.getDocument().isGridMode()) {
-                if ((pos == Position.NONE) && webform.isGridModeDocument()) {
+//                if ((pos == Position.NONE) && webform.isGridModeDocument()) {
+                if ((pos == DomPosition.NONE) && webform.isGridModeDocument()) {
                     // Safety net: in page grid mode, if we can't find a valid
                     // position, position it at the absolute position instead
                     grid = true;
@@ -996,9 +1021,11 @@ public class Dragger extends Interaction implements KeyListener {
                     pane.setCursor(webform.getManager().getLinkedCursor());
                 }
             } else if (!grid) {
-                Position pos = ModelViewMapper.viewToModel(webform, px, py);
+//                Position pos = ModelViewMapper.viewToModel(webform, px, py);
+                DomPosition pos = ModelViewMapper.viewToModel(webform, px, py);
 
-                if (pos != Position.NONE) {
+//                if (pos != Position.NONE) {
+                if (pos != DomPosition.NONE) {
                     webform.getPane().showCaret(pos);
                     pane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
                 } else {

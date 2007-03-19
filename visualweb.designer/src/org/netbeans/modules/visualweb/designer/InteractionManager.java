@@ -19,6 +19,7 @@
 package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
@@ -47,6 +48,7 @@ import javax.swing.JPopupMenu;
 
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.ErrorManager;
@@ -70,8 +72,6 @@ import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.Document;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 // For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
@@ -201,13 +201,15 @@ public class InteractionManager {
                 dc = pane.getPaneUI().createCaret();
                 pane.setCaret(dc);
 
-                Position pos = Position.NONE;
+//                Position pos = Position.NONE;
+                DomPosition pos = DomPosition.NONE;
 
                 if (event != null) {
 //                    pos = pane.viewToModel(event.getPoint());
                     pos = webform.viewToModel(event.getPoint());
 
-                    if (pos != Position.NONE) {
+//                    if (pos != Position.NONE) {
+                    if (pos != DomPosition.NONE) {
 //                        pos = DesignerUtils.checkPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
                         pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
                     }
@@ -218,11 +220,13 @@ public class InteractionManager {
 //                    if ((pos != Position.NONE) && (markupDesignBean != null)) {
 //                        pos = new Position(markupDesignBean.getElement(), 0, Bias.FORWARD);
                     Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
-                    if ((pos != Position.NONE) && (componentRootElement != null)) {
+//                    if ((pos != Position.NONE) && (componentRootElement != null)) {
+                    if ((pos != DomPosition.NONE) && (componentRootElement != null)) {
                         Element sourceElement = MarkupService.getSourceElementForElement(componentRootElement);
                         if (sourceElement != null) {
 //                            pos = new Position(sourceElement, 0, Bias.FORWARD);
-                            pos = Position.create(sourceElement, 0, Bias.FORWARD);
+//                            pos = Position.create(sourceElement, 0, Bias.FORWARD);
+                            pos = DesignerPaneBase.createDomPosition(sourceElement, 0, Bias.FORWARD);
                         }
                     }
                 }
@@ -669,7 +673,8 @@ public class InteractionManager {
             insertBox = null;
         }
 
-        Position pos = Position.NONE;
+//        Position pos = Position.NONE;
+        DomPosition pos = DomPosition.NONE;
 
         if (!box.isGrid() /* && (insertBox != null)*/
         // XXX #97697 Do not process external document boxes, like fragments.
@@ -687,21 +692,24 @@ public class InteractionManager {
             //                }
 //            if (Document.isReadOnlyRegion(pos)) {
             if (isReadOnlyRegion(pos)) {
-                pos = Position.NONE;
+//                pos = Position.NONE;
+                pos = DomPosition.NONE;
             }
 
             // See if the new position points to a location in a grid mode; for example,
             // you may be pointing at an absolutely positioned StaticText; the caret position
             // would now be adjusted to point to the left or right of this static text which
             // is really a grid location
-            if ((pos != Position.NONE) &&
+//            if ((pos != Position.NONE) &&
+            if ((pos != DomPosition.NONE) &&
                     (pos.getNode().getNodeType() == org.w3c.dom.Node.ELEMENT_NODE)) {
                 Element parent = (Element)pos.getNode();
 //                CssBox parentBox = CssBox.getBox(parent);
                 CssBox parentBox = webform.findCssBoxForElement(parent);
 
                 if ((parentBox != null) && (parentBox.isGrid())) {
-                    pos = Position.NONE;
+//                    pos = Position.NONE;
+                    pos = DomPosition.NONE;
                 }
             }
         }
@@ -764,12 +772,14 @@ public class InteractionManager {
             if (!pos.isInside(targetSourceElement)) { // XXX todo: check front/end positions!
 
                 // The position is outside of the targeted component
-                pos = Position.NONE;
+//                pos = Position.NONE;
+                pos = DomPosition.NONE;
             }
         }
 
         if (committed) {
-            if (pos != Position.NONE) {
+//            if (pos != Position.NONE) {
+            if (pos != DomPosition.NONE) {
                 dndHandler.setInsertPosition(pos);
             } else {
                 dndHandler.setDropPoint(p);
@@ -787,7 +797,8 @@ public class InteractionManager {
             }
         } else {
             // Update caret
-            if (pos != Position.NONE) {
+//            if (pos != Position.NONE) {
+            if (pos != DomPosition.NONE) {
                 if (pane.getCaret() == null) {
                     DesignerCaret dc = pane.getPaneUI().createCaret();
                     pane.setCaret(dc);
@@ -1066,14 +1077,16 @@ public class InteractionManager {
      * we're not over a text flow area.
      * @todo Move to ModelViewMapper!
      */
-    public Position findTextPosition(int x, int y) {
+//    public Position findTextPosition(int x, int y) {
+    public DomPosition findTextPosition(int x, int y) {
 //        ModelViewMapper mapper = webform.getMapper();
 //        CssBox box = mapper.findBox(x, y);
         CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), x, y);
         CssBox insertBox = findInsertBox(box);
 
         if (insertBox != null) {
-            Position pos = ModelViewMapper.viewToModel(webform, x, y);
+//            Position pos = ModelViewMapper.viewToModel(webform, x, y);
+            DomPosition pos = ModelViewMapper.viewToModel(webform, x, y);
 
             if ((getInlineEditor() == null) || !getInlineEditor().isDocumentEditor()) {
 //                pos = DesignerUtils.checkPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
@@ -1082,7 +1095,8 @@ public class InteractionManager {
 
             return pos;
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
@@ -3154,7 +3168,8 @@ public class InteractionManager {
      * Report whether the given node is in a read-only region of
      * the document or not.
      */
-    static boolean isReadOnlyRegion(Position pos) {
+//    static boolean isReadOnlyRegion(Position pos) {
+    static boolean isReadOnlyRegion(DomPosition pos) {
         org.w3c.dom.Node node = pos.getNode();
 
         // XXX FIXME Determine if this node is in a DocumentFragment which means

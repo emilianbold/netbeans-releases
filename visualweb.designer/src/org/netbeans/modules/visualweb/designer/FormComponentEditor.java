@@ -19,6 +19,7 @@
 package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
 import java.awt.Color;
@@ -64,7 +65,6 @@ import org.netbeans.modules.visualweb.css2.FormComponentBox;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /**
@@ -488,7 +488,8 @@ class FormComponentEditor extends InlineEditor {
         return !isEscaped();
     }
 
-    public boolean checkPosition(Position pos) {
+//    public boolean checkPosition(Position pos) {
+    public boolean checkPosition(DomPosition pos) {
         return true;
     }
 

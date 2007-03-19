@@ -28,12 +28,12 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.UIManager;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /*
@@ -61,8 +61,10 @@ public class EndLineAction extends TextAction {
         DesignerPaneBase target = getTextComponent(e);
 
         if (target != null) {
-            Position pos = target.getCaretPosition();
-            if (pos == Position.NONE) {
+//            Position pos = target.getCaretPosition();
+            DomPosition pos = target.getCaretPosition();
+//            if (pos == Position.NONE) {
+            if (pos == DomPosition.NONE) {
                 // #6316151 No position no move.
                 return;
             }
@@ -70,9 +72,11 @@ public class EndLineAction extends TextAction {
             WebForm webform = target.getWebForm();
             
 //            ModelViewMapper mapper = webform.getMapper();
-            Position endPos = ModelViewMapper.getLineEnd(webform, pos);
+//            Position endPos = ModelViewMapper.getLineEnd(webform, pos);
+            DomPosition endPos = ModelViewMapper.getLineEnd(webform, pos);
 
-            if (endPos != Position.NONE) {
+//            if (endPos != Position.NONE) {
+            if (endPos != DomPosition.NONE) {
                 DesignerCaret caret = target.getCaret();
 
                 if (!caret.isWithinEditableRegion(endPos)) {

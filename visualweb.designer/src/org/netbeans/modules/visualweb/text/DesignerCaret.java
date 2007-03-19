@@ -16,11 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.visualweb.text;
 
-import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
-import org.netbeans.modules.visualweb.css2.ModelViewMapper;
+
 import java.awt.Graphics;
 import java.awt.HeadlessException;
 import java.awt.Point;
@@ -37,7 +36,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
@@ -45,16 +43,23 @@ import javax.swing.Timer;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 
-import org.openide.ErrorManager;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentEvent;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentListener;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.CssBox;
+import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.actions.SelectLineAction;
 import org.netbeans.modules.visualweb.text.actions.SelectWordAction;
+
+import org.openide.ErrorManager;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 
 /**
@@ -232,7 +237,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 //        WebForm webform = component.getDocument().getWebForm();
         WebForm webform = component.getWebForm();
         
-        Position pos = webform.viewToModel(pt);
+//        Position pos = webform.viewToModel(pt);
+        DomPosition pos = webform.viewToModel(pt);
 
         if ((webform.getManager().getInlineEditor() == null) ||
                 !webform.getManager().getInlineEditor().isDocumentEditor()) {
@@ -240,7 +246,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
         }
 
-        if (pos != Position.NONE) {
+//        if (pos != Position.NONE) {
+        if (pos != DomPosition.NONE) {
             setDot(pos);
         }
     }
@@ -258,7 +265,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 //        WebForm webform = component.getDocument().getWebForm();
         WebForm webform = component.getWebForm();
         
-        Position pos = webform.viewToModel(pt);
+//        Position pos = webform.viewToModel(pt);
+        DomPosition pos = webform.viewToModel(pt);        
 
         if ((webform.getManager().getInlineEditor() == null) ||
                 !webform.getManager().getInlineEditor().isDocumentEditor()) {
@@ -266,7 +274,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
         }
 
-        if (pos != Position.NONE) {
+//        if (pos != Position.NONE) {
+        if (pos != DomPosition.NONE) {
             moveDot(pos);
         }
     }
@@ -422,7 +431,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      * Adjusts the caret location based on the MouseEvent.
      */
     private void adjustCaret(MouseEvent e) {
-        if (((e.getModifiers() & ActionEvent.SHIFT_MASK) != 0) && (getDot() != Position.NONE)) {
+//        if (((e.getModifiers() & ActionEvent.SHIFT_MASK) != 0) && (getDot() != Position.NONE)) {
+        if (((e.getModifiers() & ActionEvent.SHIFT_MASK) != 0) && (getDot() != DomPosition.NONE)) {
             moveCaret(e);
         } else {
             positionCaret(e);
@@ -524,7 +534,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
                 return;
             }
 
-            Position dot = range.getDot();
+//            Position dot = range.getDot();
+            DomPosition dot = range.getDot();
 //            Rectangle r = mapper.modelToView(/*component,*/ dot);
 //            WebForm webForm = component.getDocument().getWebForm();
             WebForm webForm = component.getWebForm();
@@ -592,7 +603,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         c.addFocusListener(this);
         
 //        c.getDocument().addDomDocumentListener(handler);
-        c.getWebForm().getDocument().addDomDocumentListener(handler);
+//        c.getWebForm().getDocument().addDomDocumentListener(handler);
+        c.getWebForm().getDomDocument().addDomDocumentListener(handler);
 
         // if the component already has focus, it won't
         // be notified.
@@ -620,7 +632,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         c.removeFocusListener(this);
         
 //        c.getDocument().removeDomDocumentListener(handler);
-        c.getWebForm().getDocument().removeDomDocumentListener(handler);
+//        c.getWebForm().getDocument().removeDomDocumentListener(handler);
+        c.getWebForm().getDomDocument().removeDomDocumentListener(handler);
 
         synchronized (this) {
             component = null;
@@ -690,7 +703,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 
                 // repaint the caret
                 if (range != null) {
-                    Position dot = range.getDot();
+//                    Position dot = range.getDot();
+                    DomPosition dot = range.getDot();
 //                    Rectangle loc = mapper.modelToView(/*component,*/ dot);
 //                    WebForm webForm = component.getDocument().getWebForm();
                     WebForm webForm = component.getWebForm();
@@ -749,9 +763,11 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      *
      * @return the position >= 0
      */
-    public Position getDot() {
+//    public Position getDot() {
+    public DomPosition getDot() {
         if (range == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         return range.getDot();
@@ -764,9 +780,11 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      *
      * @return the position >= 0
      */
-    public Position getMark() {
+//    public Position getMark() {
+    public DomPosition getMark() {
         if (range == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         return range.getMark();
@@ -776,9 +794,11 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      * Return the first endpoint of the range in the document.
      * This is always a source position.
      */
-    public Position getFirstPosition() {
+//    public Position getFirstPosition() {
+    public DomPosition getFirstPosition() {
         if (range == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         return range.getFirstPosition();
@@ -788,9 +808,11 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      * Return the second/last endpoint of the range in the document.
      * This is always a source position.
      */
-    public Position getLastPosition() {
+//    public Position getLastPosition() {
+    public DomPosition getLastPosition() {
         if (range == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         return range.getLastPosition();
@@ -803,7 +825,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      * @param dot
      *            the position >= 0
      */
-    public void setDot(Position dot) {
+//    public void setDot(Position dot) {
+    public void setDot(DomPosition dot) {
         handleSetDot(dot);
     }
 
@@ -813,12 +836,14 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      * @param dot
      *            the position >= 0
      */
-    public void moveDot(Position dot) {
+//    public void moveDot(Position dot) {
+    public void moveDot(DomPosition dot) {
         /*
          * We don't have disabled designer panes... if (! component.isEnabled()) { // don't allow
          * selection on disabled components. setDot(dot, dotBias); return; }
          */
-        if ((dot == Position.NONE) && (range == null)) {
+//        if ((dot == Position.NONE) && (range == null)) {
+        if ((dot == DomPosition.NONE) && (range == null)) {
             return;
         } else if ((range != null) && range.isDot(dot)) {
             return;
@@ -827,7 +852,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         handleMoveDot(dot);
     }
 
-    void handleMoveDot(Position dot) {
+//    void handleMoveDot(Position dot) {
+    void handleMoveDot(DomPosition dot) {
 //        assert !dot.isRendered();
         if (MarkupService.isRenderedNode(dot.getNode())) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
@@ -856,14 +882,16 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         }
     }
 
-    void handleSetDot(Position dot) {
+//    void handleSetDot(Position dot) {
+    void handleSetDot(DomPosition dot) {
         // move dot, if it changed
 
         /*
          * Document doc = component.getDocument(); if (doc != null) { dot = Position.first(dot,
          * doc.getEndPosition()); } dot = Position.last(dot, doc.getStartPosition());
          */
-        if (dot == Position.NONE) {
+//        if (dot == Position.NONE) {
+        if (dot == DomPosition.NONE) {
             if (range != null) {
                 range.detach();
                 range = null;
@@ -934,7 +962,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
      * repainted. It also makes sure that the caret is within the visible region of the view, if the
      * view is scrollable.
      */
-    void changeCaretPosition(Position dot) {
+//    void changeCaretPosition(Position dot) {
+    void changeCaretPosition(DomPosition dot) {
         // repaint the old position and set the new value of
         // the dot.
         repaint();
@@ -990,7 +1019,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             if ((mapper != null) /*&& (doc != null)*/ && (range != null)) {
                 // determine the new location and scroll if
                 // not visible.
-                Position dot = range.getDot();
+//                Position dot = range.getDot();
+                DomPosition dot = range.getDot();
 //                Rectangle newLoc = mapper.modelToView(/*component,*/ dot);
 //                WebForm webForm = component.getDocument().getWebForm();
                 WebForm webForm = component.getWebForm();
@@ -1214,17 +1244,20 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             removeSelection();
         }
 
-        Position pos = getDot();
+//        Position pos = getDot();
+        DomPosition pos = getDot();
 
         if (editor == null) {
 //            assert (pos == Position.NONE) || !pos.isRendered();
-            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+//            if (pos != Position.NONE && MarkupService.isRenderedNode(pos.getNode())) {
+            if (pos != DomPosition.NONE && MarkupService.isRenderedNode(pos.getNode())) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                         new IllegalStateException("Node is expected to be not rendered, node=" + pos.getNode())); // NOI18N
             }
         } // else: Stay in the DocumentFragment; don't jump to the source DOM (there is none)
 
-        if (pos == Position.NONE) {
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
             UIManager.getLookAndFeel().provideErrorFeedback(component);
 
             return;
@@ -1232,7 +1265,7 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 
 //        component.getDocument().insertString(this, pos, content);
 //        component.getDocument().insertString(pos, content);
-        component.getWebForm().getDocument().insertString(pos, content);
+        component.getWebForm().getDomDocument().insertString(pos, content);
     }
 
     /**
@@ -1251,11 +1284,14 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         }
 
 //        Document doc = component.getDocument();
-        Position mark = range.getMark();
+//        Position mark = range.getMark();
+        DomPosition mark = range.getMark();
 //        Position dot = ModelViewMapper.computeArrowRight(doc.getWebForm(), mark);
-        Position dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
+//        Position dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
+        DomPosition dot = ModelViewMapper.computeArrowRight(component.getWebForm(), mark);
 
-        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+//        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
             UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
 
             return false;
@@ -1283,11 +1319,14 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         }
 
 //        Document doc = component.getDocument();
-        Position mark = range.getMark();
+//        Position mark = range.getMark();
+        DomPosition mark = range.getMark();
 //        Position dot = ModelViewMapper.computeArrowLeft(doc.getWebForm(), mark);
-        Position dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
+//        Position dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
+        DomPosition dot = ModelViewMapper.computeArrowLeft(component.getWebForm(), mark);
 
-        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+//        if ((dot == Position.NONE) || !isWithinEditableRegion(dot)) {
+        if ((dot == DomPosition.NONE) || !isWithinEditableRegion(dot)) {
             UIManager.getLookAndFeel().provideErrorFeedback(component); // beep
 
             return false;
@@ -1315,17 +1354,21 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
     }
 
     /** Return true iff the position is within the editable portion of the document. */
-    public boolean isWithinEditableRegion(Position pos) {
+//    public boolean isWithinEditableRegion(Position pos) {
+    public boolean isWithinEditableRegion(DomPosition pos) {
 //        WebForm webform = component.getDocument().getWebForm();
         WebForm webform = component.getWebForm();
 
         InlineEditor editor = webform.getManager().getInlineEditor();
 
         if (editor != null) {
-            Position editableRegionStart = editor.getBegin();
-            Position editableRegionEnd = editor.getEnd();
-            assert editableRegionStart != Position.NONE;
-            assert editableRegionEnd != Position.NONE;
+//            Position editableRegionStart = editor.getBegin();
+//            Position editableRegionEnd = editor.getEnd();
+            DomPosition editableRegionStart = editor.getBegin();
+            DomPosition editableRegionEnd = editor.getEnd();
+
+//            assert editableRegionStart != Position.NONE;
+//            assert editableRegionEnd != Position.NONE;
 
             return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
         }
@@ -1353,16 +1396,16 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         //Position editableRegionEnd = new Position(null, editableRegionStart.getNode(),
         //                                               editableRegionStart.getOffset()+1);
         Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
-        Position editableRegionStart =
+//        Position editableRegionStart =
 //            new Position(box.getDesignBean().getElement(), 0, Bias.FORWARD);
                 // XXX Possible NPE?
 //                new Position(CssBox.getMarkupDesignBeanForCssBox(box).getElement(), 0, Bias.FORWARD);
 //                new Position(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
-                Position.create(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
-        Position editableRegionEnd =
+        DomPosition editableRegionStart = DesignerPaneBase.createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+//        Position editableRegionEnd =
 //            new Position(editableRegionStart.getNode(),
 //                editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
-            Position.create(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+        DomPosition editableRegionEnd = DesignerPaneBase.createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
 
         return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
     }
@@ -1386,7 +1429,7 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         }
     }
 
-    class Handler implements ActionListener, ClipboardOwner, Document.DomDocumentListener {
+    class Handler implements ActionListener, ClipboardOwner, DomDocumentListener {
         // --- ActionListener methods ----------------------------------
 
         /**
@@ -1404,7 +1447,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
                     DesignerPaneBaseUI mapper = component.getUI();
 
                     if (range != null) {
-                        Position dot = range.getDot();
+//                        Position dot = range.getDot();
+                        DomPosition dot = range.getDot();
 //                        Rectangle r = mapper.modelToView(/*component,*/ dot);
 //                        WebForm webForm = component.getDocument().getWebForm();
                         WebForm webForm = component.getWebForm();
@@ -1442,7 +1486,7 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         //////////////////////////
         // DomDocumentListener >>>
         
-        public void insertUpdate(Document.DomDocumentEvent evt) {
+        public void insertUpdate(DomDocumentEvent evt) {
             DesignerCaret.this.setDot(evt.getDomPosition());
         }
         

@@ -34,7 +34,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
-import org.netbeans.modules.visualweb.text.Document;
 
 
 /*

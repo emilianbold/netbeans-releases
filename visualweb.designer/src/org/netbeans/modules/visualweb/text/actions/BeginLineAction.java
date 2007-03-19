@@ -28,12 +28,12 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.UIManager;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.InlineEditor;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /*
@@ -61,8 +61,10 @@ public class BeginLineAction extends TextAction {
         DesignerPaneBase target = getTextComponent(e);
 
         if (target != null) {
-            Position pos = target.getCaretPosition();
-            if (pos == Position.NONE) {
+//            Position pos = target.getCaretPosition();
+            DomPosition pos = target.getCaretPosition();
+//            if (pos == Position.NONE) {
+            if (pos == DomPosition.NONE) {
                 // #6316151 No position no move.
                 return;
             }
@@ -70,9 +72,11 @@ public class BeginLineAction extends TextAction {
             WebForm webform = target.getWebForm();
             
 //            ModelViewMapper mapper = webform.getMapper();
-            Position begPos = ModelViewMapper.getLineBegin(webform, pos);
+//            Position begPos = ModelViewMapper.getLineBegin(webform, pos);
+            DomPosition begPos = ModelViewMapper.getLineBegin(webform, pos);
 
-            if (begPos != Position.NONE) {
+//            if (begPos != Position.NONE) {
+            if (begPos != DomPosition.NONE) {
                 DesignerCaret caret = target.getCaret();
 
                 if (!caret.isWithinEditableRegion(begPos)) {

@@ -50,6 +50,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.designer.ColorManager;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerSettings;
@@ -59,7 +60,6 @@ import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 /**
@@ -519,8 +519,9 @@ public class PageBox extends DocumentBox implements ChangeListener {
         if (!webform.isGridMode()) {
             DesignerPane pane = webform.getPane();
 
-            if ((pane != null) &&
-                    ((pane.getCaret() == null) || (pane.getCaretPosition() == Position.NONE))) {
+//            if ((pane != null) &&
+//                    ((pane.getCaret() == null) || (pane.getCaretPosition() == Position.NONE))) {
+            if ((pane != null) && ((pane.getCaret() == null) || (pane.getCaretPosition() == DomPosition.NONE))) {
                 pane.showCaretAtBeginning();
             }
         }

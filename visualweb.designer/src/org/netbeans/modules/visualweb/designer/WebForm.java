@@ -22,6 +22,8 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocument;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.CoordinateTranslator;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.InlineEditorSupport;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService;
@@ -58,7 +60,7 @@ import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.modules.visualweb.text.Position;
+import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -70,8 +72,6 @@ import org.openide.util.WeakListeners;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import org.netbeans.modules.visualweb.text.Document;
 
 
 /**
@@ -116,7 +116,10 @@ public class WebForm implements Designer {
 //    protected FacesModel model;
     private SelectionManager selection;
     private DesignerTopComp view;
-    private Document document;
+    
+//    private Document document;
+    private final DomDocument domDocument = DesignerPaneBase.createDomDocument(this);
+    
     private boolean gridMode = false;
 //    private ModelViewMapper mapper;
 //    private CssLookup css;
@@ -718,20 +721,27 @@ public class WebForm implements Designer {
         return selection;
     }
 
+//    /**
+//     * Get the document associated with this webform.
+//     */
+//    public Document getDocument() {
+//        if (document == null) {
+//            document = new Document(this);
+//        }
+//
+//        return document;
+//    }
+//
+//    public void setDocument(Document document) {
+//        this.document = document;
+//    }
     /**
-     * Get the document associated with this webform.
+     * Gets the DomDocument associated with this webform.
      */
-    public Document getDocument() {
-        if (document == null) {
-            document = new Document(this);
-        }
-
-        return document;
+    public DomDocument getDomDocument() {
+        return domDocument;
     }
-
-    public void setDocument(Document document) {
-        this.document = document;
-    }
+    
 
     /**
      * Get the document associated with this webform.
@@ -2116,7 +2126,7 @@ public class WebForm implements Designer {
      *   represent a valid location in the associated document
      * @see DesignerPaneBaseUI#modelToView
      */
-    public Rectangle modelToView(/*DesignerPaneBase tc,*/ Position pos) {
+    public Rectangle modelToView(/*DesignerPaneBase tc, Position pos*/ DomPosition pos) {
         if(DesignerUtils.DEBUG) {
             DesignerUtils.debugLog(getClass().getName() + ".modelToView(DesignerPaneBase, Position)");
         }
@@ -2169,7 +2179,8 @@ public class WebForm implements Designer {
      *   -1 if not painted
      * @see DesignerPaneBaseUI#viewToModel
      */
-    public Position viewToModel(/*DesignerPaneBase tc,*/ Point pt) {
+//    public Position viewToModel(/*DesignerPaneBase tc,*/ Point pt) {
+    public DomPosition viewToModel(/*DesignerPaneBase tc,*/ Point pt) {
 //        Position pos = Position.NONE;
 //        Document doc = editor.getDocument();
         

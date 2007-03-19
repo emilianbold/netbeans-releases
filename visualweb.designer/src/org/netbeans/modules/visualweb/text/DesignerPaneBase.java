@@ -19,6 +19,8 @@
 package org.netbeans.modules.visualweb.text;
 
 import java.util.HashMap;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.actions.SelectLineAction;
 import java.awt.AWTEvent;
@@ -46,6 +48,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.text.Keymap;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocument;
 import org.netbeans.modules.visualweb.text.actions.BeginLineAction;
 import org.netbeans.modules.visualweb.text.actions.BeginWordAction;
 import org.netbeans.modules.visualweb.text.actions.DefaultKeyTypedAction;
@@ -55,6 +58,8 @@ import org.netbeans.modules.visualweb.text.actions.EndLineAction;
 import org.netbeans.modules.visualweb.text.actions.EndWordAction;
 import org.netbeans.modules.visualweb.text.actions.NextVisualPositionAction;
 import org.netbeans.modules.visualweb.text.actions.SelectAllAction;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 
 /**
@@ -783,7 +788,8 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      * @exception BadLocationException
      *                if the offset or length are invalid
      */
-    public String getText(Position offs, int len) {
+//    public String getText(Position offs, int len) {
+    public String getText(DomPosition offs, int len) {
         throw new RuntimeException("Not yet implemented!"); // XXX
 
         //return "";
@@ -837,7 +843,8 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      *                than the component's text length
      * @see #setCaretPosition
      */
-    public void moveCaretPosition(Position pos) {
+//    public void moveCaretPosition(Position pos) {
+    public void moveCaretPosition(DomPosition pos) {
         if (caret != null) {
             caret.moveDot(pos);
         }
@@ -858,7 +865,8 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      * @beaninfo
      * description: the caret position
      */
-    public void setCaretPosition(Position position) {
+//    public void setCaretPosition(Position position) {
+    public void setCaretPosition(DomPosition position) {
         if (caret != null) {
             caret.setDot(position);
         }
@@ -869,9 +877,11 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      *
      * @return the position of the text insertion caret for the text component >= 0
      */
-    public Position getCaretPosition() {
+//    public Position getCaretPosition() {
+    public DomPosition getCaretPosition() {
         if (caret == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         return caret.getDot();
@@ -902,7 +912,8 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      * @see #setCaretPosition
      * @see #moveCaretPosition
      */
-    public void select(Position selectionStart, Position selectionEnd) {
+//    public void select(Position selectionStart, Position selectionEnd) {
+    public void select(DomPosition selectionStart, DomPosition selectionEnd) {
         // argument adjustment done by java.awt.TextComponent
         setCaretPosition(selectionStart);
         moveCaretPosition(selectionEnd);
@@ -1491,5 +1502,32 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
 	    super();
 	}
     } // End of AccessibleDesignerPaneBase.
+
     
+    
+    /** XXX Temporary, until the Document, Range and Position are moved */
+    public static DomDocument createDomDocument(WebForm webForm) {
+        return new Document(webForm);
+    }
+
+    /** XXX Temporary, until the Document, Range and Position are moved */
+    public static int compareBoundaryPoints(Node endPointA, int offsetA, Node endPointB, int offsetB) {
+        return Position.compareBoundaryPoints(endPointA, offsetA, endPointB, offsetB);
+    }
+
+    public static DomPosition createDomPosition(Node node, int offset, Bias bias) {
+        return Position.create(node, offset, bias);
+    }
+
+    public static DomPosition createDomPosition(Node node, boolean after) {
+        return Position.create(node, after);
+    }
+
+    public static DomPosition first(DomPosition dot, DomPosition mark) {
+        return Position.first(dot, mark);
+    }
+
+    public static DomPosition last(DomPosition dot, DomPosition mark) {
+        return Position.last(dot, mark);
+    }
 }

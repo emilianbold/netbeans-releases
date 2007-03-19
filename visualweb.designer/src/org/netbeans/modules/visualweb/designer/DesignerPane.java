@@ -20,6 +20,7 @@ package org.netbeans.modules.visualweb.designer;
 
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
@@ -66,8 +67,6 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.Document;
-import org.netbeans.modules.visualweb.text.Position;
 
 
 //import javax.swing.plaf.basic.BasicGraphicsUtils;
@@ -368,7 +367,9 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         //setGridDropListener(on);
         // Unselect text before switching, since there's no
         // caret to move once you switch to grid mode.
-        Position pos = getCaretPosition();
+//        Position pos = getCaretPosition();
+        DomPosition pos = getCaretPosition();
+        
         select(pos, pos);
 
         if (on) {
@@ -422,9 +423,11 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
      * too, if necessary)
      */
     public void showCaretAtBeginning() {
-        Position pos = ModelViewMapper.getFirstDocumentPosition(webform, true);
+//        Position pos = ModelViewMapper.getFirstDocumentPosition(webform, true);
+        DomPosition pos = ModelViewMapper.getFirstDocumentPosition(webform, true);
 
-        if (pos == Position.NONE) {
+//        if (pos == Position.NONE) {
+        if (pos == DomPosition.NONE) {
             hideCaret();
         } else {
             showCaret(pos);
@@ -439,8 +442,10 @@ implements /*PropertyChangeListener,*/ PreferenceChangeListener {
         }
     }
 
-    public void showCaret(Position dot) {
-        if (dot == Position.NONE) {
+//    public void showCaret(Position dot) {
+    public void showCaret(DomPosition dot) {
+//        if (dot == Position.NONE) {
+        if (dot == DomPosition.NONE) {
             hideCaret();
 
             return;

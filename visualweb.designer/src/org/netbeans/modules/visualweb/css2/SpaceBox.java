@@ -16,6 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.visualweb.css2;
 
 
@@ -24,11 +25,12 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import org.w3c.dom.Element;
-
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.Position;
+import org.netbeans.modules.visualweb.text.DesignerPaneBase;
+
+import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 
@@ -215,29 +217,37 @@ public class SpaceBox extends CssBox {
     }
 
     /** Return the first position in the document of this space node */
-    public Position getFirstPosition() {
+//    public Position getFirstPosition() {
+    public DomPosition getFirstPosition() {
         if (node != null) {
 //            return new Position(node, getDomStartOffset(), Bias.FORWARD);
-            return Position.create(node, getDomStartOffset(), Bias.FORWARD);
+//            return Position.create(node, getDomStartOffset(), Bias.FORWARD);
+            return DesignerPaneBase.createDomPosition(node, getDomStartOffset(), Bias.FORWARD);
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
     /** Return the last position in the document of this space node */
-    public Position getLastPosition() {
+//    public Position getLastPosition() {
+    public DomPosition getLastPosition() {
         if (node != null) {
 //            return new Position(node, getDomEndOffset(), Bias.BACKWARD);
-            return Position.create(node, getDomEndOffset(), Bias.BACKWARD);
+//            return Position.create(node, getDomEndOffset(), Bias.BACKWARD);
+            return DesignerPaneBase.createDomPosition(node, getDomEndOffset(), Bias.BACKWARD);
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
     /** TODO: rename to computePosition */
-    public Position computePosition(int px) {
+//    public Position computePosition(int px) {
+    public DomPosition computePosition(int px) {
         if (node == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         int offset = getDomStartOffset();
@@ -249,11 +259,13 @@ public class SpaceBox extends CssBox {
         }
         */
 //        return new Position(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
-        return Position.create(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
+//        return Position.create(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
+        return DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
     }
 
     /** Return the bounding box of the character at the given position */
-    public Rectangle getBoundingBox(Position pos) {
+//    public Rectangle getBoundingBox(Position pos) {
+    public Rectangle getBoundingBox(DomPosition pos) {
         assert pos.getNode() == node;
 
         if (pos.getOffset() == beginOffset) {
@@ -312,9 +324,11 @@ public class SpaceBox extends CssBox {
      * Given the position, return the previous position within this textbox if available
      * or Position.NONE if not.
      */
-    public Position getPrev(Position pos) {
+//    public Position getPrev(Position pos) {
+    public DomPosition getPrev(DomPosition pos) {
         if (node == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         if (pos.getOffset() > getDomStartOffset()) {
@@ -322,9 +336,11 @@ public class SpaceBox extends CssBox {
             int offset = getDomStartOffset();
 
 //            return new Position(node, offset, Bias.BACKWARD);
-            return Position.create(node, offset, Bias.BACKWARD);
+//            return Position.create(node, offset, Bias.BACKWARD);
+            return DesignerPaneBase.createDomPosition(node, offset, Bias.BACKWARD);
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 
@@ -332,18 +348,22 @@ public class SpaceBox extends CssBox {
      * Given the position, return the next position within this textbox if available
      * or Position.NONE if not.
      */
-    public Position getNext(Position pos) {
+//    public Position getNext(Position pos) {
+    public DomPosition getNext(DomPosition pos) {
         if (node == null) {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
 
         if (pos.getOffset() < getDomEndOffset()) {
             // Jump over all spaces in one big jump
             int offset = getDomEndOffset();
 
-            return Position.create(node, offset, Bias.FORWARD);
+//            return Position.create(node, offset, Bias.FORWARD);
+            return DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD);
         } else {
-            return Position.NONE;
+//            return Position.NONE;
+            return DomPosition.NONE;
         }
     }
 }

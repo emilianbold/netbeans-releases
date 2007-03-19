@@ -23,6 +23,7 @@ import java.awt.Rectangle;
 
 import javax.swing.plaf.ComponentUI;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 
 /**
  * Text editor user interface
@@ -70,6 +71,7 @@ public abstract class DesignerPaneBaseUI extends ComponentUI {
      * @exception BadLocationException
      * @exception IllegalArgumentException for an invalid direction
      */
-    public abstract Position getNextVisualPositionFrom(DesignerPaneBase t, Position pos,
-        int direction);
+//    public abstract Position getNextVisualPositionFrom(DesignerPaneBase t, Position pos,
+//        int direction);
+    public abstract DomPosition getNextVisualPositionFrom(DesignerPaneBase t, DomPosition pos, int direction);
 }
