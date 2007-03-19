@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,7 @@ import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.modules.junit.output.antutils.AntProject;
 import org.netbeans.modules.junit.output.antutils.TestCounter;
+import org.openide.ErrorManager;
 
 /**
  * Ant logger interested in task &quot;junit&quot;,
@@ -175,7 +176,20 @@ public final class JUnitAntLogger extends AntLogger {
             if (sessionInfo.sessionType == null) {
                 sessionInfo.sessionType = taskType;
             }
-            final int testClassCount = TestCounter.getTestClassCount(event);
+            
+            /*
+             * Count the test classes in the try-catch block so that
+             * 'testTaskStarted(...)' is called even if counting fails
+             * (throws an exception):
+             */
+            int testClassCount;
+            try {
+                testClassCount = TestCounter.getTestClassCount(event);
+            } catch (Exception ex) {
+                testClassCount = 0;
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+            
             final boolean hasXmlOutput = hasXmlOutput(event);
             getOutputReader(event).testTaskStarted(testClassCount, hasXmlOutput);
         }
