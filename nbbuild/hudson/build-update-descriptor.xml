@@ -4,6 +4,7 @@
         <makeupdatedesc desc="workspace/nbbuild/nbms/updates.xml" distbase="." automaticgrouping="true">
             <fileset dir="workspace/nbbuild/nbms">
                 <include name="*.nbm"/>
+                <exclude name="org-netbeans-modules-profiler-loadgen.nbm"/> <!-- XXX temporary, while profiler is not built properly -->
             </fileset>
         </makeupdatedesc>
 	<taskdef name="vuc" classname="org.netbeans.nbbuild.VerifyUpdateCenter" classpath="workspace/nbbuild/nbantext.jar"/>
