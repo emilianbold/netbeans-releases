@@ -887,7 +887,8 @@ public class WindowManagerParser {
         public void startElement (String nameSpace, String name, String qname, Attributes attrs) throws SAXException {
             if ("windowmanager".equals(qname)) { // NOI18N
                 handleWindowManager(attrs);
-            } else if (internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) >= 0) { //NOI18N
+            } else if (internalConfig.specVersion != null
+                    && internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) >= 0) { //NOI18N
                 //Parse version 2.0 and 2.1
                 if ("main-window".equals(qname)) { // NOI18N
                     handleMainWindow(attrs);
