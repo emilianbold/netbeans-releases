@@ -77,11 +77,11 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     //
     //    }
     /** Weak reference to the lookup. */
-    private WeakReference lookupWRef = new WeakReference(null);
+    private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
     
     
     public Lookup getLookup() {
-        Lookup lookup = (Lookup)lookupWRef.get();
+        Lookup lookup = lookupWRef.get();
         
         if (lookup == null) {
             Lookup superLookup = super.getLookup();
