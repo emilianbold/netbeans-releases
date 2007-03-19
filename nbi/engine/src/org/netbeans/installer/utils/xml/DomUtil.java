@@ -47,6 +47,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -86,7 +87,7 @@ public class DomUtil {
     public static Document parseXmlFile(CharSequence xmlFile) throws ParseException {
         try {
             final InputStream in = new ByteArrayInputStream(
-                xmlFile.toString().getBytes("UTF-8"));
+                xmlFile.toString().getBytes(StringUtils.ENCODING_UTF8));
             return parseXmlFile(in);
         } catch (UnsupportedEncodingException worntHappend) {
             throw new ParseException("utf-8 not supported!", worntHappend);

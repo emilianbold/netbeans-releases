@@ -32,7 +32,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -46,6 +45,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -592,5 +592,5 @@ public class FilesList implements Iterable<FileEntry> {
             2500;
     
     public static final String ENCODING =
-            "UTF-8"; // NOI18N
+            StringUtils.ENCODING_UTF8; // NOI18N
 }

@@ -94,7 +94,7 @@ public class StreamUtils {
     }
     
     public static CharSequence readStream(InputStream input) throws IOException {
-        return readStream(input, Charset.forName("utf-8"));
+        return readStream(input, Charset.forName(StringUtils.ENCODING_UTF8));
     }
     
     public static CharSequence readStream(InputStream input, Charset charset) throws IOException {
@@ -124,7 +124,7 @@ public class StreamUtils {
     }
     
     public static CharSequence readFile(File file) throws IOException {
-        return readFile(file, Charset.forName("UTF-8"));
+        return readFile(file, Charset.forName(StringUtils.ENCODING_UTF8));
     }
     
     public static void writeChars(OutputStream out, CharSequence chars, Charset charset) throws IOException {
@@ -132,7 +132,7 @@ public class StreamUtils {
     }
     
     public static void writeChars(OutputStream out, CharSequence chars) throws IOException {
-        writeChars(out, chars, Charset.forName("utf-8"));
+        writeChars(out, chars, Charset.forName(StringUtils.ENCODING_UTF8));
     }
     
     public static void writeChars(File file, CharSequence chars, Charset charset) throws IOException {
@@ -147,6 +147,6 @@ public class StreamUtils {
     }
     
     public static void writeChars(File file, CharSequence chars) throws IOException {
-        writeChars(file, chars, Charset.forName("UTF-8"));
+        writeChars(file, chars, Charset.forName(StringUtils.ENCODING_UTF8));
     }
 }

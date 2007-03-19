@@ -724,7 +724,7 @@ public class Installer implements FinishHandler {
                     if (path.indexOf(jarSep) != -1) {
                         jarLocation = path.substring(filePrefix.length(),
                                 path.indexOf(jarSep + installerResource));
-                        jarLocation = URLDecoder.decode(jarLocation,"UTF8");
+                        jarLocation = URLDecoder.decode(jarLocation, StringUtils.ENCODING_UTF8);
                         File jarfile = new File(jarLocation);
                         LogManager.log("... checking if it runs from cached engine");
                         if(jarfile.getAbsolutePath().equals(

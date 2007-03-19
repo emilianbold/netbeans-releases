@@ -203,7 +203,7 @@ public abstract class StringUtils {
     }
     
     public static String base64Encode(String string) throws UnsupportedEncodingException {
-        return base64Encode(string, "UTF-8");
+        return base64Encode(string, ENCODING_UTF8);
     }
     
     public static String base64Encode(String string, String charset) throws UnsupportedEncodingException {
@@ -257,7 +257,7 @@ public abstract class StringUtils {
     }
     
     public static String base64Decode(String string) throws UnsupportedEncodingException {
-        return base64Decode(string, "UTF-8");
+        return base64Decode(string, ENCODING_UTF8);
     }
     
     public static String base64Decode(String string, String charset) throws UnsupportedEncodingException {
@@ -470,6 +470,8 @@ public abstract class StringUtils {
     public static final String FORWARD_SLASH = "/"; //NOI18N
     public static final String DOUBLE_BACK_SLASH = "\\\\"; //NOI18N
     
+    public static final String ENCODING_UTF8 = "UTF-8";//NOI18N
+    
     public static final String CR = "\r";
     public static final String LF = "\n";
     public static final String DOT = ".";
@@ -484,7 +486,7 @@ public abstract class StringUtils {
     private static final String LEFT_WHITESPACE  = "^\\s+";
     private static final String RIGHT_WHITESPACE = "\\s+$";
     
-    
+        
     private static final char   MNEMONIC_CHAR    = '&';
     private static final String MNEMONIC         = "&";
     private static final char   NO_MNEMONIC      = '\u0000';

@@ -147,7 +147,7 @@ public class CreateBundleAction extends WizardAction {
             output.putNextEntry(new JarEntry(
                     EngineResources.ENGINE_PROPERTIES));
             StreamUtils.transferData(
-                    new ByteArrayInputStream(engineProperties.getBytes("UTF-8")),
+                    new ByteArrayInputStream(engineProperties.getBytes(StringUtils.ENCODING_UTF8)),
                     output);
             
             progress.addPercentage(percentageLeak);
