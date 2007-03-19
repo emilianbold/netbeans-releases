@@ -59,7 +59,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         //        this(context, new InstanceContent());
         
-
+        
     }
     
     
@@ -118,6 +118,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         }
     }
     
+    
+    private JComponent view;
     /*
      * Initializes the Panel and the graph
      **/
@@ -126,7 +128,9 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         scene = new PageFlowScene(this);
         
-        JScrollPane pane = new JScrollPane(scene.createView());
+        view = scene.createView();
+        
+        JScrollPane pane = new JScrollPane(view);
         pane.setVisible(true);
         
         //        Dimension viewDim = pane.getViewportBorderBounds().getSize();
@@ -147,7 +151,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         scene.createMalFormedWidget();
     }
     
-    public void removeUserMalFormedFacesConfig() {        
+    public void removeUserMalFormedFacesConfig() {
         scene.removeMalFormedWidget();
     }
     
@@ -362,6 +366,14 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         explorer = ExplorerManager.find(this);
     }
     
+    public void requestFocus() {
+        super.requestFocus();
+        view.requestFocus();
+    }
     
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return view.requestFocusInWindow();
+    }
     
 }
