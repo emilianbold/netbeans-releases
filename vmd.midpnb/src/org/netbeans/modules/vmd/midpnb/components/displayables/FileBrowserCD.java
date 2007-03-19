@@ -45,6 +45,8 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
+import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCode;
 import org.netbeans.modules.vmd.midp.components.displayables.ScreenCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
@@ -91,8 +93,14 @@ public final class FileBrowserCD extends ComponentDescriptor {
      
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
-            .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
+            .addParameters (MidpParameter.create(DisplayableCD.PROP_TITLE, DisplayableCD.PROP_TICKER))
+            .addParameters (DisplayableCode.createCommandParameter())
+            .addParameters (DisplayableCode.createCommandListenerParameter())
+            .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter())
             .addParameters(MidpParameter.create(PROP_FILTER))
+            .addSetters (MidpSetter.createSetter("setTitle", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE))
+            .addSetters (MidpSetter.createSetter("setTicker", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TICKER))
+            .addSetters (MidpSetter.createSetter("setCommandListener", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_COMMAND_LISTENER))
             .addSetters(MidpSetter.createSetter("setFilter", MidpVersionable.MIDP).addParameters(PROP_FILTER))
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY));
     }
@@ -118,6 +126,7 @@ public final class FileBrowserCD extends ComponentDescriptor {
 
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, AddActionPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, CodeSetterPresenter.class);
         super.gatherPresenters(presenters);
     }
 
