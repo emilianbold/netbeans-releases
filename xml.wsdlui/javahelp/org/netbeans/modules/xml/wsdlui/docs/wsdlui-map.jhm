@@ -3,6 +3,7 @@
                      "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
 <map version="1.0">
+
 	<mapID target="org.netbeans.modules.xml.wsdlui.about" url="wsdl_editor.html"/>
 	<mapID target="wsdlui_source" url="wsdl_editor_source.html"/>
 	<mapID target="wsdlui_code_completion" url="wsdl_editor_code_completion.html"/>
@@ -27,6 +28,7 @@
 	<mapID target="wsdlui_partner_nav" url="wsdl_editor_partner_nav.html"/>
 	<mapID target="wsdlui_partner_top_bottom" url="wsdl_editor_partner_top_bottom.html"/>
 	<mapID target="wsdlui_partner_types" url="wsdl_editor_partner_types.html"/>
+	<mapID target="wsdlui_partner_types_editing" url="wsdl_editor_partner_types_editing.html"/>
 	<mapID target="wsdlui_partner_messages" url="wsdl_editor_partner_messages.html"/>
 	<mapID target="wsdlui_creating" url="wsdl_editor_creating.html"/>
 	<mapID target="wsdlui_creating_existing" url="wsdl_editor_creating_existing.html"/>
