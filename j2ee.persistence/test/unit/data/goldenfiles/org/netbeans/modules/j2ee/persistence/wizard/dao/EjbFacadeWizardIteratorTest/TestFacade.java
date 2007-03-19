@@ -42,8 +42,7 @@ public void create(final Object object) {
 
     em.getTransaction().begin();
     try {
-        em.merge(test);
-        em.remove(test);
+        em.remove(em.merge(test));
         em.getTransaction().commit();
     }
     catch (Exception e) {

@@ -30,7 +30,7 @@ public final class GenerationOptions {
     public enum Operation {
         PERSIST("em.persist({0});"),
         MERGE("em.merge({0});"),
-        REMOVE("em.merge({0});\n" + "em.remove({0});"),
+        REMOVE("em.remove(em.merge({0}));"),
         FIND("return ({2}) em.find({2}.class, {0});"),
         FIND_ALL("return em.createQuery(\"select object(o) from {2} as o\").getResultList();");
     
