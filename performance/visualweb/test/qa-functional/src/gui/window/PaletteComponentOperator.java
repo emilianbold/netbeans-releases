@@ -46,17 +46,24 @@ public class PaletteComponentOperator extends TopComponentOperator {
          new Action("Window|Palette",null).perform(); // NOI18N
         return new PaletteComponentOperator();
     }
-            
+    /**
+     * expands selected category node in palette
+     * @param categoryName sets the name of category need to be expanded in palette
+     * @throws Exception
+    */
     public void expandCategory(String categoryName) throws Exception {
         JCheckBoxOperator cat = new JCheckBoxOperator(this,categoryName);
         cat.pushNoBlock();
     }
     
+    /**
+     * collapses selected category node in palette
+     * @param categoryName sets the name of category need to be collapsd in palette
+    */    
     public void collapseCategory(String categoryName) throws Exception {
         JCheckBoxOperator cat = new JCheckBoxOperator(this,categoryName);
         cat.pushNoBlock();        
     }
-    
     public JListOperator getCategoryListOperator(String categoryName) {
         //Find Checkbox operator at first
         JCheckBoxOperator cbo =  new JCheckBoxOperator(this,categoryName);
