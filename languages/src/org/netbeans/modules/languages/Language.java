@@ -438,7 +438,7 @@ public class Language {
             if (last != null) {
                 if (last instanceof List)
                     return (List<Feature>) last;
-                 return Collections.<Feature>singletonList ((Feature) o);
+                 return Collections.<Feature>singletonList ((Feature) last);
             }
             break;
         }
