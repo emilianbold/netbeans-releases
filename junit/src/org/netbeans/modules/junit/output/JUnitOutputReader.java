@@ -700,7 +700,9 @@ final class JUnitOutputReader {
                 + String.format("%3d%%",
                                 100 * progress / PROGRESS_WORKUNITS));  //NOI18N
         }
-        progressHandle.progress(progress);
+        if (progress > INITIAL_PROGRESS) {
+            progressHandle.progress(progress);
+        }
     }
     
     /**
@@ -792,7 +794,10 @@ final class JUnitOutputReader {
             expectedSuitesCount = executedSuitesCount + 1;
         }
         if (executedSuitesCount != 0) {
-            progressHandle.progress(stepMessage, getProcessedWorkunits());
+            int progress = getProcessedWorkunits();
+            if (progress > INITIAL_PROGRESS) {
+                progressHandle.progress(stepMessage, progress);
+            }
         } else {
             progressHandle.progress(stepMessage);
         }
