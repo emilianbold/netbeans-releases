@@ -38,7 +38,7 @@ public class PUDataLoader extends UniFileLoader {
     private static final String REQUIRED_EXTENSION = "xml-jpa";
     
     public PUDataLoader() {
-        super(PUDataLoader.class.getName());
+        super(PUDataObject.class.getName());
     }
     
     protected void initialize() {
