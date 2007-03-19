@@ -229,7 +229,10 @@ public final class MethodModelSupport {
     private static ExpressionTree createQualIdent(WorkingCopy workingCopy, String typeName) {
         TypeElement typeElement = workingCopy.getElements().getTypeElement(typeName);
         if (typeElement == null) {
-            throw new IllegalArgumentException("Type " + typeName + " cannot be found"); // NOI18N
+            typeElement = workingCopy.getElements().getTypeElement("java.lang." + typeName);
+            if (typeElement == null) {
+                return workingCopy.getTreeMaker().Identifier(typeName);
+            }
         }
         return workingCopy.getTreeMaker().QualIdent(typeElement);
     }
