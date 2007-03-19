@@ -460,8 +460,8 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         int off1, off2;
         initGlobalSizes(); // The window might be resized in the mean time.
         try {
-            off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), diff.getFirstStart() - 1);
-            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diff.getSecondStart() - 1);
+            off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
+            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
 
             jEditorPane1.getEditorPane().setCaretPosition(off1);
             jEditorPane2.getEditorPane().setCaretPosition(off2);
