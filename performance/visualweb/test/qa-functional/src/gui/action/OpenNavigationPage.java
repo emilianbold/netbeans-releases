@@ -64,7 +64,7 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
         log("::prepare::");
         //openNodeName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualwebproject.jsfproject.ui.Bundle", "NODENAME_Navigation_xml"); // Navigation Page
         
-        openNodeName = "Page Navigation"; // NOI18N
+        openNodeName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.project.jsfproject.ui.Bundle", "LBL_Node_Config")+"|"+"navigation.xml"; // NOI18N
         openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"), openNodeName);
         openNode.select();
         
