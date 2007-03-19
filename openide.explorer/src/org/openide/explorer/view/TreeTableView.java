@@ -736,12 +736,14 @@ public class TreeTableView extends BeanTreeView {
         treeTable.getTableHeader().removeMouseListener(l);
     }
 
-    /* DnD is not implemented for treeTable.
+    /**
+     * Drag and drop is not supported in TreeTableView.
      */
     public void setDragSource(boolean state) {
     }
 
-    /* DnD is not implemented for treeTable.
+    /**
+     * Drag and drop is not supported in TreeTableView.
      */
     public void setDropTarget(boolean state) {
     }
@@ -1722,6 +1724,7 @@ public class TreeTableView extends BeanTreeView {
                 ttv.setTableColumnPreferredWidth(0, 60);
                 ttv.setTableColumnPreferredWidth(1, 150);
                 ttv.setTableColumnPreferredWidth(2, 100);
+
 
                 ep.add("Center", ttv);
                 ep.open();
