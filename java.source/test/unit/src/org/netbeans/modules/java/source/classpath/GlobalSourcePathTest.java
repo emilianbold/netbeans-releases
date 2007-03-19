@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.source.classpath;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -101,8 +103,9 @@ public class GlobalSourcePathTest extends NbTestCase {
     public GlobalSourcePathTest(String testName) {
         super(testName);
     }
-
-    protected @Override void setUp() throws Exception {
+    
+    
+    public @Override void setUp() throws Exception {
         this.clearWorkDir();
         File _wd = this.getWorkDir();
         FileObject wd = FileUtil.toFileObject(_wd);
@@ -142,8 +145,9 @@ public class GlobalSourcePathTest extends NbTestCase {
         q.register (compRoot2,compSrc2);
         q.register (unknown2,unknownSrc2);
     }
-
-    protected @Override void tearDown() throws Exception {
+    
+    @Override 
+    public void tearDown() throws Exception {
     }
 
     public void testGlobalSourcePath () throws Exception {
@@ -408,6 +412,79 @@ public class GlobalSourcePathTest extends NbTestCase {
         res = binaryPath.getResources();
         assertEquals(new FileObject[] {bootRoot2, unknown1}, res);
     }
+    
+    
+    
+    public void testExcludeEvents () throws Exception {
+        List<PRI> resources = new ArrayList<PRI>(2);
+        resources.add(new PRI (srcRoot1.getURL()));
+        resources.add(new PRI (srcRoot2.getURL()));
+        ClassPath cp = ClassPathSupport.createClassPath(resources);
+        
+        class L implements PropertyChangeListener {
+            
+            Set ids = new HashSet ();
+        
+            public void propertyChange(PropertyChangeEvent e) {
+                if (ClassPath.PROP_INCLUDES.equals(e.getPropertyName())) {
+                    ids.add (e.getPropagationId());
+                }
+            }
+        };
+        L l = new L ();
+        cp.addPropertyChangeListener(l);
+        Object propId = "ID1";
+        for (PRI pri : resources) {
+            pri.firePropertyChange(propId);
+        }
+        assertEquals(1, l.ids.size());
+        propId = "ID2";
+        for (PRI pri : resources) {
+            pri.firePropertyChange(propId);
+        }
+        assertEquals(2, l.ids.size());
+    }
+    
+    
+    public static class PRI implements FilteringPathResourceImplementation {
+        
+        
+        private final URL root;
+        private final PropertyChangeSupport support;
+        
+        
+        public PRI (URL root) {
+            this.root = root;
+            this.support = new PropertyChangeSupport (this);
+        }
+        
+    
+        public boolean includes(URL root, String resource) {
+            return true;
+        }
+
+        public URL[] getRoots() {
+            return new URL[] {root};
+        }
+
+        public ClassPathImplementation getContent() {
+            return null;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            this.support.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            this.support.removePropertyChangeListener(listener);
+        }
+        
+        public void firePropertyChange (final Object propId) {
+            PropertyChangeEvent event = new PropertyChangeEvent (this,FilteringPathResourceImplementation.PROP_INCLUDES,null,null);
+            event.setPropagationId(propId);
+            this.support.firePropertyChange(event);
+        }
+}
     
     private static void gc () {
         System.gc();
