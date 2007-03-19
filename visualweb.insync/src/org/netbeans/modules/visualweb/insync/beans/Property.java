@@ -106,7 +106,12 @@ public class Property extends BeansNode {
      * @return true iff the source entry for this property was actually removed.
      */
     protected boolean removeEntry() {
-        return stmt == null ? false : stmt.remove();
+        boolean removed = false;
+        if(stmt != null) {
+            removed = stmt.remove();
+            stmt = null;
+        }
+        return removed;
     }
 
     //------------------------------------------------------------------------------------ Accessors
