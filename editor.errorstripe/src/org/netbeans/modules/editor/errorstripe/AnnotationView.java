@@ -109,6 +109,9 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     /** Creates a new instance of AnnotationViewBorder */
     public AnnotationView(JTextComponent pane/*, List/ *<MarkProviderCreator>* / creators*/) {
         this.pane = pane;
+        // Set the name to be able to check for this component when "errorStripeOnly" property
+        // is turned on for the pane in CustomizableSideBar.
+        setName("errorStripe");
         
         FoldHierarchy.get(pane).addFoldHierarchyListener(this);
         

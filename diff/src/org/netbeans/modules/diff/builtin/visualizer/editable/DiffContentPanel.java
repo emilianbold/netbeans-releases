@@ -45,7 +45,7 @@ class DiffContentPanel extends JComponent implements HighlightsContainer {
     private final boolean isFirst;
 
     private final DecoratedEditorPane     editorPane;
-    private final JScrollPane             scrollPane;
+    private JScrollPane                   scrollPane;
     private final LineNumbersActionsBar   linesActions;
     private final JScrollPane             actionsScrollPane;
 
@@ -70,6 +70,9 @@ class DiffContentPanel extends JComponent implements HighlightsContainer {
         add(actionsScrollPane, isFirst ? BorderLayout.LINE_END : BorderLayout.LINE_START);
         
         editorPane.putClientProperty(DiffHighlightsLayerFactory.HIGHLITING_LAYER_ID, this);
+        if (!isFirst) {
+            editorPane.putClientProperty("errorStripeOnly", Boolean.TRUE);
+        }
     }
     
     void initActions() {
@@ -197,6 +200,20 @@ class DiffContentPanel extends JComponent implements HighlightsContainer {
         actionsScrollPane.repaint();
         revalidate();
         repaint();
+    }
+    
+    public void setCustomEditor(JComponent c) {
+        remove(scrollPane);
+        // The present editorPane will already be wrapped with the new custom editor
+        // including the new scrollpane that needs to be re-assigned
+        Component viewPort = editorPane.getParent();
+        if (viewPort instanceof JViewport) {
+            viewPort = viewPort.getParent();
+            if (viewPort instanceof JScrollPane) {
+                scrollPane = (JScrollPane)viewPort;
+                add(c);
+            }
+        }
     }
 
     /**

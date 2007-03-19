@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.diff.builtin.visualizer.editable;
 
+import java.awt.Component;
+import java.awt.Component;
 import java.awt.event.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
@@ -62,6 +64,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.diff.DiffVisualizer;
+import org.openide.text.NbDocument;
 
 /**
  * Panel that shows differences between two files. The code here was originally distributed among DiffPanel and
@@ -867,6 +870,12 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         jEditorPane2.getEditorPane().setEditable(editableCookie != null);
         if (jEditorPane2.getEditorPane().isEditable()) {
             jEditorPane1.getEditorPane().setBackground(COLOR_READONLY_BG);
+        }
+        if (doc instanceof NbDocument.CustomEditor) {
+            Component c = ((NbDocument.CustomEditor)doc).createEditor(jEditorPane2.getEditorPane());
+            if (c instanceof JComponent) {
+                jEditorPane2.setCustomEditor((JComponent)c);
+            }
         }
         
         customizeEditor(jEditorPane2.getEditorPane());

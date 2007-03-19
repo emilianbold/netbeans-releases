@@ -199,6 +199,7 @@ public final class CustomizableSideBar extends JPanel {
         Map icMap = getInstanceCookiesPerKitClass(NbEditorUtilities.getMimeType(target));
 
         try{
+            boolean errorStripeOnly = Boolean.TRUE.equals(target.getClientProperty("errorStripeOnly"));
             for (Iterator entries = icMap.entrySet().iterator(); entries.hasNext(); ) {
                 Map.Entry entry = (Map.Entry) entries.next();
                 List icList = (List) entry.getValue();
@@ -208,7 +209,7 @@ public final class CustomizableSideBar extends JPanel {
                     InstanceCookie ic = (InstanceCookie)icList.get(i);
                     Object obj = ic.instanceCreate();
                     JComponent sideBarObj = ((SideBarFactory)obj).createSideBar(target);
-                    if (sideBarObj!=null){
+                    if (sideBarObj!=null && (!errorStripeOnly || "errorStripe".equals(sideBarObj.getName()))) {
                         retList.add(sideBarObj);
                     }
                 }
