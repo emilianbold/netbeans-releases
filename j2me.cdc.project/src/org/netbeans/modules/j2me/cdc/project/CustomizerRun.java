@@ -19,13 +19,29 @@
 
 package org.netbeans.modules.j2me.cdc.project;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.Map;
+import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.j2me.cdc.project.CDCPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.awt.MouseUtils;
 import org.openide.util.NbBundle;
 
 
@@ -43,6 +59,7 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
     };
     
     private VisualPropertySupport vps;
+    private ProjectProperties prop;
     
     public CustomizerRun() {
         initComponents();
@@ -50,10 +67,23 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
     public void initValues(ProjectProperties props, String configuration) {
         vps = VisualPropertySupport.getDefault(props);
         vps.register(jCheckBox1, configuration, this);
+        prop=props;
+        setRunOptions();
     }
     
     public String[] getGroupPropertyNames() {
         return PROPERTY_NAMES;
+    }
+    
+    public void setRunOptions()
+    {
+        Map<String,String> executionModes=CDCProjectUtil.getExecutionModes(prop);
+        String specialExecFqnXlet = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_XLET)  : null;
+        String specialExecFqnApplet = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_APPLET)  : null;        
+
+        jRadioButton1.setSelected( CDCProjectUtil.isMainClass(jTextFieldMainClass.getText(), prop.getSourceRoot()) );
+        jRadioButton2.setSelected( CDCProjectUtil.isXletClass(jTextFieldMainClass.getText(), prop.getSourceRoot(), specialExecFqnXlet) );
+        jRadioButton3.setSelected( CDCProjectUtil.isAppletClass(jTextFieldMainClass.getText(), prop.getSourceRoot(), specialExecFqnApplet) );
     }
     
     public void initGroupValues(boolean useDefault) {
@@ -63,12 +93,19 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         vps.register(jRadioButton3, CDCPropertiesDescriptor.MAIN_CLASS_CLASS, useDefault);
         vps.register(jTextFieldArgs, CDCPropertiesDescriptor.APPLICATION_ARGS, useDefault);
         vps.register(jTextVMOptions, DefaultPropertiesDescriptor.RUN_CMD_OPTIONS, useDefault);
+        
+        jButtonMainClass.addActionListener( new MainClassListener( jTextFieldMainClass));
+        
         jLabel1.setEnabled(!useDefault);
         jLabelArgs.setEnabled(!useDefault);
         jLabelMainClass.setEnabled(!useDefault);
         jLabelVMOptions.setEnabled(!useDefault);
         jLabelVMOptionsExample.setEnabled(!useDefault);
         jButtonMainClass.setEnabled(!useDefault);
+                
+        jRadioButton1.setEnabled(false);
+        jRadioButton2.setEnabled(false);
+        jRadioButton3.setEnabled(false);        
     }
     
     /** This method is called from within the constructor to
@@ -235,5 +272,71 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
     private javax.swing.JTextField jTextVMOptions;
     // End of variables declaration//GEN-END:variables
     
+    // Innercasses -------------------------------------------------------------
+    
+    private class MainClassListener implements ActionListener  {
+        
+        protected final JButton okButton;
+        private JTextField mainClassTextField;
+        
+        MainClassListener( JTextField mainClassTextField ) {            
+            this.mainClassTextField = mainClassTextField;
+            this.okButton  = new JButton (NbBundle.getMessage (CustomizerRun.class, "LBL_ChooseMainClass_OK"));
+            this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (CustomizerRun.class, "AD_ChooseMainClass_OK"));
+        }
+        
+        // Implementation of ActionListener ------------------------------------
+        
+        /** Handles button events
+         */        
+        public void actionPerformed( ActionEvent e ) { 
+            // only chooseMainClassButton can be performed
+            final MainClassChooser panel = new MainClassChooser (prop.getSourceRoot(),
+                    CDCProjectUtil.getExecutionModes(prop));
+
+            Object[] options = new Object[] {
+                okButton,
+                DialogDescriptor.CANCEL_OPTION
+            };
+
+            panel.setSelectedMainClass(mainClassTextField.getText());
+            if (jRadioButton2.isSelected()){
+                panel.setXletExecution(true);
+            } else if (jRadioButton3.isSelected()){
+                panel.setAppletExecution(true);
+            }
+            panel.addChangeListener (new ChangeListener () {
+               public void stateChanged(ChangeEvent e) {
+                   if ((e.getSource () instanceof MouseEvent) && 
+                           MouseUtils.isDoubleClick (((MouseEvent)e.getSource ())) ) {
+                       // click button and finish the dialog with selected class
+                       okButton.doClick ();
+                   } else {
+                       okButton.setEnabled (panel.getSelectedMainClass () != null);
+                   }
+               }
+            });
+            okButton.setEnabled (false);
+            DialogDescriptor desc = new DialogDescriptor (
+                panel,
+                NbBundle.getMessage (CustomizerRun.class, "LBL_ChooseMainClass_Title" ),
+                true, 
+                options, 
+                options[0], 
+                DialogDescriptor.BOTTOM_ALIGN, 
+                null, 
+                null);
+            //desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
+            Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+            dlg.setVisible (true);
+            if (desc.getValue() == options[0]) {
+               mainClassTextField.setText (panel.getSelectedMainClass ());
+               setRunOptions();
+            } 
+            dlg.dispose();
+            
+        }                
+    }
+
     
 }
