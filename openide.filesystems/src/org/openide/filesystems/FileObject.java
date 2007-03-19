@@ -142,8 +142,11 @@ public abstract class FileObject extends Object implements Serializable {
         String cname = getClass().getName();
         String cnameShort = cname.substring(cname.lastIndexOf('.') + 1);
         
-        return cnameShort + '@' + Integer.toHexString(System.identityHashCode(this)) + '[' + getPath() +
-                ']'; // NOI18N
+        try {
+            return cnameShort + '@' + Integer.toHexString(System.identityHashCode(this)) + '[' + (isRoot() ? "root of " + getFileSystem() : getPath()) + ']'; // NOI18N
+        } catch (FileStateInvalidException x) {
+            return cnameShort + '@' + Integer.toHexString(System.identityHashCode(this)) + "[???]"; // NOI18N
+        }
     }
 
     /** Get the full resource path of this file object starting from the filesystem root.
@@ -288,7 +291,7 @@ public abstract class FileObject extends Object implements Serializable {
     */
     public abstract boolean isData();
 
-    /* Test whether the file is valid. The file can be invalid if it has been deserialized
+    /** Test whether the file is valid. The file can be invalid if it has been deserialized
     * and the file no longer exists on disk; or if the file has been deleted.
     *
     * @return true if the file object is valid
