@@ -940,7 +940,7 @@ public final class RequestProcessor {
                 String debug = null;
 
                 Logger em = logger();
-                boolean loggable = em.isLoggable(Level.INFO);
+                boolean loggable = em.isLoggable(Level.FINE);
 
                 if (loggable) {
                     em.fine("Begining work " + getName()); // NOI18N
