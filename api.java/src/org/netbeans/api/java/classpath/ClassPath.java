@@ -41,12 +41,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -56,6 +57,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -182,7 +184,7 @@ public final class ClassPath {
      */
     public static final String PROP_INCLUDES = "includes";
     
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ClassPath.class.getName());
+    private static final Logger LOG = Logger.getLogger(ClassPath.class.getName());
     
     private static final Lookup.Result<? extends ClassPathProvider> implementations =
         Lookup.getDefault().lookupResult(ClassPathProvider.class);
@@ -472,6 +474,7 @@ public final class ClassPath {
 
     /**
      * Adds a property change listener to the bean.
+     * @param l a listener to add
      */
     public final synchronized void addPropertyChangeListener(PropertyChangeListener l) {
         attachRootsListener ();        
@@ -479,7 +482,8 @@ public final class ClassPath {
     }
 
     /**
-     * Removes the listener registered by <code>addPropertyChangeListener</code>/
+     * Removes the listener registered by {@link addPropertyChangeListener}.
+     * @param l a listener to remove
      */
     public final void removePropertyChangeListener(PropertyChangeListener l) {        
         propSupport.removePropertyChangeListener(l);        
@@ -514,15 +518,14 @@ public final class ClassPath {
             Thread.dumpStack();
             return null;
         }
-        boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
-        if (log) ERR.log("CP.getClassPath: " + f + " of type " + id);
         for (ClassPathProvider impl  : implementations.allInstances()) {
             ClassPath cp = impl.findClassPath(f, id);
             if (cp != null) {
-                if (log) ERR.log("  got result " + cp + " from " + impl);
+                LOG.log(Level.FINE, "getClassPath({0}, {1}) -> {2} from {3}", new Object[] {f, id, cp, impl});
                 return cp;
             }
         }
+        LOG.log(Level.FINE, "getClassPath({0}, {1}) -> nil", new Object[] {f, id});
         return null;
     }
 
@@ -889,7 +892,7 @@ public final class ClassPath {
                     }
                     setInitialized(true);                    
                 } else {                                                
-                    ErrorManager.getDefault().log (ErrorManager.ERROR,"Can not find file system, not able to listen on changes.");  //NOI18N
+                    LOG.warning("Cannot find file system, not able to listen on changes.");
                 }
             }
             if ("jar".equals(url.getProtocol())) { //NOI18N
@@ -1010,7 +1013,7 @@ public final class ClassPath {
                 }
                 return path;
             } catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify (e);
+                Exceptions.printStackTrace(e);
                 return null;
             }
         }

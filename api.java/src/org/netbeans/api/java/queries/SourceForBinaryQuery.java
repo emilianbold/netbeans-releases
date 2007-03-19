@@ -21,9 +21,10 @@ package org.netbeans.api.java.queries;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -41,7 +42,7 @@ import org.openide.util.Lookup;
  */
 public class SourceForBinaryQuery {
     
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(SourceForBinaryQuery.class.getName());
+    private static final Logger LOG = Logger.getLogger(SourceForBinaryQuery.class.getName());
     
     private static final Lookup.Result<? extends SourceForBinaryQueryImplementation> implementations =
         Lookup.getDefault().lookupResult (SourceForBinaryQueryImplementation.class);
@@ -62,15 +63,16 @@ public class SourceForBinaryQuery {
         if (!binaryRoot.toExternalForm().endsWith("/")) {
             throw new IllegalArgumentException ("Folder URL must end with '/'. Was: "+binaryRoot);
         }
-        boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
-        if (log) ERR.log("SFBQ.findSourceRoots: " + binaryRoot);
         for (SourceForBinaryQueryImplementation impl : implementations.allInstances()) {
             Result result = impl.findSourceRoots(binaryRoot);
             if (result != null) {
-                if (log) ERR.log("  got result " + Arrays.asList(result.getRoots()) + " from " + impl);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "findSourceRoots({0}) -> {1} from {2}", new Object[] {binaryRoot, Arrays.asList(result.getRoots()), impl});
+                }
                 return result;
             }
         }
+        LOG.log(Level.FINE, "findSourceRoots({0}) -> nil", binaryRoot);
         return EMPTY_RESULT;
     }
     
