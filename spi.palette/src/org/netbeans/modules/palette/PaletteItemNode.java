@@ -25,7 +25,9 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import javax.imageio.ImageIO;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.FilterNode;
@@ -263,6 +265,14 @@ public final class PaletteItemNode extends FilterNode {
         }
         catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        if( null == icon ) {
+            try {
+                //the URL may point to an external file
+                icon = ImageIO.read( new URL(iconURL) );
+            } catch( Exception ex ) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
         }
 
         return icon;
