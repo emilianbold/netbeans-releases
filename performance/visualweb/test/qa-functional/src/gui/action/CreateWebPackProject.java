@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -25,6 +25,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
 
 /**
  * Test create Web Pack projects
@@ -32,13 +33,13 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author  mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class CreateWebPackProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-
+    
     private NewProjectNameLocationStepOperator wizard_location;
     
     private String category, project, project_name, project_type;
     
     private int index;
-
+    
     /**
      * Creates a new instance of CreateWebPackProject
      * @param testName the name of the test
@@ -65,17 +66,17 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.visualweb.project.jsfproject.ui.wizards.Bundle", "Templates/Project/JsfWeb/emptyJsf.xml"); // Visual Web Application
         project_type="JSFWebProject";
         index=1;
-	doMeasurement();
+        doMeasurement();
     }
-
+    
     public void initialize(){
-	log("::initialize::");
+        log("::initialize::");
     }
-
+    
     public void prepare(){
         createProject();
     }
-
+    
     private void createProject() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
@@ -94,8 +95,16 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         wizard_location.txtProjectName().setText("");
         waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
+        
+        wizard_location.next();
+        
+        JTableOperator frameworkselector = new JTableOperator(wizard);
+        frameworkselector.selectCell(0,0);
+        
+        
+        
     }
-
+    
     public ComponentOperator open(){
         wizard_location.finish();
         return null;
@@ -105,9 +114,9 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         VWPFootprintUtilities.deleteProject(project_name);
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
-       
+    
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateWebPackProject("testCreateWebPackProject"));
-    }    	
-
+    }
+    
 }
