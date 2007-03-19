@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,12 +61,11 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
  */
 public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provider {
     
-    private ImportWebProjectWizardIterator.ThePanel panel;
-    private Document moduleDocument;
-    private Document nameDocument;
+    private final ImportWebProjectWizardIterator.ThePanel panel;
+    private final Document moduleDocument;
+    private final Document nameDocument;
     private boolean contextModified = false;
     private boolean locationModified = false;
-    private boolean locationComputed = false;
     private WizardDescriptor wizardDescriptor;
     
     private J2eeVersionWarningPanel warningPanel;
@@ -146,7 +145,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         int width = new Double(srcLocLabelLength).intValue();
         if (width < 500)
             width = 500;
-        int height = jComboBoxEnterprise.getFontMetrics(jComboBoxEnterprise.getFont()).getHeight() * 13 + 150;
+        int height = jComboBoxEnterprise.getFontMetrics(jComboBoxEnterprise.getFont()).getHeight() * 13 + 160;
         if (height > 340) {
             Dimension dim = new Dimension(width, height);
             setMinimumSize(dim);
@@ -253,11 +252,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             setErrorMessage("MSG_ProvideProjectFolder"); //NOI18N
             return false;
         }
-        File projectLocation;
-        if (locationComputed)
-            projectLocation = ProjectChooser.getProjectsFolder();
-        else
-            projectLocation = new File(projectLocationPath);
+        File projectLocation = new File(projectLocationPath);
         if (projectLocation.exists() && !projectLocation.canWrite()) {
             // Read only project location
             setErrorMessage("MSG_ProjectLocationRO"); //NOI18N
