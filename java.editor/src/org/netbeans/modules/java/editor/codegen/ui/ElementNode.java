@@ -304,7 +304,7 @@ public class ElementNode extends AbstractNode {
             sb.append(e.getSimpleName());
             List<? extends TypeParameterElement> typeParams = e.getTypeParameters();
             if (typeParams != null && !typeParams.isEmpty()) {
-                sb.append("&lt;"); // NOI18N
+                sb.append("<"); // NOI18N
                 for(Iterator<? extends TypeParameterElement> it = typeParams.iterator(); it.hasNext();) {
                     TypeParameterElement tp = it.next();
                     sb.append(tp.getSimpleName());
@@ -320,7 +320,7 @@ public class ElementNode extends AbstractNode {
                         sb.append(", "); // NOI18N
                     }
                 }
-                sb.append("&gt;"); // NOI18N
+                sb.append(">"); // NOI18N
             }
             return sb.toString();
         }
@@ -348,7 +348,7 @@ public class ElementNode extends AbstractNode {
                     sb = new StringBuilder(dt.asElement().getSimpleName().toString());
                     List<? extends TypeMirror> typeArgs = dt.getTypeArguments();
                     if (!typeArgs.isEmpty()) {
-                        sb.append("&lt;"); // NOI18N
+                        sb.append("<"); // NOI18N
                         for (Iterator<? extends TypeMirror> it = typeArgs.iterator(); it.hasNext();) {
                             TypeMirror ta = it.next();
                             sb.append(print(ta));
@@ -356,7 +356,7 @@ public class ElementNode extends AbstractNode {
                                 sb.append(", "); // NOI18N
                             }
                         }
-                        sb.append("&gt;"); // NOI18N
+                        sb.append(">"); // NOI18N
                     }                    
                     return sb.toString();
                 case TYPEVAR:
