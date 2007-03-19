@@ -180,7 +180,7 @@ public class Language {
     
     // package private interface ...............................................
 
-    void addToken (
+    public void addToken (
         String      startState,
         String      type,
         Pattern     pattern,

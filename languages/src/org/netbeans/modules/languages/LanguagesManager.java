@@ -99,6 +99,10 @@ public class LanguagesManager {
         return (Language) mimeTypeToLanguage.get (mimeType);
     }
     
+    public void addLanguage (Language l) {
+        mimeTypeToLanguage.put (l.getMimeType (), l);
+    }
+    
     private Vector<LanguagesManagerListener> listeners = new Vector<LanguagesManagerListener> ();
     
     public void addLanguagesManagerListener (LanguagesManagerListener l) {

@@ -20,6 +20,7 @@
 package org.netbeans.modules.languages.features;
 
 import java.util.ArrayList;
+import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
@@ -35,7 +36,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
@@ -70,10 +70,18 @@ public class CompletionProviderImpl implements CompletionProvider {
         return 0;
     }
     
+    List<CompletionItem> query (JTextComponent component) {
+        ListResult r = new ListResult ();
+        CompletionTaskImpl task = new CompletionTaskImpl (component);
+        task.compute (r);
+        return r.getList ();
+    }
+    
+    
     private static class CompletionTaskImpl implements CompletionTask {
         
         private JTextComponent          component;
-        private NbEditorDocument        doc;
+        private Document                doc;
         private boolean                 ignoreCase;
         private List<CompletionItem>    items = new ArrayList<CompletionItem> ();
         
@@ -84,7 +92,7 @@ public class CompletionProviderImpl implements CompletionProvider {
         
         public void query (CompletionResultSet resultSet) {
             //S ystem.out.println("CodeCompletion: query " + resultSet);
-            compute (resultSet);
+            compute (new CompletionResult (resultSet));
         }
 
         public void refresh (CompletionResultSet resultSet) {
@@ -121,8 +129,8 @@ public class CompletionProviderImpl implements CompletionProvider {
         public void cancel () {
         }
         
-        private void compute (CompletionResultSet resultSet) {
-            doc = (NbEditorDocument) component.getDocument ();
+        private void compute (Result resultSet) {
+            doc = component.getDocument ();
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
             int offset = component.getCaret ().getDot ();
@@ -133,8 +141,8 @@ public class CompletionProviderImpl implements CompletionProvider {
         private void compute (
             TokenSequence       tokenSequence, 
             int                 offset, 
-            CompletionResultSet resultSet,
-            NbEditorDocument    doc
+            Result              resultSet,
+            Document            doc
         ) {
             if (tokenSequence == null) return;
             String mimeType = tokenSequence.language ().mimeType ();
@@ -173,7 +181,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 addTags (feature, start, Context.create (doc, tokenSequence), resultSet);
         }
 
-        private void addParserTags (final CompletionResultSet resultSet) {
+        private void addParserTags (final Result resultSet) {
             final ParserManager parserManager = ParserManager.get (doc);
             if (parserManager.getState () == State.PARSING) {
                 //S ystem.out.println("CodeCompletion: parsing...");
@@ -195,7 +203,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             }
         }
         
-        private void addParserTags (ASTNode node, CompletionResultSet resultSet) {
+        private void addParserTags (ASTNode node, Result resultSet) {
             if (node == null) {
                 //S ystem.out.println("CodeCompletion: No AST");
                 return;
@@ -234,7 +242,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             }
         }
 
-        private void addTags (Feature feature, String start, Context context, CompletionResultSet resultSet) {
+        private void addTags (Feature feature, String start, Context context, Result resultSet) {
             int j = 1;
             while (true) {
                 Object o = feature.getValue ("text" + j, context);
@@ -259,7 +267,7 @@ public class CompletionProviderImpl implements CompletionProvider {
         private void addMethodCallTags (
             List                keys, 
             Context             context, 
-            CompletionResultSet resultSet, 
+            Result              resultSet, 
             String              start
         ) {
             Iterator it = keys.iterator ();
@@ -290,7 +298,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             Feature             feature, 
             int                 j, 
             String              start, 
-            CompletionResultSet resultSet
+            Result              resultSet
         ) {
             if (ignoreCase)
                 text = text.toLowerCase ();
@@ -307,4 +315,42 @@ public class CompletionProviderImpl implements CompletionProvider {
             resultSet.addItem (item);
         }
     }
+    
+    private static interface Result {
+        void addItem (CompletionItem item);
+        void finish ();
+    }
+    
+    private static class CompletionResult implements Result {
+        private CompletionResultSet resultSet;
+        
+        CompletionResult (CompletionResultSet resultSet) {
+            this.resultSet = resultSet;
+        }
+        
+        public void addItem (CompletionItem item) {
+            resultSet.addItem (item);
+        }
+        
+        public void finish () {
+            resultSet.finish ();
+        }
+    }
+    
+    private static class ListResult implements Result {
+        private List<CompletionItem> result = new ArrayList<CompletionItem> ();
+        
+        public void addItem (CompletionItem item) {
+            result.add (item);
+        }
+        
+        public void finish () {
+        }
+        
+        public List<CompletionItem> getList () {
+            return result;
+        }
+    }
 }
+
+

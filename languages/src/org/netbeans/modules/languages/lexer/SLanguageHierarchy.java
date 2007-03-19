@@ -44,7 +44,7 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     private HashMap<String,STokenId>    tokensMap;
     
     
-    SLanguageHierarchy (String mimeType) {
+    public SLanguageHierarchy (String mimeType) {
         this.mimeType = mimeType;
     }
     

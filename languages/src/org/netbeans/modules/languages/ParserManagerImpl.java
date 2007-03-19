@@ -262,7 +262,7 @@ public class ParserManagerImpl extends ParserManager {
         return n;
     }
 
-    private static TokenInput createTokenInput (Document doc) {
+    public static TokenInput createTokenInput (Document doc) {
         try {
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
