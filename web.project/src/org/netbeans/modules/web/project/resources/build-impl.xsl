@@ -597,7 +597,7 @@ introduced by support for multiple source roots. -jglick
                                     sei="{$seiclass}"
                                 >   
                                     <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                                    <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                                    <jvmarg value="-Djava.endorsed.dirs=&apos;${{jaxws.endorsed.dir}}&apos;"/>
                                 </wsgen>
                             </target>
                         </xsl:if>

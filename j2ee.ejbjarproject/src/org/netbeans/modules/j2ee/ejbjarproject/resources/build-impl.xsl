@@ -256,7 +256,7 @@ is divided into following sections:
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <xsl:if test="$jaxws/*/*/*/jaxws:wsdl-url">
-                                <compilerarg line="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                                <compilerarg line="-Djava.endorsed.dirs=&apos;${{jaxws.endorsed.dir}}&apos;"/>
                             </xsl:if>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>

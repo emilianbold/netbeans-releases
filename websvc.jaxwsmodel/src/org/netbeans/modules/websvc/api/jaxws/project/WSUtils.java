@@ -28,7 +28,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -52,8 +51,8 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -318,17 +317,9 @@ public class WSUtils {
     }
     
     private static String getJaxWsApiDir() {
-        URL wsFeatureUrl = WSUtils.class.getClassLoader().getResource("javax/xml/ws/WebServiceFeature.class");
-        if (wsFeatureUrl!=null) {
-            String prefix = "jar:file:"; //NOI18N
-            String postfix = "/jaxws-api.jar!/javax/xml/ws/WebServiceFeature.class"; //NOI18N
-            String jaxWsUrl = wsFeatureUrl.toExternalForm();
-            if (jaxWsUrl.startsWith(prefix) && jaxWsUrl.endsWith(postfix));
-            // the resource name on Windows starts with (example) : "jar:file:/C:/Program Files/java/..."
-            // on Linux : "jar:file:/usr/java/...
-            int startPosition = Utilities.isWindows() ? 10 : 9;
-            int endPosition = jaxWsUrl.indexOf(postfix);
-            return jaxWsUrl.substring(startPosition,endPosition);
+        File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+        if (file!=null) {
+            return file.getParent();
         }
         return null;
     }
