@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.java.source;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import javax.management.InstanceAlreadyExistsException;
@@ -36,7 +35,6 @@ import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBean;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBeanImpl;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import org.openide.windows.WindowManager;
@@ -48,7 +46,6 @@ import org.openide.windows.WindowManager;
 public class JBrowseModule extends ModuleInstall {
     
     private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
-    private static final String LUCENE_LOCK_DIR = "org.apache.lucene.lockDir";  //NOI18N
     private static final boolean ENABLE_MBEANS = Boolean.getBoolean("org.netbeans.modules.java.source.enableMBeans");  //NOI18N
     
     /** Creates a new instance of JBrowseModule */
@@ -57,21 +54,7 @@ public class JBrowseModule extends ModuleInstall {
 
     public @Override void restored() {
         super.restored();
-        final String nbUserProp = System.getProperty(NB_USER_DIR);        
-        assert nbUserProp != null;
-        final File nbUserDir = new File (nbUserProp);
-        File lockDir = FileUtil.normalizeFile(new File (nbUserDir,"var"+File.separatorChar+"lock"+File.separatorChar+"lucene"));   //NOI18N
-        if (lockDir.exists()) {
-            File[] orphanLocks = lockDir.listFiles();
-            for (File lock: orphanLocks) {
-                lock.delete();
-            }
-        }
-        else {
-            lockDir.mkdirs();
-        }
         JavaSourceTaskFactoryManager.register();
-        System.setProperty(LUCENE_LOCK_DIR,lockDir.getAbsolutePath());                
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run () {
                 RepositoryUpdater.getDefault();

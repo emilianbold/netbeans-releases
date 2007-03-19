@@ -89,6 +89,8 @@ class LuceneIndex extends Index {
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
         this.directory = FSDirectory.getDirectory(refCacheRoot, false);
+        String lockId = this.directory.getLockID();  //Old lock file
+        this.directory.clearLock(lockId);
     }
 
     @SuppressWarnings("unchecked") // NOI18N, unchecked - lucene has source 1.4
