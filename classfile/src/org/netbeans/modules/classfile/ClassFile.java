@@ -115,7 +115,11 @@ public class ClassFile {
         if (classData == null)
             throw new IOException("input stream not specified");
 	this.includeCode = includeCode;
-        load(classData);
+        try {
+            load(classData);
+        } catch (IndexOutOfBoundsException e) {
+            throw new InvalidClassFormatException("invalid classfile format");
+        }
     }
     
     /**
