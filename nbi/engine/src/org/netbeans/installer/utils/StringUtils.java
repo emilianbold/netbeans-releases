@@ -480,6 +480,7 @@ public abstract class StringUtils {
     public static final String CRLFCRLF = CRLF + CRLF;
     public static final String SPACE = " ";
     public static final String QUOTE = "\"";
+    public static final String EQUAL = "=";
     
     public static final String NEW_LINE_PATTERN = "(?:\r\n|\n|\r)";
     
