@@ -21,7 +21,6 @@ package org.netbeans.modules.web.jsf.dialogs;
 
 import java.util.Hashtable;
 import java.util.Iterator;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -36,6 +35,7 @@ import org.openide.util.NbBundle;
  */
 public class AddNavigationRuleDialog extends javax.swing.JPanel implements ValidatingPanel{
     private JSFConfigDataObject config;
+    public final String NO_FROM_VIEW_DEFINED = "nofromviewdefined";
     private Hashtable existingRules = null;
     /** Creates new form AddNavigationRuleDialog */
     public AddNavigationRuleDialog(JSFConfigDataObject config) {
@@ -52,8 +52,7 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
     }
 
     public String validatePanel() {
-        if (getFromView().length()==0)
-            return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationRule_EmptyFromView");
+        String message = null;
         if(existingRules == null){
             existingRules = new Hashtable();
             NavigationRule rule;
@@ -62,13 +61,27 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
             Iterator iter = facesConfig.getNavigationRules().iterator();
             while (iter.hasNext()){
                 rule = (NavigationRule) iter.next();
-                if (rule.getFromViewId() != null)
+                if (rule.getFromViewId() != null){
                     existingRules.put(rule.getFromViewId(), "");
+                } 
+                else { // if there is a rule withouth from view, put symbolic constant. 
+                    existingRules.put(NO_FROM_VIEW_DEFINED, "");
+                }
             }
         }
-        if (existingRules.get(getFromView())!=null)
-            return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationRule_RuleExist");
-        return null;
+        String fromView = getFromView();
+        if (fromView == null || fromView.length() == 0){
+            fromView = NO_FROM_VIEW_DEFINED;
+        }
+        if (existingRules.get(fromView)!=null){
+            if (fromView.equals(NO_FROM_VIEW_DEFINED)){
+                message = NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationRule_RuleExistWithNoFromView");
+            }
+            else {
+                message = NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationRule_RuleExist");
+            }
+        }
+        return message;
     }
     
     /** This method is called from within the constructor to
@@ -171,7 +184,7 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
     // End of variables declaration//GEN-END:variables
     
     public String getFromView(){
-        return jTextFieldFromView.getText();
+        return jTextFieldFromView.getText().trim();
     }
     
     public String getDescription(){

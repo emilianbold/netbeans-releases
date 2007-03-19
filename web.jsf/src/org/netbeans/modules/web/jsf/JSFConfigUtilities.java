@@ -54,7 +54,8 @@ public class JSFConfigUtilities {
         Collection<NavigationRule> rules = config.getNavigationRules();
         for (Iterator<NavigationRule> it = rules.iterator(); it.hasNext();) {
             NavigationRule nRule = it.next();
-            if (fromView.equals(nRule.getFromViewId())){
+            if ((fromView != null && fromView.equals(nRule.getFromViewId())) 
+                    || (fromView == null && (nRule.getFromViewId() == null || nRule.getFromViewId().trim().length()==0))){
                 navigationRule = nRule;
                 continue;
             }

@@ -42,7 +42,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
     public AddNavigationCaseDialog(JSFConfigDataObject config, String rule) {
         initComponents();
         this.config = config;
-        FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config.getPrimaryFile(), false).getRootComponent();
+        FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config.getPrimaryFile(), true).getRootComponent();
         
         DefaultComboBoxModel modelF = (DefaultComboBoxModel)jComboBoxFromView.getModel();
         DefaultComboBoxModel modelT = (DefaultComboBoxModel)jComboBoxToView.getModel();
@@ -51,8 +51,10 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         Iterator iter = facesConfig.getNavigationRules().iterator();
         while (iter.hasNext()) {
             String fromViewID=((NavigationRule)iter.next()).getFromViewId();
-            modelF.addElement(fromViewID);
-            modelT.addElement(fromViewID);
+            if (fromViewID != null && fromViewID.trim().length() > 0){
+                modelF.addElement(fromViewID);
+                modelT.addElement(fromViewID);
+            }
         }
         if (rule != null)
             jComboBoxFromView.setSelectedItem(rule);
@@ -68,8 +70,6 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
     }
     
     public String validatePanel() {
-        if (getRule().length()==0)
-            return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_EmptyRule");
         if (getToView().length()==0)
             return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_EmptyToView");
         if (getFromAction().length() == 0 && getFromOutcome().length() == 0)

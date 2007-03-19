@@ -147,7 +147,6 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             AddDialog dialog = new AddDialog(dialogPanel,
                     NbBundle.getMessage(JSFPopupAction.class,"TTL_AddNavigationRule"), //NOI18N
                     new HelpCtx(AddNavigationRuleDialog.class));
-            dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
             if (dialog.getValue().equals(dialog.ADD_OPTION)) {
@@ -161,7 +160,12 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     else {
                         rule.setDescription(END_LINE + dialogPanel.getDescription() + END_LINE);
                     }
-                    rule.setFromViewId(dialogPanel.getFromView());
+                    if (dialogPanel.getFromView() == null || dialogPanel.getFromView().length() == 0){
+                        rule.setFromViewId(null);
+                    }
+                    else {
+                        rule.setFromViewId(dialogPanel.getFromView());
+                    }
                     facesConfig.getModel().startTransaction();
                     facesConfig.addNavigationRule(rule);
                     facesConfig.getModel().endTransaction();
@@ -195,10 +199,15 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     
                     FacesConfig facesConfig = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true).getRootComponent();
                     boolean newRule = false;
-                    NavigationRule rule = JSFConfigUtilities.findNavigationRule(data, dialogPanel.getRule());
+                    
+                    String fromView = dialogPanel.getRule();
+                    if (fromView.length() == 0){
+                        fromView = null;
+                    }
+                    NavigationRule rule = JSFConfigUtilities.findNavigationRule(data, fromView);
                     if (rule == null){
                         rule = facesConfig.getModel().getFactory().createNavigationRule();
-                        rule.setFromViewId(dialogPanel.getRule());
+                        rule.setFromViewId(fromView);
                         facesConfig.getModel().startTransaction();
                         facesConfig.addNavigationRule(rule);
                         facesConfig.getModel().endTransaction();
