@@ -52,16 +52,6 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.coverage.args" value=""/>
         <property name="junit.properties.file" value=""/>
         <property name="xtest.ide.reuse.userdir" value="false"/>
-        <!-- Set IDE window system to mdi only if userdir is not reused. -->
-        <condition property="xtest.ide.winsys" value="mdi">
-           <equals arg1="${xtest.ide.reuse.userdir}" arg2="false"/>
-        </condition>
-        <!-- else set it to empty value -->
-        <condition property="xtest.ide.winsys" value="">
-            <not>
-                <isset property="xtest.ide.winsys"/>
-            </not>
-        </condition>
         <property name="xtest.ide.exit" value="true"/>
         <!-- create an empty Java project in IDE -->
         <property name="xtest.ide.create.project" value="false"/>
@@ -220,7 +210,6 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dnetbeans.classpath=&quot;${xtest.netbeans.classpath}&quot; 
 -J-Dnetbeans.mainclass=org.netbeans.xtest.plugin.ide.Main 
 -J-Dnetbeans.full.hack=true 
--J-Dnetbeans.windows=${xtest.ide.winsys} 
 -J-Dnetbeans.systemclassloader.patches=&quot;${xtest.netbeans.systemclassloader.patches}&quot; 
 -J-Dtest.exit=${xtest.ide.exit} 
 -J-Dtest.reuse.ide=${xtest.ide.reuse.userdir} 
