@@ -43,7 +43,7 @@ public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner
         ctorInfo.setEnsureMethodName(null);
         destroyInfo = new MethodInfo(DESTROYMETHOD);
         destroyInfo.setComment(getDestroyMethodComment());
-        propertiesInitInfo = new MethodInfo(INITMETHOD, Modifier.PRIVATE, Void.TYPE,
+        propertiesInitInfo = new MethodInfo(PROP_INITMETHOD, Modifier.PRIVATE, Void.TYPE,
                 getComment("COMMENT_PropInitMethodComment"), null, "Exception");
     }
 
