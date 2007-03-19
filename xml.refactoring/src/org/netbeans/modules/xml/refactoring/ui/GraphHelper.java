@@ -355,7 +355,10 @@ public class GraphHelper {
         n.setString(AnalysisConstants.LABEL, displayNode.getText(true));
         n.set(AnalysisConstants.USER_OBJECT,displayNode.getUserObject()  );
         n.setInt(AnalysisConstants.FILE_GROUP, fileGroupNumber);
-        n.set(AnalysisConstants.JAVA_AWT_IMAGE,( (ImageIcon)displayNode.getIcon()).getImage());
+
+        if (displayNode.getIcon() != null) {
+          n.set(AnalysisConstants.JAVA_AWT_IMAGE,( (ImageIcon)displayNode.getIcon()).getImage());
+        }
         
         return n;
     }
