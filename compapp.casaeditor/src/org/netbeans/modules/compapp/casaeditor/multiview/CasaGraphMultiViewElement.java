@@ -29,6 +29,7 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Date;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.compapp.casaeditor.design.CasaDesignView;
@@ -40,6 +41,9 @@ import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.print.spi.PrintProvider;
+import org.netbeans.modules.print.spi.PrintProviderCookie;
+
 
 /**
  *
@@ -96,7 +100,10 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
                 // Need the data object registered in the lookup so that the
                 // projectui code will close our open editor windows when the
                 // project is closed.
-                mDataObject
+                mDataObject,
+                // Provides the PrintProvider for printing
+                new DesignViewPrintProvider(),
+
             }),
             Lookups.singleton(CasaPalette.getPalette(Lookups.fixed(new Object[] { mDataObject, delegate }))),
             nodesMediator.getLookup(),
@@ -290,4 +297,28 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
             return flag;
         }
     }
+    
+    /**
+     * Provides the PrintProvider which allows us to print the design view
+     * to a printer using the Print API.
+     */
+    private class DesignViewPrintProvider implements PrintProviderCookie {
+
+        public PrintProvider getPrintProvider() {
+            return new PrintProvider.Component() {
+                public String getName() {
+                    return mDataObject.getName();
+                }
+
+                public Date getLastModifiedDate() {
+                    return mDataObject.getPrimaryFile().lastModified();
+                }
+
+                public JComponent getComponent() {
+                    return mDesignView.getContent();
+                }
+            };
+        }
+    }
+
 }

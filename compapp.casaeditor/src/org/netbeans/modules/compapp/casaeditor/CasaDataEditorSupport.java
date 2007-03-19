@@ -65,6 +65,10 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.openide.awt.UndoRedo;
 import org.openide.util.TaskListener;
+import org.netbeans.modules.print.spi.PrintProvider;
+import org.netbeans.modules.print.spi.PrintProviderCookie;
+import org.openide.util.Lookup;
+
 
 /**
  *
@@ -78,13 +82,16 @@ implements
         EditorCookie.Observable, 
         LineCookie, 
         CloseCookie, 
-        PrintCookie
+        //PrintCookie,
+        PrintProviderCookie
 {
     
     /** Used for managing the prepareTask listener. */
     private transient Task prepareTask2;
     
     private transient Scene mScene;
+    
+    //private CasaDataObject mDataObject;
     
     /** Needed for casa file deletion. */
     private static Map<DataObject, CasaWrapperModel> modelMap = 
@@ -93,7 +100,10 @@ implements
     
     public CasaDataEditorSupport(CasaDataObject sobj) {
         super(sobj, new CasaEditorEnv(sobj));
-        setMIMEType("text/xml");     // NOI18N
+        
+        //mDataObject = sobj;
+        
+        //setMIMEType("text/xml");     // NOI18N
         //TODO: we need to use below one eventually
         //setMIMEType(WSDLDataLoader.MIME_TYPE);
     }
@@ -557,4 +567,23 @@ ErrorManager.getDefault().notify(ioe);
 	    return canClose;
         }
     }
+    
+    public PrintProvider getPrintProvider() {
+        TopComponent component = TopComponent.getRegistry().getActivated();
+        if(component != null) {
+            Lookup lookup = component.getLookup();
+            DataObject targetDO = getDataObject();
+            if (targetDO == (DataObject) lookup.lookup(DataObject.class)) {
+                PrintProviderCookie cookie = (PrintProviderCookie) lookup.lookup(
+                            PrintProviderCookie.class);
+                // Avoid looping forever by ensuring we find a provider that
+                // is not ourselves.
+                if (cookie != null && cookie != this) {
+                    return cookie.getPrintProvider();
+                }
+            }
+        }
+        return null;
+    }
+
 }

@@ -83,6 +83,17 @@ public class CasaDesignView {
             mScene.registerController(mController);
         }
     }
+   
+     /**
+     * Return the view content, suitable for printing (i.e. without a
+     * scroll pane, which would result in the scroll bars being printed).
+     *
+     * @return  the view content, sans scroll pane.
+     */
+    public JComponent getContent() {
+        return mScene.getViewComponent();
+    }
+
 
     private void initializeSceneForDesignView() {
         mScroller.addComponentListener(new ComponentAdapter() {
