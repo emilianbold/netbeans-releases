@@ -36,6 +36,10 @@ import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -98,6 +102,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         final String pageName = presetName;
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, pageName);
         JsfProjectUtils.setProjectVersion(project, "4.0"); // NOI18N
+
+        updateNode(project);
 
         // Create Visual Web files
         ProjectManager.mutex().postReadRequest(new Runnable() {
@@ -482,6 +488,47 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         resource = mapping.substring(0,mapping.length()-2) + uri;
             }
             return resource;
+        }
+    }
+
+    private HashMap propertyListeners = new HashMap();
+
+    private void updateNode(Project project) {
+        PropertyChangeEvent event = new PropertyChangeEvent(project, null, null, null);
+
+        PropertyChangeListener[] listeners;
+        synchronized (propertyListeners) {
+            ArrayList projectListeners = (ArrayList) propertyListeners.get(project);
+            if (projectListeners == null) {
+                return;
+            }
+            listeners = (PropertyChangeListener[])projectListeners.toArray(new PropertyChangeListener[propertyListeners.size()]);
+        }
+        for (int i = 0; i < listeners.length; i++) {
+            PropertyChangeListener listener = listeners[i];
+            if (listener != null) {
+                listener.propertyChange(event);
+            }
+        }
+    }
+    
+    public void addPropertyChangeListener(Project project, PropertyChangeListener listener) {
+        synchronized (propertyListeners) {
+            ArrayList projectListeners = (ArrayList) propertyListeners.get(project);
+            if (projectListeners == null) {
+                projectListeners = new ArrayList();
+                propertyListeners.put(project, projectListeners);
+            }
+            projectListeners.add(listener);
+        }
+    }
+    
+    public void removePropertyChangeListener(Project project, PropertyChangeListener listener) {
+        synchronized (propertyListeners) {
+            ArrayList projectListeners = (ArrayList) propertyListeners.get(project);
+            if (projectListeners != null) {
+                projectListeners.remove(listener);
+            }
         }
     }
 }

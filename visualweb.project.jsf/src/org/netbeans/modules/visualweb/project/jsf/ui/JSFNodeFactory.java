@@ -20,8 +20,12 @@
 package org.netbeans.modules.visualweb.project.jsf.ui;
 
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.visualweb.project.jsf.framework.JSFFrameworkProvider;
 import org.netbeans.modules.visualweb.project.jsf.services.ComponentLibraryService;
 import org.netbeans.modules.visualweb.project.jsf.services.DataSourceService;
+
+import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -104,25 +108,46 @@ public class JSFNodeFactory implements NodeFactory {
                 ComponentLibraryService complibService = (ComponentLibraryService) Lookup.getDefault().lookup(ComponentLibraryService.class);
                 if (complibService != null) {
                     return complibService.getComplibsRootNode(project);
-		} else {
+                } else {
                     return null;
-		}
+                }
             } else if (key == DATASOURCE_REFS) {
                 DataSourceService dss = (DataSourceService) Lookup.getDefault().lookup(DataSourceService.class);
                 if (dss != null) {
                     return dss.getDataSourceReferenceNode(project); 
-		} else {
+                } else {
                     return null;
-		}
+                }
             }
             assert false: "No node for key: " + key;
             return null;
         }
 
         public void addNotify() {
+            JSFFrameworkProvider framework = getJSFFramework();
+            if (framework != null) {
+                framework.addPropertyChangeListener(project, this);
+            }
         }
 
         public void removeNotify() {
+            JSFFrameworkProvider framework = getJSFFramework();
+            if (framework != null) {
+                framework.removePropertyChangeListener(project, this);
+            }
+        }
+
+        private JSFFrameworkProvider getJSFFramework() {
+            List frameworks = WebFrameworkSupport.getFrameworkProviders();
+            for (int i = 0; i < frameworks.size(); i++) {
+                WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
+                String name = NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name");
+                if (framework.getName().equals(name)) {
+                    return (JSFFrameworkProvider) framework;
+                }
+            }
+
+            return null;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
