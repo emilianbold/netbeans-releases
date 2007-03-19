@@ -33,7 +33,7 @@ public class MainPanel extends JPanel {
 
     public MainPanel (DevicePanel devicePanel, ResourcePanel resourcePanel) {
         setLayout (new BorderLayout ());
-        setBackground (new Color (0xFCFAF5));
+        setBackground (ResourcePanel.BACKGROUND_COLOR);
         add (devicePanel, BorderLayout.WEST);
         add (resourcePanel, BorderLayout.CENTER);
     }

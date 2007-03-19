@@ -40,43 +40,38 @@ import org.netbeans.modules.vmd.screen.GradientBorder;
  * @author breh
  */
 public class ResourceItemPanel extends JLabel implements MouseListener {
-
+    
     private static Border SELECTED_RESOURCE_BORDER = new GradientBorder(true);
-//            BorderFactory.createCompoundBorder(
-//            BorderFactory.createEtchedBorder(EtchedBorder.RAISED),
-//            BorderFactory.createLineBorder(Color.BLUE, 3));
     private static Border RESOURCE_BORDER = new GradientBorder(false);
-//            BorderFactory.createCompoundBorder(
-//            BorderFactory.createEtchedBorder(EtchedBorder.RAISED),
-//            BorderFactory.createEmptyBorder(3, 3, 3, 3));
-
+    
     private DesignComponent component;
-
+    
     public ResourceItemPanel(DesignComponent component) {
         this.component = component;
-        addMouseListener (this);
+        addMouseListener(this);
     }
-
+    
     // called from AWT and document transaction
-    public void reload () {
-        InfoPresenter presenter = component.getPresenter (InfoPresenter.class);
+    public void reload() {
+        InfoPresenter presenter = component.getPresenter(InfoPresenter.class);
         assert presenter != null;
-
-        setText (presenter.getDisplayName (InfoPresenter.NameType.PRIMARY));
-
-        Image image = presenter.getIcon (InfoPresenter.IconType.COLOR_16x16);
-        setIcon (image != null ? new ImageIcon (image) : null);
-
-        if (component.getDocument ().getSelectedComponents ().contains (component))
-            setBorder (SELECTED_RESOURCE_BORDER);
-        else
-            setBorder (RESOURCE_BORDER);
+        
+        setText(presenter.getDisplayName(InfoPresenter.NameType.PRIMARY));
+        
+        Image image = presenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
+        setIcon(image != null ? new ImageIcon(image) : null);
+        
+        if (component.getDocument().getSelectedComponents().contains(component)) {
+            setBorder(SELECTED_RESOURCE_BORDER);
+        } else {
+            setBorder(RESOURCE_BORDER);
+        }
     }
-
-    public JPopupMenu getComponentPopupMenu () {
-        return Utilities.actionsToPopup (ActionsSupport.createActionsArray (component), this);
+    
+    public JPopupMenu getComponentPopupMenu() {
+        return Utilities.actionsToPopup(ActionsSupport.createActionsArray(component), this);
     }
-
+    
     public void mouseClicked(final MouseEvent e) {
         // TODO selection should be implemented so it happens on mousePressed and confirmed by mouse released !!!
         // this one wants to be selected
@@ -100,17 +95,17 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
             }
         });
     }
-
+    
     public void mousePressed(MouseEvent e) {
     }
-
+    
     public void mouseReleased(MouseEvent e) {
     }
-
+    
     public void mouseEntered(MouseEvent e) {
     }
-
+    
     public void mouseExited(MouseEvent e) {
     }
-
+    
 }

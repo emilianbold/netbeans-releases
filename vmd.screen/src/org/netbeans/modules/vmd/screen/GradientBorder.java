@@ -36,11 +36,11 @@ public class GradientBorder extends AbstractBorder {
     
     private static final int INSET_SIZE = 2;
     private static final Insets INSETS = new Insets(INSET_SIZE, INSET_SIZE, INSET_SIZE, INSET_SIZE);
-    private static final Color COLOR1 = new Color(221, 235, 246);
-    private static final Color COLOR2 = new Color(255, 255, 255);
-    private static final Color COLOR3 = new Color(214, 235, 255);
-    private static final Color COLOR4 = new Color(241, 249, 253);
-    private static final Color COLOR5 = new Color(255, 255, 255);
+    private static final Color COLOR1 = new Color(221, 235, 246, 64);
+    private static final Color COLOR2 = new Color(255, 255, 255, 64);
+    private static final Color COLOR3 = new Color(214, 235, 255, 64);
+    private static final Color COLOR4 = new Color(241, 249, 253, 64);
+    private static final Color COLOR5 = new Color(255, 255, 255, 64);
     
     private boolean isSelected;
     

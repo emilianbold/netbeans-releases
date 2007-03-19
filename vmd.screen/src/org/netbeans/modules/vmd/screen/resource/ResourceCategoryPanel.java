@@ -28,38 +28,49 @@ import java.awt.*;
 import java.util.ArrayList;
 
 /**
+ *
  * @author David Kaspar
  */
 public class ResourceCategoryPanel extends JPanel {
-
+    
     private JPanel componentPanel;
-
+    
     // this class will need to have a listener to document changes
     // the interest is in components added/removed and
     // also in the name changes of the individual components
-
-    public ResourceCategoryPanel (ScreenResourceCategoryDescriptor category) {
-        setLayout (new BorderLayout());
-        setBackground (ResourcePanel.BACKGROUND_COLOR);
-
-        Image image = category.getIcon ();
-        JLabel label = new JLabel (category.getTitle (), image != null ? new ImageIcon (image) : null, SwingConstants.LEFT);
-        label.setFont (getFont ().deriveFont (Font.BOLD));
-        label.setToolTipText(category.getToolTip ());
-        add (label,BorderLayout.NORTH);
-
-        componentPanel = new JPanel();
-        componentPanel.setBackground (ResourcePanel.BACKGROUND_COLOR);
-//        componentPanel.setLayout (new FlowLayout(FlowLayout.LEFT, 5, 5));
-        componentPanel.setLayout (new GridLayout(0, 1, 5, 5));
-        add (componentPanel,BorderLayout.CENTER);
+    
+    public ResourceCategoryPanel(ScreenResourceCategoryDescriptor category) {
+        setLayout(new BorderLayout());
+        setBackground(ResourcePanel.BACKGROUND_COLOR);
+        
+        Image image = category.getIcon();
+        JLabel label = new JLabel(category.getTitle(), image != null ? new ImageIcon(image) : null, SwingConstants.LEFT);
+        label.setFont(getFont().deriveFont(Font.BOLD));
+        label.setToolTipText(category.getToolTip());
+        add(label,BorderLayout.NORTH);
+        
+        componentPanel = new JPanel(new GridBagLayout());
+        componentPanel.setBackground(ResourcePanel.BACKGROUND_COLOR);
+        add(componentPanel, BorderLayout.CENTER);
     }
-
-    public void reload (ArrayList<ScreenResourceItemPresenter> list) {
-        for (ScreenResourceItemPresenter presenter : list) {
-            ResourceItemPanel item = new ResourceItemPanel (presenter.getRelatedComponent ()); // TODO - cache ResourceItemPanels
-            item.reload ();
-            componentPanel.add (item);
+    
+    public void reload(ArrayList<ScreenResourceItemPresenter> list) {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weightx = 1.0;
+        constraints.weighty = 1.0;
+        constraints.insets = new Insets(6, 6, 0, 6);
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridx = GridBagConstraints.REMAINDER;
+        constraints.gridy = GridBagConstraints.RELATIVE;
+        
+        for (int i = 0; i < list.size(); i++) {
+            ScreenResourceItemPresenter presenter = list.get(i);
+            ResourceItemPanel item = new ResourceItemPanel(presenter.getRelatedComponent()); // TODO - cache ResourceItemPanels
+            item.reload();
+            if (i == list.size() - 1) {
+                constraints.insets = new Insets(6, 6, 6, 6);
+            }
+            componentPanel.add(item, constraints);
         }
     }
 }

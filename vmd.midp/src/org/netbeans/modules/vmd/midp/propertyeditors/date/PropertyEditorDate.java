@@ -129,7 +129,10 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         if (dateField != null) {
             ActiveDocumentSupport.getDefault().getActiveDocument().getTransactionManager().readAccess(new Runnable() {
                 public void run() {
-                    inputMode = MidpTypes.getInteger(dateField.readProperty(DateFieldCD.PROP_INPUT_MODE));
+                    PropertyValue pv = dateField.readProperty(DateFieldCD.PROP_INPUT_MODE);
+                    if (pv.getKind() != PropertyValue.Kind.USERCODE)  {
+                        inputMode = MidpTypes.getInteger(pv);
+                    }
                 }
             });
         }
@@ -167,11 +170,11 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         return FORMAT_DATE_TIME;
     }
     
-
+    
     public void userCodeRadioButtonPressed() {
         customEditor.checkText();
     }
-
+    
     private class CustomEditor extends JPanel implements DocumentListener, ActionListener {
         private JTextField textField;
         
