@@ -68,4 +68,6 @@ public interface IAssociationEdgePresentation extends IEdgePresentation {
 	 * Validate that the qualifiers are correctly displayed.
 	 */
 	public boolean validateQualifiers();
+        
+        public void reverseEnds();
 }
