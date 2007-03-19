@@ -553,17 +553,17 @@ public class Installer extends ModuleInstall {
                     LOG.log(Level.WARNING, url.toExternalForm(), ex);
                 } catch (java.net.SocketTimeoutException ex) {
                     LOG.log(Level.INFO, url.toExternalForm(), ex);
-                    url = getClass().getResource("UnknownHostException.html");
+                    url = getUnknownHostExceptionURL();
                     msg = null;
                     continue;
                 } catch (UnknownHostException ex) {
                     LOG.log(Level.INFO, url.toExternalForm(), ex);
-                    url = getClass().getResource("UnknownHostException.html");
+                    url = getUnknownHostExceptionURL();
                     msg = null;
                     continue;
                 } catch (NoRouteToHostException ex) {
                     LOG.log(Level.INFO, url.toExternalForm(), ex);
-                    url = getClass().getResource("UnknownHostException.html");
+                    url = getUnknownHostExceptionURL();
                     msg = null;
                     continue;
                 } catch (IOException ex) {
@@ -588,6 +588,11 @@ public class Installer extends ModuleInstall {
             
         }
         
+        private URL getUnknownHostExceptionURL() {
+            String resource = NbBundle.getMessage(Installer.class, "URL_UnknownHostException");
+            return getClass().getResource(resource);            
+        }
+        
         public void run() {
             if ("ERROR_URL".equals(msg)){   // NOI18N
                 if (reportPanel==null) reportPanel = new ReportPanel();
@@ -601,6 +606,7 @@ public class Installer extends ModuleInstall {
                 dd.setMessage(reportPanel);
             }else{
                 browser = new HtmlBrowser();
+                String resource = NbBundle.getMessage(Installer.class, "URL_Connecting"); // NOI18N
                 browser.setURL(Installer.class.getResource("Connecting.html")); // NOI18N
                 browser.setEnableLocation(false);
                 browser.setEnableHome(false);
