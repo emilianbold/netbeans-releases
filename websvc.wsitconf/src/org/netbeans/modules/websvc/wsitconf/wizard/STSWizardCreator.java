@@ -11,7 +11,7 @@
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+*
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -24,6 +24,8 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
@@ -203,11 +205,15 @@ public class STSWizardCreator {
                 if (genUtils!=null) {     
                     TreeMaker make = workingCopy.getTreeMaker();
                     ClassTree javaClass = genUtils.getClassTree();
-
+                    ClassTree modifiedClass;
+                    
                     // add implementation clause
-                    // TODO - retouche - this should return <Source>, not sure how to do it with retouche yet
-                    ClassTree modifiedClass = genUtils.addImplementsClause(javaClass, "javax.xml.ws.Provider");
-
+                    TypeElement provider = workingCopy.getElements().getTypeElement("javax.xml.ws.Provider"); //NOI18N
+                    TypeElement source = workingCopy.getElements().getTypeElement("javax.xml.transform.Source"); //NOI18N
+                    ParameterizedTypeTree t = make.ParameterizedType(make.QualIdent(provider), 
+                            Collections.singletonList(make.QualIdent(source)) );
+                    modifiedClass = make.addClassImplementsClause(javaClass, t);
+                    
                     //add @WebServiceProvider annotation
                     TypeElement WSAn = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
                     List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
@@ -228,9 +234,13 @@ public class STSWizardCreator {
                     //add @WebServiceProvider annotation
                     TypeElement modeAn = workingCopy.getElements().getTypeElement("javax.xml.ws.ServiceMode"); //NOI18N
                     List<ExpressionTree> attrsM = new ArrayList<ExpressionTree>();
-                                        
+
+                    TypeElement te = workingCopy.getElements().getTypeElement("javax.xml.ws.Service.Mode");
+                    
+                    ExpressionTree mstree = make.MemberSelect(make.QualIdent(te), "PAYLOAD");
+                    
                     attrsM.add(
-                        make.Assignment(make.Identifier("value"), make.Identifier("Mode.PAYLOAD"))); //NOI18N
+                        make.Assignment(make.Identifier("value"), mstree)); //NOI18N
                     AnnotationTree modeAnnot = make.Annotation(
                         make.QualIdent(modeAn), 
                         attrsM
@@ -256,7 +266,7 @@ public class STSWizardCreator {
                                 Collections.<AnnotationTree>emptyList()
                             ),
                             "source", // name
-                            make.Identifier("javax.xml.transform.Source"), // parameter type
+                            make.QualIdent(source), // parameter type
                             null // initializer - does not make sense in parameters.
                     ));
 
@@ -271,7 +281,7 @@ public class STSWizardCreator {
                     MethodTree method = make.Method(
                             methodModifiers, // public
                             "invoke", // operation name
-                            make.Identifier("javax.xml.transform.Source"), // return type 
+                            make.QualIdent(source), // return type 
                             Collections.<TypeParameterTree>emptyList(), // type parameters - none
                             params,
                             exc, // throws 
