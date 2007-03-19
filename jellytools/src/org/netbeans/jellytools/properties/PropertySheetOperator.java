@@ -287,7 +287,7 @@ public class PropertySheetOperator extends TopComponentOperator {
     
     /** Finds property sheet anywhere in IDE. First it tries to find TopComponent
      * representing global properties and if not found, it tries to find 
-     * property sheet in all dialogs owned by Main Window or other frames in SDI.
+     * property sheet in all dialogs owned by Main Window or other frames.
      * @param sheetName name of property sheet
      * @param index index of property sheet 
      */
@@ -298,14 +298,8 @@ public class PropertySheetOperator extends TopComponentOperator {
             return comp;
         }
         // Try to find PS in a dialog which is owned by Main window or by other
-        // frame in SDI.
-        Frame[] frames;
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        if(mwo.isCompactMode()) {
-            frames = new Frame[] {(Frame)mwo.getSource()};
-        } else {
-            frames = Frame.getFrames();
-        }
+        // frame.
+        Frame[] frames = Frame.getFrames();
         for(int frameIndex=0;frameIndex<frames.length;frameIndex++) {
             Window[] windows = frames[frameIndex].getOwnedWindows();
             for(int i=0;i<windows.length;i++) {
@@ -317,8 +311,9 @@ public class PropertySheetOperator extends TopComponentOperator {
                     wo.setOutput(TestOut.getNullOutput());
                     // try to find PropertySheet subcomponent
                     comp = (JComponent)wo.findSubComponent(
-                                new PropertySheetSubchooser(sheetName, mwo.getComparator()), 
-                                index);
+                                new PropertySheetSubchooser(sheetName,
+                                    MainWindowOperator.getDefault().getComparator()), 
+                                    index);
                     if(comp != null) {
                         return comp;
                     }
@@ -330,7 +325,7 @@ public class PropertySheetOperator extends TopComponentOperator {
     
     /** Waits for property sheet anywhere in IDE. First it tries to find TopComponent
      * representing global properties and if not found, it tries to find 
-     * property sheet in all dialogs owned by Main Window or other frames in SDI.
+     * property sheet in all dialogs owned by Main Window or other frames.
      * @param sheetName name of property sheet
      * @param index index of property sheet 
      */

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -24,18 +24,14 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.WindowManagerImpl;
 
 import org.openide.awt.Toolbar;
 import org.openide.awt.StatusDisplayer;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
@@ -61,7 +57,6 @@ import org.netbeans.jemmy.util.NameComponentChooser;
  *      MainWindowOperator mainWindow = MainWindowOperator.getDefault();
  *      mainWindow.waitStatusText("Finished");
  *      System.out.println("STATUS="+mainWindow.getStatusText());
- *      mainWindow.setSDI();
  *      // push "Open" toolbar button in "System" toolbar
  *      mainWindow.getToolbarButton(mainWindow.getToolbar("System"), "Open").push();
  *      Thread.sleep(2000);
@@ -117,60 +112,6 @@ public class MainWindowOperator extends JFrameOperator {
             _menuBar = new JMenuBarOperator(this);
         }
         return _menuBar;
-    }
-    
-    /** Checks whether NetBeans are in joined (full screen) or
-     * separated (multiple smaller windows) mode.
-     * @return  true if IDE is in joined mode; false otherwise (separated mode)
-     * @deprecated Use {@link #isCompactMode} instead.
-     */
-    public static boolean isMDI() {
-        // TODO names of states will be changed http://www.netbeans.org/issues/show_bug.cgi?id=36933
-        return WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
-    }
-    
-    /** Makes IDE to switch to joined (full screen) mode. 
-     * @deprecated Use {@link #setCompactMode} instead.
-     */
-    public static void setMDI() {
-        WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_JOINED);
-        new EventTool().waitNoEvent(1000);
-    }
-    
-    /** Makes IDE to switch to separated (multiple smaller windows) mode. 
-     * @deprecated Use {@link #setSeparateMode} instead.
-     */
-    public static void setSDI() {
-        WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
-        new EventTool().waitNoEvent(1000);
-    }
-
-    /** Checks whether NetBeans are in compact (full screen) or
-     * separate (multiple smaller windows) mode.
-     * @return  true if IDE is in compact mode; false otherwise (separate mode)
-     */
-    public static boolean isCompactMode() {
-        return WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
-    }
-
-    /** Makes IDE to switch to compact mode (former MDI). */
-    public static void setCompactMode() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_JOINED);
-            }
-        });
-        new EventTool().waitNoEvent(1000);
-    }
-
-    /** Makes IDE to switch to separate (multiple smaller windows) mode (former SDI). */
-    public static void setSeparateMode() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
-            }
-        });
-        new EventTool().waitNoEvent(1000);
     }
     
     /** Returns text from status bar.
