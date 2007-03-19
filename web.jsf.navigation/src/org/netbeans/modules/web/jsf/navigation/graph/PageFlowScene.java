@@ -22,7 +22,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.util.Collection;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.DeleteAction;
-import org.netbeans.modules.web.jsf.navigation.graph.actions.GraphPopupProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;

@@ -35,7 +35,7 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     private JMenuItem miAddWebPage;
     private JPopupMenu graphPopup;
     
-    private String addPage = NbBundle.getMessage(GraphPopupProvider.class, "MSG_AddPage");
+    private String addPage = NbBundle.getMessage(PageFlowPopupProvider.class, "MSG_AddPage");
     
     /**
      * Creates a Popup for any right click on Page Flow Editor
