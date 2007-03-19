@@ -35,6 +35,7 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 
@@ -61,7 +62,67 @@ public class VWPFootprintUtilities extends gui.VWPUtilities{
         deleteProject.yes();
         waitForPendingBackgroundTasks();
     }
-    
+    static String createproject(String category, String project, int framework, boolean wait) {
+        // select Projects tab
+        ProjectsTabOperator.invoke();
+        
+        // create a project
+        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        
+       // Added more strict comparation behaviour for strings 
+        StringComparator ptree = wizard.treeCategories().getComparator();
+        StringComparator plist = wizard.lstProjects().getComparator(); 
+        
+        Operator.DefaultStringComparator ncs;
+	ncs = new Operator.DefaultStringComparator(true,true);
+        wizard.lstProjects().setComparator(ncs);
+        wizard.treeCategories().setComparator(ncs);
+        
+        wizard.selectCategory(category);
+        wizard.selectProject(project);
+
+	wizard.lstProjects().setComparator(plist);
+        wizard.treeCategories().setComparator(ptree);
+        
+        wizard.next();
+
+        NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
+        wizard_location.txtProjectLocation().clearText();
+        wizard_location.txtProjectLocation().typeText(System.getProperty("xtest.tmpdir"));
+        String pname = wizard_location.txtProjectName().getText();
+
+        // if the project exists, try to generate new name
+        int iter = 0;
+        while(!wizard.btFinish().isEnabled() && iter < 5){
+            pname = pname+"1";
+            wizard_location.txtProjectName().clearText();
+            wizard_location.txtProjectName().typeText(pname);
+            iter++;
+        }
+        wizard.next();
+        
+        JTableOperator frameworkselector = new JTableOperator(wizard);
+        frameworkselector.selectCell(0,framework);
+
+        wizard.finish();
+        
+        // wait for 10 seconds
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+        }
+        
+        // wait for classpath scanning finish
+        if (wait) {
+            new QueueTool().waitEmpty(1000);
+            //checkScanFinished();
+            waitForPendingBackgroundTasks();
+            //} else {
+            //    ProjectSupport.waitScanFinished();
+        }
+        
+        return pname;        
+    }
     static String createproject(String category, String project, boolean wait) {
         // select Projects tab
         ProjectsTabOperator.invoke();
