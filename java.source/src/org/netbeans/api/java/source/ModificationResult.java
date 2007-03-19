@@ -139,10 +139,13 @@ public final class ModificationResult {
                 if (diff.isExcluded())
                     continue;
                 int pos = diff.getStartPosition().getOffset();
-                char[] buff = new char[pos - offset];
+                int toread = pos - offset;
+                char[] buff = new char[toread];
                 int n;
-                if ((n = in.read(buff)) > 0) {
+                int rc = 0;
+                while ((n = in.read(buff,0, toread - rc)) > 0 && rc < toread) {
                     out.write(buff, 0, n);
+                    rc+=n;
                     offset += n;
                 }
                 switch (diff.getKind()) {
