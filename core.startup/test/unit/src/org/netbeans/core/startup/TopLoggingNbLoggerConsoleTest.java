@@ -19,20 +19,13 @@
 package org.netbeans.core.startup;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.logging.Handler;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.logging.StreamHandler;
-import java.util.logging.XMLFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.junit.NbTestCase;
 
 
 /**
@@ -117,4 +110,41 @@ public class TopLoggingNbLoggerConsoleTest extends TopLoggingTest {
         fail("msg shall be logged to file: " + disk);
     }
 
+    public void testCycleWithConsoleLogger() throws Exception {
+        ConsoleHandler h = new ConsoleHandler();
+
+        try {
+            Logger.getLogger("").addHandler(h);
+
+
+            w.reset();
+            Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
+
+            Pattern p = Pattern.compile("INFO.*First visible message");
+            Matcher m = p.matcher(getStream().toString("utf-8"));
+
+            Matcher d = null;
+            String disk = null;
+            // console gets flushed at 500ms
+            for (int i = 0; i < 4; i++) {
+                disk = w.toString("utf-8"); // this one is not flushing
+                d = p.matcher(disk);
+                if (!d.find()) {
+                    Thread.sleep(300);
+                } else {
+                    if (w.size() > d.end() + 300) {
+                        fail("File is too big\n" + w + "\nsize: " + w.size() + " end: " + d.end());
+                    }
+
+                    return;
+                }
+            }
+
+            fail("msg shall be logged to file: " + disk);
+        } finally {
+            Logger.getLogger("").removeHandler(h);
+            
+        }
+    }
+    
 }

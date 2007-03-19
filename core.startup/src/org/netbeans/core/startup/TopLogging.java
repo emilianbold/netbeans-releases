@@ -549,6 +549,7 @@ public final class TopLogging {
     private static final class LgStream extends PrintStream {
         private Logger log;
         private StringBuffer sb = new StringBuffer();
+        private ThreadLocal<Integer> FLUSHING = new ThreadLocal<Integer>();
 
         public LgStream(Logger log) {
             super(new ByteArrayOutputStream());
@@ -556,6 +557,9 @@ public final class TopLogging {
         }
 
         public void write(byte[] buf, int off, int len) {
+            if (FLUSHING.get() != null) {
+                return;
+            }
             sb.append(new String(buf, off, len));
             checkFlush();
         }
@@ -565,11 +569,22 @@ public final class TopLogging {
         }
 
         public void write(int b) {
+            if (FLUSHING.get() != null) {
+                return;
+            }
             sb.append((char)b);
             checkFlush();
         }
 
         private void checkFlush() {
+            try {
+                FLUSHING.set(1);
+                doFlush();
+            } finally {
+                FLUSHING.set(null);
+            }
+        }
+        private void doFlush() {
             boolean justNewLine = false;
             for (;;) {
                 int first = sb.indexOf("\n"); // NOI18N
