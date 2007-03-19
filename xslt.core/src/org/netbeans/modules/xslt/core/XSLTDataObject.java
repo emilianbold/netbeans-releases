@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
+import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.cookies.SaveCookie;
@@ -47,7 +48,7 @@ import org.xml.sax.InputSource;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class XSLTDataObject extends MultiDataObject implements Lookup.Provider {
+public class XSLTDataObject extends MultiDataObject {
     
     private static final long serialVersionUID = 1L;
     
@@ -80,36 +81,60 @@ public class XSLTDataObject extends MultiDataObject implements Lookup.Provider {
     }
     
     public Lookup getLookup() {
-        MapperContext mapperContext = getEditorSupport().getMapperContext();
-        
         Lookup lookup;
         List<Lookup> list = new LinkedList<Lookup>();
         //TODO m
         if (myLookup.get() == null) {
-            if (mapperContext == null) {
-                list.add(Lookups.fixed( new Object[]{this,
-                getEditorSupport()
-                
-                
-                }));
-            } else {
-                list.add(Lookups.fixed( new Object[]{this,
-                getEditorSupport(),
-                mapperContext
-                        
-                }));
-            }
-            
-            list.add(Lookups.fixed( new Object[]{this ,
-            // getEditorSupport() is needed for retrieving Editor Support as PrintProvider.
-            // This lookup will be put into Design Nodes, so they will have the same lookup.
-            getEditorSupport(),
-            // Model is needed by all design. Design is used lookup for accessing to model.
-            getEditorSupport().getXslModel()
+            //
+            // add lazy initialization elements
+            InstanceContent.Convertor<Class, Object> conv =
+                    new InstanceContent.Convertor<Class, Object>() {
 // TODO a
-            // Add Validation Controller.
-//                    new XSLTValidationController(getEditorSupport().getXslModel())
-            }));
+//                private AtomicReference<XSLTValidationController> valControllerRef = 
+//                        new AtomicReference<XSLTValidationController>();
+                
+                public Object convert(Class obj) {
+                    if (obj == XslModel.class) {
+                        return getEditorSupport().getXslModel();
+                    }
+                    //
+                    if (obj == MapperContext.class) {
+                        return getEditorSupport().getMapperContext();
+                    }
+                    //
+                    if (obj == XSLTDataEditorSupport.class) {
+                        return getEditorSupport();
+                    }
+                    //
+//                    if (obj == XSLTValidationController.class) {
+//                        valControllerRef.compareAndSet(null, 
+//                                new XSLTValidationController(getEditorSupport().getXslModel()));
+//                        return valControllerRef.get();
+//                    }
+                    return null;
+                }
+
+                public Class type(Class obj) {
+                    return obj;
+                }
+
+                public String id(Class obj) {
+                    return obj.toString();
+                }
+
+                public String displayName(Class obj) {
+                    return obj.getName();
+                }
+            };
+            
+            list.add(Lookups.fixed(
+                    new Class[] {XslModel.class, 
+                    MapperContext.class, 
+                    XSLTDataEditorSupport.class
+                    /*, XSLTValidationController.class*/}
+                    , conv));
+            //
+            
             //
             // WARNING
             // CANNOT add Lookups.singleton(getNodeDelegate()) or will stack
@@ -123,7 +148,7 @@ public class XSLTDataObject extends MultiDataObject implements Lookup.Provider {
              */
             myServices.compareAndSet( null, new InstanceContent() );
             myServices.get().add( new Empty() );                      // FIX for #IZ78702
-            list.add(new AbstractLookup(myServices.get()));
+            list.add(Lookups.fixed(myServices.get()));
             
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
             
