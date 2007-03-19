@@ -66,6 +66,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     implements ActionListener, PropertyChangeListener {
 
     private RequestProcessor.Task updateSubprojectsTask;
+    private RequestProcessor RP;
     private ModelUpdater modelUpdater;
 
     private Boolean tempSetAsMain;
@@ -77,7 +78,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         initComponents();
 
         modelUpdater = new ModelUpdater();
-        updateSubprojectsTask = new RequestProcessor(ModelUpdater.class.getName()).create(modelUpdater);
+        //#98080
+        RP = new RequestProcessor(ModelUpdater.class.getName(), 1);
+        updateSubprojectsTask = RP.create(modelUpdater);
         updateSubprojectsTask.setPriority( Thread.MIN_PRIORITY );
 
         // Listen on the subproject checkbox to change the option accordingly
@@ -517,6 +520,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         modelUpdater = null;
         subprojectsCache = null;
         updateSubprojectsTask = null;
+        //#98080
+        RP.stop();
     }
 
     // Aditional innerclasses for the file chooser -----------------------------
