@@ -145,8 +145,8 @@ public final class JaxWsModel {
         org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service service = findService(name);
         if (name==null) return false;
         else {
-            jaxws.getServices().removeService(service);
             fireServiceRemoved(name);
+            jaxws.getServices().removeService(service);
             return true;
         }
     }
