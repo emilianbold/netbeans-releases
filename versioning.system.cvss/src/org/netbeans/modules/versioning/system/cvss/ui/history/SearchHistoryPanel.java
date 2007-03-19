@@ -723,6 +723,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
      */
     public static int compareRevisions(String r1, String r2) {
         if (r1.equals(r2)) return 0;
+        if (r1.equals(VersionsCache.REVISION_CURRENT)) return 1;
+        if (r2.equals(VersionsCache.REVISION_CURRENT)) return -1;
         StringTokenizer st1 = new StringTokenizer(r1, "."); // NOI18N
         StringTokenizer st2 = new StringTokenizer(r2, "."); // NOI18N
         for (;;) {
