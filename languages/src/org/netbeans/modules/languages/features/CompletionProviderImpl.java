@@ -333,7 +333,6 @@ public class CompletionProviderImpl implements CompletionProvider {
         }
         
         public void finish () {
-            resultSet.finish ();
         }
     }
     
