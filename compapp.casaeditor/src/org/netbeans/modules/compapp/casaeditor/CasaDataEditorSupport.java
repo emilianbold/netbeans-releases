@@ -57,6 +57,7 @@ import java.io.IOException;
 import javax.swing.JEditorPane;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.CasaModelFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -83,6 +84,8 @@ implements
     /** Used for managing the prepareTask listener. */
     private transient Task prepareTask2;
     
+    private transient Scene mScene;
+    
     /** Needed for casa file deletion. */
     private static Map<DataObject, CasaWrapperModel> modelMap = 
             new HashMap<DataObject, CasaWrapperModel>();
@@ -102,10 +105,8 @@ implements
     
     @Override
     protected Pane createPane() {
-        TopComponent tc = CasaMultiViewFactory.createMultiView(
-                (CasaDataObject) getDataObject());
-        Mode editorMode = WindowManager.getDefault().findMode(
-                CasaDataEditorSupport.EDITOR_MODE);
+        TopComponent tc = CasaMultiViewFactory.createMultiView((CasaDataObject) getDataObject());
+        Mode editorMode = WindowManager.getDefault().findMode(CasaDataEditorSupport.EDITOR_MODE);
         if (editorMode != null) {
             editorMode.dockInto(tc);
         }
@@ -295,6 +296,16 @@ implements
         }
      
         super.notifyClosed();
+    }
+    
+    // When the scene is created, it is set here for access later.
+    public void setScene(Scene scene) {
+        mScene = scene;
+    }
+    
+    // Provides access to the scene, for convenience.
+    public Scene getScene() {
+        return mScene;
     }
     
     public CasaWrapperModel getModel() {

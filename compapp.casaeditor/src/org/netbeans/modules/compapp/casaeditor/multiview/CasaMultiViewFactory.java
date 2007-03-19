@@ -37,18 +37,13 @@ import org.netbeans.modules.compapp.casaeditor.*;
  * @author Jeri Lockhart
  */
 public class CasaMultiViewFactory {
-    /**
-     * Creates a new instance of CasaMultiViewFactory
-     */
-    public CasaMultiViewFactory() {
-    }
-
+    
     public static CloneableTopComponent createMultiView(CasaDataObject obj) {
         MultiViewDescription views[] = new MultiViewDescription[2];
 
         views[0] = getCasaSourceMultiviewDesc(obj);
         views[1] = getCasaGraphMultiViewDesc(obj);
-
+        
         CloneableTopComponent multiview =
                 MultiViewFactory.createCloneableMultiView(
                 views,

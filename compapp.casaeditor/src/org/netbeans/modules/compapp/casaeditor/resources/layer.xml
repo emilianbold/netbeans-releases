@@ -82,7 +82,9 @@
                 <folder name="x-casa+xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                     <!--for logical view in navigator -->
-                    <file name="org-netbeans-modules-compapp-casaeditor-navigator-CasaNavigatorPanel.instance"/>
+                    <file name="org-netbeans-modules-compapp-casaeditor-navigator-CasaNavigatorView.instance"/>
+                    <!--for satellite view in navigator -->
+                    <file name="org-netbeans-modules-compapp-casaeditor-navigator-CasaSatelliteView.instance"/>
                 </folder>
             </folder>
         </folder>

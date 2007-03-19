@@ -30,6 +30,7 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.compapp.casaeditor.design.CasaDesignView;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
@@ -69,6 +70,14 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
         this.mDataObject = dataObject;
         initializeLookup();
         initializeUI();
+    }
+    
+    
+    public Scene getScene() {
+        if (mDesignView != null) {
+            return mDesignView.getScene();
+        }
+        return null;
     }
     
     private CasaDataObject getCasaDataObject() {
