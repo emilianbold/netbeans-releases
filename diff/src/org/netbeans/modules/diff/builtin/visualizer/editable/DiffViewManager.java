@@ -92,6 +92,7 @@ class DiffViewManager implements ChangeListener {
             smartScroll();
         }
         master.getMyDivider().repaint();
+        master.updateCurrentDifference();
         myScrollEvent = false;
     }
     

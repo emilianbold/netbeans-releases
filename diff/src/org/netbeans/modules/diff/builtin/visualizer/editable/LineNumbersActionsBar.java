@@ -31,13 +31,15 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Draws both line numbers and diff actions for a decorated editor pane.
  * 
  * @author Maros Sandor
  */
-class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotionListener, MouseListener {
+class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotionListener, MouseListener, PropertyChangeListener {
 
     private static final int ACTIONS_BAR_WIDTH = 16;
     private static final int LINES_BORDER_WIDTH = 4;
@@ -77,6 +79,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
         actionIconsWidth = insertImage.getWidth(this);
         setOpaque(true);
         setToolTipText(""); // NOI18N
+        master.getMaster().addPropertyChangeListener(this);
         addMouseMotionListener(this);
         addMouseListener(this);
     }
@@ -90,6 +93,10 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
         super.removeNotify();
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        repaint();
+    }
+    
     private Font getLinesFont() {
         Map coloringMap = EditorUIHelper.getSharedColoringMapFor(master.getEditorPane().getEditorKit().getClass());
         
@@ -297,8 +304,10 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
         int actionsYOffset = (lineHeight - actionIconsHeight) / 2;
         int offset = linesWidth;
 
+        int currentDifference = master.getMaster().getCurrentDifference();
         List<HotSpot> newActionIcons = new ArrayList<HotSpot>();
         if (master.isFirst()) {
+            int idx = 0;
             for (DiffViewManager.DecoratedDifference dd : diffs) {
                 g.setColor(master.getMaster().getColorLines());
                 g.drawLine(0, dd.getTopLeft(), clip.width, dd.getTopLeft());
@@ -308,7 +317,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
                 if (actionsEnabled) {
                     if (dd.getDiff().getType() != Difference.ADD) {
                         Rectangle hotSpot = new Rectangle(1, dd.getTopLeft() + actionsYOffset, actionIconsWidth, actionIconsHeight);
-                        if (hotSpot.contains(lastMousePosition)) {
+                        if (hotSpot.contains(lastMousePosition) || idx == currentDifference) {
                             g.drawImage(insertActiveImage, hotSpot.x, hotSpot.y, this);
                         } else {
                             g.drawImage(insertImage, hotSpot.x, hotSpot.y, this);
@@ -316,8 +325,10 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
                         newActionIcons.add(new HotSpot(hotSpot, dd.getDiff()));
                     }
                 }
+                idx++;
             }
         } else {
+            int idx = 0;
             for (DiffViewManager.DecoratedDifference dd : diffs) {
                 g.setColor(master.getMaster().getColorLines());
                 g.drawLine(clip.x, dd.getTopRight(), clip.x + clip.width, dd.getTopRight());
@@ -327,7 +338,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
                 if (actionsEnabled) {
                     if (dd.getDiff().getType() == Difference.ADD) {
                         Rectangle hotSpot = new Rectangle(offset + 1, dd.getTopRight() + actionsYOffset, actionIconsWidth, actionIconsHeight);
-                        if (hotSpot.contains(lastMousePosition)) {
+                        if (hotSpot.contains(lastMousePosition) || idx == currentDifference) {
                             g.drawImage(removeActiveImage, hotSpot.x, hotSpot.y, this);
                         } else {
                             g.drawImage(removeImage, hotSpot.x, hotSpot.y, this);
@@ -335,6 +346,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
                         newActionIcons.add(new HotSpot(hotSpot, dd.getDiff()));
                     }
                 }
+                idx++;
             }
         }
 

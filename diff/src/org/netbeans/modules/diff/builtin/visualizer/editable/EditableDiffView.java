@@ -105,6 +105,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
     private Difference[] diffs = NO_DIFFERENCES;
    
     private int currentDiffIndex = -1;
+    private boolean isSetCurrentDifferenceContext = false;
     
     private int totalHeight = 0;
     private int totalLines = 0;
@@ -402,47 +403,58 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         if (diffNo < -1 || diffNo >= diffs.length) throw new IllegalArgumentException("Illegal difference number: " + diffNo); // NOI18N
         if (diffNo == -1) {
         } else {
-            currentDiffIndex = diffNo;
-            showCurrentLine();
-        }
-    }
-
-    public int getCurrentDifference() throws UnsupportedOperationException {
-        int firstVisibleLine;
-        int lastVisibleLine;
-        int candidate = currentDiffIndex;
-        if (jViewport2 != null) {
-            int viewHeight = jViewport2.getViewSize().height;
-            java.awt.Point p1;
-            initGlobalSizes(); // The window might be resized in the mean time.
-            p1 = jViewport2.getViewPosition();
-            int HALFLINE_CEILING = 2;  // compensation for rounding error and partially visible lines
-            float firstPct = ((float)p1.y / (float)viewHeight);
-            firstVisibleLine =  (int) (firstPct * totalLines) + HALFLINE_CEILING;
-            float lastPct = ((float)(jViewport2.getHeight() + p1.y) / (float)viewHeight);
-            lastVisibleLine = (int) (lastPct * totalLines) - HALFLINE_CEILING;
-
-            for (int i = 0; i<diffs.length; i++) {
-                int startLine = diffs[i].getSecondStart();
-                int endLine = diffs[i].getSecondEnd();  // there no remove changes in right pane
-                if (firstVisibleLine < startLine && startLine < lastVisibleLine
-                || firstVisibleLine < endLine && endLine < lastVisibleLine) {
-                    if (i == currentDiffIndex) {
-                        return currentDiffIndex; // current is visible, eliminate hazards use it.
-                    }
-                    candidate = i;  // takes last visible, optimalized for Next>
-                }
+            if (currentDiffIndex == diffNo) return;
+            try {
+                isSetCurrentDifferenceContext = true;
+                int old = currentDiffIndex;
+                currentDiffIndex = diffNo;
+                showCurrentDifference();
+                support.firePropertyChange(DiffView.PROP_DIFF_COUNT, old, currentDiffIndex);
+            } finally {
+                isSetCurrentDifferenceContext = false;
             }
         }
-
-        return candidate;
     }
 
+    public int getCurrentDifference() {
+        return currentDiffIndex;
+    }
+
+    private int computeCurrentDifference() {
+        if (manager == null) return 0;
+        Rectangle viewRect = jViewport2.getViewRect();
+        int bottom = viewRect.y + viewRect.height * 4 / 5;
+        DiffViewManager.DecoratedDifference [] ddiffs = manager.getDecorations();
+        for (int i = 0; i < ddiffs.length; i++) {
+            int startLine = ddiffs[i].getTopRight();
+            int endLine = ddiffs[i].getBottomRight();
+            if (endLine > bottom || endLine == -1 && startLine > bottom) return Math.max(0, i-1);
+        }
+        return ddiffs.length - 1;
+    }
+
+    /**
+     * Notifies the Diff View that it should update the current difference index. If the update is called in the scope
+     * of setCurrentDifference() method, this method does nothing. If not, it computes current difference base on
+     * current view. This is to ensure the following workflow:
+     * 1) If user only pushes Next/Previous buttons in Diff, he wants to review changes one by one
+     * 2) If user touches the scrollbar, 'current difference' changes accordingly 
+     */
+    void updateCurrentDifference() {
+        if (isSetCurrentDifferenceContext) return;
+        int cd = computeCurrentDifference();
+        if (cd != currentDiffIndex) {
+            int old = currentDiffIndex;
+            currentDiffIndex = cd;
+            support.firePropertyChange(DiffView.PROP_DIFF_COUNT, old, currentDiffIndex);
+        }
+    }
+    
     public JToolBar getToolBar() {
         return null;
     }
 
-    private void showCurrentLine() {
+    private void showCurrentDifference() {
         Difference diff = diffs[currentDiffIndex];
         
         int off1, off2;
@@ -453,6 +465,15 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
 
             jEditorPane1.getEditorPane().setCaretPosition(off1);
             jEditorPane2.getEditorPane().setCaretPosition(off2);
+            
+            DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[currentDiffIndex];
+            int offset;
+            if (ddiff.getDiff().getType() == Difference.DELETE) {
+                offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 2 + 1;
+            } else {
+                offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 5;
+            }
+            jEditorPane2.getScrollPane().getVerticalScrollBar().setValue(ddiff.getTopRight() - offset);
         } catch (IndexOutOfBoundsException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -901,6 +922,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         public void run() {
             synchronized(EditableDiffView.this) {
                 computeDiff();
+                if (currentDiffIndex >= diffs.length) updateCurrentDifference();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         jEditorPane1.setCurrentDiff(diffs);
@@ -909,20 +931,6 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
                     }
                 });
             }
-        }
-
-        private boolean equals(Difference[] a, Difference[] b) {
-            if (a == null || b == null || a.length != b.length) return false;
-            for (int i = 0; i < a.length; i++) {
-                Difference ad = a[i];
-                Difference bd = b[i];
-                if (ad.getType() != bd.getType() ||
-                        ad.getFirstStart() != bd.getFirstStart() ||
-                        ad.getSecondStart() != bd.getSecondStart() ||
-                        ad.getFirstEnd() != bd.getFirstEnd() ||
-                        ad.getSecondEnd() != bd.getSecondEnd()) return false;
-            }
-            return true;
         }
 
         private void computeDiff() {
