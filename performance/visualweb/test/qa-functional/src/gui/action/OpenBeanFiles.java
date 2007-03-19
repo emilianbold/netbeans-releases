@@ -34,7 +34,7 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     
     private String beanName;
     private String beanFileName;
-    
+    private String beanPath;
     /** Node to be opened/edited */
     public static Node openNode ;
     
@@ -82,10 +82,11 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     
     public void prepare() {
         log("::prepare");
-        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"), beanName);
+        beanPath = "Source Packages"+"|"+"visualwebproject"+"|"+beanName;
+        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode("VisualWebProject"), beanPath);
         
         if (this.openNode == null) {
-            throw new Error("Cannot find node "+beanName);
+            throw new Error("Cannot find node "+beanPath);
         }
         log("========== Open file path ="+this.openNode.getPath());
     }
@@ -93,13 +94,13 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     public ComponentOperator open() {
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
-            throw new Error("Cannot get context menu for node "+beanName);
+            throw new Error("Cannot get context menu for node "+beanPath);
         }
         log("------------------------- after popup invocation ------------");
         try {
             popup.pushMenu(OPEN);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error("Cannot push menu item Open on node "+beanName);
+            throw new Error("Cannot push menu item Open on node "+beanPath);
         }
         log("------------------------- after open ------------");
         
