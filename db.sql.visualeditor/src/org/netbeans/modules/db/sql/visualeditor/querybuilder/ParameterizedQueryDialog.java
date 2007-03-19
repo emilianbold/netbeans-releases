@@ -433,7 +433,7 @@ public class ParameterizedQueryDialog extends javax.swing.JPanel {
         messageArea.setLineWrap(true);
         messageArea
             .setText( NbBundle.getMessage(ParameterizedQueryDialog.class, 
-                                          "PAREMETERIZED_QURY_MESSAGE") );     // NOI18N
+                                          "PARAMETERIZED_QUERY_MESSAGE") );     // NOI18N
         messageArea.setWrapStyleWord(true);
         messageArea.setBorder(new javax.swing.border.EmptyBorder(
                                   new java.awt.Insets(10, 10, 10, 10)));

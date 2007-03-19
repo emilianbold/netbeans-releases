@@ -20,14 +20,27 @@ package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
 import java.util.Vector;
 import java.awt.Dimension;
+
 import java.awt.Color;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
+import java.awt.event.ActionListener;
+
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Timestamp;
+import java.sql.Date;
+import java.sql.Time;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+
+import java.text.DateFormat ;
 
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -36,25 +49,21 @@ import org.openide.windows.Mode;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExClipboard;
 
 import org.netbeans.modules.db.sql.visualeditor.Log;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Timestamp;
-import java.sql.Date;
-import java.sql.Time;
-
-import java.text.DateFormat ;
 
 /**
  * A table for displaying query results in the query editor
  * @author  Sanjay Dhamankar, Jim Davidson
  */
 public class QueryBuilderResultTable extends JTable
-                        implements KeyListener {
+                        implements ActionListener, KeyListener {
 
     private DefaultTableModel resultTableModel = null;
     private QueryBuilder                _queryBuilder;
+    private JPopupMenu                  resultTablePopup;
 
     public QueryBuilderResultTable() {
         this(null);
@@ -72,7 +81,18 @@ public class QueryBuilderResultTable extends JTable
             }
         };
         this.setModel(resultTableModel);
+        
+        resultTablePopup = new JPopupMenu();
+        JMenuItem menuItem;
+        menuItem = new JMenuItem(NbBundle.getMessage(QueryBuilderInputTable.class, "LBL_CopyCellValue"));      // NOI18N
+        menuItem.addActionListener(this);
+        resultTablePopup.add(menuItem);
+        menuItem = new JMenuItem(NbBundle.getMessage(QueryBuilderInputTable.class, "LBL_CopyRowValues"));      // NOI18N
+        menuItem.addActionListener(this);
+        resultTablePopup.add(menuItem);
 
+        MouseListener resultTablePopupListener = new ResultTablePopupListener();
+        super.addMouseListener(resultTablePopupListener);
         this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 //        this.setMinimumSize(new Dimension(200, 30) );
 //        this.setPreferredSize(new Dimension(200, 30) );
@@ -229,5 +249,64 @@ public class QueryBuilderResultTable extends JTable
         }
         return resultsTruncated ;
         
+    }
+
+    // Mouse listener -- bring up background menu
+    class ResultTablePopupListener extends MouseAdapter {
+
+        public void mousePressed(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            mousePressed(e);
+        }
+
+        private void maybeShowPopup(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                JTable source = (JTable)(e.getSource());
+                int row = source.rowAtPoint(e.getPoint());
+                int column = source.columnAtPoint(e.getPoint());
+                // Make sure the row where click occurred is selected.
+                if (row != -1) {
+                    source.setRowSelectionInterval (row, row);
+                }
+                resultTablePopup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        }
+    }
+
+
+    // Respond to a selection from the popup menu
+    public void actionPerformed(ActionEvent e) {
+        
+        JMenuItem source = (JMenuItem)(e.getSource());
+        if (source.getText().equals(NbBundle.getMessage(QueryBuilderInputTable.class, "LBL_CopyCellValue")))       // NOI18N
+        {
+            Object o = getValueAt(getSelectedRow(), getSelectedColumn());
+            setClipboard(o.toString());
+        }
+        else if (source.getText().equals(NbBundle.getMessage(QueryBuilderInputTable.class, "LBL_CopyRowValues")))       // NOI18N
+        {
+            int[] rows = getSelectedRows();
+            StringBuffer output = new StringBuffer();
+            for (int i = 0; i < rows.length; i++) {
+                for (int col = 0; col < getColumnCount(); col++) {
+                    if (col > 0) {
+                        output.append('\t');
+                    }
+                    Object o = getValueAt(rows[i], col);
+                    output.append(o.toString());
+                }
+                output.append('\n');
+            }
+            setClipboard(output.toString());
+        }
+    }
+    
+    private void setClipboard(String contents) {
+        ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
+        StringSelection strSel = new StringSelection(contents);
+        clipboard.setContents(strSel, strSel);
     }
 }
