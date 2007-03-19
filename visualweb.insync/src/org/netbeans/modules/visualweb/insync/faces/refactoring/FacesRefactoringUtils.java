@@ -62,11 +62,11 @@ final class FacesRefactoringUtils {
         return specialFolderNames.contains(folderName);
     }
     
-    static boolean isVisualWebJspFile(FileObject ffileObject) {
+    static boolean isVisualWebJspFile(FileObject fileObject) {
         // Is it a Jsp file
-        if (isFileUnderDocumentRoot(ffileObject)) {
-            if (isJspFile(ffileObject)) {            
-                FileObject javaFileObject = FacesModel.getJavaForJsp(ffileObject);
+        if (isFileUnderDocumentRoot(fileObject)) {
+            if (isJspFile(fileObject)) {            
+                FileObject javaFileObject = FacesModel.getJavaForJsp(fileObject);
                 if (javaFileObject != null) {
                     return true;
                 }                
