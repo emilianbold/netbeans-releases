@@ -73,15 +73,15 @@ public class PageIterator implements TemplateWizard.Iterator {
     private transient WizardDescriptor.Panel[] panels;
 
     public static PageIterator createWebFormIterator() {
-	return new PageIterator(FILETYPE_WEBFORM);
+        return new PageIterator(FILETYPE_WEBFORM);
     }
 
     public static PageIterator createBeanIterator() {
-	return new PageIterator(FILETYPE_BEAN);
+        return new PageIterator(FILETYPE_BEAN);
     }
 
     private PageIterator(String fileType) {
-	this.fileType = fileType;
+        this.fileType = fileType;
     }
 
     public void initialize (TemplateWizard wizard) {
@@ -190,8 +190,8 @@ public class PageIterator implements TemplateWizard.Iterator {
         String version = JsfProjectUtils.getProjectVersion(project);
         if (version == null || version.length() == 0) {
             List frameworks = WebFrameworkSupport.getFrameworkProviders();
-	    for (int i = 0; i < frameworks.size(); i++) {
-	        WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
+            for (int i = 0; i < frameworks.size(); i++) {
+                WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
                 String name = NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name");
                 if (framework.getName().equals(name)) {
                     FileObject projDir = project.getProjectDirectory();
@@ -206,9 +206,10 @@ public class PageIterator implements TemplateWizard.Iterator {
                         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, targetName+".jsp");
                     }
 
-		    return framework.extend(webModule);
+                    framework.getConfigurationPanel(webModule);
+                    return framework.extend(webModule);
                 }
-	    }
+            }
         }
 
         DataObject result;
