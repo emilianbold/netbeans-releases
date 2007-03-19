@@ -688,22 +688,23 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(tgbAll, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Action_All_Label"));
-        tgbAll.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Action_All_Tooltip"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tgbAll, bundle.getString("CTL_Synchronize_Action_All_Label")); // NOI18N
+        tgbAll.setToolTipText(bundle.getString("CTL_Synchronize_Action_All_Tooltip")); // NOI18N
+        tgbAll.setFocusable(false);
         tgbAll.addActionListener(this);
-
         jPanel2.add(tgbAll);
 
-        org.openide.awt.Mnemonics.setLocalizedText(tgbLocal, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Action_Local_Label"));
-        tgbLocal.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Action_Local_Tooltip"));
+        org.openide.awt.Mnemonics.setLocalizedText(tgbLocal, bundle.getString("CTL_Synchronize_Action_Local_Label")); // NOI18N
+        tgbLocal.setToolTipText(bundle.getString("CTL_Synchronize_Action_Local_Tooltip")); // NOI18N
+        tgbLocal.setFocusable(false);
         tgbLocal.addActionListener(this);
-
         jPanel2.add(tgbLocal);
 
-        org.openide.awt.Mnemonics.setLocalizedText(tgbRemote, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Action_Remote_Label"));
-        tgbRemote.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Action_Remote_Tooltip"));
+        org.openide.awt.Mnemonics.setLocalizedText(tgbRemote, bundle.getString("CTL_Synchronize_Action_Remote_Label")); // NOI18N
+        tgbRemote.setToolTipText(bundle.getString("CTL_Synchronize_Action_Remote_Tooltip")); // NOI18N
+        tgbRemote.setFocusable(false);
         tgbRemote.addActionListener(this);
-
         jPanel2.add(tgbRemote);
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
@@ -711,36 +712,36 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         jPanel2.add(jSeparator1);
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/refresh.png")));
-        btnRefresh.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Action_Refresh_Tooltip"));
-        btnRefresh.setActionCommand(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_TopComponent_Title"));
+        btnRefresh.setToolTipText(bundle.getString("CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
+        btnRefresh.setActionCommand(bundle.getString("CTL_Synchronize_TopComponent_Title")); // NOI18N
+        btnRefresh.setFocusable(false);
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 23));
         btnRefresh.addActionListener(this);
-
         jPanel2.add(btnRefresh);
 
         btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff.png")));
-        btnDiff.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Action_Diff_Tooltip"));
+        btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
+        btnDiff.setFocusable(false);
         btnDiff.setPreferredSize(new java.awt.Dimension(22, 25));
         btnDiff.addActionListener(this);
-
         jPanel2.add(btnDiff);
 
         jPanel3.setOpaque(false);
         jPanel2.add(jPanel3);
 
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/update.png")));
-        btnUpdate.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_Action_Update_Tooltip"));
-        btnUpdate.setActionCommand(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_Synchronize_TopComponent_Title"));
+        btnUpdate.setToolTipText(bundle.getString("CTL_Synchronize_Action_Update_Tooltip")); // NOI18N
+        btnUpdate.setActionCommand(bundle.getString("CTL_Synchronize_TopComponent_Title")); // NOI18N
+        btnUpdate.setFocusable(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(22, 25));
         btnUpdate.addActionListener(this);
-
         jPanel2.add(btnUpdate);
 
         btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/commit.png")));
-        btnCommit.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle").getString("CTL_CommitForm_Action_Commit_Tooltip"));
+        btnCommit.setToolTipText(bundle.getString("CTL_CommitForm_Action_Commit_Tooltip")); // NOI18N
+        btnCommit.setFocusable(false);
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));
         btnCommit.addActionListener(this);
-
         jPanel2.add(btnCommit);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -752,7 +753,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
         add(jPanel2, gridBagConstraints);
-
     }
 
     // Code for dispatching events from components to event handlers.
@@ -779,8 +779,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         else if (evt.getSource() == btnCommit) {
             SynchronizePanel.this.btnCommitActionPerformed(evt);
         }
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void btnDiffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDiffActionPerformed
         onDiffAction();
