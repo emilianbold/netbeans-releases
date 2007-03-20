@@ -31,120 +31,130 @@ import java.util.List;
  * @author David Kaspar
  */
 public class ClassCode {
-
+    
     private static final String ARRAY_SUFFIX = "Array"; // NOI18N
     private static final String GETTER_PREFIX = "get"; // NOI18N
-
+    
     static final class ClassCodeReferencePresenter extends CodeReferencePresenter {
-
-        ClassCodeReferencePresenter () {
+        
+        ClassCodeReferencePresenter() {
         }
-
-        protected String generateAccessCode () {
-            DesignComponent component = getComponent ();
-            boolean lazyInit = MidpTypes.getBoolean (component.readProperty (ClassCD.PROP_LAZY_INIT));
-            String instanceName = MidpTypes.getString (component.readProperty (ClassCD.PROP_INSTANCE_NAME));
-            return lazyInit ? createGetterNameFromInstanceName (instanceName) + " ()" : instanceName;
+        
+        protected String generateAccessCode() {
+            DesignComponent component = getComponent();
+            boolean lazyInit = MidpTypes.getBoolean(component.readProperty(ClassCD.PROP_LAZY_INIT));
+            String instanceName = MidpTypes.getString(component.readProperty(ClassCD.PROP_INSTANCE_NAME));
+            return lazyInit ? createGetterNameFromInstanceName(instanceName) + " ()" : instanceName;
         }
-
-        protected String generateDirectAccessCode () {
-            return MidpTypes.getString (getComponent ().readProperty (ClassCD.PROP_INSTANCE_NAME));
+        
+        protected String generateDirectAccessCode() {
+            return MidpTypes.getString(getComponent().readProperty(ClassCD.PROP_INSTANCE_NAME));
         }
-
-        protected String generateTypeCode () {
-            return MidpTypes.getSimpleClassName (getComponent ().getType ());
+        
+        protected String generateTypeCode() {
+            return MidpTypes.getSimpleClassName(getComponent().getType());
         }
-
+        
     }
-
+    
     /**
      * Requires CodeReferencePresenter on the same component.
      */
     static final class CodeLazyInitPresenter extends CodeClassLevelPresenter {
-
-        CodeLazyInitPresenter () {
+        
+        CodeLazyInitPresenter() {
         }
-
-        protected void generateFieldSectionCode (MultiGuardedSection section) {
-            section.getWriter ().write ("private " + CodeReferencePresenter.generateTypeCode (getComponent ()) + " " + CodeReferencePresenter.generateDirectAccessCode (getComponent ()) + ";\n");
+        
+        protected void generateFieldSectionCode(MultiGuardedSection section) {
+            section.getWriter().write("private " + CodeReferencePresenter.generateTypeCode(getComponent()) + " " + CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ";\n");
         }
-
-        protected void generateMethodSectionCode (MultiGuardedSection section) {
+        
+        protected void generateMethodSectionCode(MultiGuardedSection section) {
         }
-
-        public void generateInitializeSectionCode (MultiGuardedSection section) {
-            if (ClassSupport.isLazyInitialized (getComponent ()))
+        
+        public void generateInitializeSectionCode(MultiGuardedSection section) {
+            if (ClassSupport.isLazyInitialized(getComponent()))
                 return;
-            InitCodeGenerator.generateInitializationCode (section, getComponent ());
+            InitCodeGenerator.generateInitializationCode(section, getComponent());
         }
-
-        protected void generateClassBodyCode (StyledDocument document) {
-            if (! ClassSupport.isLazyInitialized (getComponent ()))
+        
+        protected void generateClassBodyCode(StyledDocument document) {
+            if (! ClassSupport.isLazyInitialized(getComponent()))
                 return;
-            MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-getter");// NOI18N
-
-            section.getWriter ().write ("public " + CodeReferencePresenter.generateTypeCode (getComponent ()) + " " + CodeReferencePresenter.generateAccessCode (getComponent ()) + " {\n" // NOI18N
-                    + "if (" + CodeReferencePresenter.generateDirectAccessCode (getComponent ()) + " == null) {\n").commit (); // NOI18N
-
-            section.switchToEditable (getComponent ().getComponentID () + "-preInit");
-            section.getWriter ().write (" // write pre-init user code here\n").commit (); // NOI18N
-
-            section.switchToGuarded ();
-            InitCodeGenerator.generateInitializationCode (section, getComponent ());
-            section.getWriter ().commit ();
-
-            section.switchToEditable (getComponent ().getComponentID () + "-postInit");
-            section.getWriter ().write (" // write post-init user code here\n").commit (); // NOI18N
-
-            section.switchToGuarded ();
-            section.getWriter ().write ("}\n"
-                    + "return " + CodeReferencePresenter.generateDirectAccessCode (getComponent ()) + ";\n" // NOI18N
-                    + "}\n").commit (); // NOI18N
-
-            section.close ();
+            MultiGuardedSection section = MultiGuardedSection.create(document, getComponent().getComponentID() + "-getter");// NOI18N
+            
+            section.getWriter().write("public " + CodeReferencePresenter.generateTypeCode(getComponent()) + " " + CodeReferencePresenter.generateAccessCode(getComponent()) + " {\n" // NOI18N
+                    + "if (" + CodeReferencePresenter.generateDirectAccessCode(getComponent()) + " == null) {\n").commit(); // NOI18N
+            
+            section.switchToEditable(getComponent().getComponentID() + "-preInit");
+            section.getWriter().write(" // write pre-init user code here\n").commit(); // NOI18N
+            
+            section.switchToGuarded();
+            InitCodeGenerator.generateInitializationCode(section, getComponent());
+            section.getWriter().commit();
+            
+            section.switchToEditable(getComponent().getComponentID() + "-postInit");
+            section.getWriter().write(" // write post-init user code here\n").commit(); // NOI18N
+            
+            section.switchToGuarded();
+            section.getWriter().write("}\n"
+                    + "return " + CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ";\n" // NOI18N
+                    + "}\n").commit(); // NOI18N
+            
+            section.close();
         }
-
+        
     }
-
+    
     static class CodeClassComponentDependencyPresenter extends RootCode.CodeComponentDependencyPresenter {
-
-        protected void collectRequiredComponents (Collection<DesignComponent> requiredComponents) {
-            DesignComponent component = getComponent ();
-            ComponentDescriptor descriptor = component.getComponentDescriptor ();
+        
+        protected void collectRequiredComponents(Collection<DesignComponent> requiredComponents) {
+            DesignComponent component = getComponent();
+            ComponentDescriptor descriptor = component.getComponentDescriptor();
             if (descriptor != null)
-                for (PropertyDescriptor property : descriptor.getPropertyDescriptors ())
-                    Debug.collectAllComponentReferences (component.readProperty (property.getName ()), requiredComponents);
+                for (PropertyDescriptor property : descriptor.getPropertyDescriptors())
+                    Debug.collectAllComponentReferences(component.readProperty(property.getName()), requiredComponents);
         }
     }
-
+    
     static class CodeClassNamePresenter extends CodeNamePresenter {
-
-        public List<String> getReservedNames () {
-            return getReservedNamesFor (MidpTypes.getString (getComponent ().readProperty (ClassCD.PROP_INSTANCE_NAME)));
+        
+        public List<String> getReservedNames() {
+            return getReservedNamesFor(MidpTypes.getString(getComponent().readProperty(ClassCD.PROP_INSTANCE_NAME)));
         }
-
-        public List<String> getReservedNamesFor (String suggestedMainName) {
-            return Arrays.asList (suggestedMainName, createGetterNameFromInstanceName (suggestedMainName));
+        
+        public List<String> getReservedNamesFor(String suggestedMainName) {
+            return Arrays.asList(suggestedMainName, createGetterNameFromInstanceName(suggestedMainName));
         }
-
+        
     }
-
-    private static String createGetterNameFromInstanceName (String instanceName) {
-        if (instanceName == null || instanceName.length () < 0)
+    
+    private static String createGetterNameFromInstanceName(String instanceName) {
+        if (instanceName == null || instanceName.length() < 0)
             return null;
-        return GETTER_PREFIX + Character.toUpperCase (instanceName.charAt (0)) + instanceName.substring (1);
+        return GETTER_PREFIX + Character.toUpperCase(instanceName.charAt(0)) + instanceName.substring(1);
     }
-
-    static String getSuggestedMainName (DesignComponent component) {
-        TypeID type = component.getType ();
-        String instanceName = type.getString ();
-        int index = instanceName.lastIndexOf ('.');
+    
+    static String getSuggestedMainName(DesignComponent component) {
+        TypeID type = component.getType();
+        String instanceName = type.getString();
+        int index = instanceName.lastIndexOf('.');
         if (index >= 0)
-            instanceName = instanceName.substring (index + 1);
-        if (type.getDimension () > 0)
+            instanceName = instanceName.substring(index + 1);
+        if (type.getDimension() > 0)
             instanceName += ARRAY_SUFFIX;
-        instanceName = Character.toLowerCase (instanceName.charAt (0)) + instanceName.substring (1);
+        char[] chars = instanceName.toCharArray();
+        chars[0] = Character.toLowerCase(chars[0]);
+        for (int i = 0 ; i < chars.length ; i++ ) {
+            if (Character.isLetter(chars[i]) && !Character.isLowerCase(chars[i])) {
+                if (chars.length >= i + 1 && !Character.isLowerCase(chars[i+1]))
+                    chars[i] = Character.toLowerCase(chars[i]);
+                else
+                    break;
+            }
+        }
+        instanceName = String.copyValueOf(chars);
         return instanceName;
     }
-
+    
 }
