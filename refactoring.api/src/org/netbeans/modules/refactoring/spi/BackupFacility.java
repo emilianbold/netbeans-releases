@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -151,7 +153,7 @@ public abstract class BackupFacility {
         
         private class BackupEntry {
             private File file;
-            private String path;
+            private URI path;
         }
         
         /** Creates a new instance of BackupFacility */
@@ -172,13 +174,17 @@ public abstract class BackupFacility {
          * @throws java.io.IOException if backup failed
          */
         public long backup(FileObject file) throws IOException {
-            BackupEntry entry = new BackupEntry();
-            entry.file = File.createTempFile("nbbackup", null); //NOI18N
-            copy(FileUtil.toFile(file), entry.file);
-            entry.path = file.getPath();
-            map.put(currentId, entry);
-            entry.file.deleteOnExit();
-            return currentId++;
+            try {
+                BackupEntry entry = new BackupEntry();
+                entry.file = File.createTempFile("nbbackup", null); //NOI18N
+                copy(FileUtil.toFile(file), entry.file);
+                entry.path = file.getURL().toURI();
+                map.put(currentId, entry);
+                entry.file.deleteOnExit();
+                return currentId++;
+            } catch (URISyntaxException ex) {
+                throw new IOException(file.toString(), ex);
+            }
         }
         /**
          * restore file, which was stored by backup(file)
@@ -215,11 +221,20 @@ public abstract class BackupFacility {
                 return true;
             File parent = f.getParentFile();
             if (parent!=null) {
-                createNewFile(parent);
+                createNewFolder(parent);
             }
             f.createNewFile();
             return false;
-            
+        }
+        
+        private void createNewFolder(File f) throws IOException {
+            if (!f.exists()) {
+                File parent = f.getParentFile();
+                if (parent != null) {
+                    createNewFolder(parent);
+                }
+                f.mkdir();
+            }
         }
         
         private void copy(File a, File b) throws IOException {
