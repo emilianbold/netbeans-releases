@@ -65,10 +65,6 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.openide.awt.UndoRedo;
 import org.openide.util.TaskListener;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.spi.PrintProviderCookie;
-import org.openide.util.Lookup;
-
 
 /**
  *
@@ -81,9 +77,7 @@ implements
         EditCookie,
         EditorCookie.Observable, 
         LineCookie, 
-        CloseCookie, 
-        //PrintCookie,
-        PrintProviderCookie
+        CloseCookie
 {
     
     /** Used for managing the prepareTask listener. */
@@ -567,23 +561,4 @@ ErrorManager.getDefault().notify(ioe);
 	    return canClose;
         }
     }
-    
-    public PrintProvider getPrintProvider() {
-        TopComponent component = TopComponent.getRegistry().getActivated();
-        if(component != null) {
-            Lookup lookup = component.getLookup();
-            DataObject targetDO = getDataObject();
-            if (targetDO == (DataObject) lookup.lookup(DataObject.class)) {
-                PrintProviderCookie cookie = (PrintProviderCookie) lookup.lookup(
-                            PrintProviderCookie.class);
-                // Avoid looping forever by ensuring we find a provider that
-                // is not ourselves.
-                if (cookie != null && cookie != this) {
-                    return cookie.getPrintProvider();
-                }
-            }
-        }
-        return null;
-    }
-
 }

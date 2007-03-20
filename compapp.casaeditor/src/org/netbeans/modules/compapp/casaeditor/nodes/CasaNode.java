@@ -33,6 +33,8 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.NodeDeleteAction;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
+import org.netbeans.modules.print.spi.PrintProvider;
+import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
@@ -66,6 +68,7 @@ public abstract class CasaNode<T> extends AbstractNode
         super(children, new AbstractLookup(content));
         mDataReference = new WeakReference(data);
         content.add(new SaveCookieDelegate());
+        content.add(new PrintProviderCookieDelegate());
     }
     
     
@@ -179,6 +182,19 @@ public abstract class CasaNode<T> extends AbstractNode
                     cookie.save();
                 }
             }
+        }
+    }
+
+    class PrintProviderCookieDelegate implements PrintProviderCookie {
+        public PrintProvider getPrintProvider() {
+            DataObject dobj = getDataObject();
+            if (dobj != null) {
+                PrintProviderCookie cookie = (PrintProviderCookie) dobj.getCookie(PrintProviderCookie.class);
+                if(cookie != null) {
+                    return cookie.getPrintProvider();
+                }
+            }
+            return null;
         }
     }
 }

@@ -26,8 +26,12 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JComponent;
+import org.netbeans.modules.print.spi.PrintProvider;
+import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.MultiFileLoader;
@@ -63,7 +67,7 @@ public class CasaDataObject extends MultiDataObject {
         
         CookieSet set = getCookieSet();
         set.add(editorSupport);
-        
+        getCookieSet().add(getPrintProviderCookie());        
         
     }
            
@@ -136,4 +140,23 @@ public class CasaDataObject extends MultiDataObject {
             }
         };
     }
+    
+    private PrintProviderCookie getPrintProviderCookie() {
+        return new PrintProviderCookie() {
+            public PrintProvider getPrintProvider() {
+                return new PrintProvider.Component() {
+                    public String getName() {
+                        return getEditorSupport().getDataObject().getName();
+                    }
+                    public Date getLastModifiedDate() {
+                        return getEditorSupport().getDataObject().getPrimaryFile().lastModified();
+                    }
+                    public JComponent getComponent() {
+                        return getEditorSupport().getScene().getView();
+                    }
+                };
+            }
+        };
+    }
+    
 }
