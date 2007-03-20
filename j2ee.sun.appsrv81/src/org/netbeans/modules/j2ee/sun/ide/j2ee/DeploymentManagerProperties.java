@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -168,17 +168,24 @@ public class DeploymentManagerProperties {
         if (ret==null){
             return installRoot;
         }
-        if (ret.equals( installRoot )){
-            //upgrade from previous semantic of this field in EA2: it was the app server location
-            //not the domain location...
-            String ext = (File.separatorChar == '/' ? "conf" : "bat");          // NOI18N
-            File asenv = new File(installRoot,"config/asenv."+ext);            // NOI18N
-            Asenv asenvContent = new Asenv(asenv);
-            String defDomainsDirName = asenvContent.get(Asenv.AS_DEF_DOMAINS_PATH);
-            ret = defDomainsDirName;
-//            ret = ret +File.separator+"domains";
-            instanceProperties.setProperty(LOCATION_ATTR, ret);
-            
+        
+        File domainFile = new File(irf,instanceProperties.getProperty(DOMAIN_ATTR));
+        if (domainFile.exists() && domainFile.isDirectory()) {
+            //
+            // do nothing 
+            //
+        } else {
+            if (ret.equals(installRoot)) {
+                //upgrade from previous semantic of this field in EA2: it was the app server location
+                //not the domain location...
+                String ext = (File.separatorChar == '/' ? "conf" : "bat");          // NOI18N
+                File asenv = new File(installRoot,"config/asenv."+ext);            // NOI18N
+                Asenv asenvContent = new Asenv(asenv);
+                String defDomainsDirName = asenvContent.get(Asenv.AS_DEF_DOMAINS_PATH);
+                ret = defDomainsDirName;
+                //            ret = ret +File.separator+"domains";
+                instanceProperties.setProperty(LOCATION_ATTR, ret);                
+            }
         }
         return ret;
     }
