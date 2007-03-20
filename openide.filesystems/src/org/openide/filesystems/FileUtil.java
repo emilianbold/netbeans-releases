@@ -523,7 +523,6 @@ public final class FileUtil extends Object {
                 return null;
             }
 
-            assert !url.toExternalForm().equals("file:") : "#98388: got bad URL '" + url + "' from '" + file + "'";
             retVal = URLMapper.findFileObject(url);
 
             /*probably temporary piece of code to catch the cause of #46630*/
@@ -1298,7 +1297,7 @@ public final class FileUtil extends Object {
     }
     
     private static boolean is4089199() {
-        return getJavaSpecVersion() < 1.6;
+        return /*98388*/Utilities.isWindows() && getJavaSpecVersion() < 1.6;
     }
     
     private static float getJavaSpecVersion() {
