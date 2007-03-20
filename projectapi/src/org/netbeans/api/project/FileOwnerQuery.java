@@ -26,6 +26,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -51,6 +53,8 @@ public class FileOwnerQuery {
     
     // XXX acquire the appropriate ProjectManager.mutex for the duration of calls
 
+    private static final Logger LOG = Logger.getLogger(FileOwnerQuery.class.getName());
+
     private static Lookup.Result<FileOwnerQueryImplementation> implementations;
 
     /** Cache of all available FileOwnerQueryImplementation instances. */
@@ -74,9 +78,11 @@ public class FileOwnerQuery {
         for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(file);
             if (p != null) {
+                LOG.log(Level.FINE, "getOwner({0}) -> {1} from {2}", new Object[] {file, p, q});
                 return p;
             }
         }
+        LOG.log(Level.FINE, "getOwner({0}) -> nil", file);
         return null;
     }
 
@@ -118,9 +124,11 @@ public class FileOwnerQuery {
         for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(uri);
             if (p != null) {
+                LOG.log(Level.FINE, "getOwner({0}) -> {1} from {2}", new Object[] {uri, p, q});
                 return p;
             }
         }
+        LOG.log(Level.FINE, "getOwner({0}) -> nil", uri);
         return null;
     }
     
@@ -170,6 +178,7 @@ public class FileOwnerQuery {
      * @see <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
      */
     public static void markExternalOwner(FileObject root, Project owner, int algorithm) throws IllegalArgumentException {
+        LOG.log(Level.FINE, "markExternalOwner({0}, {1}, {2})", new Object[] {root, owner, algorithm});
         switch (algorithm) {
         case EXTERNAL_ALGORITHM_TRANSIENT:
             // XXX check args
@@ -206,6 +215,7 @@ public class FileOwnerQuery {
      * @see <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
      */
     public static void markExternalOwner(URI root, Project owner, int algorithm) throws IllegalArgumentException {
+        LOG.log(Level.FINE, "markExternalOwner({0}, {1}, {2})", new Object[] {root, owner, algorithm});
         switch (algorithm) {
         case EXTERNAL_ALGORITHM_TRANSIENT:
             // XXX check args

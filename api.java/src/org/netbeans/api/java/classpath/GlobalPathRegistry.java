@@ -31,6 +31,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -81,6 +83,8 @@ import org.openide.filesystems.FileObject;
  * @since org.netbeans.api.java/1 1.4
  */
 public final class GlobalPathRegistry {
+
+    private static final Logger LOG = Logger.getLogger(GlobalPathRegistry.class.getName());
     
     private static GlobalPathRegistry DEFAULT = new GlobalPathRegistry();
     
@@ -144,6 +148,8 @@ public final class GlobalPathRegistry {
         if (id == null || paths == null) {
             throw new NullPointerException();
         }
+        // Do not log just when firing an event, since there may no listeners.
+        LOG.log(Level.FINE, "registering paths {0} of type {1}", new Object[] {Arrays.asList(paths), id});
         GlobalPathRegistryEvent evt = null;
         GlobalPathRegistryListener[] _listeners = null;
         synchronized (this) {
@@ -187,6 +193,7 @@ public final class GlobalPathRegistry {
      * @throws IllegalArgumentException if they had not been registered before
      */
     public void unregister(String id, ClassPath[] paths) throws IllegalArgumentException {
+        LOG.log(Level.FINE, "unregistering paths {0} of type {1}", new Object[] {Arrays.asList(paths), id});
         if (id == null || paths == null) {
             throw new NullPointerException();
         }
