@@ -35,7 +35,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
-//import org.netbeans.modules.j2me.cdc.project.CDCProjectUtil;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
@@ -292,6 +291,7 @@ public class MainClassChooser extends JPanel {
     public static boolean hasMainMethod (FileObject classFO) {
         return CDCProjectUtil.hasMainMethod (classFO);
     }
+    
 
     /** This method is called from within the constructor to
      * initialize the form.

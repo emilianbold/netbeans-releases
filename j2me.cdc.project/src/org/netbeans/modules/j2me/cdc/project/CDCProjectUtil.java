@@ -44,9 +44,6 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.modules.j2me.cdc.platform.CDCDevice;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
-import org.netbeans.modules.mobility.project.J2MEProject;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -91,9 +88,7 @@ public class CDCProjectUtil {
      * @param root the root of source to start find
      * @param addInto list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
-    private static void getMainClasses (final FileObject root, final List<String> addInto, final Map<String,String> executionModes) {
-        //SourceUtils.waitScanFinished();
-
+    private static void getMainClasses (final FileObject root, final List<String> addInto, final Map<String,String> executionModes) {       
         final String specialXletFqn = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_XLET)  : null;
         final String specialAppletFqn = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_APPLET)  : null;
         
@@ -180,7 +175,7 @@ public class CDCProjectUtil {
      * it's a main class.
      * 
      * @param className FQN of class
-     * @param roots roots of sources
+     * @param root roots of sources
      * @return true if the class name exists and it's a main class
      */
     public static boolean isMainClass(String className, FileObject root) {

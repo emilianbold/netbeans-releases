@@ -23,19 +23,14 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.j2me.cdc.project.CDCPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
-import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
@@ -51,6 +46,8 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerRun extends JPanel implements CustomizerPanel, VisualPropertyGroup  {
     
+    final private javax.swing.JTextField jTextHidden;
+    
     private static String[] PROPERTY_NAMES = new String[] {
         CDCPropertiesDescriptor.MAIN_CLASS,
         CDCPropertiesDescriptor.MAIN_CLASS_CLASS,
@@ -63,49 +60,33 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
     
     public CustomizerRun() {
         initComponents();
+        jTextHidden=new javax.swing.JTextField();        
     }
     public void initValues(ProjectProperties props, String configuration) {
         vps = VisualPropertySupport.getDefault(props);
         vps.register(jCheckBox1, configuration, this);
-        prop=props;
-        setRunOptions();
+        prop=props;        
     }
     
     public String[] getGroupPropertyNames() {
         return PROPERTY_NAMES;
     }
     
-    public void setRunOptions()
-    {
-        Map<String,String> executionModes=CDCProjectUtil.getExecutionModes(prop);
-        String specialExecFqnXlet = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_XLET)  : null;
-        String specialExecFqnApplet = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_APPLET)  : null;        
-
-        jRadioButton1.setSelected( CDCProjectUtil.isMainClass(jTextFieldMainClass.getText(), prop.getSourceRoot()) );
-        jRadioButton2.setSelected( CDCProjectUtil.isXletClass(jTextFieldMainClass.getText(), prop.getSourceRoot(), specialExecFqnXlet) );
-        jRadioButton3.setSelected( CDCProjectUtil.isAppletClass(jTextFieldMainClass.getText(), prop.getSourceRoot(), specialExecFqnApplet) );
-    }
-    
     public void initGroupValues(boolean useDefault) {
         vps.register(jTextFieldMainClass, CDCPropertiesDescriptor.MAIN_CLASS, useDefault);
-        vps.register(jRadioButton1, CDCPropertiesDescriptor.MAIN_CLASS_CLASS, useDefault);
-        vps.register(jRadioButton2, CDCPropertiesDescriptor.MAIN_CLASS_CLASS, useDefault);
-        vps.register(jRadioButton3, CDCPropertiesDescriptor.MAIN_CLASS_CLASS, useDefault);
         vps.register(jTextFieldArgs, CDCPropertiesDescriptor.APPLICATION_ARGS, useDefault);
         vps.register(jTextVMOptions, DefaultPropertiesDescriptor.RUN_CMD_OPTIONS, useDefault);
+        vps.register(jTextHidden, CDCPropertiesDescriptor.MAIN_CLASS_CLASS, useDefault);
         
         jButtonMainClass.addActionListener( new MainClassListener( jTextFieldMainClass));
         
-        jLabel1.setEnabled(!useDefault);
         jLabelArgs.setEnabled(!useDefault);
         jLabelMainClass.setEnabled(!useDefault);
         jLabelVMOptions.setEnabled(!useDefault);
         jLabelVMOptionsExample.setEnabled(!useDefault);
         jButtonMainClass.setEnabled(!useDefault);
                 
-        jRadioButton1.setEnabled(false);
-        jRadioButton2.setEnabled(false);
-        jRadioButton3.setEnabled(false);        
+        
     }
     
     /** This method is called from within the constructor to
@@ -122,10 +103,6 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         jLabelMainClass = new javax.swing.JLabel();
         jTextFieldMainClass = new javax.swing.JTextField();
         jButtonMainClass = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
-        jRadioButton3 = new javax.swing.JRadioButton();
         jLabelArgs = new javax.swing.JLabel();
         jTextFieldArgs = new javax.swing.JTextField();
         jLabelVMOptions = new javax.swing.JLabel();
@@ -148,13 +125,14 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabelMainClass, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jTextFieldMainClass, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton")); // NOI18N
@@ -163,64 +141,19 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(jButtonMainClass, gridBagConstraints);
-
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/cdc/project/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("LBL_ExecutionType")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(jLabel1, gridBagConstraints);
-
-        buttonGroup1.add(jRadioButton1);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_MainMethod")); // NOI18N
-        jRadioButton1.setActionCommand("main"); // NOI18N
-        jRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(jRadioButton1, gridBagConstraints);
-
-        buttonGroup1.add(jRadioButton2);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_XletMethod")); // NOI18N
-        jRadioButton2.setActionCommand("xlet"); // NOI18N
-        jRadioButton2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(jRadioButton2, gridBagConstraints);
-
-        buttonGroup1.add(jRadioButton3);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_AppletMethod")); // NOI18N
-        jRadioButton3.setActionCommand("applet"); // NOI18N
-        jRadioButton3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 0);
-        add(jRadioButton3, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabelArgs, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabelArgs, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -230,22 +163,22 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptions, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jLabelVMOptions, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jTextVMOptions, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptionsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -259,14 +192,10 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton jButtonMainClass;
     private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelArgs;
     private javax.swing.JLabel jLabelMainClass;
     private javax.swing.JLabel jLabelVMOptions;
     private javax.swing.JLabel jLabelVMOptionsExample;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
-    private javax.swing.JRadioButton jRadioButton3;
     private javax.swing.JTextField jTextFieldArgs;
     private javax.swing.JTextField jTextFieldMainClass;
     private javax.swing.JTextField jTextVMOptions;
@@ -300,11 +229,6 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
             };
 
             panel.setSelectedMainClass(mainClassTextField.getText());
-            if (jRadioButton2.isSelected()){
-                panel.setXletExecution(true);
-            } else if (jRadioButton3.isSelected()){
-                panel.setAppletExecution(true);
-            }
             panel.addChangeListener (new ChangeListener () {
                public void stateChanged(ChangeEvent e) {
                    if ((e.getSource () instanceof MouseEvent) && 
@@ -331,7 +255,18 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
             dlg.setVisible (true);
             if (desc.getValue() == options[0]) {
                mainClassTextField.setText (panel.getSelectedMainClass ());
-               setRunOptions();
+               if (panel.isAppletExecution())
+               {
+                   jTextHidden.setText("applet");
+               }
+               else if (panel.isXletExecution())
+               {
+                   jTextHidden.setText("xlet");
+               }
+               else
+               {
+                   jTextHidden.setText("main");
+               }
             } 
             dlg.dispose();
             
