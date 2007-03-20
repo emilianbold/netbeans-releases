@@ -36,7 +36,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
-
 import java.io.IOException;
 import java.util.*;
 
@@ -84,7 +83,7 @@ public final class MidpProjectSupport {
      * @param document the document
      * @return the project
      */
-    private static Project getProjectForDocument(DesignDocument document) {
+    public static Project getProjectForDocument(DesignDocument document) {
         if (document == null)
             return null;
         
@@ -251,5 +250,5 @@ public final class MidpProjectSupport {
             return null;
         return sourceGroups[0];
     }
-
+	
 }
