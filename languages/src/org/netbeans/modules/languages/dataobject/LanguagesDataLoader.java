@@ -48,9 +48,9 @@ public class LanguagesDataLoader extends MultiFileLoader {
         return "Loaders/Languages/Actions";
     }
 
-    protected FileObject findPrimaryFile(FileObject fo) {
+    protected FileObject findPrimaryFile (FileObject fo) {
         String mimeType = fo.getMIMEType ();
-        if (LanguagesManager.getDefault ().isSupported (mimeType))
+        if (LanguagesManager.getDefault ().createDataObjectFor (mimeType))
             return fo;
         return null;
     }
@@ -58,7 +58,7 @@ public class LanguagesDataLoader extends MultiFileLoader {
     protected MultiDataObject createMultiObject (FileObject primaryFile) 
     throws DataObjectExistsException, IOException {
         String mimeType = primaryFile.getMIMEType ();
-        if (LanguagesManager.getDefault ().isSupported (mimeType))
+        if (LanguagesManager.getDefault ().createDataObjectFor (mimeType))
             return new LanguagesDataObject (primaryFile, this);
         return null;
     }

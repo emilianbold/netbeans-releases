@@ -67,6 +67,15 @@ public class LanguagesManager {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
         return fs.findResource ("Editors/" + mimeType + "/language.nbs") != null;
     }
+
+    public boolean createDataObjectFor (String mimeType) {
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+        FileObject fo = fs.findResource ("Editors/" + mimeType + "/language.nbs");
+        if (fo == null) return false;
+        Boolean b = (Boolean) fo.getAttribute ("createDataObject");
+        if (b == null) return true;
+        return b.booleanValue ();
+    }
     
     private Map<String,Object> mimeTypeToLanguage = new HashMap<String,Object> ();
     
