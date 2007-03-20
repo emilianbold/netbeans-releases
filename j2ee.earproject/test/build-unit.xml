@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
-    
+<!--    
     <target name="run-unit-test" depends="init-cp">
         <unzip src="${xtest.data}/SunAppServer.zip" dest="${xtest.tmpdir}"/>
         <property name="appserv.home.dir" value="${xtest.tmpdir}/SunAppServer"/>
@@ -35,5 +35,5 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
         <delete dir="${appserv.home.dir}"/>
     </target>
-        
+-->        
 </project>
