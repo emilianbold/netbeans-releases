@@ -567,7 +567,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         }
 
         private List<DiffMark> getMarksForDifferences() {
-            if (currentDiff == null) return Collections.emptyList();
+            if (currentDiff == null || !isVisible() || getWidth() <= 0) return Collections.emptyList();
             List<DiffMark> marks = new ArrayList<DiffMark>(currentDiff.length);
             for (int i = 0; i < currentDiff.length; i++) {
                 Difference difference = currentDiff[i];
