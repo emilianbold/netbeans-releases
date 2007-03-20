@@ -198,6 +198,8 @@ public final class ScreenAccessController implements AccessController {
             super.getListCellRendererComponent(list, label[0], index, isSelected, cellHasFocus);
             if (image[0] != null)
                 setIcon(new ImageIcon(image[0]));
+            
+            
             return this;
         }
     }

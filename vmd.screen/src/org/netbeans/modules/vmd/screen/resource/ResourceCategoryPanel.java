@@ -26,6 +26,8 @@ import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  *
@@ -74,4 +76,5 @@ public class ResourceCategoryPanel extends JPanel {
             componentPanel.add(item, constraints);
         }
     }
+   
 }

@@ -19,23 +19,28 @@
 package org.netbeans.modules.vmd.midpnb.components.sources;
 
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 
 /**
  * @author Karol Harezlak
  */
+ 
+public class AbstractCommandEventSourceCD extends ComponentDescriptor {
 
-public final class LoginScreenLoginCommandEventSourceCD extends ComponentDescriptor {
-
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#LoginScreenLoginCommandEventSource"); // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#AbstractCommandEventSourceCD"); // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor(AbstractCommandEventSourceCD.TYPEID, TYPEID, true, false);
+        return new TypeDescriptor(CommandEventSourceCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor () {
@@ -46,10 +51,19 @@ public final class LoginScreenLoginCommandEventSourceCD extends ComponentDescrip
         return null;
     }
 
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, InfoPresenter.class);
+        DocumentSupport.removePresentersOfClass (presenters, InspectorFolderPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
-            // info
-            InfoPresenter.createStatic ("LoginScreen.LOGIN_COMMAND", "Command", CommandCD.ICON_PATH) //NOI18N
+            //inspector
+            InspectorFolderPresenter.create(false),    
+            // delete
+            DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
+            DeletePresenter.createUserIndeliblePresenter ()
         );
     }
 
