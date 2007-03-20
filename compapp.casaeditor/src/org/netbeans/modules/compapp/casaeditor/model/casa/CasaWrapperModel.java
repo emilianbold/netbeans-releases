@@ -1538,7 +1538,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             
             AddProjectAction addProjectAction = new AddProjectAction();
             
-            for (String key : mAddProjects.keySet()) {
+            for (String key : new HashSet<String>(mAddProjects.keySet())) {
                 Project project = mAddProjects.get(key);
                 AntArtifactProvider antArtifactProvider =
                         (AntArtifactProvider) project.getLookup().
@@ -1568,7 +1568,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             DeleteModuleAction deleteModuleAction =
                     (DeleteModuleAction) SystemAction.get(DeleteModuleAction.class);
                 
-            for (String key : mDeleteProjects.keySet()) {
+            for (String key : new HashSet<String>(mDeleteProjects.keySet())) {
                 String artifactName = mDeleteProjects.get(key);
                 boolean success =
                         deleteModuleAction.removeProject(jbiProject, artifactName);                
