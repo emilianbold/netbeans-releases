@@ -31,6 +31,7 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
@@ -59,19 +60,17 @@ public class SearchForJavaAction extends WizardAction {
     
     // private //////////////////////////////////////////////////////////////////////
     private static String getLabel(File javaHome, JavaInfo javaInfo) {
-        return "" + javaHome +
-                " (v. " + javaInfo.getVersion().toJdkStyle() +
-                " by " + javaInfo.getVendor() + ")";
+        return StringUtils.format(JAVA_ENTRY_LABEL,
+                javaHome, 
+                javaInfo.getVersion().toJdkStyle(),
+                javaInfo.getVendor());
     }
     
     private static String getLabel(File javaHome, Version version, String vendor) {
-        return "" +
-                javaHome +
-                " (v. " +
-                version.toJdkStyle() +
-                " by " +
-                vendor +
-                ")";
+        return StringUtils.format(JAVA_ENTRY_LABEL,
+                javaHome,
+                version.toJdkStyle(),
+                vendor);
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -92,13 +91,13 @@ public class SearchForJavaAction extends WizardAction {
         
         getWizardUi().setProgress(progress);
         
-        progress.setTitle("Searching for installed JDKs...");
+        progress.setTitle(SEARCH_INSTALLED_JAVAS);
         progress.setDetail("");
         progress.setPercentage(Progress.START);
         
         SystemUtils.sleep(200);
         
-        progress.setDetail("Preparing locations list");
+        progress.setDetail(PREPARE_JAVA_LIST);
         if (SystemUtils.isWindows()) {
             fetchLocationsFromWindowsRegistry(locations);
         }
@@ -109,7 +108,7 @@ public class SearchForJavaAction extends WizardAction {
         for (int i = 0; i < locations.size(); i++) {
             final File javaHome = locations.get(i).getAbsoluteFile();
             
-            progress.setDetail("Checking " + javaHome);
+            progress.setDetail(StringUtils.format(CHECKING,javaHome));
             
             if (canceled) return; // check for cancel status
             
@@ -148,7 +147,7 @@ public class SearchForJavaAction extends WizardAction {
                         javaLabels.add(getLabel(
                                 jdk.getInstallationLocation(),
                                 jdk.getVersion(),
-                                "Sun Microsystems Inc."));
+                                SUN_MICROSYSTEMS_VENDOR));
                     }
                 }
                 
@@ -290,8 +289,8 @@ public class SearchForJavaAction extends WizardAction {
                         
                         LogManager.log("found: " + (section == HKLM ?
                             "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER") + // NOI18N
-                            "\\" + path + "\\" + key + "\\" + // NOI18N
-                            JavaUtils.JAVAHOME_VALUE + " = " + javaHome); // NOI18N
+                                "\\" + path + "\\" + key + "\\" + // NOI18N
+                                JavaUtils.JAVAHOME_VALUE + " = " + javaHome); // NOI18N
                         
                         
                         // add java home to the list if it's not there already
@@ -329,7 +328,22 @@ public class SearchForJavaAction extends WizardAction {
     public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(SearchForJavaAction.class,
             "SFJA.description"); // NOI18N
-    
+    public static final String PREPARE_JAVA_LIST =
+            ResourceUtils.getString(SearchForJavaAction.class,
+            "SFJA.prepare.list"); //NOI18N
+    public static final String CHECKING =
+            ResourceUtils.getString(SearchForJavaAction.class,
+            "SFJA.checking");//NOI18N
+   public static final String SEARCH_INSTALLED_JAVAS = 
+           ResourceUtils.getString(SearchForJavaAction.class,
+            "SFJA.search.java");//NOI18N
+   public static final String JAVA_ENTRY_LABEL = 
+           ResourceUtils.getString(SearchForJavaAction.class,
+           "SFJA.entrylabel");//NOI18N
+   
+   private static final String SUN_MICROSYSTEMS_VENDOR = 
+           "Sun Microsystems Inc." ; //NOI18N
+   
     public static final String [] JAVA_WINDOWS_REGISTRY_ENTRIES = new String [] {
         "SOFTWARE\\JavaSoft\\Java Development Kit",                         // NOI18N
         "SOFTWARE\\JRockit\\Java Development Kit",                          // NOI18N
