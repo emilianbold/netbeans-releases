@@ -130,6 +130,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
 import org.netbeans.modules.soa.ui.tnv.scrollpane.ThumbnailScrollPane;
+import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponentGroup;
@@ -290,8 +291,11 @@ public class DesignerMultiViewElement extends TopComponent
         //required to release all references to OM
         myDesignView.closeView();
         myDesignView = null;
-        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
-
+        // todo r | m 
+        DataObject dObj = getDataObject();
+        if (dObj.isValid()) {
+            setActivatedNodes(new Node[] {dObj.getNodeDelegate()});
+        }
     }
     
     public void componentDeactivated() {
