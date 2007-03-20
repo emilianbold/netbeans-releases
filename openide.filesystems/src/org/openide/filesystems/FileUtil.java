@@ -1308,7 +1308,7 @@ public final class FileUtil extends Object {
         }
         return javaSpecVersion;
     }
-    
+
     private static FileSystemView getFileSystemView() {
         boolean init = false;
         final FileSystemView[] fsv = {fileSystemView};
@@ -1318,23 +1318,21 @@ public final class FileUtil extends Object {
         }
         
         if (init) {
-            try {
-                if (SwingUtilities.isEventDispatchThread()) {
-                    fsv[0] = javax.swing.filechooser.FileSystemView.getFileSystemView();
-                } else {
-                    SwingUtilities.invokeAndWait(new java.lang.Runnable() {
-                        public void run() {
-                            fsv[0] = javax.swing.filechooser.FileSystemView.getFileSystemView();
-                        }
-                    });                    
-                }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            } catch (InvocationTargetException ex) {}
-            
-            synchronized(FileUtil.class) {
-                fileSystemView = fsv[0];
-            }            
+            if (SwingUtilities.isEventDispatchThread()) {
+                fsv[0] = javax.swing.filechooser.FileSystemView.getFileSystemView();                
+                synchronized(FileUtil.class) {
+                    fileSystemView = fsv[0];
+                }                
+            } else {
+                SwingUtilities.invokeLater(new java.lang.Runnable() {
+                    public void run() {
+                        fsv[0] = javax.swing.filechooser.FileSystemView.getFileSystemView();
+                        synchronized(FileUtil.class) {
+                            fileSystemView = fsv[0];
+                        }                        
+                    }
+                });
+            }                        
         }
         return fileSystemView;
     }
