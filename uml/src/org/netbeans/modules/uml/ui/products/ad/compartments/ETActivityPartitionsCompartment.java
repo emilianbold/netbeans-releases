@@ -21,13 +21,10 @@
 
 package org.netbeans.modules.uml.ui.products.ad.compartments;
 
-import java.awt.Color;
-import java.awt.Point;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
@@ -36,34 +33,22 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.diagrams.ICoreRelationshipDiscovery;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.CollectionTranslator;
-import org.netbeans.modules.uml.core.support.umlsupport.ETDeviceRect;
 import org.netbeans.modules.uml.core.support.umlsupport.ETPoint;
-import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
-import org.netbeans.modules.uml.core.support.umlsupport.ETSize;
 import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
-import org.netbeans.modules.uml.core.support.umlsupport.IETSize;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.core.support.umlutils.InvalidArguments;
-import org.netbeans.modules.uml.core.support.umlutils.InvalidPointerException;
 import org.netbeans.modules.uml.ui.controls.drawingarea.DiagramAreaEnumerations;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.ADRelationshipDiscovery;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IConnectedNode;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IEdgePresentation;
 import org.netbeans.modules.uml.ui.support.applicationmanager.INodePresentation;
-import org.netbeans.modules.uml.ui.support.applicationmanager.MoveToFlags;
 import org.netbeans.modules.uml.ui.support.helpers.GUIBlocker;
 import org.netbeans.modules.uml.ui.support.helpers.IGUIBlocker;
 import org.netbeans.modules.uml.ui.support.helpers.IGUIBlocker.GBK;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETPointEx;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETRectEx;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETTransformOwner;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.GDISupport;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.PointConversions;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
@@ -74,22 +59,7 @@ import com.tomsawyer.drawing.TSDGraph;
 import com.tomsawyer.drawing.TSDGraphManager;
 import com.tomsawyer.drawing.TSDNode;
 import com.tomsawyer.editor.TSENode;
-import com.tomsawyer.editor.graphics.TSEGraphics;
-//import com.tomsawyer.layout.glt.TSLayoutEngine;
-//import com.tomsawyer.layout.glt.TSLocalLayoutProxy;
 import com.tomsawyer.service.layout.jlayout.client.TSLayoutProxy;
-//import com.tomsawyer.util.TSConstRect;
-import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSPoint;
-import com.tomsawyer.drawing.geometry.TSPoint;
-//import com.tomsawyer.util.TSRect;
-import com.tomsawyer.drawing.geometry.TSRect;
-
-
-/**
- * @author Embarcadero Technologies Inc.
- *
- */
 
 public class ETActivityPartitionsCompartment extends ETZonesCompartment implements IADActivityPartitionsCompartment
 {

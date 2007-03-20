@@ -18,20 +18,15 @@
  */
 
 
-//	 $Date$
-
 package org.netbeans.modules.uml.ui.products.ad.compartments;
 
 import java.awt.Font;
-import java.awt.Point;
-import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.uml.common.generics.IteratorT;
-import org.netbeans.modules.uml.core.support.umlsupport.ETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.ETSize;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
@@ -60,9 +55,7 @@ import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageResultKindEnum;
 import org.netbeans.modules.uml.ui.support.helpers.UserInputBlocker;
 import org.netbeans.modules.uml.ui.support.helpers.IGUIBlocker.GBK;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETTransform;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartments;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
@@ -72,12 +65,8 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import com.tomsawyer.editor.TSEColor;
 import com.tomsawyer.editor.TSEFont;
-import com.tomsawyer.editor.TSEGraphWindow;
 import com.tomsawyer.editor.graphics.TSEGraphics;
-import com.tomsawyer.graph.TSGraphObject;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
-import org.netbeans.modules.uml.core.support.umlsupport.ETDeviceRect;
 
 /**
  * @author Embarcadero Technologies Inc
