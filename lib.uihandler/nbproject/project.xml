@@ -4,7 +4,16 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.lib.uihandler</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.7</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.uihandler</friend>
                 <package>org.netbeans.lib.uihandler</package>

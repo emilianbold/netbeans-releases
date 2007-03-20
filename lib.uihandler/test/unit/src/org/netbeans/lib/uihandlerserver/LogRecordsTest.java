@@ -21,14 +21,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Handler;
@@ -40,6 +38,7 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.lib.uihandler.LogRecords;
+import org.netbeans.lib.uihandler.TestHandler;
 
 /**
  *
@@ -131,10 +130,11 @@ public class LogRecordsTest extends NbTestCase {
     
     public void testMakeSureItIsReadable() throws Exception {
         InputStream is = getClass().getResourceAsStream("NB1216449736.xml");
+        TestHandler records = new TestHandler(is);
         int cnt = 0;
         for (;;) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = LogRecords.read(is);
+            LogRecord r = records.read();
             if (r == null) {
                 break;
             }
@@ -169,9 +169,10 @@ public class LogRecordsTest extends NbTestCase {
         }
         
         LogRecord first = null;
+        TestHandler records = new TestHandler(is);
         for (;;) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = LogRecords.read(is);
+            LogRecord r = records.read();
             if (r == null) {
                 break;
             }
@@ -214,9 +215,10 @@ public class LogRecordsTest extends NbTestCase {
     public void testCanReadEmpty() throws Exception {
         InputStream is = getClass().getResourceAsStream("Empty.xml");
         int cnt = 0;
+        TestHandler records = new TestHandler(is);
         for (;;) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = LogRecords.read(is);
+            LogRecord r = records.read();
             if (r == null) {
                 break;
             }
@@ -245,9 +247,10 @@ public class LogRecordsTest extends NbTestCase {
             }
         }
         
+        TestHandler records = new TestHandler(is);
         for (;;) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = LogRecords.read(is);
+            LogRecord r = records.read();
             if (r == null) {
                 break;
             }
@@ -282,9 +285,10 @@ public class LogRecordsTest extends NbTestCase {
             }
         }
         
+        TestHandler records = new TestHandler(is);
         for (;;) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = LogRecords.read(is);
+            LogRecord r = records.read();
             if (r == null) {
                 break;
             }
@@ -359,9 +363,10 @@ public class LogRecordsTest extends NbTestCase {
             }
         }
         
+        TestHandler records = new TestHandler(is);
         for (;;) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = LogRecords.read(is);
+            LogRecord r = records.read();
             if (r == null) {
                 break;
             }
@@ -380,7 +385,7 @@ public class LogRecordsTest extends NbTestCase {
     public void testNotFinishedFiles() throws Exception {
         String what = "eof.xml";
         InputStream is = getClass().getResourceAsStream(what);
-        int cnt = 0;
+        int expectRecords = 1;
         
         class H extends Handler {
             int cnt;
@@ -396,29 +401,12 @@ public class LogRecordsTest extends NbTestCase {
             }
         }
         
-        for (;;) {
-            LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r;
-            try {
-                r = LogRecords.read(is);
-            } catch (EOFException ex) {
-                assertNull("Next read is null", LogRecords.read(is));
-                break;
-            }
-            if (r == null) {
-                break;
-            }
-            LOG.log(Level.INFO, "Read {0}th record", cnt);
-            cnt++;
-        }
-        is.close();
-        
         H h = new H();
         is = getClass().getResourceAsStream(what);
         LogRecords.scan(is, h);
         is.close();
         
-        assertEquals("The same amount of records", cnt, h.cnt);
+        assertEquals("The same amount of records", expectRecords, h.cnt);
     }
     public void testScanFileThatClaimsTohaveWrongUTF8Char() throws Exception {
         InputStream is = getClass().getResourceAsStream("wrongutfchar.xml");
@@ -438,9 +426,10 @@ public class LogRecordsTest extends NbTestCase {
             }
         }
         
+        TestHandler records = new TestHandler(is);
         for (;;) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = LogRecords.read(is);
+            LogRecord r = records.read();
             if (r == null) {
                 break;
             }
@@ -477,8 +466,9 @@ public class LogRecordsTest extends NbTestCase {
 
         {
             DataInputStream in = new DataInputStream(new FileInputStream(file));
+            TestHandler records = new TestHandler(in);
             for (int i = 0; i < cnt; i++) {
-                LogRecord rec = LogRecords.read(in);
+                LogRecord rec = records.read();
                 assertLog(i + "-th record is the same", rec, arr[i]);
             }
             in.close();

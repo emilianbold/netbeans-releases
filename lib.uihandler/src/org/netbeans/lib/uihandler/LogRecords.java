@@ -18,7 +18,6 @@
 package org.netbeans.lib.uihandler;
 
 import java.io.ByteArrayInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,16 +27,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Queue;
 import java.util.ResourceBundle;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.XMLFormatter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -57,12 +57,7 @@ public final class LogRecords {
 
     private static final Logger LOG = Logger.getLogger(LogRecords.class.getName());
     
-    private static final Formatter FORMATTER = new XMLFormatter() {
-        public String formatMessage(LogRecord r) {
-            return super.formatMessage(r);
-        //    return r.getMessage();
-        }
-    };
+    private static final Formatter FORMATTER = new LogFormatter();
     
     public static void write(OutputStream os, LogRecord rec) throws IOException {
         String formated = FORMATTER.format(rec);
@@ -119,221 +114,22 @@ public final class LogRecords {
         } catch (SAXException ex) {
             LOG.log(Level.WARNING, null, ex);
             throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+        } catch (InternalError error){
+            LOG.log(Level.WARNING, "INPUT FILE CORRUPTION", error);
         }
-    }
-    
-    
-    public static LogRecord read(InputStream is) throws IOException {
-        int[] end = new int[1];
-        byte[] data = readXMLBlock(is, end);
-        if (data == null) {
-            return null;
-        }
-        
-        String s = new String(data, 0, end[0]);
-        
-        // in case the block is not ours
-        if (s.indexOf("record>") == -1) { // NOI18N
-            Logger.getLogger(LogRecords.class.getName()).info("Skipping: " + s); // NOI18N
-            data = readXMLBlock(is, end);
-            if (data == null) {
-                return null;
-            }
-            s = new String(data, 0, end[0]);
-        }
-        
-        s = s.replaceAll("&amp;", "&").replaceAll("&gt;", ">")
-            .replaceAll("&lt;", "<");
-
-        String millis = content(s, "millis", true);
-        String seq = content(s, "sequence", true);
-        String lev = content(s, "level", true);
-        String thread = content(s, "thread", true);
-        String msg = content(s, "message", true);
-        String key = content(s, "key", false);
-        String catalog = content(s, "catalog", false);
-        
-        LogRecord r = new LogRecord(parseLevel(lev), key != null && catalog != null ? key : msg);
-        r.setThreadID(Integer.parseInt(thread));
-        r.setSequenceNumber(Long.parseLong(seq));
-        r.setMillis(Long.parseLong(millis));
-        if (catalog != null && key != null) {
-            r.setResourceBundleName(catalog);
-            if (!"<null>".equals(catalog)) { // NOI18N
-                try {
-                    ResourceBundle b = ResourceBundle.getBundle(catalog);
-                    b.getObject(key);
-                    // ok, the key is there
-                    r.setResourceBundle(b);
-                } catch (MissingResourceException e) {
-                    LOG.log(Level.CONFIG, "Cannot find resource bundle for {0} and key {1}", new Object[] { catalog, key });
-                    r.setResourceBundle(new FakeBundle(key, msg));
-                }
-            }
-        
-            int[] paramFrom = new int[1];
-            List<String> params = new ArrayList<String>();
-            for (;;) {
-                String p = content(s, "param", false, paramFrom);
-                if (p == null) {
-                    break;
-                }
-                params.add(p);
-            }
-            
-            r.setParameters(params.toArray());
-        }
-        
-        String exception = content(s, "exception", false);
-        if (exception != null) {
-            FakeException currentEx = new FakeException(null);
-            int[] stackIndex = new int[1];
-            currentEx.message = content(exception, "message", true, stackIndex);
-            
-            if (currentEx.message.equals(r.getMessage())) {
-                // probably parsed message inside the exception block
-                r.setMessage(null);
-            }
-            
-            for (;;) {
-                String frame = content(exception, "frame", false, stackIndex);
-                if (frame == null) {
-                    break;
-                }
-                
-                String clazz = content(frame, "class", true);
-                String method = content(frame, "method", false);
-                String line = content(frame, "line", false);
-                LOG.finer("StackTrace " + clazz + "." + method + ":" + line);
-                StackTraceElement elem = new StackTraceElement(
-                    clazz, 
-                    method, 
-                    null,
-                    line == null ? -1 : Integer.parseInt(line)
-                );
-                currentEx.trace.add(elem);
-            }
-            r.setThrown(currentEx);
-        }
-        
-        return r;
-    }
+    }   
 
     static Level parseLevel(String lev) {
         return "USER".equals(lev) ? Level.SEVERE : Level.parse(lev);
-    }
-    private static String content(String where, String what, boolean fail) throws IOException {
-        return content(where, what, fail, new int[1]);
-    }
-    private static String content(String where, String what, boolean fail, int[] from) throws IOException {
-        int indx = where.indexOf("<" + what + ">", from[0]);
-        if (indx == -1) {
-            if (fail) {
-                throw new IOException("Not found: <" + what + "> inside of:\n"+ where); // NOI18N
-            } else {
-                return null;
-            }
-        }
-        int begin = indx + what.length() + 2;
-        
-        int end = where.indexOf("</" + what + ">", indx);
-        if (indx == -1) {
-            throw new IOException("Not found: </" + what + "> inside of:\n"+ where); // NOI18N
-        }
-        from[0] = end;
-        
-        return where.substring(begin, end);
-    }
-    
-    private static byte[] readXMLBlock(InputStream is, int[] len) throws IOException {
-        byte[] arr = new byte[4096 * 12];
-        int index = 0;
-        
-        for (;;) {
-            int ch = is.read();
-            if (ch == -1) {
-                return null;
-            }
-
-            if (ch == '<') {
-                arr[index++] = '<';
-                break;
-            }
-        }
-        
-        int depth = 0;
-        boolean inTag = true;
-        boolean seenSlash = false;
-        boolean seenQuest = false;
-        int uigestures = 0;
-        for (;;) {
-            if (!inTag && depth == 0) {
-                break;
-            }
-            
-            int ch = is.read();
-            if (ch == -1) {
-                throw new EOFException();
-            }
-            if (index == arr.length) {
-                throw new EOFException("Buffer size " + arr.length + " exceeded"); // NOI18N
-            }
-            
-            arr[index++] = (byte)ch;
-            
-            if (inTag) {
-                switch (uigestures) {
-                    case 0: if (ch == 'u') uigestures = 1; else uigestures = 0; break;
-                    case 1: if (ch == 'i') uigestures = 2; else uigestures = 0; break;
-                    case 2: if (ch == 'g') uigestures = 3; else uigestures = 0; break;
-                    case 3: if (ch == 'e') uigestures = 4; else uigestures = 0; break;
-                    case 4: if (ch == 's') uigestures = 5; else uigestures = 0; break;
-                    case 5: if (ch == 't') uigestures = 6; else uigestures = 0; break;
-                    case 6: if (ch == 'u') uigestures = 7; else uigestures = 0; break;
-                    case 7: if (ch == 'r') uigestures = 8; else uigestures = 0; break;
-                    case 8: if (ch == 'e') uigestures = 9; else uigestures = 0; break;
-                    case 9: if (ch == 's') uigestures = 10; else uigestures = 0; break;
-                    case 10: // ok, stay at 10
-                }
-                
-                if (ch == '?') {
-                    seenQuest = true;
-                } else if (ch == '/') {
-                    seenSlash = true;
-                } else if (ch == '>') {
-                    inTag = false;
-                    if (uigestures == 10) {
-                        // header found, restart
-                        return readXMLBlock(is, len);
-                    }
-                    if (seenSlash) {
-                        depth--;
-                    } else if (seenQuest) {
-              //          depth--;
-                    } else {
-                        depth++;
-                    }
-                }
-            } else {
-                if (ch == '<') {
-                    inTag = true;
-                    seenSlash = false;
-                    seenQuest = false;
-                    uigestures = 0;
-                }
-            }
-        }
-        len[0] = index;
-        return arr;
     }
     
     private static final class Parser extends DefaultHandler {
         private Handler callback;
         private static enum Elem {
-            UIGESTURES, RECORD, DATE, MILLIS, SEQUENCE, LEVEL, THREAD, 
+            UIGESTURES, RECORD, DATE, MILLIS, SEQUENCE, LEVEL, THREAD,
             MESSAGE, KEY, PARAM, FRAME, CLASS, METHOD, LOGGER, EXCEPTION, LINE,
-            CATALOG;
-                
+            CATALOG, MORE, FILE;
+            
             public String parse(Map<Elem,String> values) {
                 String v = values.get(this);
                 return v;
@@ -342,6 +138,7 @@ public final class LogRecords {
         private Map<Elem,String> values = new EnumMap<Elem,String>(Elem.class);
         private Elem current;
         private FakeException currentEx;
+        private Queue<FakeException> exceptions;
         private List<String> params;
         private StringBuilder chars = new StringBuilder();
         
@@ -382,7 +179,7 @@ public final class LogRecords {
             }
             chars = new StringBuilder();
         }
-
+        
         public void endElement(String uri, String localName, String qName) throws SAXException {
             if (current != null) {
                 String v = chars.toString();
@@ -408,11 +205,11 @@ public final class LogRecords {
                 if ("frame".equals(qName)) { // NOI18N
                     String line = Elem.LINE.parse(values);
                     StackTraceElement elem = new StackTraceElement(
-                        Elem.CLASS.parse(values),
-                        Elem.METHOD.parse(values),
-                        null,
-                        line == null ? -1 : Integer.parseInt(line)
-                    );
+                            Elem.CLASS.parse(values),
+                            Elem.METHOD.parse(values),
+                            Elem.FILE.parse(values),
+                            line == null ? -1 : Integer.parseInt(line)
+                            );
                     currentEx.trace.add(elem);
                     values.remove(Elem.CLASS);
                     values.remove(Elem.METHOD);
@@ -420,8 +217,14 @@ public final class LogRecords {
                 }
                 if ("exception".equals(qName)) {
                     currentEx.message = values.get(Elem.MESSAGE);
+                    String more = values.get(Elem.MORE);
+                    if (more != null) currentEx.more = Integer.parseInt(more);
+                    if (exceptions == null){
+                        exceptions = new LinkedList<FakeException>();
+                    }
+                    exceptions.add(currentEx);
                     values = currentEx.values;
-                    currentEx.values = null;
+                    currentEx = null;
                 }
                 return;
             }
@@ -459,8 +262,9 @@ public final class LogRecords {
                         r.setParameters(params.toArray());
                     }
                 }
-                if (currentEx != null) {
-                    r.setThrown(currentEx);
+                if (exceptions != null) {
+                    r.setThrown(createThrown(null));
+                    // exceptions = null;  should be empty after poll
                 }
                 
                 callback.publish(r);
@@ -471,7 +275,25 @@ public final class LogRecords {
             }
             
         }
-
+        
+        /** set first element of exceptions as a result of this calling and
+         * recursively fill it's cause
+         */
+        private FakeException createThrown(FakeException last){
+            if (exceptions.size()==0) return null;
+            FakeException result = exceptions.poll();
+            if ((result!= null) && (result.getMore()!= 0)){
+                assert last != null : "IF MORE IS NOT 0, LAST MUST BE SET NOT NULL";
+                StackTraceElement[] trace = last.getStackTrace();
+                for (int i = trace.length - result.getMore(); i < trace.length; i++){
+                    result.trace.add(trace[i]);// fill the rest of stacktrace
+                }
+            }
+            FakeException cause = createThrown(result);
+            result.initCause(cause);
+            return result;
+        }
+        
         public void characters(char[] ch, int start, int length) throws SAXException {
             chars.append(ch, start, length);
         }
@@ -518,9 +340,11 @@ public final class LogRecords {
         final List<StackTraceElement> trace = new ArrayList<StackTraceElement>();
         Map<Parser.Elem,String> values;
         String message;
+        int more;
         
         public FakeException(Map<Parser.Elem,String> values) {
             this.values = values;
+            more = 0;
         }
        
         public StackTraceElement[] getStackTrace() {
@@ -530,5 +354,18 @@ public final class LogRecords {
         public String getMessage() {
             return message;
         }
+        
+        public int getMore(){
+            return more;
+        }
+        
+        /**
+         * org.netbeans.lib.uihandler.LogRecords$FakeException: NullPointerException ...
+         * is not the best message - it's better to suppress FakeException
+         */
+        public String toString(){
+            return message;
+        }
+        
     } // end of FakeException
 }

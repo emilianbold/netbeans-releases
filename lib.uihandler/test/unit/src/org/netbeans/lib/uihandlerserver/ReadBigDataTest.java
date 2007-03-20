@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.LogRecords;
+import org.netbeans.lib.uihandler.TestHandler;
 
 /**
  *
@@ -150,11 +151,12 @@ public class ReadBigDataTest extends NbTestCase {
             i++;
             InputStream is = new BufferedInputStream(new FileInputStream(f));
             int cnt = 0;
+            TestHandler records = new TestHandler(is);
             try {
-                while (LogRecords.read(is) != null) {
+                while (records.read() != null) {
                     cnt++;
                 }
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 LOG.log(Level.WARNING, null, ex);
                 err++;
                 continue;

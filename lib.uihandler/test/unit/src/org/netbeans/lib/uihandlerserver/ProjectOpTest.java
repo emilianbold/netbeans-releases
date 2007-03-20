@@ -23,8 +23,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.lib.uihandler.ProjectOp;
+import org.netbeans.lib.uihandler.TestHandler;
 
 /**
  *
@@ -95,9 +95,10 @@ public class ProjectOpTest extends NbTestCase {
             "</record>";
 
         InputStream is = new ByteArrayInputStream(what.getBytes());
-        LogRecord rec = LogRecords.read(is);
-        LogRecord rec2 = LogRecords.read(is);
-        LogRecord rec3 = LogRecords.read(is);
+        TestHandler records = new TestHandler(is);
+        LogRecord rec = records.read();
+        LogRecord rec2 = records.read();
+        LogRecord rec3 = records.read();
         is.close();
         
         ProjectOp op = ProjectOp.valueOf(rec);

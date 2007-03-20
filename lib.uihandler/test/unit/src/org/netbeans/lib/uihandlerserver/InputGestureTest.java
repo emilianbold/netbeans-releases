@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.InputGesture;
 import org.netbeans.lib.uihandler.LogRecords;
+import org.netbeans.lib.uihandler.TestHandler;
 
 /**
  *
@@ -73,9 +74,10 @@ public class InputGestureTest extends NbTestCase {
         expectedGestures.put(177, InputGesture.KEYBOARD);
         expectedGestures.put(197, InputGesture.KEYBOARD);
         expectedGestures.put(205, InputGesture.MENU);
+        TestHandler records = new TestHandler(is);
         for (int cnt = 0;; cnt++) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = LogRecords.read(is);
+            LogRecord r = records.read();
             if (r == null) {
                 break;
             }
@@ -98,9 +100,10 @@ public class InputGestureTest extends NbTestCase {
         SortedMap<Integer,InputGesture> expectedGestures = new TreeMap<Integer,InputGesture>();
         expectedGestures.put(62, InputGesture.TOOLBAR);
         expectedGestures.put(63, InputGesture.MENU);
+        TestHandler records = new TestHandler(is);
         for (int cnt = 0;; cnt++) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = LogRecords.read(is);
+            LogRecord r = records.read();
             if (r == null) {
                 break;
             }
