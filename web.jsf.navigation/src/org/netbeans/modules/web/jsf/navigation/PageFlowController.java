@@ -13,6 +13,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -23,8 +24,6 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.xml.xam.ComponentEvent;
-import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -46,6 +45,8 @@ public class PageFlowController {
     private Project project;
     private Collection<FileObject> webFiles;
     
+    private HashMap<NavigationCase,NavigationCaseNode> case2Node = new HashMap<NavigationCase,NavigationCaseNode>();
+    
     /** Creates a new instance of PageFlowController
      * @param context
      * @param view
@@ -56,23 +57,24 @@ public class PageFlowController {
         configModel = ConfigurationUtils.getConfigModel(configFile,true);
         project = FileOwnerQuery.getOwner(configFile);
         webFiles = getAllProjectRelevantFilesObjects();
+        
         setupGraph();
         registerListeners();
         
         
-//        configModel.addComponentListener(new ComponentListener(){
-//            public void valueChanged(ComponentEvent evt) {
-//                //                System.out.println("ValueChanged: " + evt);
-//            }
-//            
-//            public void childrenAdded(ComponentEvent evt) {
-//                //                System.out.println("childrenAdded: " + evt);
-//            }
-//            
-//            public void childrenDeleted(ComponentEvent evt) {
-//                //                System.out.println("\n\n\n\n\n\nchildrenDeleted: " + evt);
-//            }
-//        });
+        //        configModel.addComponentListener(new ComponentListener(){
+        //            public void valueChanged(ComponentEvent evt) {
+        //                //                System.out.println("ValueChanged: " + evt);
+        //            }
+        //
+        //            public void childrenAdded(ComponentEvent evt) {
+        //                //                System.out.println("childrenAdded: " + evt);
+        //            }
+        //
+        //            public void childrenDeleted(ComponentEvent evt) {
+        //                //                System.out.println("\n\n\n\n\n\nchildrenDeleted: " + evt);
+        //            }
+        //        });
     }
     
     PropertyChangeListener pcl;
@@ -211,6 +213,14 @@ public class PageFlowController {
         
         view.clearGraph();
         
+        if( !configModel.inSync() ){
+            try {
+                configModel.sync();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
         
         FacesConfig facesConfig = configModel.getRootComponent();
         
@@ -233,12 +243,9 @@ public class PageFlowController {
         for( NavigationRule rule : rules ) {
             List<NavigationCase> navCases = rule.getNavigationCases();
             for( NavigationCase navCase : navCases ){
-                //                try             {
                 NavigationCaseNode node = new NavigationCaseNode(navCase);
+                case2Node.put(navCase, node);
                 view.createEdge(node);
-                //                } catch (IntrospectionException ex) {
-                //                    Exceptions.printStackTrace(ex);
-                //                }
             }
         }
     }
@@ -339,13 +346,18 @@ public class PageFlowController {
             }
             
             if ( ev.getPropertyName() == "navigation-case"){
+                
                 NavigationCase myNavCase = (NavigationCase)ev.getNewValue();
-                //                try {
-                NavigationCaseNode node = new NavigationCaseNode(myNavCase);
-                view.createEdge(node);
-                //                } catch(IntrospectionException ie){
-                //                    ie.printStackTrace();
-                //                }
+                if( myNavCase != null ){
+                    NavigationCaseNode node = new NavigationCaseNode(myNavCase);
+                    case2Node.put(myNavCase, node);
+                    view.createEdge(node);
+                } else {
+//                    NavigationCaseNode node = case2Node.get((NavigationCase)ev.getOldValue());
+                    NavigationCaseNode node = case2Node.remove((NavigationCase)ev.getOldValue());
+                    view.removeEdge(node);
+                }
+                view.validate();
             } else if (ev.getPropertyName() == "navigation-rule" ) {
                 NavigationRule myNavRule = (NavigationRule)ev.getNewValue();
                 //You can actually do nothing.
@@ -446,7 +458,7 @@ public class PageFlowController {
             return false;
         }
         
-
+        
         
     }
     

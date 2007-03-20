@@ -36,8 +36,10 @@ import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.explorer.ExplorerManager;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -147,7 +149,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     
     
     public void warnUserMalFormedFacesConfig() {
-//        clearGraph();
+        //        clearGraph();
         scene.createMalFormedWidget();
     }
     
@@ -231,7 +233,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         
         String toPage = navCaseNode.getToViewId();
-//        String caseName = navCaseNode.getFromOuctome();
+        //        String caseName = navCaseNode.getFromOuctome();
         String action = navCaseNode.getFromAction();
         String fromPage = navCaseNode.getFromViewId();
         
@@ -374,6 +376,15 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return view.requestFocusInWindow();
+    }
+    
+    public void removeEdge( NavigationCaseNode node ){
+        
+        scene.removeEdge(node);
+        //            Node actNode = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
+        //            setActivatedNodes(new org.openide.nodes.Node[]{actNode});
+        setActivatedNodes(null);
+        
     }
     
 }

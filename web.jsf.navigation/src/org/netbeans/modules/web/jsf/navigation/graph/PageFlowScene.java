@@ -20,8 +20,6 @@ package org.netbeans.modules.web.jsf.navigation.graph;
 
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.Collection;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -39,14 +37,9 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import java.util.Collections;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.InputMap;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.SelectProvider;
@@ -61,6 +54,7 @@ import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
+import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
 import org.openide.nodes.Node;
@@ -143,24 +137,8 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
     }
     
     private WidgetAction createActionMap() {
-        InputMap inputMap = new InputMap();
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), "myAction");
-        
-        ActionMap actionMap = new ActionMap();
-        actionMap.put("myAction", new MyAction());
-        return ActionFactory.createActionMapAction(inputMap, actionMap);
+        return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
     }
-    private static class MyAction extends AbstractAction {
-        
-        public MyAction() {
-            super("My Action");
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null, "My Action has been invoked");
-        }
-    }
-    
 
     
     
@@ -221,7 +199,7 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
-        nodeWidget.getActions().addAction(createActionMap());
+//        nodeWidget.getActions().addAction(createActionMap());
         //        nodeWidget.getActions ().addAction (popupGraphAction);
         //        imageWidget.getActions().addAction(connectAction);
         
@@ -266,10 +244,8 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         VMDNodeWidget nodeWidget = ((VMDNodeWidget) findWidget(node));
         nodeWidget.attachPinWidget(widget);
         
-        //        widget.getActions().addAction(deleteAction);
         widget.getActions().addAction(createObjectHoverAction());
         widget.getActions().addAction(createSelectAction());
-        //        widget.getActions().addAction(connectAction);
         
         return widget;
     }
@@ -295,12 +271,11 @@ public class PageFlowScene extends GraphPinScene<Node, NavigationCaseNode, Strin
         
         connectionLayer.addChild(connectionWidget);
         
-        //        connectionWidget.getActions().addAction(deleteAction);
         connectionWidget.getActions().addAction(createObjectHoverAction());
-        //        connectionWidget.getActions().addAction(createSelectAction());
         connectionWidget.getActions().addAction(selectAction);
         connectionWidget.getActions().addAction(moveControlPointAction);
-        //        connectionWidget.getActions ().addAction (deleteAction);
+//        connectionWidget.getActions().addAction(createActionMap());
+        
         return connectionWidget;
     }
     
