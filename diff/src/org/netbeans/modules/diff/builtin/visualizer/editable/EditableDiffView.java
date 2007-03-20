@@ -804,7 +804,6 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         jEditorPane1.initActions();        
         jEditorPane1.getEditorPane().setDocument(doc);
         customizeEditor(jEditorPane1.getEditorPane());
-        jViewport2 = jEditorPane2.getScrollPane().getViewport();
     }
     
     private Document getSourceDocument(StreamSource ss) {
@@ -879,6 +878,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         }
         
         customizeEditor(jEditorPane2.getEditorPane());
+        jViewport2 = jEditorPane2.getScrollPane().getViewport();
         joinScrollBars();
     }
     
