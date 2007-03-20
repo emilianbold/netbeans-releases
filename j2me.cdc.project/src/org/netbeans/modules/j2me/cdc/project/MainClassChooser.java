@@ -192,6 +192,8 @@ public class MainClassChooser extends JPanel {
     protected void checkSelectionOptions() {
         if (!multipleXlets.isSelected()){
             String mainClass = getSelectedMainClass();
+            if (mainClass == null)
+                mainClass=this.mainClass;
             boolean isMain = CDCProjectUtil.isMainClass(mainClass, sourcesRoot);
             boolean isXlet = CDCProjectUtil.isXletClass(mainClass, sourcesRoot, specialExecFqnXlet);
             boolean isApplet = CDCProjectUtil.isAppletClass(mainClass, sourcesRoot, specialExecFqnApplet);
