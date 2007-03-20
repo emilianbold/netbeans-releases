@@ -239,7 +239,7 @@ public class CasaModelGraphUtilities {
             scene.invokeRegionLayout(scene.getEngineRegion(), false);
         }
         
-        RegionUtilities.stretchSceneWidthOnly(scene);
+        RegionUtilities.stretchScene(scene);
         widget.invokeDependencies();
 
         return widget;
