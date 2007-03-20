@@ -43,6 +43,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipException;
 import org.openide.util.Enumerations;
 import org.openide.util.RequestProcessor;
@@ -89,6 +91,7 @@ public class JarFileSystem extends AbstractFileSystem {
     private transient RequestProcessor.Task watcherTask = null;
     private transient RequestProcessor.Task closeTask = null;
     private transient long lastModification = 0;
+    private static final Logger LOGGER = Logger.getLogger(JarFileSystem.class.getName());
 
     /*Should help to prevent closing JarFile if anybody has InputStream. Also this variable
      is used as object for synchronization: synchronized(closeSync)*/
@@ -242,6 +245,7 @@ public class JarFileSystem extends AbstractFileSystem {
 
         try {
             tempJar = new JarFile(s);
+            LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + s);//NOI18N
         } catch (ZipException e) {
             FSException.io("EXC_NotValidJarFile2", e.getLocalizedMessage(), s); // NOI18N
         }
@@ -637,6 +641,7 @@ public class JarFileSystem extends AbstractFileSystem {
 
             if ((jar == null) && (root != null)) {
                 jar = new JarFile(root);
+                LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + root.getAbsolutePath());//NOI18N
             }
 
             return jar;
@@ -667,6 +672,7 @@ public class JarFileSystem extends AbstractFileSystem {
                         if (jar != null) {
                             try {
                                 jar.close();
+                                LOGGER.log(Level.FINE, "closed: "+ System.currentTimeMillis()+ "   " + root.getAbsolutePath());//NOI18N
                             } catch (Exception exc) {
                                 // ignore exception during closing, just log it
                                 ExternalUtil.exception(exc);
