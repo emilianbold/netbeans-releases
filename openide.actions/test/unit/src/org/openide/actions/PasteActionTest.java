@@ -22,6 +22,7 @@ package org.openide.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -134,7 +135,10 @@ public class PasteActionTest extends AbstractCallbackActionTestHidden {
         TopComponent tc = new TopComponent();
         tc.getActionMap ().put(javax.swing.text.DefaultEditorKit.pasteAction, action);
         ActionsInfraHid.UT.setActivated (tc);
+        
+        CharSequence log = Log.enable(PasteAction.class.getName(), Level.WARNING);
         global.actionPerformed (new ActionEvent (this, 0, "waitFinished"));
+        assertEquals("Log is empty", "", log.toString());
         
         arr[0].assertCnt ("Performed on delegate", 1);
         action.assertCnt ("Not performed on action", 0);

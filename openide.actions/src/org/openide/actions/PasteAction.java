@@ -152,6 +152,7 @@ public final class PasteAction extends CallbackSystemAction {
                     Action [] arr = (Action []) obj;
                     if (arr.length > 0) {
                         arr [0].actionPerformed (ev);
+                        return;
                     }
                 } else {
                     ac.actionPerformed(ev);
