@@ -14,7 +14,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 // </editor-fold>
@@ -37,7 +37,6 @@ import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -58,16 +57,12 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.MasterPasswordInputDialog;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
-
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
-
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 import org.openide.windows.InputOutput;
 
@@ -85,14 +80,17 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     private ServerDebugInfo debugInfo = null;
     private boolean shouldStopDeploymentManagerSilently =false;
     private static final int CMD_NONE = 0;
+
     /**
      * Start the server
      */
     private static final int CMD_START = 1;
+    
     /**
      * Stop the server
      */
     private static final int CMD_STOP = 2;
+    
     /**
      * restart the server
      */
@@ -174,6 +172,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public boolean supportsStartDebugging(Target target) {
         return supportsStartDeploymentManager();
     }
+    
     /**
      * Can be the specified target server started in profile mode? If the
      * target is also an admin server can be the admin server started in
@@ -216,7 +215,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public void stopDeploymentManagerSilently() {
         shouldStopDeploymentManagerSilently =true;
         stopDeploymentManager();
-        //
     }
     
     /** See {@link stopDeploymentManagerSilently}
@@ -228,11 +226,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     }
     
     public ProgressObject startDeploymentManager() {
-        
-        
         ct = CommandType.START;
         pes.clearProgressListener();
-        
         
         if (cmd == CMD_NONE) {
             cmd = CMD_START;
@@ -244,25 +239,17 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 }
             }
         });
-//        if (portInUse()) {
-//            pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,ct,
-//                    NbBundle.getMessage(StartSunServer.class, "ERR_PORT_IN_USE", ((SunDeploymentManagerInterface) this.dm).getPort()),
-//                    StateType.FAILED));
-//        } else {
         ConfigureProfiler.removeProfilerFromDomain(dm);
         pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
                 ct, "",
                 StateType.RUNNING));
         debug=false;
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
-//        }
-        
         
         return this;
     }
     
     public ProgressObject stopDeploymentManager() {
-        
         SunDeploymentManager sunDm = (SunDeploymentManager)this.dm;
         ct = CommandType.STOP;
         pes.clearProgressListener();
@@ -280,11 +267,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         // involving  the AWT thread...  Using getTargets() directly to test
         // whether the server is running... GF and SJSAS always have at least
         // one target...
-//        try {
-//            running = sunDm.isRunning(true);
-//        } catch (RuntimeException re) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, re);
-//        }
         try {
             Target [] targs = sunDm.getTargets();        
             running = (targs == null) ? false : targs.length > 0;
@@ -310,10 +292,9 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         return this;
     }
     
-    /* view the log file
+    /** view the log file
      *
-     */
-    
+     */    
     public void viewLogFile(){
         getLogViewerWindow();
     }
@@ -355,11 +336,13 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             }
             
             
-            String asadminCmd = domainDir + File.separator + domain  +File.separator + "bin" +   File.separator + "stopserv";
+            String asadminCmd = installRoot + File.separator + "bin" +  File.separator + "asadmin";          //NOI18N            
             if (File.separator.equals("\\")) {
                 asadminCmd = asadminCmd + ".bat"; //NOI18N
             }
-            String arr[] = { asadminCmd, " "};
+            String arr[] = { asadminCmd, "stop-domain",
+                "--domaindir", domainDir, domain //NOI18N
+            };
             
             errorCode = exec(arr, CMD_STOP, null);
             if (errorCode != 0) {
@@ -512,14 +495,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         int exitValue = -1;
         
         try {
-            Process process = Runtime.getRuntime().exec(arr);
-            
-//            String cmdName="";
-//            for (int j=0;j<arr.length;j++){
-//                cmdName= cmdName+arr[j]+" ";
-//            }
-//            System.out.println("exec cmdName="+cmdName);
-            
+            final Process process = Runtime.getRuntime().exec(arr);
+                                    
             ByteArrayOutputStream eos = new ByteArrayOutputStream();
             
             // start stream flusher to push output to parent streams and log if they exist
@@ -586,13 +563,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         return exitValue;
     }
     
-    
-    
-    
-    
-    
-    
-    
     private static final String MASTER_PASSWORD_ALIAS="master-password";//NOI18N
     private char[] getMasterPasswordPassword() {
         return MASTER_PASSWORD_ALIAS.toCharArray();
@@ -602,19 +572,12 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
      **/
     protected String readMasterPasswordFile() {
         String mpw= "changeit";//NOI18N
-//        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
-//        String domain ;
-//        String domainDir ;
-//
-//        domain = dmProps.getDomainName();
-//        domainDir = dmProps.getLocation();
         
         String domain = dmProps.getDomainName();
         String domainDir = dmProps.getLocation();
         final File pwdFile = new File(domainDir + File.separator + domain  +File.separator+"master-password");
         if (pwdFile.exists()) {
-            try {
-                
+            try {                
                 SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
                 ClassLoader loader = ServerLocationManager.getNetBeansAndServerClassLoader(sdm.getPlatformRoot());
                 Class pluginRootFactoryClass =loader.loadClass("com.sun.enterprise.security.store.PasswordAdapter");//NOI18N
@@ -622,8 +585,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 Object PasswordAdapter =constructor.newInstance(new Object[] {pwdFile.getAbsolutePath(),getMasterPasswordPassword() });
                 Class PasswordAdapterClazz = PasswordAdapter.getClass();
                 java.lang.reflect.Method method =PasswordAdapterClazz.getMethod("getPasswordForAlias", new Class[]{  MASTER_PASSWORD_ALIAS.getClass()});//NOI18N
-                mpw = (String)method.invoke(PasswordAdapter, new Object[] {MASTER_PASSWORD_ALIAS });
-                
+                mpw = (String)method.invoke(PasswordAdapter, new Object[] {MASTER_PASSWORD_ALIAS });                
                 
                 return mpw;
             } catch (Exception ex) {
@@ -648,9 +610,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     return mpw;
                     
                 } catch (Exception ex) {
-//                ex.printStackTrace();
-//                System.out.println("INVALID  master PASSWORD");
-                    return null;
+                   return null;
                 }
             } else{
                 return null;
@@ -685,6 +645,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             return false;
         }
     }
+    
     /**
      * Try to get response from the server, whether the START/STOP command has
      * succeeded.
@@ -719,7 +680,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                             
                             return true;
                         } else if (state == ProfilerSupport.STATE_INACTIVE) {
-//                            System.out.println("---ProfilerSupport.STATE_INACTIVE");
                             return false;
                         }
                     }
@@ -737,7 +697,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 } catch(InterruptedException ie) {}
             }
         } catch (RuntimeException e) {
-//            System.out.println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDe"+e.getMessage());
             return false;
         }
     }
@@ -751,8 +710,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
      */
     public boolean needsRestart(Target target) {
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
-        return sunDm.isRestartNeeded();
-        
+        return sunDm.isRestartNeeded();        
     }
     
     /**
@@ -784,11 +742,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         }
         return  (null!=debugInfoMap.get(sunDm.getHost()+sunDm.getPort()));//we need a debuginfo there if in debug
     }
-/*
- *
- * mode can be run, debug or profile
- **/
-    
+
+    /*
+     * 
+     * mode can be run, debug or profile
+     **/    
     public ProgressObject startTarget(Target Target, int mode, ProfilerServerSettings settings) {
         //in theory, target should not be null, but it is always null there!!!
         // System.out.println("in startTarget, debug="+debug);
@@ -827,14 +785,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 }
             }
         });
-//        if (portInUse()) {
-//            pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,ct,
-//                    NbBundle.getMessage(StartSunServer.class, "ERR_PORT_IN_USE", ((SunDeploymentManagerInterface)dm).getPort()),
-//                    StateType.FAILED));
-//        } else {
         pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,ct, "",StateType.RUNNING));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
-        // }
         return this;
     }
     
@@ -861,7 +813,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     }
     
     public ProgressObject stopTarget(Target target) {
-        // System.out.println("           in stopTarget");
         pes.clearProgressListener();
         boolean running = false;
         try {
@@ -883,17 +834,10 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
      *
      **/
     public ServerDebugInfo  getDebugInfo(Target target) {
-        //System.out.println("           in getDebugInfo debug="+debug);
-        //System.out.println(""+target+"           in getDebugInfo ");
-        // if (target==null){
-        //Thread.dumpStack();
-        //     return null;/// no target passed!!! necessary to prevent J2eeserver to call us when we are not started yet.
-        // }
         return getDebugInfo();
     }
     
-    private ServerDebugInfo  getDebugInfo() {
-        
+    private ServerDebugInfo  getDebugInfo() {        
         try{
             SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
             if (sunDm.isRunning()==false){
@@ -928,9 +872,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         }
         return debugInfo;
     }
-    
-    
-    
     
     /**
      * Returns true if this server is started in debug mode AND debugger is attached to it
@@ -974,10 +915,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         return retVal;
     }
     
-    
-    
-    
-    
     public DeploymentStatus getDeploymentStatus() {
         return pes.getDeploymentStatus();
     }
@@ -1019,8 +956,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     
     
     public boolean isAlsoTargetServer(Target target) {
-        //       System.out.println("in isAlsoTargetServer");
-        
         return true;
     }
     
@@ -1032,8 +967,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         //System.out.println("in ProgressObject startDebugging");
         current_mode = MODE_DEBUG;
         return startTarget(target, MODE_DEBUG, null);//debug and no profile settings
-        
-        
     }
     
     public boolean needsStartForAdminConfig() {
@@ -1043,8 +976,10 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public boolean needsStartForTargetList() {
         return true;
     }
+    
     private static  final  String LOCALHOST="localhost";//NOI18N
     private static  final  String LOCALADDRESS="127.0.0.1";//NOI18N
+    
     /* return true if the 2 host names represent the same machine
      * deal with localhost, domain name and ips liek 127.0.0.1
      */
