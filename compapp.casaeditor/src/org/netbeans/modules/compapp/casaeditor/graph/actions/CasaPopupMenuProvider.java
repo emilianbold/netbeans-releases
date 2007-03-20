@@ -66,20 +66,24 @@ public class CasaPopupMenuProvider implements PopupMenuProvider {
         if (node instanceof CasaNode) {
             CasaNode casaNode = (CasaNode) node;
             Action[] actions = node.getActions(true);
+            Action lastActionAdded = null;
             for (Action action : actions) {
                 Point sceneLocation = widget.convertLocalToScene(localLocation);
                 if (casaNode.isValidSceneActionForLocation(action, widget, sceneLocation)) {
                     if (action instanceof AbstractAction) {
                         popupMenu.add(action);
                         hasActions = true;
+                        lastActionAdded = action;
                     } else if (action instanceof NodeAction) {
                         // Cannot add a NodeAction directly to a popup menu.
                         JMenuItem menuItem = new JMenuItem();
                         popupMenu.add(menuItem);
                         Actions.connect(menuItem, action, true);
                         hasActions = true;
-                    } else if (action == null) {
+                        lastActionAdded = action;
+                    } else if (action == null && lastActionAdded != null) {
                         popupMenu.addSeparator();
+                        lastActionAdded = null;
                     }
                 }
             }
