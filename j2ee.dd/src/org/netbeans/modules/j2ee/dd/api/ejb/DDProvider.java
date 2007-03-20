@@ -46,6 +46,7 @@ import org.xml.sax.SAXParseException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.HashMap;
@@ -339,11 +340,16 @@ public final class DDProvider {
                 synchronized (ddMap) {
                     EjbJarProxy ejbJarProxy = getFromCache(fo);
                     if (ejbJarProxy != null) {
-                        String encoding = EncodingUtil.detectEncoding(new BufferedInputStream(fo.getInputStream()));
-                        if (encoding == null) {
-                            encoding = "UTF8";
+                        InputStream inputStream = fo.getInputStream();
+                        try {
+                            String encoding = EncodingUtil.detectEncoding(new BufferedInputStream(inputStream));
+                            if (encoding == null) {
+                                encoding = "UTF8";
+                            }
+                            DDUtils.merge(ejbJarProxy, new InputStreamReader(inputStream, encoding));
+                        } finally {
+                            inputStream.close();
                         }
-                        DDUtils.merge(ejbJarProxy, new InputStreamReader(fo.getInputStream(), encoding));
                     }
                 }
             } catch (IOException ex) {
