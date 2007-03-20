@@ -45,7 +45,6 @@ import org.openide.windows.WindowManager;
  */
 public class JBrowseModule extends ModuleInstall {
     
-    private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
     private static final boolean ENABLE_MBEANS = Boolean.getBoolean("org.netbeans.modules.java.source.enableMBeans");  //NOI18N
     
     /** Creates a new instance of JBrowseModule */
