@@ -523,6 +523,7 @@ public final class FileUtil extends Object {
                 return null;
             }
 
+            assert !url.toExternalForm().equals("file:") : "#98388: got bad URL '" + url + "' from '" + file + "'";
             retVal = URLMapper.findFileObject(url);
 
             /*probably temporary piece of code to catch the cause of #46630*/
