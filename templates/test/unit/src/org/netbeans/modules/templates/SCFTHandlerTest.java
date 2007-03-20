@@ -91,6 +91,37 @@ public class SCFTHandlerTest extends NbTestCase {
         
     }
     
+     public void testCreateFromTemplateUsingFreemarkerAndInclude() throws Exception {
+         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+         FileObject fclasses = FileUtil.createFolder(root, "classes");
+         FileObject fincludes = FileUtil.createFolder(root, "includes");
+         FileObject fclass = FileUtil.createData(fclasses, "class.txt");
+         OutputStream os = fclass.getOutputStream();
+         String classtxt = "<#include \"../includes/include.txt\">";
+         os.write(classtxt.getBytes());
+         os.close();
+         fclass.setAttribute("javax.script.ScriptEngine", "freemarker");
+         FileObject finclude = FileUtil.createData(fincludes, "include.txt");
+         os = finclude.getOutputStream();
+         String includetxt = "<html><h1>${title}</h1></html>";
+         os.write(includetxt.getBytes());
+         os.close();
+         
+         
+         DataObject obj = DataObject.find(fclass);
+         
+         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
+         
+         Map<String,String> parameters = Collections.singletonMap("title", "Nazdar");
+         DataObject n = obj.createFromTemplate(folder, "complex", parameters);
+         
+         assertEquals("Created in right place", folder, n.getFolder());
+         assertEquals("Created with right name", "complex.txt", n.getName());
+         
+         String exp = "<html><h1>Nazdar</h1></html>";
+         assertEquals(exp, readFile(n.getPrimaryFile()));
+         
+     }
     
     public void testBasePropertiesAlwaysPresent() throws Exception {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
