@@ -43,6 +43,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -176,6 +178,17 @@ public class ProvidedExtensionsTest extends NbTestCase {
                 lock.releaseLock();
             }
         }
+    }
+
+    public void testAfterAtomicAction() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                FileUtil.createData(new File(getWorkDir(),"a/b/c/d/e/f/g.txt"));
+                assertEquals(0, iListener.implsCreateSuccessCalls);
+            }            
+        });
+        assertEquals(7, iListener.implsCreateSuccessCalls);
     }
     
     public void testImplsRename2() throws IOException {
@@ -384,6 +397,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private int implsRenameCalls;
         private int renameImplCalls;
         private int implsBeforeChangeCalls;
+        private int implsCreateSuccessCalls;        
         
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
@@ -397,6 +411,12 @@ public class ProvidedExtensionsTest extends NbTestCase {
             implsRenameCalls = 0;
             renameImplCalls = 0;
             implsBeforeChangeCalls = 0;
+            implsCreateSuccessCalls = 0;
+        }
+
+        public void createSuccess(FileObject fo) {
+            super.createSuccess(fo);
+            implsCreateSuccessCalls++;
         }
 
         public void beforeChange(FileObject f) {
