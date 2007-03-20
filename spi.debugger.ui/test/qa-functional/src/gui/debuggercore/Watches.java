@@ -24,15 +24,14 @@ package gui.debuggercore;
 import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
-import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
@@ -575,7 +574,23 @@ public class Watches extends JellyTestCase {
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newWatchTitle);
         new JTextFieldOperator(dialog, 0).typeText(exp);
         dialog.ok();
-        new EventTool().waitNoEvent(500);
+        try {
+            new Waiter(new Waitable() {
+                public Object actionProduced(Object dialog) {
+                    NbDialogOperator op = (NbDialogOperator)dialog;
+                    if (!op.isVisible()) {
+                        return Boolean.TRUE;
+                    }
+                    return null;
+                }
+                
+                public String getDescription() {
+                    return "Wait new watch dialog is closed";
+                }
+            }).waitAction(dialog);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
     }
     
     /**
