@@ -75,6 +75,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         this.initialTypeName = deploymentTypeDisplayName;
         initComponents();
         btw.setRootVisible(false);
+        btw.setPopupAllowed( false );
         manager.addPropertyChangeListener(this);
         jPanel1.add(btw, BorderLayout.CENTER);
         Children.Array ch = new Children.Array() {

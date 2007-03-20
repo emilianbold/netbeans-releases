@@ -514,9 +514,33 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
     //!!!!!!!!!   HelpCtx !!!!!!!!!!!!!!!!
     private Node createRootNode() {
         DataFolder df = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(REGISTRATION_FOLDER));
-        return new FilterNode(df.getNodeDelegate(), new ConfigurationChildren(df));
+        return new FNode(df.getNodeDelegate(), new ConfigurationChildren(df));
     }
 
+    private static class FNode extends FilterNode {
+        public FNode(Node original, org.openide.nodes.Children children) {
+            super(original, children);
+        }
+        
+        public boolean canCopy() {
+            return false;
+        }
+
+        public boolean canDestroy() {
+            return false;
+        }
+
+        public boolean canCut() {
+            return false;
+        }
+
+        public boolean canRename() {
+            return false;
+        }
+
+        
+    }
+    
     /** Children used for configuration
      */
     private static class ConfigurationChildren extends Children.Keys {
@@ -538,7 +562,7 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         }
         
         protected Node[] createNodes( final Object key ) {
-            return key instanceof DataFolder ? new Node[] {new FilterNode(((DataFolder)key).getNodeDelegate(), new ConfigurationChildren((DataFolder)key))} : null;
+            return key instanceof DataFolder ? new Node[] {new FNode(((DataFolder)key).getNodeDelegate(), new ConfigurationChildren((DataFolder)key))} : null;
         }
     }
     
