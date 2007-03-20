@@ -228,37 +228,27 @@ implements Executor {
         LocatableEvent event = (LocatableEvent) ev;
         String className = event.location ().declaringType ().name ();
         ThreadReference tr = event.thread ();
+        removeStepRequests (tr);
         if (stepRequest.depth() == StepRequest.STEP_OUT) {
             setLastOperation(tr);
         }
         synchronized (getDebuggerImpl ().LOCK) {
             //S ystem.out.println("/nStepAction.exec");
 
-            // 2) remove step request
-            //removeStepRequests (((LocatableEvent) ev).thread ());
-            
-            
-            // 3) ignore step events in not current threads - NO, we have impl. of issue #44582.
-            JPDAThreadImpl ct = (JPDAThreadImpl) getDebuggerImpl ().
-                getCurrentThread ();
-            
             int suspendPolicy = getDebuggerImpl().getSuspend();
-            
-            // 4) stop execution here?
             
             // Synthetic method?
             try {
-                if (ct.getThreadReference().frame(0).location().method().isSynthetic()) {
+                if (tr.frame(0).location().method().isSynthetic()) {
                     //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
                     
-                    removeStepRequests (ct.getThreadReference ());
                     int step = ((StepRequest)ev.request()).depth();
                     VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
                     if (vm == null) {
                         return false; // The session has finished
                     }
                     stepRequest = vm.eventRequestManager ().createStepRequest (
-                        ct.getThreadReference (),
+                        tr,
                         StepRequest.STEP_LINE,
                         step
                     );
@@ -278,7 +268,7 @@ implements Executor {
                 ErrorManager.getDefault().notify(e);
             }
             
-            // Not synthetic
+            // Stop execution here?
             boolean fsh = getSmartSteppingFilterImpl ().stopHere (className);
             if (ssverbose)
                 System.out.println("SS  SmartSteppingFilter.stopHere (" + 
@@ -303,8 +293,6 @@ implements Executor {
             // do not stop here -> start smart stepping!
             if (ssverbose)
                 System.out.println("\nSS:  SMART STEPPING START! ********** ");
-            boolean stepInto = ((StepRequest) ev.request ()).depth () == 
-                            StepRequest.STEP_INTO;
             getStepIntoActionProvider ().doAction 
                 (ActionsManager.ACTION_STEP_INTO);
             //S ystem.out.println("/nStepAction.exec end - resume");
