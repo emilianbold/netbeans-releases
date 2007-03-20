@@ -67,6 +67,8 @@ public class ColorsManager {
     public static void initColorings (Language l) {
         FontColorSettingsFactory fcsf = EditorSettings.getDefault ().
             getFontColorSettings (new String[] {l.getMimeType ()});
+        if (!fcsf.getAllFontColors("NetBeans").isEmpty ())
+            return;
         Map<String,AttributeSet> colorsMap = new HashMap<String,AttributeSet> ();
         Iterator<Language> it = l.getImportedLanguages ().iterator ();
         while (it.hasNext ())
