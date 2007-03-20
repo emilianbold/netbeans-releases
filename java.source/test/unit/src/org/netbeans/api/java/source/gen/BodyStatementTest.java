@@ -418,8 +418,9 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "   public void method() {\n" +
             "        try {\n" +
             "            new Runnable() {\n" +
+            "\n" +
             "                public void run() {\n" +
-            "                }\n\n" +
+            "                }\n" +
             "            };\n" +
             "        } finally {\n" +
             "            System.err.println(\"Got a problem.\");\n" +
@@ -496,8 +497,9 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "   public Object method() {\n" +
             "        try {\n" +
             "            new Runnable() {\n" +
+            "\n" +
             "                public void run() {\n" +
-            "                }\n\n" +
+            "                }\n" +
             "            }\n" +
             "            return null;\n" +
             "        } finally {\n" +

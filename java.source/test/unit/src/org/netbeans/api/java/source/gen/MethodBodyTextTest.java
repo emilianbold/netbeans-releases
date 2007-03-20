@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -228,9 +228,8 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
             "package personal;\n" +
             "\n" +
             "public class Test {\n" +
-            "    public Test() {" +
+            "    public Test() {\n" +
             "System.err.println(null);\n" +
-            "\n" +
             "    }\n" +
             "    \n" +
             "    public Object method() {\n" +

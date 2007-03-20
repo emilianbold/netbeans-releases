@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -69,7 +69,8 @@ public class MethodBodyTest extends GeneratorTest {
             "package personal;\n" +
             "\n" +
             "public class Test {\n" +
-            "    public Object method() {System.out.println(\"test\");\n\n" +
+            "    public Object method() {\n" +
+            "System.out.println(\"test\");\n" +
             "    }\n" +
             "}\n";
                  
@@ -126,7 +127,8 @@ public class MethodBodyTest extends GeneratorTest {
             "package personal;\n" +
             "\n" +
             "public class Test {\n" +
-            "    public Object method() {java.lang.System.out.println(\"test\");\n\n" +
+            "    public Object method() {\n" +
+            "java.lang.System.out.println(\"test\");\n" +
             "    }\n" +
             "}\n";
                  
@@ -165,12 +167,14 @@ public class MethodBodyTest extends GeneratorTest {
             "}\n");
         
          String golden = 
-            "package personal;\n\n" +
+            "package personal;\n" +
+            "\n" +
             "import java.util.HashMap;\n" +
             "import java.util.Map;\n" +
             "\n" +
             "public class Test {\n" +
-            "    public Object method() {        Map env = new HashMap();\n\n" +
+            "    public Object method() {\n" +
+            "        Map env = new HashMap();\n" +
             "    }\n" +
             "}\n";
                  

@@ -73,7 +73,7 @@ public class CommentsTest extends GeneratorTestMDRCompat {
             "\n" +
             "public class Test {\n" +
             "\n" +
-            "    void method() {" +
+            "    void method() {\n" +
             "        // test\n" +
             "        int a;\n" +
             "\n" +
@@ -83,7 +83,6 @@ public class CommentsTest extends GeneratorTestMDRCompat {
             "        int b;\n" +
             "        // cecko\n" +
             "        int c;\n" +
-            "\n" +
             "    }\n\n" +
             "}\n";
 
@@ -276,11 +275,10 @@ public class CommentsTest extends GeneratorTestMDRCompat {
             "\n" +
             "public class Test {\n" +
             "\n" +
-            "    void method() {" +  // missing new line
+            "    void method() {\n" +
             "        // TODO: Process the button click action. Return value is a navigation\n" +
             "        // case name where null will return to the same page.\n" +
             "        return null;\n" +
-            "\n" + // additional line which shoudn't be there
             "    }\n" +
             "\n" +
             "}\n";

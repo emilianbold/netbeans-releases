@@ -20,7 +20,7 @@ package org.netbeans.test.codegen;
 
 public class ConstructorTest2 {
 
-
     public ConstructorTest2(boolean a) {
     }
+
 }

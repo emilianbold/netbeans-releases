@@ -1236,7 +1236,7 @@ public class CasualDiff {
             }
         } else {
             if (oldT.annotations.isEmpty()) copyTo(lastPrinted, oldPos);
-            PositionEstimator est = EstimatorFactory.members(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
+            PositionEstimator est = EstimatorFactory.toplevel(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
             int[] res = diffList(oldT.annotations, newT.annotations, oldPos, est, Measure.DEFAULT, printer);
             lastPrinted = res[1];
             //printer.printAnnotations(newT.annotations);

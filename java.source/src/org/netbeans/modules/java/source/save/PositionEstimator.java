@@ -482,6 +482,19 @@ public abstract class PositionEstimator {
         
         public int prepare(int startPos, StringBuilder aHead,
                            StringBuilder aTail) {
+            seq.move(startPos);
+            seq.moveNext();
+            moveToSrcRelevant(seq, Direction.BACKWARD);
+            while (seq.moveNext() && nonRelevant.contains(seq.token().id())) {
+                if (JavaTokenId.WHITESPACE == seq.token().id()) {
+                    int newlineInToken = seq.token().text().toString().indexOf('\n');
+                    if (newlineInToken > -1) {
+                        return seq.offset() + newlineInToken + 1;
+                    }
+                } else if (JavaTokenId.LINE_COMMENT == seq.token().id()) {
+                    return seq.offset() + seq.token().text().length();
+                }
+            }
             return startPos;
         }
         
