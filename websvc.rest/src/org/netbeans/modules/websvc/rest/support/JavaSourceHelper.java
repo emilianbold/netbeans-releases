@@ -39,9 +39,7 @@ public class JavaSourceHelper {
     
     public static List<JavaSource> getJavaSources(Project project) {
         List<JavaSource> result = new ArrayList<JavaSource>();
-        
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] groups = getSourceGroups(project);
         
         for (SourceGroup group : groups) {
             System.out.println("group = " + group);
@@ -62,6 +60,11 @@ public class JavaSourceHelper {
         
         return result;
     }
+    
+    public static SourceGroup[] getSourceGroups(Project project) {
+        return ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+    }
+    
     
     public static List<JavaSource> getEntityClasses(Project project) {
         List<JavaSource> sources = getJavaSources(project);
