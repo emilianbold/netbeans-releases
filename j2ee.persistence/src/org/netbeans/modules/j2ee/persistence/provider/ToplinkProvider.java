@@ -31,7 +31,7 @@ import org.openide.util.NbBundle;
 class ToplinkProvider extends Provider{
     
     protected ToplinkProvider(){
-        super("oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider");
+        super("oracle.toplink.essentials.PersistenceProvider"); //NO18N
     }
     
     public String getDisplayName() {
