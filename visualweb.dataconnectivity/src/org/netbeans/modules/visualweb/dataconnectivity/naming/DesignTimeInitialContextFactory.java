@@ -20,56 +20,82 @@ package org.netbeans.modules.visualweb.dataconnectivity.naming;
 
 import java.util.Hashtable;
 import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 
 /**
  * The factory that creates Creator's InitialContext
  *
  * @author John Kline
  */
+//public class DesignTimeInitialContextFactory implements InitialContextFactory, ProjectChangeListener{
 public class DesignTimeInitialContextFactory implements InitialContextFactory {
-
+//    private Project previousProject = null;
+//    private static boolean contextCreated = false;
+    private static DesignTimeContext prjContext = null;
+//    private Project lastProject = null;
+//    private boolean datasourcesUpdated = false;
+//    private ProjectContextManager prjCtxManager = null;
+    
     public static void setInitialContextFactoryBuilder() {
         try {
             javax.naming.spi.NamingManager.setInitialContextFactoryBuilder(
-                new javax.naming.spi.InitialContextFactoryBuilder() {
-                    public InitialContextFactory createInitialContextFactory(Hashtable env) {
-                        return new DesignTimeInitialContextFactory();
-                    }
+                    new javax.naming.spi.InitialContextFactoryBuilder() {
+                public InitialContextFactory createInitialContextFactory(Hashtable env) {
+                    return new DesignTimeInitialContextFactory();
                 }
+            }
             );
         } catch (NamingException e) {
         }
     }
-
+    
     private static Context ctx = null;
-
+    private static Hashtable env = null;
+    
     public DesignTimeInitialContextFactory() {
     }
-
+    
     public synchronized Context getInitialContext(Hashtable environment)
-        throws NamingException {
+    throws NamingException {
+        env = environment;
         String otherName = (String)environment.get(Context.INITIAL_CONTEXT_FACTORY);
-
+        
         if (otherName != null && !getClass().getName().equals(otherName)) {
             try {
                 InitialContextFactory otherFactory = (InitialContextFactory)Thread.currentThread().
                         getContextClassLoader().loadClass(otherName).newInstance();
-
+                
                 return otherFactory.getInitialContext(environment);
-            }
-            catch (Exception e) {
-                        // No NB ErrorManager here!
+            } catch (Exception e) {
+                // No NB ErrorManager here!
                 e.printStackTrace();
             }
         }
-
-        if (ctx == null) {
-            ctx = new DesignTimeContext(environment);
-        }
-
-        return ctx;
+        
+        // If no projects open in the IDE then return null,
+        // else if there is at least one open project then make sure that a context for
+        // the project hasn't been created before creating a context
+        Project currentProj = CurrentProject.getInstance().getProject();
+        
+        
+        Project ps[] ;
+        if (currentProj == null)
+            currentProj = OpenProjects.getDefault().getMainProject();
+        
+        if (currentProj == null) {
+            ps = OpenProjects.getDefault().getOpenProjects();
+            if (ps.length > 0)
+                currentProj = ps[0];
+        }        
+        
+        
+        // Construct a new context object for the current project
+        prjContext = (DesignTimeContext)DesignTimeContext.createDesignTimeContext(currentProj, environment);                
+        
+        return prjContext;
     }
 }

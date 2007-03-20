@@ -140,7 +140,7 @@ public class DataSourceImport {
         return ( validationTable == null ? "" : validationTable ) ; // NOI18N
     }
     public void setValidationTable(String table) {
-        setValidationQuery( DesignTimeDataSource.composeValidationQuery(table) ) ;
+//        setValidationQuery( DesignTimeDataSource.composeValidationQuery(table) ) ;
     }
 
     public void setAlias(String alias) {

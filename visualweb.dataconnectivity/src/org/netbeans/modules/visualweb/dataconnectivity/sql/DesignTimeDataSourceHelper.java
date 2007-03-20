@@ -21,12 +21,14 @@ package org.netbeans.modules.visualweb.dataconnectivity.sql;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -35,9 +37,12 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameNotFoundException;
-import javax.sql.DataSource;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
+import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
+import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.SAXException;
@@ -69,11 +74,13 @@ public class DesignTimeDataSourceHelper {
     private Context                ctx;
     private DesignTimeDataSource[] dataSources;
     private String[]               dataSourceNames;
+    private boolean                isDataSourceAdded;
 
     public DesignTimeDataSourceHelper() throws NamingException {
         dataSources     = null;
         dataSourceNames = null;
         ctx             = new InitialContext();
+        isDataSourceAdded = false;
     }
 
     public DataSourceExport[] getDataSourceExports() throws NamingException {
@@ -334,6 +341,7 @@ public class DesignTimeDataSourceHelper {
         String url, String validationQuery, String username, String password)
         throws NamingException {
 
+        isDataSourceAdded = true;
         return addFullNameDataSource(DS_SUBCTX + "/" + name, driverClassName, url, validationQuery, // NOI18N
             username, password);
     }
@@ -350,7 +358,7 @@ public class DesignTimeDataSourceHelper {
     public DesignTimeDataSource addFullNameDataSource(String name, DesignTimeDataSource ds )
         throws NamingException {
 
-        try {
+        try {          
             ctx.bind(name, ds);
         } catch (NameAlreadyBoundException e) {
             throw e;
@@ -452,5 +460,90 @@ public class DesignTimeDataSourceHelper {
     public void refresh() {
         dataSources     = null;
         dataSourceNames = null;
+    }
+    
+    
+    public  Map updateDataSource(Project currentProj) {
+        
+        // Get the data sources in the project then bind them to the project's context
+        String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
+        String[] hardCodedDataSources = ProjectDataSourceTracker.getHardcodedDataSources(currentProj);
+        ArrayList <RequestedJdbcResource> jdbcResources = new ArrayList();
+        RequestedJdbcResource jdbcResource = null;
+        ArrayList <DesignTimeDataSource> ds = null;
+        Map binding = new HashMap();
+        
+        ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(currentProj);
+        
+        if (dynamicDataSources.length > 0 || hardCodedDataSources.length > 0) {
+            try {
+                
+                DesignTimeDataSourceHelper dsHelper = new DesignTimeDataSourceHelper();
+                for (String name : dynamicDataSources) {
+                    jdbcResource = (projectDataSourceManager.getDataSourceWithName(name.substring(name.lastIndexOf("/")+1)));
+                    
+                    if (jdbcResource != null)
+                        jdbcResources.add(jdbcResource);                    
+                }
+                
+                
+                for (String name : hardCodedDataSources) {
+                    jdbcResource = (projectDataSourceManager.getDataSourceWithName(name.substring(name.lastIndexOf("/")+1)));
+                    
+                    if (jdbcResource != null)
+                        jdbcResources.add(jdbcResource);                        
+                }
+                                
+            } catch (NamingException ne) {
+                ne.printStackTrace();
+            }
+            
+            
+           
+            // Check if datasource exists in the context.  If it doesn't exist then bind the datasource .
+            Iterator it = jdbcResources.iterator();
+            boolean found = false;
+            
+            while (it.hasNext()) {
+
+                jdbcResource = (RequestedJdbcResource) it.next();
+                String name = ((String)jdbcResource.getResourceName());
+                name = name.substring(name.indexOf("/")+1);
+                found = false; 
+                if (!found)
+                    binding.put(DS_SUBCTX + "/" + name, new DesignTimeDataSource(null, false, jdbcResource.getDriverClassName(),
+                            jdbcResource.getUrl(), null, jdbcResource.getUsername(), jdbcResource.getPassword()));
+            }
+        }
+        
+        return binding;
+    }
+     
+     public boolean dataSourceAdded() {
+         return isDataSourceAdded;
+     }
+         
+     // Update context with existing project's data sources, if any.
+    public void updateCtxBindings(Map bindings) {
+        Iterator it = bindings.keySet().iterator();
+        
+        try {
+           while (it.hasNext()) {
+               String key = (String)it.next();
+               ctx.bind(key, bindings.get(key));
+           }
+        } catch (NamingException ne) {
+            ne.printStackTrace();
+        }
+    }
+    
+    public boolean datasourcesInProject(Project currentProj) {
+        String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
+        String[] hardCodedDataSources = ProjectDataSourceTracker.getHardcodedDataSources(currentProj);        
+        
+        if (dynamicDataSources.length > 0 || hardCodedDataSources.length > 0) 
+            return true;
+        else
+            return false;
     }
 }

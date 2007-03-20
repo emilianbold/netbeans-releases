@@ -65,7 +65,7 @@ public class DataSourceInfo {
         this.name = name;
         setDataSource(dataSource);
         dbmdh = null;
-        setId(DataSourceInfoManager.getInstance().getUniqueDataSourceId());
+//        setId(DataSourceInfoManager.getInstance().getUniqueDataSourceId());
 
         // Used as tooltip in the Datasource node
         if ( isAlias() ) {
@@ -83,14 +83,14 @@ public class DataSourceInfo {
         setDataSource(new DesignTimeDataSource(null, false, driverClassName,url,
         validationQuery, username, password) );
         dbmdh = null;
-        setId(DataSourceInfoManager.getInstance().getUniqueDataSourceId());
+//        setId(DataSourceInfoManager.getInstance().getUniqueDataSourceId());
     }
 
     public DataSourceInfo(String name, String aliasName) {
         this.name = name;
         setDataSource(new DesignTimeDataSourceAlias(aliasName) );
         dbmdh = null;
-        setId(DataSourceInfoManager.getInstance().getUniqueDataSourceId());
+//        setId(DataSourceInfoManager.getInstance().getUniqueDataSourceId());
     }
 
     private void setDataSource( DesignTimeDataSource dtds ) {

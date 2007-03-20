@@ -28,7 +28,6 @@
 package org.netbeans.modules.visualweb.dataconnectivity.model;
 
 import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
-import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.dataconnectivity.explorer.RowSetBeanCreateInfoSet;
 
 import org.netbeans.modules.visualweb.dataconnectivity.ui.JdbcDriverConfigUtil;
@@ -37,26 +36,28 @@ import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.Result;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.Set;
+import java.sql.SQLException;
+import java.util.logging.ErrorManager;
+import javax.naming.NamingException;
+//import javax.xml.transform.Result;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
-import org.openide.ErrorManager;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
+//import org.openide.ErrorManager;
 
 /**
  * Manages the Design Time Data sources transferables
  * @author Winston   Prakash
  */
 public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
-
+    
     protected static String dataProviderClassName = "com.sun.data.provider.impl.CachedRowSetDataProvider";
     public static String rowSetClassName = "com.sun.sql.rowset.CachedRowSetXImpl";
-
+    
     public DisplayItem getDisplayItem(Transferable transferable) {
         Object transferData = null;
         try {
@@ -68,46 +69,52 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                         DatabaseMetaDataTransfer.Table tableInfo = (DatabaseMetaDataTransfer.Table) transferData;
                         String schemaName = tableInfo.getDatabaseConnection().getSchema();
                         String tableName =
-                            ((schemaName == null) || (schemaName.equals(""))) ?
-                            tableInfo.getTableName() :
-                            schemaName + "." + tableInfo.getTableName();
+                                ((schemaName == null) || (schemaName.equals(""))) ?
+                                    tableInfo.getTableName() :
+                                    schemaName + "." + tableInfo.getTableName();
                         // String tableName = tableInfo.getTableName();
                         DatabaseConnection dbConnection = (DatabaseConnection)tableInfo.getDatabaseConnection();
                         JDBCDriver jdbcDriver = (JDBCDriver) tableInfo.getJDBCDriver();
-
+                        
                         // Create the Bean Create Infoset and return
                         return new DatasourceBeanCreateInfoSet(dbConnection, jdbcDriver, tableName);
                     }
                 }
             }
         }catch (Exception exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
         }
         return null;
     }
-
+    
     private static final class DatasourceBeanCreateInfoSet extends RowSetBeanCreateInfoSet{
         DatabaseConnection dbConnection = null;
         JDBCDriver jdbcDriver = null;
-
+        
         public DatasourceBeanCreateInfoSet(DatabaseConnection connection,  JDBCDriver driver, String tableName ) {
             super(tableName);
             dbConnection = connection;
             jdbcDriver = driver;
         }
-
+        
         public Result beansCreatedSetup(DesignBean[] designBeans) {
             DesignBean designBean = designBeans[0];
-
+            
             // Get the Database Connection information and add it to design time
             // Naming Context
             // Make sure duplicate datasources are not added
-            String dsName = "dataSource";
+//            String dsName = "dataSource";
             
-            // I can not use the name returned by NB DatabaseConnection
-            // It has some wierd format and exception is thrown from CachedRowset
-            // Ex. the name look like jdbc:derby://localhost:1527/sample [travel on TRAVEL]
-            //String dsName = dbConnection.getName();
+            String databaseProductName = null;
+            try {
+                databaseProductName = dbConnection.getJDBCConnection().getMetaData().getDatabaseProductName();
+            } catch (SQLException sqle) {
+                sqle.printStackTrace();
+            }
+            
+            String dsName = dbConnection.getSchema() + "_" + databaseProductName;
+            if (dbConnection.getSchema() == "")
+                dsName = dbConnection.getUser()  + dsName;
             
             String driverClassName = dbConnection.getDriverClass();
             String url = dbConnection.getDatabaseURL();
@@ -116,126 +123,31 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             String password = dbConnection.getPassword();
             
             DataSourceInfo dataSourceInfo = new DataSourceInfo(dsName, driverClassName, url, validationQuery, username, password);
-            /* XXX
-            DataSourceInfo dsInfo = DataSourceInfoManager.getInstance().findDataSourceInfo(dataSourceInfo);
-            if(dsInfo != null){
-                dataSourceInfo = dsInfo;
-            }else{
-                DataSourceInfoManager.getInstance().addDataSourceInfo(dataSourceInfo);
-                addJdbcDriver(jdbcDriver);
-            }
-            */
-            
+                                    
             // Logic to reuse the datasource exist in the project. No necessary to create new data source
-            // First find if the datasource exists in the project
-            ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean);
-            Set<RequestedJdbcResource> projectDataResources = projectDataSourceManager.
-                    findRequestedJdbcResources(dataSourceInfo);
-            Set<DataSourceInfo> dsInfos = DataSourceInfoManager.getInstance().findDataSourceInfo(dataSourceInfo);
-                                // OK, we don't have the datasource. Add it
-            if ((dsInfos == null) || (dsInfos.size() == 0)) {
-                boolean found = false;
-                
-                                // If Datasource exists in the project use its name
-                if (projectDataResources != null && projectDataResources.size() > 0) {
-                    Iterator<RequestedJdbcResource> it = projectDataResources.iterator();
-                    
-                    while (it.hasNext() && !found) {
-                        RequestedJdbcResource r = it.next();
-                        String projectDsInfoName = r.getResourceName().replaceFirst("jdbc/", ""); // NOI18N
-                                // Make sure it doesn't exist in the DataSourceInfoManager
-                        String lastUniqueName = DataSourceInfoManager.getInstance().
-                                getUniqueDataSourceName(projectDsInfoName);
-                        dataSourceInfo.setName(lastUniqueName);
-                        
-                        if (lastUniqueName.equals(projectDsInfoName)) {
-                            found = true;
-                        }
-                    }
-                }
-                    
-                if (!found) {
-                   RequestedJdbcResource r = projectDataSourceManager.
-                            getDataSourceWithName(dataSourceInfo.getName());
-                        
-                    if (r != null && !projectDataSourceManager.matchDataSourceInfo(r, dataSourceInfo)) {
-                                // Too bad we have a different datasource in the DataSourceInfoManager
-                                // with same name as project datasource
-                        dataSourceInfo.setName(getUniqueName(dataSourceInfo.getName()));
-                    }
-                        
-                    if (!projectDataSourceManager.addDataSource(dataSourceInfo)) {
-                        return Result.FAILURE;
-                    }
-                }
-                
-                DataSourceInfoManager.getInstance().addDataSourceInfo(dataSourceInfo);
-                addJdbcDriver(jdbcDriver);
-            } else {
-                if (projectDataResources != null && projectDataResources.size() > 0) {
-                    Iterator<RequestedJdbcResource> it = projectDataResources.iterator();
-                    boolean found = false;
-                    String lastProjectDsInfoName = null;
-                    
-                    while (it.hasNext() && !found) {
-                        RequestedJdbcResource r = it.next();
-                        lastProjectDsInfoName = r.getResourceName().replaceFirst("jdbc/",""); // NOI18N
-                        
-                        Iterator<DataSourceInfo> it1 = dsInfos.iterator();
-                        
-                        while (it1.hasNext() && !found) {
-                            DataSourceInfo dsInfo = it1.next();
-                            if (dsInfo.getName().equals(lastProjectDsInfoName)) {
-                                found = true;
-                                dataSourceInfo = dsInfo;
-                            }
-                        }
-                    }
-                    
-                    if (!found) {
-                                // OK we have a problem, the JNDI name doesn't match, so create
-                                // another datasource with that of project datasource in the
-                                // Datasource manager
-                        String uniqueName = DataSourceInfoManager.getInstance().
-                                getUniqueDataSourceName(lastProjectDsInfoName);
-                        
-                        dataSourceInfo.setName(uniqueName);
-                        
-                        if (!uniqueName.equals(lastProjectDsInfoName)) {
-                            RequestedJdbcResource r = projectDataSourceManager.
-                                    getDataSourceWithName(uniqueName);
-                        
-                            if (r != null && !projectDataSourceManager.matchDataSourceInfo(r, dataSourceInfo)) {
-                                dataSourceInfo.setName(getUniqueName(dataSourceInfo.getName()));
-                            }
-
-                            if (!projectDataSourceManager.addDataSource(dataSourceInfo)) {
-                                return Result.FAILURE;
-                            }
-                        }
-
-                        DataSourceInfoManager.getInstance().addDataSourceInfo(dataSourceInfo);
-                    }
-                } else {
-                    dataSourceInfo = dsInfos.iterator().next();
-                    
-                    boolean needAdd = false;
-                    
-                    if (projectDataSourceManager.getDataSourceWithName(dataSourceInfo.getName()) != null) {
-                        dataSourceInfo.setName(getUniqueName(dataSourceInfo.getName()));                       
-                        needAdd = true;
-                    }
-
-                    if (!projectDataSourceManager.addDataSource(dataSourceInfo)) {
-                        return Result.FAILURE;
-                    }
-                    
-                    if (needAdd) {
-                        DataSourceInfoManager.getInstance().addDataSourceInfo(dataSourceInfo);
-                    }
-                }
+            ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean);            
+            
+            // If Datasource exists in the project use its name
+            try {
+                DesignTimeDataSourceHelper dsHelper = new DesignTimeDataSourceHelper();
+                DesignTimeDataSource dtDs = dsHelper.getDataSource(dataSourceInfo.getName());
+            } catch (NamingException ne) {
+                // XXX Swallow exception for now - clean up later
             }
             
+            // Add the data sources to the project
+            projectDataSourceManager.addDataSource(dataSourceInfo);            
+            try {
+                DesignTimeDataSourceHelper dsHelper = new DesignTimeDataSourceHelper();
+                dsHelper.addDataSource( dsName, driverClassName, url, null,  username, password);
+            } catch (NamingException ne) {
+                ne.printStackTrace();
+            }
+            
+            
+            // no need to do this once the switch is made to use NetBeans connections
+            addJdbcDriver(jdbcDriver);
+                        
             setDataSourceInfo(dataSourceInfo);
             return super.beansCreatedSetup(designBeans);
         }
@@ -244,7 +156,7 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
         * This is needed for design time datasource connection to work
         * TODO make sure duplicate drivers are not added
         * Possibly check against the driver jar names and its size
-        */   
+        */
         private void addJdbcDriver(JDBCDriver jdbcDriver){
             // Get the driver jar urls copy them and then add the jar names
             URL[] driverJarUrls = jdbcDriver.getURLs();
@@ -256,18 +168,18 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                     if (urlPath != null)  // test if urlPath is undefined
                         driverUtil.copyJarNoConfirm(urlPath);
                 } catch (URISyntaxException urie) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, urie);
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, urie);
                 }
             }
         }
-
+        
         private String getUniqueName(String name){
-           if(name.indexOf('_') != -1){
-              String prefix = name.substring(0, name.indexOf('_'));
-              return prefix + "_" + System.currentTimeMillis(); // NOI18N
-           } else{
-              return name + "_" + System.currentTimeMillis(); // NOI18N
-           }
-        } 
+            if(name.indexOf('_') != -1){
+                String prefix = name.substring(0, name.indexOf('_'));
+                return prefix + "_" + System.currentTimeMillis(); // NOI18N
+            } else{
+                return name + "_" + System.currentTimeMillis(); // NOI18N
+            }
+        }
     }
 }

@@ -27,13 +27,9 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoManag
 import org.netbeans.modules.visualweb.dataconnectivity.model.XmlUtil;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.netbeans.modules.visualweb.dataconnectivity.explorer.ideDb.BundledDatabaseHelper;
-import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfoManager;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.DbPortUtilities;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.SampleDatabaseCreator;
-
-
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DesignTimeInitialContextFactory;
-
 import java.beans.Introspector;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -45,8 +41,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
+import org.openide.windows.WindowManager;
 
 // Comment out the code that was added to create Driver entries for DataDirect drivers
 // import java.net.URL;
@@ -82,7 +80,7 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
     public void restored() {
 
         Log.err.log("Entering DataconnectivityModuleInstaller.restored()");
-//         long start = System.currentTimeMillis();
+//         long start = System.TimeMillis();
 //         long time1 = start, time2;
 
         setBundledDBPort() ;
@@ -142,7 +140,10 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
 //        time1 = time2;
         
         // Create sample database in Shortfin 
-        SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);                
+        SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);       
+        init();
+        
+  
        // Won't include other databases yet
        // SampleDatabaseCreator.createAll("jsc", "jsc", "jsc", "JSC", "modules/ext/jsc.zip", true, "localhost", 1527);                
        // SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "modules/ext/vir.zip", true, "localhost", 1527);                
@@ -156,6 +157,15 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         BundledDatabaseHelper.save() ;
     }
     
+    public static void init() {
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            public void run() {
+                // code to be invoked when system UI is ready
+                System.out.println("*** CurrentProject.getInstance().setup();");
+                CurrentProject.getInstance().setup();
+            }
+        }  );
+    }
     
     // public static String compString = "jdbc:pointbase:server://localhost:9092/"; //NOI18N
     public static String compString = "jdbc:derby://localhost:1527/"; //NOI18N

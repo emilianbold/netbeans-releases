@@ -18,10 +18,9 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.naming;
 
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -30,9 +29,9 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Stack;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 import javax.naming.Binding;
@@ -51,6 +50,9 @@ import javax.naming.spi.NamingManager;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
+import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.SAXException;
@@ -62,7 +64,9 @@ import org.xml.sax.SAXNotRecognizedException;
  * @author John Kline
  */
 class DesignTimeContext implements Context {
-    static final String  USER_CTX     = "context.xml"; // NOI18N
+    static final String  PRJ_CTX_FILE     = "datasources.xml"; // NOI18N
+     static final String  USER_CTX     = "context.xml"; // NOI18N
+    private static Project currentProj;
     public static final String  ROOT_CTX_TAG = "rootContext"; // NOI18N
     public static final String  CTX_TAG      = "context"; // NOI18N
     public static final String  OBJ_TAG      = "object"; // NOI18N
@@ -72,12 +76,14 @@ class DesignTimeContext implements Context {
     public static final String  VALUE_ATTR   = "value"; // NOI18N
     private static final int    TAB_WIDTH    = 4;
     private DesignTimeContext   parent;
+    private static DesignTimeContext thisInstance;
     private String       ctxName;
-    private TreeMap      map;
-    private Hashtable    env;
+    private File         userCtxFile;
+    private TreeMap      map;  
+    private static Hashtable    env;
     private NameParser   nameParser = DesignTimeNameParser.getInstance();
     private String       ctxPathName;
-    private File         userCtxFile;
+    private boolean      update = false;
     private boolean      initMode;   /* used only by initial context ctor, signals not to
                                       * call saveContext during InitialContext construction
                                       */
@@ -88,7 +94,7 @@ class DesignTimeContext implements Context {
     private ObjectChangeListener objectChangeListener = new ObjectChangeListener() {
         public void objectChanged(ObjectChangeEvent evt) throws NamingException {
             Log.getLogger().entering(getClass().getName(), "objectChanged", evt); //NOI18N
-            saveContext();
+//            saveContext();
         }
     };
 
@@ -102,40 +108,52 @@ class DesignTimeContext implements Context {
         }
     }
 
-    // ctor for creating initial context
-    public DesignTimeContext(Hashtable env) {
-        Log.getLogger().entering(getClass().getName(), "DesignTimeContext", env); //NOI18N
-        initMode    = true;
-        parent      = null;
-        ctxName     = null;
-        ctxPathName = System.getProperty("netbeans.user") + File.separator + File.separator + USER_CTX; // NOI18N
-        userCtxFile = new File(ctxPathName);
-        map         = new TreeMap();
-        this.env    = new Hashtable(env);
-        //EnvProcessor envProcessor = new EnvProcessor(this);
-
-        /*
-         * Look for context.xml in the user's directory.  If doesn't exist, copy
-         * the master file from netbeans.home/../ide4/startup/samples.
-         */
-        try {
-            if (!userCtxFile.exists()) {
-                writeNewUserContextFile();
-            }
-            try {
-                parseContextFile();
-            } catch (SAXException e) {
-                rebuildContextFile(e);
-            } catch (IOException e) {
-                rebuildContextFile(e);
-            }
-        } catch (Exception e) {
-            Log.getLogger().log(java.util.logging.Level.SEVERE, "DesignTimeContext()", e); // NOI18N
-            e.printStackTrace();
-        } finally {
-            initMode = false;
+    /** Creates a new instance of DesignTimeDatasourceContext */
+    private DesignTimeContext(Project p,  Hashtable env) {
+        currentProj = p;
+        this.ctxPathName = p.getProjectDirectory().getPath() + File.separator + "web" + File.separator + PRJ_CTX_FILE;;
+//        ctxPathName = System.getProperty("netbeans.user") + File.separator + File.separator + USER_CTX; // NOI18N
+        this.env    = new Hashtable(env);  
+        this.map     = new TreeMap();
+        thisInstance  = this;                                                                    
+    }
+    
+    private static class DesignTimeContextHolder {
+        static final DesignTimeContext setDesignTimeContext(Project prj, Hashtable environment) {
+            return new DesignTimeContext(prj, environment);
         }
     }
+    
+    public static void setDesignTimeContext(Project prj, Hashtable environment) {
+        currentProj = prj;
+        env = environment;
+    }
+    
+    public static DesignTimeContext getDesignTimeContext() {
+        return thisInstance;
+    }
+    
+    public static DesignTimeContext createDesignTimeContext(Project prj, Hashtable environment) {
+        DesignTimeContext dtCtx = null;
+        
+        if (currentProj != null && prj != null)
+            if (!currentProj.equals(prj))
+                dtCtx =  DesignTimeContextHolder.setDesignTimeContext(prj, environment);
+            else {
+                dtCtx = getDesignTimeContext();
+                if (dtCtx == null)
+                    dtCtx =  DesignTimeContextHolder.setDesignTimeContext(prj, environment);
+
+            }
+        if (currentProj == null && prj != null) {
+            dtCtx =  DesignTimeContextHolder.setDesignTimeContext(prj, environment);
+        }
+        
+        DesignTimeDataSourceHelper dsHelper = null;      
+        return dtCtx;
+    }    
+      
+    
 
     private void rebuildContextFile(Exception e)
         throws IOException, SAXException, NamingException, ParserConfigurationException {
@@ -143,9 +161,9 @@ class DesignTimeContext implements Context {
         Log.getLogger().log(java.util.logging.Level.FINER, "parseContextFile()", e); // NOI18N
         // try again after writing default context
         Log.getLogger().log(java.util.logging.Level.FINER, "saveUserContextFile()"); // NOI18N
-        saveUserContextFile();
+//        saveUserContextFile();
         Log.getLogger().log(java.util.logging.Level.FINER, "writeNewUserContextFile()"); // NOI18N
-        writeNewUserContextFile();
+//        writeNewUserContextFile();
         close();
         map = new TreeMap();
         this.env = new Hashtable(env);
@@ -163,17 +181,6 @@ class DesignTimeContext implements Context {
         this.env     = new Hashtable(env);
     }
 
-/* don't support cloning - at least not now
-    // ctor for cloning contexts (lookup with empty name)
-    public DesignTimeContext(DesignTimeContext parent, String ctxName,
-        TreeMap map, Hashtable env) {
-
-        this.parent  = parent;
-        this.ctxName = ctxName;
-        this.map     = new TreeMap(map);
-        this.env     = new Hashtable(env);
-    }
- */
 
     protected String getFullName() {
         if (parent == null) {
@@ -185,6 +192,13 @@ class DesignTimeContext implements Context {
 
     public Object lookup(Name name) throws NamingException {
         Log.getLogger().entering(getClass().getName(), "lookup", name); //NOI18N
+        
+        // Update datasources for current project            
+        Object dtDs = null;
+        if (!name.toString().equals("java:comp/env/com.sun.faces.ClientStateSavingPassword") || !update) {            
+            return updateBindings(currentProj) ;
+        }
+        
         // get to the correct context and then look up in map
         if (name.size() == 0) {
             // we don't allow cloning a context
@@ -213,7 +227,7 @@ class DesignTimeContext implements Context {
                 Context subcontext = ((Subcontext)obj).subcontext;
                 return subcontext.lookup(name.getSuffix(1));
             }
-        }
+        }         
     }
 
     public Object lookup(String name) throws NamingException {
@@ -232,14 +246,15 @@ class DesignTimeContext implements Context {
         } catch (NamingException e) {
         }
         if (nameExists) {
-            throw new NameAlreadyBoundException(name.toString());
+           // swallow exception  until this method is cleaned up
+            // throw new NameAlreadyBoundException(name.toString());
         }
         if (name.size() == 1) {
             map.put(name.get(0), obj);
             if (obj instanceof ContextPersistance) {
                 ((ContextPersistance)obj).addObjectChangeListener(objectChangeListener);
             }
-            saveContext();
+//            saveContext();
         } else {
             Object subCtx = lookup(name.getPrefix(name.size() - 1));
             if (!(subCtx instanceof Context)) {
@@ -285,7 +300,7 @@ class DesignTimeContext implements Context {
                 ((ContextPersistance)obj).removeObjectChangeListener(objectChangeListener);
             }
             if (callSaveContext) {
-                saveContext();
+//                saveContext();
             }
         } else {
             Object obj = lookup(name.getPrefix(name.size() - 1));
@@ -478,24 +493,26 @@ class DesignTimeContext implements Context {
         return null;
     }
 
-    private void saveContext() throws NamingException {
-        if (parent != null) {
-            parent.saveContext();
-        } else {
-            if (!initMode) {
-                try {
-                    if (!userCtxFile.exists()) {
-                        userCtxFile.createNewFile();
-                    }
-                    FileOutputStream os = new FileOutputStream(userCtxFile);
-                    writeTag(os, 0);
-                    os.close();
-                } catch (IOException e) {
-                    throw new NamingException(getClass().getName() + ": saveContext: " + e); // NOI18N
-                }
-            }
-        }
-    }
+//    private void saveContext() throws NamingException {
+//        
+//        // write to datasources.xml and add to weakhashmap ?
+//        if (parent != null) {
+//            parent.saveContext();
+//        } else {
+//            if (!initMode) {
+//                try {
+//                    if (!userCtxFile.exists()) {
+//                        userCtxFile.createNewFile();
+//                    }
+//                    FileOutputStream os = new FileOutputStream(userCtxFile);
+//                    writeTag(os, 0);
+//                    os.close();
+//                } catch (IOException e) {
+//                    throw new NamingException(getClass().getName() + ": saveContext: " + e); // NOI18N
+//                }
+//            }
+//        }
+//    }
 
     private void writeTag(OutputStream os, int level) throws IOException {
         writeSpaces(os, level, TAB_WIDTH);
@@ -665,41 +682,41 @@ class DesignTimeContext implements Context {
         }
     }
 
-    private void writeNewUserContextFile() throws IOException {
-        // Solve the location of the file (should be used the layers, or in the worst case InstalledFileLocator)
-        // But we can't do that here, because we don't know about anything netbeans.
-        FileInputStream master = new FileInputStream(System.getProperty("netbeans.home") // NOI18N
-                   + File.separator + ".." + File.separator + "visualweb1" //NOI18N
-                   + File.separator + "startup" + File.separator + "samples" + File.separator // NOI18N
-                   + USER_CTX);
-        if (!userCtxFile.getParentFile().exists()) {
-            userCtxFile.getParentFile().mkdirs();
-        }
-        FileOutputStream os = new FileOutputStream(userCtxFile);
-        byte[] buf= new byte[1024];
-        int n = master.read(buf);
-        while (n > -1) {
-            os.write(buf, 0, n);
-            n = master.read(buf);
-        }
-        master.close();
-        os.close();
-    }
-
-    private void saveUserContextFile() throws IOException {
-        FileInputStream master = new FileInputStream(userCtxFile);
-        File saveUserCtxFile = new File(ctxPathName + ".save"); // NOI18N
-        FileOutputStream os = new FileOutputStream(saveUserCtxFile);
-
-        byte[] buf= new byte[1024];
-        int n = master.read(buf);
-        while (n > -1) {
-            os.write(buf, 0, n);
-            n = master.read(buf);
-        }
-        master.close();
-        os.close();
-    }
+//    private void writeNewUserContextFile() throws IOException {
+//        // Solve the location of the file (should be used the layers, or in the worst case InstalledFileLocator)
+//        // But we can't do that here, because we don't know about anything netbeans.
+//        FileInputStream master = new FileInputStream(System.getProperty("netbeans.home") // NOI18N
+//                   + File.separator + ".." + File.separator + "visualweb1" //NOI18N
+//                   + File.separator + "startup" + File.separator + "samples" + File.separator // NOI18N
+//                   + PRJ_CTX_FILE);
+//        if (!userCtxFile.getParentFile().exists()) {
+//            userCtxFile.getParentFile().mkdirs();
+//        }
+//        FileOutputStream os = new FileOutputStream(userCtxFile);
+//        byte[] buf= new byte[1024];
+//        int n = master.read(buf);
+//        while (n > -1) {
+//            os.write(buf, 0, n);
+//            n = master.read(buf);
+//        }
+//        master.close();
+//        os.close();
+//    }
+//
+//    private void saveUserContextFile() throws IOException {
+//        FileInputStream master = new FileInputStream(userCtxFile);
+//        File saveUserCtxFile = new File(ctxPathName + ".save"); // NOI18N
+//        FileOutputStream os = new FileOutputStream(saveUserCtxFile);
+//
+//        byte[] buf= new byte[1024];
+//        int n = master.read(buf);
+//        while (n > -1) {
+//            os.write(buf, 0, n);
+//            n = master.read(buf);
+//        }
+//        master.close();
+//        os.close();
+//    }
 
     private Object executeConstructor(Class clazz, Class[] clazzes, Object[] args)
         throws NoSuchMethodException, SecurityException, InstantiationException,
@@ -721,5 +738,76 @@ class DesignTimeContext implements Context {
         String getValue() {
             return value;
         }
+    }        
+    
+    private Project getProject() {
+        return this.currentProj;
     }
+    
+    public boolean contextExists(Project project) {
+        return getProject() != null;
+    }
+    
+    private Object updateBindings(Project project) {
+        
+        DesignTimeDataSourceHelper dsHelper = null;
+        Map bindings = null;
+        Object obj = null;
+        update = true;
+        
+        try {
+            dsHelper = new DesignTimeDataSourceHelper();
+            if (dsHelper.datasourcesInProject(currentProj) ){
+                bindings = dsHelper.updateDataSource(currentProj);   
+//                dsHelper.updateCtxBindings(bindings);
+                Iterator it = bindings.keySet().iterator();
+                
+                while (it.hasNext()) {
+                    String key = (String)it.next();
+                    Name name = new CompositeName(key);
+                    String datasourceName = name.get(name.size()-1);
+                    obj = bindings.get(key);
+                    if (map.get(datasourceName) == null)
+                        map.put(datasourceName, obj );
+                    else if (!map.containsKey(datasourceName))
+                        map.put(datasourceName, obj );
+                                       
+                }
+//                    if (name.size() == 0) {
+//                        throw new NamingException(rb.getString("NAME_IS_EMPTY"));
+//                    }
+//                    boolean nameExists = false;
+//                    try {
+//                        lookup(name);
+//                        nameExists = true;
+//                    } catch (NamingException e) {
+//                    }
+//                    if (nameExists) {
+//                        throw new NameAlreadyBoundException(name.toString());
+//                    }
+//                    if (name.size() == 1) {
+//                        map.put(name.get(0), obj);
+//                        if (obj instanceof ContextPersistance) {
+//                            ((ContextPersistance)obj).addObjectChangeListener(objectChangeListener);
+//                        }
+////            saveContext();
+//                    } else {
+//                        Object subCtx = lookup(name.getPrefix(name.size() - 1));
+//                        if (!(subCtx instanceof Context)) {
+//                            NamingException e = new NamingException(
+//                                    MessageFormat.format(rb.getString("NAME_NOT_INSTANCE_OF_CONTEXT"),
+//                                    new Object[] { name.getPrefix(name.size() - 1).toString() }));
+//                            e.setRemainingName(new CompositeName(name.get(name.size() - 1)));
+//                            e.setResolvedObj(subCtx);
+//                            throw e;
+//                        }
+//                        ((Context)subCtx).bind(name.get(name.size() - 1), obj);
+//                    }
+//                }
+            }
+        } catch (NamingException ne) {
+            ;
+        }           
+        return obj;
+    }       
 }

@@ -50,9 +50,10 @@ import org.openide.util.Lookup;
  *
  * @author marcow
  */
-public class ProjectDataSourceManager {
+public class ProjectDataSourceManager  {
     private Project project = null;
     private DesignTimeDataSourceService dataSourceService = null;
+    private static Project currentProj;
 
     /**
      * Creates a new instance of ProjectDataSourceManager
@@ -102,7 +103,8 @@ public class ProjectDataSourceManager {
 
 
         // save data source for project
-        DataSourceInfoManager.getInstance().addDataSourceInfo(dsInfo);
+//        DataSourceInfoManager.getInstance().addDataSourceInfo(dsInfo);
+//        dsHelper.addFullNameDataSource(dsString, ds.getDataSource() ) ;
 
         return true;
     }
@@ -263,4 +265,6 @@ public class ProjectDataSourceManager {
         // Modify the datasource meta data in the project if it exists in the project
         throw new UnsupportedOperationException("Missing support in web/project"); //NOI18N
     }
+    
+    
 }
