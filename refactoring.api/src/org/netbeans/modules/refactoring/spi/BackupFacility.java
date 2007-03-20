@@ -183,7 +183,7 @@ public abstract class BackupFacility {
                 entry.file.deleteOnExit();
                 return currentId++;
             } catch (URISyntaxException ex) {
-                throw new IOException(file.toString(), ex);
+                throw (IOException) new IOException(file.toString()).initCause(ex);
             }
         }
         /**
