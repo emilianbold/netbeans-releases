@@ -109,9 +109,23 @@ public class GameCodeSupport {
 	private static String getImageName(DesignComponent imageResource) {
 		String path = MidpTypes.getString(imageResource.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH));
 		int index = path.lastIndexOf("/"); // NOI18N
-		String name = path.substring(index + 1);
-		name = name.substring(0, name.lastIndexOf(".")); // NOI18N
-		return name;
+		String str = path.substring(index + 1);
+		str = str.substring(0, str.lastIndexOf(".")); // NOI18N
+		
+		StringBuilder name = new StringBuilder(str);
+		if (!Character.isJavaIdentifierStart(name.charAt(0))) {
+			name.setCharAt(0, '_');
+		}
+		if (name.length() == 1) {
+			return name.toString();
+		}
+		for (int i = 1; i < name.length(); i++) {
+			int curChar = name.charAt(i);
+			if (!Character.isJavaIdentifierPart(curChar)) {
+				name.setCharAt(i, '_');
+			}
+		}
+		return name.toString();
 	}
 	
 	public static Presenter createSceneCodePresenter() {
