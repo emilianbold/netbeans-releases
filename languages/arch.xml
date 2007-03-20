@@ -102,9 +102,9 @@ defining language structure and describing its features, <a href="http://wiki.ne
     <p><b>Example:</b></p>
     <pre>
     COLOR:number {
-        default-coloring:"identifier";
-        foreground-color:"orange";
-        font-type:"bold";
+        default_coloring:"identifier";
+        foreground_color:"orange";
+        font_type:"bold";
     }
     </pre>
     The example shows syntax coloring definition for token <b>number</b>. The definition is composed
@@ -115,7 +115,7 @@ defining language structure and describing its features, <a href="http://wiki.ne
     attribute's value in general, actions performing, tooltips evaluations,
     etc. A method call specification in .nbs file follows the syntax:
     <pre> 
-    attribute-name:languagePackage.ClassName.methodName;
+    attribute_name:languagePackage.ClassName.methodName;
     </pre>
     where ClassName is a class located in the module corresponding to the
     language and methodName is its static method.
