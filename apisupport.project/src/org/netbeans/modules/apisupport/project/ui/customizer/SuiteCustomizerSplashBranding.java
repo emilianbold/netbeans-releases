@@ -171,8 +171,12 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         branding.getSplashRunningTextFontSize().setValue(SplashUISupport.integerToString(((Number)fontSize.getValue()).intValue()));
         branding.getSplashRunningTextBounds().setValue(SplashUISupport.boundsToString((Rectangle)runningTextBounds.getValue()));
         branding.getSplashProgressBarBounds().setValue(SplashUISupport.boundsToString((Rectangle)progressBarBounds.getValue()));
-        branding.getSplashRunningTextColor().setValue(SplashUISupport.colorToString(textColor.getColor()));
-        branding.getSplashProgressBarColor().setValue(SplashUISupport.colorToString(barColor.getColor()));
+        if (textColor.getColor() != null) {
+            branding.getSplashRunningTextColor().setValue(SplashUISupport.colorToString(textColor.getColor()));
+        }
+        if (barColor.getColor() != null) {
+            branding.getSplashProgressBarColor().setValue(SplashUISupport.colorToString(barColor.getColor()));
+        }
         //these colors below has a little effect on resulting branded splash
         //then user can't adjust it from UI
         //edgeColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarEdgeColor().getValue()));
