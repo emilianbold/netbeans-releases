@@ -20,13 +20,8 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -36,26 +31,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
-/*
-import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.modules.j2ee.persistence.dd.ORMMetadata;
-import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ChangeSupport;
- */
+import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+
 
 /**
  *
@@ -66,8 +47,15 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
     private WizardDescriptor wizard;
     //private ChangeSupport changeSupport = new ChangeSupport(this);
     private Project project;
-    boolean waitingForScan;
-    boolean waitingForEntities;
+    private List<JavaSource> availableEntities;
+    private List<JavaSource> selectedEntities;
+    private List<ChangeListener> listeners;
+    
+    //boolean waitingForScan;
+    //boolean waitingForEntities;
+    private List<JavaSource> entityClasses;
+    private String  persistenceUnit;
+    
     //private List<EntityMappings> waitForMappings = new ArrayList<EntityMappings>();
     //private PersistenceUnit persistenceUnit;
     // TODO: RETOUCHE
@@ -79,6 +67,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
     public EntitySelectionPanelVisual(String name, WizardDescriptor wizard) {
         setName(name);
         this.wizard = wizard;
+        listeners = new ArrayList<ChangeListener>();
         initComponents();
         ListSelectionListener selectionListener = new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -98,7 +87,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
     public PersistenceUnit getPersistenceUnit() {
         return persistenceUnit;
     }
-    */
+     */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -271,7 +260,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         listSelected.clearSelection();
         listAvailable.clearSelection();
         //        entityClosure.setClosureEnabled(cbAddRelated.isSelected());
- 
+        
     }//GEN-LAST:event_cbAddRelatedActionPerformed
     
     private void createPUButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPUButtonActionPerformed
@@ -287,16 +276,20 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
     
     private void buttonRemoveAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveAllActionPerformed
         //        entityClosure.removeAllEntities();
+        availableEntities.addAll(selectedEntities);
+        selectedEntities.clear();
         listSelected.clearSelection();
         updateButtons();
-        //changeSupport.fireChange();
+        fireChange();
     }//GEN-LAST:event_buttonRemoveAllActionPerformed
     
     private void buttonAddAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddAllActionPerformed
         //        entityClosure.addAllEntities();
+        selectedEntities.addAll(availableEntities);
+        availableEntities.clear();
         listAvailable.clearSelection();
         updateButtons();
-        //changeSupport.fireChange();
+        fireChange();
     }//GEN-LAST:event_buttonAddAllActionPerformed
     
     private void buttonRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveActionPerformed
@@ -308,7 +301,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         //        entityClosure.removeEntities(sel);
         listSelected.clearSelection();
         updateButtons();
-        
+         
         changeSupport.fireChange();
          */
     }//GEN-LAST:event_buttonRemoveActionPerformed
@@ -322,7 +315,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
                entityClosure.addEntities(sel);
         listAvailable.clearSelection();
         updateButtons();
-        
+         
         changeSupport.fireChange();
          */
     }//GEN-LAST:event_buttonAddActionPerformed
@@ -345,7 +338,15 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     public void addChangeListener(ChangeListener listener) {
-        //changeSupport.addChangeListener(listener);
+        listeners.add(listener);
+    }
+    
+    public void fireChange() {
+        ChangeEvent event = new ChangeEvent(this);
+        
+        for (ChangeListener listener : listeners) {
+            listener.stateChanged(event);
+        }
     }
     
     boolean valid(WizardDescriptor wizard) {
@@ -353,6 +354,17 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
     }
     
     void read(WizardDescriptor settings) {
+        project = Templates.getProject(settings);
+        availableEntities = JavaSourceHelper.getEntityClasses(project);
+        selectedEntities = new ArrayList<JavaSource>();
+        
+        EntityListModel model = new EntityListModel(availableEntities, true);
+        listAvailable.setModel(model);
+        this.addChangeListener(model);
+        
+        model = new EntityListModel(selectedEntities, false);
+        listSelected.setModel(model);
+        this.addChangeListener(model);
     }
     
     void store(WizardDescriptor settings) {
@@ -406,15 +418,13 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
     private final ListCellRenderer ENTITY_LIST_RENDERER = new EntityListCellRenderer();
     
     private class EntityListModel extends AbstractListModel implements ChangeListener {
-        //        private EntityClosure entityClosure;
-        private List entities = new ArrayList();
+        
+        private List<JavaSource> entities;
         private boolean available;
         
-        // TODO: RETOUCHE
-        EntityListModel(/*EntityClosure entityClosure*/ Object entityClosure, boolean available) {
-            //            this.entityClosure = entityClosure;
+        EntityListModel(List<JavaSource> entities, boolean available) {
+            this.entities = entities;
             this.available = available;
-            //            entityClosure.addChangeListener(this);
             refresh();
         }
         
@@ -426,7 +436,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
             return entities.get(index);
         }
         
-        public List getEntityClasses() {
+        public List<JavaSource> getEntityClasses() {
             return entities;
         }
         
@@ -435,10 +445,10 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         }
         
         private void refresh() {
-            //int oldSize = getSize();
+            int oldSize = getSize();
             //            entities = new ArrayList(available ? entityClosure.getAvailableEntities() : entityClosure.getSelectedEntities());
             //Collections.sort(entities, ENTITY_COMPARATOR);
-            //fireContentsChanged(this, 0, Math.max(oldSize, getSize()));
+            fireContentsChanged(this, 0, Math.max(oldSize, getSize()));
         }
     }
     
@@ -446,22 +456,21 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         public EntityListCellRenderer() {
             setOpaque(true);
         }
+        
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String text = null;
-            /*
-            if (value instanceof Entity) {
-                text = ((Entity) value).getClass2();
-                if (text != null) {
-                    String simpleName = Util.simpleClassName(text);
-                    String packageName = text.length() > simpleName.length() ? text.substring(0, text.length() - simpleName.length() -1 ) : "<default package>";
-                    text =  simpleName + " (" +  packageName + ")";
-                } else {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Entity:" + value + " returns null from getClass2(); see IZ 80024"); //NOI18N
-                }
-            }*/
+            
+            if (value instanceof JavaSource) {
+                JavaSource source = (JavaSource) value;
+                String simpleName = JavaSourceHelper.getClassName(source);
+                String packageName = JavaSourceHelper.getPackageName(source);
+                text = simpleName + " (" +  packageName + ")";
+            }
+            
             if (text == null) {
                 text = value.toString();
             }
+            
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
@@ -469,7 +478,8 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
-            //            setEnabled(entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value));
+            
+            //setEnabled(entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value));
             setFont(list.getFont());
             setText(text);
             return this;
