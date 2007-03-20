@@ -47,8 +47,15 @@ public class SLanguageProvider extends LanguageProvider {
 
     public Language<STokenId> findLanguage (String mimePath) {
 //        System.out.println("findLanguage " + mimePath);
-        if (LanguagesManager.getDefault ().isSupported (mimePath))
-            return new SLanguageHierarchy (mimePath).language ();
+        if (LanguagesManager.getDefault ().isSupported (mimePath)) {
+            try {
+                 org.netbeans.modules.languages.Language language = 
+                        LanguagesManager.getDefault ().getLanguage (mimePath);
+                 if (language.getTokenTypes ().isEmpty ()) return null;
+                return new SLanguageHierarchy (mimePath).language ();
+            } catch (ParseException ex) {
+            }
+        }
         return null;
     }
 
