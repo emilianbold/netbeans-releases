@@ -23,8 +23,9 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.palette.DefaultModel;
-import org.openide.ErrorManager;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -136,9 +137,9 @@ public abstract class DragAndDropHandler {
                 return true;
             }
         } catch( IOException ioE ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+            Logger.getLogger( DragAndDropHandler.class.getName() ).log( Level.INFO, null, ioE );
         } catch( UnsupportedFlavorException e ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+            Logger.getLogger( DragAndDropHandler.class.getName() ).log( Level.INFO, null, e );
         }
         return false;
     }

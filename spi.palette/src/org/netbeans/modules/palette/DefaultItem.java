@@ -23,8 +23,9 @@ import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.nodes.*;
 
@@ -89,7 +90,7 @@ public class DefaultItem implements Item {
         try {
             return itemNode.drag();
         } catch( IOException ioE ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+            Logger.getLogger( DefaultItem.class.getName() ).log( Level.INFO, null, ioE );
         }
         return null;
     }
@@ -98,7 +99,7 @@ public class DefaultItem implements Item {
         try {
             return itemNode.clipboardCut();
         } catch( IOException ioE ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+            Logger.getLogger( DefaultItem.class.getName() ).log( Level.INFO, null, ioE );
         }
         return null;
     }

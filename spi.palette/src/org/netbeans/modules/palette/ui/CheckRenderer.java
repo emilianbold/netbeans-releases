@@ -22,7 +22,6 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 import org.netbeans.modules.palette.DefaultSettings;
-import org.netbeans.modules.palette.Settings;
 import org.openide.explorer.view.NodeRenderer;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;

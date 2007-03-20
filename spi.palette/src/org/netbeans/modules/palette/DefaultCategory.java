@@ -26,10 +26,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.spi.palette.DragAndDropHandler;
-import org.openide.ErrorManager;
-import org.openide.nodes.*;
+import org.openide.nodes.Index;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Lookup;
 
 /**
@@ -160,7 +166,7 @@ public class DefaultCategory implements Category, NodeListener {
         try {
             return categoryNode.drag();
         } catch( IOException ioE ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+            Logger.getLogger( DefaultCategory.class.getName() ).log( Level.INFO, null, ioE );
         }
         return null;
     }

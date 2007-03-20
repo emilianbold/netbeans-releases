@@ -21,7 +21,8 @@ package org.netbeans.modules.palette;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
@@ -106,7 +107,7 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                 try {
                     o = getInstance();
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
                 }
             }
            
@@ -137,10 +138,10 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                 reader.parse(is);
             }
             catch (SAXException saxe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, saxe);
+                Logger.getLogger( getClass().getName() ).log( Level.INFO, null, saxe );
             } 
             catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ioe );
             }
 
             node = createPaletteItemNode(handler);

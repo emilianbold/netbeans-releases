@@ -23,10 +23,11 @@ import java.awt.Dialog;
 import javax.swing.*;
 import javax.swing.text.DefaultEditorKit;
 import java.beans.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.awt.Mnemonics;
-
 import org.openide.util.*;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
@@ -331,7 +332,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
                 }
             }
             catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Logger.getLogger( getClass().getName() ).log( Level.INFO, null, e );
             }
         }
     }//GEN-LAST:event_removeButtonActionPerformed

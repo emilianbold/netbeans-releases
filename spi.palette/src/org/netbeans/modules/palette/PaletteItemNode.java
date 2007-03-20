@@ -27,8 +27,9 @@ import java.beans.BeanInfo;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import org.openide.ErrorManager;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -219,7 +220,7 @@ public final class PaletteItemNode extends FilterNode {
 
         }
         catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
         }
 
         return (displayName == null ? "" : displayName);
@@ -251,7 +252,7 @@ public final class PaletteItemNode extends FilterNode {
 
         }
         catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
         }
 
         return (tooltip == null ? "" :  tooltip);
@@ -264,14 +265,14 @@ public final class PaletteItemNode extends FilterNode {
             icon = Utilities.loadImage(iconURL);
         }
         catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
         }
         if( null == icon ) {
             try {
                 //the URL may point to an external file
                 icon = ImageIO.read( new URL(iconURL) );
-            } catch( Exception ex ) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            } catch( IOException ex ) {
+            Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
             }
         }
 

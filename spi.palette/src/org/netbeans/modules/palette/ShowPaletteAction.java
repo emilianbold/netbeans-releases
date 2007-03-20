@@ -21,10 +21,11 @@
 package org.netbeans.modules.palette;
 
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.openide.util.Utilities;
-import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -49,8 +50,8 @@ public class ShowPaletteAction extends AbstractAction {
         // show ComponentPalette
         TopComponent palette = WindowManager.getDefault().findTopComponent("CommonPalette"); // NOI18N
         if( null == palette ) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
-                "Can not find CommonPalette component." )); // NOI18N
+            Logger.getLogger( getClass().getName() ).log( Level.INFO, "Cannot find CommonPalette component." ); // NOI18N
+                
             return;
         }
         palette.open();
