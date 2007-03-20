@@ -56,6 +56,7 @@ public class WsdlModeler {
     private Set<String> bindingFiles;
     private String packageName;
     private List<WsdlModelListener> modelListeners;
+    private List<WsdlChangeListener> wsdlChangeListeners;
     RequestProcessor.Task task;
     int listenersSize;
     
@@ -66,6 +67,7 @@ public class WsdlModeler {
     WsdlModeler(URL wsdlUrl) {
         this.wsdlUrl=wsdlUrl;
         modelListeners = new ArrayList<WsdlModelListener>();
+        wsdlChangeListeners = new ArrayList<WsdlChangeListener>();
         task = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 generateWsdlModel();
@@ -174,7 +176,9 @@ public class WsdlModeler {
             Model tmpModel = ideWSDLModeler.buildModel();
             
             if (tmpModel!=null) {
+                WsdlModel oldWsdlModel = wsdlModel;
                 wsdlModel=new WsdlModel(tmpModel);
+                fireWsdlModelChanged(oldWsdlModel, wsdlModel);
                 creationException=null;
             }
         } catch (Exception ex){
@@ -221,5 +225,18 @@ public class WsdlModeler {
                     "WsdlModeler.generateWsdlModel", ex); //NOI18N
         }
         
+    }
+    
+    public synchronized void addWsdlChangeListener(WsdlChangeListener wsdlChangeListener) {
+        wsdlChangeListeners.add(wsdlChangeListener);
+    }
+    
+    public synchronized void removeWsdlChangeListener(WsdlChangeListener wsdlChangeListener) {
+        wsdlChangeListeners.remove(wsdlChangeListener);
+    }
+    
+    private void fireWsdlModelChanged(WsdlModel oldWsdlModel, WsdlModel newWsdlModel ) {
+        for (WsdlChangeListener wsdlChangeListener: wsdlChangeListeners) {
+            wsdlChangeListener.wsdlModelChanged(oldWsdlModel, newWsdlModel);      }
     }
 }
