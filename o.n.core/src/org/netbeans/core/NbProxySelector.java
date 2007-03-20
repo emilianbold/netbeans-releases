@@ -66,16 +66,28 @@ public final class NbProxySelector extends ProxySelector {
             } else {
                 String protocol = uri.getScheme ();
                 assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
+                // handling nonProxyHosts first
+                if (dontUseProxy (ProxySettings.SystemProxySettings.getNonProxyHosts (), uri.getHost ())) {
+                    res.add (Proxy.NO_PROXY);
+                }
                 if (protocol.toLowerCase (Locale.US).startsWith("http")) {
-                    // handling nonProxyHosts first
-                    if (dontUseProxy (ProxySettings.SystemProxySettings.getNonProxyHosts (), uri.getHost ())) {
-                        res.add (Proxy.NO_PROXY);
-                    }
                     String ports = ProxySettings.SystemProxySettings.getHttpPort ();
                     if (ports != null && ports.length () > 0 && ProxySettings.SystemProxySettings.getHttpHost ().length () > 0) {
                         int porti = Integer.parseInt(ports);
                         Proxy p = new Proxy (Proxy.Type.HTTP,  new InetSocketAddress (ProxySettings.SystemProxySettings.getHttpHost (), porti));
                         res.add (p);
+                    }
+                } else { // supposed SOCKS
+                    String ports = ProxySettings.SystemProxySettings.getSocksPort ();
+                    String hosts = ProxySettings.SystemProxySettings.getSocksHost ();
+                    if (ports != null && ports.length () > 0 && hosts.length () > 0) {
+                        int porti = Integer.parseInt(ports);
+                        Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (hosts, porti));
+                        res.add (p);
+                    } else {
+                        log.info ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                        log.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
+                        res.addAll (original.select (uri));
                     }
                 }
                 res.addAll (original.select (uri));
@@ -104,7 +116,7 @@ public final class NbProxySelector extends ProxySelector {
                 String hosts = ProxySettings.getSocksHost ();
                 if (ports != null && ports.length () > 0 && hosts.length () > 0) {
                     int porti = Integer.parseInt(ports);
-                    Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (ProxySettings.getSocksHost (), porti));
+                    Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (hosts, porti));
                     res.add (p);
                 } else {
                     log.info ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");

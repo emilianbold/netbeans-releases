@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -215,18 +215,40 @@ public class ProxySettings {
         }
 
         private static boolean isSystemSocksServerDetect () {
-            // no SOCKS detection yet
-            return false;
+            return isSystemProxyDetect () && System.getProperty ("netbeans.system_socks_proxy") != null; // NOI18N
         }
         
         private static String getSystemSocksServerHost () {
-            assert false : "SOCKS Server cannot be detected yet.";
-            return "";
+            String systemProxy = System.getProperty ("netbeans.system_socks_proxy"); // NOI18N
+            if (systemProxy == null) {
+                return ""; // NOI18N
+            }
+
+            int i = systemProxy.lastIndexOf (":"); // NOI18N
+            if (i <= 0 || i >= systemProxy.length () - 1) {
+                return ""; // NOI18N
+            }
+
+            return normalizeProxyHost (systemProxy.substring (0, i));
         }
 
         private static String getSystemSocksServerPort () {
-            assert false : "SOCKS Server cannot be detected yet.";
-            return "";
+            String systemProxy = System.getProperty ("netbeans.system_socks_proxy"); // NOI18N
+            if (systemProxy == null) {
+                return ""; // NOI18N
+             }
+
+            int i = systemProxy.lastIndexOf (":"); // NOI18N
+            if (i <= 0 || i >= systemProxy.length () - 1) {
+                return ""; // NOI18N
+            }
+            
+            String p = systemProxy.substring (i + 1);
+            if (p.indexOf ('/') >= 0) {
+                p = p.substring (0, p.indexOf ('/'));
+            }
+
+            return p;
         }
 
     }
