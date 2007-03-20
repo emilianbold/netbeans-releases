@@ -35,6 +35,7 @@ import javax.lang.model.util.*;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -452,6 +453,14 @@ public class Utilities {
                     if (bound.getKind() == TypeKind.WILDCARD)
                         bound = ((WildcardType)bound).getSuperBound();
                     visit(bound, p);
+                } else {
+                    bound = SourceUtils.getBound(t);
+                    if (bound != null) {
+                        DEFAULT_VALUE.append(" extends "); //NOI18N
+                        visit(bound, p);
+                    } else {
+                        DEFAULT_VALUE.append(p ? " extends java.lang.Object" : " extends Object"); //NOI18N                        
+                    }
                 }
             } else {
                 DEFAULT_VALUE.append(" super "); //NOI18N

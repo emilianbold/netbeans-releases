@@ -32,6 +32,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.JavaFileObject.Kind;
 
@@ -46,12 +47,12 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
-import javax.lang.model.type.WildcardType;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
@@ -118,12 +119,14 @@ public class SourceUtils {
             if (!typeVars.isEmpty())
                 from = new Type.ForAll(typeVars, (Type)from);
         } else if (from.getKind() == TypeKind.WILDCARD) {
-            WildcardType wt = (WildcardType)from;
-            from = wt.getExtendsBound();
-            if (from == null)
-                from = Symtab.instance(c).objectType;
+            from = Types.instance(c).upperBound((Type)from);
         }
         return Check.instance(c).checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
+    }
+    
+    public static TypeMirror getBound(WildcardType wildcardType) {
+        Type.TypeVar bound = ((Type.WildcardType)wildcardType).bound;
+        return bound != null ? bound.bound : null;
     }
 
     /**
