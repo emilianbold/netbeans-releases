@@ -224,7 +224,7 @@ class FacesDndSupport {
 
         for (int i = 0; i < flavors.length; i++) {
             String mime = flavors[i].getMimeType();
-            Class clz = flavors[i].getRepresentationClass();
+            Class<?> clz = flavors[i].getRepresentationClass();
 
             if (clz.isAssignableFrom(DisplayItem.class)) {
                 return flavors[i];
@@ -450,7 +450,7 @@ class FacesDndSupport {
      * @return true iff the bean palette item was inserted successfully
      */
     private boolean importBean(DisplayItem[] items, DesignBean origParent, int nodePos,
-    String facet, List createdBeans, Location location, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender)
+    String facet, List<DesignBean> createdBeans, Location location, CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender)
     throws IOException {
 //        if(DesignerUtils.DEBUG) {
 //            DesignerUtils.debugLog(getClass().getName() + ".importBean(DisplayItem[], DesignBean, int, String, List)");
@@ -496,7 +496,7 @@ class FacesDndSupport {
         }
 
 //        Document document = webform.getDocument();
-        List beanItems = new ArrayList(); // HACK remove after TP
+        List<DisplayItem> beanItems = new ArrayList<DisplayItem>(); // HACK remove after TP
 
         String description = NbBundle.getMessage(FacesDndSupport.class,
                 (items.length > 1) ? "LBL_DropComponents" : "LBL_DropComponent"); // NOI18N
@@ -511,7 +511,7 @@ class FacesDndSupport {
 //                    (items.length > 1) ? "DropComponents" : "DropComponent"); // NOI18N
 //            document.writeLock(description);
 
-            List beans = createBeans(location, items, beanItems, coordinateTranslator, updateSuspender);
+            List<DesignBean> beans = createBeans(location, items, beanItems, coordinateTranslator, updateSuspender);
 
             if (beans.isEmpty()) {
                 return false;
@@ -524,7 +524,7 @@ class FacesDndSupport {
             beansCreated(beans, beanItems);
 
             processLinks(location.getDroppeeElement(), null, beans, false, true, false, updateSuspender);
-            Util.customizeCreation((DesignBean[])beans.toArray(new DesignBean[beans.size()]), facesModel);
+            Util.customizeCreation(beans.toArray(new DesignBean[beans.size()]), facesModel);
 
 ////            selectBean(select);
 ////            webform.getSelection().selectBean(select);
@@ -554,11 +554,11 @@ class FacesDndSupport {
         fireInlineEdit(designBeans);
     }
     
-    private void beansCreated(List beans, List beanItems) {
+    private void beansCreated(List<DesignBean> beans, List<DisplayItem> beanItems) {
         int n = beans.size();
 
         for (int i = 0; i < n; i++) {
-            DesignBean lb = (DesignBean)beans.get(i);
+            DesignBean lb = beans.get(i);
 
             try {
                 facesModel.beanCreated(lb);
@@ -568,7 +568,7 @@ class FacesDndSupport {
         }
 
         for (int i = 0; i < n; i++) {
-            DisplayItem item = (DisplayItem)beanItems.get(i);
+            DisplayItem item = beanItems.get(i);
 
             if (item == null) {
                 continue;
@@ -595,7 +595,7 @@ class FacesDndSupport {
                 // getting out of sync.
                 // So instead I count by checking for identical BeanCreateItems
                 // in subsequent beanItems entries
-                ArrayList list = new ArrayList();
+                List<DesignBean> list = new ArrayList<DesignBean>();
 
                 for (int j = i; j < n; j++) {
                     if (beanItems.get(j) == item) {
@@ -606,14 +606,13 @@ class FacesDndSupport {
                 if (list.size() > 0) {
                     i += (list.size() - 1);
 
-                    DesignBean[] createdBeans =
-                        (DesignBean[])list.toArray(new DesignBean[list.size()]);
+                    DesignBean[] createdBeans = list.toArray(new DesignBean[list.size()]);
                     Result result = bcis.beansCreatedSetup(createdBeans);
                     ResultHandler.handleResult(result, facesModel);
                 }
             } else if (item instanceof BeanCreateInfo) {
                 BeanCreateInfo bci = (BeanCreateInfo)item;
-                DesignBean bean = (DesignBean)beans.get(i);
+                DesignBean bean = beans.get(i);
                 Result result = bci.beanCreatedSetup(bean);
                 ResultHandler.handleResult(result, facesModel);
             } else {
@@ -687,7 +686,8 @@ class FacesDndSupport {
         //assert (beans == null) || (classes == null) || (beans.size() == classes.length);
 
         for (int i = 0; i < n; i++) {
-            ArrayList candidates = new ArrayList(n);
+            // XXX Incorrect code.
+            List<Object> candidates = new ArrayList<Object>(n);
             Class clz;
             DesignBean lb = null;
 
@@ -862,7 +862,8 @@ class FacesDndSupport {
                         null);
 
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(dlg);
-                dialog.show();
+//                dialog.show();
+                dialog.setVisible(true);
 
                 if (dlg.getValue().equals(DialogDescriptor.OK_OPTION)) {
                     Enumeration enm = buttonGroup.getElements();
@@ -1092,10 +1093,9 @@ class FacesDndSupport {
 //    }
     
     public String[] getClasses(DisplayItem[] items) {
-        List list = new ArrayList(items.length);
+        List<String> list = new ArrayList<String>(items.length);
 
-        for (int i = 0, n = items.length; i < n; i++) {
-            DisplayItem item = items[i];
+        for (DisplayItem item : items) {
             if (item instanceof BeanCreateInfo) {
                 list.add(((BeanCreateInfo)item).getBeanClassName());
             } else if (item instanceof BeanCreateInfoSet) {
@@ -1109,18 +1109,16 @@ class FacesDndSupport {
             }
         }
 
-        String[] classNames = (String[])list.toArray(new String[list.size()]);
-
-        return classNames;
+        return list.toArray(new String[list.size()]);
     }
     
-    private List createBeans(Location location, DisplayItem[] items, List beanItems,
+    private List<DesignBean> createBeans(Location location, DisplayItem[] items, List<DisplayItem> beanItems,
     CoordinateTranslator coordinateTranslator, UpdateSuspender updateSuspender) throws IOException {
         DesignBean droppee = location.getDroppee();
         MarkupPosition position = location.getPos();
         String facet = location.getFacet();
 
-        ArrayList created = new ArrayList(2 * items.length); // slop for BeanCreateInfoSets
+        List<DesignBean> created = new ArrayList<DesignBean>(2 * items.length); // slop for BeanCreateInfoSets
 
         for (int i = 0; i < items.length; i++) {
 
@@ -1642,7 +1640,7 @@ class FacesDndSupport {
             // you want. It would be better if we had a modifier key
             // to let the user FORCE move though. Perhaps we should rethink
             // this since there IS a modifier key for link (ctrl-shift).
-            List list = new ArrayList(beans.length);
+            List<DesignBean> list = new ArrayList<DesignBean>(beans.length);
 
             for (int i = 0; i < beans.length; i++) {
                 list.add(beans[i]);
@@ -2375,14 +2373,12 @@ linkCheckFinished:
 //            panel = PageImport.importRandomFile(project, f, extension, panel);
 // ====
             Lookup l = Lookup.getDefault();
-            Lookup.Template template = new Lookup.Template(Importable.class);
-            Iterator it = l.lookup(template).allInstances().iterator();
+            Lookup.Template<Importable.PageImportable> template = new Lookup.Template<Importable.PageImportable>(Importable.PageImportable.class);
+            Iterator<? extends Importable.PageImportable> it = l.lookup(template).allInstances().iterator();
             while (it.hasNext()) {
-                Object importable = it.next();
-                if(importable instanceof Importable.PageImportable) {
-                    panel = ((Importable.PageImportable)importable).importRandomFile(project, f, extension, panel);
-                    break;
-                }
+                Importable.PageImportable pageImportable = it.next();
+                panel = pageImportable.importRandomFile(project, f, extension, panel);
+                break;
             }
 // </dep>
 
@@ -2674,7 +2670,7 @@ linkCheckFinished:
      * (delimited by the default delimiter except the space char) mean file, otherwise null is returned.
      * @return Array of files or <code>null</code> */
     private static File[] extractFilesFromString(String string) {
-        List files = new ArrayList();
+        List<File> files = new ArrayList<File>();
         // XXX Do not use space as delimiter (the file name might contain it).
         StringTokenizer st = new StringTokenizer(string, "\t\n\r\f"); // NOI18N
         while (st.hasMoreTokens()) {
@@ -2686,7 +2682,7 @@ linkCheckFinished:
             }
             files.add(file);
         }
-        return (File[])files.toArray(new File[files.size()]);
+        return files.toArray(new File[files.size()]);
     }
     
     private static File extractFileFromString(String string) {
@@ -2937,7 +2933,7 @@ linkCheckFinished:
 
                         if (!needPos) {
 //                            XhtmlCssEngine engine = webform.getMarkup().getCssEngine();
-                            List remove = new ArrayList(5);
+                            List<StyleData> remove = new ArrayList<StyleData>(5);
                             remove.add(new StyleData(XhtmlCss.POSITION_INDEX));
                             remove.add(new StyleData(XhtmlCss.LEFT_INDEX));
                             remove.add(new StyleData(XhtmlCss.TOP_INDEX));
@@ -2947,14 +2943,14 @@ linkCheckFinished:
 //                            engine.updateLocalStyleValues((RaveElement)element, null, remove);
 // ====
                             Util.updateLocalStyleValuesForElement(element,
-                                    null, (StyleData[])remove.toArray(new StyleData[remove.size()]));
+                                    null, remove.toArray(new StyleData[remove.size()]));
 // </removing design bean manipulation in engine>
 
                             continue;
                         }
 
-                        List set = new ArrayList(5);
-                        List remove = new ArrayList(5);
+                        List<StyleData> set = new ArrayList<StyleData>(5);
+                        List<StyleData> remove = new ArrayList<StyleData>(5);
 //                        Value val = CssLookup.getValue(element, XhtmlCss.POSITION_INDEX);
                         CssValue cssValue = CssProvider.getEngineService().getComputedValueForElement(element, XhtmlCss.POSITION_INDEX);
 
@@ -3009,8 +3005,8 @@ linkCheckFinished:
 //                        engine.updateLocalStyleValues((RaveElement)element, set, remove);
 // ====
                         Util.updateLocalStyleValuesForElement(element,
-                                (StyleData[])set.toArray(new StyleData[set.size()]),
-                                (StyleData[])remove.toArray(new StyleData[remove.size()]));
+                                set.toArray(new StyleData[set.size()]),
+                                remove.toArray(new StyleData[remove.size()]));
 // </removing design bean manipulation in engine>
                     } finally {
 //                        webform.getDomSynchronizer().setUpdatesSuspended(bean, false);
@@ -3465,7 +3461,7 @@ linkCheckFinished:
             return false;
         }
         
-        Class rc = importFlavor.getRepresentationClass();
+        Class<?> rc = importFlavor.getRepresentationClass();
         try {
             if (rc == DisplayItem.class) {
                 // Create a new type

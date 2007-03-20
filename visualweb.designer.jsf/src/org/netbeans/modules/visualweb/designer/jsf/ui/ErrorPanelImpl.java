@@ -570,7 +570,8 @@ implements org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.ErrorPane
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(d);
         dlg.pack();
-        dlg.show();
+//        dlg.show();
+        dlg.setVisible(true);
 
         // Do OK/Cancel thingy here
         return d.getValue() == NotifyDescriptor.OK_OPTION;
