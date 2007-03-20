@@ -78,7 +78,6 @@ import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDescriptor;
@@ -222,7 +221,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 DebuggerManager.getDebuggerManager().addBreakpoint(mb);
             }
         }
-        tr.keepLastOperationsUponResume();
+        tr.holdLastOperations(true);
         ExpressionPool.OperationLocation[] nextOperationLocations;
         if (opIndex < 0) {
             nextOperationLocations = expr.findNextOperationLocations(codeIndex);
@@ -367,6 +366,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         if (getHidden()) {
             return true; // Resume
         } else {
+            tr.holdLastOperations(false);
             return false;
         }
     }

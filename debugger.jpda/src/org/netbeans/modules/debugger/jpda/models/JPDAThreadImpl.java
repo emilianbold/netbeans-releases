@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -154,8 +154,8 @@ public final class JPDAThreadImpl implements JPDAThread {
         lastOperations = null;
     }
     
-    public synchronized void keepLastOperationsUponResume() {
-        doKeepLastOperations = true;
+    public synchronized void holdLastOperations(boolean doHold) {
+        doKeepLastOperations = doHold;
     }
 
 
@@ -402,9 +402,7 @@ public final class JPDAThreadImpl implements JPDAThread {
         synchronized (this) {
             setReturnVariable(null); // Clear the return var on resume
             setCurrentOperation(null);
-            if (doKeepLastOperations) {
-                doKeepLastOperations = false;
-            } else {
+            if (!doKeepLastOperations) {
                 clearLastOperations();
             }
             try {
@@ -441,9 +439,7 @@ public final class JPDAThreadImpl implements JPDAThread {
             if (clearVars) {
                 setCurrentOperation(null);
                 setReturnVariable(null); // Clear the return var on resume
-                if (doKeepLastOperations) {
-                    doKeepLastOperations = false;
-                } else {
+                if (!doKeepLastOperations) {
                     clearLastOperations();
                 }
             }
