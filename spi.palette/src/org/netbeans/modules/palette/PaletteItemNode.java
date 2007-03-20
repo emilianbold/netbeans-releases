@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
@@ -79,6 +80,9 @@ public final class PaletteItemNode extends FilterNode {
         super(original, Children.LEAF, new AbstractLookup(content));
         
         content.add( this );
+        DataObject dob = original.getCookie( DataObject.class );
+        if( null != dob )
+            content.add( dob );
         this.name = name;
         this.bundleName = bundleName; 
         this.displayNameKey = displayNameKey;
@@ -99,6 +103,9 @@ public final class PaletteItemNode extends FilterNode {
         super(original, Children.LEAF, new AbstractLookup(content));
         
         content.add( this );
+        DataObject dob = original.getCookie( DataObject.class );
+        if( null != dob )
+            content.add( dob );
         this.name = name;
         this.bundleName = bundleName; 
         assert null != displayName;
@@ -169,7 +176,7 @@ public final class PaletteItemNode extends FilterNode {
         ActiveEditorDrop drop = (ActiveEditorDrop) lookup.lookup(ActiveEditorDrop.class);
         ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(drop);
         t.put(s);
-
+        
         //do not allow external DnD flavors otherwise some items may get interpreted
         //as an external file dropped into the editor window
         return new NoExternalDndTransferable( t );
