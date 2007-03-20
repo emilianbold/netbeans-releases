@@ -77,7 +77,6 @@ import org.openide.filesystems.FileObject;
  */
 public class OperationGeneratorHelper {
     File wsdlFile;
-    FileObject implementationClass;
     
     /** Creates a new instance of MethodGeneratorHelper */
     public OperationGeneratorHelper(File wsdlFile) {
