@@ -145,7 +145,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         setLayout(new java.awt.GridBagLayout());
 
-        platforms.setBorder(null);
         platforms.setPreferredSize(new java.awt.Dimension(200, 334));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
