@@ -101,20 +101,19 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	public static final String PROJECT_TYPE_GAME = "vmd-midp-game"; // NOI18N
 	
 	private DataObjectContext context;
+    private GameEditorView gameEditorView;
 	private JComponent loadingPanel;
 	private JPanel panel = new JPanel(new BorderLayout());
-	
-	private GlobalRepository gameDesign;
 	
 	private DesignDocument document;
 	
 	
 	/** Creates a new instance of GameController */
-	public GameController(DataObjectContext context) {
+	public GameController(DataObjectContext context, GameEditorView gameEditorView) {
 		this.context = context;
+		this.gameEditorView = gameEditorView;
 		this.loadingPanel = IOUtils.createLoadingPanel();
 		this.panel.add(this.loadingPanel);
-		this.gameDesign = new GlobalRepository(null);
 		this.context.addDesignDocumentAwareness(this);
 	}
 	
@@ -127,31 +126,53 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	public GlobalRepository getGameDesign() {
-		return this.gameDesign;
+		final DesignDocument doc = this.getDesignDocument();
+		if (doc == null) {
+			return null;
+		}
+		final GlobalRepository[] gameDesign = {null};
+		doc.getTransactionManager().readAccess(new Runnable() {
+				public void run () {
+					GameAccessController controller = doc.getListenerManager().getAccessController(GameAccessController.class);
+					gameDesign[0] = controller.getGameDesign();
+				}
+		});
+		return gameDesign[0];
 	}
 		
 	public void setDesignDocument(final DesignDocument designDocument) {
 		System.out.println(">>>> set design document to: " + designDocument);
+
+		if (designDocument == this.document) {
+			return;
+		}
         
         this.panel.removeAll();
 		
-		//if we already have a document then dereister listeners and clean game model
-		if (document != null) {
+		GlobalRepository oldGameDesign = this.getGameDesign();
+		
+		//if we already have a document then de-register listeners and clean game model
+		if (this.document != null) {
 			this.removeAllListeners();
-			this.gameDesign.removeAllComponents();
+			oldGameDesign.removeGlobalRepositoryListener(this);
+			oldGameDesign.removeAllComponents();
+			oldGameDesign.getMainView().removeEditorManagerListener(gameEditorView);
 			designIdMap.clear();
 		}
 		
 		JComponent view = null;
 		
-		document = designDocument;
-		this.gameDesign.setDesignDocument(designDocument);
+		this.document = designDocument;
+		final GlobalRepository gameDesign = this.getGameDesign();
+		
+		this.gameEditorView.setGameDesign(gameDesign);
 		
 		if (designDocument == null) {
 			view = this.loadingPanel;
 		}
 		else {
-			view = this.gameDesign.getMainView().getRootComponent();
+			gameDesign.getMainView().addEditorManagerListener(gameEditorView);
+			view = gameDesign.getMainView().getRootComponent();
 			designDocument.getTransactionManager().writeAccess(new Runnable() {
 				public void run() {
 					if (true) {
@@ -159,8 +180,8 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 						DesignComponent root = designDocument.getRootComponent();
 						GameController.this.modelComponent(root);
 
-						GameController.this.gameDesign.addGlobalRepositoryListener(GameController.this);
-						GameController.this.gameDesign.getMainView().requestEditing(new Editable() {
+						gameDesign.addGlobalRepositoryListener(GameController.this);
+						gameDesign.getMainView().requestEditing(new Editable() {
                             public JComponent getEditor() {
 								JPanel top = new JPanel(new BorderLayout());
 								JPanel midle = new JPanel(new GridBagLayout());
@@ -186,7 +207,6 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	
 	
 	private void removeAllListeners() {
-		this.gameDesign.removeGlobalRepositoryListener(this);
 		for (Object o : designIdMap.keySet()) {
 			if (o instanceof Scene) {
 				Scene s = (Scene) o;
@@ -307,7 +327,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	private Sprite constructSprite(DesignComponent spriteDC) {
 		String name = (String) spriteDC.readProperty(LayerCD.PROPERTY_NAME).getPrimitiveValue();
 		//if GlobalRepository already has a layer of that name it must have been already constructed
-		Sprite sprite = (Sprite) this.gameDesign.getLayerByName(name);
+		Sprite sprite = (Sprite) this.getGameDesign().getLayerByName(name);
 		if (sprite != null) {
 			return sprite;
 		}
@@ -318,7 +338,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		List<PropertyValue> sequenceDCs = spriteDC.readProperty(SequenceContainerCDProperties.PROP_SEQUENCES).getArray();
 
 		Sequence defaultSequence = this.constructSequence(defaultSequenceDC);
-		sprite = this.gameDesign.createSprite(name, imgRes, defaultSequence);
+		sprite = this.getGameDesign().createSprite(name, imgRes, defaultSequence);
 		
 		for (PropertyValue propertyValue : sequenceDCs) {
 			DesignComponent sequenceDC = propertyValue.getComponent();
@@ -334,7 +354,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	private TiledLayer constructTiledLayer(DesignComponent tiledLayerDC) {
 		String name = (String) tiledLayerDC.readProperty(LayerCD.PROPERTY_NAME).getPrimitiveValue();
 		//if GlobalRepository already has a layer of that name it must have been already constructed
-		TiledLayer tiledLayer = (TiledLayer) this.gameDesign.getLayerByName(name);
+		TiledLayer tiledLayer = (TiledLayer) this.getGameDesign().getLayerByName(name);
 		if (tiledLayer != null) {
 			return tiledLayer;
 		}
@@ -344,7 +364,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		int tileWidth = MidpTypes.getInteger(tiledLayerDC.readProperty(LayerCD.PROPERTY_TILE_WIDTH));
 		int tileHeight = MidpTypes.getInteger(tiledLayerDC.readProperty(LayerCD.PROPERTY_TILE_HEIGHT));
 		
-		tiledLayer = this.gameDesign.createTiledLayer(name, imgRes, grid, tileWidth, tileHeight);
+		tiledLayer = this.getGameDesign().createTiledLayer(name, imgRes, grid, tileWidth, tileHeight);
 		
 		return tiledLayer;
 	}
@@ -381,7 +401,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 
 		final String imgResPath = (String) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH).getPrimitiveValue();
 		
-		imgRes = this.gameDesign.getImageResource(imgResPath);
+		imgRes = this.getGameDesign().getImageResource(imgResPath);
 		if (imgRes != null) {
 			return imgRes;
 		}
@@ -469,18 +489,18 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		} catch (FileStateInvalidException e) {
 			throw new RuntimeException(e);
 		}
-		imgRes = this.gameDesign.getImageResource(imgResUrl, imgResPath);
+		imgRes = this.getGameDesign().getImageResource(imgResUrl, imgResPath);
 		return imgRes;
 	}
 	
 	private Scene constructScene(DesignComponent sceneDC) {
 		String name = (String) sceneDC.readProperty(SceneCD.PROPERTY_NAME).getPrimitiveValue();
 		//if GlobalRepository already has a scene of that name it must have been already constructed
-		Scene scene = this.gameDesign.getSceneByName(name);
+		Scene scene = this.getGameDesign().getSceneByName(name);
 		if (scene != null) {
 			return scene;
 		}
-		scene = this.gameDesign.createScene(name);
+		scene = this.getGameDesign().createScene(name);
 		List<PropertyValue> sceneItemsProps = sceneDC.readProperty(SceneCD.PROPERTY_SCENE_ITEMS).getArray();
 		for (PropertyValue sceneItemProp : sceneItemsProps) {
 			DesignComponent sceneItemDC = sceneItemProp.getComponent();
@@ -726,7 +746,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 				scene.removeSceneListener(GameController.this);
 				scene.removePropertyChangeListener(GameController.this);
 				document.deleteComponent(dcScene);
-            }			
+            }
 		});
     }
 

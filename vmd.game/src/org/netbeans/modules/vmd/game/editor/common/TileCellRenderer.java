@@ -26,26 +26,22 @@ import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import javax.swing.JList;
-import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
-import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.vmd.game.model.StaticTile;
 
-import org.netbeans.modules.vmd.game.model.Tile;
+public class TileCellRenderer extends JComponent implements ListCellRenderer {
 
-public class TileCellRenderer extends JComponent implements TableCellRenderer, ListCellRenderer {
-
+	private static final int MIN_TILE_SIZE = 30;
+	
 	private int padX;
 	private int padY;
 
-	private static final int EMPTY_LIST_INDICATOR_WIDTH = 2;
-	
-	//TODO : replace those colors with the correct color resource from L&F
+	//TODO : replace those colors with the correct color resources from L&F
 	private final static Color MOST_COLOR = Color.RED;
 	private final static Color NO_COLOR = Color.LIGHT_GRAY;
 	private final static Color MEDIUM_COLOR = Color.ORANGE;
 	
-	private JTable table;
-	private Tile tile;
+	private StaticTile tile;
 	private boolean isSelected;
 	private boolean hasFocus;
 	
@@ -58,8 +54,6 @@ public class TileCellRenderer extends JComponent implements TableCellRenderer, L
 		return "Index: " + this.tile.getIndex();
 	}
 	
-
-	
 	public void paintComponent(Graphics g) {
 		Color c = this.isSelected && this.hasFocus ? MOST_COLOR : (this.isSelected ? MEDIUM_COLOR : NO_COLOR);
 		g.setColor(c);
@@ -68,60 +62,43 @@ public class TileCellRenderer extends JComponent implements TableCellRenderer, L
 		g.fillRect(padX, 0, this.getWidth() - 2 * padX, padY); //top horizontal
 		g.fillRect(padX, this.getHeight() - padY, this.getWidth() - 2 * padX, padY); //bottom horizontal
 		if (this.tile != null) {
-			//g.setClip(padX, padY, this.tile.getWidth(), this.tile.getHeight());
-			this.tile.paint((Graphics2D) g, padX, padY);
+			this.tile.paint((Graphics2D) g, padX, padY, this.getWidth() - 2*padX, this.getHeight() - 2*padY);
 		}
+		g.setColor(Color.WHITE);
+		g.drawRect(0, 0, this.getWidth() -1, this.getHeight() -1);
 		this.paintBorder(g);
-	}
-
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-		if (value instanceof Tile) {
-			this.table = table;
-			this.tile = (Tile) value;
-			this.isSelected = isSelected;
-			this.hasFocus = hasFocus;
-			Dimension dimension = new Dimension(this.tile.getWidth() + 2*padX, this.tile.getHeight() + 2*padY);
-			this.setToolTipText("Tile index " + tile.getIndex());
-			this.setPreferredSize(dimension);
-			this.setMinimumSize(dimension);
-			this.setMaximumSize(dimension);
-			return this;
-		}
-		if (value instanceof Integer) {
-			Integer integer = (Integer) value; //right now the only int value can be SequenceListModel.EMPTY_COL
-			this.tile = null;
-			this.isSelected = isSelected;
-			this.hasFocus = hasFocus;
-			Dimension prefSize = this.getPreferredSize();
-			Dimension newSize = new Dimension(this.padX*2 + EMPTY_LIST_INDICATOR_WIDTH, prefSize.height);
-			this.setPreferredSize(newSize);
-			this.setMaximumSize(newSize);
-			this.setMinimumSize(newSize);
-			return this;
-		}
-		throw new IllegalArgumentException("Only org.netbeans.mobility.game.model.Tile can be rendered.");
 	}
 	
 	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean hasFocus) {
-		if (value instanceof Tile) {
-			Tile tile = (Tile) value;
+		if (value instanceof StaticTile) {
+			StaticTile tile = (StaticTile) value;
 			this.tile = tile;
 			this.isSelected = isSelected;
 			this.hasFocus = hasFocus;
-			Dimension dimension = new Dimension(tile.getWidth() + 2*padX, tile.getHeight() + 2*padY);
+			
+			int tileW = tile.getWidth();
+			int tileH = tile.getHeight();
+			
+			int width = tileW;
+			int height = tileH;
+			
+			if (tileW < tileH && tileW < MIN_TILE_SIZE) {
+				float ratio = (float) MIN_TILE_SIZE / (float) tileW;
+				width = MIN_TILE_SIZE;
+				height *= ratio;
+			}
+			else if (tileH < tileW && tileH < MIN_TILE_SIZE) {
+				float ratio = (float) MIN_TILE_SIZE / (float) tileH;
+				height = MIN_TILE_SIZE;
+				width *= ratio;				
+			}
+			else if (tileH == tileW && tileH < MIN_TILE_SIZE) {
+				width = MIN_TILE_SIZE;
+				height = MIN_TILE_SIZE;
+			}
+			
+			Dimension dimension = new Dimension(width + 2*padX, height + 2*padY);
 			this.setPreferredSize(dimension);
-			return this;
-		}
-		if (value instanceof Integer) {
-			Integer integer = (Integer) value; //right now the only int value can be SequenceListModel.EMPTY_COL
-			this.tile = null;
-			this.isSelected = isSelected;
-			this.hasFocus = hasFocus;
-			Dimension prefSize = this.getPreferredSize();
-			Dimension newSize = new Dimension(this.padX*2 + EMPTY_LIST_INDICATOR_WIDTH, prefSize.height);
-			this.setPreferredSize(newSize);
-			this.setMaximumSize(newSize);
-			this.setMinimumSize(newSize);
 			return this;
 		}
 		throw new IllegalArgumentException("Only org.netbeans.mobility.game.model.Tile or java.lang.Integer can be rendered.");

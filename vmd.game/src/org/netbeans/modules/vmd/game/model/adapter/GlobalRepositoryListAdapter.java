@@ -41,13 +41,20 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 	private GlobalRepository gameDesign;	
 	
 	/** Creates a new instance of GlobalRepositoryListAdapter */
-	public GlobalRepositoryListAdapter(GlobalRepository gameDesign) {
+	public GlobalRepositoryListAdapter() {
+	}
+	
+	public void setGameDesign(GlobalRepository gameDesign) {
 		this.gameDesign = gameDesign;
 		this.gameDesign.addGlobalRepositoryListener(this);
+		this.fireContentsChanged(this, 0, this.getSize() -1);
 	}
 	
 	//AbstractListModel
 	public int getSize() {
+		if (this.gameDesign == null) {
+			return 0;
+		}
 		int sceneCount = this.gameDesign.getScenes().size();
 		int tiledLayerCount = this.gameDesign.getTiledLayers().size();
 		int spriteCount = this.gameDesign.getSprites().size();

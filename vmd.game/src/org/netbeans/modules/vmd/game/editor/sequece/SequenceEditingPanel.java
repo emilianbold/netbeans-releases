@@ -24,7 +24,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -59,7 +58,6 @@ import javax.swing.JViewport;
 import javax.swing.Scrollable;
 import javax.swing.ToolTipManager;
 import javax.swing.event.EventListenerList;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
@@ -67,7 +65,6 @@ import org.netbeans.modules.vmd.game.model.SequenceListener;
 import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TileDataFlavor;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 
 
 /**
@@ -75,7 +72,7 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
  */
  public class SequenceEditingPanel extends JComponent implements Scrollable, MouseMotionListener, MouseListener, SequenceListener {
 	
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 
 	private static final int BOUNDARY_MIN = 10;
 	private static final int SEPARATOR_WIDTH_MIN = 15;
@@ -493,38 +490,45 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 
 	//------------ MouseListener -----------
 	//on separator right-click offer tween :)
+	
     public void mouseClicked(MouseEvent e) {
-		int col = this.getColumnForPoint(e.getPoint());
-		int f = this.getFrameForColumn(col);
-		if (f == -1)
-			return;
-		if (isContinuousSelect(e)) {
-			int anchor = this.selection.getAnchorSelectionIndex();
-			if (anchor == FrameSelectionManager.NONE) {
-				this.selection.setSelected(f, true);
-			}
-			else {
-				this.selection.setIntervalSelection(anchor, f, true);
-			}
-		}
-		else if (isMultiSelect(e)) {
-			this.selection.flipSelection(f);
-		}
-		else {
-			boolean alreadySelected = this.selection.isFrameSelected(f);
-			this.selection.clearSelections();
-			this.selection.setSelected(f, !alreadySelected);
-		}
-		this.repaint();
-		this.sequence.getGameDesign().getMainView().requestPreview(this.sequence.getFrame(f));
     }
 
     public void mousePressed(MouseEvent e) {
-		this.handlePopUp(e);
+		if (e.isPopupTrigger()) {
+			this.handlePopUp(e);
+		}
+		else {
+			int col = this.getColumnForPoint(e.getPoint());
+			int f = this.getFrameForColumn(col);
+			if (f == -1)
+				return;
+			if (isContinuousSelect(e)) {
+				int anchor = this.selection.getAnchorSelectionIndex();
+				if (anchor == FrameSelectionManager.NONE) {
+					this.selection.setSelected(f, true);
+				}
+				else {
+					this.selection.setIntervalSelection(anchor, f, true);
+				}
+			}
+			else if (isMultiSelect(e)) {
+				this.selection.flipSelection(f);
+			}
+			else {
+				boolean alreadySelected = this.selection.isFrameSelected(f);
+				this.selection.clearSelections();
+				this.selection.setSelected(f, !alreadySelected);
+			}
+			this.repaint();
+			this.sequence.getGameDesign().getMainView().requestPreview(this.sequence.getFrame(f));
+		}
     }
 
     public void mouseReleased(MouseEvent e) {
-		this.handlePopUp(e);
+		if (e.isPopupTrigger()) {
+			this.handlePopUp(e);
+		}
     }
 
     public void mouseEntered(MouseEvent e) {
@@ -545,8 +549,6 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 	}
 	
 	private void handlePopUp(MouseEvent e) {
-		if (!e.isPopupTrigger())
-			return;
 		JPopupMenu menu = new JPopupMenu();
 		
 		//common menu items

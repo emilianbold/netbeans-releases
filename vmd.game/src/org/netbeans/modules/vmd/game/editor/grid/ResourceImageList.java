@@ -45,8 +45,8 @@ class ResourceImageList extends JList {
 	
     public static final boolean DEBUG = true;
     
-	private int padX = 2;
-	private int padY = 2;
+	private int padX = 4;
+	private int padY = 4;
 	
 	
 	
@@ -111,11 +111,11 @@ class ResourceImageList extends JList {
 	
 	}
 	
-	private class ResourceImageListSelectionListener implements ListSelectionListener {		
+	private class ResourceImageListSelectionListener implements ListSelectionListener {
 		public void valueChanged(ListSelectionEvent e) {
 			if (DEBUG) System.out.println("GridTableSelectionListener.valueChanged()");
-	        if (e.getValueIsAdjusting())
-	            return;
+//	        if (e.getValueIsAdjusting())
+//	            return;
 			int index = ResourceImageList.this.getSelectedIndex();
 	        this.handleTileSelection(index);
 		}

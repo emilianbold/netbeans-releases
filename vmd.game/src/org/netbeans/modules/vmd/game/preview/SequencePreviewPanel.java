@@ -107,6 +107,8 @@ public class SequencePreviewPanel extends javax.swing.JPanel  implements
 			this.isPlaying = false;
 		}
 		this.buttonPause.setEnabled(this.isPlaying);
+		this.buttonPlayForward.setEnabled(!this.isPlayingForward || !this.isPlaying);
+		this.buttonPlayBackward.setEnabled(this.isPlayingForward || !this.isPlaying);
 	}
 
 	

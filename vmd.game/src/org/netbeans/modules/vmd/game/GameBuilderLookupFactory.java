@@ -29,7 +29,7 @@ import java.util.Collection;
 
 /**
  *
- * @author kaja
+ * @author karel herink
  */
 public class GameBuilderLookupFactory implements DataEditorViewLookupFactory {
     

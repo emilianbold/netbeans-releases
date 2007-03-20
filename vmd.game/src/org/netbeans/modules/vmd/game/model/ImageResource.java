@@ -335,6 +335,9 @@ public class ImageResource {
 	}
 	
 	void paint(int index, Graphics2D g, int x, int y, int tileWidth, int tileHeight) {
+		this.paint(index, g, x, y, tileWidth, tileHeight, tileWidth, tileHeight);
+	}
+	void paint(int index, Graphics2D g, int x, int y, int tileWidth, int tileHeight, int scaledWidth, int scaledHeight) {
 		if (index == Tile.EMPTY_TILE_INDEX)
 			return;
 		//static tile
@@ -344,7 +347,7 @@ public class ImageResource {
 			int resX = coordinates[1] * tileWidth;
 			int resY = coordinates[0] * tileHeight;
 			
-			g.drawImage(img, x, y, x + tileWidth, y + tileHeight, resX, resY, resX + tileWidth, resY + tileHeight, null);
+			g.drawImage(img, x, y, x + scaledWidth, y + scaledHeight, resX, resY, resX + tileWidth, resY + tileHeight, null);
 		}
 		//animated tile
 		else {

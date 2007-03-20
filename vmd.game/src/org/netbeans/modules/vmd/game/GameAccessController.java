@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.game;
 import org.netbeans.modules.vmd.api.model.*;
 import javax.swing.*;
 import java.util.Collection;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 
 /**
  *
@@ -29,15 +30,23 @@ import java.util.Collection;
  */
 public class GameAccessController implements AccessController {
 
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
     
     private DesignDocument document;
 	
+	private GlobalRepository gameDesign;
 	
 	/** Creates a new instance of GameAccessController */
 	public GameAccessController(DesignDocument document) {
+		if (DEBUG) System.out.println("new GameAccessController() with document: " + document);
 		this.document = document;
+		this.gameDesign = new GlobalRepository(document);
 	}
+	
+	public GlobalRepository getGameDesign() {
+		return this.gameDesign;
+	}
+	
 	
 	public void writeAccess(Runnable runnable) {
 		runnable.run();
@@ -47,18 +56,15 @@ public class GameAccessController implements AccessController {
 	}
 	
 	public void notifyEventFired(DesignEvent event) {
-		if (DEBUG)
-			System.out.println("GameAccessController.notifyEventFired() : " + event);
+//		if (DEBUG) System.out.println("GameAccessController.notifyEventFired() : " + event);
 	}
 	
 	public void notifyComponentsCreated(Collection<DesignComponent> createdComponents) {
 	}
 	
     public static class Factory implements AccessControllerFactory {
-
         public AccessController createAccessController(DesignDocument document) {
             return new GameAccessController (document);
         }
-
     }
 }

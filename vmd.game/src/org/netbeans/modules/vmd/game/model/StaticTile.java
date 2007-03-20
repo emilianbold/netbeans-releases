@@ -37,5 +37,9 @@ public class StaticTile extends Tile {
     public void paint(Graphics2D g, int x, int y) {
 		this.getImageResource().paint(this.getIndex(), g, x, y, getWidth(), getHeight());
     }
+	
+    public void paint(Graphics2D g, int x, int y, int scaledWidth, int scaledHeight) {
+		this.getImageResource().paint(this.getIndex(), g, x, y, getWidth(), getHeight(), scaledWidth, scaledHeight);
+    }
 
 }

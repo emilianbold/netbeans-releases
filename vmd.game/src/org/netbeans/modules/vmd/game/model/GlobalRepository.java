@@ -49,12 +49,9 @@ public class GlobalRepository implements PropertyChangeListener {
 	
 	
 	public GlobalRepository(DesignDocument designDocument) {
+		this.designDocument = designDocument;
 		this.mainView = new MainView();
 		this.addGlobalRepositoryListener(this.mainView);
-	}
-	
-	public void setDesignDocument(DesignDocument designDocument) {
-		this.designDocument = designDocument;
 	}
 	
 	public DesignDocument getDesignDocument() {

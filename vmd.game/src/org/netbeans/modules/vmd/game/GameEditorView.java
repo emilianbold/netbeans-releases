@@ -32,6 +32,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 
@@ -47,6 +48,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
     private DataObjectContext context;
     private transient GameController controller;
+	private GlobalRepository gameDesign;
 
     private transient JComponent toolBarRepresentation;
     private transient JComboBox comboGlobal;
@@ -58,9 +60,34 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     private void init () {
-        this.controller = new GameController(context);
-        this.controller.getGameDesign().getMainView().addEditorManagerListener(this);
+        this.controller = new GameController(context, this);
+		if (this.controller.getGameDesign() != null) {
+			this.controller.getGameDesign().getMainView().addEditorManagerListener(this);
+		}
+		
     }
+	
+	
+	public void setGameDesign(GlobalRepository gameDesign) {
+		if (this.gameDesign == gameDesign) {
+			return;
+		}
+		if (this.gameDesign != null) {
+			this.gameDesign.getMainView().removeEditorManagerListener(this);
+		}
+		
+		this.gameDesign = gameDesign;
+		
+		if (this.gameDesign != null) {
+			if (this.comboGlobal == null) {
+				this.comboGlobal = new JComboBox();
+			}
+			GlobalRepositoryComboBoxModel model = new GlobalRepositoryComboBoxModel();
+			model.setGameDesign(gameDesign);
+			this.comboGlobal.setModel(model);
+		}
+		
+	}
 
     public DataObjectContext getContext() {
         return this.context;
@@ -93,9 +120,13 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     public JComponent getToolbarRepresentation() {
         if (this.toolBarRepresentation == null) {
             JToolBar tool = new JToolBar();
-
+			
             tool.addSeparator();
-            this.comboGlobal = new JComboBox(new GlobalRepositoryComboBoxModel(this.controller.getGameDesign()));
+			
+			if (this.comboGlobal == null) {
+				this.comboGlobal = new JComboBox();
+			}
+			
             comboGlobal.setMaximumRowCount(16);
             comboGlobal.setRenderer(new DefaultListCellRenderer() {
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -116,11 +147,13 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                     Object item = comboGlobal.getSelectedItem();
                     if (item instanceof Editable) {
                         if (DEBUG) System.out.println("Request editing for: " + item);
-                        controller.getGameDesign().getMainView().requestEditing((Editable) item);
+                        gameDesign.getMainView().requestEditing((Editable) item);
                     }
                 }
             });
-            comboGlobal.setSelectedItem(this.controller.getGameDesign().getMainView().getCurrentEditable());
+			if (gameDesign != null) {
+				comboGlobal.setSelectedItem(gameDesign.getMainView().getCurrentEditable());
+			}
 
             tool.add(comboGlobal);
             tool.addSeparator();
@@ -128,7 +161,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             JButton buttonCreateScene = new JButton("New scene");
             buttonCreateScene.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    NewSceneDialog dialog = new NewSceneDialog(controller.getGameDesign());
+                    NewSceneDialog dialog = new NewSceneDialog(gameDesign);
                     DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Scene");
                     dd.setButtonListener(dialog);
                     dd.setValid(false);
@@ -141,7 +174,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             JButton buttonCreateTiledLayer = new JButton("New TiledLayer");
             buttonCreateTiledLayer.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    TiledLayerDialog nld = new TiledLayerDialog(controller.getGameDesign());
+                    TiledLayerDialog nld = new TiledLayerDialog(gameDesign);
                     DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
                     dd.setButtonListener(nld);
                     dd.setValid(false);
@@ -154,7 +187,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             JButton buttonCreateSprite = new JButton("New Sprite");
             buttonCreateSprite.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    SpriteDialog nld = new SpriteDialog(controller.getGameDesign());
+                    SpriteDialog nld = new SpriteDialog(gameDesign);
                     DialogDescriptor dd = new DialogDescriptor(nld, "Create new Sprite");
                     dd.setButtonListener(nld);
                     dd.setValid(false);

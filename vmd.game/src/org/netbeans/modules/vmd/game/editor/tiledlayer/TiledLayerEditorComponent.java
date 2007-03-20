@@ -65,7 +65,6 @@ import javax.swing.ToolTipManager;
 import org.netbeans.modules.vmd.game.dialog.DuplicateTiledLayerDialog;
 import org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog;
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Position;
@@ -74,7 +73,6 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 

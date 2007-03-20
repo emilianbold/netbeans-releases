@@ -20,7 +20,6 @@
 package org.netbeans.modules.vmd.game.model.adapter;
 
 import javax.swing.ComboBoxModel;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 
 /**
  *
@@ -31,13 +30,11 @@ public class GlobalRepositoryComboBoxModel extends GlobalRepositoryListAdapter i
 	private Object selectedItem;
 	
 	/** Creates a new instance of GlobalRepositoryComboBoxModel */
-	public GlobalRepositoryComboBoxModel(GlobalRepository gameDesign) {
-		super(gameDesign);
+	public GlobalRepositoryComboBoxModel() {
 	}
 
 	public void setSelectedItem(Object anItem) {
 		this.selectedItem = anItem;
-		
 	}
 
 	public Object getSelectedItem() {
