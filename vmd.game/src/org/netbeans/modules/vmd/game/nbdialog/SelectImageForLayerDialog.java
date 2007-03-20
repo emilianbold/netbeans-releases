@@ -58,8 +58,8 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 	private FileObject imgFile;
 	
 		
-	public SelectImageForLayerDialog(String path, Collection<FileObject> images) {
-		this.path = path;
+	public SelectImageForLayerDialog(String missingImagePath, Collection<FileObject> images) {
+		this.path = missingImagePath;
 		this.images = images;
 		initComponents();
 		init();

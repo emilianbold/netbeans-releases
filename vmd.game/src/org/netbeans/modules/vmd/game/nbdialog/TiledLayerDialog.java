@@ -25,6 +25,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,7 +48,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.vmd.game.GameController;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
@@ -54,6 +58,7 @@ import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -91,6 +96,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         labelImageFile = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         listImageFileName = new javax.swing.JList();
+        buttonImportImages = new javax.swing.JButton();
         panelPreview = new javax.swing.JPanel();
         labelImagePreview = new javax.swing.JLabel();
         panelImage = new javax.swing.JPanel();
@@ -116,6 +122,8 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         listImageFileName.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(listImageFileName);
 
+        buttonImportImages.setText("Import sample images ");
+
         org.jdesktop.layout.GroupLayout panelCustomizerLayout = new org.jdesktop.layout.GroupLayout(panelCustomizer);
         panelCustomizer.setLayout(panelCustomizerLayout);
         panelCustomizerLayout.setHorizontalGroup(
@@ -123,7 +131,8 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(panelCustomizerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(labelImageFile)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE))
+                    .add(buttonImportImages)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panelCustomizerLayout.setVerticalGroup(
@@ -131,7 +140,10 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(labelImageFile)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonImportImages)
+                .addContainerGap())
         );
 
         labelImagePreview.setText("Adjust tile size in pixels:");
@@ -176,7 +188,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                     .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sliderWidth, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 31, Short.MAX_VALUE)
                 .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelTileWidth, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(labelTileHeight)))
@@ -219,7 +231,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                             .add(org.jdesktop.layout.GroupLayout.LEADING, spinnerCols)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, spinnerRows, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE))
                         .addContainerGap())
-                    .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)))
+                    .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)))
         );
 
         panelLayerInfoLayout.linkSize(new java.awt.Component[] {spinnerCols, spinnerRows}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -227,7 +239,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         panelLayerInfoLayout.setVerticalGroup(
             panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, panelLayerInfoLayout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
+                .addContainerGap(37, Short.MAX_VALUE)
                 .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(fieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel3))
@@ -266,7 +278,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(panelLayerInfo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(panelLayerInfo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -287,6 +299,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroupLayers;
+    private javax.swing.JButton buttonImportImages;
     private javax.swing.JTextField fieldLayerName;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -375,6 +388,8 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		
 		this.sliderWidth.setEnabled(false);
 		this.sliderHeight.setEnabled(false);
+
+		this.buttonImportImages.addActionListener(this);
 	}
 	
 	private List<Map.Entry<FileObject, String>> getImageList() {
@@ -586,6 +601,49 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		if (e.getSource() == NotifyDescriptor.OK_OPTION) {
 			this.handleOKButton();
 		}
+		if (e.getSource() == this.buttonImportImages) {
+			try         {
+                this.handleImportImagesButton();
+            }
+            catch (IOException ex) {
+				ex.printStackTrace();
+            }
+		}
+	}
+	
+	private void handleImportImagesButton() throws IOException {
+		InputStream inImgPlatformTiles = SpriteDialog.class.getResourceAsStream("res/platform_tiles.png");
+		assert inImgPlatformTiles != null;
+		InputStream inImgTopViewTiles = SpriteDialog.class.getResourceAsStream("res/topview_tiles.png");
+		assert inImgTopViewTiles != null;
+		
+		Project p = MidpProjectSupport.getProjectForDocument(this.gameDesign.getDesignDocument());
+		SourceGroup sg = MidpProjectSupport.getSourceGroup(p);
+		FileObject foSrc = sg.getRootFolder();
+		
+		OutputStream topViewOut = null;
+		OutputStream platformOut = null;
+		try {
+			FileObject foPlatform = FileUtil.createData(foSrc, "platform_tiles.png");
+			FileObject foTop = FileUtil.createData(foSrc, "topview_tiles.png");
+
+			platformOut = foPlatform.getOutputStream();
+			FileUtil.copy(inImgPlatformTiles, platformOut);
+			topViewOut = foTop.getOutputStream();
+			FileUtil.copy(inImgTopViewTiles, topViewOut);
+		} 
+		finally {
+			try {
+				if (platformOut != null) {
+					platformOut.close();
+				}
+				if (topViewOut != null) {
+					topViewOut.close();
+				}
+			} catch (Exception ex) {
+			}
+		}
+		this.listImageFileName.setModel(this.getImageListModel());
 	}
 	
 	private void handleOKButton() {

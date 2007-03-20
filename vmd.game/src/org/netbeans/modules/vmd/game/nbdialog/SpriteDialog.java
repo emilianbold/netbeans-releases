@@ -25,9 +25,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -45,7 +50,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.vmd.game.GameController;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
@@ -54,6 +60,7 @@ import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -91,6 +98,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         labelImageFile = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         listImageFileName = new javax.swing.JList();
+        buttonImportImages = new javax.swing.JButton();
         panelPreview = new javax.swing.JPanel();
         labelImagePreview = new javax.swing.JLabel();
         panelImage = new javax.swing.JPanel();
@@ -114,6 +122,8 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         listImageFileName.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(listImageFileName);
 
+        buttonImportImages.setText("Import sample images ");
+
         org.jdesktop.layout.GroupLayout panelCustomizerLayout = new org.jdesktop.layout.GroupLayout(panelCustomizer);
         panelCustomizer.setLayout(panelCustomizerLayout);
         panelCustomizerLayout.setHorizontalGroup(
@@ -121,6 +131,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(panelCustomizerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(labelImageFile)
+                    .add(buttonImportImages)
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -129,7 +140,10 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(labelImageFile)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonImportImages)
+                .addContainerGap())
         );
 
         labelImagePreview.setText("Adjust tile size in pixels:");
@@ -268,6 +282,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroupLayers;
+    private javax.swing.JButton buttonImportImages;
     private javax.swing.JTextField fieldLayerName;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
@@ -347,6 +362,8 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		
 		this.sliderWidth.setEnabled(false);
 		this.sliderHeight.setEnabled(false);
+		
+		this.buttonImportImages.addActionListener(this);
 	}
 	
 	private List<Map.Entry<FileObject, String>> getImageList() {
@@ -558,6 +575,49 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		if (e.getSource() == NotifyDescriptor.OK_OPTION) {
 			this.handleOKButton();
 		}
+		if (e.getSource() == this.buttonImportImages) {
+			try         {
+                this.handleImportImagesButton();
+            }
+            catch (IOException ex) {
+				ex.printStackTrace();
+            }
+		}
+	}
+	
+	private void handleImportImagesButton() throws IOException {
+		InputStream inImgPlatformTiles = SpriteDialog.class.getResourceAsStream("res/platform_tiles.png");
+		assert inImgPlatformTiles != null;
+		InputStream inImgTopViewTiles = SpriteDialog.class.getResourceAsStream("res/topview_tiles.png");
+		assert inImgTopViewTiles != null;
+		
+		Project p = MidpProjectSupport.getProjectForDocument(this.gameDesign.getDesignDocument());
+		SourceGroup sg = MidpProjectSupport.getSourceGroup(p);
+		FileObject foSrc = sg.getRootFolder();
+		
+		OutputStream topViewOut = null;
+		OutputStream platformOut = null;
+		try {
+			FileObject foPlatform = FileUtil.createData(foSrc, "platform_tiles.png");
+			FileObject foTop = FileUtil.createData(foSrc, "topview_tiles.png");
+
+			platformOut = foPlatform.getOutputStream();
+			FileUtil.copy(inImgPlatformTiles, platformOut);
+			topViewOut = foTop.getOutputStream();
+			FileUtil.copy(inImgTopViewTiles, topViewOut);
+		} 
+		finally {
+			try {
+				if (platformOut != null) {
+					platformOut.close();
+				}
+				if (topViewOut != null) {
+					topViewOut.close();
+				}
+			} catch (Exception ex) {
+			}
+		}
+		this.listImageFileName.setModel(this.getImageListModel());
 	}
 	
 	private void handleOKButton() {
