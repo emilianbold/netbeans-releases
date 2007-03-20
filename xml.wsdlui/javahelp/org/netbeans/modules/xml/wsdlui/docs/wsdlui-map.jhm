@@ -23,6 +23,7 @@
 	<mapID target="wsdlui_refactoring" url="wsdl_editor_refactoring.html"/>
 	<mapID target="wsdlui_documentation" url="wsdl_editor_documentation.html"/>
 	<mapID target="wsdlui_find" url="wsdl_editor_find.html"/>
+
 	<mapID target="wsdlui_partner" url="wsdl_editor_partner.html"/>
 	<mapID target="wsdlui_partner_layout" url="wsdl_editor_partner_layout.html"/>
 	<mapID target="wsdlui_partner_nav" url="wsdl_editor_partner_nav.html"/>
@@ -30,6 +31,8 @@
 	<mapID target="wsdlui_partner_types" url="wsdl_editor_partner_types.html"/>
 	<mapID target="wsdlui_partner_types_editing" url="wsdl_editor_partner_types_editing.html"/>
 	<mapID target="wsdlui_partner_messages" url="wsdl_editor_partner_messages.html"/>
+	<mapID target="wsdlui_partner_messages_editing" url="wsdl_editor_partner_messages_editing.html"/>
+
 	<mapID target="wsdlui_creating" url="wsdl_editor_creating.html"/>
 	<mapID target="wsdlui_creating_existing" url="wsdl_editor_creating_existing.html"/>
 	<mapID target="wsdlui_validation" url="wsdl_editor_validation.html"/>
@@ -51,6 +54,7 @@
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ServiceNode" url="wsdl_editor_services.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.BindingNode" url="wsdl_editor_bindings.html"/>
 	<mapID target="nbdocs_org_netbeans_modules_usersguide_editing_csh_about_source_editor" url="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html"/>
+
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.DocumentationNode" url="wsdlui-documentationnode.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLImportNode" url="wsdlui-wsdlimportnode.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.XSDImportNode" url="wsdlui-xsdimportnode.html"/>
@@ -77,6 +81,5 @@
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingAndServiceNewType" url="CSH/generate_binding_service_port.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.ImportSchemaCustomizer" url="CSH/add_import.html"/>
         <mapID target="org.netbeans.modules.xml.wsdl.ui.view.ImportWSDLCreator" url="CSH/add_import.html"/>
-
 
 </map>

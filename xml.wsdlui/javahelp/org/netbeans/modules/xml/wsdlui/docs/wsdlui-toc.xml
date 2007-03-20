@@ -36,7 +36,8 @@
 				<tocitem text="Editing Partner Link Types Using the Partner View" target="wsdlui_partner_types_editing" />
 			</tocitem>
 			<tocitem text="Messages">
-				<tocitem text="Configuring Messages Using the Partner View" target="wsdlui_partner_messages" />
+				<tocitem text="Creating Messages Using the Partner View" target="wsdlui_partner_messages" />
+				<tocitem text="Editing Messages Using the Partner View" target="wsdlui_partner_messages_editing" />
 			</tocitem>
 		</tocitem>
 		<tocitem text="Working with WSDL Files">

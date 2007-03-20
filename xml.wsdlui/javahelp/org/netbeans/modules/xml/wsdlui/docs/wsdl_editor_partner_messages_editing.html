@@ -7,34 +7,39 @@
 <html>
 
 <head>
-<title>Creating Messages Using the Partner View</title>
+<title>Editing Messages Using the Partner View</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
 
-<h2>Creating Messages Using the Partner View</h2>
+<h2>Editing Messages Using the Partner View</h2>
 
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The Messages box contains one configuration box for each message in the WSDL file.</p>
-
-<p>A message contains one or more logical parts. For each part, you specify the name and the type of content.</p>
+<p>Once you have created a message using the Partner view, you can modify the message in various ways.</p>
 
 
 
-<p><b>To create a message:</b></p>
+<p><b>To change the name of a message:</b></p>
 
 <ol>
+  <li>Double-click the message name.</li>
+  <li>Change the name.</li>
+  <li>Press Enter.</li>
+</ol>
 
-  <li>Do one of the following:<br>
-  <ul>
-    <li>Click Add Message.</li>
-    <li>Drag the Message icon from the Palette onto the Messages box.</li>
-    <li>Right-click the Messages box and choose Add Message.</li>
-  </ul>
-  The configuration box for the message appears. The message contains one part. The part's type of content is undefined.</li>
+<p><b>To change the name of a part:</b></p>
 
+<ol>
+  <li>In the Part Name column, double-click the part name.</li>
+  <li>Change the name.</li>
+  <li>Press Enter.</li>
+</ol>
+
+<p><b>To change the type of content for a part:</b></p>
+
+<ul>
   <li>Do one of the following:</li>
   <ul>
     <li>In the Part Type or Element column, click the ellipsis (...) button. 
@@ -43,23 +48,29 @@
         Click OK.</li>
     <li>Drag an element or type from the Navigator window onto the Part Type or Element column.</li>
   </ul>
-
-</ol>
-
+</ul>
 
 
-<p><b>To add a part:</b></p>
+
+<p><b>To delete a part:</b></p>
 
 <ul>
-  <li>Do one of the following:<br>
+  <li>Do one of the following:</li>
   <ul>
-    <li>Click Add Part.<br>
-        A new row appears. The type of content is set to <tt>xs:string</tt>.</li>
-    <li>Right-click the configuration box for the message and choose Add Part from the pop-up menu.<br>
-        A new row appears. The type of content is undefined.</li>
-    <li>Drag an element or type from the Navigator window onto the configuration box for the message, 
-        and above or below an existing row.<br>
-        A new row appears. The type of content is set to the element or type that you selected.</li>
+    <li>Select the part and press Delete.</li>
+    <li>Select the part and click Remove Part.</li>
+    <li>Right-click the part and choose Delete from the pop-up menu.</li>
+  </ul>
+</ul>
+
+<p><b>To delete a message:</b></p>
+
+<ul>
+  <li>Do one of the following:</li>
+  <ul>
+    <li>Select the configuration box for the message and press Delete.</li>
+    <li>Select the configuration box for the message and click Remove Message.</li>
+    <li>Right-click the configuration box for the message and choose Delete from the pop-up menu.</li>
   </ul>
 </ul>
 
