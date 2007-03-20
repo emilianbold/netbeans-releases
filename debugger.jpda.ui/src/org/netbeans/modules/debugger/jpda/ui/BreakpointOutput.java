@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -148,8 +148,12 @@ PropertyChangeListener {
     
     public void propertyChange (PropertyChangeEvent evt) {
         if (JPDABreakpoint.PROP_VALIDITY.equals(evt.getPropertyName())) {
+            JPDABreakpoint bp = (JPDABreakpoint) evt.getSource();
+            if (bp.isHidden()) {
+                // Ignore hidden breakpoints
+                return ;
+            }
             if (JPDABreakpoint.VALIDITY.INVALID.equals(evt.getNewValue())) {
-                JPDABreakpoint bp = (JPDABreakpoint) evt.getSource();
                 String msg = bp.getValidityMessage();
                 synchronized (lock) {
                     if (ioManager == null) {
@@ -175,7 +179,6 @@ PropertyChangeListener {
                     }
                 }
             } else if (JPDABreakpoint.VALIDITY.VALID.equals(evt.getNewValue())) {
-                JPDABreakpoint bp = (JPDABreakpoint) evt.getSource();
                 synchronized (lock) {
                     if (ioManager == null) {
                         lookupIOManager ();
