@@ -103,7 +103,7 @@ implements
         
         //mDataObject = sobj;
         
-        //setMIMEType("text/xml");     // NOI18N
+        setMIMEType("text/xml");     // NOI18N
         //TODO: we need to use below one eventually
         //setMIMEType(WSDLDataLoader.MIME_TYPE);
     }
