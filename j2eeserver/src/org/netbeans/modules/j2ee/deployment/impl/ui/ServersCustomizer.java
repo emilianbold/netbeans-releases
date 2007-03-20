@@ -145,7 +145,6 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
 
         setLayout(new java.awt.GridBagLayout());
 
-        servers.setBorder(null);
         servers.setPreferredSize(new java.awt.Dimension(220, 400));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
