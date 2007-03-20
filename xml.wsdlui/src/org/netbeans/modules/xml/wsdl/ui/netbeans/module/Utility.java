@@ -239,6 +239,41 @@ public class Utility {
         }
     }
     
+    public static void addNamespacePrefix(WSDLComponent comp, WSDLModel model, String prefix) {
+        if (comp != null && model != null) {
+            addNamespacePrefix(comp.getModel(), model, prefix);
+        }
+    }
+    
+    private static void addNamespacePrefix(WSDLModel imported, WSDLModel model, String prefix) {
+        assert model != null;
+        if(imported != null) {
+            Definitions definitions = model.getDefinitions();
+            String targetNamespace = imported.getDefinitions().getTargetNamespace();
+            String computedPrefix = null;
+
+            if(targetNamespace != null) {
+                if (Utility.getNamespacePrefix(targetNamespace, model) != null) {
+                    //already exists, doesnt need to be added
+                    return;
+                }
+                //Use the prefix (in parameter) or generate new one.
+                if(prefix != null) {
+                    computedPrefix = prefix;
+                } else {
+                    computedPrefix = NameGenerator.getInstance().generateNamespacePrefix(null, model.getDefinitions());
+                }
+                boolean isAlreadyInTransaction = Utility.startTransaction(model);
+                ((AbstractDocumentComponent)definitions).addPrefix(computedPrefix, targetNamespace);
+
+                Utility.endTransaction(model, isAlreadyInTransaction);
+
+            }
+
+        }
+        
+    }
+
     public static void addNamespacePrefix(Element schemaElement,
             WSDLComponent element,
             String prefix) {
@@ -269,7 +304,7 @@ public class Utility {
                     computedPrefix = NameGenerator.getInstance().generateNamespacePrefix(null, model.getDefinitions());
                 }
                 boolean isAlreadyInTransaction = Utility.startTransaction(model);
-                ((AbstractDocumentComponent)definitions).addPrefix(computedPrefix, schema.getTargetNamespace());
+                ((AbstractDocumentComponent)definitions).addPrefix(computedPrefix, targetNamespace);
 
                 Utility.endTransaction(model, isAlreadyInTransaction);
 
@@ -415,7 +450,7 @@ public class Utility {
     public static void addSchemaImport(SchemaComponent comp1, WSDLModel wsdlModel) {
         Map<String, String> existingLocationToNamespaceMap = new HashMap<String, String>();
         
-        FileObject wsdlFileObj = (FileObject) wsdlModel.getModelSource().getLookup().lookup(FileObject.class);
+        FileObject wsdlFileObj = wsdlModel.getModelSource().getLookup().lookup(FileObject.class);
         URI wsdlFileURI = FileUtil.toFile(wsdlFileObj).toURI();
         
         Definitions def = wsdlModel.getDefinitions();
@@ -471,7 +506,7 @@ public class Utility {
             if (schemaTNS != null && 
                     !schemaTNS.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)) {
 
-                FileObject fo = (FileObject) model.getModelSource().getLookup().lookup(FileObject.class);
+                FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
                 
                 
                 if (fo != null) {
@@ -515,6 +550,49 @@ public class Utility {
             }
         }
         
-    }        
+    } 
+    
+    public static void addWSDLImport(WSDLComponent comp, WSDLModel wsdlModel) {
+        if (comp != null && wsdlModel != null && comp.getModel() != wsdlModel) {
+            
+            String importedWSDLTargetNamespace = comp.getModel().getDefinitions().getTargetNamespace();
+            
+            if (importedWSDLTargetNamespace != null) {
+                Import wsdlImport = wsdlModel.getFactory().createImport();
+                wsdlImport.setNamespace(importedWSDLTargetNamespace);
+                
+                FileObject wsdlFileObj = wsdlModel.getModelSource().getLookup().lookup(FileObject.class);
+                URI wsdlFileURI = FileUtil.toFile(wsdlFileObj).toURI();
+                
+                FileObject fo = comp.getModel().getModelSource().getLookup().lookup(FileObject.class);
+                String path = null;
+                if (!FileUtil.toFile(fo).toURI().equals(wsdlFileURI)) {
+                    DefaultProjectCatalogSupport catalogSupport = DefaultProjectCatalogSupport.getInstance(wsdlFileObj);
+                    if (catalogSupport.needsCatalogEntry(wsdlFileObj, fo)) {
+                        // Remove the previous catalog entry, then create new one.
+                        URI uri;
+                        try {
+                            uri = catalogSupport.getReferenceURI(wsdlFileObj, fo);
+                            catalogSupport.removeCatalogEntry(uri);
+                            catalogSupport.createCatalogEntry(wsdlFileObj, fo);
+                            path = catalogSupport.getReferenceURI(wsdlFileObj, fo).toString();
+                        } catch (URISyntaxException use) {
+                            ErrorManager.getDefault().notify(use);
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                        } catch (CatalogModelException cme) {
+                            ErrorManager.getDefault().notify(cme);
+                        }
+                    } else {
+                        path = RelativePath.getRelativePath(FileUtil.toFile(wsdlFileObj).getParentFile(), FileUtil.toFile(fo));
+                    }
+                }
+                
+                if (path != null) wsdlImport.setLocation(path);
+                
+                wsdlModel.getDefinitions().addImport(wsdlImport);
+            }
+        }
+    }
         
 }

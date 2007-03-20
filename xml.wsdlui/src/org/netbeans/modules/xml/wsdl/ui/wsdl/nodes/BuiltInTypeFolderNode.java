@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -72,20 +73,21 @@ public class BuiltInTypeFolderNode extends AbstractNode {
         return Utilities.mergeImages(icon, ICON, 8, 8);
     }
     
-    public static class BuiltInTypeNodeChildren extends Children.Keys {
-        SchemaModel model = null;
+    public static class BuiltInTypeNodeChildren extends Children.Keys<GlobalSimpleType> {
+        private SchemaModel model = null;
+        private Set<GlobalSimpleType> emptySet = Collections.emptySet();
         
         BuiltInTypeNodeChildren(SchemaModel model) {
             this.model = model;
         }
         
         @Override
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(GlobalSimpleType simpleType) {
             List<Class<? extends SchemaComponent>> filters = new ArrayList<Class<? extends SchemaComponent>>();
             filters.add(PrimitiveSimpleType.class);
             CategorizedSchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
                     model, filters, Lookup.EMPTY);
-            Node node = factory.createNode((GlobalSimpleType) key);
+            Node node = factory.createNode(simpleType);
             return new Node[] { new ChildLessNode(node) };
         }
         
@@ -97,21 +99,16 @@ public class BuiltInTypeFolderNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(emptySet);
             
         }
         
-        @SuppressWarnings("unchecked")
         private void resetKeys() {
-            ArrayList keys = new ArrayList();
+            ArrayList<GlobalSimpleType> keys = new ArrayList<GlobalSimpleType>();
             keys.addAll(model.getSchema().getSimpleTypes());
             this.setKeys(keys);
         }
         
-        @Override
-        public boolean remove(final Node[] arr) {
-            return super.remove(arr);
-        }
     }
     
     private static class ChildLessNode extends FilterNode {

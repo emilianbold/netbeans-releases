@@ -29,43 +29,28 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.beans.PropertyVetoException;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
-import org.netbeans.modules.xml.schema.model.SchemaModelReference;
-import org.netbeans.modules.xml.schema.ui.nodes.SchemaNodeFactory;
-import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
-import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypeOrMessagePartProvider.ParameterType;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ImportFolderNode;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageFolderNode;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
-import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.XSDBuiltInTypeFolderNode;
-import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.XSDTypesNode;
+import org.netbeans.modules.xml.wsdl.ui.view.ElementOrTypeChooserPanel;
+import org.netbeans.modules.xml.xam.ui.customizer.FolderNode;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -180,8 +165,8 @@ public class ElementOrTypeOrMessagePartPropertyPanel extends JPanel {
 
 
         public WsdlPartnerLinkTypeTreeView(ElementOrTypeOrMessagePart elementOrType) {
-            initGUI();
             previousSelection = elementOrType;
+            initGUI();
         }
 
 
@@ -213,7 +198,7 @@ public class ElementOrTypeOrMessagePartPropertyPanel extends JPanel {
             btv.setPopupAllowed( false );
             btv.expandNode(mRootNode);
             btv.setDefaultActionAllowed(false);
-            Utility.expandNodes(btv, 4, mRootNode);
+            Utility.expandNodes(btv, 2, mRootNode);
             manager.setExploredContext(mRootNode);
             this.add(btv, BorderLayout.CENTER);
             btv.setName(NbBundle.getMessage(ElementOrTypeOrMessagePartPropertyPanel.class, "ElementOrTypeOrMessagePartPropertyPanel.btv.name")); // NOI18N
@@ -230,47 +215,58 @@ public class ElementOrTypeOrMessagePartPropertyPanel extends JPanel {
         }
 
         private void populateRootNode() {
-            //show current messages
-            MessageFolderNode msgFolderNode = new MessageFolderNode(mModel.getDefinitions());
-            mRootNode.getChildren().add(new Node[] {new EnabledNode(msgFolderNode)});
+            MessagePartChooserHelper wsdlHelper = new MessagePartChooserHelper(mModel);
+            wsdlHelper.populateNodes(mRootNode);
             
-            //show wsdl imports
-            ImportFolderNode impFolderNode = new ImportFolderNode(mModel.getDefinitions());
-            mRootNode.getChildren().add(new Node[] {new EnabledNode(impFolderNode)});
+            Node elementOrTypeFolderNode = new FolderNode(new Children.Array());
+            elementOrTypeFolderNode.setDisplayName(NbBundle.getMessage(ElementOrTypeOrMessagePartPropertyPanel.class, "LBL_ElementOrType_DisplayName"));
+            ElementOrTypeChooserHelper schemaHelper = new ElementOrTypeChooserHelper(mModel);
+            schemaHelper.populateNodes(elementOrTypeFolderNode);
+            mRootNode.getChildren().add(new Node[] {elementOrTypeFolderNode});
             
-            
-            //type in current wsdl document
-            Types types = mModel.getDefinitions().getTypes();
-            if(types != null) {
-                XSDTypesNode typesNode = new XSDTypesNode(NodesFactory.getInstance().create(types), types.getSchemas());
-                mRootNode.getChildren().add(new Node[] {new EnabledNode(typesNode)});
-            }
+            if (previousSelection != null) {
+                ParameterType type = previousSelection.getParameterType();
+                Node selected = null;
+                switch (type) {
+                case ELEMENT:
+                    selected = schemaHelper.selectNode(previousSelection.getElement());
+                    break;
+                case TYPE:
+                    selected = schemaHelper.selectNode(previousSelection.getType());
+                    break;
+                case MESSAGEPART:
+                    selected = wsdlHelper.selectNode(previousSelection.getMessagePart());
+                    break;
+                case NONE :
 
-            // built in schema types
-            XSDBuiltInTypeFolderNode builtInTypes = new XSDBuiltInTypeFolderNode();
-            mRootNode.getChildren().add(new Node[] {new EnabledNode(builtInTypes)});
-
-            //imported schemas
-            List<Class<? extends SchemaComponent>> filters = new ArrayList<Class<? extends SchemaComponent>>();
-            filters.add(GlobalSimpleType.class);
-            filters.add(GlobalComplexType.class);
-            filters.add(GlobalElement.class);
-            filters.add(SchemaModelReference.class);
-            Collection<Import> importedSchemas = mModel.getDefinitions().getImports();
-            for (Import imp : importedSchemas) {
-                List list = imp.getModel().findSchemas(imp.getNamespace());
-                if (list != null && list.size() > 0) {
-                    Schema schema = (Schema) list.get(0);
-                    SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
-                            schema.getModel(), filters, Lookup.EMPTY);
-                    Node node = factory.createNode(schema);
-                    mRootNode.getChildren().add(new Node[] { new EnabledNode(node) });
                 }
+                if (selected != null) {
+                    selectNode(selected);
+                    firePropertyChange(ElementOrTypeChooserPanel.PROP_ACTION_APPLY, false, true);
+                }
+            } else {
+                selectNode(mRootNode);
             }
-            
+
         }
 
+        private void selectNode(Node node) {
+            final Node finalNode = node;
+            Runnable run = new Runnable() {
+                public void run() {
+                    if(manager != null) {
+                        try {
+                            manager.setExploredContextAndSelection(finalNode, new Node[] {finalNode});
+                            btv.expandNode(finalNode);
+                        } catch(PropertyVetoException ex) {
+                            //ignore this
+                        }
 
+                    }
+                }
+            };
+            SwingUtilities.invokeLater(run);
+        }
 
         class ExplorerPropertyChangeListener implements PropertyChangeListener {
 
@@ -306,49 +302,6 @@ public class ElementOrTypeOrMessagePartPropertyPanel extends JPanel {
                 }
             }
         }
-    }
-    
-    /*
-     * Filternode to make the nodes look enabled.
-     */
-    public static class EnabledNode extends FilterNode {
-        private static Pattern pattern = Pattern.compile("(^<font.*>)(.*)(<.*>$)");
-
-        public EnabledNode(Node node) {
-            super(node, new EnabledChildren(node));
-        }
-        
-        @Override
-        public String getHtmlDisplayName()
-        {
-            //strips off font tag, to make it not grey. IZ  
-            String retValue = super.getHtmlDisplayName();
-            if(retValue == null) retValue = getDisplayName();
-            
-            
-            if(retValue != null) {
-                Matcher matcher  = pattern.matcher(retValue);
-                if (matcher.find()) {
-                    return matcher.group(2);
-                }
-            }
-            return retValue;
-        }
-        
-        
-    }
-    
-    private static class EnabledChildren extends FilterNode.Children {
-
-        public EnabledChildren(Node node) {
-            super(node);
-        }
-        
-        @Override
-        protected Node[] createNodes(Node n) {
-             return new Node[] {new EnabledNode(n)};
-        }
-        
     }
     
     

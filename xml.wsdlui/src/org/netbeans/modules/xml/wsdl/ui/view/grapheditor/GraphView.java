@@ -191,12 +191,14 @@ public class GraphView extends JPanel  {
         return messagesWidget.getParentWidget() != null;
     }
 
+    @Override
     public void requestFocus() {
         super.requestFocus();
         // Ensure the graph widgets have the focus.
         scene.getView().requestFocus();
     }
 
+    @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         // Ensure the graph widgets have the focus.

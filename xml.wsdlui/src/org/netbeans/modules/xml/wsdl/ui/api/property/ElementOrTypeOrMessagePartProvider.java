@@ -24,6 +24,7 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 
 public class ElementOrTypeOrMessagePartProvider {
@@ -59,6 +60,7 @@ public class ElementOrTypeOrMessagePartProvider {
                 switch (pType) {
                 case ELEMENT:
                     Utility.addNamespacePrefix(o.getElement().getModel().getSchema(), extensibilityElement.getModel(), null);
+                    Utility.addSchemaImport(o.getElement(), extensibilityElement.getModel());
                     extensibilityElement.setAttribute(elementAttributeName, o.toString());
                     extensibilityElement.setAttribute(typeAttributeName, null);
                     extensibilityElement.setAttribute(messageAttributeName, null);
@@ -66,6 +68,7 @@ public class ElementOrTypeOrMessagePartProvider {
                     break;
                 case TYPE:
                     Utility.addNamespacePrefix(o.getType().getModel().getSchema(), extensibilityElement.getModel(), null);
+                    Utility.addSchemaImport(o.getType(), extensibilityElement.getModel());
                     extensibilityElement.setAttribute(elementAttributeName, null);
                     extensibilityElement.setAttribute(typeAttributeName, o.toString());
                     extensibilityElement.setAttribute(messageAttributeName, null);
@@ -74,14 +77,16 @@ public class ElementOrTypeOrMessagePartProvider {
                 case MESSAGEPART:
                     Part part = o.getMessagePart();
                     Message message = (Message)part.getParent();
-                    String tns = message.getModel().getDefinitions().getTargetNamespace();
+                    Utility.addNamespacePrefix(part, extensibilityElement.getModel(), null);
+                    Utility.addWSDLImport(part, extensibilityElement.getModel());
                     QName qname = new QName(message.getName());
+                    
+                    String tns = message.getModel().getDefinitions().getTargetNamespace();
                     if (tns != null) {
                         String prefix = Utility.getNamespacePrefix(tns, extensibilityElement.getModel()); 
                         qname = prefix != null ? new QName(tns, message.getName(), prefix) :
-                        new QName(tns, message.getName());
+                                                                new QName(tns, message.getName());
                     }
-                    
                     extensibilityElement.setAttribute(messageAttributeName, Utility.fromQNameToString(qname));
                     extensibilityElement.setAttribute(partAttributeName, part.getName());
                     extensibilityElement.setAttribute(elementAttributeName, null);
@@ -96,6 +101,7 @@ public class ElementOrTypeOrMessagePartProvider {
             } finally {                
                 getModel().endTransaction();
             }
+            ActionHelper.selectNode(extensibilityElement);
         }
     }
 

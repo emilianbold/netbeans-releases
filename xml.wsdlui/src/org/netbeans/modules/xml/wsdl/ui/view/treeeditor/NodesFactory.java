@@ -19,13 +19,9 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
-import java.io.IOException;
 import java.util.List;
 
-import org.netbeans.modules.xml.schema.model.Schema;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
 import org.netbeans.modules.xml.schema.ui.nodes.SchemaNodeFactory;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -51,6 +47,7 @@ import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.Types;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
@@ -60,7 +57,6 @@ import org.netbeans.modules.xml.wsdl.ui.cookies.SaveCookieDelegate;
 import org.netbeans.modules.xml.xam.Component;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -194,6 +190,10 @@ public class NodesFactory {
         Lookup lookup = new AbstractLookup(content);
         Node schemaRootNode = new EmbeddedSchemaNode(node, component, lookup);
         return schemaRootNode;
+    }
+    
+    public Node createFilteredDefinitionNode(Definitions def, List<Class<? extends WSDLComponent>> filters) {
+        return new DefinitionsNode(def, filters);
     }
 
 }

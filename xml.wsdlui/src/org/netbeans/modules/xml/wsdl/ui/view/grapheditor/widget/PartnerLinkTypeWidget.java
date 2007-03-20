@@ -44,9 +44,13 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.dom.Utils;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.NewAction;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -110,6 +114,19 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
                 new TextFieldInplaceEditor() {
 
             public void setText(Widget widget, String text) {
+                String errorMessage = null;
+                if (text == null || text.trim().length() == 0) {
+                    errorMessage = NbBundle.getMessage(PartnerLinkTypeWidget.class, "MSG_BlankPartnerLinkTypeName", text);
+                } else if (!Utils.isValidNCName(text)) { 
+                    errorMessage = NbBundle.getMessage(PartnerLinkTypeWidget.class, "MSG_InvalidPartnerLinkTypeName", text);
+                }
+                
+                if (errorMessage != null) {
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(errorMessage, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
+                    return;
+                }
+                
                 Model model = mPartnerLinkType.getModel();
                 try {
                     if (model.startTransaction()) {
