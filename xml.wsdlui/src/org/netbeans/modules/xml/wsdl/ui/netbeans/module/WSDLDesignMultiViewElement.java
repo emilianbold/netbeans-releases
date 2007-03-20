@@ -308,9 +308,9 @@ public class WSDLDesignMultiViewElement extends TopComponent
         return this;
     }
 
-    @SuppressWarnings("deprecation")
-    public void requestFocus() {
-        super.requestFocus();
+    @Override
+    public void requestActive() {
+        super.requestActive();
         // Ensure the graph widgets have the focus.
         // Also helps to make F1 open the correct help topic.
         if (graphComponent != null) {
@@ -318,21 +318,12 @@ public class WSDLDesignMultiViewElement extends TopComponent
         }
     }
 
-    @SuppressWarnings("deprecation")
-    public boolean requestFocusInWindow() {
-        boolean retVal = super.requestFocusInWindow();
-        // Ensure the graph widgets have the focus.
-        // Also helps to make F1 open the correct help topic.
-        if (graphComponent != null) {
-            return graphComponent.requestFocusInWindow();
-        }
-        return retVal;
-    }
-
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx(WSDLDesignMultiViewDesc.class);
     }
 
+    @Override
     public void readExternal(ObjectInput in) throws
             IOException, ClassNotFoundException {
         super.readExternal(in);
@@ -355,6 +346,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
         }
     }
 
+    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(wsdlDataObject);

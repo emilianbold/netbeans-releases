@@ -98,8 +98,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     private void initialize() {
 	manager = new ExplorerManager();
         // Install our own actions.
-        CallbackSystemAction globalFindAction =
-                (CallbackSystemAction) SystemAction.get(FindAction.class);
+        CallbackSystemAction globalFindAction = SystemAction.get(FindAction.class);
         Object mapKey = globalFindAction.getActionMapKey();
         Action action = new WSDLFindAction();
         ActionMap map = getActionMap();
@@ -213,14 +212,14 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         super.componentActivated();
 	ExplorerUtils.activateActions(manager, true);
         mObj.getWSDLEditorSupport().syncModel();
-        updateGroupVisibility(false);
+        updateGroupVisibility();
     }
     
     @Override
     public void componentDeactivated() {
 	ExplorerUtils.activateActions(manager, false);
         super.componentDeactivated();
-        updateGroupVisibility(true);
+        updateGroupVisibility();
     }
     
     @Override
@@ -236,32 +235,23 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         }
     }
 
-    @SuppressWarnings("deprecation")
-    public void requestFocus() {
-        super.requestFocus();
+    @Override
+    public void requestActive() {
+        super.requestActive();
         // For Help to work properly, need to take focus.
         if (categoryPane != null) {
             categoryPane.getComponent().requestFocus();
         }
     }
-
-    @SuppressWarnings("deprecation")
-    public boolean requestFocusInWindow() {
-        boolean retVal = super.requestFocusInWindow();
-        // For Help to work properly, need to take focus.
-        if (categoryPane != null) {
-            return categoryPane.getComponent().requestFocusInWindow();
-        }
-        return retVal;
-    }
-
+    
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx(WSDLTreeViewMultiViewDesc.class);
     }
 
     private static Boolean groupVisible = null;
     
-    private void updateGroupVisibility(boolean closeGroup) {
+    private void updateGroupVisibility() {
         WindowManager wm = WindowManager.getDefault();
         final TopComponentGroup group = wm.findTopComponentGroup("wsdl_ui"); // NOI18N
         if (group == null) {
