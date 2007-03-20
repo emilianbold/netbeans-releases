@@ -2502,7 +2502,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     return toExclude != e && Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
-                            e.getEnclosingElement().getKind() == PACKAGE &&
                             trees.isAccessible(scope, (TypeElement)e) &&
                             isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
                 }
@@ -2981,7 +2980,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Trees trees = controller.getTrees();
             acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
-                    return e.getSimpleName().contentEquals(simpleName) && e.getEnclosingElement().getKind() == PACKAGE &&
+                    return e.getSimpleName().contentEquals(simpleName) &&
                             trees.isAccessible(scope, (TypeElement)e);
                 }
             };
