@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- XXX add actions -->
     <folder name="Actions">
         <folder name="LocalHistory">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.localhistory.resources.Bundle"/>
             <file name="org-netbeans-modules-localhistory-ui-view-ShowLocalHistoryAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction"/>
             </file>
@@ -36,4 +37,25 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="LocalHistory.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.localhistory.options.LocalHistoryOptions"/>
+            </file>
+        </folder>
+        <folder name="Actions">
+            <folder name="LocalHistory">
+                <file name="ShowLocalHistoryAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/LocalHistory/org-netbeans-modules-localhistory-ui-view-ShowLocalHistoryAction.instance"/>
+                </file>
+                <file name="RevertDeletedAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/LocalHistory/org-netbeans-modules-localhistory-ui-actions-RevertDeletedAction.instance"/>
+                </file>
+                <file name="RevertToAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/LocalHistory/org-netbeans-modules-localhistory-ui-revert-RevertToAction.instance"/>
+                </file>            
+            </folder>                                
+        </folder>                                
+    </folder>
+        
 </filesystem>
