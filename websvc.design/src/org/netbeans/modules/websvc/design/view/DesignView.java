@@ -34,6 +34,9 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
+import org.netbeans.modules.websvc.design.util.Util;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -42,19 +45,26 @@ import org.openide.filesystems.FileObject;
  * @author Ajit Bhate
  */
 public class DesignView extends JPanel  {
+    private FileObject implementationClass;
+    private Service service;
+    private WSDLModel wsdlModel;
     /** Manages the state of the widgets and corresponding objects. */
-    private transient Scene scene;
+    private Scene scene;
     /** Manages the zoom level. */
     private ZoomManager zoomer;
-    private transient Widget mMainLayer;
-    private transient Widget contentWidget;
-    private transient OperationsWidget operationsWidget;
+    private Widget mMainLayer;
+    private Widget contentWidget;
+    private OperationsWidget operationsWidget;
     /**
      * Creates a new instance of GraphView.
      */
     public DesignView(Service service, FileObject implementationClass) {
         super(new BorderLayout());
 
+        this.service = service;
+        this.implementationClass = implementationClass;
+        this.wsdlModel = getWSDLModel();
+        
         scene = new Scene();
         zoomer = new ZoomManager(scene);
         // add actions
@@ -71,7 +81,7 @@ public class DesignView extends JPanel  {
                 LayoutFactory.SerialAlignment.JUSTIFY, 16));
         mMainLayer.addChild(contentWidget);
         //add operations widget
-        operationsWidget = new OperationsWidget(scene,service,implementationClass);
+        operationsWidget = new OperationsWidget(scene,service,implementationClass, wsdlModel);
         contentWidget.addChild(operationsWidget);
 
         JComponent sceneView = scene.createView();
@@ -116,4 +126,19 @@ public class DesignView extends JPanel  {
         return scene.getView().requestFocusInWindow();
     }
 
+    private WSDLModel getWSDLModel(){
+        String localWsdlUrl = service.getLocalWsdlFile();
+        if (localWsdlUrl!=null) { //WS from e
+            JAXWSSupport support = JAXWSSupport.getJAXWSSupport(implementationClass);
+            if (support!=null) {
+                FileObject localWsdlFolder = support.getLocalWsdlFolderForService(service.getName(),false);
+                if (localWsdlFolder!=null) {
+                    FileObject localWsdl = localWsdlFolder.getFileObject(localWsdlUrl);
+                    return localWsdl==null?null:Util.getWSDLModel(localWsdl,true);
+                }
+            }
+        }
+        return null;
+    }
+    
 }

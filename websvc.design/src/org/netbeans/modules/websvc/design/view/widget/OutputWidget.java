@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.awt.Image;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
+import org.netbeans.modules.xml.wsdl.model.Output;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -39,17 +39,17 @@ public class OutputWidget extends RoundedRectangleWidget {
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/output.png"); // NOI18N   
 
-    private WsdlOperation operation;
+    private Output output;
     private transient ImageLabelWidget headerLabelWidget;
 
     /** 
      * Creates a new instance of OperationWidget 
      * @param scene 
-     * @param   service  
+     * @param output  
      */
-    public OutputWidget(Scene scene, WsdlOperation operation) {
+    public OutputWidget(Scene scene, Output output) {
         super(scene);
-        this.operation = operation;
+        this.output = output;
         setRadius(GAP);
         setBorderColor(BORDER_COLOR);
         setTitleColor(TITLE_COLOR,TITLE_COLOR2);
@@ -57,12 +57,11 @@ public class OutputWidget extends RoundedRectangleWidget {
     }
     
     private void createContent() {
-        if (operation==null) return;
-        
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
-                NbBundle.getMessage(OperationWidget.class, "LBL_Output", operation.getReturnTypeName()), 
+        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, output==null?
+                NbBundle.getMessage(OperationWidget.class, "LBL_OutputNone"): 
+                NbBundle.getMessage(OperationWidget.class, "LBL_Output", output.getName()), 
                 null);
         addChild(0,headerLabelWidget);
         setTitleWidget(headerLabelWidget);

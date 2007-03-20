@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.awt.Image;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
+import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -39,7 +39,7 @@ public class FaultsWidget extends RoundedRectangleWidget {
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/fault.png"); // NOI18N   
 
-    private WsdlOperation operation;
+    private Operation operation;
     private transient ImageLabelWidget headerLabelWidget;
 
     /** 
@@ -47,7 +47,7 @@ public class FaultsWidget extends RoundedRectangleWidget {
      * @param scene
      * @param operation  
      */
-    public FaultsWidget(Scene scene, WsdlOperation operation) {
+    public FaultsWidget(Scene scene, Operation operation) {
         super(scene);
         this.operation = operation;
         setRadius(GAP);

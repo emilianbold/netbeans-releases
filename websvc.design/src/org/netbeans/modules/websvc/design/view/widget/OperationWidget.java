@@ -27,9 +27,9 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
+import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -51,7 +51,7 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
     private static final Image IMAGE_NOTIFICATION  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/notification_operation.png"); // NOI18N   
 
-    private WsdlOperation operation;
+    private Operation operation;
     
     private transient Widget contentWidget;
     private transient HeaderWidget headerWidget;
@@ -69,7 +69,7 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
      * @param scene
      * @param operation
      */
-    public OperationWidget(Scene scene, WsdlOperation operation) {
+    public OperationWidget(Scene scene, Operation operation) {
         super(scene);
         setBorderColor(BORDER_COLOR);
         setTitleColor(TITLE_COLOR,TITLE_COLOR2);
@@ -106,10 +106,10 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
 
         String typeOfOperation ="";
         Image image = null;
-        if(operation.getReturnTypeName()==null) {
+        if(operation.getOutput()==null) {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_OneWay");
             image = IMAGE_ONE_WAY;
-        } else if (!operation.getParameters().isEmpty()) {
+        } else if (operation.getInput()!=null) {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_RequestResponse");
             image = IMAGE_REQUEST_RESPONSE;
         } else {
@@ -120,8 +120,8 @@ public class OperationWidget extends RoundedRectangleWidget implements Expandabl
                 "("+typeOfOperation+")");
         headerWidget.addChild(0,headerLabelWidget);
 
-        inputWidget = new ParametersWidget(getScene(),operation);
-        outputWidget = new OutputWidget(getScene(),operation);
+        inputWidget = new ParametersWidget(getScene(),operation.getInput());
+        outputWidget = new OutputWidget(getScene(),operation.getOutput());
         faultWidget = new FaultsWidget(getScene(),operation);
         descriptionWidget = new LabelWidget(getScene(),"description");
         contentWidget.addChild(inputWidget);

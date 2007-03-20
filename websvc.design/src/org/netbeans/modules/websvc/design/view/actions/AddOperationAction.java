@@ -34,6 +34,7 @@ import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -48,6 +49,9 @@ import org.openide.util.NbBundle;
  */
 public class AddOperationAction extends AbstractAction {
     
+    
+    public static final String PROPERTY_OPERATION_ADDED = "operation-added";
+
     private FileObject implementationClass;
     private Service service;
     private File wsdlFile;
@@ -96,7 +100,7 @@ public class AddOperationAction extends AbstractAction {
                         GlobalElement parameterType = panel.getParameterType();
                         GlobalElement returnType = panel.getReturnType();
                         GlobalElement faultType = panel.getFaultType();
-                        generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
+                        Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
                                 operationName, parameterType, returnType, faultType);
                         generatorHelper.generateJavaArtifacts(service, implementationClass, operationName);
                         
@@ -111,13 +115,14 @@ public class AddOperationAction extends AbstractAction {
                         }catch(IOException e){
                             ErrorManager.getDefault().notify(e);
                         }
+                        AddOperationAction.this.firePropertyChange(PROPERTY_OPERATION_ADDED,null,operation);
                     }
                 }
             });
             
             Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
             dialog.setVisible(true);
-        } else { // WS from Java
+         } else { // WS from Java
             AddWsOperationHelper strategy = new AddWsOperationHelper(getName());
             try {
                 String className = _RetoucheUtil.getMainClassName(implementationClass);

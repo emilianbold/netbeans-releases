@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
@@ -85,7 +86,7 @@ public class OperationGeneratorHelper {
     
     /** This method adds new operation to wsdl file
      */
-    public void addWsOperation(WSDLModel wsdlModel,
+    public Operation addWsOperation(WSDLModel wsdlModel,
             String portTypeName,
             String operationName,
             GlobalElement parameterType,
@@ -224,12 +225,13 @@ public class OperationGeneratorHelper {
                     binding.addBindingOperation(bOp);
                     //TODO: Need to handle faults!!!
                 }else{
-                    return; //Not SOAP binding, we cannot do anything
+                    return null; //Not SOAP binding, we cannot do anything
                 }
                 
             }
         }
         wsdlModel.endTransaction();
+        return operation;
     }
     /** call wsimport to generate java artifacts
      * generate WsdlModel to find information about the new operation

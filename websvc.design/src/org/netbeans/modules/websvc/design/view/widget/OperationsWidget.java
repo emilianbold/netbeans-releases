@@ -21,8 +21,8 @@ package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JToolBar;
@@ -35,6 +35,9 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
 import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -43,7 +46,8 @@ import org.openide.util.Utilities;
  *
  * @author Ajit Bhate
  */
-public class OperationsWidget extends RoundedRectangleWidget implements ExpandableWidget{
+public class OperationsWidget extends RoundedRectangleWidget 
+        implements ExpandableWidget, PropertyChangeListener{
     
     private static final Color BORDER_COLOR = new Color(180,180,255);
     private static final Color TITLE_COLOR = new Color(204,204,255);
@@ -52,7 +56,7 @@ public class OperationsWidget extends RoundedRectangleWidget implements Expandab
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/operation.png"); // NOI18N   
 
-    private transient WsdlService wsdlService;
+    private transient WSDLModel wsdlModel;
     private transient Action addAction;
 
     private transient Widget contentWidget;
@@ -68,43 +72,26 @@ public class OperationsWidget extends RoundedRectangleWidget implements Expandab
      * @param scene 
      * @param service 
      * @param implementationClass 
+     * @param wsdlModel 
      */
-    public OperationsWidget(Scene scene, Service service, FileObject implementationClass) {
+    public OperationsWidget(Scene scene, Service service, FileObject implementationClass, WSDLModel wsdlModel) {
         super(scene);
+        this.wsdlModel = wsdlModel;
         setRadius(GAP);
         setBorderColor(BORDER_COLOR);
         setTitleColor(TITLE_COLOR,TITLE_COLOR2);
         addAction = new AddOperationAction(service, implementationClass);
+        addAction.addPropertyChangeListener(this);
         addAction.putValue(Action.SMALL_ICON, new ImageIcon(IMAGE));
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
             addAction,
         })));
-        initialize(service);
         createContent();
     }
     
-    /**
-     * Initialize the model. Try to find if the Service is created from WSDL.
-     * If so find the WsdlService object representing JAXWS service
-     */
-    private void initialize(Service service) {
-        try {
-            String wsdlUrlStr = service.getWsdlUrl();
-            if(wsdlUrlStr==null) return;
-            URL wsdlUrl = new URL(wsdlUrlStr);
-            if(wsdlUrl==null) return;
-            WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
-            if(modeler==null) return;
-            WsdlModel model = modeler.getAndWaitForWsdlModel();
-            if(model==null) return;
-            wsdlService = model.getServiceByName(service.getServiceName());
-        } catch(MalformedURLException e) {
-        }
-    }
-
     private void createContent() {
-        if (wsdlService==null) return;
+        if (wsdlModel==null) return;
         
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
@@ -131,24 +118,34 @@ public class OperationsWidget extends RoundedRectangleWidget implements Expandab
         contentWidget = new Widget(getScene());
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
 
-        int noOfOperations = 0;
-        for(WsdlPort port:wsdlService.getPorts()) {
-            for(WsdlOperation operation:port.getOperations()) {
+        for(PortType portType:wsdlModel.getDefinitions().getPortTypes()) {
+            for(Operation operation:portType.getOperations()) {
                 contentWidget.addChild(new OperationWidget(getScene(),operation));
-                noOfOperations++;
             }
         }
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
-                NbBundle.getMessage(OperationWidget.class, "LBL_Operations"), 
-                "("+noOfOperations+")");
-        headerWidget.addChild(0,headerLabelWidget);
-
+        createHeaderLabel();
         
         if(expanded) {
             expandWidget();
         } else {
             collapseWidget();
         }
+    }
+
+    private void createHeaderLabel() {
+        if(headerLabelWidget!=null) {
+            if (headerLabelWidget.getParentWidget()!=null) {
+                headerLabelWidget.removeFromParent();
+            }
+        }
+        int noOfOperations = 0;
+        for(PortType portType:wsdlModel.getDefinitions().getPortTypes()) {
+            noOfOperations += portType.getOperations().size();
+        }
+        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
+                NbBundle.getMessage(OperationWidget.class, "LBL_Operations"), 
+                "("+noOfOperations+")");
+        headerWidget.addChild(0,headerLabelWidget);
     }
 
     public void collapseWidget() {
@@ -165,7 +162,7 @@ public class OperationsWidget extends RoundedRectangleWidget implements Expandab
     }
 
     public Object hashKey() {
-        return wsdlService==null?null:wsdlService.getName();
+        return wsdlModel==null?null:wsdlModel.getDefinitions().getName();
     }
     
     /**
@@ -176,5 +173,17 @@ public class OperationsWidget extends RoundedRectangleWidget implements Expandab
      */
     public void addToolbarActions(JToolBar toolbar) {
         toolbar.add(addAction);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        String property = evt.getPropertyName();
+        Object source = evt.getSource();
+        Object newValue = evt.getNewValue();
+        if(property.equals(AddOperationAction.PROPERTY_OPERATION_ADDED) &&
+                source==addAction && newValue instanceof Operation) {
+            contentWidget.addChild(new OperationWidget(getScene(),(Operation)newValue));
+            createHeaderLabel();
+            getScene().validate();
+        }
     }
 }
