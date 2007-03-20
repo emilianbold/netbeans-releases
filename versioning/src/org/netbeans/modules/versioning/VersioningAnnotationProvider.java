@@ -68,9 +68,13 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         return VCSContext.forFiles(roots);
     }
 
+    private VersioningSystem getOwner(File file) {
+        return file == null ? null : VersioningManager.getInstance().getOwner(file);
+    }
+    
     public Image annotateIcon(Image icon, int iconType, Set files) {
         FileObject fo = (FileObject) files.iterator().next();
-        VersioningSystem vs = VersioningManager.getInstance().getOwner(FileUtil.toFile(fo));
+        VersioningSystem vs = getOwner(FileUtil.toFile(fo));
         
         if (vs == null) return null;
         VCSAnnotator an = vs.getVCSAnnotator();
@@ -82,7 +86,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
 
     public String annotateNameHtml(String name, Set files) {
         FileObject fo = (FileObject) files.iterator().next();
-        VersioningSystem vs = VersioningManager.getInstance().getOwner(FileUtil.toFile(fo));
+        VersioningSystem vs = getOwner(FileUtil.toFile(fo));
         
         if (vs == null) return null;
         VCSAnnotator an = vs.getVCSAnnotator();
@@ -94,7 +98,9 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
 
     public Action[] actions(Set files) {
         FileObject fo = (FileObject) files.iterator().next();
-        VersioningSystem vs = VersioningManager.getInstance().getOwner(FileUtil.toFile(fo));
+        File file = FileUtil.toFile(fo);
+        if (file == null) return new Action[0];
+        VersioningSystem vs = getOwner(file);
         
         List<Action> actions = new ArrayList<Action>();
         
@@ -108,7 +114,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             actions.add(action);
         }
         
-        VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(FileUtil.toFile(fo));
+        VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(file);
         if(localHistory != null && localHistory.getVCSAnnotator() != null) {
             LocalHistoryActions localHistoryAction = SystemAction.get(LocalHistoryActions.class);
             localHistoryAction.setVersioninSystem(localHistory);          
