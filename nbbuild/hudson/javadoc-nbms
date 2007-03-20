@@ -1,4 +1,6 @@
 #!/bin/sh
+ANT_OPTS=-Xmx512m
+export ANT_OPTS
 if [ `ant -f nbbuild/build.xml -Dmoduleconfig=daily-alpha-nbms print-cvs-modules | perl -ne 'print sort split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
 then
     echo "Set of modules changed, getting fresh checkout..."
