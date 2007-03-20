@@ -38,11 +38,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="LocalHistory.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.localhistory.options.LocalHistoryOptions"/>
-            </file>
-        </folder>
         <folder name="Actions">
             <folder name="LocalHistory">
                 <file name="ShowLocalHistoryAction.shadow">
