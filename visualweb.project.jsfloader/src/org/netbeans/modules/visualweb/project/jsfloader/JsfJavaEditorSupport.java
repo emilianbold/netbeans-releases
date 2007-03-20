@@ -898,7 +898,8 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                 if (javaPaletteController == null) {
                     lookup = new ProxyLookup(new Lookup[] {superLookup});
                 } else {
-                    lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.singleton(javaPaletteController)});
+                    DataObject dObj = ((JsfJavaEditorSupport)cloneableEditorSupport()).getDataObject();
+                    lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.singleton(javaPaletteController), Lookups.singleton(dObj)});
                 }
                 lookupWRef = new WeakReference(lookup);
             }
