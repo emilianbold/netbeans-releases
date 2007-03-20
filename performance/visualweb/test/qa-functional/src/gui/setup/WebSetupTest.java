@@ -35,6 +35,7 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 
 /**
@@ -133,7 +134,7 @@ public class WebSetupTest extends IDESetupTest {
     
     private void createTestProject(String ProjectName) {
         String category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web"); // Web
-        String project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.visualweb.project.jsfproject.ui.wizards.Bundle", "Templates/Project/JsfWeb/emptyJsf.xml"); // Visual Web Application
+        String project = "Web Application";
         
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
@@ -150,6 +151,11 @@ public class WebSetupTest extends IDESetupTest {
         wizard_location.txtProjectName().setText("");
         new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(ProjectName);
+        
+        wizard_location.next();
+        
+        JTableOperator frameworkselector = new JTableOperator(wizard);
+        frameworkselector.selectCell(0,0);
         
         wizard_location.finish();
     }
