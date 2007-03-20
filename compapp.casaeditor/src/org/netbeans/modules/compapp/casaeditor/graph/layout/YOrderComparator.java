@@ -54,22 +54,9 @@ public class YOrderComparator implements Comparator<CasaNodeWidget> {
             } else {
                 return 1;
             }
+            
         } else if (mScene.findObject(w1) instanceof CasaServiceEngineServiceUnit) {
-            CasaServiceEngineServiceUnit su1 = (CasaServiceEngineServiceUnit) mScene.findObject(w1);
-            CasaServiceEngineServiceUnit su2 = (CasaServiceEngineServiceUnit) mScene.findObject(w2);
-            int y1 = w1.getLocation().y;
-            int y2 = w2.getLocation().y;
-            return y1 - y2;
-//            if (y1 == y2) {
-//                int order1 = getOrderNumber(su1);
-//                int order2 = getOrderNumber(su2);
-//                return order1 - order2;
-//                return 0;
-//            } else if (y1 < y2) {
-//                return -1;
-//            } else {
-//                return 1;
-//            }
+            return w1.getLocation().y - w2.getLocation().y;
             
         } else {
             return -1;

@@ -60,7 +60,15 @@ public final class LayoutBindings extends CustomizablePersistLayout {
         for (CasaNodeWidget child : orderedNodeList) {
             int x = parentWidth - child.getBounds().width;
             int y = nextYStart;
-            nextYStart = moveWidget(child, new Point(x, y), nextYStart);
+            
+            if (isAdjustingForOverlapOnly()) {
+                y = nextYStart > child.getLocation().y ? nextYStart : child.getLocation().y;
+                nextYStart = y + child.getEntireBounds().height + getYSpacing();
+            } else {
+                nextYStart += child.getEntireBounds().height + getYSpacing();
+            }
+            
+            moveWidget(child, new Point(x, y));
         }
         
         widget.getScene().validate();

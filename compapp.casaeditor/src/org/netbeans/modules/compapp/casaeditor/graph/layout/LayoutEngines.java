@@ -19,10 +19,12 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph.layout;
 
-import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.*;
@@ -32,13 +34,15 @@ import org.netbeans.modules.compapp.casaeditor.graph.*;
  */
 public final class LayoutEngines extends CustomizablePersistLayout {
     
+    private static final int SPACING_FROM_REGION_EDGES = 40;
+    
     
     public LayoutEngines() {
         setYSpacing(60);
     }
     
     
-    public void layout (Widget widget) {
+    public void layout(Widget widget) {
         
         if (widget == null) {
             return;
@@ -56,13 +60,20 @@ public final class LayoutEngines extends CustomizablePersistLayout {
         
         final int parentWidth  = (int) widget.getBounds().getWidth();
 
-        int nextYStart = ((CasaRegionWidget) widget).getLabelYOffset() + getYSpacing();
+        CenteredFlowLayout layout = new CenteredFlowLayout(
+                parentWidth, 
+                SPACING_FROM_REGION_EDGES, 
+                getYSpacing());
         for (CasaNodeWidget child : orderedNodeList) {
-            int x = isAdjustingForOverlapOnly() ? 
-                child.getLocation().x :
-                (int) ((double) (parentWidth - child.getBounds().width) / 2.0);
-            int y = nextYStart;
-            nextYStart = moveWidget(child, new Point(x, y), nextYStart);
+            layout.add(child);
+        }
+        Map<CasaNodeWidget, Rectangle> widgetMap = new HashMap<CasaNodeWidget, Rectangle>();
+        layout.positionWidgets(
+                ((CasaRegionWidget) widget).getLabelYOffset() + getYSpacing(),
+                widgetMap,
+                isAdjustingForOverlapOnly());
+        for (CasaNodeWidget iterWidget : widgetMap.keySet()) {
+            moveWidget(iterWidget, widgetMap.get(iterWidget).getLocation());
         }
         
         widget.getScene().validate();

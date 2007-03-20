@@ -75,13 +75,7 @@ public abstract class CustomizablePersistLayout implements Layout {
         return mIsPersisting;
     }
     
-    protected int moveWidget(CasaNodeWidget widget, Point location, int nextYStart) {
-        if (mIsAdjustingForOverlapOnly) {
-            location.y = nextYStart > widget.getLocation().y ? nextYStart : widget.getLocation().y;
-            nextYStart = location.y + widget.getEntireBounds().height + mYSpacing;
-        } else {
-            nextYStart += widget.getEntireBounds().height + mYSpacing;
-        }
+    protected void moveWidget(CasaNodeWidget widget, Point location) {
         if (isPersisting()) {
             widget.persistLocation(location);
         }
@@ -90,6 +84,5 @@ public abstract class CustomizablePersistLayout implements Layout {
         } else {
             widget.setPreferredLocation(location);
         }
-        return nextYStart;
     }
 }
