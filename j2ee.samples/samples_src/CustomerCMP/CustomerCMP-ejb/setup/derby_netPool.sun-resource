@@ -6,5 +6,6 @@
     <property name="DatabaseName" value="sample"/>
     <property name="User" value="app"/>
     <property name="Password" value="app"/>
+    <property name="ConnectionAttributes" value="create=true"/>
   </jdbc-connection-pool>
 </resources>
