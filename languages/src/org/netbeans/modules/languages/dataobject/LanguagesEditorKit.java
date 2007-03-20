@@ -206,6 +206,11 @@ public class LanguagesEditorKit extends NbEditorKit {
     
     public Document createDefaultDocument() {
         Document doc = super.createDefaultDocument ();
+        initDocument (doc);
+        return doc;
+    }
+    
+    protected void initDocument (Document doc) {
         doc.putProperty("mimeType", mimeType); //NOI18N
         ((BaseDocument) doc).addLayer (
             new MyFirstDrawLayer (mimeType), 
@@ -217,7 +222,6 @@ public class LanguagesEditorKit extends NbEditorKit {
         );
         new AnnotationManager (doc);
         ((DatabaseManagerImpl) DatabaseManager.getDefault ()).new Listener (doc);
-        return doc;
     }
     
 //    public Syntax createSyntax (Document doc) {
