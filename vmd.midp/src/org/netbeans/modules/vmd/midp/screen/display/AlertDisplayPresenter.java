@@ -19,19 +19,16 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.BorderLayout;
-import java.awt.Image;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
-import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -44,30 +41,34 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
     
     public AlertDisplayPresenter() {
         imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(JLabel.CENTER);
         stringLabel = new JLabel();
+        stringLabel.setHorizontalAlignment(JLabel.CENTER);
         JPanel contentPanel = getPanel().getContentPanel();
-        contentPanel.setLayout(new BorderLayout());
-        contentPanel.add(imageLabel, BorderLayout.CENTER);
-        contentPanel.add(stringLabel, BorderLayout.SOUTH);
+        contentPanel.setLayout(new GridBagLayout());
+        
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weightx = 1.0;
+        constraints.weighty = 1.0;
+        constraints.insets = new Insets(2, 2, 2, 2);
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridx = GridBagConstraints.REMAINDER;
+        constraints.gridy = GridBagConstraints.RELATIVE;
+        constraints.anchor = GridBagConstraints.CENTER;
+        contentPanel.add(imageLabel, constraints);
+        
+        constraints.anchor = GridBagConstraints.NORTHWEST;
+        contentPanel.add(stringLabel, constraints);
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
         DesignComponent imageComponent = getComponent().readProperty(AlertCD.PROP_IMAGE).getComponent();
-        if (imageComponent != null) {
-            String iconPath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
-            Image image = Utilities.loadImage(iconPath);
-            if (image != null) {
-                Icon icon = new ImageIcon(image);
-                imageLabel.setIcon(icon);
-            } else {
-                Debug.warning("Can't load image for alert " + getComponent());
-            }
-        }
+        Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        imageLabel.setIcon(icon);
         
         String text = MidpTypes.getString(getComponent().readProperty(AlertCD.PROP_STRING));
-        stringLabel.setText(text);
+        stringLabel.setText(ScreenSupport.wrapWithHtml(text));
     }
-    
 }

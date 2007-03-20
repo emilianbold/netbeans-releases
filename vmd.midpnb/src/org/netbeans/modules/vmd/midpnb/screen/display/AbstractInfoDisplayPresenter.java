@@ -20,19 +20,15 @@
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
 import java.awt.BorderLayout;
-import java.awt.Image;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -56,16 +52,9 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
         super.reload(deviceInfo);
         
         DesignComponent imageComponent = getComponent().readProperty(AbstractInfoScreenCD.PROP_IMAGE).getComponent();
-        if (imageComponent != null) {
-            String iconPath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
-            Image image = Utilities.loadImage(iconPath);
-            if (image != null) {
-                Icon icon = new ImageIcon(image);
-                imageLabel.setIcon(icon);
-            } else {
-                Debug.warning("Can't load image for info screen " + getComponent());
-            }
-        }
+        Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        imageLabel.setIcon(icon);
+
         String text = MidpTypes.getString(getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT));
         stringLabel.setText(text);
     }

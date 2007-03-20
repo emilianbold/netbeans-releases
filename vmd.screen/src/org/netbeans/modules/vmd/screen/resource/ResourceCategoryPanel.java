@@ -47,7 +47,7 @@ public class ResourceCategoryPanel extends JPanel {
         JLabel label = new JLabel(category.getTitle(), image != null ? new ImageIcon(image) : null, SwingConstants.LEFT);
         label.setFont(getFont().deriveFont(Font.BOLD));
         label.setToolTipText(category.getToolTip());
-        add(label,BorderLayout.NORTH);
+        add(label, BorderLayout.NORTH);
         
         componentPanel = new JPanel(new GridBagLayout());
         componentPanel.setBackground(ResourcePanel.BACKGROUND_COLOR);
@@ -62,6 +62,7 @@ public class ResourceCategoryPanel extends JPanel {
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = GridBagConstraints.REMAINDER;
         constraints.gridy = GridBagConstraints.RELATIVE;
+        constraints.anchor = GridBagConstraints.NORTHWEST;
         
         for (int i = 0; i < list.size(); i++) {
             ScreenResourceItemPresenter presenter = list.get(i);

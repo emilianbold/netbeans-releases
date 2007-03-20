@@ -147,7 +147,7 @@ public class PaletteKit implements Runnable {
             
             if (catFO == null) { // if category folder was not initialized - create folder
                 // only creation is not enough, should be set NB attributes, see MidpPaletteProvider for example
-                Debug.warning(catID + "should be initialized! See MidpPaletteProvider.");
+                Debug.warning(catID + " should be initialized! See MidpPaletteProvider.");
                 try {
                     catFO = org.openide.loaders.DataFolder.create(rootFolder, catID).getPrimaryFile();
                 } catch (IOException ex) {

@@ -20,22 +20,36 @@
 
 package org.netbeans.modules.vmd.screen;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JPanel;
 import org.netbeans.modules.vmd.screen.resource.ResourcePanel;
 import org.netbeans.modules.vmd.screen.device.DevicePanel;
 
-import javax.swing.*;
-import java.awt.*;
 
 /**
+ * 
  * @author David Kaspar
  */
 public class MainPanel extends JPanel {
+    
+    public MainPanel(DevicePanel devicePanel, ResourcePanel resourcePanel) {
+        setLayout(new GridBagLayout());
+        setBackground(ResourcePanel.BACKGROUND_COLOR);
+        
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weightx = 1.0;
+        constraints.weighty = 1.0;
+        constraints.insets = new Insets(12, 12, 12, 6);
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.gridx = GridBagConstraints.RELATIVE;
+        constraints.gridy = GridBagConstraints.REMAINDER;
+        constraints.anchor = GridBagConstraints.NORTHWEST;
+        add(devicePanel, constraints);
 
-    public MainPanel (DevicePanel devicePanel, ResourcePanel resourcePanel) {
-        setLayout (new BorderLayout ());
-        setBackground (ResourcePanel.BACKGROUND_COLOR);
-        add (devicePanel, BorderLayout.WEST);
-        add (resourcePanel, BorderLayout.CENTER);
+        constraints.insets = new Insets(12, 6, 12, 12);
+        add(resourcePanel, constraints);
     }
-
+    
 }

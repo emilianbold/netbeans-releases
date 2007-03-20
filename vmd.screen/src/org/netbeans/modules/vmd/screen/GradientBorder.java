@@ -32,7 +32,7 @@ import javax.swing.border.AbstractBorder;
 public class GradientBorder extends AbstractBorder {
     
     static final Color COLOR_BORDER = new Color(0xBACDF0);
-    static final Color COLOR_SELECTION = Color.BLACK;
+    static final Color COLOR_SELECTION = Color.BLUE;
     
     private static final int INSET_SIZE = 2;
     private static final Insets INSETS = new Insets(INSET_SIZE, INSET_SIZE, INSET_SIZE, INSET_SIZE);

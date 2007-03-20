@@ -20,7 +20,15 @@
 package org.netbeans.modules.vmd.midp.screen.display;
 
 import java.awt.Font;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontFace;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontSize;
@@ -28,6 +36,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontType;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 
 /**
  *
@@ -85,4 +94,46 @@ public final class ScreenSupport {
         return deviceInfo.getDeviceTheme().getFont(face, style, size);
     }
     
+    /**
+     * Wraps given text with html tags to be displayed in swing component,
+     * removes all exising tags in the text
+     * 
+     * @param text to be wraped
+     * @return text
+     */
+    public static final String wrapWithHtml(String text) {
+        text.replaceAll("<.*>", ""); // NOI18N
+        
+        StringBuffer str = new StringBuffer();
+        str.append("<html>"); // NOI18N
+        str.append(text);
+        str.append("</html>"); // NOI18N
+        return str.toString();
+    }
+    
+    /**
+     * Loads icon using resourcePath property from given image design component
+     * 
+     * @param imageComponent image design component
+     * @return icon
+     */
+    public static final Icon getIconFromImageComponent(DesignComponent imageComponent) {
+        Icon icon = null;
+        if (imageComponent != null) {
+            String iconPath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
+            if (iconPath != null) {
+                DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+                DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+                if (context != null) { // document is loading
+                    SourceGroup sourceGroup = ProjectUtils.getSourceGroups(context).get(0); // CLDC project has always only one source root
+                    String srcPath = sourceGroup.getRootFolder().getPath();
+                    icon = new ImageIcon(srcPath + iconPath);
+                    if (icon == null) {
+                        Debug.warning("Resource path property in " + imageComponent + " contains incorrect value");
+                    }
+                }
+            }
+        }
+        return icon;
+    }
 }
