@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -180,8 +180,8 @@ public final class PropertyUtils {
                 PropertyUtils.Reflection prop = new Reflection(
                         tempInnstanceRef, propClass, getterName, setterName,
                         removerName);
-//                PropertySupport.Reflection prop = new PropertySupport.Reflection(
-//                        objRef, propClass, getterName, setterName);
+                //                PropertySupport.Reflection prop = new PropertySupport.Reflection(
+                //                        objRef, propClass, getterName, setterName);
                 // The remover method doesn't supported in this case!
                 //
                 if (prop != null) {
@@ -233,7 +233,7 @@ public final class PropertyUtils {
                     displayName, "This property is stub!") {  // NOI18N
                 
                 public Object getValue()
-                throws IllegalAccessException, InvocationTargetException {
+                        throws IllegalAccessException, InvocationTargetException {
                     return null;
                 }
                 
@@ -247,24 +247,24 @@ public final class PropertyUtils {
         return prop;
     }
     
-//    public static Node.Property registerSimpleTypeProperty(
-//            Sheet.Set targetPropertySet, String propName, String displayName,
-//            Class propClass, Object referent,
-//            String getterName, String setterName) {
-//        Node.Property prop = null;
-//        try {
-//            prop = new PropertySupport.Reflection(
-//                    referent, propClass, getterName, setterName);
-//            if (prop != null) {
-//                prop.setName(propName);
-//                prop.setDisplayName(displayName);
-//                targetPropertySet.put(prop);
-//            }
-//        } catch (NoSuchMethodException ex) {
-//            ErrorManager.getDefault().notify(ex);
-//        }
-//        return prop;
-//    }
+    //    public static Node.Property registerSimpleTypeProperty(
+    //            Sheet.Set targetPropertySet, String propName, String displayName,
+    //            Class propClass, Object referent,
+    //            String getterName, String setterName) {
+    //        Node.Property prop = null;
+    //        try {
+    //            prop = new PropertySupport.Reflection(
+    //                    referent, propClass, getterName, setterName);
+    //            if (prop != null) {
+    //                prop.setName(propName);
+    //                prop.setDisplayName(displayName);
+    //                targetPropertySet.put(prop);
+    //            }
+    //        } catch (NoSuchMethodException ex) {
+    //            ErrorManager.getDefault().notify(ex);
+    //        }
+    //        return prop;
+    //    }
     
     //======================================================================
     
@@ -491,7 +491,7 @@ public final class PropertyUtils {
          * The first suitable method is returned.
          * The NoSuchMethodException is thrown if no any method is found.
          */
-        private Method tryFindMethodByName(Class[] targetClassesArr, 
+        private Method tryFindMethodByName(Class[] targetClassesArr,
                 String methodName, Class[] params) throws NoSuchMethodException {
             Method result = null;
             boolean methodFound = false;
@@ -518,7 +518,7 @@ public final class PropertyUtils {
                         } else {
                             classesNames.append("; "); // NOI18N
                         }
-                        classesNames.append(classObj.getName()); 
+                        classesNames.append(classObj.getName());
                     }
                 }
                 //
@@ -541,7 +541,7 @@ public final class PropertyUtils {
          * @exception NoSuchMethodException if the getter or setter methods cannot be found
          */
         public Reflection(InstanceRef instanceRef, Class valueType, String property)
-        throws NoSuchMethodException {
+                throws NoSuchMethodException {
             super(valueType);
             assert instanceRef != null;
             //
@@ -626,14 +626,14 @@ public final class PropertyUtils {
          */
         private static String firstLetterToUpperCase(String s, String pref) {
             switch (s.length()) {
-                case 0:
-                    return pref;
-                    
-                case 1:
-                    return pref + Character.toUpperCase(s.charAt(0));
-                    
-                default:
-                    return pref + Character.toUpperCase(s.charAt(0)) + s.substring(1);
+            case 0:
+                return pref;
+                
+            case 1:
+                return pref + Character.toUpperCase(s.charAt(0));
+                
+            default:
+                return pref + Character.toUpperCase(s.charAt(0)) + s.substring(1);
             }
         }
         
@@ -715,30 +715,26 @@ public final class PropertyUtils {
                     
                     Object refRef = node.getReference();
                     
-                    if ((refRef != null) 
-                            && (refRef instanceof DocumentComponent))
-                    {
+                    if ((refRef != null)
+                            && (refRef instanceof DocumentComponent)) {
                         return (DocumentComponent) refRef;
                     }
                 }
             }
-                    
-
+            
+            
             if (myInstanceRef.getAlternativeReference() != null) {
-                if (myInstanceRef.getAlternativeReference() 
-                        instanceof DocumentComponent) 
-                {
+                if (myInstanceRef.getAlternativeReference()
+                        instanceof DocumentComponent) {
                     return (DocumentComponent) myInstanceRef.getAlternativeReference();
                 }
                 
-                if (myInstanceRef.getAlternativeReference() instanceof BpelNode) 
-                {
+                if (myInstanceRef.getAlternativeReference() instanceof BpelNode) {
                     BpelNode node = (BpelNode) myInstanceRef
                             .getAlternativeReference();
                     
-                    if ((node.getReference() != null) 
-                            && (node.getReference() instanceof DocumentComponent))
-                    {
+                    if ((node.getReference() != null)
+                            && (node.getReference() instanceof DocumentComponent)) {
                         return (DocumentComponent) node.getReference();
                     }
                 }
@@ -755,7 +751,7 @@ public final class PropertyUtils {
          * @exception InvocationTargetException an exception during invocation
          */
         public void setValue(Object newValue)
-        throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             try {
                 if (newValue == null ||
                         (newValue instanceof String &&
@@ -830,25 +826,30 @@ public final class PropertyUtils {
                     // Check if the setValue has been called from the property sheet
                     StackTraceElement[] stackTraceArr = ex.getStackTrace();
                     for (StackTraceElement stElement : stackTraceArr) {
-                        if (stElement.getMethodName().equals("stopCellEditing")) { // NOI18N
-                            if (stElement.getClassName().equals(
-                                    "org.openide.explorer.propertysheet.SheetCellEditor")) { // NOI18N
-                                //
-                                // The setValue is invoked from the propery sheet inplace editor
-                                //
-                                UserNotification.showMessage(
-                                        targetEx.getLocalizedMessage());
-                                processed = true;
-                                break;
-                            }
-                        } else if (stElement.getMethodName().equals("doButtonPressed")) { // NOI18N
-                            if (stElement.getClassName().equals(
-                                    "org.openide.explorer.propertysheet.PropertyDialogManager")) { // NOI18N
-                                //
-                                // The setValue is invoked from the propery customizer dialog
-                                //
-                                throw new PropertyVetoError(targetEx);
-                            }
+                        if (stElement.getMethodName().equals("stopCellEditing") &&
+                                stElement.getClassName().equals(
+                                "org.openide.explorer.propertysheet.SheetCellEditor")) { // NOI18N
+                            //
+                            // The setValue is invoked from the propery sheet inplace editor
+                            //
+                            UserNotification.showMessage(
+                                    targetEx.getLocalizedMessage());
+                            processed = true;
+                            break;
+                        } else if (stElement.getMethodName().equals("cancelValue") &&
+                                stElement.getClassName().equals(
+                                "org.openide.explorer.propertysheet.PropertyDialogManager")) { // NOI18N
+                            //
+                            // Ignore the exception if user press the Cancel button
+                            processed = true;
+                            break;
+                        } else if (stElement.getMethodName().equals("actionPerformed") &&
+                                stElement.getClassName().equals(
+                                "org.openide.explorer.propertysheet.PropertyDialogManager")) { // NOI18N
+                            //
+                            // The setValue is invoked from the propery customizer dialog
+                            //
+                            throw new PropertyVetoError(targetEx);
                         }
                     }
                 } else if (!(targetEx instanceof Exception)) {
@@ -874,7 +875,7 @@ public final class PropertyUtils {
         }
         
         public void removeValue()
-        throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             if (myRemover == null) {
                 throw new IllegalAccessException();
             }
@@ -893,22 +894,22 @@ public final class PropertyUtils {
                 if (propertyEditorClass != null) {
                     Object result = null;
                     //
-//                if (propertyEditorClass != null &&
-//                        Reusable.class.isAssignableFrom(propertyEditorClass)) {
-//                    result = PropertyUtils.propertyEditorPool.
-//                            getObjectByClass(propertyEditorClass);
-//                }
-//                //
-//                // Try to load static method "getInstance"
-//                if (result == null) {
-//                    try {
-//                        Method method = propertyEditorClass.
-//                                getMethod("getInstance"); // NOI18N
-//                        result = method.invoke(propertyEditorClass);
-//                    } catch (Exception ex) {
-//                        // DO Nothing
-//                    }
-//                }
+                    //                if (propertyEditorClass != null &&
+                    //                        Reusable.class.isAssignableFrom(propertyEditorClass)) {
+                    //                    result = PropertyUtils.propertyEditorPool.
+                    //                            getObjectByClass(propertyEditorClass);
+                    //                }
+                    //                //
+                    //                // Try to load static method "getInstance"
+                    //                if (result == null) {
+                    //                    try {
+                    //                        Method method = propertyEditorClass.
+                    //                                getMethod("getInstance"); // NOI18N
+                    //                        result = method.invoke(propertyEditorClass);
+                    //                    } catch (Exception ex) {
+                    //                        // DO Nothing
+                    //                    }
+                    //                }
                     //
                     // Try to call the default constructor
                     if (result == null) {
@@ -939,23 +940,23 @@ public final class PropertyUtils {
             propertyEditorClass = clazz;
         }
         
-        private Object invokeMethod(InstanceRef instanceRef, 
-                Method method, Object... args) 
-                throws IllegalAccessException, IllegalArgumentException, 
+        private Object invokeMethod(InstanceRef instanceRef,
+                Method method, Object... args)
+                throws IllegalAccessException, IllegalArgumentException,
                 InvocationTargetException {
             Class<?> requiredClass = method.getDeclaringClass();
             //
             Object instance = instanceRef.getReference();
             if (instance != null && requiredClass.isAssignableFrom(instance.getClass())) {
                 return method.invoke(instance, args);
-            } 
+            }
             //
             instance = instanceRef.getAlternativeReference();
             if (instance != null && requiredClass.isAssignableFrom(instance.getClass())) {
                 return method.invoke(instance, args);
-            } 
+            }
             //
-            throw new IllegalArgumentException("The method \"" + method.getName() + 
+            throw new IllegalArgumentException("The method \"" + method.getName() +
                     "\" can't be called for the specified objecs"); // NOI18N
         }
     }
