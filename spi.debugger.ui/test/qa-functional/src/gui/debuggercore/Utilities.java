@@ -324,7 +324,7 @@ public class Utilities {
                     Object[] annotations = ((EditorOperator) editorOper).getAnnotations(line);
                     boolean found =false;
                     for (int i = 0; i < annotations.length; i++) {
-                        if ("Breakpoint".equals(((EditorOperator) editorOper).getAnnotationType(annotations[i]))) {
+                        if (((EditorOperator)editorOper).getAnnotationType(annotations[i]).startsWith("Breakpoint")) {
                             found=true;
                             if (newBreakpoint) {
                                 return Boolean.TRUE;

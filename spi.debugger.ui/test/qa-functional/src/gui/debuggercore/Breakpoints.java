@@ -23,6 +23,7 @@ package gui.debuggercore;
 
 import java.io.File;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -35,6 +36,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -84,13 +86,17 @@ public class Breakpoints extends JellyTestCase {
         suite.addTest(new Breakpoints("testLineBreakpointFunctionalityInInnerClass"));
         suite.addTest(new Breakpoints("testLineBreakpointFunctionalityInSecondaryClass"));
         suite.addTest(new Breakpoints("testConditionalLineBreakpointFunctionality"));
+        suite.addTest(new Breakpoints("testLineBreakpointActions"));
+        suite.addTest(new Breakpoints("testLineBreakpointsValidation"));
         suite.addTest(new Breakpoints("testMethodBreakpointPrefilledConstructor"));
-        //suite.addTest(new Breakpoints("testMethodBreakpointPrefilledInitializer"));
         suite.addTest(new Breakpoints("testMethodBreakpointPrefilledMethod"));
         suite.addTest(new Breakpoints("testMethodBreakpointCreation"));
         suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityInPrimaryClass"));
         suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityInSecondClass"));
         suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityOnAllMethods"));
+        suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityOnExit"));
+        suite.addTest(new Breakpoints("testConditionalMethodBreakpointFunctionality"));
+        suite.addTest(new Breakpoints("testMethodBreakpointsValidation"));
         suite.addTest(new Breakpoints("testClassBreakpointPrefilledInClass"));
         suite.addTest(new Breakpoints("testClassBreakpointPrefilledInInitializer"));
         suite.addTest(new Breakpoints("testClassBreakpointPrefilledInConstructor"));
@@ -104,10 +110,13 @@ public class Breakpoints extends JellyTestCase {
         suite.addTest(new Breakpoints("testFieldBreakpointCreation"));
         suite.addTest(new Breakpoints("testFieldBreakpointFunctionalityAccess"));
         suite.addTest(new Breakpoints("testFieldBreakpointFunctionalityModification"));
+        suite.addTest(new Breakpoints("testConditionalFieldBreakpointFunctionality"));
+        suite.addTest(new Breakpoints("testFieldBreakpointsValidation"));
         suite.addTest(new Breakpoints("testThreadBreakpointCreation"));
         suite.addTest(new Breakpoints("testThreadBreakpointFunctionality"));
         suite.addTest(new Breakpoints("testExceptionBreakpointCreation"));
         suite.addTest(new Breakpoints("testExceptionBreakpointFunctionality"));
+        
         return suite;
     }
     
@@ -345,6 +354,73 @@ public class Breakpoints extends JellyTestCase {
     /**
      *
      */
+    public void testLineBreakpointActions() throws Throwable {
+        try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            //toggle breakpoints
+            Utilities.toggleBreakpoint(eo, 102);
+            Utilities.toggleBreakpoint(eo, 104);
+            
+            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+            assertEquals("Line MemoryView.java:102", jTableOperator.getValueAt(0, 0).toString());
+            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Customize");
+            NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
+            
+            String nothread = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_CB_Actions_Panel_Suspend_None");
+            new JComboBoxOperator(dialog, 0).selectItem(nothread);
+            String breakpointHitText = "Line breakpoint hit on {className}:{lineNumber}";  //noi18n
+            new JTextFieldOperator(dialog, 2).setText(breakpointHitText);
+            dialog.ok();
+            Utilities.startDebugger();
+            int lines = Utilities.waitDebuggerConsole("Line breakpoint hit on examples.advanced.MemoryView:102", 0);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lines+1);
+            
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testLineBreakpointsValidation() throws Throwable {
+        try {
+            int[] prelines = new int[] {33, 34, 37, 43, 49};
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            //toggle breakpoints
+            for (int i = 0; i < prelines.length; i++) {
+                Utilities.toggleBreakpoint(eo, prelines[i]);
+            }
+            //start debugging
+            Utilities.startDebugger();
+            int lines = Utilities.waitDebuggerConsole("User program running", 0);
+            for (int i = 0; i < prelines.length; i++) {
+                Utilities.waitDebuggerConsole("Invalid LineBreakpoint MemoryView.java : "+prelines[i], lines);
+            }
+            int[] debuglines = new int[] {72, 81, 83, 95, 96, 105, 108, 122, 125, 153};
+            //toggle breakpoints
+            for (int i = 0; i < debuglines.length; i++) {
+                Utilities.toggleBreakpoint(eo, debuglines[i]);
+                Utilities.waitDebuggerConsole("Invalid LineBreakpoint MemoryView.java : "+debuglines[i], lines+1);
+            }
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    /**
+     *
+     */
     public void testMethodBreakpointPrefilledConstructor() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(53);
@@ -472,6 +548,90 @@ public class Breakpoints extends JellyTestCase {
             lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:79", lines+1);
             new ContinueAction().perform();
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lines+1);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testMethodBreakpointFunctionalityOnExit() throws Throwable {
+        try {
+            NbDialogOperator dialog = Utilities.newBreakpoint(54);
+            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            new JCheckBoxOperator(dialog, 1).setSelected(true);  //method entry
+            new JCheckBoxOperator(dialog, 2).setSelected(true);  //method exit
+            dialog.ok();
+            
+            dialog = Utilities.newBreakpoint(102);
+            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            new JCheckBoxOperator(dialog, 1).setSelected(false);  //method entry
+            new JCheckBoxOperator(dialog, 2).setSelected(true);  //method exit
+            dialog.ok();
+            
+            Utilities.startDebugger();
+            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:50", 0);
+            new ContinueAction().perform();
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:76", lines+1);
+            new ContinueAction().perform();
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", lines+1);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testConditionalMethodBreakpointFunctionality() throws Throwable {
+        try {
+            NbDialogOperator dialog = Utilities.newBreakpoint(104);
+            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            new JTextFieldOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
+            
+            dialog.ok();
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            //toggle control line breakpoint
+            Utilities.toggleBreakpoint(eo, 104);
+            
+            Utilities.startDebugger();
+            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", 0);
+            new ContinueAction().perform();
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lines+1);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testMethodBreakpointsValidation() throws Throwable {
+        try {
+            NbDialogOperator dialog = Utilities.newBreakpoint(104);
+            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            String wrongname = "wrong";
+            new JTextFieldOperator(dialog, 3).setText(wrongname);
+            dialog.ok();
+            
+            Utilities.startDebugger();
+            int lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]."+wrongname, 0);
+            dialog = Utilities.newBreakpoint(104);
+            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            wrongname = "wrong2";
+            new JTextFieldOperator(dialog, 3).setText(wrongname);
+            dialog.ok();
+            lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]."+wrongname, lines+1);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -774,6 +934,60 @@ public class Breakpoints extends JellyTestCase {
             dialog.ok();
             Utilities.startDebugger();
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:45", 0);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testConditionalFieldBreakpointFunctionality() throws Throwable {
+        try {
+            NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
+            new JComboBoxOperator(dialog, 0).selectItem("Field");
+            new JComboBoxOperator(dialog, 1).selectItem("Field Access");
+            new JTextFieldOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
+            dialog.ok();
+            
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            //toggle breakpoints
+            Utilities.toggleBreakpoint(eo, 109);
+            
+            Utilities.startDebugger();
+            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", 0);
+            new ContinueAction().perform();
+            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lines+1);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testFieldBreakpointsValidation() throws Throwable {
+        try {
+            NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
+            new JComboBoxOperator(dialog, 0).selectItem("Field");
+            String wrongname = "wrongname";
+            new JTextFieldOperator(dialog, 3).setText(wrongname);
+            dialog.ok();
+            
+            Utilities.startDebugger();
+            int lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView."+wrongname, 0);
+            dialog = Utilities.newBreakpoint(36, 36);
+            new JComboBoxOperator(dialog, 0).selectItem("Field");
+            wrongname = "wrongname2";
+            new JTextFieldOperator(dialog, 3).setText(wrongname);
+            dialog.ok();
+            Utilities.waitDebuggerConsole("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView."+wrongname, lines+1);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
