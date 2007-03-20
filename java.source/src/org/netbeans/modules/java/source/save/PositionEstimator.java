@@ -43,7 +43,7 @@ import org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType;
  *
  * @author Pavel Flaska
  */
-abstract class PositionEstimator {
+public abstract class PositionEstimator {
     
     final List<? extends Tree> oldL;
     final List<? extends Tree> newL;
@@ -733,7 +733,7 @@ abstract class PositionEstimator {
      * @return      relevant token identifier.
      *
      */
-    protected static JavaTokenId moveToSrcRelevant(TokenSequence<JavaTokenId> seq,
+    public static JavaTokenId moveToSrcRelevant(TokenSequence<JavaTokenId> seq,
                                                  Direction dir)
     {
         return moveToDifferentThan(seq, dir, nonRelevant);
@@ -827,7 +827,7 @@ abstract class PositionEstimator {
     /**
      * Represents the direction to move. Either forward or backward.
      */
-    protected enum Direction {
+    public enum Direction {
         FORWARD, BACKWARD;
     }
 }

@@ -49,6 +49,7 @@ public class CommentsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new CommentsTest("testAddJavaDocToMethod"));
 //        suite.addTest(new CommentsTest("testGetComment1"));
 //        suite.addTest(new CommentsTest("testAddJavaDocToExistingMethod"));
+//        suite.addTest(new CommentsTest("testAddTwoEndLineCommments"));
         return suite;
     }
 
@@ -254,6 +255,63 @@ public class CommentsTest extends GeneratorTestMDRCompat {
         assertTrue(TestUtilities.copyFileToString(testFile), TestUtilities.copyFileToString(testFile).contains("Comentario"));
     }
 
+    public void testAddTwoEndLineCommments() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    void method() {\n" +
+            "    }\n" +
+            "\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    void method() {" +  // missing new line
+            "        // TODO: Process the button click action. Return value is a navigation\n" +
+            "        // case name where null will return to the same page.\n" +
+            "        return null;\n" +
+            "\n" + // additional line which shoudn't be there
+            "    }\n" +
+            "\n" +
+            "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                String bodyText = "{ \n" +
+                    "        // TODO: Process the button click action. Return value is a navigation\n" +
+                    "        // case name where null will return to the same page.\n" +
+                    "        return null; }";
+                BlockTree block = make.createMethodBody(method, bodyText);
+                workingCopy.rewrite(method.getBody(), block);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

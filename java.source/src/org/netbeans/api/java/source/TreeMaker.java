@@ -19,7 +19,8 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.*;
-import com.sun.source.tree.Tree.Kind;
+import static com.sun.source.tree.Tree.*;
+
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
@@ -31,18 +32,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.EnumSet;
 
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+
+import org.netbeans.api.java.lexer.JavaTokenId;
+
 import org.netbeans.api.java.source.query.CommentHandler;
 import org.netbeans.api.java.source.query.CommentSet;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.query.CommentHandler;
 import org.netbeans.api.java.source.query.Query;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 
 import org.netbeans.modules.java.source.engine.TreeMakerInt;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.save.PositionEstimator;
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 /**
  * Factory interface for creating new com.sun.source.tree instances.  The
@@ -2472,8 +2476,8 @@ public final class TreeMaker {
         SourcePositions pos = copy.getTrees().getSourcePositions();
         for (StatementTree statement : trees) {
             seq.move((int) pos.getStartPosition(null, statement));
-            seq.moveNext();
-            while (seq.movePrevious() && nonRelevant.contains(seq.token().id())) {
+            PositionEstimator.moveToSrcRelevant(seq, Direction.BACKWARD);
+            while (seq.moveNext() && nonRelevant.contains(seq.token().id())) {
                 switch (seq.token().id()) {
                     case LINE_COMMENT:
                         comments.addComment(statement, Comment.create(Style.LINE, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
