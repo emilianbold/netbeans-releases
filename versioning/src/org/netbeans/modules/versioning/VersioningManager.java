@@ -104,11 +104,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * 
      * @param systems new list of versioning systems
      */
-    private void refreshVersioningSystems(Collection<? extends VersioningSystem> systems) {
-        synchronized(versioningSystems) {
-            unloadVersioningSystems();
-            loadVersioningSystems(systems);
-        }
+    private synchronized void refreshVersioningSystems(Collection<? extends VersioningSystem> systems) {
+        unloadVersioningSystems();
+        loadVersioningSystems(systems);
     }
 
     private void loadVersioningSystems(Collection<? extends VersioningSystem> systems) {
