@@ -31,7 +31,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Date;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.compapp.casaeditor.design.CasaDesignView;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
@@ -76,13 +75,6 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
         initializeUI();
     }
     
-    
-    public Scene getScene() {
-        if (mDesignView != null) {
-            return mDesignView.getScene();
-        }
-        return null;
-    }
     
     private CasaDataObject getCasaDataObject() {
         return mDataObject;
@@ -315,7 +307,7 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
                 }
 
                 public JComponent getComponent() {
-                    return mDesignView.getContent();
+                    return mDataObject.getEditorSupport().getScene().getView();
                 }
             };
         }
