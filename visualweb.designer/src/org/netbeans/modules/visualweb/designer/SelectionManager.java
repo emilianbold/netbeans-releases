@@ -59,7 +59,6 @@ import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.netbeans.modules.visualweb.text.actions.DefaultKeyTypedAction;
 
 import org.openide.ErrorManager;
@@ -978,7 +977,7 @@ public class SelectionManager {
 
 //                                Position newPos = new Position(text, 0, Bias.FORWARD);
 //                                Position newPos = Position.create(text, 0, Bias.FORWARD);
-                                DomPosition newPos = DesignerPaneBase.createDomPosition(text, 0, Bias.FORWARD);
+                                DomPosition newPos = webform.createDomPosition(text, 0, Bias.FORWARD);
                                 
                                 pane.setCaretPosition(newPos);
 
@@ -2185,14 +2184,14 @@ public class SelectionManager {
 //                Element sourceElement = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement).getElement();
                 Element sourceElement = WebForm.getHtmlDomProviderService().getSourceElement(sc.componentRootElement);
 //                startNode = Position.create(sourceElement, false);
-                startNode = DesignerPaneBase.createDomPosition(sourceElement, false);
+                startNode = webform.createDomPosition(sourceElement, false);
                 
                 if(start == null || startNode.isEarlierThan(start)) {
                     start = startNode;
                 }
 //                endNode = Position.create(fo.component.getElement(), true);
 //                endNode = Position.create(sourceElement, true);
-                endNode = DesignerPaneBase.createDomPosition(sourceElement, true);
+                endNode = webform.createDomPosition(sourceElement, true);
                 
                 if(end == null || end.isEarlierThan(endNode)) {
                     end = endNode;

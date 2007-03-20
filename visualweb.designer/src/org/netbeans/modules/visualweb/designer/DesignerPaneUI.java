@@ -1273,13 +1273,14 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
                             !webform.getManager().getInlineEditor().isDocumentEditor()) {
                         boolean findNearest = !webform.isGridMode();
 //                        pos = DesignerUtils.checkPosition(pos, findNearest, /*webform*/webform.getManager().getInlineEditor());
-                        pos = ModelViewMapper.findValidPosition(pos, findNearest, /*webform*/webform.getManager().getInlineEditor());
+//                        pos = ModelViewMapper.findValidPosition(pos, findNearest, /*webform*/webform.getManager().getInlineEditor());
+                        pos = ModelViewMapper.findValidPosition(webform, pos, findNearest, /*webform*/webform.getManager().getInlineEditor());
                     }
                     
 //                    Position p0 = Position.first(dot, mark);
 //                    Position p1 = Position.last(dot, mark);
-                    DomPosition p0 = DesignerPaneBase.first(dot, mark);
-                    DomPosition p1 = DesignerPaneBase.last(dot, mark);
+                    DomPosition p0 = webform.first(dot, mark);
+                    DomPosition p1 = webform.last(dot, mark);
                     
                     if ((pos.isLaterThan(p0)) && (pos.isStrictlyEarlierThan(p1))) {
                         return true;

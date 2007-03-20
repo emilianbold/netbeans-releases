@@ -69,5 +69,5 @@ public interface Designer {
     public void align(Alignment alignment);
     public void snapToGrid();
 
-
+    public boolean isInlineEditing();
 }

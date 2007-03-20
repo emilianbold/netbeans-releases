@@ -2598,7 +2598,7 @@ linkCheckFinished:
 
                 while (last != null) {
                     if ((last.getNodeType() != Node.TEXT_NODE) ||
-                            !onlyWhitespace(last.getNodeValue())) {
+                            !JsfSupportUtilities.onlyWhitespace(last.getNodeValue())) {
                         break;
                     }
 
@@ -2615,31 +2615,32 @@ linkCheckFinished:
         return new MarkupPosition(under, before);
     }
     
-    /** Return true iff the string contains only whitespace */
-    private static boolean onlyWhitespace(String s) {
-//        if(DEBUG) {
-//            debugLog(DesignerUtils.class.getName() + ".onlyWhitespace(String)");
+    // XXX Moved to JsfSupportUtilities.
+//    /** Return true iff the string contains only whitespace */
+//    private static boolean onlyWhitespace(String s) {
+////        if(DEBUG) {
+////            debugLog(DesignerUtils.class.getName() + ".onlyWhitespace(String)");
+////        }
+//        if(s == null) {
+//            return true;
 //        }
-        if(s == null) {
-            return true;
-        }
-        int n = s.length();
-        
-        for (int i = 0; i < n; i++) {
-            char c = s.charAt(i);
-            
-            /* See the "empty-cells" documentation in CSS2.1 for example:
-             * it sounds like only SOME of the whitespace characters are
-             * truly considered ignorable whitespace: \r, \n, \t, and space.
-             * So do something more clever in some of these cases.
-             */
-            if (!Character.isWhitespace(c)) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
+//        int n = s.length();
+//        
+//        for (int i = 0; i < n; i++) {
+//            char c = s.charAt(i);
+//            
+//            /* See the "empty-cells" documentation in CSS2.1 for example:
+//             * it sounds like only SOME of the whitespace characters are
+//             * truly considered ignorable whitespace: \r, \n, \t, and space.
+//             * So do something more clever in some of these cases.
+//             */
+//            if (!Character.isWhitespace(c)) {
+//                return false;
+//            }
+//        }
+//        
+//        return true;
+//    }
     
     /** Return the relative path of the given GenericItem to the page folder */
     private static String getPageRelativePath(Project project, FileObject fo) {

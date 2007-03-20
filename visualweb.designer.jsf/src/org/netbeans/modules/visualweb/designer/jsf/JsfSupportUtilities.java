@@ -23,6 +23,8 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.Designer;
+import org.netbeans.modules.visualweb.insync.Util;
+import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.w3c.dom.Element;
 
 /**
@@ -48,6 +50,41 @@ public final class JsfSupportUtilities {
 
     public static Element getComponentRootElementForDesignBean(DesignBean bean) {
         return HtmlDomProviderServiceImpl.getComponentRootElementForDesignBean(bean);
+    }
+    
+    // XXX Also in designer/../DesignerUtils.
+    /** Return true iff the string contains only whitespace */
+    public static boolean onlyWhitespace(String s) {
+//        if(DEBUG) {
+//            debugLog(DesignerUtils.class.getName() + ".onlyWhitespace(String)");
+//        }
+        if(s == null) {
+            return true;
+        }
+        int n = s.length();
+        
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            
+            /* See the "empty-cells" documentation in CSS2.1 for example:
+             * it sounds like only SOME of the whitespace characters are
+             * truly considered ignorable whitespace: \r, \n, \t, and space.
+             * So do something more clever in some of these cases.
+             */
+            if (!Character.isWhitespace(c)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    public static boolean isSpecialComponent(Element componentRootElement) {
+        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        if (markupDesignBean == null) {
+            return false;
+        }
+        return Util.isSpecialBean(markupDesignBean);
     }
     
 }

@@ -1505,29 +1505,29 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
 
     
     
-    /** XXX Temporary, until the Document, Range and Position are moved */
-    public static DomDocument createDomDocument(WebForm webForm) {
-        return new Document(webForm);
-    }
-
-    /** XXX Temporary, until the Document, Range and Position are moved */
-    public static int compareBoundaryPoints(Node endPointA, int offsetA, Node endPointB, int offsetB) {
-        return Position.compareBoundaryPoints(endPointA, offsetA, endPointB, offsetB);
-    }
-
-    public static DomPosition createDomPosition(Node node, int offset, Bias bias) {
-        return Position.create(node, offset, bias);
-    }
-
-    public static DomPosition createDomPosition(Node node, boolean after) {
-        return Position.create(node, after);
-    }
-
-    public static DomPosition first(DomPosition dot, DomPosition mark) {
-        return Position.first(dot, mark);
-    }
-
-    public static DomPosition last(DomPosition dot, DomPosition mark) {
-        return Position.last(dot, mark);
-    }
+//    /** XXX Temporary, until the Document, Range and Position are moved */
+//    public static DomDocument createDomDocument(WebForm webForm) {
+//        return new Document(webForm);
+//    }
+//
+//    /** XXX Temporary, until the Document, Range and Position are moved */
+//    public static int compareBoundaryPoints(Node endPointA, int offsetA, Node endPointB, int offsetB) {
+//        return Position.compareBoundaryPoints(endPointA, offsetA, endPointB, offsetB);
+//    }
+//
+//    public static DomPosition createDomPosition(Node node, int offset, Bias bias) {
+//        return Position.create(node, offset, bias);
+//    }
+//
+//    public static DomPosition createDomPosition(Node node, boolean after) {
+//        return Position.create(node, after);
+//    }
+//
+//    public static DomPosition first(DomPosition dot, DomPosition mark) {
+//        return Position.first(dot, mark);
+//    }
+//
+//    public static DomPosition last(DomPosition dot, DomPosition mark) {
+//        return Position.last(dot, mark);
+//    }
 }

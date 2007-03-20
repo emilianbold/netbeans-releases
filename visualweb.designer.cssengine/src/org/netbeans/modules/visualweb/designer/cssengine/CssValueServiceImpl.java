@@ -39,6 +39,7 @@ import org.apache.batik.css.engine.value.ComputedValue;
 import org.apache.batik.css.engine.value.ListValue;
 import org.apache.batik.css.engine.value.Value;
 import org.apache.batik.css.engine.value.ValueConstants;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSPrimitiveValue;
 
@@ -711,5 +712,64 @@ public class CssValueServiceImpl implements CssValueService {
 //            return false;
 //        }
 //    } // End of FontKey
+
+    // XXX Moved from designer/../ContainerBox.
+    public boolean isInlineTag(CssValue cssDisplay, Element element, HtmlTag tag) {
+//        if (display == CssValueConstants.NONE_VALUE) {
+        if (isNoneValue(cssDisplay)) {
+            return false;
+        }
+
+//        if ((display == CssValueConstants.BLOCK_VALUE) ||
+//                (display == CssValueConstants.LIST_ITEM_VALUE) ||
+//                (display == CssValueConstants.TABLE_VALUE) ||
+//                (
+//            /* These are not always block
+//            display == CssValueConstants.COMPACT_VALUE ||
+//            display == CssValueConstants.RUN_IN_VALUE ||
+//             */
+//            display == CssValueConstants.INLINE_BLOCK_VALUE)) {
+        if (isBlockValue(cssDisplay)
+        || isListItemValue(cssDisplay)
+        || isTableValue(cssDisplay)
+        || isInlineBlockValue(cssDisplay)){
+            return false;
+//        } else if (display == CssValueConstants.INLINE_VALUE) {
+        } else if (isInlineValue(cssDisplay)) {
+            return true;
+
+            // TODO: Handle rest of constants appropriately.
+            // The "inline" boolean flag is too simplistic; we should
+            // store the formatting type here and do the right type
+            // of layout
+
+            /*
+              CssValueConstants.COMPACT_VALUE,
+              CssValueConstants.INLINE_TABLE_VALUE,
+              CssValueConstants.MARKER_VALUE,
+              CssValueConstants.RUN_IN_VALUE,
+              CssValueConstants.TABLE_VALUE,
+              CssValueConstants.TABLE_CAPTION_VALUE,
+              CssValueConstants.TABLE_CELL_VALUE,
+              CssValueConstants.TABLE_COLUMN_VALUE,
+              CssValueConstants.TABLE_COLUMN_GROUP_VALUE,
+              CssValueConstants.TABLE_FOOTER_GROUP_VALUE,
+              CssValueConstants.TABLE_HEADER_GROUP_VALUE,
+              CssValueConstants.TABLE_ROW_VALUE,
+              CssValueConstants.TABLE_ROW_GROUP_VALUE,
+             */
+        } else {
+            // Else - use tag default
+            if (tag == null) {
+                tag = HtmlTag.getTag(element.getTagName());
+            }
+
+            if (tag != null) {
+                return tag.isInlineTag();
+            }
+        }
+
+        return true;
+    }
     
 }

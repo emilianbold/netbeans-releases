@@ -31,6 +31,8 @@ import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupMouseRegion;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.WriteLock;
+import org.netbeans.modules.visualweb.designer.jsf.text.DomDocumentImpl;
 //NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
@@ -52,6 +54,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
+import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -63,7 +66,7 @@ import org.w3c.dom.Node;
  * @author Peter Zavadsky
  * @author Tor Norbye (the original code copied from the old WebForm)
  */
-class JsfForm {
+public class JsfForm {
 
     /** Weak <code>Map</code> between <code>FacesModel</code> and <code>JsfForm</code>. */
     private static final Map<FacesModel, JsfForm> facesModel2jsfForm = new WeakHashMap<FacesModel, JsfForm>();
@@ -101,6 +104,8 @@ class JsfForm {
     private Exception renderFailureException;
     // XXX Bad (old style) error handling.
     private MarkupDesignBean renderFailureComponent;
+    
+    private final DomDocumentImpl domDocumentImpl = new DomDocumentImpl(this);
 
 
     /** Creates a new instance of JsfForm */
@@ -1084,6 +1089,45 @@ class JsfForm {
     FacesModel.JsfSupport getJsfSupport() {
         // XXX 
         return getDndSupport();
+    }
+
+    public Element getHtmlBody() {
+        return htmlDomProvider.getHtmlBody();
+    }
+
+    public Document getJspDom() {
+        return htmlDomProvider.getJspDom();
+    }
+
+    public Element createComponent(String className, Node parent, Node before) {
+        return htmlDomProvider.createComponent(className, parent, before);
+    }
+
+    public boolean isInlineEditing() {
+        Designer[] designers = findDesigners(this);
+        for (Designer designer : designers) {
+            if (designer.isInlineEditing()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    public WriteLock writeLock(String message) {
+        return htmlDomProvider.writeLock(message);
+    }
+
+    public void writeUnlock(WriteLock writeLock) {
+        htmlDomProvider.writeUnlock(writeLock);
+    }
+
+    public void deleteComponent(Element componentRootElement) {
+        htmlDomProvider.deleteComponent(componentRootElement);
+    }
+
+    DomDocumentImpl getDomDocumentImpl() {
+        return domDocumentImpl;
     }
     
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {

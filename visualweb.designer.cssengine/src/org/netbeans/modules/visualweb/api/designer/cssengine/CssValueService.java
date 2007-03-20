@@ -22,6 +22,7 @@ package org.netbeans.modules.visualweb.api.designer.cssengine;
 
 
 import java.awt.Color;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.w3c.dom.Element;
 
 
@@ -141,4 +142,7 @@ public interface CssValueService {
     public String getWidthProperty();
     
     public boolean hasNoUnits(String value);
+
+    // XXX Get rid of the HtmlTag parameter.
+    public boolean isInlineTag(CssValue cssDisplay, Element element, HtmlTag tag);
 }

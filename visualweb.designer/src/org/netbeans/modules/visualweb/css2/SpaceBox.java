@@ -28,7 +28,6 @@ import java.awt.Rectangle;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
@@ -222,7 +221,7 @@ public class SpaceBox extends CssBox {
         if (node != null) {
 //            return new Position(node, getDomStartOffset(), Bias.FORWARD);
 //            return Position.create(node, getDomStartOffset(), Bias.FORWARD);
-            return DesignerPaneBase.createDomPosition(node, getDomStartOffset(), Bias.FORWARD);
+            return webform.createDomPosition(node, getDomStartOffset(), Bias.FORWARD);
         } else {
 //            return Position.NONE;
             return DomPosition.NONE;
@@ -235,7 +234,7 @@ public class SpaceBox extends CssBox {
         if (node != null) {
 //            return new Position(node, getDomEndOffset(), Bias.BACKWARD);
 //            return Position.create(node, getDomEndOffset(), Bias.BACKWARD);
-            return DesignerPaneBase.createDomPosition(node, getDomEndOffset(), Bias.BACKWARD);
+            return webform.createDomPosition(node, getDomEndOffset(), Bias.BACKWARD);
         } else {
 //            return Position.NONE;
             return DomPosition.NONE;
@@ -260,7 +259,7 @@ public class SpaceBox extends CssBox {
         */
 //        return new Position(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
 //        return Position.create(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
-        return DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
+        return webform.createDomPosition(node, offset, Bias.FORWARD); // XXX set bias to back if equal to endOffset?
     }
 
     /** Return the bounding box of the character at the given position */
@@ -337,7 +336,7 @@ public class SpaceBox extends CssBox {
 
 //            return new Position(node, offset, Bias.BACKWARD);
 //            return Position.create(node, offset, Bias.BACKWARD);
-            return DesignerPaneBase.createDomPosition(node, offset, Bias.BACKWARD);
+            return webform.createDomPosition(node, offset, Bias.BACKWARD);
         } else {
 //            return Position.NONE;
             return DomPosition.NONE;
@@ -360,7 +359,7 @@ public class SpaceBox extends CssBox {
             int offset = getDomEndOffset();
 
 //            return Position.create(node, offset, Bias.FORWARD);
-            return DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD);
+            return webform.createDomPosition(node, offset, Bias.FORWARD);
         } else {
 //            return Position.NONE;
             return DomPosition.NONE;

@@ -48,7 +48,6 @@ import javax.swing.JPopupMenu;
 
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.ErrorManager;
@@ -211,7 +210,8 @@ public class InteractionManager {
 //                    if (pos != Position.NONE) {
                     if (pos != DomPosition.NONE) {
 //                        pos = DesignerUtils.checkPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
-                        pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
+//                        pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
+                        pos = ModelViewMapper.findValidPosition(webform, pos, true, /*webform*/webform.getManager().getInlineEditor());
                     }
 
 //                    if ((pos != Position.NONE) && (box.getDesignBean() != null)) {
@@ -226,7 +226,7 @@ public class InteractionManager {
                         if (sourceElement != null) {
 //                            pos = new Position(sourceElement, 0, Bias.FORWARD);
 //                            pos = Position.create(sourceElement, 0, Bias.FORWARD);
-                            pos = DesignerPaneBase.createDomPosition(sourceElement, 0, Bias.FORWARD);
+                            pos = webform.createDomPosition(sourceElement, 0, Bias.FORWARD);
                         }
                     }
                 }
@@ -1090,7 +1090,8 @@ public class InteractionManager {
 
             if ((getInlineEditor() == null) || !getInlineEditor().isDocumentEditor()) {
 //                pos = DesignerUtils.checkPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
-                pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
+//                pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
+                pos = ModelViewMapper.findValidPosition(webform, pos, true, /*webform*/webform.getManager().getInlineEditor());
             }
 
             return pos;
@@ -1935,7 +1936,8 @@ public class InteractionManager {
 
                         if ((tb.getNode() != null) &&
 //                                (DesignerUtils.checkPosition(tb.getFirstPosition(), false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE)) {
-                                (ModelViewMapper.isValidPosition(tb.getFirstPosition(), false, /*webform*/webform.getManager().getInlineEditor()))) {
+//                                (ModelViewMapper.isValidPosition(tb.getFirstPosition(), false, /*webform*/webform.getManager().getInlineEditor()))) {
+                                (ModelViewMapper.isValidPosition(webform, tb.getFirstPosition(), false, /*webform*/webform.getManager().getInlineEditor()))) {
                             // You've clicked directly on text while in
                             // flow mode, and the text is not part of a
                             // jsf component: don't initiate a drag!

@@ -30,7 +30,6 @@ import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 import org.openide.ErrorManager;
 
@@ -273,8 +272,8 @@ public final class TextBox extends CssBox {
 //        int r2 =
 //            Position.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), renderNode,
 //                beginOffset);
-        int r1 = DesignerPaneBase.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), renderNode, endOffset);
-        int r2 = DesignerPaneBase.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), renderNode, beginOffset);
+        int r1 = webform.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), renderNode, endOffset);
+        int r2 = webform.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), renderNode, beginOffset);
 
         if (!((r1 >= 0) && (r2 <= 0))) {
             // No overlap - just do normal painting
@@ -417,7 +416,7 @@ public final class TextBox extends CssBox {
         if (node != null) {
 //            return new Position(node, getDomStartOffset(), Bias.FORWARD);
 //            return Position.create(node, getDomStartOffset(), Bias.FORWARD);
-            return DesignerPaneBase.createDomPosition(node, getDomStartOffset(), Bias.FORWARD);
+            return webform.createDomPosition(node, getDomStartOffset(), Bias.FORWARD);
         } else {
 //            return Position.NONE;
             return DomPosition.NONE;
@@ -430,7 +429,7 @@ public final class TextBox extends CssBox {
         if (node != null) {
 //            return new Position(node, getDomEndOffset(), Bias.BACKWARD);
 //            return Position.create(node, getDomEndOffset(), Bias.BACKWARD);
-            return DesignerPaneBase.createDomPosition(node, getDomEndOffset(), Bias.BACKWARD);
+            return webform.createDomPosition(node, getDomEndOffset(), Bias.BACKWARD);
         } else {
             return DomPosition.NONE;
         }
@@ -482,7 +481,7 @@ public final class TextBox extends CssBox {
 
 //        return new Position(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
 //        return Position.create(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
-        return DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
+        return webform.createDomPosition(node, offset, Bias.FORWARD); // XXX set bias depending on how it compares to end offset?
     }
     
     // XXX Moved from DesignerUtils.
@@ -667,7 +666,7 @@ public final class TextBox extends CssBox {
 
 //            return new Position(node, offset, Bias.BACKWARD);
 //            return Position.create(node, offset, Bias.BACKWARD);
-            return DesignerPaneBase.createDomPosition(node, offset, Bias.BACKWARD);
+            return webform.createDomPosition(node, offset, Bias.BACKWARD);
         } else {
 //            return Position.NONE;
             return DomPosition.NONE;
@@ -717,7 +716,7 @@ public final class TextBox extends CssBox {
 
 //            return new Position(node, offset, Bias.FORWARD);
 //            return Position.create(node, offset, Bias.FORWARD);
-            return DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD);
+            return webform.createDomPosition(node, offset, Bias.FORWARD);
         } else {
 //            return Position.NONE;
             return DomPosition.NONE;

@@ -47,6 +47,7 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentEv
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocumentListener;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
@@ -95,7 +96,9 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
 
     //Position dot = Position.NONE;
     //Position mark = Position.NONE;
-    Range range = null;
+//    Range range = null;
+    DomRange range = null;
+    
     Object selectionTag;
     boolean selectionVisible;
     Timer flasher;
@@ -243,7 +246,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         if ((webform.getManager().getInlineEditor() == null) ||
                 !webform.getManager().getInlineEditor().isDocumentEditor()) {
 //            pos = DesignerUtils.checkPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
-            pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
+//            pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
+            pos = ModelViewMapper.findValidPosition(webform, pos, true, /*webform*/webform.getManager().getInlineEditor());
         }
 
 //        if (pos != Position.NONE) {
@@ -271,7 +275,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         if ((webform.getManager().getInlineEditor() == null) ||
                 !webform.getManager().getInlineEditor().isDocumentEditor()) {
 //            pos = DesignerUtils.checkPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
-            pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
+//            pos = ModelViewMapper.findValidPosition(pos, true, /*webform*/webform.getManager().getInlineEditor());
+            pos = ModelViewMapper.findValidPosition(webform, pos, true, /*webform*/webform.getManager().getInlineEditor());
         }
 
 //        if (pos != Position.NONE) {
@@ -932,7 +937,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         if (range == null) {
 //            range = new Range(component.getDocument().getWebForm(), node, offset, node, offset);
 //            range = Range.create(component.getDocument().getWebForm(), node, offset, node, offset);
-            range = Range.create(component.getWebForm(), node, offset, node, offset);
+//            range = Range.create(component.getWebForm(), node, offset, node, offset);
+            range = component.getWebForm().createDomRange(node, offset, node, offset);
             
             dotChanged = true;
         } else {
@@ -983,7 +989,8 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
             // XXX Log the problem?
 //            range = new Range(component.getDocument().getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
 //            range = Range.create(component.getDocument().getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
-            range = Range.create(component.getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
+//            range = Range.create(component.getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
+            range = component.getWebForm().createDomRange(dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
         } else {
             range.setDot(dot.getNode(), dot.getOffset(), dot.getBias());
         }
@@ -1401,11 +1408,14 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
                 // XXX Possible NPE?
 //                new Position(CssBox.getMarkupDesignBeanForCssBox(box).getElement(), 0, Bias.FORWARD);
 //                new Position(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
-        DomPosition editableRegionStart = DesignerPaneBase.createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+//        DomPosition editableRegionStart = DesignerPaneBase.createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+        DomPosition editableRegionStart = component.getWebForm().createDomPosition(WebForm.getHtmlDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+        
 //        Position editableRegionEnd =
 //            new Position(editableRegionStart.getNode(),
 //                editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
-        DomPosition editableRegionEnd = DesignerPaneBase.createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+//        DomPosition editableRegionEnd = DesignerPaneBase.createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
+        DomPosition editableRegionEnd = component.getWebForm().createDomPosition(editableRegionStart.getNode(), editableRegionStart.getNode().getChildNodes().getLength(), Bias.BACKWARD);
 
         return pos.isLaterThan(editableRegionStart) && pos.isEarlierThan(editableRegionEnd);
     }

@@ -2212,61 +2212,62 @@ public class ContainerBox extends CssBox {
     /** Determine if the given element represents an inline tag
      * @todo Move to Utilities ?
      */
-    public static boolean isInlineTag(CssValue cssDisplay, Element element, HtmlTag tag) {
-//        if (display == CssValueConstants.NONE_VALUE) {
-        if (CssProvider.getValueService().isNoneValue(cssDisplay)) {
-            return false;
-        }
-
-//        if ((display == CssValueConstants.BLOCK_VALUE) ||
-//                (display == CssValueConstants.LIST_ITEM_VALUE) ||
-//                (display == CssValueConstants.TABLE_VALUE) ||
-//                (
-//            /* These are not always block
-//            display == CssValueConstants.COMPACT_VALUE ||
-//            display == CssValueConstants.RUN_IN_VALUE ||
+    private /*public*/ static boolean isInlineTag(CssValue cssDisplay, Element element, HtmlTag tag) {
+////        if (display == CssValueConstants.NONE_VALUE) {
+//        if (CssProvider.getValueService().isNoneValue(cssDisplay)) {
+//            return false;
+//        }
+//
+////        if ((display == CssValueConstants.BLOCK_VALUE) ||
+////                (display == CssValueConstants.LIST_ITEM_VALUE) ||
+////                (display == CssValueConstants.TABLE_VALUE) ||
+////                (
+////            /* These are not always block
+////            display == CssValueConstants.COMPACT_VALUE ||
+////            display == CssValueConstants.RUN_IN_VALUE ||
+////             */
+////            display == CssValueConstants.INLINE_BLOCK_VALUE)) {
+//        if (CssProvider.getValueService().isBlockValue(cssDisplay)
+//        || CssProvider.getValueService().isListItemValue(cssDisplay)
+//        || CssProvider.getValueService().isTableValue(cssDisplay)
+//        || CssProvider.getValueService().isInlineBlockValue(cssDisplay)){
+//            return false;
+////        } else if (display == CssValueConstants.INLINE_VALUE) {
+//        } else if (CssProvider.getValueService().isInlineValue(cssDisplay)) {
+//            return true;
+//
+//            // TODO: Handle rest of constants appropriately.
+//            // The "inline" boolean flag is too simplistic; we should
+//            // store the formatting type here and do the right type
+//            // of layout
+//
+//            /*
+//              CssValueConstants.COMPACT_VALUE,
+//              CssValueConstants.INLINE_TABLE_VALUE,
+//              CssValueConstants.MARKER_VALUE,
+//              CssValueConstants.RUN_IN_VALUE,
+//              CssValueConstants.TABLE_VALUE,
+//              CssValueConstants.TABLE_CAPTION_VALUE,
+//              CssValueConstants.TABLE_CELL_VALUE,
+//              CssValueConstants.TABLE_COLUMN_VALUE,
+//              CssValueConstants.TABLE_COLUMN_GROUP_VALUE,
+//              CssValueConstants.TABLE_FOOTER_GROUP_VALUE,
+//              CssValueConstants.TABLE_HEADER_GROUP_VALUE,
+//              CssValueConstants.TABLE_ROW_VALUE,
+//              CssValueConstants.TABLE_ROW_GROUP_VALUE,
 //             */
-//            display == CssValueConstants.INLINE_BLOCK_VALUE)) {
-        if (CssProvider.getValueService().isBlockValue(cssDisplay)
-        || CssProvider.getValueService().isListItemValue(cssDisplay)
-        || CssProvider.getValueService().isTableValue(cssDisplay)
-        || CssProvider.getValueService().isInlineBlockValue(cssDisplay)){
-            return false;
-//        } else if (display == CssValueConstants.INLINE_VALUE) {
-        } else if (CssProvider.getValueService().isInlineValue(cssDisplay)) {
-            return true;
-
-            // TODO: Handle rest of constants appropriately.
-            // The "inline" boolean flag is too simplistic; we should
-            // store the formatting type here and do the right type
-            // of layout
-
-            /*
-              CssValueConstants.COMPACT_VALUE,
-              CssValueConstants.INLINE_TABLE_VALUE,
-              CssValueConstants.MARKER_VALUE,
-              CssValueConstants.RUN_IN_VALUE,
-              CssValueConstants.TABLE_VALUE,
-              CssValueConstants.TABLE_CAPTION_VALUE,
-              CssValueConstants.TABLE_CELL_VALUE,
-              CssValueConstants.TABLE_COLUMN_VALUE,
-              CssValueConstants.TABLE_COLUMN_GROUP_VALUE,
-              CssValueConstants.TABLE_FOOTER_GROUP_VALUE,
-              CssValueConstants.TABLE_HEADER_GROUP_VALUE,
-              CssValueConstants.TABLE_ROW_VALUE,
-              CssValueConstants.TABLE_ROW_GROUP_VALUE,
-             */
-        } else {
-            // Else - use tag default
-            if (tag == null) {
-                tag = HtmlTag.getTag(element.getTagName());
-            }
-
-            if (tag != null) {
-                return tag.isInlineTag();
-            }
-        }
-
-        return true;
+//        } else {
+//            // Else - use tag default
+//            if (tag == null) {
+//                tag = HtmlTag.getTag(element.getTagName());
+//            }
+//
+//            if (tag != null) {
+//                return tag.isInlineTag();
+//            }
+//        }
+//
+//        return true;
+        return CssProvider.getValueService().isInlineTag(cssDisplay, element, tag);
     }
 }

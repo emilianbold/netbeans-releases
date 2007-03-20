@@ -155,7 +155,7 @@ public class DesignerUtils {
     //    }
     //}
     
-    /** Copy also in insync/FacesDnDSupport.
+    /** XXX Copy also in insync/FacesDnDSupport.
      * Return true iff the string contains only whitespace */
     public static boolean onlyWhitespace(String s) {
         if(DEBUG) {

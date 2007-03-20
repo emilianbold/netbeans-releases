@@ -25,6 +25,8 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomDocument;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.CoordinateTranslator;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.InlineEditorSupport;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
@@ -118,7 +120,7 @@ public class WebForm implements Designer {
     private DesignerTopComp view;
     
 //    private Document document;
-    private final DomDocument domDocument = DesignerPaneBase.createDomDocument(this);
+//    private final DomDocument domDocument = DesignerPaneBase.createDomDocument(this);
     
     private boolean gridMode = false;
 //    private ModelViewMapper mapper;
@@ -739,7 +741,8 @@ public class WebForm implements Designer {
      * Gets the DomDocument associated with this webform.
      */
     public DomDocument getDomDocument() {
-        return domDocument;
+//        return domDocument;
+        return htmlDomProvider.getDomDocument();
     }
     
 
@@ -2206,6 +2209,35 @@ public class WebForm implements Designer {
         
 //        return pos;
     }
+
+    public boolean isInlineEditing() {
+        return getManager().isInlineEditing();
+    }
+
+    public DomPosition createDomPosition(Node node, int offset, Bias bias) {
+        return htmlDomProvider.createDomPosition(node, offset, bias);
+    }
+
+    public DomPosition createDomPosition(Node node, boolean after) {
+        return htmlDomProvider.createDomPosition(node, after);
+    }
+    
+    public DomRange createDomRange(Node dotNode, int dotOffset, Node markNode, int markOffset) {
+        return htmlDomProvider.createDomRange(dotNode, dotOffset, markNode, markOffset);
+    }
+
+    public int compareBoundaryPoints(Node endPointA, int offsetA, Node endPointB, int offsetB) {
+        return htmlDomProvider.compareBoundaryPoints(endPointA, offsetA, endPointB, offsetB);
+    }
+
+    DomPosition first(DomPosition dot, DomPosition mark) {
+        return htmlDomProvider.first(dot, mark);
+    }
+
+    DomPosition last(DomPosition dot, DomPosition mark) {
+        return htmlDomProvider.last(dot, mark);
+    }
+
     // XXX Model <-> View mapping <<<
 
     

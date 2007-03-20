@@ -221,7 +221,8 @@ public final class ModelViewMapper {
             DomPosition p = prev.computePosition(magicPosition.x - prev.getAbsoluteX());
 
 //            if (DesignerUtils.checkPosition(p, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
-            if (isValidPosition(p, false, /*webform*/webform.getManager().getInlineEditor())) {
+//            if (isValidPosition(p, false, /*webform*/webform.getManager().getInlineEditor())) {
+            if (isValidPosition(webform, p, false, /*webform*/webform.getManager().getInlineEditor())) {
 //                if (p != Position.NONE) {
                 if (p != DomPosition.NONE) {
                     
@@ -289,7 +290,8 @@ public final class ModelViewMapper {
             DomPosition p = next.computePosition(magicPosition.x - next.getAbsoluteX());
 
 //            if (DesignerUtils.checkPosition(p, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
-            if (isValidPosition(p, false, /*webform*/webform.getManager().getInlineEditor())) {
+//            if (isValidPosition(p, false, /*webform*/webform.getManager().getInlineEditor())) {
+            if (isValidPosition(webform, p, false, /*webform*/webform.getManager().getInlineEditor())) {
 //                if (p != Position.NONE) {
                 if (p != DomPosition.NONE) {
                     
@@ -395,7 +397,7 @@ public final class ModelViewMapper {
 //                    return Position.create(MarkupService.getSourceElementForElement(getElement(box)), true);
 //                    return Position.create(MarkupService.getSourceElementForElement(
 //                            getComponentRootElementParentForCssBox(box)), true);
-                    return DesignerPaneBase.createDomPosition(MarkupService.getSourceElementForElement(getComponentRootElementParentForCssBox(box)), true);
+                    return lb.getWebForm().createDomPosition(MarkupService.getSourceElementForElement(getComponentRootElementParentForCssBox(box)), true);
                 }
 
                 if (i >= (n - 1)) {
@@ -449,7 +451,8 @@ public final class ModelViewMapper {
                 DomPosition p = tb.getNext(tb.getFirstPosition());
 
 //                if (DesignerUtils.checkPosition(p, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(p, false, inlineEditor)) {
+//                if (isValidPosition(p, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), p, false, inlineEditor)) {
                     return p;
                 } else {
                     // else it's probably a JSF component
@@ -463,7 +466,8 @@ public final class ModelViewMapper {
                 DomPosition p = tb.getNext(tb.getFirstPosition());
 
 //                if (DesignerUtils.checkPosition(p, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(p, false, inlineEditor)) {
+//                if (isValidPosition(p, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), p, false, inlineEditor)) {
                     return p;
                 } else {
                     // else it's probably a JSF component
@@ -617,7 +621,7 @@ public final class ModelViewMapper {
 //                    return Position.create(MarkupService.getSourceElementForElement(getElement(box)), false);
 //                    return Position.create(MarkupService.getSourceElementForElement(
 //                            getComponentRootElementParentForCssBox(box)), false);
-                    return DesignerPaneBase.createDomPosition(MarkupService.getSourceElementForElement(getComponentRootElementParentForCssBox(box)), false);
+                    return lb.getWebForm().createDomPosition(MarkupService.getSourceElementForElement(getComponentRootElementParentForCssBox(box)), false);
                 }
 
                 if (i == 0) {
@@ -663,7 +667,8 @@ public final class ModelViewMapper {
                 DomPosition p = tb.getPrev(tb.getLastPosition());
 
 //                if (DesignerUtils.checkPosition(p, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(p, false, inlineEditor)) {
+//                if (isValidPosition(p, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), p, false, inlineEditor)) {
                     return p;
                 } else {
                     // else it's probably a JSF component
@@ -677,7 +682,8 @@ public final class ModelViewMapper {
                 DomPosition p = tb.getPrev(tb.getLastPosition());
 
 //                if (DesignerUtils.checkPosition(p, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(p, false, inlineEditor)) {
+//                if (isValidPosition(p, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), p, false, inlineEditor)) {
                     return p;
                 } else {
                     // else it's probably a JSF component
@@ -727,7 +733,8 @@ public final class ModelViewMapper {
                 DomPosition pos = tb.getFirstPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             } else if (box.getBoxType() == BoxType.SPACE) {
@@ -736,17 +743,19 @@ public final class ModelViewMapper {
                 DomPosition pos = tb.getFirstPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             } else {
                 // assert that this is a simple inline, noncontainer box,
                 // such as an image, a StringBox, an iframe, etc.
 //                Position pos = Position.create(box.getSourceElement(), false);
-                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), false);
+                DomPosition pos = lb.getWebForm().createDomPosition(box.getSourceElement(), false);
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             }
@@ -796,7 +805,8 @@ public final class ModelViewMapper {
                 DomPosition pos = tb.getLastPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             } else if (box.getBoxType() == BoxType.SPACE) {
@@ -805,7 +815,8 @@ public final class ModelViewMapper {
                 DomPosition pos = tb.getLastPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             } else {
@@ -820,7 +831,8 @@ public final class ModelViewMapper {
                         DomPosition pos = tb.getLastPosition();
 
 //                        if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                        if (isValidPosition(pos, false, inlineEditor)) {
+//                        if (isValidPosition(pos, false, inlineEditor)) {
+                        if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                             return pos;
                         }
                     } else if (prev.getBoxType() == BoxType.SPACE) {
@@ -829,17 +841,19 @@ public final class ModelViewMapper {
                         DomPosition pos = tb.getLastPosition();
 
 //                        if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                        if (isValidPosition(pos, false, inlineEditor)) {
+//                        if (isValidPosition(pos, false, inlineEditor)) {
+                        if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                             return pos;
                         }
                     }
                 }
 
 //                Position pos = Position.create(box.getSourceElement(), false);
-                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), false);
+                DomPosition pos = lb.getWebForm().createDomPosition(box.getSourceElement(), false);
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             }
@@ -888,10 +902,11 @@ public final class ModelViewMapper {
 
             if (box.getBoxType() == BoxType.LINEBREAK) {
 //                Position pos = Position.create(box.getSourceElement(), false);
-                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), false);
+                DomPosition pos = lb.getWebForm().createDomPosition(box.getSourceElement(), false);
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             }
@@ -902,7 +917,8 @@ public final class ModelViewMapper {
                 DomPosition pos = tb.getLastPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             } else if (box.getBoxType() == BoxType.SPACE) {
@@ -911,15 +927,17 @@ public final class ModelViewMapper {
                 DomPosition pos = tb.getLastPosition();
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             } else {
 //                Position pos = Position.create(box.getSourceElement(), true);
-                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), true);
+                DomPosition pos = lb.getWebForm().createDomPosition(box.getSourceElement(), true);
 
 //                if (DesignerUtils.checkPosition(pos, false, inlineEditor) != Position.NONE) {
-                if (isValidPosition(pos, false, inlineEditor)) {
+//                if (isValidPosition(pos, false, inlineEditor)) {
+                if (isValidPosition(lb.getWebForm(), pos, false, inlineEditor)) {
                     return pos;
                 }
             }
@@ -1605,7 +1623,7 @@ public final class ModelViewMapper {
                     return modelToView(pageBox,
 //                        new Position(node, node.getChildNodes().getLength(), Bias.FORWARD));
 //                            Position.create(node, node.getChildNodes().getLength(), Bias.FORWARD));
-                            DesignerPaneBase.createDomPosition(node, node.getChildNodes().getLength(), Bias.FORWARD));
+                            pageBox.getWebForm().createDomPosition(node, node.getChildNodes().getLength(), Bias.FORWARD));
                 } else {
                     offset = 1; // XXX ?
                 }
@@ -1665,9 +1683,9 @@ public final class ModelViewMapper {
                 if (box.getBoxType() == BoxType.TEXT) {
 //                    return ((TextBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
 //                    return ((TextBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
-                    return ((TextBox)box).getBoundingBox(DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD));
+                    return ((TextBox)box).getBoundingBox(pageBox.getWebForm().createDomPosition(node, offset, Bias.FORWARD));
                 } else if (box.getBoxType() == BoxType.SPACE) {
-                    return ((SpaceBox)box).getBoundingBox(DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD));
+                    return ((SpaceBox)box).getBoundingBox(pageBox.getWebForm().createDomPosition(node, offset, Bias.FORWARD));
 
                     /*
                     } else if (box instanceof FormComponentBox) {
@@ -1691,14 +1709,14 @@ public final class ModelViewMapper {
                     if (box.getBoxType() == BoxType.TEXT) {
 //                        r = ((TextBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
 //                        r = ((TextBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
-                        r = ((TextBox)box).getBoundingBox(DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD));
+                        r = ((TextBox)box).getBoundingBox(pageBox.getWebForm().createDomPosition(node, offset, Bias.FORWARD));
                         r.width += ((TextBox)box).getMetrics().charWidth(' ');
 
                         return r;
                     } else if (box.getBoxType() == BoxType.SPACE) {
 //                        r = ((SpaceBox)box).getBoundingBox(new Position(node, offset, Bias.FORWARD));
 //                        r = ((SpaceBox)box).getBoundingBox(Position.create(node, offset, Bias.FORWARD));
-                        r = ((SpaceBox)box).getBoundingBox(DesignerPaneBase.createDomPosition(node, offset, Bias.FORWARD));
+                        r = ((SpaceBox)box).getBoundingBox(pageBox.getWebForm().createDomPosition(node, offset, Bias.FORWARD));
                         r.width += ((SpaceBox)box).getMetrics().charWidth(' ');
 
                         return r;
@@ -1982,7 +2000,8 @@ public final class ModelViewMapper {
             DomPosition p = lb.computePosition(x - lb.getAbsoluteX());
 
 //            if (DesignerUtils.checkPosition(p, false, webform.getManager().getInlineEditor()) != Position.NONE) {
-            if (isValidPosition(p, false, webform.getManager().getInlineEditor())) {
+//            if (isValidPosition(p, false, webform.getManager().getInlineEditor())) {
+            if (isValidPosition(webform, p, false, webform.getManager().getInlineEditor())) {
                 return p;
             }
         }
@@ -2189,14 +2208,14 @@ public final class ModelViewMapper {
             TextBox tb = (TextBox)box;
 //            Position p = new Position(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
 //            Position p = Position.create(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
-            DomPosition p = DesignerPaneBase.createDomPosition(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+            DomPosition p = pageBox.getWebForm().createDomPosition(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
 
             return p.getSourcePosition();
         } else if (box.getBoxType() == BoxType.SPACE) {
             SpaceBox tb = (SpaceBox)box;
 //            Position p = new Position(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
 //            Position p = Position.create(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
-            DomPosition p = DesignerPaneBase.createDomPosition(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
+            DomPosition p = pageBox.getWebForm().createDomPosition(tb.getNode(), tb.getDomStartOffset(), Bias.FORWARD);
 
             return p.getSourcePosition();
         } else {
@@ -2225,14 +2244,14 @@ public final class ModelViewMapper {
             TextBox tb = (TextBox)box;
 //            Position p = new Position(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
 //            Position p = Position.create(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
-            DomPosition p = DesignerPaneBase.createDomPosition(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+            DomPosition p = pageBox.getWebForm().createDomPosition(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
 
             return p.getSourcePosition();
         } else if (box.getBoxType() == BoxType.SPACE) {
             SpaceBox tb = (SpaceBox)box;
 //            Position p = new Position(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
 //            Position p = Position.create(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
-            DomPosition p = DesignerPaneBase.createDomPosition(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
+            DomPosition p = pageBox.getWebForm().createDomPosition(tb.getNode(), tb.getDomEndOffset(), Bias.BACKWARD);
 
             return p.getSourcePosition();
         } else {
@@ -2420,9 +2439,9 @@ public final class ModelViewMapper {
     
 
 //    public static boolean isValidPosition(Position pos, boolean adjust, InlineEditor inline) {
-    public static boolean isValidPosition(DomPosition pos, boolean adjust, InlineEditor inline) {
+    public static boolean isValidPosition(WebForm webForm, DomPosition pos, boolean adjust, InlineEditor inline) {
 //        return findValidPosition(pos, adjust, inline) != Position.NONE;
-        return findValidPosition(pos, adjust, inline) != DomPosition.NONE;
+        return findValidPosition(webForm, pos, adjust, inline) != DomPosition.NONE;
     }
     
     // XXX Moved from DesignerUtils.
@@ -2443,7 +2462,7 @@ public final class ModelViewMapper {
      */
 //    public static Position checkValidPosition(Position pos, boolean adjust, /*WebForm webform*/InlineEditor inline) {
 //    public static Position findValidPosition(Position pos, boolean adjust, /*WebForm webform*/InlineEditor inline) {
-    public static DomPosition findValidPosition(DomPosition pos, boolean adjust, /*WebForm webform*/InlineEditor inline) {
+    public static DomPosition findValidPosition(WebForm webForm, DomPosition pos, boolean adjust, /*WebForm webform*/InlineEditor inline) {
 //        if(DEBUG) {
 //            debugLog(DesignerUtils.class.getName() + ".checkPosition(Position, boolean, WebForm)");
 //        }
@@ -2522,7 +2541,7 @@ public final class ModelViewMapper {
                                     }
                                     
 //                                    return Position.create(e, pos.getOffset() > 0);
-                                    return DesignerPaneBase.createDomPosition(e, pos.getOffset() > 0);
+                                    return webForm.createDomPosition(e, pos.getOffset() > 0);
                                 }
                             }
                             
@@ -2565,7 +2584,7 @@ public final class ModelViewMapper {
                             Element parentElement = se;
                             
 //                            return Position.create(parentElement, pos.getOffset() > 0);
-                            return DesignerPaneBase.createDomPosition(parentElement, pos.getOffset() > 0);
+                            return webForm.createDomPosition(parentElement, pos.getOffset() > 0);
                         } else {
 //                            return Position.NONE;
                             return DomPosition.NONE;
@@ -2609,7 +2628,7 @@ public final class ModelViewMapper {
 //                        Element el = WebForm.getHtmlDomProviderService().getElement(bean);
                         Element sourceElement = MarkupService.getSourceElementForElement(componentRootElement);
 //                        return Position.create(sourceElement, pos.getOffset() > 0);
-                        return DesignerPaneBase.createDomPosition(sourceElement, pos.getOffset() > 0);
+                        return webForm.createDomPosition(sourceElement, pos.getOffset() > 0);
                     }
                 }
                 
@@ -2691,7 +2710,7 @@ public final class ModelViewMapper {
         }
 
 //        Position pos = Position.create(element, false);
-        DomPosition pos = DesignerPaneBase.createDomPosition(element, false);
+        DomPosition pos = pageBox.getWebForm().createDomPosition(element, false);
 
 //        if (!pos.isRendered()) {
 //        if (!MarkupService.isRenderedNode(pos.getNode())) {

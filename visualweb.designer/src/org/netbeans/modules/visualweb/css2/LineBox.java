@@ -30,7 +30,6 @@ import org.netbeans.modules.visualweb.designer.DesignerSettings;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
-import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 import org.openide.ErrorManager;
 
@@ -678,10 +677,11 @@ public class LineBox extends ContainerBox {
 
             if (box.getBoxType() == BoxType.LINEBREAK) {
 //                Position pos = Position.create(box.getSourceElement(), false);
-                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), false);
+                DomPosition pos = webform.createDomPosition(box.getSourceElement(), false);
 
 //                if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
-                if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+//                if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+                if (ModelViewMapper.isValidPosition(webform, pos, false, /*webform*/webform.getManager().getInlineEditor())) {
                     return pos;
                 }
             }
@@ -721,7 +721,8 @@ public class LineBox extends ContainerBox {
                     DomPosition pos = tb.getFirstPosition();
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
-                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+//                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+                    if (ModelViewMapper.isValidPosition(webform, pos, false, /*webform*/webform.getManager().getInlineEditor())) {
                         return pos;
                     }
                 } else if (closest.getBoxType() == BoxType.SPACE) {
@@ -732,15 +733,17 @@ public class LineBox extends ContainerBox {
                     DomPosition pos = tb.getFirstPosition();
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
-                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+//                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+                    if (ModelViewMapper.isValidPosition(webform, pos, false, /*webform*/webform.getManager().getInlineEditor())) {
                         return pos;
                     }
                 } else {
 //                    Position pos = Position.create(closest.getSourceElement(), after);
-                    DomPosition pos = DesignerPaneBase.createDomPosition(closest.getSourceElement(), after);
+                    DomPosition pos = webform.createDomPosition(closest.getSourceElement(), after);
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
-                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+//                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+                    if (ModelViewMapper.isValidPosition(webform, pos, false, /*webform*/webform.getManager().getInlineEditor())) {
                         return pos;
                     }
                 }
@@ -752,7 +755,8 @@ public class LineBox extends ContainerBox {
                     DomPosition pos = ((TextBox)box).computePosition(px - left);
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
-                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+//                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+                    if (ModelViewMapper.isValidPosition(webform, pos, false, /*webform*/webform.getManager().getInlineEditor())) {
                         return pos;
                     }
                 } else if (box.getBoxType() == BoxType.SPACE) {
@@ -762,7 +766,8 @@ public class LineBox extends ContainerBox {
                     DomPosition pos = ((SpaceBox)box).computePosition(px - left);
 
 //                    if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
-                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+//                    if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+                    if (ModelViewMapper.isValidPosition(webform, pos, false, /*webform*/webform.getManager().getInlineEditor())) {
                         return pos;
                     }
 
@@ -788,10 +793,11 @@ public class LineBox extends ContainerBox {
                 // on.
                 boolean after = px > ((left + right) / 2);
 //                Position pos = Position.create(box.getSourceElement(), after);
-                DomPosition pos = DesignerPaneBase.createDomPosition(box.getSourceElement(), after);
+                DomPosition pos = webform.createDomPosition(box.getSourceElement(), after);
 
 //                if (DesignerUtils.checkPosition(pos, false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE) {
-                if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+//                if (ModelViewMapper.isValidPosition(pos, false, /*webform*/webform.getManager().getInlineEditor())) {
+                if (ModelViewMapper.isValidPosition(webform, pos, false, /*webform*/webform.getManager().getInlineEditor())) {
                     return pos;
                 }
             }

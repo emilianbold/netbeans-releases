@@ -358,14 +358,14 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
             if (text.getNodeType() == Node.TEXT_NODE) {
 //                begin = new Position(text, 0, Bias.FORWARD);
 //                begin = Position.create(text, 0, Bias.FORWARD);
-                begin = DesignerPaneBase.createDomPosition(text, 0, Bias.FORWARD);
+                begin = webform.createDomPosition(text, 0, Bias.FORWARD);
 
 //                if (br != null) {
 //                    end = Position.create(br, false);
 //                } else {
 //                    end = new Position(text, text.getNodeValue().length(), Bias.BACKWARD);
 //                end = Position.create(text, text.getNodeValue().length(), Bias.BACKWARD);
-                end = DesignerPaneBase.createDomPosition(text, text.getNodeValue().length(), Bias.BACKWARD);
+                end = webform.createDomPosition(text, text.getNodeValue().length(), Bias.BACKWARD);
 //                }
             } else {
                 NodeList children = text.getChildNodes();
@@ -373,7 +373,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
                 if (children.getLength() > 0) {
 //                    begin = new Position(children.item(0), 0, Bias.FORWARD);
 //                    begin = Position.create(children.item(0), 0, Bias.FORWARD);
-                    begin = DesignerPaneBase.createDomPosition(children.item(0), 0, Bias.FORWARD);
+                    begin = webform.createDomPosition(children.item(0), 0, Bias.FORWARD);
 
 //                    if (br != null) {
 //                        end = Position.create(br, false);
@@ -383,24 +383,24 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
                         if (last.getNodeType() == Node.TEXT_NODE) {
 //                            end = new Position(last, last.getNodeValue().length(), Bias.BACKWARD);
 //                            end = Position.create(last, last.getNodeValue().length(), Bias.BACKWARD);
-                            end = DesignerPaneBase.createDomPosition(last, last.getNodeValue().length(), Bias.BACKWARD);
+                            end = webform.createDomPosition(last, last.getNodeValue().length(), Bias.BACKWARD);
                         } else {
 //                            end = new Position(last, last.getChildNodes().getLength(), Bias.BACKWARD);
 //                            end = Position.create(last, last.getChildNodes().getLength(), Bias.BACKWARD);
-                            end = DesignerPaneBase.createDomPosition(last, last.getChildNodes().getLength(), Bias.BACKWARD);
+                            end = webform.createDomPosition(last, last.getChildNodes().getLength(), Bias.BACKWARD);
                         }
 //                    }
                 } else {
 //                    begin = new Position(text, 0, Bias.FORWARD);
 //                    begin = Position.create(text, 0, Bias.FORWARD);
-                    begin = DesignerPaneBase.createDomPosition(text, 0, Bias.FORWARD);
+                    begin = webform.createDomPosition(text, 0, Bias.FORWARD);
 
 //                    if (br != null) {
 //                        end = Position.create(br, false);
 //                    } else {
 //                        end = new Position(text, text.getChildNodes().getLength(), Bias.BACKWARD);
 //                    end = Position.create(text, text.getChildNodes().getLength(), Bias.BACKWARD);
-                    end = DesignerPaneBase.createDomPosition(text, text.getChildNodes().getLength(), Bias.BACKWARD);
+                    end = webform.createDomPosition(text, text.getChildNodes().getLength(), Bias.BACKWARD);
 //                    }
                 }
             }
@@ -409,8 +409,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //            end = new Position(fragment, fragment.getChildNodes().getLength(), Bias.FORWARD);
 //            begin = Position.create(fragment, 0, Bias.FORWARD);
 //            end = Position.create(fragment, fragment.getChildNodes().getLength(), Bias.FORWARD);
-            begin = DesignerPaneBase.createDomPosition(fragment, 0, Bias.FORWARD);
-            end = DesignerPaneBase.createDomPosition(fragment, fragment.getChildNodes().getLength(), Bias.FORWARD);
+            begin = webform.createDomPosition(fragment, 0, Bias.FORWARD);
+            end = webform.createDomPosition(fragment, fragment.getChildNodes().getLength(), Bias.FORWARD);
         }
 
         boolean changed = DesignerUtils.stripDesignStyleClasses(fragment);
@@ -720,7 +720,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //            end.setOffset(n.getNodeValue().length());
 //            end = new Position(end.getNode(), n.getNodeValue().length(), end.getBias());
 //            end = Position.create(end.getNode(), n.getNodeValue().length(), end.getBias());
-            end = DesignerPaneBase.createDomPosition(end.getNode(), n.getNodeValue().length(), end.getBias());
+            end = webform.createDomPosition(end.getNode(), n.getNodeValue().length(), end.getBias());
         }
 
 //        //        /*

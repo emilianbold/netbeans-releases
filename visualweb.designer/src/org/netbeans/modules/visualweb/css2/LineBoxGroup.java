@@ -33,7 +33,6 @@ import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
-import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 
 import org.openide.ErrorManager;
 
@@ -1182,11 +1181,11 @@ public class LineBoxGroup extends ContainerBox {
 //            int r1 =
 //                Position.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), lastNode,
 //                    10000);
-            int r1 = DesignerPaneBase.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), lastNode, 10000);
+            int r1 = webform.compareBoundaryPoints(caretBeginNode, caretBegin.getOffset(), lastNode, 10000);
             
 //            int r2 =
 //                Position.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), firstNode, 0);
-            int r2 = DesignerPaneBase.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), firstNode, 0);
+            int r2 = webform.compareBoundaryPoints(caretEndNode, caretEnd.getOffset(), firstNode, 0);
 
             if ((r1 >= 0) && (r2 <= 0)) {
                 PageBox pageBox = pane.getPageBox();
