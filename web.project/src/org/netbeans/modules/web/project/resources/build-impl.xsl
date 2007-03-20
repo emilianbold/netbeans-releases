@@ -302,7 +302,7 @@ introduced by support for multiple source roots. -jglick
                                 <xsl:value-of select="$jaxws/jaxws:jax-ws/jaxws:jsr109"/>
                             </xsl:variable>
                             <xsl:if test="($jaxws/*/*/*/jaxws:wsdl-url) or ($isJSR109 = 'false' and $jaxws/jaxws:jax-ws/jaxws:services/jaxws:service)">
-                                <compilerarg line="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                                <compilerarg line="-Djava.endorsed.dirs=&apos;${{jaxws.endorsed.dir}}&apos;"/>
                             </xsl:if>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
@@ -597,7 +597,7 @@ introduced by support for multiple source roots. -jglick
                                     sei="{$seiclass}"
                                 >   
                                     <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                                    <jvmarg value="-Djava.endorsed.dirs=&apos;${{jaxws.endorsed.dir}}&apos;"/>
+                                    <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                                 </wsgen>
                             </target>
                         </xsl:if>
