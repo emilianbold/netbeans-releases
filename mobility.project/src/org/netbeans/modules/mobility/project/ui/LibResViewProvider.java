@@ -112,58 +112,61 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
             helper=project.getLookup().lookup(AntProjectHelper.class);
         }
 
-        public void propertyChange(final PropertyChangeEvent evt)
-        {
-            final String oldV=(String)evt.getOldValue();
-            final String newV=(String)evt.getNewValue();
-            final String prop=evt.getPropertyName();
-            int pos;
-            Node parentNode=null;
-            String confName;
-            final String defName=project.getConfigurationHelper().getDefaultConfiguration().getDisplayName();
-            
-            if ((pos=prop.indexOf(DefaultPropertiesDescriptor.LIBS_CLASSPATH))!=-1)
-            {
-                if (pos==0)
-                {
-                    confName=defName;
-                }
-                else
-                {
-                   final int begin=J2MEProjectProperties.CONFIG_PREFIX.length();
-                   final int end=pos-1;
-                   confName=prop.substring(begin,end);
-                }
-                parentNode=node.getChildren().findChild(confName);
-                if (parentNode != null)
-                {
-                    final ConfigChildren children=(ConfigChildren)parentNode.getChildren();
-                    children.refreshNode("Resources");
-                }
-                
-                //We must refresh resources of all "default resources" configurations
-                if (pos==0)
-                {
-                    final ProjectConfiguration confs[]=project.getConfigurationHelper().getConfigurations().toArray(new ProjectConfiguration[0]);
-                    final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
-                    for (int i=0;i<confs.length;i++)
+        public void propertyChange(final PropertyChangeEvent evt) {
+            RequestProcessor.getDefault().post(new Runnable(){
+                public void run() {
+                    final String oldV=(String)evt.getOldValue();
+                    final String newV=(String)evt.getNewValue();
+                    final String prop=evt.getPropertyName();
+                    int pos;
+                    Node parentNode=null;
+                    String confName;
+                    final String defName=project.getConfigurationHelper().getDefaultConfiguration().getDisplayName();
+
+                    if ((pos=prop.indexOf(DefaultPropertiesDescriptor.LIBS_CLASSPATH))!=-1)
                     {
-                        if (!confs[i].getDisplayName().equals(defName))
+                        if (pos==0)
                         {
-                            final String libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+confs[i].getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
-                            if (libs==null)
+                            confName=defName;
+                        }
+                        else
+                        {
+                           final int begin=J2MEProjectProperties.CONFIG_PREFIX.length();
+                           final int end=pos-1;
+                           confName=prop.substring(begin,end);
+                        }
+                        parentNode=node.getChildren().findChild(confName);
+                        if (parentNode != null)
+                        {
+                            final ConfigChildren children=(ConfigChildren)parentNode.getChildren();
+                            children.refreshNode("Resources");
+                        }
+
+                        //We must refresh resources of all "default resources" configurations
+                        if (pos==0)
+                        {
+                            final ProjectConfiguration confs[]=project.getConfigurationHelper().getConfigurations().toArray(new ProjectConfiguration[0]);
+                            final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
+                            for (int i=0;i<confs.length;i++)
                             {
-                                parentNode=node.getChildren().findChild(confs[i].getDisplayName());
-                                if (parentNode != null)
+                                if (!confs[i].getDisplayName().equals(defName))
                                 {
-                                    final ConfigChildren children=(ConfigChildren)parentNode.getChildren();
-                                    children.refreshNode("Resources");
+                                    final String libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+confs[i].getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+                                    if (libs==null)
+                                    {
+                                        parentNode=node.getChildren().findChild(confs[i].getDisplayName());
+                                        if (parentNode != null)
+                                        {
+                                            final ConfigChildren children=(ConfigChildren)parentNode.getChildren();
+                                            children.refreshNode("Resources");
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
+            });
         }
     }
     
@@ -188,8 +191,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         {
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run() {
-                    if (evt.getNewValue() instanceof ProjectConfiguration[])
-                    {
+                    if (evt.getNewValue() instanceof ProjectConfiguration[]){
                         final List<ProjectConfiguration> nObj=Arrays.asList((ProjectConfiguration[])evt.getNewValue());
                         final List<ProjectConfiguration> oObj=Arrays.asList((ProjectConfiguration[])evt.getOldValue());
 
