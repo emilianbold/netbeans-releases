@@ -23,6 +23,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 
 /**
  * Open the Subversion view. It focuses recently opened
@@ -57,6 +60,11 @@ public class OpenVersioningAction extends ShowAllChangesAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
+                
         SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
         if (stc.hasContext() == false) {
             super.actionPerformed(e);

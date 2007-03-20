@@ -33,7 +33,6 @@ import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-
 import javax.swing.*;
 import java.io.File;
 import java.util.*;
@@ -43,6 +42,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Contains all components of the Search History panel.

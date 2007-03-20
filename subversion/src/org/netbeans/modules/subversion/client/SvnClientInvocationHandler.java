@@ -133,7 +133,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     return invoke(proxy, method, args);
                 } else {
                     // some action canceled by user message 
-                    throw new SVNClientException(ExceptionHandler.ACTION_CANCELED_BY_USER); 
+                    throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER); 
                 }                
             } catch (InvocationTargetException ite) {
                 Throwable t = ite.getTargetException();
@@ -145,7 +145,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 if(ex.getCause() instanceof InvalidKeyException) {
                     InvalidKeyException ike = (InvalidKeyException) ex.getCause();
                     if(ike.getMessage().toLowerCase().equals("illegal key size or default parameters")) { // NOI18N
-                        ExceptionHandler.handleInvalidKeyException(ike);
+                        SvnClientExceptionHandler.handleInvalidKeyException(ike);
                     }
                     return null; 
                 }
@@ -176,7 +176,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if (remoteMethods.contains(proxyMethod.getName())) {
                 // save the proxy settings into the svn servers file                
                 if(desc != null && desc.getSvnUrl() != null) {
-                    // XXX still not sure if this is the best place to set the proxy
                     SvnConfigFiles.getInstance().setProxy(desc.getSvnUrl().toString());      
                 }                
             }

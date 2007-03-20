@@ -21,7 +21,6 @@ package org.netbeans.modules.subversion;
 
 import java.io.File;
 import java.util.regex.*;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.FlatFolder;
@@ -35,6 +34,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.ErrorManager;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
@@ -278,10 +278,10 @@ public class FileStatusCache implements ISVNNotifyListener {
             // unversioned resource is expected getSingleStatus()
             // does not return SVNStatusKind.UNVERSIONED but throws exception instead            
             // instead of throwing exception
-            if (ExceptionHandler.isUnversionedResource(e.getMessage()) == false) {
+            if (SvnClientExceptionHandler.isUnversionedResource(e.getMessage()) == false) {
                 // missing or damaged entries
                 // or ignored file
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                SvnClientExceptionHandler.notifyException(e, false, false);
             }
         }
         FileInformation fi = createFileInformation(file, status, repositoryStatus);
@@ -513,8 +513,8 @@ public class FileStatusCache implements ISVNNotifyListener {
             }
         } catch (SVNClientException e) {
             // no or damaged entries
-            ErrorManager.getDefault().annotate(e, "Can not status " + dir.getAbsolutePath() + ", guessing it...");  // NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            //ErrorManager.getDefault().annotate(e, "Can not status " + dir.getAbsolutePath() + ", guessing it...");  // NOI18N
+            SvnClientExceptionHandler.notifyException(e, false, false);
         }
 
         if (entries == null) {

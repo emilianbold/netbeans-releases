@@ -21,11 +21,7 @@ package org.netbeans.modules.subversion.client;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.Socket;
-
+import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -41,13 +37,10 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
 import javax.swing.JButton;
-import org.netbeans.modules.proxy.ConnectivitySettings;
 import org.netbeans.modules.subversion.Diagnostics;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.CertificateFile;
-import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
@@ -55,6 +48,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -65,12 +59,11 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class SvnClientExceptionHandler extends ExceptionHandler {
+public class SvnClientExceptionHandler {
     
     private final ISVNClientAdapter adapter;
     private final SvnClient client;
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
-    private final String CHARSET_NAME = "ASCII7"; // NOI18N
     private final int handledExceptions;
     
     private class CertificateFailure {
@@ -91,15 +84,41 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
         new CertificateFailure (8, "issuer is not trusted" ,                        NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotTrusted"))         // NOI18N
     };
     
+    public final static int EX_UNKNOWN = 0;
+    public final static int EX_ACTION_CANCELED_BY_USER = 2;
+    public final static int EX_AUTHENTICATION = 4;
+    public final static int EX_NO_CERTIFICATE = 8;
+    public final static int EX_WRONG_URL = 16;
+    public final static int EX_NO_HOST_CONNECTION = 32;
+    public final static int EX_UNVERSIONED_RESOURCE = 64;
+    public final static int EX_WRONG_URL_IN_REVISION = 128;
+    public final static int EX_URL_NON_EXISTENT = 256;
+    public final static int EX_HTTP_405 = 512;
+    public final static int EX_IS_ALREADY_WC = 1024;
+    public final static int EX_CLOSED_CONNECTION = 2048;
+    public final static int EX_COMMIT_FAILED = 4096;
+    public final static int EX_FILE_ALREADY_EXISTS = 8192;
+    public final static int EX_IS_OUT_OF_DATE = 16384;            
+    public final static int EX_NO_SVN_CLIENT = 32768;            
+    
+  
+    public final static int EX_HANDLED_EXCEPTIONS = EX_AUTHENTICATION | EX_NO_CERTIFICATE | EX_NO_HOST_CONNECTION;
+    public final static int EX_DEFAULT_HANDLED_EXCEPTIONS = EX_HANDLED_EXCEPTIONS;
+    
+    private final SVNClientException exception;
+    private final int exceptionMask;
+            
+    static final String ACTION_CANCELED_BY_USER = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ActionCanceledByUser");
+    
     public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, int handledExceptions) {
-        super(exception);
+        this.exception = exception;                
         this.adapter = adapter;
         this.client = client;
         this.handledExceptions = handledExceptions;
-    }  
+        exceptionMask = getMask(exception.getMessage());
+    }      
     
     public boolean handleException() throws Exception {
-        int exceptionMask = getExceptionMask();
         if(exceptionMask != EX_UNKNOWN) {
             if( (handledExceptions & exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) {
                 return handleRepositoryConnectError();
@@ -210,8 +229,7 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
         AcceptCertificatePanel acceptCertificatePanel = new AcceptCertificatePanel();
         acceptCertificatePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N
         acceptCertificatePanel.certificatePane.setText(getCertMessage(cert, hostString));
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N        
         JButton permanentlyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptPermanently")); // NOI18N
         JButton temporarilyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptTemp")); // NOI18N
         JButton rejectButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_Reject")); // NOI18N
@@ -246,61 +264,7 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
         dialog.setVisible(true);
-    }
-    
-    private void connectProxy(Socket tunnel, String host, int port, String proxyHost, int proxyPort) throws IOException {
-      
-      String connectString = "CONNECT "+ host + ":" + port + " HTTP/1.0\r\n" + "Connection: Keep-Alive\r\n\r\n"; // NOI18N
-        
-      byte connectBytes[];
-      try {
-         connectBytes = connectString.getBytes(CHARSET_NAME);
-      } catch (UnsupportedEncodingException ignored) {
-         connectBytes = connectString.getBytes();
-      }
-      
-      OutputStream out = tunnel.getOutputStream();
-      out.write(connectBytes);
-      out.flush();
-
-      byte reply[] = new byte[200];
-      int replyLen = 0;
-      int newlinesSeen = 0;
-      boolean headerDone = false;
-      InputStream in = tunnel.getInputStream();
-      
-      while (newlinesSeen < 2) {
-         byte b = (byte) in.read();
-         if (b < 0) {
-            throw new IOException("Unexpected EOF from proxy"); // NOI18N
-         }
-         if (b == '\n') {
-            headerDone = true;
-            ++newlinesSeen;
-         } else if (b != '\r') {
-            newlinesSeen = 0;
-            if (!headerDone && replyLen < reply.length) {
-               reply[replyLen++] = b;
-            }
-         }
-      }
-
-      String ret = ""; // NOI18N
-      try {
-        ret = new String(reply, 0, replyLen, CHARSET_NAME);
-      } catch (UnsupportedEncodingException ignored) {
-        ret = new String(reply, 0, replyLen);
-      }
-        if (!isOKresponse(ret.toLowerCase())) {
-            throw new IOException("Unable to connect through proxy " // NOI18N
-                                 + proxyHost + ":" + proxyPort // NOI18N
-                                 + ".  Proxy returns \"" + ret + "\""); // NOI18N
-        }
-   }
-    
-    private boolean isOKresponse(String ret) {
-        return ret.startsWith("http/1.1 200") || ret.startsWith("http/1.0 200"); // NOI18N
-    }
+    }     
 
     private String getCertMessage(X509Certificate cert, String host) { 
         CertificateFailure[] certFailures = getCertFailures();
@@ -370,4 +334,201 @@ public class SvnClientExceptionHandler extends ExceptionHandler {
         return ""; // NOI18N
     }
     
+    private SVNClientException getException() {
+        return exception;
+    }
+
+    private static int getMask(String msg) {
+        if(msg == null || msg.trim().equals("")) {
+            return EX_UNKNOWN;
+        }
+        msg = msg.toLowerCase();        
+        if(isAuthentication(msg)) {         
+            return EX_AUTHENTICATION;
+        } else if (isCancelledAction(msg)) {
+            return EX_ACTION_CANCELED_BY_USER;
+        } else if (isNoCertificate(msg)) {
+            return EX_NO_CERTIFICATE;
+        } else if (isWrongUrl(msg)) {
+            return EX_WRONG_URL;
+        } else if (isNoHostConnection(msg)) {
+            return EX_NO_HOST_CONNECTION;
+        } else if(isUnversionedResource(msg)) {
+            return EX_UNVERSIONED_RESOURCE;
+        } else if(isWrongURLInRevision(msg)) {
+            return EX_WRONG_URL_IN_REVISION;
+        } else if(isHTTP405(msg)) { 
+            return EX_HTTP_405;
+        } else if(isAlreadyAWorkingCopy(msg)) {
+            return EX_IS_ALREADY_WC;
+        } else if(isClosedConnection(msg)) {
+            return EX_CLOSED_CONNECTION;
+        } else if(isCommitFailed(msg)) {
+            return EX_COMMIT_FAILED;
+        } else if(isNoSvnClient(msg)) {               
+            return EX_NO_SVN_CLIENT;
+        }
+        return EX_UNKNOWN;
+    }
+    
+    private static boolean isCancelledAction(String msg) {
+        return msg.equals(ACTION_CANCELED_BY_USER);
+    }
+    
+    private static boolean isAuthentication(String msg) {        
+        return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
+               msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
+               msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
+               msg.indexOf("can't get password") > - 1;                                     // NOI18N
+        // XXX we also have to check for authentication messages from proxy
+    }
+
+    private static boolean isNoCertificate(String msg) {
+        return msg.indexOf("server certificate verification failed") > -1;                  // NOI18N
+    }
+    
+    public static boolean isWrongUrl(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("(not a valid url)") > - 1;                                      // NOI18N
+    }
+
+    private static boolean isNoHostConnection(String msg) {
+        return msg.indexOf("host not found") > -1 ||                                        // NOI18N
+               msg.indexOf("could not connect to server") > -1 ||                           // NOI18N
+               msg.indexOf("could not resolve hostname") > -1;                              // NOI18N
+    }
+    
+    public static boolean isUnversionedResource(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("(not a versioned resource)") > -1 ||                            // NOI18N
+               msg.indexOf("is not a working copy") > -1;                                   // NOI18N
+    }
+    
+    public static boolean isWrongURLInRevision(String msg) {        
+        msg = msg.toLowerCase();
+        if (msg.indexOf("no such revision") > -1 ) {                                        // NOI18N
+            return true;
+        }
+        int idx = msg.indexOf("unable to find repository location for");                    // NOI18N
+        if(idx > -1 && msg.indexOf("in revision", idx + 23) > -1) {                         // NOI18N
+            return true;
+        }
+        idx = msg.indexOf("url");                                                           // NOI18N
+        return idx > -1 && msg.indexOf("non-existent in that revision", idx + 3) > -1;      // NOI18N        
+    }    
+
+    private static boolean isHTTP405(String msg) {
+        return msg.indexOf("405") > -1;                                                     // NOI18N
+    }
+    
+    private static boolean isAlreadyAWorkingCopy(String msg) {        
+        return msg.indexOf("is already a working copy for a different url") > -1;           // NOI18N
+    }
+
+    private static boolean isClosedConnection(String msg) {
+        return msg.indexOf("could not read status line: an existing connection was forcibly closed by the remote host.") > -1; // NOI18N
+    }
+
+    private static boolean isCommitFailed(String msg) {
+        return msg.indexOf("commit failed (details follow)") > -1;                          // NOI18N
+    }
+
+    public static boolean isFileAlreadyExists(String msg) {
+        msg = msg.toLowerCase();        
+        return msg.indexOf("file already exists") > -1 ||                                   // NOI18N
+               (msg.indexOf("mkcol") > -1 && isHTTP405(msg));                               // NOI18N
+    }
+    
+    private static boolean isOutOfDate(String msg) {
+        return msg.indexOf("out of date") > -1;                                             // NOI18N
+    }
+    
+    private static boolean isNoSvnClient(String msg) {
+        msg = msg.toLowerCase();
+        return msg.equals("command line client adapter is not available");
+    }
+       
+    public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
+        if(isNoSvnClient(ex.getMessage())) {
+            if(isUI) {
+                notifyNoClient();
+            }
+            return;
+        }
+        if(isCancelledAction(ex.getMessage())) {
+            cancelledAction();
+            return;
+        }                 
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        if( annotate ) {
+            String msg = getCustomizedMessage(ex);
+            if(msg == null) {
+                if(ex instanceof SVNClientException) {
+                    msg = parseExceptionMessage((SVNClientException)ex);    
+                } else {
+                    msg = ex.getMessage();                        
+                }                
+            }        
+            annotate(msg);
+        }         
+    }       
+
+    private static void notifyNoClient() {
+        MissingSvnClient msc = new MissingSvnClient();
+        msc.show();
+    }
+    
+    private static String getCustomizedMessage(Exception exception) {
+        String msg = null;
+        if (isHTTP405(exception.getMessage())) {
+            msg = exception.getMessage() + "\n\n" + // NOI18N
+                    NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error405"); // NOI18N
+        } else if(isOutOfDate(exception.getMessage())) {
+            msg = exception.getMessage() + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N
+            
+        }
+        return msg;
+    }
+
+    public static String parseExceptionMessage(SVNClientException ex) {
+        String msg = ex.getMessage();
+        int idx = msg.lastIndexOf("svn: "); // NOI18N
+        if(idx > -1) {
+            msg = msg.substring(idx + 5);
+        }
+        return msg;
+    }
+
+    private static void annotate(String msg) {        
+        CommandReport report = new CommandReport(NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_SubversionCommandError"), msg);
+        JButton ok = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_CommandReport_OK"));
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                report, 
+                NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CommandFailed_Title"), 
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object [] { ok },
+                ok);
+        DialogDisplayer.getDefault().notify(descriptor);        
+    }
+    
+    private static void cancelledAction() {
+        JButton ok = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_OK")); // NOI18N
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                ACTION_CANCELED_BY_USER,
+                NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_ActionCanceled_Title"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object [] { ok },
+                ok);
+        DialogDisplayer.getDefault().notify(descriptor);
+        return;
+    }
+
+    static void handleInvalidKeyException(InvalidKeyException ike) {
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ike);
+        String msg = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_InvalidKeyException"); // NOI18N
+        annotate(msg);
+    }
+        
 }

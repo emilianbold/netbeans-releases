@@ -31,7 +31,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;

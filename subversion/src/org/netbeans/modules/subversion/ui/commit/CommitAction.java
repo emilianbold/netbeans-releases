@@ -26,7 +26,6 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -38,6 +37,8 @@ import java.util.List;
 import java.text.MessageFormat;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -72,6 +73,9 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
     /** Run commit action. Shows UI */
     public static void commit(String contentTitle, final Context ctx) {
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] roots = ctx.getFiles();
         if (roots.length == 0) {
@@ -255,6 +259,9 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
     }
     
     protected void performContextAction(Node[] nodes) {
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
         final Context ctx = getContext(nodes);
         commit(getContextDisplayName(nodes), ctx);
     }
@@ -270,7 +277,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
             try {
                 client = Subversion.getInstance().getClient(ctx, support);
             } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
+                SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
                 return;
             }                   
             support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N

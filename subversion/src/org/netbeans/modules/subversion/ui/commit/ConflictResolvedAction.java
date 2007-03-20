@@ -27,7 +27,6 @@ import org.netbeans.modules.subversion.util.*;
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -60,8 +59,8 @@ public class ConflictResolvedAction extends ContextAction {
                 try {
                     client = Subversion.getInstance().getClient(ctx, this);
                 } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    //ErrorManager.getDefault().notify(ErrorManager.USER, ex);
                 }
 
                 if (client == null) {
@@ -73,7 +72,11 @@ public class ConflictResolvedAction extends ContextAction {
                         return;
                     }
                     File file = files[i];
-                    ConflictResolvedAction.perform(file, client);
+                    try {
+                        ConflictResolvedAction.perform(file, client);
+                    } catch (SVNClientException ex) {
+                        annotate(ex);                        
+                    }
                 }
             }
         };
@@ -82,35 +85,24 @@ public class ConflictResolvedAction extends ContextAction {
 
 
     /** Marks as resolved or shows error dialog. */
-    public static void perform(File file) {
-        SvnClient client = null;
-        try {
-            client = Subversion.getInstance().getClient(file);
-            perform(file, client);
-        } catch (SVNClientException ex) {
-            ExceptionHandler eh = new ExceptionHandler (ex);
-            eh.notifyException();
-        }        
+    public static void perform(File file) throws SVNClientException {
+        SvnClient client = Subversion.getInstance().getClient(file);
+        perform(file, client);        
     }
 
-    private static void perform(File file, SvnClient client) {
+    private static void perform(File file, SvnClient client) throws SVNClientException {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
 
-        try {
-            client.resolved(file);
-            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        client.resolved(file);
+        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
 
-            // auxiliary files disappear, synch with FS
-            File parent = file.getParentFile();
-            if (parent != null) {
-                FileObject folder = FileUtil.toFileObject(parent);
-                if (folder != null) {
-                    folder.refresh();
-                }
+        // auxiliary files disappear, synch with FS
+        File parent = file.getParentFile();
+        if (parent != null) {
+            FileObject folder = FileUtil.toFileObject(parent);
+            if (folder != null) {
+                folder.refresh();
             }
-        } catch (SVNClientException ex) {
-            ExceptionHandler eh = new ExceptionHandler (ex);
-            eh.notifyException();
         }        
     }
 

@@ -52,6 +52,7 @@ import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -283,8 +284,8 @@ public class Annotator {
                 String mime = prop.getValue();    
                 return mime != null ? mime : "";
             }            
-        } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
+        } catch (SVNClientException ex) {           
+            SvnClientExceptionHandler.notifyException(ex, false, false);
             return "";
         }                
         return "";

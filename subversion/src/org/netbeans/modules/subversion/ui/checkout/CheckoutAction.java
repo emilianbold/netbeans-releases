@@ -24,8 +24,8 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.wizards.*;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -40,6 +40,11 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public final class CheckoutAction extends CallableSystemAction {
            
     public void performAction() {
+        
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
+        
         CheckoutWizard wizard = new CheckoutWizard();
         if (!wizard.show()) return;
         
@@ -54,7 +59,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 try {
                     client = Subversion.getInstance().getClient(repository);
                 } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ex); // should not happen
+                    SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
                     return;
                 }
         

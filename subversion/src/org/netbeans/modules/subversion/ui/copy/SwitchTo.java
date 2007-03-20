@@ -26,11 +26,13 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 

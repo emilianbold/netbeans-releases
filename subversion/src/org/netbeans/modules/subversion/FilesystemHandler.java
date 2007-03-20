@@ -24,13 +24,12 @@ import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.ErrorManager;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.*;
@@ -166,7 +165,7 @@ class FilesystemHandler extends VCSInterceptor {
                         client.revert(file, false);
                         file.delete();
                     } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
                     }
                 }
             }
@@ -284,7 +283,7 @@ class FilesystemHandler extends VCSInterceptor {
                     try {
                         client.move(srcFile, dstFile, force);
                         break;
-                    } catch (SVNClientException e) {
+                    } catch (SVNClientException e) {                        
                         // svn: Working copy '/tmp/co/svn-prename-19/AnagramGame-pack-rename/src/com/toy/anagrams/ui2' locked
                         if (e.getMessage().endsWith("' locked") && retryCounter > 0) { // NOI18N
                             // XXX HACK AWT- or FS Monitor Thread performs

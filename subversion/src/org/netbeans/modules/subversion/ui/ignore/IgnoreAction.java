@@ -26,9 +26,10 @@ import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.util.*;
 import org.openide.*;
 import org.openide.nodes.Node;
-
 import java.io.File;
 import java.lang.String;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -103,7 +104,9 @@ public class IgnoreAction extends ContextAction {
     }
 
     public void performContextAction(final Node[] nodes) {
-
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
         final int actionStatus = getActionStatus(nodes);
         if (actionStatus != IGNORING && actionStatus != UNIGNORING) {
             throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
@@ -116,7 +119,13 @@ public class IgnoreAction extends ContextAction {
                 Map<File, Set<String>> names = splitByParent(files);
                 // do not attach onNotify listeners because the ignore command forcefully fires change events on ALL files
                 // in the parent directory and NONE of them interests us, see #89516
-                SvnClient client = Subversion.getInstance().getClient(false);               
+                SvnClient client;
+                try {
+                    client = Subversion.getInstance().getClient(false);               
+                } catch (SVNClientException e) {
+                    SvnClientExceptionHandler.notifyException(e, true, true);
+                    return;
+                }                
                 for (File parent : names.keySet()) {
                     Set<String> patterns = names.get(parent);
                     if(isCanceled()) {
@@ -133,7 +142,7 @@ public class IgnoreAction extends ContextAction {
                         client.setIgnoredPatterns(parent, new ArrayList<String>(currentPatterns));    
                         
                     } catch (SVNClientException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        SvnClientExceptionHandler.notifyException(e, true, true);
                     }
                 }
                 // refresh files manually, we do not suppport wildcards in ignore patterns so this is sufficient

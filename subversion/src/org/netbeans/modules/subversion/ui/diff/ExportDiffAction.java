@@ -49,6 +49,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import org.netbeans.modules.subversion.FileStatusCache;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Exports diff to file:
@@ -106,9 +109,13 @@ public class ExportDiffAction extends ContextAction {
     }
 
     protected void performContextAction(final Node[] nodes) {
-
+       
         // reevaluate fast enablement logic guess
 
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
+        
         boolean noop;
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {

@@ -36,7 +36,6 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -119,21 +118,13 @@ public class RelocateAction extends AbstractAction {
         try {
             support = new SvnProgressSupport() {
                 SvnClient client = null;
-                protected void perform() {
+                protected void perform() {                    
                     try {
                         client = Subversion.getInstance().getClient(repositoryUrl);
-                    } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                        return;
-                    }
-                    
-                    try {
                         client.relocate(repositoryUrl.toString(), newUrl, wc, true);
                     } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-                    } catch (Exception e) {
-                        ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-                    }
+                        support.annotate(ex);
+                    } 
                 }
             };
             support.start(rp, repositoryUrl, loc.getString("LBL_Relocate_Progress"));
@@ -146,7 +137,7 @@ public class RelocateAction extends AbstractAction {
         File root = ctx.getRootFiles().iterator().next();
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
         return repositoryUrl.toString();
-    }
+    }        
     
     private String getWorkingCopy() {
         File root = ctx.getRootFiles().iterator().next();

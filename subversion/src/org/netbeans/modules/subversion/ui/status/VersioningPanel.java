@@ -322,7 +322,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     /**
      * Performs the "cvs update" command on all diplayed roots.
      */ 
-    private void onUpdateAction() {
+    private void onUpdateAction() {      
         UpdateAction.performUpdate(context);
         parentTopComponent.contentRefreshed();
     }
@@ -333,6 +333,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * and refreshing file nodes.
      */ 
     private void onRefreshAction() {
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }          
         LifecycleManager.getDefault().saveAll();
         if(context.getRootFiles().length < 1) {
             return;
@@ -371,7 +374,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * Shows Diff panel for all files in the view. The initial type of diff depends on the sync mode: Local, Remote, All.
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
-    private void onDiffAction() {        
+    private void onDiffAction() {   
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }          
         String title = parentTopComponent.getContentTitle();
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {            
             LifecycleManager.getDefault().saveAll();

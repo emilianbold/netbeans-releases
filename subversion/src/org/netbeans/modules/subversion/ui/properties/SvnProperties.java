@@ -42,6 +42,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
@@ -247,7 +248,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
 
     }
   
-    protected void refreshProperties() {
+    protected void refreshProperties() {        
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
               
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
@@ -259,14 +260,14 @@ public class SvnProperties implements ActionListener, DocumentListener {
                     try {
                         client = Subversion.getInstance().getClient(repositoryUrl);
                     } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
+                        SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }
                     
                     try {
                         isvnProps = client.getProperties(root);
                     } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }    
                     EventQueue.invokeLater(new Runnable() {
@@ -300,7 +301,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
     
     public void setProperties() {
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
-              
+
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
             support = new SvnProgressSupport() {
@@ -310,7 +311,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
                     try {
                         client = Subversion.getInstance().getClient(repositoryUrl);
                     } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
+                        SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }
                     
@@ -326,7 +327,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
                             client.propertySet(root, getPropertyName(), getPropertyValue(), panel.cbxRecursively.isSelected());
                         }
                     } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+                        SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }    
                     EventQueue.invokeLater(new Runnable() {
@@ -355,7 +356,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
                     try {
                         client = Subversion.getInstance().getClient(repositoryUrl);
                     } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
+                        SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }
                     
@@ -375,7 +376,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
                             //refreshProperties();
                         }                      
                     } catch (SVNClientException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }    
                 }

@@ -28,8 +28,8 @@ import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
@@ -159,13 +159,13 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                 SvnClient client;
                 SVNUrl url = rc.getSvnUrl();
                 try {
-                    int handledExceptions = ExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS ^ // the default without
-                                            (ExceptionHandler.EX_NO_HOST_CONNECTION |        // host connection errors (misspeled host or proxy urls, ...)
-                                             ExceptionHandler.EX_AUTHENTICATION) ;           // authentication errors 
+                    int handledExceptions = (SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS) ^ // the default without
+                                            (SvnClientExceptionHandler.EX_NO_HOST_CONNECTION |        // host connection errors (misspeled host or proxy urls, ...)
+                                             SvnClientExceptionHandler.EX_AUTHENTICATION) ;           // authentication errors 
                     client = Subversion.getInstance().getClient(url, rc.getUsername(), rc.getPassword(), handledExceptions);
                 } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    invalidMsg = ex.getLocalizedMessage();
+                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    invalidMsg = org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Invalid", rc.getUrl()); 
                     return;
                 }
                     
@@ -176,7 +176,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                     info = client.getInfo(url);
                 } catch (SVNClientException ex) {
                     annotate(ex);
-                    invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
+                    invalidMsg = SvnClientExceptionHandler.parseExceptionMessage(ex);
                 } 
                 if(isCanceled()) {
                     return;

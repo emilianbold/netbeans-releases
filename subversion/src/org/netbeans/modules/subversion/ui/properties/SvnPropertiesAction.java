@@ -24,6 +24,8 @@ import java.io.File;
 import javax.swing.JComponent;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -57,15 +59,18 @@ public final class SvnPropertiesAction extends ContextAction {
     }
 
     protected void performContextAction(Node[] nodes) {
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }       
         final Context ctx = getContext(nodes);
         String ctxDisplayName = getContextDisplayName(nodes);
         File[] roots = ctx.getRootFiles();
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         SvnClient client;
-        try {
-            client = Subversion.getInstance().getClient(repositoryUrl);
+        try {            
+            client = Subversion.getInstance().getClient(repositoryUrl);            
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
+            SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }
         

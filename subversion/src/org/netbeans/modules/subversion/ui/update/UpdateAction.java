@@ -27,6 +27,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
@@ -62,10 +64,13 @@ public class UpdateAction extends ContextAction {
     }
     
     protected void performContextAction(Node[] nodes) {        
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }        
         performUpdate(nodes);
     }
 
-    public void performUpdate(final Node[] nodes) {
+    private void performUpdate(final Node[] nodes) {
         // FIXME add shalow logic allowing to ignore nested projects
         // look into CVS, it's very tricky:
         // project1/
@@ -84,7 +89,7 @@ public class UpdateAction extends ContextAction {
     }
 
     private static void update(Context ctx, SvnProgressSupport progress) {
-
+               
         File[] roots = ctx.getRootFiles();
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         
@@ -103,13 +108,13 @@ public class UpdateAction extends ContextAction {
         for (int i= 0; i<split[0].length; i++) {            
             flatFiles.add(split[0][i]);
         }
-        
+                        
         
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(repositoryUrl);
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
+            SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }
 
@@ -150,7 +155,10 @@ roots_loop:
         return;
     }
 
-    public static void performUpdate(final Context context) {
+    public static void performUpdate(final Context context) {                
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
         if (context == null || context.getRoots().size() == 0) {
             return;
         }        

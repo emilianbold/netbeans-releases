@@ -41,7 +41,6 @@ import org.openide.util.*;
 import org.openide.xml.*;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
-
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.event.*;
@@ -55,6 +54,8 @@ import java.util.List;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -393,7 +394,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     private void revert(File file, String revision) {
         final Context ctx = new Context(file);
-        final SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
+        
+        final SVNUrl url = SvnUtils.getRepositoryRootUrl(file);        
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         
         final RevertModifications revertModifications = new RevertModifications(repositoryFile, revision);

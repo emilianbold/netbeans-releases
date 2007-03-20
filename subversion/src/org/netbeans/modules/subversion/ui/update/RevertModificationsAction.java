@@ -22,10 +22,11 @@ package org.netbeans.modules.subversion.ui.update;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
@@ -65,8 +66,11 @@ public class RevertModificationsAction extends ContextAction {
     }
 
     protected void performContextAction(final Node[] nodes) {
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }      
         final Context ctx = getContext(nodes);
-        final File root = ctx.getRootFiles()[0];
+        final File root = ctx.getRootFiles()[0];        
         final SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         
@@ -89,7 +93,7 @@ public class RevertModificationsAction extends ContextAction {
         try {
             client = Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ex);
+            SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }
 
@@ -122,7 +126,7 @@ public class RevertModificationsAction extends ContextAction {
                     }
                     if(files.length > 0 ) {
                         client.revert(files, recursive);                                               
-                    }                    
+                    }
                 }
             } catch (SVNClientException ex) {
                 support.annotate(ex);

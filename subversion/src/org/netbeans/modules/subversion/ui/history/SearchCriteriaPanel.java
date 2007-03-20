@@ -33,7 +33,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-
 import javax.swing.*;
 import java.io.File;
 import java.beans.PropertyChangeListener;
@@ -43,6 +42,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 
 /**
  * Packages search criteria in Search History panel.
@@ -363,14 +363,14 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         try {
             client = Subversion.getInstance().getClient(repositoryURL, progress);
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }
         ISVNLogMessage[] log = new org.tigris.subversion.svnclientadapter.ISVNLogMessage[0];
         try {
             log = client.getLogMessages(tagURL, null, new SVNRevision.Number(1), SVNRevision.HEAD, true, false, 1);
         } catch (SVNClientException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            SvnClientExceptionHandler.notifyException(e, true, true);
             return;
         }
         final SVNRevision.Number revision = log[0].getRevision();

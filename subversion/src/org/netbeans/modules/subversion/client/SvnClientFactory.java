@@ -43,10 +43,10 @@ import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapter;
 public class SvnClientFactory {
 
     /** the only existing SvnClientFactory instance */
-    private static SvnClientFactory instance;    
+    private static SvnClientFactory instance;        
+    private static ClientAdapterFactory factory;        
+    private static SVNClientException exception = null;
     
-    private ClientAdapterFactory factory;
-        
     /** Creates a new instance of SvnClientFactory */
     private SvnClientFactory() {
     }
@@ -56,13 +56,23 @@ public class SvnClientFactory {
      *
      * @return the SvnClientFactory instance
      */
-    public static SvnClientFactory getInstance() {
+    public synchronized static SvnClientFactory getInstance() {        
         if(instance == null) {
-            instance = new SvnClientFactory();
+            init();
         }
         return instance;
     }
 
+    /**
+     * Initializes the SvnClientFactory instance
+     */ 
+    public synchronized static void init() {                        
+        if(instance == null) {
+            instance = new SvnClientFactory();
+            instance.setup();
+        }
+    }    
+    
     /**
      * Returns a SvnClient, which isn't configured in any way.
      * Knows no username, password, has no SvnProgressSupport<br/>
@@ -70,10 +80,13 @@ public class SvnClientFactory {
      *
      * @return the SvnClient
      */
-    public SvnClient createSvnClient() {    
-        return factory.createSvnClient();
+    public SvnClient createSvnClient() throws SVNClientException {       
+        if(exception != null) {
+            throw exception;                 
+        }
+        return factory.createSvnClient();            
     }
-
+    
     /**
      *
      * Returns a SvnClient which is configured with the given <tt>username</tt>,
@@ -91,7 +104,10 @@ public class SvnClientFactory {
      * @return the configured SvnClient
      *
      */    
-    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, String password, int handledExceptions) {
+    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, String password, int handledExceptions) throws SVNClientException {
+        if(exception != null) {
+            throw exception;             
+        }
         return factory.createSvnClient(repositoryUrl, support, username, password, handledExceptions);
     }
     
@@ -100,7 +116,7 @@ public class SvnClientFactory {
      * The CommandlineClientAdapterFactory is default as long no value is set for svnClientAdapterFactory.
      *
      */ 
-    public void setup() throws SVNClientException {
+    private void setup() {
         try {
             String factoryType = System.getProperty("svnClientAdapterFactory");
             
@@ -133,14 +149,17 @@ public class SvnClientFactory {
             } */else {                
                 throw new SVNClientException("Unknown factory: " + factoryType);
             } 
-        } catch (Throwable t) {                                    
-            setupUnsupported();            
-            if(t instanceof SVNClientException) {
-                throw (SVNClientException) t;
-            }            
-            throw new SVNClientException(t);
+        } catch (SVNClientException e) {
+            exception = e;            
         }
     }
+    
+    /**
+     * Throws an exception if no SvnClientAdapter is available.
+     */ 
+    public static void checkClientAvailable() throws SVNClientException {
+        if(exception != null) throw exception;        
+    } 
     
     private void setupJavaHl () throws SVNClientException {        
         JhlClientAdapterFactory.setup();        
@@ -174,21 +193,7 @@ public class SvnClientFactory {
         };
         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on javasvn");
     }
-    */
-    
-    private void setupUnsupported () throws SVNClientException {                
-       factory = new ClientAdapterFactory() {
-            protected ISVNClientAdapter createAdapter() {
-                return new UnsupportedSvnClientAdapter();
-            }
-            protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-                return new SvnCmdLineClientInvocationHandler(adapter, desc, support, handledExceptions);
-            }   
-            protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
-                return null;
-            }            
-        };         
-    }
+    */    
     
     private void setupCommandline () throws SVNClientException {
         String subversionPath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
@@ -256,21 +261,18 @@ public class SvnClientFactory {
             return null;
         }   
                   
-        protected void setupAdapter(ISVNClientAdapter adapter, String username, String password, ISVNPromptUserPassword callback) {                    
-            
+        protected void setupAdapter(ISVNClientAdapter adapter, String username, String password, ISVNPromptUserPassword callback) {                                
             if(callback != null) {
                 adapter.addPasswordCallback(callback);
-            }
-            
+            }            
             try {
                 File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
                 adapter.setConfigDirectory(configDir);
                 adapter.setUsername(username);
                 adapter.setPassword(password);
             } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ex); // should not happen
-            }        
-            
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+            }                    
         }                    
     }
     

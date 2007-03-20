@@ -23,13 +23,13 @@ import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -63,12 +63,17 @@ public class CreateCopyAction extends ContextAction {
     }
     
     protected void performContextAction(final Node[] nodes) {
+        
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
+        
         Context ctx = getContext(nodes);
 
         final File root = ctx.getRootFiles()[0];
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         
-        final boolean hasChanges = files.length > 0;                
+        final boolean hasChanges = files.length > 0; 
         final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);        
         final SVNUrl fileUrl = SvnUtils.getRepositoryUrl(root);        
         final RepositoryFile repositoryFile = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);        
@@ -94,7 +99,7 @@ public class CreateCopyAction extends ContextAction {
             try {
                 client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
             } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ex);
+                SvnClientExceptionHandler.notifyException(ex, true, true);
                 return;
             }
 
@@ -104,7 +109,7 @@ public class CreateCopyAction extends ContextAction {
                 try{
                     info = client.getInfo(folderToCreate);                                                                
                 } catch (SVNClientException ex) {                                
-                    if(!ExceptionHandler.isWrongUrl(ex.getMessage())) { 
+                    if(!SvnClientExceptionHandler.isWrongUrl(ex.getMessage())) { 
                         throw ex;
                     }
                 }            

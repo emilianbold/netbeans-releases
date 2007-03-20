@@ -35,10 +35,11 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.util.SvnUtils;
-
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * The node that is rendered in the SyncTable view. It gets values to display from the

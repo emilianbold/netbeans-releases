@@ -43,6 +43,8 @@ import java.util.MissingResourceException;
 import java.util.Date;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -89,7 +91,7 @@ public abstract class ContextAction extends NodeAction {
 
     public static SVNUrl getSvnUrl(Context ctx) {
         File[] roots = ctx.getRootFiles();
-        return SvnUtils.getRepositoryRootUrl(roots[0]);
+        return SvnUtils.getRepositoryRootUrl(roots[0]);        
     }
 
     protected abstract void performContextAction(Node[] nodes);

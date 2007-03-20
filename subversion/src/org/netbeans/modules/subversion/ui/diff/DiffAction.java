@@ -20,13 +20,13 @@
 package org.netbeans.modules.subversion.ui.diff;
 
 import java.util.*;
-
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
-
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 
@@ -64,6 +64,11 @@ public class DiffAction extends ContextAction {
     }
     
     protected void performContextAction(Node[] nodes) {
+        
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
+        
         Context ctx = getContext(nodes);
         String contextName = getContextDisplayName(nodes);
         diff(ctx, Setup.DIFFTYPE_LOCAL, contextName);        

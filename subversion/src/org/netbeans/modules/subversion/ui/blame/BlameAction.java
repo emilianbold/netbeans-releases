@@ -29,16 +29,16 @@ import org.openide.nodes.Node;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.windows.WindowManager;
 import org.tigris.subversion.svnclientadapter.*;
-
 import javax.swing.*;
 import java.io.File;
 import java.util.*;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 
 /**
  *
@@ -70,7 +70,10 @@ public class BlameAction extends ContextAction {
         return false;
     }
 
-    protected void performContextAction(Node[] nodes) {
+    protected void performContextAction(Node[] nodes) {        
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }        
         if (visible(nodes)) {
             JEditorPane pane = activatedEditorPane(nodes);
             AnnotationBarManager.hideAnnotationBar(pane);
@@ -110,7 +113,7 @@ public class BlameAction extends ContextAction {
             client = Subversion.getInstance().getClient(file, progress);
         } catch (SVNClientException ex) {
             ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationFailed")); // NOI18N;
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }
 
@@ -119,7 +122,7 @@ public class BlameAction extends ContextAction {
             annotations = client.annotate(file, new SVNRevision.Number(1), SVNRevision.BASE);
         } catch (SVNClientException e) {
             ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationFailed")); // NOI18N;
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            SvnClientExceptionHandler.notifyException(e, true, true);
             return;
         }
         if (progress.isCanceled()) {
@@ -134,7 +137,7 @@ public class BlameAction extends ContextAction {
         try {
             logs = client.getLogMessages(file, new SVNRevision.Number(1), SVNRevision.BASE, false, false);
         } catch (SVNClientException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            progress.annotate(e);
             return;
         }
         if (progress.isCanceled()) {

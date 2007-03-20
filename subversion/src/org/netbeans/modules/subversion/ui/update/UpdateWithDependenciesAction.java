@@ -26,9 +26,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
-
 import java.util.*;
 import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 
 /**
  * Updates selected projects and all projects they depend on.
@@ -64,6 +66,10 @@ public class UpdateWithDependenciesAction extends ContextAction {
     }
     
     protected void performContextAction(final Node[] nodes) {
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
+        
         running = true;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {

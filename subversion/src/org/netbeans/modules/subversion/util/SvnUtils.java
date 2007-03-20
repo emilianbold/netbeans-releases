@@ -36,7 +36,6 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.SvnFileNode;
-
 import java.io.*;
 import java.lang.Character;
 import java.util.*;
@@ -45,7 +44,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.versioning.util.FlatFolder;
 import org.tigris.subversion.svnclientadapter.*;
@@ -309,8 +308,7 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */
     public static String getRelativePath(File file) {
-        String repositoryPath = null;
-        SvnClient client = Subversion.getInstance().getClient(false);
+        String repositoryPath = null;        
         
         List<String> path = new ArrayList<String>();
         SVNUrl repositoryURL = null;
@@ -318,10 +316,11 @@ public class SvnUtils {
             
             ISVNInfo info = null;
             try {
+                SvnClient client = Subversion.getInstance().getClient(false);
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {                    
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
             }
             
@@ -366,17 +365,24 @@ public class SvnUtils {
      */
     public static String getRelativePath(SVNUrl repositoryURL, File file) {
         String repositoryPath = null;
-        SvnClient client = Subversion.getInstance().getClient(false);
+        
+        SvnClient client;
+        try {
+            client = Subversion.getInstance().getClient(false);
+        } catch (SVNClientException ex) {                 
+            SvnClientExceptionHandler.notifyException(ex, false, false);            
+            return null;
+        }
         
         List<String> path = new ArrayList<String>();
         while (Subversion.getInstance().isManaged(file)) {
             
             ISVNStatus status = null;
-            try {
+            try {                
                 status = client.getSingleStatus(file);
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {                    
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
             }
             
@@ -419,16 +425,22 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */
     public static SVNUrl getRepositoryRootUrl(File file) {
-        SvnClient client = Subversion.getInstance().getClient(false);
+        SvnClient client;
+        try {
+            client = Subversion.getInstance().getClient(false);
+        } catch (SVNClientException ex) {       
+            SvnClientExceptionHandler.notifyException(ex, false, false);            
+            return null;
+        }
         
         SVNUrl repositoryURL = null;
         while (Subversion.getInstance().isManaged(file)) {
             ISVNInfo info = null;
-            try {
+            try {                
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
             }
             
@@ -456,10 +468,17 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */
     public static SVNUrl getRepositoryUrl(File file) {
-        SvnClient client = Subversion.getInstance().getClient(false);
         
         StringBuffer path = new StringBuffer();
         SVNUrl fileURL = null;
+        SvnClient client = null;
+        try {
+            client = Subversion.getInstance().getClient(false);
+        } catch (SVNClientException ex) {            
+            SvnClientExceptionHandler.notifyException(ex, false, false);
+            return null;
+        }
+        
         while (Subversion.getInstance().isManaged(file)) {
             
             try {
@@ -472,19 +491,19 @@ public class SvnUtils {
                     }
                 }
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
             }
             
             // slower fallback
             
-            ISVNInfo info = null;
+            ISVNInfo info = null;            
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
             }
             
@@ -730,9 +749,9 @@ public class SvnUtils {
      *
      * @return name or null
      */
-    public static String getCopy(File file, List<AnnotationExpression> annotationExpressions) {
-        SVNUrl url = getRepositoryUrl(file);
-        return getCopy(url, annotationExpressions);
+    private static String getCopy(File file, List<AnnotationExpression> annotationExpressions) {
+        SVNUrl url = getRepositoryUrl(file);                    
+        return getCopy(url, annotationExpressions);    
     }
     
     public static String getCopy(SVNUrl url) {

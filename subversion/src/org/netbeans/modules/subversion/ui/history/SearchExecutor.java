@@ -26,12 +26,12 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.tigris.subversion.svnclientadapter.*;
-
 import javax.swing.*;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 
 /**
  * Executes searches in Search History panel.
@@ -87,9 +87,9 @@ class SearchExecutor implements Runnable {
                 }
                 set.add(file);
             }
-        }
+        }                
     }
-
+        
     private int getCommonPostfixLength(String a, String b) {        
         int ai = a.length() - 1;        
         int bi = b.length() - 1;
@@ -146,7 +146,7 @@ class SearchExecutor implements Runnable {
         try {
             client = Subversion.getInstance().getClient(rootUrl, progressSupport);
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }
         if (progressSupport.isCanceled()) {
@@ -164,10 +164,10 @@ class SearchExecutor implements Runnable {
         } else {
             String [] paths = new String[files.size()];
             int idx = 0;
-            for (File file : files) {
-                paths[idx++] = SvnUtils.getRelativePath(rootUrl, file);
-            }
-            try {
+            try {            
+                for (File file : files) {
+                    paths[idx++] = SvnUtils.getRelativePath(rootUrl, file);
+                }
                 ISVNLogMessage [] messages = client.getLogMessages(rootUrl, paths, fromRevision, toRevision, false, true);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {

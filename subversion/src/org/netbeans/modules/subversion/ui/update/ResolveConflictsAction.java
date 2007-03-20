@@ -21,6 +21,8 @@ package org.netbeans.modules.subversion.ui.update;
 
 import java.io.*;
 import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -49,6 +51,9 @@ public class ResolveConflictsAction extends ContextAction {
     }        
 
     protected void performContextAction(Node[] nodes) {
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }       
         Context ctx = getContext(nodes);
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT);

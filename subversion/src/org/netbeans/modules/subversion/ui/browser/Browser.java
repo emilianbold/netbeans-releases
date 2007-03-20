@@ -30,8 +30,8 @@ import javax.swing.Action;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
@@ -209,11 +209,11 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             }        
             
         } catch (SVNClientException ex) {
-            if(ExceptionHandler.isWrongURLInRevision(ex.getMessage())) {
+            if(SvnClientExceptionHandler.isWrongURLInRevision(ex.getMessage())) {
                 // is not a folder in the repository
                 return null;
             } else {
-                support.annotate(ex);                
+                support.annotate(ex);
                 throw ex;
             }                
         }

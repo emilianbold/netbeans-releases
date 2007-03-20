@@ -30,8 +30,8 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
@@ -197,8 +197,8 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                 try {
                     client = Subversion.getInstance().getClient(repositoryPaths.getRepositoryUrl(), this);
                 } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    valid(ex.getLocalizedMessage());
+                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    invalidMsg = SvnClientExceptionHandler.parseExceptionMessage(ex);
                     return;
                 }
 
@@ -215,7 +215,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                         importDummyFolder.deleteOnExit();
                         client.doImport(importDummyFolder, repositoryFile.getFileUrl(), getImportMessage(), false);
                     } catch (SVNClientException ex) {
-                        if(ExceptionHandler.isFileAlreadyExists(ex.getMessage()) ) {
+                        if(SvnClientExceptionHandler.isFileAlreadyExists(ex.getMessage()) ) {
                             // ignore
                         } else {
                             throw ex;
@@ -238,7 +238,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     }
                 } catch (SVNClientException ex) {
                     annotate(ex);
-                    invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
+                    invalidMsg = SvnClientExceptionHandler.parseExceptionMessage(ex);
                 }
 
             } finally {

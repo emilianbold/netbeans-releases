@@ -101,7 +101,7 @@ public class Subversion {
     private void init() {
         Diagnostics.init();
         loadIniParserClassesWorkaround();
-        setupSvnClientFactory();
+        SvnClientFactory.init();        
         
         fileStatusCache = new FileStatusCache();
         annotator = new Annotator(this);
@@ -109,20 +109,7 @@ public class Subversion {
         filesystemHandler  = new FilesystemHandler(this);
         cleanup();
     }
-    
-    public static void setupSvnClientFactory() {
-        try {
-            SvnClientFactory.getInstance().setup();
-        } catch (SVNClientException ex) {
-            Logger.getLogger("org.netbeans.modules.subversion").log(Level.INFO, UnsupportedSvnClientAdapter.getMessage());
-            
-            // ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
-            // ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            // TODO: #78951 hotfix
-//            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
-        }        
-    }        
-            
+                           
     /**
      * Ini4j uses context classloader to load classes, use this as a workaround. 
      */ 
@@ -215,6 +202,16 @@ public class Subversion {
         return annotator;
     }
 
+    public boolean checkClientAvailable() {
+        try {
+            SvnClientFactory.checkClientAvailable();
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return false;
+        }
+        return true;
+    }
+    
     public SvnClient getClient(SVNUrl repositoryUrl,
                                String username, 
                                String password) 
@@ -260,7 +257,7 @@ public class Subversion {
         File[] roots = ctx.getRootFiles();
         SVNUrl repositoryUrl = null;
         for (int i = 0; i<roots.length; i++) {
-             repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
             if (repositoryUrl != null) {
                 break;
             }
@@ -287,7 +284,7 @@ public class Subversion {
      *
      * <p>It hanldes cancellability
      */
-    public SvnClient getClient(boolean attachListeners) {        
+    public SvnClient getClient(boolean attachListeners) throws SVNClientException {        
         cleanupFilesystem();
         if(attachListeners) {            
             if(noUrlClientWithListeners == null) {
@@ -329,7 +326,12 @@ public class Subversion {
      * @param file a file
      * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
      */
-    File getTopmostManagedParent(File file) {
+    File getTopmostManagedParent(File file) {           
+        try {
+            SvnClientFactory.checkClientAvailable();
+        } catch (SVNClientException ex) {
+            return null;
+        }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             for (;file != null; file = file.getParentFile()) {
                 if (isAdministrative(file)) {
@@ -400,7 +402,7 @@ public class Subversion {
                     }
                     
                 } catch (SVNClientException ex)  {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
             }
         }
@@ -419,7 +421,7 @@ public class Subversion {
                     }
                 }
             } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                SvnClientExceptionHandler.notifyException(ex, false, false);
             }
             return true;
         } else {

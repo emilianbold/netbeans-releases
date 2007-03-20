@@ -115,7 +115,7 @@ public final class PropertiesClient {
                 return ((ParserSvnInfo) info).getPropertyFile();                
             }
         } else {
-            throw new SVNClientException("Unexpected value:" + info + " should be from type " + ParserSvnInfo.class);
+            throw new SVNClientException("Unexpected value:" + info + " should be from type " + ParserSvnInfo.class);            
         }         
     }
     

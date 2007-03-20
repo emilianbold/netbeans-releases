@@ -29,10 +29,12 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-
 import javax.swing.*;
 import java.io.File;
 import java.util.*;
+import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 
 /**
  * Opens Search History Component.
@@ -58,6 +60,9 @@ public class SearchHistoryAction extends ContextAction {
     }
 
     protected void performContextAction(Node[] nodes) {
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }        
         String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes)); // NOI18N
         openHistory(getContext(nodes), title);
     }

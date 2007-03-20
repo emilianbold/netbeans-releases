@@ -35,9 +35,12 @@ import java.io.*;
 import java.util.*;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -86,6 +89,11 @@ public final class ImportAction extends NodeAction {
     }
 
     protected void performAction(Node[] nodes) {
+        
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
+    
         if (nodes.length == 1) {
             final File importDirectory = lookupImportDirectory(nodes[0]);
             if (importDirectory != null) {
@@ -107,8 +115,7 @@ public final class ImportAction extends NodeAction {
     private void performAction(final Context context,
                                final Map/*<SvnFileNode, CommitOptions>*/ commitFiles,
                                final String message)
-    {        
-        
+    {                
         SVNUrl repository = SvnUtils.getRepositoryRootUrl(context.getRootFiles()[0]);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {

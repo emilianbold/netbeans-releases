@@ -39,7 +39,6 @@ import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 import org.netbeans.modules.subversion.ui.diff.ExportDiffAction;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
-
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.event.*;
@@ -50,6 +49,8 @@ import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * @author Maros Sandor
@@ -327,17 +328,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     static void revert(final SearchHistoryPanel master, final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
-        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getSearchRepositoryRootUrl());
+        SVNUrl url = master.getSearchRepositoryRootUrl();        
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
                 revertImpl(master, revisions, events, this);
             }
         };
-        support.start(rp, master.getSearchRepositoryRootUrl(), NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
+        support.start(rp, url, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
     }
 
     private static void revertImpl(SearchHistoryPanel master, RepositoryRevision[] revisions, RepositoryRevision.Event[] events, SvnProgressSupport progress) {
-        final RepositoryFile repositoryFile = new RepositoryFile(master.getSearchRepositoryRootUrl(), master.getSearchRepositoryRootUrl(), SVNRevision.HEAD);
+        SVNUrl url = master.getSearchRepositoryRootUrl();        
+        final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         for (RepositoryRevision revision : revisions) {
             RevertModifications revertModifications = new RevertModifications(repositoryFile, Long.toString(revision.getLog().getRevision().getNumber()));
             final Context ctx = new Context(master.getRoots());

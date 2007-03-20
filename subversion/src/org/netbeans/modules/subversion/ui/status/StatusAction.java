@@ -26,6 +26,8 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.openide.ErrorManager;
@@ -53,6 +55,11 @@ public class StatusAction  extends ContextAction {
     }
 
     public void performContextAction(Node[] nodes) {
+        
+        if(!Subversion.getInstance().checkClientAvailable()) {            
+            return;
+        }
+        
         Context ctx = SvnUtils.getCurrentContext(nodes);
         final SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
         stc.setContentTitle(getContextDisplayName(nodes));
@@ -76,7 +83,7 @@ public class StatusAction  extends ContextAction {
             try {
                 client = Subversion.getInstance().getClient(context, support);
             } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ex);
+                SvnClientExceptionHandler.notifyException(ex, true, true);
                 return;
             }
 

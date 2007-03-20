@@ -30,7 +30,8 @@ import org.tigris.subversion.svnclientadapter.*;
 /**
  * File revisions cache. It can access pristine files.
  *
- *
+ * XXX and what exactly is cached here?!
+ * 
  * @author Petr Kuzel
  */
 public class VersionsCache {

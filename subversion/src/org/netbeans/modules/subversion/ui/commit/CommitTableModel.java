@@ -24,10 +24,11 @@ import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -159,7 +160,7 @@ public class CommitTableModel extends AbstractTableModel {
                 String relativePath = nodes[rowIndex].getFile().getAbsolutePath().substring(rootFile.rootLocalPath.length());
                 shortPath = rootFile.repositoryPath + relativePath.replace(File.separatorChar, '/');
             } else {
-                Set<SVNUrl> url = getRepositoryRoots();
+                Set<SVNUrl> url = getRepositoryRoots();                
                 for (Iterator<SVNUrl> it = url.iterator(); it.hasNext();) {
                     SVNUrl nextUrl = it.next();
                     shortPath = SvnUtils.getRelativePath(nextUrl, nodes[rowIndex].getFile());
@@ -169,7 +170,6 @@ public class CommitTableModel extends AbstractTableModel {
                     shortPath = SvnUtils.getRelativePath(newUrl, nodes[rowIndex].getFile());                    
                     url.add(newUrl);
                 }
-                //shortPath = SvnUtils.getRelativePath(nodes[rowIndex].getFile());
                 if (shortPath == null) {
                     shortPath = org.openide.util.NbBundle.getMessage(CommitTableModel.class, "CTL_CommitForm_NotInRepository"); // NOI18N
                 }
