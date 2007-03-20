@@ -69,6 +69,16 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
     }
 
+    @Override
+    public BeanDescriptor getBeanDescriptor() {
+        BeanDescriptor retval = super.getBeanDescriptor();
+        if (retval == null) {
+            retval = new BeanDescriptor(IDESettings.class);
+        }
+        retval.setDisplayName(NbBundle.getMessage (IDESettingsBeanInfo.class, "CTL_IDESettings"));
+        return retval;
+    }
+
     /** Returns the IDESettings' icon */
     public Image getIcon(int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
