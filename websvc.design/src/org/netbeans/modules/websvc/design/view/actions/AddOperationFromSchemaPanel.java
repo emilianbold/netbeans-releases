@@ -151,7 +151,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                     boolean isSelected,
                     boolean cellHasFocus) {
                     if (value instanceof GlobalElement) {
-                        String text = ((GlobalElement)value).getName();
+                        GlobalElement el = (GlobalElement)value;
+                        String text = "{"+el.getModel().getEffectiveNamespace(el)+"}:"+el.getName(); //NOI18N
                         setText(text);
                     } else if (value instanceof String) { 
                         setText((String)value);
@@ -169,6 +170,7 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -180,6 +182,9 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         returnCombo = new javax.swing.JComboBox();
         faultCombo = new javax.swing.JComboBox();
         schemaCombo = new javax.swing.JComboBox();
+        jLabel6 = new javax.swing.JLabel();
+        jRadioButton1 = new javax.swing.JRadioButton();
+        jRadioButton2 = new javax.swing.JRadioButton();
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("LBL_OperationName_mnem").charAt(0));
         jLabel1.setLabelFor(opNameTxt);
@@ -203,6 +208,21 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         browseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("LBL_Browse_mnem").charAt(0));
         browseButton.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "LBL_Browse")); // NOI18N
 
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "LBL_BindingStyle")); // NOI18N
+
+        buttonGroup1.add(jRadioButton1);
+        jRadioButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("RB_DOCUMENT_LITERAL_mnem").charAt(0));
+        jRadioButton1.setSelected(true);
+        jRadioButton1.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "RB_DOCUMENT_LITERAL")); // NOI18N
+        jRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        buttonGroup1.add(jRadioButton2);
+        jRadioButton2.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("RB_RPC_LITERAL_mnem").charAt(0));
+        jRadioButton2.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "RB_RPC_LITERAL")); // NOI18N
+        jRadioButton2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -217,13 +237,18 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                             .add(jLabel1)
                             .add(jLabel2)
                             .add(jLabel3)
-                            .add(jLabel5))
+                            .add(jLabel5)
+                            .add(jLabel6))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, opNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, parmCombo, 0, 469, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, faultCombo, 0, 469, Short.MAX_VALUE)
-                            .add(returnCombo, 0, 469, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(jRadioButton1)
+                                .add(76, 76, 76)
+                                .add(jRadioButton2))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, opNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, parmCombo, 0, 487, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, faultCombo, 0, 487, Short.MAX_VALUE)
+                            .add(returnCombo, 0, 487, Short.MAX_VALUE)
                             .add(schemaCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 459, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
@@ -240,7 +265,12 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                     .add(schemaCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseButton)
-                .add(46, 46, 46)
+                .add(11, 11, 11)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel6)
+                    .add(jRadioButton1)
+                    .add(jRadioButton2))
+                .add(20, 20, 20)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(parmCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -252,61 +282,82 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(faultCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(68, Short.MAX_VALUE))
+                .addContainerGap(65, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void schemaComboChanged(java.awt.event.ItemEvent evt) {
-    // TODO add your handling code here:
-    parmCombo.removeAllItems();
-    returnCombo.removeAllItems();
-    faultCombo.removeAllItems();
-    String selectedItem = (String)schemaCombo.getSelectedItem();
-    populateWithElements(selectedItem);
-}
+    private void schemaComboChanged(java.awt.event.ItemEvent evt) {
+        // TODO add your handling code here:
+        parmCombo.removeAllItems();
+        returnCombo.removeAllItems();
+        faultCombo.removeAllItems();
+        String selectedItem = (String)schemaCombo.getSelectedItem();
+        populateWithElements(selectedItem);
+    }
 
 
-private void populateWithElements(String selectedItem) {
-    parmCombo.addItem("<no params>");
-    returnCombo.addItem("void");
-    faultCombo.addItem("<no exceptions>");
-    Import importedSchema = map.get(selectedItem);
-    if (importedSchema!=null) {
-        String namespace = importedSchema.getNamespace();
-        try {
-            SchemaModel schemaModel = importedSchema.resolveReferencedModel();
-            Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
-            for(GlobalElement element : elements){
-                String elementName = element.getName();
-                parmCombo.addItem(element);
-                returnCombo.addItem(element);
-                faultCombo.addItem(element);
+    private void populateWithElements(String selectedItem) {
+        parmCombo.addItem("<no params>");populateWithPrimitives(parmCombo);
+        returnCombo.addItem("void");populateWithPrimitives(returnCombo);
+        faultCombo.addItem("<no exceptions>");
+        Import importedSchema = map.get(selectedItem);
+        if (importedSchema!=null) {
+            String namespace = importedSchema.getNamespace();
+            try {
+                SchemaModel schemaModel = importedSchema.resolveReferencedModel();
+                Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
+                for(GlobalElement element : elements){
+                    String elementName = element.getName();
+                    parmCombo.addItem(element);
+                    returnCombo.addItem(element);
+                    faultCombo.addItem(element);
+                }
+            } catch (CatalogModelException ex) {
+                ex.printStackTrace();
             }
-        } catch (CatalogModelException ex) {
-            ex.printStackTrace();
-        }
-    } else {
-        Schema schema = map1.get(selectedItem);
-        if (schema!=null) {
-            Collection<GlobalElement> elements = schema.getElements();
-            for(GlobalElement element : elements){
-                String elementName = element.getName();
-                parmCombo.addItem(element);
-                returnCombo.addItem(element);
-                faultCombo.addItem(element);
+        } else {
+            Schema schema = map1.get(selectedItem);
+            if (schema!=null) {
+                Collection<GlobalElement> elements = schema.getElements();
+                for(GlobalElement element : elements){
+                    String elementName = element.getName();
+                    parmCombo.addItem(element);
+                    returnCombo.addItem(element);
+                    faultCombo.addItem(element);
+                }
             }
         }
     }
-}
+
+    private void populateWithPrimitives(javax.swing.JComboBox combo) {
+        combo.addItem("xsd:string");
+        combo.addItem("xsd:int");
+        combo.addItem("xsd:boolean");
+        combo.addItem("xsd:decimal");
+        combo.addItem("xsd:float");
+        combo.addItem("xsd:double");
+        combo.addItem("xsd:duration");
+        combo.addItem("xsd:base64Binary");
+        combo.addItem("xsd:hexBinary");
+        combo.addItem("xsd:date");
+        combo.addItem("xsd:time");
+        combo.addItem("xsd:dateTime");
+        combo.addItem("xsd:anyUri");
+        combo.addItem("xsd:QName");
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox faultCombo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JRadioButton jRadioButton1;
+    private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JTextField opNameTxt;
     private javax.swing.JComboBox parmCombo;
     private javax.swing.JComboBox returnCombo;
