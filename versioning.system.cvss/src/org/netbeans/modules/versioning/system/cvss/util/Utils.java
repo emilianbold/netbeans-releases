@@ -561,7 +561,7 @@ public class Utils {
         if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z')) return false;
         for (int i = 1; i < name.length(); i++) {
             c = name.charAt(i);
-            if (c == '$' || c == ',' || c=='.' || c == ':' || c == ';' || c =='@' || c == ' ' || c == '\t' || c == '\n') return false;
+            if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9') && c != '-' && c != '_') return false;
         }
         if (name.equals("HEAD") || name.equals("BASE")) return false;
         return true;
