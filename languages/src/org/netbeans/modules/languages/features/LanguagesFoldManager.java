@@ -21,6 +21,7 @@ package org.netbeans.modules.languages.features;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.ParseException;
@@ -62,8 +63,12 @@ import org.netbeans.api.lexer.TokenHierarchy;
  */
 public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     
-    private FoldOperation   operation;
-    private NbEditorDocument doc;
+    private static final int EVALUATING = 0;
+    private static final int STOPPED = 1;
+    
+    private FoldOperation operation;
+    private Document doc;
+    private int evalState = STOPPED;
     
     
     /** Creates a new instance of JavaFoldManager */
@@ -76,12 +81,9 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
      * @param operation fold hierarchy operation dedicated to the fold manager.
      */
     public void init (FoldOperation operation) {
-        Document d = operation.getHierarchy ().getComponent ().getDocument ();
-        if (d instanceof NbEditorDocument) {
-            this.operation = operation;
-            doc = (NbEditorDocument) d;
-            ParserManagerImpl.get (doc).addASTEvaluator (this);
-        }
+        this.doc = operation.getHierarchy ().getComponent ().getDocument ();
+        this.operation = operation;
+        ParserManagerImpl.get (doc).addASTEvaluator (this);
     }
     
     /**
@@ -196,12 +198,17 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     private List<FoldItem> folds;
     
     public void beforeEvaluation (State state, ASTNode root) {
+        evalState = EVALUATING;
         folds = new CopyOnWriteArrayList<FoldItem> ();
     }
 
     public void afterEvaluation (State state, ASTNode root) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
+                if (operation == null) {
+                    evalState = STOPPED;
+                    return;
+                }
                 FoldHierarchy hierarchy = operation.getHierarchy ();
                 FoldHierarchyTransaction transaction = operation.openTransaction ();
                 try {
@@ -224,6 +231,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                     ex.printStackTrace ();
                 } finally {
                     transaction.commit ();
+                    evalState = STOPPED;
                 }
             }
         });
@@ -234,8 +242,8 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             ASTItem item = path.getLeaf ();
             int s = item.getOffset (),
                 e = item.getEndOffset ();
-            int sln = NbDocument.findLineNumber (doc, s),
-                eln = NbDocument.findLineNumber (doc, e);
+            int sln = NbDocument.findLineNumber ((StyledDocument)doc, s),
+                eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
             if (sln == eln) return;
             String mimeType = item.getMimeType ();
             Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
@@ -265,8 +273,8 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                 }
                 ts.moveNext ();
                 e = ts.offset ();
-                sln = NbDocument.findLineNumber (doc, s);
-                eln = NbDocument.findLineNumber (doc, e);
+                sln = NbDocument.findLineNumber ((StyledDocument)doc, s);
+                eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
                 if (eln - sln < 1) return;
             }
                 
@@ -286,10 +294,25 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
         }
     }
     
+    // package private methods for unit tests...................................
+    
+    void init (Document doc) {
+        this.doc = doc;
+        this.operation = null;
+        ParserManagerImpl.get (doc).addASTEvaluator (this);
+    }
+    
+    List<FoldItem> getFolds() {
+        return folds;
+    }
+    
+    boolean isEvaluating() {
+        return evalState == EVALUATING;
+    }
     
     // innerclasses ............................................................
     
-    private static final class FoldItem {
+    static final class FoldItem {
         String foldName;
         int start;
         int end;
