@@ -34,6 +34,7 @@ import com.tomsawyer.editor.TSEWindowTool;
 import com.tomsawyer.editor.ui.TSEDefaultNodeUI;
 import com.tomsawyer.editor.ui.TSENodeUI;
 import com.tomsawyer.graph.TSEdge;
+import com.tomsawyer.graph.TSFindChildParent;
 import com.tomsawyer.graph.TSGraph;
 import com.tomsawyer.graph.TSGraphObject;
 import com.tomsawyer.graph.TSNode;
@@ -240,7 +241,7 @@ public class ADCoreEngine extends DiagramEngine
 	public static String CONTROL_STEREO = DiagramEngineResources.getString("ADCoreEngine.controller_2"); 
 	public static String ENTITY_STEREO = DiagramEngineResources.getString("ADCoreEngine.entity_3"); 
 	public static int INT_MAX = 999;
-
+        public static int FIND_DEPTH_ALL = TSFindChildParent.FIND_DEPTH_ALL;
 	private static final String BUNDLE_NAME = "org.netbeans.modules.uml.ui.products.ad.diagramengines.Bundle"; 
 	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 
@@ -4137,7 +4138,7 @@ public class ADCoreEngine extends DiagramEngine
         { 
             if (pPresEle != null)
             {
-                control.hide(pPresEle, INT_MAX, false);
+                control.hide(pPresEle, this.INT_MAX, false);
             }
             bHandled = true;
         }
@@ -4161,7 +4162,7 @@ public class ADCoreEngine extends DiagramEngine
         { 
             if (pPresEle != null)
             {
-                control.unhide(pPresEle, INT_MAX, true);
+                control.unhide(pPresEle, FIND_DEPTH_ALL, true);
             }
             bHandled = true;
         }
@@ -4185,7 +4186,7 @@ public class ADCoreEngine extends DiagramEngine
         { 
             if (pPresEle != null)
             {
-                control.unhide(pPresEle, INT_MAX, false);
+                control.unhide(pPresEle, FIND_DEPTH_ALL, false);
             }
             bHandled = true;
         }
