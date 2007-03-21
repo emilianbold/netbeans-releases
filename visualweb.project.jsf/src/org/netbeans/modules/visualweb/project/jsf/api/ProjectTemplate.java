@@ -60,6 +60,15 @@ public abstract class ProjectTemplate {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, iox);
             throw iox;
         }
+
+        // Allow file been created under subdir of the root.
+        int pindex = name.lastIndexOf('/');
+        if (pindex != -1) {
+            String path = name.substring(0, pindex);
+            folder = FileUtil.createFolder(folder, path);
+            name = name.substring(pindex+1);
+        }
+
         DataFolder folderDataObj = (DataFolder)DataObject.find(folder);
         DataObject template = DataObject.find(FO);
         String ext = FileUtil.getExtension(name);

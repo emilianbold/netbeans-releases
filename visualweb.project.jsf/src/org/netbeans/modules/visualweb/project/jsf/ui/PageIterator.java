@@ -206,9 +206,9 @@ public class PageIterator implements TemplateWizard.Iterator {
 
                     boolean isPage = "jsp".equals(template.getExt());
                     if (isPage) {
-                        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, targetName+".jsp");
+                        setStartPage(project, webModule, dir, targetName);
                     } else if ("jspf".equals(template.getExt()) && "Page1".equals(targetName)) {
-                        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "Page2.jsp");
+                        setStartPage(project, webModule, dir, "Page2");
                     }
 
                     framework.getConfigurationPanel(webModule);
@@ -249,6 +249,19 @@ public class PageIterator implements TemplateWizard.Iterator {
         return result;
     }
     
+    private void setStartPage(Project project, WebModule webModule, FileObject targetFolder, String targetName) {
+        String startPage = targetName + ".jsp";
+        FileObject webFolder = webModule.getDocumentBase();
+        if (webFolder != null) {
+            // Allow the first start page been created under subdir of the web root.
+            String startPath = FileUtil.getRelativePath(webFolder, targetFolder);
+            if (startPath != null && startPath.length() > 0) {
+                startPage = startPath + "/" + startPage;
+            }
+        }
+        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, startPage);
+    }
+
     public void previousPanel () {
         if (! hasPrevious ()) throw new NoSuchElementException ();
         index--;
