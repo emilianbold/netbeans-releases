@@ -84,6 +84,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
     private WidgetAction moveControlPointAction;
     private WidgetAction renameAction;
     private WidgetAction popupMenuAction;
+    private WidgetAction editAction;
 
     private Router edgeRouter;
 
@@ -122,6 +123,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         reconnectAction = ActionFactory.createReconnectAction (flowReconnectDecoratorProvider, flowReconnectDecoratorProvider);
         moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
         renameAction = ActionFactory.createInplaceEditorAction (new FlowRenameEditor ());
+        editAction = ActionFactory.createEditAction (new FlowEditProvider ());
 
         edgeRouter = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
 
@@ -240,6 +242,10 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         return popupMenuAction;
     }
 
+    public WidgetAction createEditAction () {
+        return editAction;
+    }
+
     public void userSelectionSuggested (final Set<? extends Object> suggestedSelectedObjects, boolean invertSelection) {
         if (invertSelection) {
             HashSet<Object> objects = new HashSet<Object> (getSelectedObjects ());
@@ -279,6 +285,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         actions.addAction (createMoveAction ());
         actions.addAction (createAcceptAction ());
         actions.addAction (createPopupMenuAction ());
+        actions.addAction (createEditAction ());
     }
 
     public void addEdgeCommonActions (ConnectionWidget widget) {
@@ -287,6 +294,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         actions.addAction (createSelectAction ());
         actions.addAction (createReconnectAction ());
         actions.addAction (createPopupMenuAction ());
+        actions.addAction (createEditAction ());
     }
 
     public void addPinCommonActions (Widget widget) {
@@ -296,6 +304,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         widget.getActions ().addAction (createAcceptAction ());
         widget.getActions ().addAction (createConnectAction ());
         actions.addAction (createPopupMenuAction ());
+        actions.addAction (createEditAction ());
     }
 
     public void addBadge (FlowDescriptor descriptor, FlowBadgeDescriptor badge) {
@@ -828,6 +837,23 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
             });
         }
 
+    }
+
+    private class FlowEditProvider implements EditProvider {
+
+        public void edit (final Widget widget) {
+            final FlowDescriptor descriptor = (FlowDescriptor) findObject (widget);
+            if (descriptor == null)
+                return;
+            document.getTransactionManager ().writeAccess (new Runnable() {
+                public void run () {
+                    FlowDescriptor descriptor = (FlowDescriptor) findObject (widget);
+                    FlowDescriptor.EditActionBehaviour behaviour = getAbstractBehaviour (descriptor, FlowDescriptor.EditActionBehaviour.class);
+                    if (behaviour != null)
+                        behaviour.edit (descriptor);
+                }
+            });
+        }
     }
 
     private final static class CacheNodeDescriptor {

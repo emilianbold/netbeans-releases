@@ -94,4 +94,10 @@ public abstract class FlowDescriptor {
 
     }
 
+    public interface EditActionBehaviour extends Behaviour {
+
+        void edit (FlowDescriptor descriptor);
+        
+    }
+
 }
