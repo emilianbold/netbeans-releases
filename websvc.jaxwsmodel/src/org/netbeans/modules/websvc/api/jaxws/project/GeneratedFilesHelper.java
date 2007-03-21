@@ -418,18 +418,7 @@ public final class GeneratedFilesHelper {
 
         Map properties = h.getStandardPropertyEvaluator().getProperties();
         String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
-        System.out.println("server instance: " + serverInstance);
-        String j2eeplatform = (String)properties.get("j2ee.platform");
-        System.out.println("j2eeplatform: " + j2eeplatform);
-        String j2eeservertype = (String)properties.get("j2ee.server.type");
-        System.out.println("j2eepservertype: " + j2eeservertype);
-        String j2eeplatform_classpath = (String)properties.get("j2ee.platform.classpath");
-        System.out.println("j2eeplatform_classpath: " + j2eeplatform_classpath);
-        if (serverInstance != null) {
-            String[] ids = Deployment.getDefault().getServerInstanceIDs();
-            for(int i = 0; i < ids.length; i++){
-                System.out.println("server id: " + ids[i]);
-            }    
+        if (serverInstance != null) {    
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
             if (j2eePlatform != null && j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109)) {
                File[] roots = j2eePlatform.getPlatformRoots();
@@ -438,7 +427,6 @@ public final class GeneratedFilesHelper {
                    File dtdFile = new File(appSvrRoot, "lib" + 
                            File.separator + "dtds" + 
                            File.separator + "sun-domain_1_3.dtd");
-                   System.out.println("dtdFile: " + dtdFile.getAbsolutePath());
                    if(dtdFile.exists()){
                        return true;
                    }
