@@ -40,7 +40,7 @@ public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
 
     public Component getComponent() {
         if (component == null) {
-            component = new AddToPaletteVisualPanel1();
+            component = new AddToPaletteVisualPanel1(this);
         }
         return component;
     }

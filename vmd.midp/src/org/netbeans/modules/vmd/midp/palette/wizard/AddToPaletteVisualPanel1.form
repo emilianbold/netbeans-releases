@@ -37,6 +37,9 @@
   </Layout>
   <SubComponents>
     <Component class="javax.swing.JComboBox" name="projectCombo">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="projectComboActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>

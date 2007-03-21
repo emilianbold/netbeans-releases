@@ -31,7 +31,10 @@ import java.awt.*;
  */
 public final class AddToPaletteVisualPanel1 extends JPanel {
 
-    public AddToPaletteVisualPanel1() {
+    private AddToPaletteWizardPanel1 wizardPanel;
+
+    public AddToPaletteVisualPanel1 (AddToPaletteWizardPanel1 wizardPanel) {
+        this.wizardPanel = wizardPanel;
         initComponents();
         projectCombo.setRenderer (new ProjectListCellRenderer ());
     }
@@ -48,7 +51,11 @@ public final class AddToPaletteVisualPanel1 extends JPanel {
         Project[] projects = OpenProjects.getDefault ().getOpenProjects ();
         // TODO - filter for midp projects only
         projectCombo.setModel (new DefaultComboBoxModel (projects));
-        projectCombo.setSelectedItem (project != null ? project : OpenProjects.getDefault ().getMainProject ());
+        if (project == null)
+            project = OpenProjects.getDefault ().getMainProject ();
+        if (project == null  &&  projects.length > 0)
+            project = projects[0];
+        projectCombo.setSelectedItem (project);
     }
 
     /** This method is called from within the constructor to
@@ -61,6 +68,12 @@ public final class AddToPaletteVisualPanel1 extends JPanel {
 
         projectCombo = new javax.swing.JComboBox();
         javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
+
+        projectCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                projectComboActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Select Project:");
 
@@ -86,6 +99,10 @@ public final class AddToPaletteVisualPanel1 extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+private void projectComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboActionPerformed
+    wizardPanel.fireChangeEvent();
+}//GEN-LAST:event_projectComboActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox projectCombo;
@@ -94,6 +111,8 @@ public final class AddToPaletteVisualPanel1 extends JPanel {
     public static class ProjectListCellRenderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value == null)
+                return super.getListCellRendererComponent (list, value, index, isSelected, cellHasFocus);
             ProjectInformation info = ((Project) value).getLookup ().lookup (ProjectInformation.class);
             super.getListCellRendererComponent (list, info != null ? info.getDisplayName () : null, index, isSelected, cellHasFocus);
             if (info != null)
