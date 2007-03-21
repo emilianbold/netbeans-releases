@@ -572,7 +572,7 @@ public class Watches extends JellyTestCase {
         new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();
         //new ActionNoBlock(null, null, Utilities.newWatchShortcut).performShortcut();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newWatchTitle);
-        new JTextFieldOperator(dialog, 0).typeText(exp);
+        new JTextFieldOperator(dialog, 0).setText(exp);
         dialog.ok();
         try {
             new Waiter(new Waitable() {

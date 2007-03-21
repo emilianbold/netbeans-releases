@@ -66,11 +66,11 @@ public class Actions extends JellyTestCase {
         suite.addTest(new Actions("testCheckEnabledActionsDebugging"));
         suite.addTest(new Actions("testToggleBreakpoints"));
         suite.addTest(new Actions("testStartDebugging"));
+        suite.addTest(new Actions("testRemoveBreakpoint"));
         suite.addTest(new Actions("testStepInto"));
         suite.addTest(new Actions("testStepOver"));
         suite.addTest(new Actions("testRunToCursor"));
         suite.addTest(new Actions("testStepOut"));
-        suite.addTest(new Actions("testRemoveBreakpoint"));
         suite.addTest(new Actions("testContinue"));
         suite.addTest(new Actions("testStepOverExpression"));
         suite.addTest(new Actions("testPause"));
@@ -325,6 +325,23 @@ public class Actions extends JellyTestCase {
         }
     }
     
+    public void testRemoveBreakpoint() throws Throwable {
+        try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            //remove breakpoint
+            Utilities.toggleBreakpoint(eo, 80, false);
+            assertFalse("Breakpoint annotation is not removed from line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
     public void testStepInto() throws Throwable {
         try {
             new StepIntoAction().performShortcut();
@@ -392,23 +409,6 @@ public class Actions extends JellyTestCase {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             assertFalse("Current PC annotation remains on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
             assertTrue("Current PC annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CurrentExpressionLine"));
-        } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
-            throw th;
-        }
-    }
-    
-    public void testRemoveBreakpoint() throws Throwable {
-        try {
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            //remove breakpoint
-            Utilities.toggleBreakpoint(eo, 80, false);
-            assertFalse("Breakpoint annotation is not removed from line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
