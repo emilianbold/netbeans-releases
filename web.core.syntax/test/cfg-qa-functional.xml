@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="j2eecompletion" executor="ide_as" name="JSP Syntax EE5 validation">
+    <testbag testattribs="j2eecompletion, validation, stable" executor="ide_as" name="JSP Syntax EE5 validation">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/J2EECompletionTest.class"/>
