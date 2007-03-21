@@ -91,9 +91,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-css">
                 <attr name="createDataObject" boolvalue="false"/>
-                <file name="language.nbs">
-                    <attr name="createDataObject" boolvalue="false"/>
-                </file>
                 
                 <file name="Settings.settings" url="EditorOptions.xml"/>
                 

@@ -69,8 +69,11 @@ public class LanguagesManager {
     }
 
     public boolean createDataObjectFor (String mimeType) {
+        if(!isSupported(mimeType)) {
+            return false;
+        }
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        FileObject fo = fs.findResource ("Editors/" + mimeType + "/language.nbs");
+        FileObject fo = fs.findResource ("Editors/" + mimeType);
         if (fo == null) return false;
         Boolean b = (Boolean) fo.getAttribute ("createDataObject");
         if (b == null) return true;
