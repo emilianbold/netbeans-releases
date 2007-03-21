@@ -51,6 +51,7 @@ import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Position;
@@ -1410,7 +1411,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		
 		@Override
 		protected void paintComponent(Graphics g) {
-			g.setColor(new Color(230, 230, 255));
+			g.setColor(UIManager.getColor("Panel.background"));
 			g.fillRect(0, 0, this.getWidth(), this.getHeight());
 			g.setColor(Color.BLACK);
 			int startx = BORDER;
@@ -1508,9 +1509,10 @@ public class ScenePanel extends JPanel implements SceneListener,
 	    private final Color COLOR_MINOR = Color.GRAY;
 	    private final Font FONT = new Font("SansSerif", Font.PLAIN, 9);
 	    
-	    public final Color RulerColor = new Color(230, 230, 255);
-	    
-	    public int orientation;
+	    public final Color RulerColor = UIManager.getColor ("Panel.background"); // NOI18N 
+		//new Color(230, 230, 255);
+
+		public int orientation;
 	    private int increment = 10;
 	    private int units = 50;
 
