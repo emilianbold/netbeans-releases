@@ -48,9 +48,9 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <p>
    AXIOM is a XML-Schema model that is built by de-normalizing a Schema.
-   This model is very useful. Here are two use-cases:
-   a) Authoring XML Schema by examples
-   b) Schema aware code completion in XML documents
+   This model is very useful. Here are two primary use-cases:
+   a) Schema aware code completion in XML documents
+   b) Authoring XML Schema by examples
   </p>
  </answer>
 
@@ -116,8 +116,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-   a) Authoring XML Schema by examples
-   b) Schema aware code completion in XML documents
+   a) Schema aware code completion in XML documents
+   b) Authoring XML Schema by examples
   </p>
  </answer>
 
@@ -137,8 +137,8 @@ Microsystems, Inc. All Rights Reserved.
   <p>
    AXIOM is a XML-Schema model that is built by de-normalizing a Schema.
    This model is very useful. Here are two use-cases:
-   a) Authoring XML Schema by examples
-   b) Schema aware code completion in XML documents   
+   a) Schema aware code completion in XML documents
+   b) Authoring XML Schema by examples
   </p>
  </answer>
 
@@ -173,7 +173,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-deprecation">
   <p>
-   Not Applicable.
+   No impact.
   </p>
  </answer>
 
@@ -339,7 +339,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-   Yes.
+   Runs same in all platform.
   </p>
  </answer>
 
@@ -363,7 +363,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-dependencies">
   <p>
-   Nothing.
+   Other modules need to be friend of this module.
   </p>
  </answer>
 
@@ -428,7 +428,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   No.
+   Yes. The module allows friends access.
   </p>
  </answer>
 
@@ -929,7 +929,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   No pluggin enabled.
+   No pluggins allowed.
   </p>
  </answer>
 
