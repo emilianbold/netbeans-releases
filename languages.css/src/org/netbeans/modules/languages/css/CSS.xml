@@ -20,7 +20,8 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
 <MIME-resolver>
     <file>
-        <ext name="css2"/>
-        <resolver mime="text/css2"/>
+        <ext name="css"/>
+        <ext name="CSS"/>
+        <resolver mime="text/x-css"/>
     </file>
 </MIME-resolver>

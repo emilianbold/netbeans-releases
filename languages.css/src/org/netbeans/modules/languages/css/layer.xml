@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Editors">
         <folder name="text">
-            <folder name="css2">
+            <folder name="x-css">
                 <file name="language.nbs" url="CSS.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/css/css.gif"/>
                 </file>
