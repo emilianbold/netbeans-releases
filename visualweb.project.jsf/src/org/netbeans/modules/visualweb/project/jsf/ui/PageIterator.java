@@ -185,6 +185,7 @@ public class PageIterator implements TemplateWizard.Iterator {
 
         DataObject dTemplate = DataObject.find(template);                
         String targetName = Templates.getTargetName(wizard);
+        Set result = Collections.EMPTY_SET;
 
         // Visual Web framework is not initialized
         String version = JsfProjectUtils.getProjectVersion(project);
@@ -202,36 +203,50 @@ public class PageIterator implements TemplateWizard.Iterator {
                         beanPackage = JsfProjectUtils.deriveSafeName(projDir.getName());
                     }
                     JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, beanPackage);
-                    if ("jsp".equals(template.getExt())) {
+
+                    boolean isPage = "jsp".equals(template.getExt());
+                    if (isPage) {
                         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, targetName+".jsp");
+                    } else if ("jspf".equals(template.getExt()) && "Page1".equals(targetName)) {
+                        JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "Page2.jsp");
                     }
 
                     framework.getConfigurationPanel(webModule);
-                    return framework.extend(webModule);
+                    result = framework.extend(webModule);
+
+                    if (isPage) {
+                        return result;
+                    }
                 }
             }
         }
 
-        DataObject result;
+        DataObject obj;
         try {
             if (targetName == null) {
                 // Default name.
-                result = dTemplate.createFromTemplate(df);
+                obj = dTemplate.createFromTemplate(df);
             } else {
-                result = dTemplate.createFromTemplate(df, targetName);
+                obj = dTemplate.createFromTemplate(df, targetName);
             }
         } catch(org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException jsfe) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 NbBundle.getMessage(PageIterator.class, "TXT_CantCreatePage", df.getName())));
-            return Collections.EMPTY_SET;
+            return result;
+        }
+
+        if (result == Collections.EMPTY_SET) {
+            result = Collections.singleton(obj);
+        } else {
+            result.add(obj);
         }
 
         // Open the new document
-        OpenCookie open = (OpenCookie)result.getCookie(OpenCookie.class);
+        OpenCookie open = (OpenCookie)obj.getCookie(OpenCookie.class);
         if (open != null) {
             open.open();
         }
-        return Collections.singleton(result);
+        return result;
     }
     
     public void previousPanel () {
