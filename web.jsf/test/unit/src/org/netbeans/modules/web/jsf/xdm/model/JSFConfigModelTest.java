@@ -7,6 +7,8 @@
 
 package org.netbeans.modules.web.jsf.xdm.model;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
@@ -15,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
@@ -29,6 +32,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.impl.facesmodel.FacesAttributes;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
@@ -50,7 +54,7 @@ public class JSFConfigModelTest extends NbTestCase {
     protected Level logLevel() {
         return Level.INFO;
     }
-
+    
     protected void setUp() throws Exception {
         Logger.getLogger(JSFConfigModelImpl.class.getName()).setLevel(Level.FINEST);
     }
@@ -239,12 +243,12 @@ public class JSFConfigModelTest extends NbTestCase {
         newCase.setToViewId("/toviewide.jsp");
         
         navigationRule.getModel().startTransaction();
-        navigationRule.addNavigationCase(newCase);      
+        navigationRule.addNavigationCase(newCase);
         navigationRule.getModel().endTransaction();
         
         System.out.println("pridam case");
         //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
-        //model = Util.dumpAndReloadModel(model);        
+        //model = Util.dumpAndReloadModel(model);
         navigationRules = model.getRootComponent().getNavigationRules();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
         navigationRule = navigationRules.iterator().next();
@@ -277,12 +281,12 @@ public class JSFConfigModelTest extends NbTestCase {
         //assertFalse(jsfConfig1.getModelSource().isEditable());
         assertFalse(model.isEditable());
         ModelSource model2 = TestCatalogModel.getDefault().createModelSource(fileObject, true);
-        //JSFConfigModel jsfConfig2 = JSFConfigModelFactory.getInstance().getModel(model2);        
+        //JSFConfigModel jsfConfig2 = JSFConfigModelFactory.getInstance().getModel(model2);
         //assertTrue("The model should be editable ", jsfConfig2.getModelSource().isEditable());
         assertTrue(model2.isEditable());
     }
     
-    private void dumpModelToFile (JSFConfigModel model, String fileName) throws Exception{
+    private void dumpModelToFile(JSFConfigModel model, String fileName) throws Exception{
         File file = new File(getWorkDir(), fileName);
         System.out.println("workfile: " + file.getAbsolutePath());
         Util.dumpToFile(model, file);
@@ -315,6 +319,25 @@ public class JSFConfigModelTest extends NbTestCase {
         managedBean.setAttribute(FacesAttributes.ID.getName(), FacesAttributes.ID, "girl");
         managedBean.getModel().endTransaction();
         assertEquals("girl", managedBean.getAttribute(FacesAttributes.ID));
-        Util.dumpToStream(((AbstractDocumentModel)managedBean.getModel()).getBaseDocument(), System.out);
+    }
+    
+    public void test98276() throws Exception{
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-98276.xml");
+        model.addPropertyChangeListener(
+                new PropertyChangeListener(){
+            public void propertyChange(PropertyChangeEvent event) {
+                assertNotSame(Model.STATE_PROPERTY, event.getPropertyName());
+            }
+            
+        });
+        List <NavigationRule> rules = model.getRootComponent().getNavigationRules();
+        NavigationRule rule = rules.get(0);
+        assertEquals("RealPage3.jsp", rule.getFromViewId());
+        assertEquals("RealPage5.jsp", rule.getNavigationCases().get(0).getToViewId());
+        model.startTransaction();
+        rule.setFromViewId("RealPage4.jsp");
+        model.endTransaction();
+        model.sync();
+        assertEquals("RealPage4.jsp", rule.getFromViewId());
     }
 }
