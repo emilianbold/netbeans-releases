@@ -109,7 +109,7 @@ public class CenteredFlowLayout {
         public boolean canAdd(Widget widget) {
             return
                     mElements.size() == 0 ||
-                    mUsedWidth + widget.getPreferredBounds().width + X_BUFFER < mAllowedWidth;
+                    mUsedWidth + widget.getBounds().width + X_BUFFER < mAllowedWidth;
         }
         
         public void positionWidgets_preserve(Map<CasaNodeWidget, Rectangle> widgetMap) {
@@ -119,7 +119,7 @@ public class CenteredFlowLayout {
             for (CasaNodeWidget widget : mElements) {
                 widgetMap.put(widget, new Rectangle(
                         widget.getLocation(),
-                        widget.getPreferredBounds().getSize()));
+                        widget.getBounds().getSize()));
             }
             
             int rowCollisionYOffset = getRowCollisionYOffset(widgetMap);
@@ -141,10 +141,10 @@ public class CenteredFlowLayout {
             int maxY = yOffset;
             for (CasaNodeWidget widget : mElements) {
                 xOffset += centeringGap + X_BUFFER_LEFT;
-                Rectangle rect = new Rectangle(new Point(xOffset, yOffset), widget.getPreferredBounds().getSize());
-                xOffset += widget.getPreferredBounds().width + X_BUFFER_RIGHT + centeringGap;
+                Rectangle rect = new Rectangle(new Point(xOffset, yOffset), widget.getBounds().getSize());
+                xOffset += widget.getBounds().width + X_BUFFER_RIGHT + centeringGap;
                 widgetMap.put(widget, rect);
-                maxY = Math.max(maxY, yOffset + widget.getPreferredBounds().height);
+                maxY = Math.max(maxY, yOffset + widget.getBounds().height);
             }
             maxY += mVerticalSpacing;
             return maxY;
@@ -158,7 +158,7 @@ public class CenteredFlowLayout {
                 // collision detection
                 Rectangle widgetRect = new Rectangle(
                         widget.getLocation(),
-                        widget.getPreferredBounds().getSize());
+                        widget.getBounds().getSize());
                 for (CasaNodeWidget iterWidget : widgetMap.keySet()) {
                     if (widget == iterWidget) {
                         continue;
@@ -204,7 +204,7 @@ public class CenteredFlowLayout {
         }
         
         private void forceAdd(CasaNodeWidget widget) {
-            mUsedWidth += widget.getPreferredBounds().width + X_BUFFER;
+            mUsedWidth += widget.getBounds().width + X_BUFFER;
             mElements.add(widget);
         }
         
@@ -214,7 +214,7 @@ public class CenteredFlowLayout {
             
             mUsedWidth = mEdgeSpacing * 2;
             for (Widget iterWidget : mElements) {
-                mUsedWidth += iterWidget.getPreferredBounds().width + X_BUFFER;
+                mUsedWidth += iterWidget.getBounds().width + X_BUFFER;
             }
             
             return lastElement;

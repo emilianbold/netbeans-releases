@@ -133,7 +133,7 @@ public class CasaRegionWidget extends LayerWidget {
     
     
     private void updateBannerLabel() {
-        int height = CasaRegionWidget.this.getPreferredBounds().height - getLabelYOffset();
+        int height = CasaRegionWidget.this.getPreferredBounds().height - getTitleYOffset();
         mBannerWidget.setPreferredBounds(new Rectangle(
                 0,
                 0,
@@ -185,7 +185,7 @@ public class CasaRegionWidget extends LayerWidget {
         getScene().repaint();
     }
     
-    public int getLabelYOffset() {
+    public int getTitleYOffset() {
         return mTitleWidget.getPreferredLocation().y + mTitleWidget.getPreferredBounds().height;
     }
     

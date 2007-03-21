@@ -304,8 +304,8 @@ public class CasaModelGraphUtilities {
     {
         CasaRegionWidget region = (CasaRegionWidget) widget.getParentWidget();
         // Ensure widget location is not on top of the region label.
-        if (suggestedY < region.getLabelYOffset()) {
-            suggestedY = region.getLabelYOffset();
+        if (suggestedY < region.getTitleYOffset()) {
+            suggestedY = region.getTitleYOffset();
         }
         Dimension widgetSize = widget.getBounds().getSize();
         if (isRightAligned) {

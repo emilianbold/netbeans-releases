@@ -173,7 +173,7 @@ implements PropertyChangeListener {
                     public Widget createSelectionWidget() {
                         Widget widget = new Widget(CasaModelGraphScene.this);
                         widget.setBorder(org.netbeans.api.visual.border.BorderFactory.createDashedBorder(
-                                Color.BLACK,
+                                Color.DARK_GRAY,
                                 4,
                                 3,
                                 true));
