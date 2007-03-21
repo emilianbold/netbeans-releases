@@ -19,19 +19,23 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
+import java.awt.Image;
+import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
+import javax.swing.ImageIcon;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.ComponentWidget;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
  * @author Ajit Bhate
  */
-public class ButtonWidget extends ComponentWidget {
+public class ButtonWidget extends Widget {
     
+    private ImageLabelWidget button;
+    private Action action;
+   
     /**
      *
      * @param scene
@@ -47,8 +51,8 @@ public class ButtonWidget extends ComponentWidget {
      * @param scene
      * @param icon
      */
-    public ButtonWidget(Scene scene, Icon icon) {
-        this(scene, icon, null);
+    public ButtonWidget(Scene scene, Image image) {
+        this(scene, image, null);
     }
     
     
@@ -58,8 +62,8 @@ public class ButtonWidget extends ComponentWidget {
      * @param icon
      * @param text
      */
-    public ButtonWidget(Scene scene, Icon icon, String text) {
-        this(scene,new JButton(text,icon));
+    public ButtonWidget(Scene scene, Image image, String text) {
+        this(scene, new ImageLabelWidget(scene,image,text));
     }
     
     
@@ -69,7 +73,8 @@ public class ButtonWidget extends ComponentWidget {
      * @param action
      */
     public ButtonWidget(Scene scene, Action action) {
-        this(scene,new JButton(action));
+        this(scene, createImageLabelWidget(scene,action));
+        this.action = action;
     }
     
     
@@ -78,12 +83,15 @@ public class ButtonWidget extends ComponentWidget {
      * @param scene
      * @param button
      */
-    public ButtonWidget(Scene scene, JButton button) {
-        super(scene,button);
-        getButton().setContentAreaFilled(false);
-        getButton().setBorder(BorderFactory.createRaisedBevelBorder());
-        setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory
-                .SerialAlignment.CENTER, 4));
+    private ButtonWidget(Scene scene, ImageLabelWidget button) {
+        super(scene);
+        this.button = button;
+        addChild(button);
+        setBorder(BorderFactory.createBevelBorder(true));
+        button.setBorder(BorderFactory.createEmptyBorder(4));
+        setLayout(LayoutFactory.createHorizontalFlowLayout(
+                LayoutFactory.SerialAlignment.CENTER, 4));
+        getActions().addAction(ButtonAction.DEFAULT);
     }
     
     
@@ -91,16 +99,16 @@ public class ButtonWidget extends ComponentWidget {
      *
      * @return
      */
-    public JButton getButton() {
-        return (JButton)super.getComponent();
+    public ImageLabelWidget getButton() {
+        return button;
     }
-    
+
     /**
      *
      * @param action
      */
     public void setAction(Action action) {
-        getButton().setAction(action);
+        this.action = action;
     }
     
     /**
@@ -108,7 +116,7 @@ public class ButtonWidget extends ComponentWidget {
      * @return
      */
     public String getText() {
-        return getButton().getText();
+        return getButton().getLabel();
     }
     
     
@@ -116,8 +124,8 @@ public class ButtonWidget extends ComponentWidget {
      *
      * @return
      */
-    public Icon getIcon() {
-        return getButton().getIcon();
+    public Image getIcon() {
+        return getButton().getImage();
     }
     
     
@@ -126,16 +134,16 @@ public class ButtonWidget extends ComponentWidget {
      * @param text
      */
     public void setText(String text) {
-        getButton().setText(text);
+        getButton().setLabel(text);
     }
     
     
     /**
      *
-     * @param icon
+     * @param image
      */
-    public void setIcon(Icon icon) {
-        getButton().setIcon(icon);
+    public void setImage(Image image) {
+        getButton().setImage(image);
     }
     
     /**
@@ -143,8 +151,7 @@ public class ButtonWidget extends ComponentWidget {
      * @param v
      */
     public void setButtonEnabled(boolean v) {
-        JButton button = getButton();
-        button.setEnabled(v);
+        getButton().setEnabled(v);
         revalidate();
         repaint();
     }
@@ -160,4 +167,36 @@ public class ButtonWidget extends ComponentWidget {
         return getButton().isEnabled();
     }
     
+    /**
+     * Called when mouse is clicked on the widget.
+     */
+    protected void mouseClicked() {
+        //simply delegate to swing action
+        if(action!=null) {
+            action.actionPerformed(new ActionEvent(this,0, 
+                    (String)action.getValue(Action.ACTION_COMMAND_KEY)));
+            //validate scene as called from ActionListeners
+            getScene().validate();
+        }
+    }
+
+    /**
+     * Called when mouse is moved over on the widget.
+     * change color?
+     */
+    protected void mouseEntered() {
+    }
+    
+    /**
+     * Called when mouse is moved away from the widget.
+     * change color?
+     */
+    protected void mouseExited() {
+    }
+    
+    private static ImageLabelWidget createImageLabelWidget(Scene scene, Action action) {
+        String label = (String)action.getValue(Action.NAME);
+        Image image = ((ImageIcon)action.getValue(Action.SMALL_ICON)).getImage();
+        return new ImageLabelWidget(scene,image,label);
+    }
 }

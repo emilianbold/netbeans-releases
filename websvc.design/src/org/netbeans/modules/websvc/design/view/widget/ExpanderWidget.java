@@ -30,7 +30,6 @@ import java.awt.image.BufferedImage;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
@@ -113,15 +112,13 @@ public class ExpanderWidget extends ButtonWidget {
      */
     public ExpanderWidget(Scene scene, ExpandableWidget expandable,
             boolean expanded) {
-        super(scene, (ImageIcon)null);
+        super(scene, expanded ? IMAGE_COLLAPSE : IMAGE_EXPAND);
         getButton().setPreferredSize(new Dimension(20, 20));
         this.expandable = expandable;
         isExpanded = expanded;
         setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 setExpanded(!isExpanded());
-                //validate scene as called from ActionListeners
-                getScene().validate();
             }
         });
     }
@@ -159,21 +156,11 @@ public class ExpanderWidget extends ButtonWidget {
         // Save the state of the expandable in case it gets recreated later.
         expandedCache.put(expandable.hashKey(), Boolean.valueOf(expanded));
         isExpanded = expanded;
-        setIcon(expanded ? new ImageIcon(IMAGE_COLLAPSE) : new ImageIcon(IMAGE_EXPAND));
+        setImage(expanded ? IMAGE_COLLAPSE : IMAGE_EXPAND);
         if (isExpanded) {
             expandable.expandWidget();
         } else {
             expandable.collapseWidget();
-        }
-    }
-
-    /**
-     * Just to show the icon initially.
-     */
-    protected void paintChildren () {
-        super.paintChildren();
-        if(getButton().getIcon()==null) {
-            setIcon(isExpanded ? new ImageIcon(IMAGE_COLLAPSE) : new ImageIcon(IMAGE_EXPAND));
         }
     }
 

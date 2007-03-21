@@ -101,6 +101,11 @@ public class OperationsWidget extends RoundedRectangleWidget
         headerWidget = new HeaderWidget(getScene(), expander);
         headerWidget.setLayout(new LeftRightLayout(32));
 
+        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
+                NbBundle.getMessage(OperationWidget.class, "LBL_Operations"));
+        headerWidget.addChild(headerLabelWidget);
+        updateHeaderLabel();
+
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
@@ -123,7 +128,6 @@ public class OperationsWidget extends RoundedRectangleWidget
                 contentWidget.addChild(new OperationWidget(getScene(),operation));
             }
         }
-        createHeaderLabel();
         
         if(expanded) {
             expandWidget();
@@ -132,20 +136,12 @@ public class OperationsWidget extends RoundedRectangleWidget
         }
     }
 
-    private void createHeaderLabel() {
-        if(headerLabelWidget!=null) {
-            if (headerLabelWidget.getParentWidget()!=null) {
-                headerLabelWidget.removeFromParent();
-            }
-        }
+    private void updateHeaderLabel() {
         int noOfOperations = 0;
         for(PortType portType:wsdlModel.getDefinitions().getPortTypes()) {
             noOfOperations += portType.getOperations().size();
         }
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
-                NbBundle.getMessage(OperationWidget.class, "LBL_Operations"), 
-                "("+noOfOperations+")");
-        headerWidget.addChild(0,headerLabelWidget);
+        headerLabelWidget.setComment("("+noOfOperations+")");
     }
 
     public void collapseWidget() {
@@ -182,8 +178,7 @@ public class OperationsWidget extends RoundedRectangleWidget
         if(property.equals(AddOperationAction.PROPERTY_OPERATION_ADDED) &&
                 source==addAction && newValue instanceof Operation) {
             contentWidget.addChild(new OperationWidget(getScene(),(Operation)newValue));
-            createHeaderLabel();
-            getScene().validate();
+            updateHeaderLabel();
         }
     }
 }
