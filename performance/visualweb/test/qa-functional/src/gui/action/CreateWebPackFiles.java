@@ -78,7 +78,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         doccategory = "Web"; //NOI18N
         doctype =" Visual Web JSF Page"; //NOI18N
 	docfolder = "web";
-	suffix = "";
+	suffix = ".jsp";
         index = 1;
         projectfolder = VWPUtilities.WEB_PAGES;
 	doMeasurement();
@@ -91,7 +91,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         doccategory = "Web"; //NOI18N
         doctype = "Visual Web JSF Page Fragment"; //NOI18N
 	docfolder = "web";
-	suffix = "";
+	suffix = ".jspf";
         index = 1;
         projectfolder = VWPUtilities.WEB_PAGES;
 	doMeasurement();
@@ -158,7 +158,8 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         log(":: Selected: "+objNode.getTreePath().toString());
         
         new DeleteAction().performAPI(objNode);
-        new NbDialogOperator("Confirm Object Deletion").yes(); //NOI18N
+        String dialogCaption = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle");
+        new NbDialogOperator(dialogCaption).yes(); 
         log(":: cleanup passed");
     }
     
