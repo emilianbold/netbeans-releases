@@ -22,8 +22,10 @@ package org.netbeans.modules.vmd.screen.device;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
+import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
@@ -48,8 +50,21 @@ public class TopPanel extends JPanel {
         addMouseListener (new MouseAdapter() {
             public void mouseClicked (MouseEvent e) {
                 select (e);
+                if (e.isPopupTrigger ())
+                    popupMenu (e);
             }
 
+            public void mousePressed (MouseEvent e) {
+                select (e);
+                if (e.isPopupTrigger ())
+                    popupMenu (e);
+            }
+
+            public void mouseReleased (MouseEvent e) {
+                select (e);
+                if (e.isPopupTrigger ())
+                    popupMenu (e);
+            }
         });
 
         addMouseMotionListener (new MouseMotionAdapter () {
@@ -133,6 +148,21 @@ public class TopPanel extends JPanel {
             public void run () {
                 DesignComponent component = devicePanel.getDesignComponentAt (point);
                 AcceptSupport.accept (component, transferable);
+            }
+        });
+    }
+
+    public void popupMenu (final MouseEvent e) {
+        final DesignDocument document = devicePanel.getController ().getDocument ();
+        if (document == null)
+            return;
+        document.getTransactionManager ().writeAccess (new Runnable() {
+            public void run () {
+                DesignComponent component = devicePanel.getDesignComponentAt (e.getPoint ());
+                if (component == null)
+                    return;
+                JPopupMenu menu = Utilities.actionsToPopup (ActionsSupport.createActionsArray (component), TopPanel.this);
+                menu.show (TopPanel.this, e.getX (), e.getY ());
             }
         });
     }
