@@ -230,7 +230,7 @@ type CDATA #REQUIRED
     <!-- Correlation and Filter -->
     <component_type_group name="Operator" icon="" title="IEP.Operator.title" description="IEP.Operator.description">
         <!-- stream project and filter -->
-        <component_type name="StreamProjectionAndFilter" icon="StreamProjectionAndFilterx16.png" title="IEP.Operator.StreamProjectionAndFilter.title" description="IEP.Operator.StreamProjectionAndFilter.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="StreamProjectionAndFilter" icon="streamProjectionAndFilterx16.png" title="IEP.Operator.StreamProjectionAndFilter.title" description="IEP.Operator.StreamProjectionAndFilter.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
