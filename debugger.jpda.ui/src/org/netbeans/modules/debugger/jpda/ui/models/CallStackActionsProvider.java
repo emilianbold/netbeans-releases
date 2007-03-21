@@ -190,10 +190,9 @@ public class CallStackActionsProvider implements NodeActionsProvider {
                         " line: " + stack[i].getLineNumber("java"));
                 if (i != k - 1) frameStr.append('\n');
             }    
-            Clipboard systemClipboard = 
-                    Toolkit.getDefaultToolkit().getSystemClipboard();
+            Clipboard systemClipboard = getClipboard();
             Transferable transferableText =
-                    new StringSelection(new String(frameStr));
+                    new StringSelection(frameStr.toString());
             systemClipboard.setContents(
                     transferableText,
                     null);
@@ -201,6 +200,14 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         } catch (AbsentInformationException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+    }
+    
+    private static Clipboard getClipboard() {
+        Clipboard clipboard = (Clipboard) org.openide.util.Lookup.getDefault().lookup(Clipboard.class);
+        if (clipboard == null) {
+            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        }
+        return clipboard;
     }
     
     private void makeCurrent (final CallStackFrame frame) {
