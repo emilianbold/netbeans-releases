@@ -20,6 +20,7 @@
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.util.Collections;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.xml.namespace.QName;
@@ -56,13 +57,6 @@ public enum JSFConfigQNames {
     CONVERTER_FOR_CLASS("converter-for-class"),
     CONVERTER_CLASS("converter-class");
     
-    
-//    private static Set<QName> mappedQNames = new HashSet<QName>();
-//    static {
-//        mappedQNames.add(FACES_CONFIG.getQName());
-//        mappedQNames.add(MANAGED_BEAN.getQName());
-//    }
-    
     private QName qname_1_1;
     private QName qname_1_2;
     
@@ -95,8 +89,27 @@ public enum JSFConfigQNames {
         return value;
     }
     
-//    public static Set<QName> getMappedQNames() {
-//        return Collections.unmodifiableSet(mappedQNames);
-//    }
+    private static Set<QName> mappedQNames_1_1 = new HashSet<QName>();
+    private static Set<QName> mappedQNames_1_2 = new HashSet<QName>();
+    static {
+        mappedQNames_1_1.add(FACES_CONFIG.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(MANAGED_BEAN.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(CONVERTER.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(NAVIGATION_RULE.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(NAVIGATION_CASE.getQName(JSFVersion.JSF_1_1));
+        
+        mappedQNames_1_2.add(FACES_CONFIG.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(MANAGED_BEAN.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(CONVERTER.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(NAVIGATION_RULE.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(NAVIGATION_CASE.getQName(JSFVersion.JSF_1_2));
+    }
+    
+    public static Set<QName> getMappedQNames(JSFVersion version) {
+        Set<QName> mappedQNames = mappedQNames_1_1;
+        if (version.equals(JSFVersion.JSF_1_2))
+            mappedQNames = mappedQNames_1_2;
+        return Collections.unmodifiableSet(mappedQNames);
+    }
     
 }

@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import java.util.Set;
 import java.util.logging.Logger;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
@@ -79,6 +81,10 @@ public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent
             version = JSFVersion.JSF_1_2;
         }
         return version;
+    }
+    
+    public Set<QName> getQNames() {
+        return JSFConfigQNames.getMappedQNames(getVersion());
     }
 
 }
