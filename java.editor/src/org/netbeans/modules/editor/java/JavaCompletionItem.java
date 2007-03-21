@@ -626,7 +626,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 sb.append(cnt++);
                                 if (ta.getKind() == TypeKind.TYPEVAR) {
                                     TypeVariable tv = (TypeVariable)ta;
-                                    if (elem == tv.asElement()) {
+                                    if (elem == tv.asElement().getEnclosingElement()) {
                                         sb.append(" type=\""); //NOI18N
                                         ta = tv.getUpperBound();
                                     } else {
