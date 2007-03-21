@@ -47,14 +47,14 @@ public class ArrayPropertyOrderingController implements InspectorOrderingControl
         this.supportedTypeID = supportedTypeID;
     }
     
-    public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folder) {
-        List<InspectorFolder> orderedList = new ArrayList<InspectorFolder>(folder.size());
+    public List<InspectorFolder> getOrdered(DesignComponent component,Collection<InspectorFolder> folders) {
+        List<InspectorFolder> orderedList = new ArrayList<InspectorFolder>(folders.size());
         
         List<PropertyValue> array = component.readProperty(propertyName).getArray();
         
         for (PropertyValue propertyValue : array) {
             long componentID = propertyValue.getComponent().getComponentID();
-            for(InspectorFolder f : folder) {
+            for(InspectorFolder f : folders) {
                 if (f.getComponentID() == componentID) {
                     orderedList.add(array.indexOf(propertyValue), f);
                 }

@@ -22,7 +22,6 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
-import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +35,7 @@ public final class SMSComposerSendCommandEventSourceCD extends ComponentDescript
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#SMSComposerSendCommandEventSource"); // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor(CommandEventSourceCD.TYPEID, TYPEID, true, false);
+        return new TypeDescriptor(AbstractCommandEventSourceCD.TYPEID, TYPEID, true, false);
     }
 
     public VersionDescriptor getVersionDescriptor () {
@@ -46,7 +45,7 @@ public final class SMSComposerSendCommandEventSourceCD extends ComponentDescript
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
         return null;
     }
-
+    
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info

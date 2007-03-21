@@ -14,25 +14,30 @@
 package org.netbeans.modules.vmd.midp.screen;
 
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceOrderingController;
+import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.openide.util.Utilities;
 
 /**
  * @author breh
  */
 public class ScreenResourceCategoryDescriptorSupport {
-
+    //TODO Add tOrdering
     public static ScreenResourceCategoryDescriptor ASSIGNED_COMMANDS = new ScreenResourceCategoryDescriptor (
             "Assigned Commands",
             Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"),
             "Commands assigned to the edited displayable",
-            -100
+            -100,
+            ScreenResourceOrderingController.getArrayOrdering(DisplayableCD.PROP_COMMANDS)
     );
 
     public static ScreenResourceCategoryDescriptor OTHER_DESIGN_RESOURCES = new ScreenResourceCategoryDescriptor (
             "Resources",
             Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/resource_16.png"),
             "Resources available in the design",
-            100
+            100,
+            ScreenResourceOrderingController.getDefaultOrdering()
         );
+    
     
 }

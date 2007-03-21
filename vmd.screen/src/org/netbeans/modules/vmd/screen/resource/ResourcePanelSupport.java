@@ -28,50 +28,61 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 
 import java.util.*;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceOrderingController;
 
 /**
  * @author David Kaspar
  */
 public class ResourcePanelSupport {
-
-    static Map<ScreenResourceCategoryDescriptor,ArrayList<ScreenResourceItemPresenter>> getCategoryDescriptors (DesignComponent editedScreen) {
+    
+    static Map<ScreenResourceCategoryDescriptor,ArrayList<ScreenResourceItemPresenter>> getCategoryDescriptors(DesignComponent editedScreen) {
         if (editedScreen == null)
-            return Collections.emptyMap ();
-        Collection<? extends ScreenResourceCategoriesPresenter> categoriesPresenters = editedScreen.getPresenters (ScreenResourceCategoriesPresenter.class);
+            return Collections.emptyMap();
+        Collection<? extends ScreenResourceCategoriesPresenter> categoriesPresenters = editedScreen.getPresenters(ScreenResourceCategoriesPresenter.class);
         HashMap<ScreenResourceCategoryDescriptor,ArrayList<ScreenResourceItemPresenter>> categories = new HashMap<ScreenResourceCategoryDescriptor,ArrayList<ScreenResourceItemPresenter>> ();
         for (ScreenResourceCategoriesPresenter presenter : categoriesPresenters) {
-            Collection<ScreenResourceCategoryDescriptor> list = presenter.getCategoryDescriptors ();
+            Collection<ScreenResourceCategoryDescriptor> list = presenter.getCategoryDescriptors();
             if (list != null) {
                 for (ScreenResourceCategoryDescriptor category : list)
-                    categories.put (category, new ArrayList<ScreenResourceItemPresenter> ());
+                    categories.put(category, new ArrayList<ScreenResourceItemPresenter> ());
             }
         }
         return categories;
     }
-
-    static void resolveResources (DesignDocument document, DesignComponent editedScreen, Map<ScreenResourceCategoryDescriptor, ArrayList<ScreenResourceItemPresenter>> categories) {
+    
+    static void resolveResources(DesignDocument document, DesignComponent editedScreen, Map<ScreenResourceCategoryDescriptor, ArrayList<ScreenResourceItemPresenter>> categories) {
         if (editedScreen == null)
             return;
-        Collection<ScreenResourceItemPresenter> resources = DocumentSupport.gatherAllPresentersOfClass (document, ScreenResourceItemPresenter.class);
+        Collection<ScreenResourceItemPresenter> resources = DocumentSupport.gatherAllPresentersOfClass(document, ScreenResourceItemPresenter.class);
         for (ScreenResourceItemPresenter resource : resources) {
-            if (! resource.isActiveFor (editedScreen))
+            if (! resource.isActiveFor(editedScreen))
                 continue;
-            ScreenResourceCategoryDescriptor category = resource.getCategoryDescriptor ();
-            ArrayList<ScreenResourceItemPresenter> list = categories.get (category);
+            ScreenResourceCategoryDescriptor category = resource.getCategoryDescriptor();
+            ArrayList<ScreenResourceItemPresenter> list = categories.get(category);
             if (list == null)
                 continue;
-            list.add (resource);
+            list.add(resource);
+        }
+        //Sorting
+        for (ScreenResourceCategoryDescriptor category : categories.keySet()) {
+            for (ScreenResourceOrderingController oc  : category.getOrderingControllers()) {
+                List<ScreenResourceItemPresenter> orderedList =  oc.getOrdered(editedScreen, categories.get(category));
+                if (orderedList == null)
+                    continue;
+                categories.get(category).removeAll(orderedList);
+                categories.get(category).addAll(orderedList);
+            }
         }
     }
-
-    public static List<ScreenResourceCategoryDescriptor> getSortedCategories (Set<ScreenResourceCategoryDescriptor> set) {
+    
+    public static List<ScreenResourceCategoryDescriptor> getSortedCategories(Set<ScreenResourceCategoryDescriptor> set) {
         ArrayList<ScreenResourceCategoryDescriptor> list = new ArrayList<ScreenResourceCategoryDescriptor> (set);
-        Collections.sort (list, new Comparator<ScreenResourceCategoryDescriptor>() {
-            public int compare (ScreenResourceCategoryDescriptor o1, ScreenResourceCategoryDescriptor o2) {
-                return o1.getOrder () - o2.getOrder ();
+        Collections.sort(list, new Comparator<ScreenResourceCategoryDescriptor>() {
+            public int compare(ScreenResourceCategoryDescriptor o1, ScreenResourceCategoryDescriptor o2) {
+                return o1.getOrder() - o2.getOrder();
             }
         });
         return list;
     }
-
+    
 }

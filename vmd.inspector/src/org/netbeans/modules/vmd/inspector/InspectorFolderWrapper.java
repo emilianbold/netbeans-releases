@@ -204,8 +204,8 @@ final class InspectorFolderWrapper {
             if (sortedList == null)
                 throw new IllegalArgumentException("List returned from InspectorOrderingController is null, controller:" + oc); //NOI18N
             
-            if (sortedList.size() != ocMap.get(oc).size() || (! ocMap.get(oc).containsAll(sortedList)))
-                Debug.warning("Elements passed to sort in component: "+ component + " are diffrent from elements returned from FolderOrderingController :" + oc.getClass()); //NOI18N
+            //if (sortedList.size() != ocMap.get(oc).size() || (! ocMap.get(oc).containsAll(sortedList)))
+            //    Debug.warning("Elements passed to sort in component: "+ component + " are diffrent from elements returned from FolderOrderingController :" + oc.getClass()); //NOI18N
             
             if (oc.getOrder() != null && sortedLists.get(oc.getOrder()) == null)
                 sortedLists.put(oc.getOrder(), sortedList);
