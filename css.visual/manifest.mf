@@ -6,3 +6,4 @@ OpenIDE-Module-Install: org/netbeans/modules/css/CssModuleInstall.class
 
 Name: org/netbeans/modules/css/loader/CssFileLoader.class
 OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.css.CSSObject

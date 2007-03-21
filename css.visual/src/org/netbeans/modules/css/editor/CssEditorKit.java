@@ -56,7 +56,7 @@ public class CssEditorKit  extends LanguagesEditorKit {
                 return new CssCustomEditor(editorPane);
             }
         };
-        schliemanizeDocument(doc); //schliemann hack
+        initDocument(doc); //schliemann hack
         return doc;
     }
 
