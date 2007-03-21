@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
@@ -188,7 +189,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 								midle.add(new GameComponentOverviewPanel(gameDesign));
 								top.add(midle, BorderLayout.NORTH);
 								top.add(new JPanel(), BorderLayout.CENTER);
-								return top;
+								return new JScrollPane(top);
                             }
                             public ImageResourceInfo getImageResourceInfo() {
 								return null;
@@ -392,7 +393,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			sequence.setFrame((StaticTile) imgRes.getTile(frames[i], frameWidth, frameHeight), i);
 		}
 		return sequence;
-	}	
+	}
 	
 	private ImageResource constructImageResource(final DesignComponent imageResourceDC) {
 		ImageResource imgRes;
