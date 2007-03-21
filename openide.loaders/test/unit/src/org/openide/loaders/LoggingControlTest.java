@@ -21,9 +21,9 @@ package org.openide.loaders;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.TestFailure;
 import junit.framework.TestResult;
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
 
@@ -33,14 +33,14 @@ import org.openide.util.RequestProcessor;
  */
 public class LoggingControlTest extends LoggingTestCaseHid {
 
-    private ErrorManager err;
+    private Logger err;
 
     public LoggingControlTest (String name) {
         super (name);
     }
 
     protected void setUp() throws Exception {
-        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
+        err = Logger.getLogger("TEST-" + getName());
     }
     
     protected Level logLevel() {
@@ -54,21 +54,21 @@ public class LoggingControlTest extends LoggingTestCaseHid {
             
             public void run() {
                 events.add("A");
-                err.log("A");
+                err.info("A");
                 events.add("B");
-                err.log("B");
+                err.info("B");
                 events.add("C");
-                err.log("C");
+                err.info("C");
             }
             
             public void directly() {
-                err.log("0");
+                err.info("0");
                 events.add(new Integer(1));
-                err.log("1");
+                err.info("1");
                 events.add(new Integer(2));
-                err.log("2");
+                err.info("2");
                 events.add(new Integer(3));
-                err.log("3");
+                err.info("3");
             }
         }
         
@@ -104,21 +104,21 @@ public class LoggingControlTest extends LoggingTestCaseHid {
             
             public void run() {
                 events.add("A");
-                err.log("4329043A");
+                err.info("4329043A");
                 events.add("B");
-                err.log("B");
+                err.info("B");
                 events.add("C");
-                err.log("CCCC");
+                err.info("CCCC");
             }
             
             public void directly() {
-                err.log("0");
+                err.info("0");
                 events.add(new Integer(1));
-                err.log("1");
+                err.info("1");
                 events.add(new Integer(2));
-                err.log("2");
+                err.info("2");
                 events.add(new Integer(3));
-                err.log("3");
+                err.info("3");
             }
         }
         
@@ -154,21 +154,21 @@ public class LoggingControlTest extends LoggingTestCaseHid {
             
             public void run() {
                 events.add("A");
-                err.log("A");
+                err.info("A");
                 events.add("A");
-                err.log("A");
+                err.info("A");
                 events.add("A");
-                err.log("A");
+                err.info("A");
             }
             
             public void directly() {
-                err.log("0");
+                err.info("0");
                 events.add(new Integer(1));
-                err.log("1");
+                err.info("1");
                 events.add(new Integer(2));
-                err.log("2");
+                err.info("2");
                 events.add(new Integer(3));
-                err.log("3");
+                err.info("3");
             }
         }
         
@@ -200,7 +200,7 @@ public class LoggingControlTest extends LoggingTestCaseHid {
     private Exception throwIt;
     public void testRuntimeExceptionsAlsoGenerateLog() throws Exception {
         if (throwIt != null) {
-            ErrorManager.getDefault().log("Ahoj");
+            Logger.getLogger("global").info("Ahoj");
             throw throwIt;
         }
         
