@@ -180,7 +180,7 @@ public class VWPFootprintUtilities extends gui.VWPUtilities{
         return pname;
     }
     
-    static void buildproject(String project) {
+    public static void buildproject(String project) {
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         ProjectRootNode prn = pto.getProjectRootNode(project);
         prn.buildProject();
@@ -208,7 +208,7 @@ public class VWPFootprintUtilities extends gui.VWPUtilities{
         //MainWindowOperator.getDefault().waitStatusText("test");
     }
     
-    static void deployProject(String project) {
+    public static void deployProject(String project) {
         actionOnProject(project, "Deploy Project");
         waitForPendingBackgroundTasks();
         MainWindowOperator.getDefault().waitStatusText("Finished building "+project+" (run-deploy)");
