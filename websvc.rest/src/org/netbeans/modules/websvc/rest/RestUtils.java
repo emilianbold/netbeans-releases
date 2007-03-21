@@ -47,12 +47,13 @@ public class RestUtils {
      */
     public static void addSwdpLibrary(FileObject source, String[] classPathTypes) throws IOException {
         Project project = FileOwnerQuery.getOwner(source);
-        if (project == null /*|| jeePlatformAlreadyHasSwdpLibrary(project)*/) {
+        if (project == null) {
             return;
         }
-        // check if the wsimport class is already present - this means we don't need to add the library
+        
+        // check if swdp is already part of classpath
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.COMPILE);
         FileObject restClass = classPath.findResource("com/sun/ws/rest/api/UriTemplate.class"); // NOI18N
         if (restClass != null) {
             return;
