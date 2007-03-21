@@ -31,7 +31,6 @@ import org.openide.loaders.XMLDataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.xml.sax.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -46,7 +45,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.*;
 import java.util.logging.Level;
-import org.netbeans.core.IDESettings;
+import org.netbeans.core.windows.view.ui.MainWindow;
+import org.openide.windows.WindowManager;
+
 /** Toolbar configuration.
  * It can load configuration from DOM Document, store configuration int XML file. 
  * Toolbar configuration contains list of all correct toolbars (toolbars which are
@@ -149,7 +150,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     }
 
     /** Creates new toolbar configuration for specific name and from specific XMLDataObject
-     * @param name new configuration name
      * @param xml XMLDataObject representing a toolbar configuration
      */
     public ToolbarConfiguration(XMLDataObject xml) throws IOException {
@@ -507,7 +507,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     }
     
     private int lastConfigurationHash = -1;
-    private void rebuildMenu() {
+    public void rebuildMenu() {
         if (toolbarMenu != null) {
             toolbarMenu.removeAll();
             fillToolbarsMenu(toolbarMenu);
@@ -747,6 +747,9 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     
     /** Fills given menu instance with list of toolbars and configurations */
     private void fillToolbarsMenu (JComponent menu) {
+        MainWindow frame = (MainWindow)WindowManager.getDefault().getMainWindow();
+        boolean fullScreen = frame.isFullScreenMode();
+        
         lastConfigurationHash = Utilities.arrayHashCode(ToolbarPool.getDefault().getConfigurations());
         // generate list of available toolbars
         Iterator it = Arrays.asList (ToolbarPool.getDefault ().getToolbars ()).iterator ();
@@ -786,6 +789,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                         setToolbarVisible(tb, !tc.isVisible());
                     }
                 });
+                mi.setEnabled( !fullScreen );
                 menu.add (mi);
             }
         }
@@ -818,11 +822,13 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                   }
               }
         });
+        cbmi.setEnabled( !fullScreen );
         menu.add (cbmi);
         
         menu.add( new JPopupMenu.Separator() );
 
         JMenuItem menuItem = new JMenuItem( new ResetToolbarsAction() );
+        menuItem.setEnabled( !fullScreen );
         menu.add( menuItem );
         
         menuItem = new JMenuItem(getBundleString( "CTL_CustomizeToolbars" ) );
@@ -831,8 +837,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 ConfigureToolbarPanel.showConfigureDialog();
             }
         });
+        menuItem.setEnabled( !fullScreen );
         menu.add( menuItem );
-        
     } // getContextMenu
 
     /** Make toolbar visible/invisible in this configuration

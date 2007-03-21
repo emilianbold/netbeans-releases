@@ -37,6 +37,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import org.netbeans.core.windows.*;
+import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.LifecycleManager;
 import org.openide.awt.*;
 import org.openide.cookies.InstanceCookie;
@@ -546,11 +547,14 @@ public final class MainWindow extends JFrame {
         setUndecorated( isFullScreenMode );
         setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );
 
-        getJMenuBar().setVisible( !isFullScreenMode );
-        getToolbarComponent().setVisible( !isFullScreenMode );
-        if( !isFullScreenMode && restoreExtendedState != JFrame.MAXIMIZED_BOTH ) {
-            setBounds( restoreBounds );
+        String toolbarConfigName = ToolbarPool.getDefault().getConfiguration();
+        if( null != toolbarConfigName ) {
+            ToolbarConfiguration tc = ToolbarConfiguration.findConfiguration( toolbarConfigName );
+            if( null != tc )
+                tc.rebuildMenu();
         }
+        getToolbarComponent().setVisible( !isFullScreenMode );
+        final boolean updateBounds = ( !isFullScreenMode && restoreExtendedState != JFrame.MAXIMIZED_BOTH );
         setVisible( true );
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
@@ -560,6 +564,8 @@ public final class MainWindow extends JFrame {
                 if( null != activatedTc ) {
                     activatedTc.requestFocusInWindow();
                 }
+                if( updateBounds )
+                    setBounds( restoreBounds );
             }
         });
     }
