@@ -155,33 +155,19 @@ public class RegionUtilities {
             
             Rectangle sceneRect = scroller.getViewportBorderBounds();
             
-            Widget leftResizer   = scene.getLeftResizer();
-            Widget middleResizer = scene.getMiddleResizer();
-            
-            CasaRegionWidget leftRegion   = getRegionWidget(scene, CasaRegion.Name.WSDL_ENDPOINTS);
+            CasaRegionWidget leftRegion = getRegionWidget(scene, CasaRegion.Name.WSDL_ENDPOINTS);
             CasaRegionWidget middleRegion = getRegionWidget(scene, CasaRegion.Name.JBI_MODULES);
             CasaRegionWidget rightRegion  = getRegionWidget(scene, CasaRegion.Name.EXTERNAL_MODULES);
             
             if (leftRegion == null || middleRegion == null || rightRegion == null) {
                 return;
             }
-
-            int maxLeftRegionXSpan   = findMaximumWidgetXSpan(
-                    0, // cannot have a gap, we are right-aligning our widgets to the edge
-                    leftRegion);
-            int maxMiddleRegionXSpan = findMaximumWidgetXSpan(
-                    HORIZONTAL_EXPANSION_GAP, 
-                    middleRegion);
-            int maxRightRegionXSpan  = findMaximumWidgetXSpan(
-                    HORIZONTAL_EXPANSION_GAP, 
-                    rightRegion);
             
-            maxLeftRegionXSpan   = Math.max(maxLeftRegionXSpan,   leftRegion.getPreferredBounds().width);
-            maxMiddleRegionXSpan = Math.max(maxMiddleRegionXSpan, middleRegion.getPreferredBounds().width);
+            int maxRightRegionXSpan  = findMaximumWidgetXSpan(HORIZONTAL_EXPANSION_GAP, rightRegion);
             
             // The left and middle regions expand only enough to fit their widgets.
-            int leftWidth   = adjustWidth(maxLeftRegionXSpan,   leftRegion);
-            int middleWidth = adjustWidth(maxMiddleRegionXSpan, middleRegion);
+            int leftWidth   = leftRegion.getPreferredBounds().width;
+            int middleWidth = middleRegion.getPreferredBounds().width;
             
             // The right region expands automatically to fill the remaining scene width.
             maxRightRegionXSpan = Math.max(
@@ -190,20 +176,18 @@ public class RegionUtilities {
             
             int rightWidth  = adjustWidth(maxRightRegionXSpan,  rightRegion);
             
-            leftRegion.setPreferredLocation(  new Point(0, 0));
-            middleRegion.setPreferredLocation(new Point(leftWidth, 0));
             rightRegion.setPreferredLocation( new Point(leftWidth + middleWidth, 0));
             
-            leftResizer.setPreferredLocation(new Point(
+            scene.getLeftResizer().setPreferredLocation(new Point(
                 middleRegion.getPreferredLocation().x - RegionUtilities.RESIZER_HALF_WIDTH, 
                 0));
-            middleResizer.setPreferredLocation(new Point(
+            scene.getMiddleResizer().setPreferredLocation(new Point(
                 rightRegion.getPreferredLocation().x - RegionUtilities.RESIZER_HALF_WIDTH, 
                 0));
         }
     }
-
-
+    
+    
     private static int adjustWidth(int width, CasaRegionWidget region) {
         if (width < CasaRegionWidget.MINIMUM_WIDTH) {
             width = CasaRegionWidget.MINIMUM_WIDTH;
@@ -214,7 +198,7 @@ public class RegionUtilities {
                 bounds.height));
         return width;
     }
-    
+
     
     private static void adjustHeights(int height, Widget ... widgets) {
         for (Widget widget : widgets) {
@@ -247,21 +231,19 @@ public class RegionUtilities {
         return maxHeight;
     }
     
-    private static int findMaximumWidgetXSpan(int gap, CasaRegionWidget ... regionWidgets) {
+    private static int findMaximumWidgetXSpan(int gap, CasaRegionWidget regionWidget) {
         int maxWidth = 0;
-        for (CasaRegionWidget regionWidget : regionWidgets) {
-            for (Widget childWidget : regionWidget.getChildren()) {
-                if (childWidget instanceof CasaNodeWidget) {
-                    if (
-                            childWidget.getPreferredLocation() != null &&
-                            childWidget.getBounds() != null)
-                    {
-                        maxWidth = Math.max(
-                                maxWidth, 
-                                childWidget.getPreferredLocation().x + 
-                                    childWidget.getBounds().width + 
-                                    gap);
-                    }
+        for (Widget childWidget : regionWidget.getChildren()) {
+            if (childWidget instanceof CasaNodeWidget) {
+                if (
+                        childWidget.getPreferredLocation() != null &&
+                        childWidget.getBounds() != null)
+                {
+                    maxWidth = Math.max(
+                            maxWidth, 
+                            childWidget.getPreferredLocation().x + 
+                                childWidget.getBounds().width + 
+                                gap);
                 }
             }
         }

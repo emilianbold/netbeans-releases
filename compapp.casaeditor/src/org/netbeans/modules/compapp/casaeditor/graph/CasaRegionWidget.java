@@ -156,12 +156,12 @@ public class CasaRegionWidget extends LayerWidget {
     
     private void updateBorder() {
         if (getPreferredBounds() != null) {
-            mBorderWidget.setPreferredLocation(new Point(
-                    getPreferredBounds().width - BORDER_WIDTH,
-                    0));
             mBorderWidget.setPreferredBounds(new Rectangle(
                     BORDER_WIDTH,
                     getPreferredBounds().height));
+            mBorderWidget.setPreferredLocation(new Point(
+                    getPreferredBounds().width - BORDER_WIDTH,
+                    0));
         }
     }
     
