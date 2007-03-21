@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.project.ProjectManager;
@@ -36,11 +37,15 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExternal;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItem;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -52,18 +57,18 @@ import org.openide.loaders.DataObject;
  * @author rdara
  */
 public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
-
+    
     private CasaWrapperModel mModel;
     private List<String> artifactTypes = new ArrayList<String>();
     
-
+    
     public CasaPaletteAcceptProvider(CasaModelGraphScene scene, CasaWrapperModel model) {
         super(scene);
         mModel = model;
         artifactTypes.add(JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA);
     }
     
-
+    
     private String getJbiProjectType(Project p) {
         if (p == null) {
             return null;
@@ -87,13 +92,24 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 }
             }
         }
-
+        
         return null;
     }
-
-    public ConnectorState isAcceptable (Widget widget, Point point, Transferable transferable){
+    
+    public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable){
         ConnectorState retState = ConnectorState.REJECT;
         try {
+            // JBIMGR
+            // Due to the class loader limitation of JBI Manager, we
+            Object transferData = transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor); //?
+            if (transferData instanceof List &&
+                    ((List)transferData).size() == 3 &&
+                    ((List)transferData).get(0) instanceof String &&
+                    ((List)transferData).get(0).equals("JBIMGR_SU_TRANSFER")) {
+                return isAcceptableFromJBIManager(widget, point, transferData);
+            }
+            // JBIMGR
+            
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
                 CasaPaletteItem selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
                 if (selNode != null) {
@@ -110,6 +126,18 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return retState;
     }
     
+    // JBIMGR
+    private ConnectorState isAcceptableFromJBIManager(Widget widget, Point point,
+            Object transferData) {
+        ConnectorState retState = ConnectorState.REJECT;
+        CasaRegionWidget extRegion = getScene().getExternalRegion();
+        if (extRegion.getBounds().contains(extRegion.convertSceneToLocal(point))) {
+            retState = ConnectorState.ACCEPT;
+        }
+        return retState;
+    }
+    // JBIMGR
+    
     private ConnectorState isAcceptableFromPalette(Widget widget, Point point, CasaPaletteItem selNode) {
         CasaRegionWidget region = getApplicableRegion(selNode);
         ConnectorState retState = ConnectorState.REJECT;
@@ -121,8 +149,9 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return retState;
     }
     
-    private ConnectorState isAcceptableFromOther(Widget widget, Point point, Transferable transferable) 
+    private ConnectorState isAcceptableFromOther(Widget widget, Point point, Transferable transferable)
     throws Exception {
+        
         DataFlavor[] dfs = transferable.getTransferDataFlavors();
         CasaRegionWidget region = getScene().getEngineRegion();
         if (region.getBounds().contains(region.convertSceneToLocal(point))) {
@@ -152,8 +181,27 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
+            // JBIMGR
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
-                CasaPaletteItem selNode = 
+                Object data = transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+                if (data instanceof List &&
+                        ((List)data).size() == 3 &&
+                        ((List)data).get(0) instanceof String &&
+                        ((List)data).get(0).equals("JBIMGR_SU_TRANSFER")) {
+                    
+                    JBIServiceUnitTransferObject suTransfer =
+                            new JBIServiceUnitTransferObject(
+                            (String) ((List)data).get(1),
+                            (String) ((List)data).get(2));
+                    acceptFromJBIManager(widget, point, suTransfer);
+                    return;
+                }
+            }
+            // JBIMGR
+            
+            if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
+                
+                CasaPaletteItem selNode =
                         (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
                 if (selNode != null) {
                     acceptFromPalette(widget, point, selNode);
@@ -194,7 +242,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         }
     }
     
-    private void acceptFromOther(Widget widget, Point point, Transferable transferable) 
+    private void acceptFromOther(Widget widget, Point point, Transferable transferable)
     throws Exception {
         // check for SU project node
         DataFlavor[] dfs = transferable.getTransferDataFlavors();
@@ -209,7 +257,69 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
             }
         }
     }
-
+    
+    // JBIMGR
+    private void acceptFromJBIManager(Widget widget, Point point,
+            //String suName, String descriptor) throws Exception {
+            final JBIServiceUnitTransferObject suTransfer) throws Exception {
+        
+        point = getScene().getExternalRegion().convertSceneToLocal(point);
+        final CasaServiceEngineServiceUnit seSU =
+                mModel.addUnknownEngineServiceUnit(false, point.x, point.y);
+        final Model model = seSU.getModel();
+        String suName = suTransfer.getServiceUnitName();
+        
+        model.startTransaction();
+        try {
+            seSU.setName(suName);
+            seSU.setUnitName(suName);
+        } finally {
+            if (model.isIntransaction()) {
+                model.endTransaction();
+            }
+        }
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {                
+                List<JBIServiceUnitTransferObject.Endpoint> pList = suTransfer.getProvidesEndpoints();
+                for (JBIServiceUnitTransferObject.Endpoint p : pList) {
+                    CasaEndpointRef endpointRef =
+                            mModel.addEndpointToExternalServiceUnit(seSU, false);
+                    CasaEndpoint endpoint = endpointRef.getEndpoint().get();
+                    
+                    model.startTransaction();
+                    try {
+                        endpoint.setInterfaceQName(p.getInterfaceQName());
+                        endpoint.setServiceQName(p.getServiceQName());
+                        endpoint.setEndpointName(p.getEndpointName());
+                    } finally {
+                        if (model.isIntransaction()) {
+                            model.endTransaction();
+                        }
+                    }
+                }
+                List<JBIServiceUnitTransferObject.Endpoint> cList = suTransfer.getConsumesEndpoints();
+                for (JBIServiceUnitTransferObject.Endpoint c : cList) {
+                    CasaEndpointRef endpointRef =
+                            mModel.addEndpointToExternalServiceUnit(seSU, false);
+                    CasaEndpoint endpoint = endpointRef.getEndpoint().get();
+                    
+                    model.startTransaction();
+                    try {
+                        endpoint.setInterfaceQName(c.getInterfaceQName());
+                        endpoint.setServiceQName(c.getServiceQName());
+                        endpoint.setEndpointName(c.getEndpointName());
+                    } finally {
+                        if (model.isIntransaction()) {
+                            model.endTransaction();
+                        }
+                    }
+                }
+            }
+        });
+    }
+    // JBIMGR
+    
     // todo: 02/15/07 fix the problem created by bpel project changes...
     private Project getProjectFromDataObject(DataObject obj) throws Exception {
         if (obj == null) {
@@ -225,7 +335,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         }
         return p;
     }
-
+    
     
     public void acceptStarted(Transferable transferable) {
         super.acceptStarted(transferable);
@@ -234,7 +344,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         if (region != null) {    //Region can take the drop -- highlight it!
             highlightRegion(region);
         } else {    // Its WSDL Points and hence highlight external SUs
-                    // Sanity check...
+            // Sanity check...
             if(selNode != null) {
                 if(selNode.getCategory() == CasaPalette.CASA_CATEGORY_TYPE.END_POINTS) {
                     highlightExtSUs(true);
@@ -255,16 +365,16 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         region.setHighlighted(true);
         showRegion(region);
     }
-
+    
     private void highlightExtSUs(boolean bValue) {
-       for (Widget widget : getScene().getExternalRegion().getChildren()) {
+        for (Widget widget : getScene().getExternalRegion().getChildren()) {
             if (widget instanceof CasaNodeWidgetEngineExternal) {
                 ((CasaNodeWidgetEngineExternal) widget).setHighlighted(bValue);
             }
-       }
-       if (bValue) {
+        }
+        if (bValue) {
             showRegion(getScene().getExternalRegion());
-       }
+        }
     }
     
     private void showRegion(CasaRegionWidget region) {
@@ -276,7 +386,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         getScene().getViewComponent().scrollRectToVisible(visibleRect);
         
     }
-
+    
     private CasaRegionWidget getApplicableRegion(CasaPaletteItem selNode) {
         CasaRegionWidget region = null;
         if (selNode != null) {
@@ -291,9 +401,9 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                         region = getScene().getExternalRegion();
                     }
                     break;
-            default:
-                break;
-           }
+                default:
+                    break;
+            }
         } else {
             region = getScene().getEngineRegion();
         }
@@ -314,4 +424,4 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return selNode;
     }
 }
- 
+

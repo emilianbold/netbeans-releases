@@ -23,7 +23,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -34,13 +33,9 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.util.NbBundle;
-//import org.openide.util.Utilities;
-//import org.openide.windows.WindowManager;
 
 
 /**
@@ -54,7 +49,6 @@ public class ProgressUI implements ProgressListener {
     
     private String title;
     private boolean modal;    
-//    private Deployment.Logger logger;
     
     private ProgressHandle handle;
     private ProgressObject progObj;
@@ -67,13 +61,8 @@ public class ProgressUI implements ProgressListener {
     
     /** Creates a new instance of ProgressUI */
     public ProgressUI(String title, boolean modal) {
-//        this(title, modal, null);
-//    }
-//    
-//    public ProgressUI(String title, boolean modal, Deployment.Logger logger) {
         this.modal = modal;
         this.title = title;
-//        this.logger = logger;        
         handle = ProgressHandleFactory.createHandle(title);
     }
     
@@ -116,7 +105,6 @@ public class ProgressUI implements ProgressListener {
                 }
             });
         }
-//        log(message);
     }
     
     /** Finish the task, unregister the progress object listener and dispose the ui. */
@@ -141,9 +129,6 @@ public class ProgressUI implements ProgressListener {
     /** Display a failure dialog with the specified message and call finish. */
     public void failed(String message) {
         finish();
-//        if (logger != null) {
-//            log(message);
-//        }
     }
     
     /** Set a progress object this progress UI will monitor. */
@@ -157,20 +142,7 @@ public class ProgressUI implements ProgressListener {
             progObj.addProgressListener(this);
         }
     }
-    
-//    /** Set a logger to where all the progress messages will be copied. */
-//    public void setLogger(Deployment.Logger logger)  {
-//        this.logger = logger;
-//    }
-//    
-//    // private helper methods
-//    
-//    private void log(String msg) {
-//        if (logger != null && msg != null) {
-//            logger.log(msg);
-//        }
-//    }
-    
+        
     private JComponent createProgressDialog(ProgressHandle handle, String message) {
         JPanel panel = new JPanel();                                                                                                                                                                           
         messageLabel = new JLabel();
