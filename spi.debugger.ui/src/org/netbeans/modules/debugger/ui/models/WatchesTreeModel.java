@@ -118,7 +118,8 @@ public class WatchesTreeModel implements TreeModel {
         int i, k = v.size ();
         for (i = 0; i < k; i++)
             ((ModelListener) v.get (i)).modelChanged (
-                new ModelEvent.TableValueChanged (this, b, propertyName)
+                //new ModelEvent.TableValueChanged (this, b, "DefaultWatchesColumn")
+                new ModelEvent.NodeChanged(this, b)
             );
     }
     
