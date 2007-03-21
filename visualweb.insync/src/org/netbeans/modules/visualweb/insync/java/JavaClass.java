@@ -148,10 +148,6 @@ public class JavaClass {
                 for(ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
                     if(isBeanGetter(method)) {
                         TypeMirror type = method.getReturnType();
-                        // In case of array get the component type;
-                        if(type.getKind() == TypeKind.ARRAY) {
-                            type = ((ArrayType)type).getComponentType();
-                        }
                         String typeName = type.toString();
                         // In case of parameterized type, use the raw type
                         if(isParameterizedType(type)) {
