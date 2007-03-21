@@ -30,7 +30,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <xsl:param name = "jax_ws_uri">jax-ws.xml</xsl:param>
     <xsl:param name = "jaxws" select="document($jax_ws_uri)"/>
-    
+    <xsl:param name="jaxwsversion"/>
+
     <xsl:template match="/">
         
         <xsl:comment><![CDATA[
@@ -606,8 +607,10 @@ Microsystems, Inc. All Rights Reserved.
                 </target>
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
                     <xsl:if test="jaxws:package-name/@forceReplace">
+                       <xsl:choose>
+                         <xsl:when test="$jaxwsversion = 'jaxws21lib'">
                         <wsimport
-                            fork="true"
+                            xendorsed="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             package="{$package_name}"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
@@ -618,18 +621,41 @@ Microsystems, Inc. All Rights Reserved.
                                 <binding dir="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/bindings">
                                     <xsl:attribute name="includes">
                                         <xsl:for-each select="jaxws:binding">
-                                            <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                            <xsl:if test="position()!=1"><xsl:text> ,</xsl:text></xsl:if>
                                             <xsl:value-of select="normalize-space(jaxws:file-name)"/>
                                         </xsl:for-each>
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
-                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                         </wsimport>
+                       </xsl:when>
+                       <xsl:otherwise>
+                         <wsimport
+                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            package="{$package_name}"
+                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                            wsdlLocation="{$wsdl_url_actual}"
+                            catalog="{$catalog}">
+                            <xsl:if test="jaxws:binding">
+                                <binding dir="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/bindings">
+                                    <xsl:attribute name="includes">
+                                        <xsl:for-each select="jaxws:binding">
+                                            <xsl:if test="position()!=1"><xsl:text> ,</xsl:text></xsl:if>
+                                            <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                        </xsl:for-each>
+                                    </xsl:attribute>
+                                </binding>
+                            </xsl:if>
+                        </wsimport> 
+                       </xsl:otherwise>
+                      </xsl:choose>>
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
-                        <wsimport
-                            fork="true"
+                      <xsl:choose>
+                         <xsl:when test="$jaxwsversion = 'jaxws21lib'">
+                          <wsimport
+                            xendorsed="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
                             wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
@@ -639,14 +665,34 @@ Microsystems, Inc. All Rights Reserved.
                                 <binding dir="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/bindings">
                                     <xsl:attribute name="includes">
                                         <xsl:for-each select="jaxws:binding">
-                                            <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                            <xsl:if test="position()!=1"><xsl:text> ,</xsl:text></xsl:if>
                                             <xsl:value-of select="normalize-space(jaxws:file-name)"/>
                                         </xsl:for-each>
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
-                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                         </wsimport>
+                        </xsl:when>
+                        <xsl:otherwise>
+                           <wsimport
+                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                            wsdlLocation="{$wsdl_url_actual}"
+                            catalog="{$catalog}">
+                            <xsl:if test="jaxws:binding">
+                                <binding dir="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/bindings">
+                                    <xsl:attribute name="includes">
+                                        <xsl:for-each select="jaxws:binding">
+                                            <xsl:if test="position()!=1"><xsl:text> ,</xsl:text></xsl:if>
+                                            <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                        </xsl:for-each>
+                                    </xsl:attribute>
+                                </binding>
+                            </xsl:if>
+                        </wsimport>
+                        </xsl:otherwise>
+                      </xsl:choose>
                     </xsl:if>
                     <copy todir="${{classes.dir}}">
                         <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>

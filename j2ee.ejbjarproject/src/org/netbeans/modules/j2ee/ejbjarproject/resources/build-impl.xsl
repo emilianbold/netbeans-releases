@@ -30,6 +30,8 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:param name = "jax_ws_uri">jax-ws.xml</xsl:param>
     <xsl:param name = "jaxws" select="document($jax_ws_uri)"/>
+    <xsl:param name="jaxwsversion"/>
+
     <xsl:template match="/">
         
         <xsl:comment><![CDATA[
@@ -531,8 +533,10 @@ is divided into following sections:
                 </target>
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
                     <xsl:if test="jaxws:package-name/@forceReplace">
+                      <xsl:choose>
+                         <xsl:when test="$jaxwsversion = 'jaxws21lib'">
                         <wsimport
-                            fork="true"
+                            xendorsed="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             package="{$package_name}"
@@ -550,12 +554,36 @@ is divided into following sections:
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
-                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                         </wsimport>
+                         </xsl:when>
+                         <xsl:otherwise>
+                            <wsimport
+                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            extension="true"
+                            package="{$package_name}"
+                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                            wsdlLocation="{$wsdl_url_actual}"
+                            catalog="{$catalog}">
+                            <xsl:if test="jaxws:binding">
+                                <binding dir="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/bindings">
+                                    <xsl:attribute name="includes">
+                                        <xsl:for-each select="jaxws:binding">
+                                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                                            <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                        </xsl:for-each>
+                                    </xsl:attribute>
+                                </binding>
+                            </xsl:if>
+                        </wsimport>
+                         </xsl:otherwise>
+                     </xsl:choose>
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
+                      <xsl:choose>
+                         <xsl:when test="$jaxwsversion = 'jaxws21lib'">
                         <wsimport
-                            fork="true"
+                            xendorsed="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
@@ -572,8 +600,29 @@ is divided into following sections:
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
-                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                         </wsimport>
+                        </xsl:when>
+                        <xsl:otherwise>
+                           <wsimport
+                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            extension="true"
+                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                            wsdlLocation="{$wsdl_url_actual}"
+                            catalog="{$catalog}">
+                            <xsl:if test="jaxws:binding">
+                                <binding dir="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/bindings">
+                                    <xsl:attribute name="includes">
+                                        <xsl:for-each select="jaxws:binding">
+                                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                                            <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                        </xsl:for-each>
+                                    </xsl:attribute>
+                                </binding>
+                            </xsl:if>
+                        </wsimport>
+                        </xsl:otherwise> 
+                      </xsl:choose>
                     </xsl:if>
                     <copy todir="${{classes.dir}}">
                         <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
@@ -598,8 +647,10 @@ is divided into following sections:
                     </target>
                     <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">
                         <xsl:if test="jaxws:package-name/@forceReplace">
+                         <xsl:choose>
+                           <xsl:when test="$jaxwsversion = 'jaxws21lib'">  
                             <wsimport
-                                fork="true"
+                                xendorsed="true"
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 extension="true"
                                 verbose="true"
@@ -617,12 +668,36 @@ is divided into following sections:
                                         </xsl:attribute>
                                     </binding>
                                 </xsl:if>
-                                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                             </wsimport>
+                           </xsl:when>
+                           <xsl:otherwise>
+                              <wsimport
+                                sourcedestdir="${{build.generated.dir}}/wsimport/service"
+                                extension="true"
+                                verbose="true"
+                                package="{$package_name}"
+                                destdir="${{classes.dir}}"
+                                wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
+                                catalog="{$catalog}">
+                                <xsl:if test="jaxws:binding">
+                                    <binding dir="${{meta.inf}}/xml-resources/web-services/{$wsname}/bindings">
+                                        <xsl:attribute name="includes">
+                                            <xsl:for-each select="jaxws:binding">
+                                                <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                                <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                            </xsl:for-each>
+                                        </xsl:attribute>
+                                    </binding>
+                                </xsl:if>
+                            </wsimport>
+                           </xsl:otherwise>
+                          </xsl:choose>
                         </xsl:if>
                         <xsl:if test="not(jaxws:package-name/@forceReplace)">
+                          <xsl:choose>
+                           <xsl:when test="$jaxwsversion = 'jaxws21lib'"> 
                             <wsimport
-                                fork="true"
+                                xendorsed="true"
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 extension="true"
                                 verbose="true"
@@ -639,8 +714,29 @@ is divided into following sections:
                                         </xsl:attribute>
                                     </binding>
                                 </xsl:if>
-                                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
-                            </wsimport>                           
+                            </wsimport>  
+                          </xsl:when>
+                          <xsl:otherwise>
+                             <wsimport
+                                sourcedestdir="${{build.generated.dir}}/wsimport/service"
+                                extension="true"
+                                verbose="true"
+                                destdir="${{classes.dir}}"
+                                wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
+                                catalog="{$catalog}">
+                                <xsl:if test="jaxws:binding">
+                                    <binding dir="${{meta.inf}}/xml-resources/web-services/{$wsname}/bindings">
+                                        <xsl:attribute name="includes">
+                                            <xsl:for-each select="jaxws:binding">
+                                                <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                                <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                            </xsl:for-each>
+                                        </xsl:attribute>
+                                    </binding>
+                                </xsl:if>
+                            </wsimport>
+                          </xsl:otherwise>
+                         </xsl:choose>                          
                         </xsl:if>
                     </target>
                     <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
