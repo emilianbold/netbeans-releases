@@ -100,13 +100,16 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         ConnectorState retState = ConnectorState.REJECT;
         try {
             // JBIMGR
-            // Due to the class loader limitation of JBI Manager, we
-            Object transferData = transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor); //?
-            if (transferData instanceof List &&
-                    ((List)transferData).size() == 3 &&
-                    ((List)transferData).get(0) instanceof String &&
-                    ((List)transferData).get(0).equals("JBIMGR_SU_TRANSFER")) {
-                return isAcceptableFromJBIManager(widget, point, transferData);
+            try { 
+                Object transferData = transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor); //?
+                if (transferData instanceof List &&
+                        ((List)transferData).size() == 3 &&
+                        ((List)transferData).get(0) instanceof String &&
+                        ((List)transferData).get(0).equals("JBIMGR_SU_TRANSFER")) {
+                    return isAcceptableFromJBIManager(widget, point, transferData);
+                }
+            } catch (Exception e) {
+                ;
             }
             // JBIMGR
             
