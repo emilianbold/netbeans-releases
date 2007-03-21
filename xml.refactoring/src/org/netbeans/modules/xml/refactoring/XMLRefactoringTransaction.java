@@ -114,7 +114,8 @@ public class XMLRefactoringTransaction implements Transaction {
                 undoRenameFile();
             }
             
-            RefactoringUtil.save(models, targetModel, excludedFromSave);
+            if(! isLocal)
+                RefactoringUtil.save(models, targetModel, excludedFromSave);
           
                  
       } catch (IOException ioe) {
@@ -169,17 +170,22 @@ public class XMLRefactoringTransaction implements Transaction {
                 //Model model = request.getTargetModel();
                 if (targetModel != null) {
                     try {
+                        addUndoableRefactorListener(targetModel);
                         targetModel.startTransaction();
-                        //if the scope if local, then there should be only one plugin with only
+                        doRefactorTarget();
+                        //if the scope is local, then there should be only one plugin with only
                         //the usages in the target model
                          for (XMLRefactoringPlugin plugin : plugins) {
                              plugin.doRefactoring(elements);
                          }
+                        
                     } finally {
                         if (targetModel.isIntransaction()) {
                             targetModel.endTransaction();
+                            
                         }
                     }
+                   
                 }
             }
             
