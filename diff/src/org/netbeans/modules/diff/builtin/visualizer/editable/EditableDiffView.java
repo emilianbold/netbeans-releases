@@ -20,13 +20,13 @@
 package org.netbeans.modules.diff.builtin.visualizer.editable;
 
 import java.awt.Component;
-import java.awt.Component;
 import java.awt.event.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.*;
@@ -48,6 +48,7 @@ import org.netbeans.modules.diff.NestableDiffView;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer;
 import org.netbeans.modules.diff.builtin.visualizer.SourceTranslatorAction;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -74,6 +75,8 @@ import org.openide.text.NbDocument;
  */
 public class EditableDiffView implements DiffView, NestableDiffView, DocumentListener, AncestorListener, PropertyChangeListener {
 
+    private Stroke boldStroke = new BasicStroke(2);
+    
     // === Default Diff Colors ===========================================================
     private Color colorMissing = new Color(255, 160, 180);
     private Color colorAdded   = new Color(180, 255, 180);
@@ -128,6 +131,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
     private EditorCookie.Observable editableCookie;
     private Document editableDocument;
     private UndoRedo.Manager editorUndoRedo;
+    private EditableDiffMarkProvider diffMarkprovider;
 
     public EditableDiffView() {
     }
@@ -145,9 +149,11 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         if (mimeType2 == null) mimeType2 = mimeType1;
         
         actionsEnabled = ss2.isEditable();
+        diffMarkprovider = new EditableDiffMarkProvider();        
                 
         jEditorPane1 = new DiffContentPanel(this, true);
         jEditorPane2 = new DiffContentPanel(this, false);
+        jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
         
         initComponents ();
         jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title")); // NOI18N
@@ -370,6 +376,10 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         }
+    }
+
+    Stroke getBoldStroke() {
+        return boldStroke;
     }
 
     class DiffSplitPaneUI extends BasicSplitPaneUI {
@@ -937,6 +947,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
                         jEditorPane1.setCurrentDiff(diffs);
                         jEditorPane2.setCurrentDiff(diffs);
                         jSplitPane1.repaint();
+                        diffMarkprovider.refresh();
                     }
                 });
             }
@@ -1017,5 +1028,37 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
 
     public void removePropertyChangeListener(PropertyChangeListener l) {
         support.removePropertyChangeListener(l);
+    }
+    
+    /**
+     * Integration provider for the error stripe.
+     */
+    private class EditableDiffMarkProvider extends MarkProvider {
+
+        private List<DiffMark> marks;
+
+        public EditableDiffMarkProvider() {
+            marks = getMarksForDifferences();
+        }
+
+        public List getMarks() {
+            return marks;
+        }
+
+        void refresh() {
+            List<DiffMark> oldMarks = marks;
+            marks = getMarksForDifferences();
+            firePropertyChange(PROP_MARKS, oldMarks, marks);
+        }
+
+        private List<DiffMark> getMarksForDifferences() {
+            if (diffs == null) return Collections.emptyList();
+            List<DiffMark> marks = new ArrayList<DiffMark>(diffs.length);
+            for (int i = 0; i < diffs.length; i++) {
+                Difference difference = diffs[i];
+                marks.add(new DiffMark(difference, getColor(difference)));
+            }
+            return marks;
+        }
     }
 }

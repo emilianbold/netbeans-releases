@@ -32,6 +32,8 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.GeneralPath;
 import java.util.*;
 import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Split pane divider with Diff decorations.
@@ -68,6 +70,11 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         
         addMouseListener(this);
         addMouseMotionListener(this);
+        master.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                repaint();
+            }
+        });
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -156,6 +163,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         protected void paintComponent(Graphics gr) {
             Graphics2D g = (Graphics2D) gr.create();
             Rectangle clip = g.getClipBounds();
+            Stroke cs = g.getStroke();
         
             Rectangle rightView = master.getEditorPane2().getScrollPane().getViewport().getViewRect();
             Rectangle leftView = master.getEditorPane1().getScrollPane().getViewport().getViewRect();
@@ -185,11 +193,15 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             g.setColor(Color.LIGHT_GRAY);
             g.drawLine(0, clip.y, 0, clip.height);
             g.drawLine(rightY, clip.y, rightY, clip.height);
+
+            int curDif = master.getCurrentDifference();
             
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             DiffViewManager.DecoratedDifference [] decoratedDiffs = master.getManager().getDecorations();
+            int idx = 0;
             for (DiffViewManager.DecoratedDifference dd : decoratedDiffs) {
                 g.setColor(master.getColor(dd.getDiff()));
+                g.setStroke(curDif == idx++ ? master.getBoldStroke() : cs);                            
                 if (dd.getBottomLeft() == -1) {
                     paintMatcher(g, master.getColor(dd.getDiff()), 0, rightY,
                             dd.getTopLeft() + leftOffset, dd.getTopRight() + rightOffset, 

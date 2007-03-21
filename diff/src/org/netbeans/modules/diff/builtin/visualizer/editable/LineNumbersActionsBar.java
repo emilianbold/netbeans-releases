@@ -286,6 +286,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
     protected void paintComponent(Graphics gr) {
         Graphics2D g = (Graphics2D) gr;
         Rectangle clip = g.getClipBounds();
+        Stroke cs = g.getStroke();
 
         if (checkLinesWidth(gr)) return;
         
@@ -310,6 +311,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
             int idx = 0;
             for (DiffViewManager.DecoratedDifference dd : diffs) {
                 g.setColor(master.getMaster().getColorLines());
+                g.setStroke(currentDifference == idx ? master.getMaster().getBoldStroke() : cs);                            
                 g.drawLine(0, dd.getTopLeft(), clip.width, dd.getTopLeft());
                 if (dd.getBottomLeft() != -1) {
                     g.drawLine(0, dd.getBottomLeft(), clip.width, dd.getBottomLeft());
@@ -331,6 +333,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
             int idx = 0;
             for (DiffViewManager.DecoratedDifference dd : diffs) {
                 g.setColor(master.getMaster().getColorLines());
+                g.setStroke(currentDifference == idx ? master.getMaster().getBoldStroke() : cs);                            
                 g.drawLine(clip.x, dd.getTopRight(), clip.x + clip.width, dd.getTopRight());
                 if (dd.getBottomRight() != -1) {
                     g.drawLine(clip.x, dd.getBottomRight(), clip.x + clip.width, dd.getBottomRight());

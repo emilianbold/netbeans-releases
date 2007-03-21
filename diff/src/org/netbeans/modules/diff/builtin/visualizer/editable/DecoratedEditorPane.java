@@ -28,13 +28,15 @@ import org.openide.ErrorManager;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Editor pane with added decorations (diff lines).
  * 
  * @author Maros Sandor
  */
-class DecoratedEditorPane extends JEditorPane {
+class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener {
 
     private Difference[]        currentDiff;
     private DiffContentPanel    master;
@@ -42,6 +44,7 @@ class DecoratedEditorPane extends JEditorPane {
     public DecoratedEditorPane(DiffContentPanel master) {
         setBorder(null);
         this.master = master;
+        master.getMaster().addPropertyChangeListener(this);
     }
 
     public boolean isFirst() {
@@ -65,6 +68,7 @@ class DecoratedEditorPane extends JEditorPane {
         
         Graphics2D g = (Graphics2D) gr.create();
         Rectangle clip = g.getClipBounds();
+        Stroke cs = g.getStroke();
         // compensate for cursor drawing, it is needed for catching a difference on the cursor line 
         clip.y -= 1;
         clip.height += 1; 
@@ -98,6 +102,8 @@ class DecoratedEditorPane extends JEditorPane {
                     int line = rootElem.getElementIndex(view.getStartOffset());
                     line++; // make it 1-based
 
+                    int curDif = master.getMaster().getCurrentDifference();
+                    
                     g.setColor(master.getMaster().getColorLines());
                     if (master.isFirst()) {
                         for (int i = startViewIndex; i < rootViewCount; i++){
@@ -106,6 +112,8 @@ class DecoratedEditorPane extends JEditorPane {
                             line++; // make it 1-based
                             Difference ad = EditableDiffView.getFirstDifference(currentDiff, line);
                             if (ad != null) {
+                                // TODO: can cause AIOOBE, synchronize "currentDiff" and "curDif" variables
+                                g.setStroke(curDif >= 0 && curDif < currentDiff.length && currentDiff[curDif] == ad ? master.getMaster().getBoldStroke() : cs);                            
                                 int yy = y + editorUI.getLineHeight();
                                 if (ad.getType() == Difference.ADD) {
                                     g.drawLine(0, yy, getWidth(), yy);
@@ -131,6 +139,8 @@ class DecoratedEditorPane extends JEditorPane {
                             line++; // make it 1-based
                             Difference ad = EditableDiffView.getSecondDifference(currentDiff, line);
                             if (ad != null) {
+                                // TODO: can cause AIOOBE, synchronize "currentDiff" and "curDif" variables
+                                g.setStroke(curDif >= 0 && curDif < currentDiff.length && currentDiff[curDif] == ad ? master.getMaster().getBoldStroke() : cs);                          
                                 int yy = y + editorUI.getLineHeight();
                                 if (ad.getType() == Difference.DELETE) {
                                     g.drawLine(0, yy, getWidth(), yy);
@@ -159,5 +169,9 @@ class DecoratedEditorPane extends JEditorPane {
         } finally {
             doc.readUnlock();
         }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        repaint();
     }
 }
