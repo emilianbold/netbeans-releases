@@ -202,6 +202,10 @@ public class GlobalRepository implements PropertyChangeListener {
 	}
 	
 	void removeLayer(Layer layer) {
+		List<Scene> scenes = this.getScenes();
+		for (Scene scene : scenes) {
+			scene.remove(layer);
+		}
 		if (layer instanceof TiledLayer) {
 			TiledLayer tl = (TiledLayer) layer;
 			this.removeTiledLayer(tl);

@@ -43,6 +43,7 @@ import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 public class Scene implements GlobalRepositoryListener, PropertyChangeListener, Previewable, Editable {
 
@@ -551,7 +552,16 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			gameDesign.removeScene(Scene.this);
+				Object response = DialogDisplayer.getDefault().notify(new NotifyDescriptor("Are you sure you wish to delete scene " + getName() + "?",
+						"Delete scene?",
+						NotifyDescriptor.YES_NO_OPTION,
+						NotifyDescriptor.QUESTION_MESSAGE,
+						new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+						NotifyDescriptor.YES_OPTION));
+				if (response == NotifyDescriptor.YES_OPTION) {
+					System.out.println("said YES to delete scene");
+					gameDesign.removeScene(Scene.this);
+				}
 		}
 	}
 

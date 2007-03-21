@@ -30,10 +30,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 public abstract class Layer implements Previewable, Editable, Transferable {
 	
@@ -180,9 +181,18 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 			if (scene != null) {
 				scene.remove(Layer.this);
 			}
-			//else remove completely
+			//else delete completely
 			else {
-				Layer.this.gameDesign.removeLayer(Layer.this);
+				Object response = DialogDisplayer.getDefault().notify(new NotifyDescriptor("Are you sure you wish to completely delete all references to " + getDisplayableTypeName() + " " + getName() + "?",
+						"Delete layer?",
+						NotifyDescriptor.YES_NO_OPTION,
+						NotifyDescriptor.QUESTION_MESSAGE,
+						new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+						NotifyDescriptor.YES_OPTION));
+				if (response == NotifyDescriptor.YES_OPTION) {
+					System.out.println("said YES to delete layer");
+					Layer.this.gameDesign.removeLayer(Layer.this);
+				}
 			}
 		}
 	}
