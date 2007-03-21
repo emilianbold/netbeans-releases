@@ -63,7 +63,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     
     public void testCreateWebPackProject() {
         category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web"); // Web
-        project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.visualweb.project.jsfproject.ui.wizards.Bundle", "Templates/Project/JsfWeb/emptyJsf.xml"); // Visual Web Application
+        project = "Web Application";
         project_type="JSFWebProject";
         index=1;
         doMeasurement();
