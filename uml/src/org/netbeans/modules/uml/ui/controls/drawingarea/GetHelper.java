@@ -21,20 +21,14 @@
 
 package org.netbeans.modules.uml.ui.controls.drawingarea;
 
-import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.Vector;
-
 import org.netbeans.modules.uml.common.generics.IteratorT;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
@@ -60,17 +54,13 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETGraph;
 import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETNode;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETEGraphImageEncoder;
-import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericGraphUI;
 import org.netbeans.modules.uml.ui.support.ImageTransferable;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation;
 import org.netbeans.modules.uml.ui.support.applicationmanager.INodePresentation;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IProductGraphPresentation;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETPointEx;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETRectEx;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETEdge;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETLabel;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETNode;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ITSGraphObject;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import com.tomsawyer.diagramming.TSCutCopyPasteControl;
 import com.tomsawyer.drawing.TSDGraph;
@@ -81,27 +71,17 @@ import com.tomsawyer.editor.TSEGraph;
 import com.tomsawyer.editor.TSEGraphManager;
 import com.tomsawyer.editor.TSEGraphWindow;
 import com.tomsawyer.editor.TSENode;
-import com.tomsawyer.editor.TSEObjectUI;
 import com.tomsawyer.graph.TSEdge;
 import com.tomsawyer.graph.TSGraphObject;
 import com.tomsawyer.graph.TSNode;
-//import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSExpTransform;
-import com.tomsawyer.drawing.geometry.TSExpTransform;
-import com.tomsawyer.util.TSObject;
-//import com.tomsawyer.util.TSRect;
 import com.tomsawyer.drawing.geometry.TSRect;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
-import com.tomsawyer.util.command.TSCommand;
 import com.tomsawyer.editor.TSEGraphImageEncoder;
 import com.tomsawyer.editor.complexity.TSEHidingManager;
 import com.tomsawyer.editor.complexity.command.TSEHideCommand;
 import com.tomsawyer.editor.complexity.command.TSEUnhideCommand;
-//import com.tomsawyer.editor.state.TSEPasteState;
 import com.tomsawyer.editor.tool.TSEPasteTool;
 import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
 import org.netbeans.modules.uml.ui.support.visitors.ETFirstSubjectSameVistor;
@@ -109,7 +89,6 @@ import org.netbeans.modules.uml.ui.support.visitors.ETGraphObjectTraversal;
 import org.netbeans.modules.uml.ui.support.visitors.ETXMIIDEqualsVisitor;
 import org.netbeans.modules.uml.ui.support.visitors.IETGraphObjectVisitor;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.SaveAsGraphicKind;
 import org.netbeans.modules.uml.ui.swing.drawingarea.diagramtools.ADPasteState;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 import org.netbeans.modules.uml.core.support.Debug;
@@ -876,64 +855,70 @@ public class GetHelper
         }
     }
     
+    // Fixed IZ=78350. Modified this method to use TS API to correctly get hidden children nodes 
+    // at all specified search levels.
     /**
-     * Get all hidden children upto specified level
+     * Finds all the hidden children of a given node up to a specified search level
+     * @param prodNode       The node whose hidden children are searched
+     * @param hiddenChildren A list of children found up to the specified search level
+     * @param level          An integer indicating the search depth. If the level equals to
+     *   ADCoreEngine.FIND_DEPTH_ALL, the method gets the hidden children found at all levels.
+     * @param hidingManager  TomSawyer hidingManager that performs the search.
      */
-    public static void findHiddenChildren(TSENode prodNode, List hiddenChildren, long levels, TSEHidingManager hidingManager) {
-        if ((levels>=1) && prodNode != null) {
-            if (hiddenChildren == null) {
-                hiddenChildren = new Vector();
-            }
-            List myChildren = new Vector();
-            hidingManager.findHiddenChildren(prodNode,1);
-            List myHiddenChildren = hidingManager.getResultNodeList();
-            if (myHiddenChildren != null)  {
-                myHiddenChildren.removeAll(hiddenChildren);
-                hiddenChildren.addAll(myHiddenChildren);
-                myChildren = myHiddenChildren;
-            }
-            if (levels>1) {
-                findChildren(prodNode,myChildren,1);
-                if(myChildren != null && !myChildren.isEmpty()) {
-                    int ctr =0;
-                    while (ctr<myChildren.size()) {
-                        TSENode pNode = (TSENode)myChildren.get(ctr++);
-                        findHiddenChildren(pNode,hiddenChildren,levels-1,hidingManager);
-                    }
-                }
-            }
-        }
+    
+    public static void findHiddenChildren(TSENode prodNode, List hiddenChildren, long level, TSEHidingManager hidingManager)
+    {
+       if ( prodNode == null)
+       {
+          return;
+       }
+       
+       if (hiddenChildren == null)
+       {
+          hiddenChildren = new Vector();
+       }
+       
+       hidingManager.findHiddenChildren(prodNode,level);
+       List myHiddenChildren = hidingManager.getResultNodeList();
+       if (myHiddenChildren != null)
+       {
+          myHiddenChildren.removeAll(hiddenChildren);
+          hiddenChildren.addAll(myHiddenChildren);
+       }
     }
 
+    // Fixed IZ=78350. Modified this method to use TS API to correctly get hidden parents nodes 
+    // at all specified search levels.
     /**
-     * Get all hidden parents upto specified level
+     * Finds all the hidden parents of a given node up to a specified search level
+     * @param prodNode      The node whose hidden parents are searched
+     * @param hiddenParens  A list of hidden parents found up to the specified level
+     * @param level         An integer indicating the search depth. If the level equals
+     *   to ADCoreEngine.FIND_DEPTH_ALL, the method gets the hidden parents at all levels.
+     * @param hidingManager TomSawyer hidingManager that performs the search.
      */
-    public static void findHiddenParents(TSENode prodNode, List hiddenParents, long levels, TSEHidingManager hidingManager) {
-        if ((levels>=1) && prodNode != null) {
-            if (hiddenParents == null) {
-                hiddenParents = new Vector();
-            }
-            List myParents = new Vector();
-            hidingManager.findHiddenParents(prodNode,1);
-            List myHiddenParents = hidingManager.getResultNodeList();
-            if (myHiddenParents != null)  {
-                myHiddenParents.removeAll(hiddenParents);
-                hiddenParents.addAll(myHiddenParents);
-                myParents = myHiddenParents;
-            }
-            if (levels>1) {
-                findParents(prodNode, myParents, 1);
-                if(myParents != null)  {
-                    int ctr =0;
-                    while (ctr<myParents.size()) {
-                        TSENode pNode = (TSENode)myParents.get(ctr++);
-                        findHiddenParents(pNode,hiddenParents,levels-1,hidingManager);
-                    }
-                }
-            }
-        }
-    }
     
+    public static void findHiddenParents(TSENode prodNode, List hiddenParents, long level, TSEHidingManager hidingManager)
+    {
+       if ( prodNode == null)
+       {
+          return;
+       }
+       
+       if (hiddenParents == null)
+       {
+          hiddenParents = new Vector();
+       }
+       
+       hidingManager.findHiddenParents(prodNode, level);
+       List foundHiddenParent = hidingManager.getResultNodeList();
+       if (foundHiddenParent != null)
+       {
+          foundHiddenParent.removeAll(hiddenParents);
+          hiddenParents.addAll(foundHiddenParent);
+       }
+    }
+     
    /**
    	* Does this node have hidden children
    	*/
