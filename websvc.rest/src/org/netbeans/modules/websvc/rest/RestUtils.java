@@ -29,6 +29,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 
@@ -38,61 +39,23 @@ import org.openide.filesystems.FileObject;
  * @author Nam Nguyen
  */
 public class RestUtils {
-    public static final String SWDP_LIBRARY = "swdp"; //NOI18N
+
     /**
-     *  Add SWDP library for given source file on specified class path types.
-     * 
-     *  @param source source file object for which the libraries is added.
-     *  @param classPathTypes types of class path to add ("javac.compile",...)
+     *  Makes sure project is ready for REST development.
+     *  @param project project to make REST development ready
      */
-    public static void addSwdpLibrary(FileObject source, String[] classPathTypes) throws IOException {
-        Project project = FileOwnerQuery.getOwner(source);
-        if (project == null) {
-            return;
-        }
-        
-        // check if swdp is already part of classpath
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.COMPILE);
-        FileObject restClass = classPath.findResource("com/sun/ws/rest/api/UriTemplate.class"); // NOI18N
-        if (restClass != null) {
-            return;
-        }
-        
-        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
-        if (swdpLibrary == null) {
-            throw new IllegalStateException("SWDP library not found");
-        }
-        ProjectClassPathExtender pce = project.getLookup().lookup(ProjectClassPathExtender.class);
-        ProjectClassPathModifier pcm = project.getLookup().lookup(ProjectClassPathModifier.class);
-        if (pcm != null) {
-            for (String type : classPathTypes) {
-                pcm.addLibraries(new Library[] { swdpLibrary }, source, type);
-            }
-        } else if (pce != null) {
-            pce.addLibrary(swdpLibrary);
-        } else{
-            throw new IllegalStateException("Current project does not have support " +
-                    "for ProjectClassPathModifier or ProjectClassPathExtender");
-        }
+    public static void ensureRestDevelopmentReady(Project project) throws IOException {
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        restSupport.ensureRestDevelopmentReady();
     }
     
-    /*public static boolean jeePlatformAlreadyHasSwdpLibrary(Project project) {
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider == null){
-            return false;
-        }
-        
-        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-        if (platform == null){
-            return false;
-        }
-        
-        for (File file : platform.getClasspathEntries()) {
-            if (file.getName().equals("restbeans-impl.jar")) { //NOI18N
-                return true;
-            }
-        }
-        return false;
-    }*/
+    /**
+     *  Returns true if the project supports REST framework.
+     *  @param project project to make REST development ready
+     */
+    public static boolean supportsRestDevelopment(Project project) {
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        return restSupport != null;
+    }
+
 }

@@ -155,6 +155,7 @@
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <package>org.netbeans.modules.websvc.rest</package>
+                <package>org.netbeans.modules.websvc.rest.spi</package>
             </friend-packages>
         </data>
     </configuration>
