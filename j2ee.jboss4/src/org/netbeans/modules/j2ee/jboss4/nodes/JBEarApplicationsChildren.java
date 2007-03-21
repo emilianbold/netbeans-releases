@@ -81,7 +81,7 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                             String name = elem.getKeyProperty(propertyName);
 
                             if (isRemoteManagementSupported() && isJB4x) {
-                                if (name.endsWith(".sar")) { // NOI18N
+                                if (name.endsWith(".sar") || name.endsWith(".deployer")) { // NOI18N
                                     continue;
                                 }
                             }

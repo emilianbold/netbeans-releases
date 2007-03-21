@@ -138,6 +138,7 @@ public class JBPluginUtils {
     
     //--------------- checking for possible server directory -------------
     private static List<String> serverRequirements4x = new LinkedList<String>();
+    private static List<String> serverAlterRequirements4x = new LinkedList<String>();
     
     static {
         serverRequirements4x.add("bin");                        // NOI18N
@@ -146,7 +147,17 @@ public class JBPluginUtils {
         serverRequirements4x.add("server");                     // NOI18N
         serverRequirements4x.add("lib/jboss-common.jar");       // NOI18N
         serverRequirements4x.add("lib/endorsed/resolver.jar");  // NOI18N
-    }  
+        
+        // Alter requirements are for support of jboss 4.2.X
+        serverAlterRequirements4x.add("bin");                   // NOI18N
+        serverAlterRequirements4x.add("client");                // NOI18N
+        serverAlterRequirements4x.add("lib");                   // NOI18N
+        serverAlterRequirements4x.add("server");                // NOI18N
+        serverAlterRequirements4x.add("lib/jboss-common.jar");  // NOI18N
+        serverAlterRequirements4x.add("client/jaxb-xjc.jar");   // NOI18N
+        serverAlterRequirements4x.add("client/jaxb-impl.jar");   // NOI18N
+        serverAlterRequirements4x.add("client/jaxb-api.jar");   // NOI18N
+    }
     
     private static List<String> serverRequirements5x = new LinkedList<String>();
     
@@ -171,7 +182,8 @@ public class JBPluginUtils {
     }
     
     public static boolean isGoodJBServerLocation4x(File candidate){
-        return isGoodJBServerLocation(candidate, serverRequirements4x);
+        return isGoodJBServerLocation(candidate, serverRequirements4x) ||
+                isGoodJBServerLocation(candidate, serverAlterRequirements4x);
     }
     
     public static boolean isGoodJBServerLocation4x(JBDeploymentManager dm){
