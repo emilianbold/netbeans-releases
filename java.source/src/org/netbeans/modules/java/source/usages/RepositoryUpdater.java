@@ -991,10 +991,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final ClasspathInfo cpInfo;
                 if (!this.ignoreExcludes.contains(root)) {
                     entry = getClassPathEntry(sourcePath, root);
-                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(CacheClassPath.forClassPath(bootPath),CacheClassPath.forClassPath(compilePath),sourcePath,filter,true,false);
+                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath,filter,true,false);
                 }
                 else {
-                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(CacheClassPath.forClassPath(bootPath),CacheClassPath.forClassPath(compilePath),sourcePath,filter,true,true);
+                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath,filter,true,true);
                 }                
                 for (File child : children) {       
                     String offset = FileObjects.getRelativePath(rootFile,child);                    
