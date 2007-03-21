@@ -143,6 +143,7 @@ public class DevicePanel extends JPanel {
         ScreenDisplayPresenter presenter = editedScreen != null ? editedScreen.getPresenter (ScreenDisplayPresenter.class) : null;
         if (presenter == null)
             presenter = dummyPresenter;
+        displayPanel.setVisible (false);
         displayPanel.removeAll ();
         displayPanel.add (presenter.getView (), BorderLayout.CENTER);
         displayPanel.setBackground (getDeviceInfo ().getDeviceTheme ().getColor (ScreenDeviceInfo.DeviceTheme.COLOR_BACKGROUND));
@@ -155,6 +156,9 @@ public class DevicePanel extends JPanel {
         displayPanel.setMaximumSize (new Dimension (size.width, Integer.MAX_VALUE));
 
         topPanel.reload ();
+        displayPanel.setVisible (true);
+        displayPanel.validate ();
+        displayPanel.repaint ();
     }
 
     public DesignComponent getDesignComponentAt (Point point) {
