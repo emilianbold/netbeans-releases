@@ -81,6 +81,13 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     }
     
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
+        if(!isJsr109){
+            try{
+                addJaxWs20Library();
+            } catch(Exception e){  //TODO handle this
+                ErrorManager.getDefault().notify(e);
+            }
+        }
         JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
         String finalClientName=clientName;
         boolean clientAdded=false;
@@ -155,13 +162,13 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 }
             }
             if (clientAdded) {
-                if(!isJsr109){
-                    try{
-                        addJaxWs20Library();
-                    } catch(Exception e){  //TODO handle this
-                        ErrorManager.getDefault().notify(e);
-                    }
-                }
+//                if(!isJsr109){
+//                    try{
+//                        addJaxWs20Library();
+//                    } catch(Exception e){  //TODO handle this
+//                        ErrorManager.getDefault().notify(e);
+//                    }
+//                }
                 FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
                 try {
                     ExecutorTask wsimportTask =
