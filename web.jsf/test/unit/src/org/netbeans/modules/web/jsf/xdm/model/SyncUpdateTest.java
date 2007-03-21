@@ -22,20 +22,11 @@ public class SyncUpdateTest extends NbTestCase {
     protected void tearDown() throws Exception {
     }
     
-    public void testSyncSimpleTypeElement() throws Exception {
+    public void testSyncRuleElement() throws Exception {
         
         List<NavigationRule> navRules;
         
         JSFConfigModel model = Util.loadRegistryModel("faces-config-03.xml");
-        Document doc = Util.getResourceAsDocument("faces-config-03.xml");
-             
-        if( ! (doc instanceof BaseDocument) ) {
-            fail("Can not cast Document into BaseDocument");
-        }
-//        
-//        String text = doc.getText(0, doc.getLength());
-//        int offset = text.indexOf("from-view-id");                
-//        String fromview = JSFEditorUtilities.getNavigationRule((BaseDocument) doc, offset);
         
         navRules = model.getRootComponent().getNavigationRules();
         
@@ -46,6 +37,22 @@ public class SyncUpdateTest extends NbTestCase {
         
         assertEquals("newafaa", navRules.get(0).getFromViewId());
     }
+//    
+//    public void testSyncNotWellFormedElement() throws Exception {
+//        
+//        List<NavigationRule> navRules;
+//        
+//        JSFConfigModel model = Util.loadRegistryModel("faces-config-03.xml");
+//        
+//        navRules = model.getRootComponent().getNavigationRules();
+//        
+//        assertEquals("afaa", navRules.get(0).getFromViewId());
+//        
+//        Util.setDocumentContentTo(model, "faces-config-notwellformed.xml");
+//        navRules = model.getRootComponent().getNavigationRules();
+//        
+//        assertEquals("afaa", navRules.get(0).getFromViewId());
+//    }
     
     
 }
