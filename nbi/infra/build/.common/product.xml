@@ -370,10 +370,12 @@
             <!-- if the data needs to be packaged -->
             <if property="do.package.data" value="true">
                 <echo message="data would be packaged"/>
+		<echo message="downloading file to ${current.download}"/>
+                <echo message="download dir before dirname is ${current.download.dir}"/>
                 <dirname 
                     property="current.download.dir" 
                     file="${current.download}"/>
-		<echo message="Creating directory ${current.download.dir}"/>
+		<echo message="download dir after  dirname is ${current.download.dir}"/>
 
                 <mkdir 
                     dir="${current.download.dir}"/>
