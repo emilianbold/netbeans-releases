@@ -31,12 +31,16 @@ import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.WeakListeners;
 
 /**
@@ -115,6 +119,27 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                             }
                         }
                     } else {
+                        if (FileObjects.JAR.equals(url.getProtocol())) {
+                            URL foo = FileUtil.getArchiveFile(url);
+                            if (!FileObjects.FILE.equals(foo.getProtocol())) {
+                                FileObject fo = URLMapper.findFileObject(foo);
+                                if (fo != null) {
+                                    foo = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                                    if (FileObjects.FILE.equals(foo.getProtocol())) {
+                                        url = FileUtil.getArchiveRoot(foo);
+                                    }
+                                }
+                            }
+                        }
+                        else if (!FileObjects.FILE.equals(url.getProtocol())) {
+                            FileObject fo = URLMapper.findFileObject(url);
+                            if (fo != null) {
+                                URL foo = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                                if (FileObjects.FILE.equals(foo.getProtocol())) {
+                                    url = foo;
+                                }
+                            }
+                        }
                         this.cache.add (ClassPathSupport.createResource(url));
                     }
                 }

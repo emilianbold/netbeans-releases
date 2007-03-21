@@ -66,6 +66,7 @@ public class FileObjects {
     public static final String JAVA  = JavaDataLoader.JAVA_EXTENSION;
     public static final String CLASS = ClassDataLoader.CLASS_EXTENSION;
     public static final String JAR   = "jar";  //NOI18N
+    public static final String FILE  = "file"; //NOI18N
     public static final String ZIP   = "zip";  //NOI18N
     public static final String HTML  = "html"; //NOI18N
     public static final String SIG   = "sig";  //NOI18N
