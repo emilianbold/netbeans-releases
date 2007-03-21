@@ -340,6 +340,13 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                         // We'll resume...
                         getDebugger ().setRunningState();
                     }
+                    if (no) {
+                        // The user wants to stop on the breakpoint, remove
+                        // the step requests to prevent confusion
+                        for (StepRequest step : activeStepRequests) {
+                            thread.virtualMachine().eventRequestManager().deleteEventRequest(step);
+                        }
+                    }
                     return yes;
                 }
             }

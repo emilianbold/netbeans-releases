@@ -527,6 +527,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     // Do not wait for zombie!
                     return ;
                 }
+                if (!request.isEnabled()) {
+                    return ;
+                }
                 Boolean resumeDecission = debugger.getSingleThreadStepResumeDecission();
                 if (resumeDecission != null) {
                     if (resumeDecission.booleanValue()) {
