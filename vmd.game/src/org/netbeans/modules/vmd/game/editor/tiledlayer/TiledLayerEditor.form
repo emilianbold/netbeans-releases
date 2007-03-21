@@ -54,7 +54,7 @@
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="textFieldName" pref="100" max="32767" attributes="0"/>
+                  <Component id="textFieldName" pref="102" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -126,9 +126,9 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="null"/>
         </Property>
+        <Property name="dividerSize" type="int" value="5"/>
         <Property name="resizeWeight" type="double" value="1.0"/>
         <Property name="continuousLayout" type="boolean" value="true"/>
-        <Property name="oneTouchExpandable" type="boolean" value="true"/>
       </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
@@ -143,7 +143,6 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="this.editorScroll = new JScrollPane(this.editorComponent);&#xa;this.editorScroll.getViewport().setBackground(Color.WHITE);&#xa;this.jPanel2.add(this.editorScroll);"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="2"/>
           </AuxValues>
           <Constraints>

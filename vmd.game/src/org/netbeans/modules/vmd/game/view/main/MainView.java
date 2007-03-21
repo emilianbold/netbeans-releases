@@ -65,8 +65,8 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		this.editorSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false);
 		this.editorSplit.setDividerLocation(400);
 		this.editorSplit.setResizeWeight(1.0);
-		this.editorSplit.setOneTouchExpandable(true);
-		this.editorSplit.setDividerSize(10);
+		this.editorSplit.setOneTouchExpandable(false);
+		this.editorSplit.setDividerSize(5);
 
 	}
 	
@@ -78,8 +78,8 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		//layout the main window
 		this.mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, this.previewExplorerSplit, this.mainEditorPanel);
 		this.mainSplit.setDividerLocation(230);
-		this.mainSplit.setDividerSize(10);
-		this.mainSplit.setOneTouchExpandable(true);
+		this.mainSplit.setDividerSize(5);
+		this.mainSplit.setOneTouchExpandable(false);
 		this.mainSplit.setResizeWeight(0.0);
 
 		
@@ -151,8 +151,8 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 			this.resourceImageView.setImageResourceInfo(resource);
 			this.editorSplit.setTopComponent(editor);
 			this.editorSplit.setBottomComponent(this.resourceImageView);
-			this.editorSplit.setOneTouchExpandable(true);
-			this.editorSplit.setDividerSize(10);
+			this.editorSplit.setOneTouchExpandable(false);
+			this.editorSplit.setDividerSize(5);
 			this.mainEditorPanel.add(MainView.this.editorSplit);
 		}
 		else {

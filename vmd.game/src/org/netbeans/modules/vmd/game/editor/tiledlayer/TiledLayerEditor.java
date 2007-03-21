@@ -68,9 +68,15 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 		this.textFieldName.setBackground(this.textFieldName.getParent().getBackground());
 		this.textFieldRows.setBackground(this.textFieldRows.getParent().getBackground());
 		this.textFieldCols.setBackground(this.textFieldCols.getParent().getBackground());
+		
+		this.editorScroll = new JScrollPane();
+		this.editorScroll.getViewport().setBackground(Color.WHITE);
+		this.editorScroll.setViewportView(this.editorComponent);
 		this.editorScroll.setColumnHeaderView(this.editorComponent.rulerHorizontal);
 		this.editorScroll.setRowHeaderView(this.editorComponent.rulerVertical);
 		this.editorScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, this.editorComponent.getGridButton());
+		this.jPanel2.add(this.editorScroll, BorderLayout.CENTER);
+		
 		JScrollPane scrollAnimTiles = new JScrollPane(new AnimatedTileList(editorComponent));
 		scrollAnimTiles.setBorder(null);
 		this.panelAnimatedTiles.add(scrollAnimTiles, BorderLayout.CENTER);
@@ -83,6 +89,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 	 */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         textFieldName = new javax.swing.JTextField();
@@ -106,15 +113,15 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1Layout.createSequentialGroup()
+            .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(textFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
+                .add(textFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                 .add(jLabel1)
                 .add(textFieldName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -134,21 +141,18 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         jLabel2.setText("Rows:");
 
         jSplitPane1.setBorder(null);
+        jSplitPane1.setDividerSize(5);
         jSplitPane1.setResizeWeight(1.0);
         jSplitPane1.setContinuousLayout(true);
-        jSplitPane1.setOneTouchExpandable(true);
-        jPanel2.setLayout(new java.awt.BorderLayout());
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setPreferredSize(new java.awt.Dimension(10000, 10000));
-        this.editorScroll = new JScrollPane(this.editorComponent);
-        this.editorScroll.getViewport().setBackground(Color.WHITE);
-        this.jPanel2.add(this.editorScroll);
+        jPanel2.setLayout(new java.awt.BorderLayout());
         jSplitPane1.setLeftComponent(jPanel2);
 
+        panelAnimatedTiles.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         panelAnimatedTiles.setLayout(new java.awt.BorderLayout());
 
-        panelAnimatedTiles.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         buttonAddAnimatedTile.setText("New AnimatedTile");
         panelAnimatedTiles.add(buttonAddAnimatedTile, java.awt.BorderLayout.NORTH);
 
@@ -158,8 +162,8 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .add(jPanel1)
+            .add(layout.createSequentialGroup()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
                 .add(6, 6, 6)
@@ -168,14 +172,14 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
                 .add(jLabel3)
                 .add(6, 6, 6)
                 .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
+            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(jLabel3)
                         .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -183,8 +187,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))
         );
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 	
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables

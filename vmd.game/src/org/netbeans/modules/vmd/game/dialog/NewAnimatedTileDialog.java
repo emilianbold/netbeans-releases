@@ -41,7 +41,7 @@ public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 	}
 
 	protected String getInitialStateDescriptionText() {
-		return "Enter a Animated Tile name.";
+		return "Enter Animated Tile name.";
 	}
 	
 	protected String getNameLabelText() {
@@ -49,7 +49,7 @@ public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 	}
 	
 	protected String getDialogNameText() {
-		return "Create a new Animated Tile";
+		return "Create new Animated Tile";
 	}
 	
 	protected String getCurrentStateErrorText() {
