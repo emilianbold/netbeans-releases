@@ -39,10 +39,11 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
             <attr name="SimpleJUnitTest.java/TestSuite.java" boolvalue="true"/>
             <attr name="SimpleJUnitTest.java/Package.shadow" boolvalue="true"/>
             
-            <!-- JUnit 3.x templates -->
+            <!-- JUnit wizards -->
             
-            <file name="EmptyJUnitTest.java" url="templates/EmptyJUnitTest.java.template">
+            <file name="EmptyJUnitTest.java">
                 <attr name="template" boolvalue="true"/>
+                <attr name="simple" boolvalue="false"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnitTest.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.EmptyTestCaseWizardIterator.singleton"/>
@@ -50,8 +51,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <attr name="templateCategory" stringvalue="junit"/>
             </file>
             
-            <file name="SimpleJUnitTest.java" url="templates/SimpleJUnitTest.java.template">
+            <file name="SimpleJUnitTest.java">
                 <attr name="template" boolvalue="true"/>
+                <attr name="simple" boolvalue="false"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.SimpleTestCaseWizardIterator.singleton"/>
@@ -59,8 +61,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <attr name="templateCategory" stringvalue="junit"/>
             </file>
             
-            <file name="TestSuite.java" url="templates/TestSuite.java.template">
+            <file name="TestSuite.java">
                 <attr name="template" boolvalue="true"/>
+                <attr name="simple" boolvalue="false"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/TestSuite.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.TestSuiteWizardIterator.singleton"/>
@@ -68,33 +71,63 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <attr name="templateCategory" stringvalue="junit"/>
             </file>
             
+            <!-- JUnit 3.x templates -->
+            
+            <file name="EmptyJUnit3Test.java" url="templates/EmptyJUnit3Test.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnitTest.html"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.EmptyTestCaseWizardIterator.singleton"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
+                <attr name="templateCategory" stringvalue="invisible"/>
+            </file>
+            <attr boolvalue="true" name="EmptyJUnit3Test.java/SimpleJUnit3Test.java"/>
+            <file name="SimpleJUnit3Test.java" url="templates/SimpleJUnit3Test.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.html"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.SimpleTestCaseWizardIterator.singleton"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
+                <attr name="templateCategory" stringvalue="invisible"/>
+            </file>
+            <attr boolvalue="true" name="SimpleJUnit3Test.java/JUnit3TestSuite.java"/>
+            <file name="JUnit3TestSuite.java" url="templates/JUnit3TestSuite.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/TestSuite.html"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.TestSuiteWizardIterator.singleton"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
+                <attr name="templateCategory" stringvalue="invisible"/>
+            </file>
+            
             <!-- JUnit 4.x templates -->
             
+            <attr boolvalue="true" name="JUnit3TestSuite.java/EmptyJUnit4Test.java"/>
             <file name="EmptyJUnit4Test.java" url="templates/EmptyJUnit4Test.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnit4Test.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnitTest.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.EmptyTestCaseWizardIterator.singleton"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
-                <attr name="templateCategory" stringvalue="junit"/>
+                <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            
+            <attr boolvalue="true" name="EmptyJUnit4Test.java/SimpleJUnit4Test.java"/>
             <file name="SimpleJUnit4Test.java" url="templates/SimpleJUnit4Test.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/SimpleJUnit4Test.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.SimpleTestCaseWizardIterator.singleton"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
-                <attr name="templateCategory" stringvalue="junit"/>
+                <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            
+            <attr boolvalue="true" name="SimpleJUnit4Test.java/JUnit4TestSuite.java"/>
             <file name="JUnit4TestSuite.java" url="templates/JUnit4TestSuite.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/JUnit4TestSuite.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/TestSuite.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.TestSuiteWizardIterator.singleton"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
-                <attr name="templateCategory" stringvalue="junit"/>
+                <attr name="templateCategory" stringvalue="invisible"/>
             </file>
             
             <file name="Package.shadow">
