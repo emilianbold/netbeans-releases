@@ -53,23 +53,31 @@ public class ConstructorRenameTest extends GeneratorTest {
     public void testClassRename() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.File;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
             "public class Test {\n" +
             "    Test(int a, long c, String s) {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "    Test() {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.File;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
             "public class Test2 {\n" +
             "    Test2(int a, long c, String s) {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "    Test2() {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
@@ -101,27 +109,37 @@ public class ConstructorRenameTest extends GeneratorTest {
     public void testClassRename2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.File;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
             "public class Test {\n" +
             "    Test(int a, long c, String s) {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "    void method() {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "    Test() {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.File;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
             "public class Test2 {\n" +
             "    Test2(int a, long c, String s) {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "    void method() {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "    Test2() {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
@@ -153,12 +171,14 @@ public class ConstructorRenameTest extends GeneratorTest {
     public void testEnumRename() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public enum Enum {\n" +
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public enum Test2 {\n" +
             "}\n";
 

@@ -68,14 +68,16 @@ public class AnonymousClassTest extends GeneratorTestMDRCompat {
     public void testAddMethodToInvocParam() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "class Test {\n" +
             "    void method(Runnable r) {\n" +
             "        method(new Runnable() {});\n" +
             "    }" +
             "}\n");
         String golden =
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "class Test {\n" +
             "    void method(Runnable r) {\n" +
             "        method(new Runnable() {\n" +
