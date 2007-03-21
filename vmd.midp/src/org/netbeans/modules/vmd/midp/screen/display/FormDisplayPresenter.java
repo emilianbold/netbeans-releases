@@ -71,6 +71,7 @@ public class FormDisplayPresenter extends DisplayableDisplayPresenter {
             presenter.reload (deviceInfo);
         }
         contentPanel.add (fillPanel, new GridBagConstraints (0, y, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets (0, 0, 0, 0), 0, 0));
+        contentPanel.validate ();
     }
 
 }
