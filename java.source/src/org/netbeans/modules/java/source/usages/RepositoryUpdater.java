@@ -433,12 +433,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         if (fo == null) {
             return null;
         }
-        synchronized (this.scannedRoots) {
-            for (URL root : this.scannedRoots) {
-                FileObject rootFo = URLMapper.findFileObject(root);
-                if (rootFo != null && FileUtil.isParentOf(rootFo,fo)) {
-                    return root;
-                }
+        List<URL> clone = new ArrayList (this.scannedRoots);
+        for (URL root : clone) {
+            FileObject rootFo = URLMapper.findFileObject(root);
+            if (rootFo != null && FileUtil.isParentOf(rootFo,fo)) {
+                return root;
             }
         }
         return null;
