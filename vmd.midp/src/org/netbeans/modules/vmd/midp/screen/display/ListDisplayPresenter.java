@@ -19,6 +19,12 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -38,13 +44,9 @@ import java.util.List;
  */
 public class ListDisplayPresenter extends DisplayableDisplayPresenter {
     
-    private List<ScreenDisplayPresenter> presenters;
-    private JPanel fillPanel;
-    
     public ListDisplayPresenter() {
-        getPanel().getContentPanel().setLayout(new GridBagLayout());
-        fillPanel = new JPanel();
-        fillPanel.setOpaque(false);
+        JPanel panel = getPanel().getContentPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
     }
     
     public Collection<DesignComponent> getChildren() {
@@ -60,25 +62,18 @@ public class ListDisplayPresenter extends DisplayableDisplayPresenter {
         JPanel contentPanel = getPanel().getContentPanel();
         contentPanel.removeAll();
         
-        presenters = new ArrayList<ScreenDisplayPresenter> ();
-        int y = 0;
         for (DesignComponent elements : getChildren()) {
             ScreenDisplayPresenter presenter = elements.getPresenter(ScreenDisplayPresenter.class);
             if (presenter == null) {
                 continue;
             }
-            presenters.add(presenter);
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = y ++;
-            gbc.weightx = 1.0;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.fill = GridBagConstraints.BOTH;
-            contentPanel.add(presenter.getView(), gbc);
+            
+            contentPanel.add(presenter.getView());
             presenter.reload(deviceInfo);
         }
-        contentPanel.add(fillPanel, new GridBagConstraints(0, y, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-        contentPanel.validate ();
+        contentPanel.add(Box.createVerticalGlue());
+        
+        contentPanel.validate();
     }
     
 }

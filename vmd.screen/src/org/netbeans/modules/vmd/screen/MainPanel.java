@@ -39,7 +39,7 @@ public class MainPanel extends JPanel {
         setBackground(ResourcePanel.BACKGROUND_COLOR);
         
         GridBagConstraints constraints = new GridBagConstraints();
-        constraints.weightx = 1.0;
+        constraints.weightx = 0.0;
         constraints.weighty = 1.0;
         constraints.insets = new Insets(12, 12, 12, 6);
         constraints.fill = GridBagConstraints.BOTH;
@@ -48,6 +48,7 @@ public class MainPanel extends JPanel {
         constraints.anchor = GridBagConstraints.NORTHWEST;
         add(devicePanel, constraints);
 
+        constraints.weightx = 1.0;
         constraints.insets = new Insets(12, 6, 12, 12);
         add(resourcePanel, constraints);
     }

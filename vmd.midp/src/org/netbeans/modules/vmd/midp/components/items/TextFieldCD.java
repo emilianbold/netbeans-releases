@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeWriter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
@@ -34,7 +35,10 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorConstraints;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
+import org.netbeans.modules.vmd.midp.screen.display.TextFieldDisplayPresenter;
 
 /**
  *
@@ -89,6 +93,11 @@ public class TextFieldCD extends ComponentDescriptor {
         );
     }
 
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -114,7 +123,9 @@ public class TextFieldCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter(),
             // code
-            createSetterPresenter()
+            createSetterPresenter(),
+            // screen
+            new TextFieldDisplayPresenter()
        );   
     }
 

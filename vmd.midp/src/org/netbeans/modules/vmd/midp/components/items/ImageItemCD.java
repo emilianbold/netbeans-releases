@@ -34,10 +34,10 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.ImageItemDisplayPresenter;
 
 /**
  *
@@ -74,6 +74,11 @@ public class ImageItemCD extends ComponentDescriptor {
         );
     }
     
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -99,7 +104,9 @@ public class ImageItemCD extends ComponentDescriptor {
                 // code
                 createSetterPresenter(),
                 // delete
-                DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_IMAGE)
+                DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_IMAGE),
+                // screen
+                new ImageItemDisplayPresenter()
         );
     }
     

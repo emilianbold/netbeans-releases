@@ -19,39 +19,31 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.Border;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
+import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 
 /**
  *
  * @author Anton Chechel
+ * @version 1.0
  */
-public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
+public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
     
-    private static final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.GRAY);
-
     private JLabel label;
-    
-    public TextBoxDisplayPresenter() {
+
+    public ImageItemDisplayPresenter() {
         label = new JLabel();
-        label.setBorder(LABEL_BORDER);
-        JPanel contentPanel = getPanel().getContentPanel();
-        contentPanel.setLayout(new BorderLayout());
-        contentPanel.add(label, BorderLayout.NORTH);
+        setContentComponent(label);
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
-        String text = MidpTypes.getString(getComponent().readProperty(TextBoxCD.PROP_STRING));
-        label.setText(ScreenSupport.wrapWithHtml(text));
+        DesignComponent imageComponent = getComponent().readProperty(ImageItemCD.PROP_IMAGE).getComponent();
+        Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        label.setIcon(icon);
     }
-    
 }

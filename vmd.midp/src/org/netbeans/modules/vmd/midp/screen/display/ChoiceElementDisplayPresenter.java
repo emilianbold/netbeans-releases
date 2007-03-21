@@ -70,6 +70,7 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
                 return Utilities.actionsToPopup(ActionsSupport.createActionsArray(getRelatedComponent()), this);
             }
         };
+        panel.setOpaque(false);
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.add(label);
         panel.add(Box.createHorizontalGlue());
@@ -89,7 +90,8 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         panel.setBorder(deviceInfo.getDeviceTheme().getBorder(getComponent().getDocument().getSelectedComponents().contains(getComponent())));
-        label.setText(MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING)));
+        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING));
+        label.setText(ScreenSupport.wrapWithHtml(text));
         
         boolean isSelected = MidpTypes.getBoolean(getComponent().readProperty(ChoiceElementCD.PROP_SELECTED));
         int choiceType = MidpTypes.getInteger(getComponent().getParentComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE));

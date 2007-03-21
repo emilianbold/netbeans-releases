@@ -19,39 +19,35 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.border.Border;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
+import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
+import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
 
 /**
  *
  * @author Anton Chechel
+ * @version 1.0
  */
-public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
+public class TextFieldDisplayPresenter extends ItemDisplayPresenter {
     
     private static final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.GRAY);
-
-    private JLabel label;
     
-    public TextBoxDisplayPresenter() {
+    private JLabel label;
+
+    public TextFieldDisplayPresenter() {
         label = new JLabel();
         label.setBorder(LABEL_BORDER);
-        JPanel contentPanel = getPanel().getContentPanel();
-        contentPanel.setLayout(new BorderLayout());
-        contentPanel.add(label, BorderLayout.NORTH);
+        setContentComponent(label);
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
-        String text = MidpTypes.getString(getComponent().readProperty(TextBoxCD.PROP_STRING));
+        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(TextFieldCD.PROP_TEXT));
         label.setText(ScreenSupport.wrapWithHtml(text));
     }
-    
 }

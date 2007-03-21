@@ -34,6 +34,7 @@ import java.awt.*;
 public class DevicePanel extends JPanel {
 
     private static final Color BACKGROUND_COLOR = new Color (0xFCFAF5);
+    //private static final Color BACKGROUND_COLOR = Color.WHITE; // just for test
 
     private final ScreenDisplayPresenter dummyPresenter = new DummyDisplayPresenter ();
 
@@ -92,6 +93,7 @@ public class DevicePanel extends JPanel {
         constraints.gridx = 0;
         constraints.gridy = 1;
         constraints.fill = GridBagConstraints.VERTICAL;
+        //constraints.weighty = 1.0;
         add(getDeviceInfo().getDeviceBorder(ScreenDeviceInfo.Edge.LEFT),constraints);
 
         constraints = new GridBagConstraints();
@@ -116,6 +118,7 @@ public class DevicePanel extends JPanel {
         constraints.gridx = 0;
         constraints.gridy = 2;
         constraints.fill = GridBagConstraints.NONE;
+        //constraints.weighty = 0.0;
         add(getDeviceInfo().getDeviceBorder(ScreenDeviceInfo.Edge.BOTTOM_LEFT),constraints);
 
         constraints = new GridBagConstraints();

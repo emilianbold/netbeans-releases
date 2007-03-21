@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
@@ -33,9 +34,12 @@ import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorGaugeMaxValue;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
+import org.netbeans.modules.vmd.midp.screen.display.GaugeDisplayPresenter;
 
 /**
  *
@@ -82,6 +86,11 @@ public class GaugeCD extends ComponentDescriptor {
         );
     }
     
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                     .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -114,7 +123,9 @@ public class GaugeCD extends ComponentDescriptor {
                             component.writeProperty (PROP_USED_BY_ALERT, MidpTypes.createBooleanValue (false));
                         }
                     }
-                }
+                },
+                // screen
+                new GaugeDisplayPresenter()
         );
     }
 

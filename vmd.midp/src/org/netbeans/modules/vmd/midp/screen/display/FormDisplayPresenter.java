@@ -26,52 +26,55 @@ import java.util.Collection;
 import java.awt.*;
 
 /**
- * @author breh
  *
+ * @author breh
  */
 public class FormDisplayPresenter extends DisplayableDisplayPresenter {
-
-    private ArrayList<ScreenDisplayPresenter> presenters;
+    
     private JPanel fillPanel;
-
-
-    public FormDisplayPresenter () {
-        getPanel ().getContentPanel ().setLayout (new GridBagLayout ());
-        fillPanel = new JPanel ();
-        fillPanel.setOpaque (false);
+    
+    
+    public FormDisplayPresenter() {
+        getPanel().getContentPanel().setLayout(new GridBagLayout());
+        fillPanel = new JPanel();
+        fillPanel.setOpaque(false);
     }
-
-    public Collection<DesignComponent> getChildren () {
-        PropertyValue itemsValue = getComponent ().readProperty (FormCD.PROP_ITEMS);
-        ArrayList<DesignComponent> items = new ArrayList<DesignComponent> ();
-        Debug.collectAllComponentReferences (itemsValue, items);
+    
+    public Collection<DesignComponent> getChildren() {
+        PropertyValue itemsValue = getComponent().readProperty(FormCD.PROP_ITEMS);
+        ArrayList<DesignComponent> items = new ArrayList<DesignComponent>();
+        Debug.collectAllComponentReferences(itemsValue, items);
         return items;
     }
-
-    public void reload (ScreenDeviceInfo deviceInfo) {
-        super.reload (deviceInfo);
-
-        JPanel contentPanel = getPanel ().getContentPanel ();
-        contentPanel.removeAll ();
-
-        presenters = new ArrayList<ScreenDisplayPresenter> ();
-        int y = 0;
-        for (DesignComponent item : getChildren ()) {
-            ScreenDisplayPresenter presenter = item.getPresenter (ScreenDisplayPresenter.class);
-            if (presenter == null)
+    
+    public void reload(ScreenDeviceInfo deviceInfo) {
+        super.reload(deviceInfo);
+        
+        JPanel contentPanel = getPanel().getContentPanel();
+        contentPanel.removeAll();
+        
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weightx = 1.0;
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.gridx = GridBagConstraints.REMAINDER;
+        constraints.gridy = GridBagConstraints.RELATIVE;
+        constraints.anchor = GridBagConstraints.NORTHWEST;
+        
+        for (DesignComponent item : getChildren()) {
+            ScreenDisplayPresenter presenter = item.getPresenter(ScreenDisplayPresenter.class);
+            if (presenter == null) {
                 continue;
-            presenters.add (presenter);
-            GridBagConstraints gbc = new GridBagConstraints ();
-            gbc.gridx = 0;
-            gbc.gridy = y ++;
-            gbc.weightx = 1.0;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.fill = GridBagConstraints.BOTH;
-            contentPanel.add (presenter.getView (), gbc);
-            presenter.reload (deviceInfo);
+            }
+            
+            contentPanel.add(presenter.getView(), constraints);
+            presenter.reload(deviceInfo);
         }
-        contentPanel.add (fillPanel, new GridBagConstraints (0, y, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets (0, 0, 0, 0), 0, 0));
-        contentPanel.validate ();
+        
+        constraints.weighty = 1.0;
+        constraints.anchor = GridBagConstraints.CENTER;
+        contentPanel.add(fillPanel, constraints);
+        
+        contentPanel.validate();
     }
-
+    
 }

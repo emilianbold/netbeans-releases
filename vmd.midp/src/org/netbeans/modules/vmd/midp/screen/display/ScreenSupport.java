@@ -102,6 +102,9 @@ public final class ScreenSupport {
      * @return text
      */
     public static final String wrapWithHtml(String text) {
+        if (text == null) {
+            return text;
+        }
         text.replaceAll("<.*>", ""); // NOI18N
         
         StringBuffer str = new StringBuffer();
@@ -111,6 +114,28 @@ public final class ScreenSupport {
         return str.toString();
     }
     
+    /**
+     * Wraps given text with html tags and make a link to be displayed in swing component,
+     * removes all exising tags in the text
+     * 
+     * @param text to be wraped
+     * @return text
+     */
+    public static final String wrapLinkWithHtml(String text) {
+        if (text == null) {
+            return text;
+        }
+        text.replaceAll("<.*>", ""); // NOI18N
+        
+        StringBuffer str = new StringBuffer();
+        str.append("<html>"); // NOI18N
+        str.append("<a href='null'>"); // NOI18N
+        str.append(text);
+        str.append("</a"); // NOI18N
+        str.append("</html>"); // NOI18N
+        return str.toString();
+    }
+
     /**
      * Loads icon using resourcePath property from given image design component
      * 

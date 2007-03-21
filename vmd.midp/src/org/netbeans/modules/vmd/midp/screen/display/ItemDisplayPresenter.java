@@ -36,53 +36,58 @@ import java.util.Collections;
  * @author David Kaspar
  */
 public class ItemDisplayPresenter extends ScreenDisplayPresenter {
-
+    
     private JPanel panel;
     private JLabel label;
     private JComponent contentComponent;
-
-    public ItemDisplayPresenter () {
-        panel = new JPanel () {
-            public JPopupMenu getComponentPopupMenu () {
-                return Utilities.actionsToPopup (ActionsSupport.createActionsArray (getRelatedComponent ()), this);
+    
+    public ItemDisplayPresenter() {
+        panel = new JPanel() {
+            public JPopupMenu getComponentPopupMenu() {
+                return Utilities.actionsToPopup(ActionsSupport.createActionsArray(getRelatedComponent()), this);
             }
         };
-        panel.setLayout (new BorderLayout ());
-        label = new JLabel ();
-        panel.add (label, BorderLayout.NORTH);
+        panel.setLayout(new BorderLayout());
+        panel.setOpaque(false);
+        
+        label = new JLabel();
+        Font bold = label.getFont().deriveFont(Font.BOLD);
+        label.setFont(bold);
+        panel.add(label, BorderLayout.NORTH);
     }
-
-    public boolean isTopLevelDisplay () {
+    
+    public boolean isTopLevelDisplay() {
         return false;
     }
-
-    public Collection<DesignComponent> getChildren () {
-        return Collections.emptyList ();
+    
+    public Collection<DesignComponent> getChildren() {
+        return Collections.emptyList();
     }
-
-    public JComponent getView () {
+    
+    public JComponent getView() {
         return panel;
     }
-
-    protected JPanel getPanel () {
+    
+    protected final JPanel getViewPanel() {
         return panel;
     }
-
-    protected void setContentComponent (JComponent contentComponent) {
+    
+    protected final void setContentComponent(JComponent contentComponent) {
         if (this.contentComponent != null)
-            panel.remove (this.contentComponent);
+            panel.remove(this.contentComponent);
         this.contentComponent = contentComponent;
         if (contentComponent != null)
-            panel.add (contentComponent, BorderLayout.CENTER);
+            panel.add(contentComponent, BorderLayout.CENTER);
     }
-
-    public void reload (ScreenDeviceInfo deviceInfo) {
-        panel.setBorder (deviceInfo.getDeviceTheme ().getBorder (getComponent ().getDocument ().getSelectedComponents ().contains (getComponent ())));
-        label.setText (MidpValueSupport.getHumanReadableString (getComponent ().readProperty (ItemCD.PROP_LABEL)));
+    
+    public void reload(ScreenDeviceInfo deviceInfo) {
+        panel.setBorder(deviceInfo.getDeviceTheme().getBorder(getComponent().getDocument().getSelectedComponents().contains(getComponent())));
+        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ItemCD.PROP_LABEL));
+        label.setText(ScreenSupport.wrapWithHtml(text));
     }
-
-    public Shape getSelectionShape () {
-        return new Rectangle (panel.getSize ());
+    
+    public Shape getSelectionShape() {
+        return new Rectangle(panel.getSize());
     }
-
+    
 }

@@ -74,6 +74,7 @@ public class DisplayableDisplayPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         headerPanel.add(lTicker, gridBagConstraints);
 
+        lTitle.setFont(new java.awt.Font("Tahoma", 1, 11));
         lTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -86,6 +87,7 @@ public class DisplayableDisplayPanel extends javax.swing.JPanel {
         add(headerPanel, java.awt.BorderLayout.PAGE_START);
 
         contentPanel.setBackground(java.awt.Color.white);
+        contentPanel.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.white));
         add(contentPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     

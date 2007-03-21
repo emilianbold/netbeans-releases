@@ -43,7 +43,8 @@ public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
     public ChoiceGroupDisplayPresenter() {
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        getPanel().add(panel, BorderLayout.CENTER);
+        panel.setOpaque(false);
+        getViewPanel().add(panel, BorderLayout.CENTER);
     }
     
     public Collection<DesignComponent> getChildren() {
