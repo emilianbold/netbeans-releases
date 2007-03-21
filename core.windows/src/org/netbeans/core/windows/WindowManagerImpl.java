@@ -1059,7 +1059,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 && mode.getState() != Constants.MODE_STATE_SEPARATED ) {
             //the editor is maximized so the newly opened TopComponent should slide out
             String tcID = findTopComponentID( tc );
-            if( !isTopComponentDockedInMaximizedMode( tcID ) && mode.getKind() != Constants.MODE_KIND_SLIDING ) {
+            if( !isTopComponentDockedInMaximizedMode( tcID ) && mode.getKind() == Constants.MODE_KIND_VIEW ) {
                 //slide the TopComponent to edgebar and slide it out
                 central.slide( tc, mode, central.getSlideSideForMode( mode ) );
 
