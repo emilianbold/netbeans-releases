@@ -27,6 +27,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.impl.facesmodel.FacesAttributes;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
@@ -295,5 +296,25 @@ public class JSFConfigModelTest extends NbTestCase {
         List <Converter> converters = facesConfig.getConverters();
         assertEquals("Number of converters ", 1, converters.size());
         
+    }
+    
+    public void testManagedBeanID() throws Exception{
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-02.xml");
+        List <ManagedBean> beans = model.getRootComponent().getManagedBeans();
+        ManagedBean managedBean = null;
+        for (ManagedBean bean : beans) {
+            String value = bean.getAttribute(FacesAttributes.ID);
+            if ("person".equals(bean.getManagedBeanName()))
+                assertNull(value);
+            if ("student".equals(bean.getManagedBeanName())){
+                managedBean = bean;
+                assertEquals("student", value);
+            }
+        }
+        managedBean.getModel().startTransaction();
+        managedBean.setAttribute(FacesAttributes.ID.getName(), FacesAttributes.ID, "girl");
+        managedBean.getModel().endTransaction();
+        assertEquals("girl", managedBean.getAttribute(FacesAttributes.ID));
+        Util.dumpToStream(((AbstractDocumentModel)managedBean.getModel()).getBaseDocument(), System.out);
     }
 }

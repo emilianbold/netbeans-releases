@@ -13,7 +13,7 @@
         <managed-bean-class>my.bean.NewJSFManagedBean</managed-bean-class>
         <managed-bean-scope>request</managed-bean-scope>
     </managed-bean>
-    <managed-bean>
+    <managed-bean id="student">
         <managed-bean-name>student</managed-bean-name>
         <managed-bean-class>my.bean.NewJSFManagedBean</managed-bean-class>
         <managed-bean-scope>session</managed-bean-scope>
