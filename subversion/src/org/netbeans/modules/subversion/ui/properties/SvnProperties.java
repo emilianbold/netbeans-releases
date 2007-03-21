@@ -249,7 +249,13 @@ public class SvnProperties implements ActionListener, DocumentListener {
     }
   
     protected void refreshProperties() {        
-        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        final SVNUrl repositoryUrl;
+        try {            
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }                         
               
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
@@ -300,7 +306,13 @@ public class SvnProperties implements ActionListener, DocumentListener {
     }
     
     public void setProperties() {
-        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        final SVNUrl repositoryUrl;
+        try {            
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }                                         
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
@@ -346,7 +358,13 @@ public class SvnProperties implements ActionListener, DocumentListener {
     }
     
     public void removeProperties() {
-        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        final SVNUrl repositoryUrl;
+        try {
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }                   
         final int[] rows = propTable.getSelectedItems();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {

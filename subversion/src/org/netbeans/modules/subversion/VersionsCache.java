@@ -75,7 +75,7 @@ public class VersionsCache {
                 FileUtils.copyStreamToFile(new BufferedInputStream(in), expanded);
                 return expanded;
             } catch (SVNClientException e) {
-                return null;
+                throw new IOException(e);
             }
         } else if (Setup.REVISION_PRISTINE.equals(revision)) {
             String name = base.getName();

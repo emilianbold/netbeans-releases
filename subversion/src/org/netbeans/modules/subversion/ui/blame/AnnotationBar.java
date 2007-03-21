@@ -395,7 +395,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private void revert(File file, String revision) {
         final Context ctx = new Context(file);
         
-        final SVNUrl url = SvnUtils.getRepositoryRootUrl(file);        
+        final SVNUrl url;  
+        try {            
+            url = SvnUtils.getRepositoryRootUrl(file);  
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }               
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         
         final RevertModifications revertModifications = new RevertModifications(repositoryFile, revision);

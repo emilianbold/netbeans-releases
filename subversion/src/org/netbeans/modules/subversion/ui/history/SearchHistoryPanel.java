@@ -235,7 +235,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return repositoryUrl;
     }
 
-    public SVNUrl getSearchRepositoryRootUrl() {
+    public SVNUrl getSearchRepositoryRootUrl() throws SVNClientException {
         if (repositoryUrl != null) return repositoryUrl;
         return SvnUtils.getRepositoryRootUrl(roots[0]);
     }

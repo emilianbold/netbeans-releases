@@ -311,7 +311,13 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_onFromBrowse
 
     private void onBrowse(final JTextField destination) {
-        final SVNUrl repositoryUrl = url != null ? url : SvnUtils.getRepositoryRootUrl(roots[0]); 
+        final SVNUrl repositoryUrl;
+        try {            
+            repositoryUrl = url != null ? url : SvnUtils.getRepositoryRootUrl(roots[0]); 
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }                
 
         String title = destination == tfFrom ? NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_StartTag") : NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_EndTag"); // NOI18N
         final Browser browser;

@@ -31,6 +31,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -112,7 +113,13 @@ public class RelocateAction extends AbstractAction {
         final String newUrl = panel.getNewURL().getText();
         
         File root = ctx.getRootFiles().iterator().next();
-        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        final SVNUrl repositoryUrl;
+        try {            
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }                  
         final String wc = root.getAbsolutePath();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
@@ -135,8 +142,13 @@ public class RelocateAction extends AbstractAction {
     
     private String getCurrentURL() {
         File root = ctx.getRootFiles().iterator().next();
-        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
-        return repositoryUrl.toString();
+        try {
+            SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+            return repositoryUrl.toString();
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);            
+        }                            
+        return "";
     }        
     
     private String getWorkingCopy() {

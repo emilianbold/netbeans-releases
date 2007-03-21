@@ -68,26 +68,31 @@ class SearchExecutor implements Runnable {
         filterMessage = criteria.getCommitMessage() != null;
         
         pathToRoot = new HashMap<String, File>(); 
-        if (searchingUrl()) {
-            String rootPath = SvnUtils.getRepositoryPath(master.getRoots()[0]);
-            pathToRoot.put(rootPath, master.getRoots()[0]); 
-        } else {
-            workFiles = new HashMap<SVNUrl, Set<File>>();
-            for (File file : master.getRoots()) {
-                String rootPath = SvnUtils.getRepositoryPath(file);
-                String fileAbsPath = file.getAbsolutePath().replace(File.separatorChar, '/');
-                int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);                
-                pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength), 
-                               new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
-                SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
-                Set<File> set = workFiles.get(rootUrl);
-                if (set == null) {
-                    set = new HashSet<File>(2);
-                    workFiles.put(rootUrl, set);
+        try {
+            if (searchingUrl()) {
+                String rootPath = SvnUtils.getRepositoryPath(master.getRoots()[0]);
+                pathToRoot.put(rootPath, master.getRoots()[0]); 
+            } else {
+                workFiles = new HashMap<SVNUrl, Set<File>>();
+                for (File file : master.getRoots()) {
+                    String rootPath = SvnUtils.getRepositoryPath(file);
+                    String fileAbsPath = file.getAbsolutePath().replace(File.separatorChar, '/');
+                    int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);                
+                    pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength), 
+                                   new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
+                    SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
+                    Set<File> set = workFiles.get(rootUrl);
+                    if (set == null) {
+                        set = new HashSet<File>(2);
+                        workFiles.put(rootUrl, set);
+                    }
+                    set.add(file);
                 }
-                set.add(file);
-            }
-        }                
+            }                
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }
     }
         
     private int getCommonPostfixLength(String a, String b) {        

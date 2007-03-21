@@ -172,7 +172,12 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
             final String message = panel.messageTextArea.getText();
             org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message, 20);
 
-            SVNUrl repository = getSvnUrl(ctx);
+            SVNUrl repository = null;
+            try {            
+                repository = getSvnUrl(ctx);
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, true, true);                
+            }                    
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
             SvnProgressSupport support = new SvnProgressSupport() {
                 public void perform() {                    
@@ -221,8 +226,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges");
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
-            }
-            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));                        
+            }            
         }
         
         if (stickyTags.size() > 1) {

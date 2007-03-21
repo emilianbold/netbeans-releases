@@ -74,8 +74,15 @@ public class CreateCopyAction extends ContextAction {
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         
         final boolean hasChanges = files.length > 0; 
-        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);        
-        final SVNUrl fileUrl = SvnUtils.getRepositoryUrl(root);        
+        final SVNUrl repositoryUrl; 
+        final SVNUrl fileUrl;        
+        try {            
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(root); 
+            fileUrl = SvnUtils.getRepositoryUrl(root);        
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }                   
         final RepositoryFile repositoryFile = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);        
         
         final CreateCopy createCopy = new CreateCopy(repositoryFile, root, hasChanges);

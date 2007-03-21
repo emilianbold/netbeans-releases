@@ -23,7 +23,6 @@ import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.*;
@@ -32,8 +31,6 @@ import java.io.*;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -306,7 +303,8 @@ public class Subversion {
 
     /**
      * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status. 
-     * All files and folders that have a parent with CVS/Repository file are considered versioned.
+     * All files and folders that have a parent with either .svn/entries or _svn/entries file are 
+     * considered versioned.
      * 
      * @param file a file or directory
      * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise

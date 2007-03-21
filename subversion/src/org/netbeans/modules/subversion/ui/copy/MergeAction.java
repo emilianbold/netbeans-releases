@@ -70,7 +70,13 @@ public class MergeAction extends ContextAction {
         
         Context ctx = getContext(nodes);        
         final File root = ctx.getRootFiles()[0];
-        SVNUrl url = SvnUtils.getRepositoryRootUrl(root);        
+        SVNUrl url;
+        try {            
+            url = SvnUtils.getRepositoryRootUrl(root);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }           
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
      
         final Merge merge = new Merge(repositoryRoot, root);           

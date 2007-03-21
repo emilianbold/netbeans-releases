@@ -56,10 +56,8 @@ public class SvnClientFactory {
      *
      * @return the SvnClientFactory instance
      */
-    public synchronized static SvnClientFactory getInstance() {        
-        if(instance == null) {
-            init();
-        }
+    public synchronized static SvnClientFactory getInstance() {                
+        init();
         return instance;
     }
 

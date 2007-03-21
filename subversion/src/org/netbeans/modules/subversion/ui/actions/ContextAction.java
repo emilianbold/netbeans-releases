@@ -85,11 +85,11 @@ public abstract class ContextAction extends NodeAction {
         performContextAction(nodes);           
     }
 
-    protected SVNUrl getSvnUrl(Node[] nodes) {
+    protected SVNUrl getSvnUrl(Node[] nodes) throws SVNClientException {
         return getSvnUrl(getContext(nodes)); 
     }
 
-    public static SVNUrl getSvnUrl(Context ctx) {
+    public static SVNUrl getSvnUrl(Context ctx) throws SVNClientException {
         File[] roots = ctx.getRootFiles();
         return SvnUtils.getRepositoryRootUrl(roots[0]);        
     }
@@ -286,7 +286,12 @@ public abstract class ContextAction extends NodeAction {
     }
     
     protected RequestProcessor createRequestProcessor(Node[] nodes) {
-        SVNUrl repository = getSvnUrl(nodes);
+        SVNUrl repository = null;
+        try {
+            repository = getSvnUrl(nodes);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, false);
+        }        
         return Subversion.getInstance().getRequestProcessor(repository);
     }
 
@@ -303,7 +308,13 @@ public abstract class ContextAction extends NodeAction {
 
         public RequestProcessor.Task start(RequestProcessor  rp) {
             runningName = ActionUtils.cutAmpersand(action.getRunningName(nodes));
-            return start(rp, getSvnUrl(action.getContext(nodes)), runningName);
+            SVNUrl url = null;
+            try {
+                url = getSvnUrl(action.getContext(nodes));
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+            }                    
+            return start(rp, url, runningName);
         }
 
         public abstract void perform();

@@ -71,7 +71,13 @@ public class RevertModificationsAction extends ContextAction {
         }      
         final Context ctx = getContext(nodes);
         final File root = ctx.getRootFiles()[0];        
-        final SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
+        final SVNUrl url;
+        try {            
+            url = SvnUtils.getRepositoryRootUrl(root);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }                 
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         
         final RevertModifications revertModifications = new RevertModifications(repositoryFile);

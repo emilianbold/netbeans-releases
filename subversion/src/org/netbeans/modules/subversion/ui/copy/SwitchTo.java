@@ -91,10 +91,12 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
                 if(revision == null) {
                     return null;
                 }
-                SVNUrl url = SvnUtils.getRepositoryUrl(root);                
+                SVNUrl url = SvnUtils.getRepositoryUrl(root);
                 RepositoryFile rf = new RepositoryFile(repositoryRoot.getRepositoryUrl(), url, revision);
                 return rf;
             }
+        } catch (SVNClientException ex) {            
+            SvnClientExceptionHandler.notifyException(ex, true, true);
         } catch (MalformedURLException ex) {
             // should be already checked and 
             // not happen at this place anymore

@@ -347,18 +347,24 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * Programmatically invokes the Refresh action.
      * Connects to repository and gets recent status.
      */ 
-    RequestProcessor.Task performRefreshAction() {
-        return refreshStatuses();
+    void performRefreshAction() {
+        refreshStatuses();
     }
 
     /* Async Connects to repository and gets recent status. */
-    private RequestProcessor.Task refreshStatuses() {
+    private void refreshStatuses() {
         if(svnProgressSupport!=null) {
             svnProgressSupport.cancel();
             svnProgressSupport = null;
         }
 
-        SVNUrl repository = CommitAction.getSvnUrl(context);
+        SVNUrl repository;
+        try {
+            repository = CommitAction.getSvnUrl(context);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);     
+            return; 
+        }                 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         svnProgressSupport = new SvnProgressSupport() {
             public void perform() {                
@@ -367,7 +373,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             }            
         };
         parentTopComponent.contentRefreshed();
-        return svnProgressSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(VersioningPanel.class, "LBL_Refresh_Progress")); // NOI18N
+        svnProgressSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(VersioningPanel.class, "LBL_Refresh_Progress")); // NOI18N
     }
 
     /**

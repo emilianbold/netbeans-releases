@@ -189,8 +189,8 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     /**
      * Programmatically invokes the Refresh action.
      */ 
-    public RequestProcessor.Task performRefreshAction() {
-        return syncPanel.performRefreshAction();
+    public void performRefreshAction() {
+        syncPanel.performRefreshAction();
     }
 
     /**

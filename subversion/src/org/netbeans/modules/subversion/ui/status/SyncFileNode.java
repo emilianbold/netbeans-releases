@@ -189,7 +189,11 @@ public class SyncFileNode extends AbstractNode {
             if (shortPath == null) {
                 Runnable run = new Runnable() {
                     public void run() {
-                        shortPath = SvnUtils.getRelativePath(node.getFile());
+                        try {
+                            shortPath = SvnUtils.getRelativePath(node.getFile());
+                        } catch (SVNClientException ex) { 
+                            SvnClientExceptionHandler.notifyException(ex, false, false);
+                        }
                         if (shortPath == null) {
                             shortPath = org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_Location_NotInRepository"); // NOI18N
                         }

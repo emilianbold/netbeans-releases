@@ -161,15 +161,21 @@ public class CommitTableModel extends AbstractTableModel {
                 shortPath = rootFile.repositoryPath + relativePath.replace(File.separatorChar, '/');
             } else {
                 Set<SVNUrl> url = getRepositoryRoots();                
-                for (Iterator<SVNUrl> it = url.iterator(); it.hasNext();) {
-                    SVNUrl nextUrl = it.next();
-                    shortPath = SvnUtils.getRelativePath(nextUrl, nodes[rowIndex].getFile());
-                }
-                if (shortPath == null) {
-                    SVNUrl newUrl = SvnUtils.getRepositoryRootUrl(nodes[rowIndex].getFile());
-                    shortPath = SvnUtils.getRelativePath(newUrl, nodes[rowIndex].getFile());                    
-                    url.add(newUrl);
-                }
+                try {            
+                    for (Iterator<SVNUrl> it = url.iterator(); it.hasNext();) {
+                        SVNUrl nextUrl = it.next();
+                        shortPath = SvnUtils.getRelativePath(nextUrl, nodes[rowIndex].getFile());
+                    }                
+                    if (shortPath == null) {
+
+                            SVNUrl newUrl = SvnUtils.getRepositoryRootUrl(nodes[rowIndex].getFile());
+                            shortPath = SvnUtils.getRelativePath(newUrl, nodes[rowIndex].getFile());                    
+                            url.add(newUrl);
+
+                    }
+                } catch (SVNClientException ex) {
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                }                    
                 if (shortPath == null) {
                     shortPath = org.openide.util.NbBundle.getMessage(CommitTableModel.class, "CTL_CommitForm_NotInRepository"); // NOI18N
                 }

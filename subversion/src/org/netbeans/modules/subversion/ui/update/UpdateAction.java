@@ -28,11 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.RequestProcessor;
@@ -91,7 +89,15 @@ public class UpdateAction extends ContextAction {
     private static void update(Context ctx, SvnProgressSupport progress) {
                
         File[] roots = ctx.getRootFiles();
-        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+        
+        final SVNUrl repositoryUrl; 
+        try {
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }        
+        
         
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         cache.refreshCached(ctx);
@@ -162,7 +168,15 @@ roots_loop:
         if (context == null || context.getRoots().size() == 0) {
             return;
         }        
-        SVNUrl repository = getSvnUrl(context);
+        
+        SVNUrl repository;
+        try {
+            repository = getSvnUrl(context);   
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }   
+        
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {

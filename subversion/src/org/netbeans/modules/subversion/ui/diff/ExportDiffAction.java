@@ -255,8 +255,13 @@ public class ExportDiffAction extends ContextAction {
             int i = 0;
             while (it.hasNext()) {
                 Setup setup = it.next();
-                File file = setup.getBaseFile();
-                progress.setRepositoryRoot(SvnUtils.getRepositoryRootUrl(file));
+                File file = setup.getBaseFile();                
+                try {            
+                    progress.setRepositoryRoot(SvnUtils.getRepositoryRootUrl(file));
+                } catch (SVNClientException ex) {
+                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    return;
+                }                           
                 progress.setDisplayName(file.getName());
 
                 String index = "Index: ";   // NOI18N

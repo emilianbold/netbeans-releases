@@ -115,8 +115,14 @@ public final class ImportAction extends NodeAction {
     private void performAction(final Context context,
                                final Map/*<SvnFileNode, CommitOptions>*/ commitFiles,
                                final String message)
-    {                
-        SVNUrl repository = SvnUtils.getRepositoryRootUrl(context.getRootFiles()[0]);
+    {                        
+        SVNUrl repository;
+        try {            
+            repository = SvnUtils.getRepositoryRootUrl(context.getRootFiles()[0]);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }                 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {                    

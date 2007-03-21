@@ -328,7 +328,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     static void revert(final SearchHistoryPanel master, final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
-        SVNUrl url = master.getSearchRepositoryRootUrl();        
+        SVNUrl url;
+        try {
+            url = master.getSearchRepositoryRootUrl();        
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);                
+            return;
+        }                   
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
@@ -339,7 +345,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     private static void revertImpl(SearchHistoryPanel master, RepositoryRevision[] revisions, RepositoryRevision.Event[] events, SvnProgressSupport progress) {
-        SVNUrl url = master.getSearchRepositoryRootUrl();        
+        SVNUrl url;
+        try {
+            url = master.getSearchRepositoryRootUrl();        
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);                
+            return;            
+        }                           
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         for (RepositoryRevision revision : revisions) {
             RevertModifications revertModifications = new RevertModifications(repositoryFile, Long.toString(revision.getLog().getRevision().getNumber()));

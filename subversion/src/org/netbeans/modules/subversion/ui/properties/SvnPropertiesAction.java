@@ -65,9 +65,10 @@ public final class SvnPropertiesAction extends ContextAction {
         final Context ctx = getContext(nodes);
         String ctxDisplayName = getContextDisplayName(nodes);
         File[] roots = ctx.getRootFiles();
-        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+        
         SvnClient client;
         try {            
+            SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);            
             client = Subversion.getInstance().getClient(repositoryUrl);            
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
