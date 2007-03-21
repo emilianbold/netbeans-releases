@@ -49,6 +49,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String CAST = "cast"; //NOI18N
     public static final String NEW_VAR_NAME = "newVarName"; //NOI18N
     public static final String NAMED = "named"; //NOI18N
+    public static final String UNCAUGHT_EXCEPTION_TYPE = "uncaughtExceptionType"; //NOI18N
 
     private static final String FALSE = "false"; //NOI18N
     private static final String NULL = "null"; //NOI18N
@@ -230,6 +231,19 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 return newVarName(param.getInsertTextOffset() + 1);
             } else if (NAMED.equals(entry.getKey())) {
                 name = param.getName();
+            } else if (UNCAUGHT_EXCEPTION_TYPE.equals(entry.getKey())) {
+                TypeMirror tm = uncaughtExceptionType(param.getInsertTextOffset() + 1);
+                if (tm != null && tm.getKind() != TypeKind.ERROR) {
+                    if (tm.getKind() == TypeKind.TYPEVAR)
+                        tm = ((TypeVariable)tm).getUpperBound();
+                    String value = Utilities.getTypeName(tm, true).toString();
+                    if (value != null) {
+                        param2hints.put(param, UNCAUGHT_EXCEPTION_TYPE);
+                        if (tm.getKind() == TypeKind.DECLARED)
+                            param2types.put(param, tm);
+                        return value;
+                    }
+                }
             }
         }
         return null;
@@ -474,6 +488,28 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     Iterator<String> names = Utilities.varNamesSuggestions(type, null, cInfo.getTypes(), cInfo.getElements(), cInfo.getElementUtilities().getLocalVars(s, acceptor), isConst).iterator();
                     if (names.hasNext())
                         return names.next();
+                }
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+    
+    private TypeMirror uncaughtExceptionType(int caretOffset) {
+        try {
+            if (initParsing()) {
+                SourcePositions[] sourcePositions = new SourcePositions[1];
+                TreeUtilities tu = cInfo.getTreeUtilities();
+                StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);                
+                if (errChecker.containsErrors(stmt))
+                    return null;
+                TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
+                path = Utilities.getPathElementOfKind(Tree.Kind.TRY, path);
+                if (path != null && ((TryTree)path.getLeaf()).getBlock() != null) {
+                    tu.attributeTree(stmt, scope);
+                    Iterator<? extends TypeMirror> excs = tu.getUncaughtExceptions(new TreePath(path, ((TryTree)path.getLeaf()).getBlock())).iterator();
+                    if (excs.hasNext())
+                        return excs.next();
                 }
             }
         } catch (Exception e) {

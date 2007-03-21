@@ -247,7 +247,7 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
         javaAbbrevMap.put("trycatch",
                 "try {\n"
                 +    "${selection line}${cursor}\n"
-                + "} catch (${EX_TYPE default=\"Exception\"} ${EX default=\"e\"}) {\n"
+                + "} catch (${EX_TYPE uncaughtExceptionType default=\"Exception\"} ${EX default=\"e\"}) {\n"
                 + "}\n"
          );
         javaAbbrevMap.put("newo", // NOI18N
