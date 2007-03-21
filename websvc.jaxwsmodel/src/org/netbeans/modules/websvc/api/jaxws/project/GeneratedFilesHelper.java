@@ -40,10 +40,13 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 //import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 //import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.jaxwsmodel.project.UserQuestionHandler;
+import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -280,7 +283,7 @@ public final class GeneratedFilesHelper {
                                     t.setParameter(JAXWS_VERSION, JAXWS_21_LIB );
                                 }else{
                                     t.setParameter(JAXWS_VERSION, JAXWS_20_LIB );
-                                }   
+                                }
                                 File projectXmlF = FileUtil.toFile(projectXml);
                                 assert projectXmlF != null;
                                 StreamSource projectXmlSource = new StreamSource(
@@ -415,27 +418,13 @@ public final class GeneratedFilesHelper {
     }
     
     private boolean isJAXWS21(){
-        /*
-        Map properties = h.getStandardPropertyEvaluator().getProperties();
-        String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
-        if (serverInstance != null) {    
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-            if (j2eePlatform != null && j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109)) {
-               File[] roots = j2eePlatform.getPlatformRoots();
-               if(roots.length > 0){
-                   File appSvrRoot = roots[0];
-                   File dtdFile = new File(appSvrRoot, "lib" + 
-                           File.separator + "dtds" + 
-                           File.separator + "sun-domain_1_3.dtd");
-                   if(dtdFile.exists()){
-                       return true;
-                   }
-               }
-            }
-        }
+        Project project = FileOwnerQuery.getOwner(h.getProjectDirectory());
+        JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
+        if(jvp != null && 
+                jvp.getJAXWSVersion().equals(JAXWSVersionProvider.JAXWS21)){
+            return true;
+        }       
         return false;
-        */
-        return true;
     }
     
     /**

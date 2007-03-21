@@ -90,6 +90,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSVersionProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
@@ -330,6 +331,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarJPASupport(this),
                 new EjbJarServerStatusProvider(this),
                 new EjbJarJPAModuleInfo(this),
+                new EjbProjectJAXWSVersionProvider(helper),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger()

@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.clientproject.ui.AppClientLogicalViewProvider;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSClientSupport;
+import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSVersionProvider;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesSupportProvider;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
@@ -242,6 +243,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new ProjectAppClientProvider(this),
             appClient,
             new AppClientPersistenceProvider(this, evaluator()),
+            new AppClientProjectJAXWSVersionProvider(helper),
             enterpriseResourceSupport,
             getJaxWsModel(),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),

@@ -98,6 +98,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
+import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -351,6 +352,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebJPADataSourceSupport(this), 
             new WebServerStatusProvider(this),
             new WebJPAModuleInfo(this),
+            new WebProjectJAXWSVersionProvider(helper),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
