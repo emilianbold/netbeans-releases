@@ -295,6 +295,8 @@ public final class ClassPath {
         else {
             List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
             for (PathResourceImplementation pr : resources) {
+                pr.removePropertyChangeListener(pListener);
+                pr.addPropertyChangeListener(pListener);
                 for (URL root : pr.getRoots()) {
                     cache.add(new Entry(root,
                             pr instanceof FilteringPathResourceImplementation ? (FilteringPathResourceImplementation) pr : null));
@@ -310,14 +312,6 @@ public final class ClassPath {
         this.impl = impl;
         this.pListener = new SPIListener ();
         this.impl.addPropertyChangeListener (this.pListener);
-        listenToPRIs();
-    }
-
-    private void listenToPRIs() {
-        for (PathResourceImplementation pri : impl.getResources()) {
-            pri.removePropertyChangeListener(pListener);
-            pri.addPropertyChangeListener(pListener);
-        }
     }
 
     /**
@@ -860,7 +854,10 @@ public final class ClassPath {
                 }
             }
             if (ClassPathImplementation.PROP_RESOURCES.equals(prop)) {
-                listenToPRIs();
+                for (PathResourceImplementation pri : impl.getResources()) {
+                    pri.removePropertyChangeListener(pListener);
+                    pri.addPropertyChangeListener(pListener);
+                }
             }
         }
     }
