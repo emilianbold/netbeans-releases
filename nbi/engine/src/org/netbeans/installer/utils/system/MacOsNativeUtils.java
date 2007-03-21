@@ -22,6 +22,7 @@
 package org.netbeans.installer.utils.system;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedList;
@@ -42,6 +43,8 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -223,7 +226,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             
             DocumentBuilder documentBuilder =
                     documentBuilderFactory.newDocumentBuilder();
-            
+            documentBuilder.setEntityResolver(new PropertyListEntityResolver());
             LogManager.log(ErrorLevel.DEBUG,
                     "    parsing xml file...");
             Document document = documentBuilder.parse(dockFile);
@@ -262,7 +265,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                 persistentAppsKeyNode = XMLUtils.appendChild(dict,"key","persistent-apps");
             } else {
                 LogManager.log(ErrorLevel.DEBUG,
-                        "    done. KeyNode = " + persistentAppsKeyNode.getTextContent());                
+                        "    done. KeyNode = " + persistentAppsKeyNode.getTextContent());
             }
             LogManager.log(ErrorLevel.DEBUG,
                     "    Getting next element.. expecting it to be array element");
@@ -451,5 +454,26 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             returnResult = -1;
         }
         return returnResult;
+    }
+    
+    private class PropertyListEntityResolver implements  EntityResolver {
+        public static final String PROPERTTY_LIST_DTD_LOCAL =
+                "/System/Library/DTDs/PropertyList.dtd"; //NOI18N
+        public static final String PROPERTTY_LIST_DTD_REMOTE =
+                "http://www.apple.com/DTDs/PropertyList-1.0.dtd"; //NOI18N
+        public static final String PROPERTTY_LIST_DTD_PUBLIC_ID =
+                "-//Apple Computer//DTD PLIST 1.0//EN"; //NOI18N
+        
+        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+            File propDtd = new File(PROPERTTY_LIST_DTD_LOCAL);
+            
+            return ((PROPERTTY_LIST_DTD_PUBLIC_ID.equals(publicId) ||
+                    PROPERTTY_LIST_DTD_REMOTE.equals(systemId)) &&
+                    FileUtils.exists(propDtd)) ?
+                        new InputSource(new FileInputStream(propDtd)):
+                        null;
+            
+        }
+        
     }
 }
