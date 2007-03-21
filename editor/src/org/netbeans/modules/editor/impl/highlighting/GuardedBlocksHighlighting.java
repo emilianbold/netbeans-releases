@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.editor.impl.highlighting;
 
-import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
@@ -37,22 +36,18 @@ import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 
 /**
  *
  * @author Vita Stejskal
  */
-public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer implements LookupListener {
+public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer {
     
     private static final Logger LOG = Logger.getLogger(GuardedBlocksHighlighting.class.getName());
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.oldlibbridge.GuardedBlocksHighlighting"; //NOI18N
     
     private final Document document;
     private final MimePath mimePath;
-    private final Lookup.Result<FontColorSettings> lookupResult;
 
     private long version = 0;
     private AttributeSet attribs = null;
@@ -61,8 +56,6 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
     public GuardedBlocksHighlighting(Document document, String mimeType) {
         this.document = document;
         this.mimePath = MimePath.parse(mimeType);
-        this.lookupResult = MimeLookup.getLookup(mimePath).lookup(new Lookup.Template<FontColorSettings>(FontColorSettings.class));
-        this.lookupResult.addLookupListener(this);
     }
 
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
@@ -76,23 +69,6 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
         }
     }
     
-    // ----------------------------------------------------------------------
-    //  LookupListener implementation
-    // ----------------------------------------------------------------------
-    
-    public void resultChanged(LookupEvent ev) {
-        synchronized (this) {
-            attribs = null;
-            version++;
-        }
-        
-        document.render(new Runnable() {
-            public void run() {
-                fireHighlightsChange(0, Integer.MAX_VALUE);
-            }
-        });
-    }
-
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
@@ -199,9 +175,8 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
                 }
 
                 if (attribs == null) {
-                    Collection<? extends FontColorSettings> allFcs = lookupResult.allInstances();
-                    if (!allFcs.isEmpty()) {
-                        FontColorSettings fcs = allFcs.iterator().next();
+                    FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
+                    if (fcs != null) {
                         attribs = fcs.getFontColors(FontColorNames.GUARDED_COLORING);
                     }
 

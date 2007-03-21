@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.editor.impl.highlighting;
 
-import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
@@ -42,16 +41,13 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Vita Stejskal
  */
-public final class NonLexerSyntaxHighlighting extends AbstractHighlightsContainer implements DocumentListener, LookupListener {
+public final class NonLexerSyntaxHighlighting extends AbstractHighlightsContainer implements DocumentListener {
     
     private static final Logger LOG = Logger.getLogger(NonLexerSyntaxHighlighting.class.getName());
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.oldlibbridge.NonLexerSyntaxHighlighting"; //NOI18N
@@ -60,14 +56,11 @@ public final class NonLexerSyntaxHighlighting extends AbstractHighlightsContaine
     private long version = 0;
 
     private final MimePath mimePath;
-    private final Lookup.Result<FontColorSettings> lookupResult;
     private final WeakHashMap<TokenID, AttributeSet> attribsCache = new WeakHashMap<TokenID, AttributeSet>();
     
     /** Creates a new instance of NonLexerSytaxHighlighting */
     public NonLexerSyntaxHighlighting(Document document, String mimeType) {
         this.mimePath = MimePath.parse(mimeType);
-        this.lookupResult = MimeLookup.getLookup(mimePath).lookup(new Lookup.Template<FontColorSettings>(FontColorSettings.class));
-        this.lookupResult.addLookupListener(this);
         
         this.document = document;
         this.document.addDocumentListener(WeakListeners.document(this, document));
@@ -100,23 +93,6 @@ public final class NonLexerSyntaxHighlighting extends AbstractHighlightsContaine
     }
     
     // ----------------------------------------------------------------------
-    //  LookupListener implementation
-    // ----------------------------------------------------------------------
-    
-    public void resultChanged(LookupEvent ev) {
-        synchronized (this) {
-            attribsCache.clear();
-            version++;
-        }
-        
-        document.render(new Runnable() {
-            public void run() {
-                fireHighlightsChange(0, Integer.MAX_VALUE);
-            }
-        });
-    }
-    
-    // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
 
@@ -125,10 +101,8 @@ public final class NonLexerSyntaxHighlighting extends AbstractHighlightsContaine
             AttributeSet attribs = attribsCache.get(tokenItem.getTokenID());
 
             if (attribs == null) {
-                Collection<? extends FontColorSettings> allFcs = lookupResult.allInstances();
-                if (!allFcs.isEmpty()) {
-                    FontColorSettings fcs = allFcs.iterator().next();
-
+                FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
+                if (fcs != null) {
                     attribs = findFontAndColors(fcs, tokenItem);
                     if (attribs == null) {
                         attribs = SimpleAttributeSet.EMPTY;
