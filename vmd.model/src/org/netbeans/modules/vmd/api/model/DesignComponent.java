@@ -215,8 +215,7 @@ public final class DesignComponent {
     public PropertyValue readProperty(String propertyName) {
         assert document.getTransactionManager().isAccess();
         PropertyValue value = properties.get(propertyName);
-        if (! properties.containsKey(propertyName))
-            throw new IllegalArgumentException ("DesignComponent (" + this + ") does not contain property: " + propertyName); //NOI18N
+        assert properties.containsKey(propertyName) : toString () + "." + propertyName + "is missing"; //NOI18N
         assert value != null;
         return value;
     }
@@ -228,17 +227,17 @@ public final class DesignComponent {
      */
     public void writeProperty(String propertyName, PropertyValue propertyValue) {
         assert document.getTransactionManager().isWriteAccess();
-        assert propertyValue != null : "Null property value";
+        assert propertyValue != null : "Null property value"; // NOI18N
         assert componentDescriptor != null;
         
         PropertyValue oldValue = properties.get(propertyName);
-        assert oldValue != null;
+        assert oldValue != null : "Missing old value in " + this + "." + propertyName; // NOI18N
         if (oldValue == propertyValue)
             return;
         
         PropertyDescriptor propertyDescriptor = componentDescriptor.getPropertyDescriptor(propertyName);
-        assert propertyDescriptor != null : "Missing property descriptor in " + this + " for " + propertyName;
-        assert ! propertyDescriptor.isReadOnly() : "Read-only property"; // TODO - allow writing during deserialization
+        assert propertyDescriptor != null : "Missing property descriptor in " + this + "." + propertyName; // NOI18N
+        assert ! propertyDescriptor.isReadOnly() : "Cannot write read-only property " + this + "." + propertyName; // NOI18N // TODO - allow writing during deserialization
         assert propertyValue.isCompatible(propertyDescriptor);
         
         properties.put(propertyName, propertyValue);
