@@ -54,11 +54,11 @@ public class DefaultModelProvider extends CompletionModelProvider {
      */    
     public List<CompletionModel> getModels(CompletionContext context) {
         this.context = (CompletionContextImpl)context;
-        List<URI> uris = context.getSchemas();
+        List<URI> uris = this.context.getSchemas();
         if(uris == null || uris.size() == 0)
             return null;
         List<CompletionModel> models = new ArrayList<CompletionModel>();
-        for(URI uri : context.getSchemas()) {
+        for(URI uri : this.context.getSchemas()) {
             CompletionModel model = getCompletionModel(uri);
             if(model != null)
                 models.add(model);

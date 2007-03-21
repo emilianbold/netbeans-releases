@@ -23,17 +23,18 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 /**
  * Schema aware code completion feature works, based on the "schemaLocation"
- * attribute of the root element of the XML document. If found, it looks up
- * the models of the schemas specified.
+ * or "noNamespaceSchemaLocation" attribute of the root element of the XML
+ * document. If a matching schema found, it uses the models for the schemas
+ * to query completion items.
  *
- * CompletionModelProvider is a hook for XML documents that will not specify
- * "schemaLocation" attribute in their document but still want to use the schema
- * aware code completion feature. For example, if you want code completion in a
- * WSDL document based on WSDL's schema, all you need to do is, implement a
- * CompletionModelProvider and return the set of models for WSDL's schema(s).
+ * CompletionModelProvider is a hook for XML documents that do not directly
+ * conform to a schema either through "schemaLocation" or "noNamespaceSchemaLocation".
+ * attribute but still want to use the schema aware code completion feature.
+ * For example, if you want code completion in a WSDL document, all you need
+ * to do is, implement a CompletionModelProvider and return the set of models
+ * for WSDL's schema(s).
  *
- *
- * @author Samaresh
+ * @author Samaresh (Samaresh@Netbeans.Org)
  */
 public abstract class CompletionModelProvider {
     

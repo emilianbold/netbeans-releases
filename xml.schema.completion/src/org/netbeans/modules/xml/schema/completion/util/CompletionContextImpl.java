@@ -98,9 +98,10 @@ public class CompletionContextImpl extends CompletionContext {
     public String getTypedChars() {
         return typedChars;
     }    
+    ////////////////END CompletionContext Implementations////////////////
     
     public boolean isSchemaAwareCompletion() {
-        return schemaLocation != null;
+        return (schemaLocation != null) || (noNamespaceSchemaLocation != null);
     }
 
     public List<URI> getSchemas() {
@@ -111,7 +112,6 @@ public class CompletionContextImpl extends CompletionContext {
             CompletionUtil.loadSchemaURIs(noNamespaceSchemaLocation, uris, true);        
         return uris;
     }
-    ////////////////END CompletionContext Implementations////////////////
         
     /**
      * Keeps all namespaces along with their prefixes in a HashMap.

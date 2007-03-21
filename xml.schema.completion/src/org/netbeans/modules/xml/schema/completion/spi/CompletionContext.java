@@ -28,22 +28,10 @@ import org.openide.filesystems.FileObject;
 /**
  * Represents code completion context at the current cursor location.
  *
- * @author Samaresh (Samaresh.Panda@Sun.Com)
+ * @author Samaresh (Samaresh@Netbeans.Org)
  */
 public abstract class CompletionContext {
     
-    /**
-     * Returns true if schemaLocation attribute is specified
-     * in the root element, false otherwise.
-     */
-    public abstract boolean isSchemaAwareCompletion();
-    
-    /**
-     * Returns the list of schemas as specified in the schemaLocation
-     * attribute of the root element. Null if the attribute is not specified.
-     */
-    public abstract List<URI> getSchemas();
-
     /**
      * Returns the default namespace for the document.
      */
