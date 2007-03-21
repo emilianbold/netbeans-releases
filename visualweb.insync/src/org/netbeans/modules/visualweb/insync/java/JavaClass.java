@@ -399,7 +399,7 @@ public class JavaClass {
         return (Method)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
                 ExecutableElement elem = getMethod(cinfo, name, params);
-                if(elem.getModifiers().contains(Modifier.PUBLIC)) {
+                if(elem != null && elem.getModifiers().contains(Modifier.PUBLIC)) {
                     return new Method(elem, JavaClass.this);
                 }
                 

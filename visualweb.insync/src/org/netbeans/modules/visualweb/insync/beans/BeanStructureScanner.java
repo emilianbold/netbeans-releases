@@ -112,6 +112,11 @@ public class BeanStructureScanner {
     public  Method ensureEventMethod(MethodDescriptor md, String name, 
                                     String defaultBody, String[] parameterNames,
                                     String[] requiredImports) {
+        Class[] pts = md.getMethod().getParameterTypes();
+        Method method = beansUnit.getThisClass().getPublicMethod(name, pts);
+        if( method != null) {
+            return method;
+        }
         Class retType = md.getMethod().getReturnType();
         String body = defaultBody;
         if(defaultBody == null) {
@@ -123,7 +128,6 @@ public class BeanStructureScanner {
         }
         
         String[] pns = parameterNames;
-        Class[] pts = md.getMethod().getParameterTypes();
         if (pns == null) {
             pns = Naming.paramNames(pts, md.getParameterDescriptors());
         }
@@ -162,22 +166,25 @@ public class BeanStructureScanner {
     }
 
    protected Method ensureMethod(Object location, MethodInfo mi) {
-        org.netbeans.modules.visualweb.insync.java.MethodInfo info = 
-                new org.netbeans.modules.visualweb.insync.java.MethodInfo(mi.getName(), 
-                mi.getReturnType(), mi.getModifiers(), null, null, 
-                null, mi.getComment());
-        UndoEvent event = null;
-        Method method = null;
-        try {
-            String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureMethod"); //NOI18N
-            event = beansUnit.getModel().writeLock(eventName);
-            method = beansUnit.getThisClass().addMethod(info);
-        }finally {
-            if(event != null) {
-                beansUnit.getModel().writeUnlock(event);
-            }
-        }
-        return method;
+       Method method = beansUnit.getThisClass().getPublicMethod(mi.getName(), null);
+       if(method != null) {
+           return method;
+       }
+       org.netbeans.modules.visualweb.insync.java.MethodInfo info =
+               new org.netbeans.modules.visualweb.insync.java.MethodInfo(mi.getName(),
+               mi.getReturnType(), mi.getModifiers(), null, null,
+               null, mi.getComment());
+       UndoEvent event = null;
+       try {
+           String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureMethod"); //NOI18N
+           event = beansUnit.getModel().writeLock(eventName);
+           method = beansUnit.getThisClass().addMethod(info);
+       }finally {
+           if(event != null) {
+               beansUnit.getModel().writeUnlock(event);
+           }
+       }
+       return method;
     }
 
    /**
