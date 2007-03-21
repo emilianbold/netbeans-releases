@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
@@ -62,8 +63,8 @@ public class GenerateJNLPApplicationTest extends TestBase {
         LayerTestBase.Lkp.setLookup(new Object[0]);
     }
     
-    private ErrorManager err;
     private SuiteProject suite;
+    private Logger LOG;
     
     public GenerateJNLPApplicationTest(String name) {
         super(name);
@@ -71,11 +72,13 @@ public class GenerateJNLPApplicationTest extends TestBase {
     
     @Override
     protected Level logLevel() {
-        return Level.CONFIG;
+        return Level.FINE;
     }
 
 
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
+        
         super.setUp();
 
         InstalledFileLocatorImpl.registerDestDir(destDirF);
@@ -85,8 +88,6 @@ public class GenerateJNLPApplicationTest extends TestBase {
         
         SuiteProjectTest.openSuite(suite);
         proj.open();
-        
-        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
     }
     
     public void testBuildTheJNLPAppWhenAppNamePropIsNotSet() throws Exception {
@@ -143,7 +144,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
         ep.setProperty("jnlp.servlet.jar", someJar.toString());
         suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(suite);
-        err.log("Properties stored");
+        LOG.info("Properties stored");
         
         SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
         assertNotNull("Provider is here");
@@ -152,16 +153,16 @@ public class GenerateJNLPApplicationTest extends TestBase {
         assertTrue("We support build-jnlp: " + l, l.contains("build-jnlp"));
         
         DialogDisplayerImpl.returnFromNotify(null);
-        err.log("invoking build-jnlp");
+        LOG.info("invoking build-jnlp");
         ExecutorTask task = p.invokeActionImpl("build-jnlp", suite.getLookup());
-        err.log("Invocation started");
+        LOG.info("Invocation started");
         
         assertNotNull("Task was started", task);
-        err.log("Waiting for task to finish");
+        LOG.info("Waiting for task to finish");
         task.waitFinished();
-        err.log("Checking the result");
+        LOG.info("Checking the result");
         assertEquals("Finished ok", 0, task.result());
-        err.log("Testing the content of the directory");
+        LOG.info("Testing the content of the directory");
         
         FileObject[] arr = suite.getProjectDirectory().getChildren();
         List subobj = new ArrayList (Arrays.asList(arr));
@@ -255,7 +256,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
             "");
         suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(suite);
-        err.log("Properties stored");
+        LOG.info("Properties stored");
         
         FileObject fo = suite.getProjectDirectory().getFileObject("build.xml");
         assertNotNull("There should be a build script", fo);
@@ -291,16 +292,16 @@ public class GenerateJNLPApplicationTest extends TestBase {
         assertTrue("We support build-jnlp: " + l, l.contains("build-jnlp"));
         
         DialogDisplayerImpl.returnFromNotify(null);
-        err.log("invoking build-jnlp");
+        LOG.info("invoking build-jnlp");
         ExecutorTask task = p.invokeActionImpl("build-jnlp", suite.getLookup());
-        err.log("Invocation started");
+        LOG.info("Invocation started");
         
         assertNotNull("Task was started", task);
-        err.log("Waiting for task to finish");
+        LOG.info("Waiting for task to finish");
         task.waitFinished();
-        err.log("Checking the result");
+        LOG.info("Checking the result");
         assertEquals("Finished ok", 0, task.result());
-        err.log("Testing the content of the directory");
+        LOG.info("Testing the content of the directory");
         
         FileObject[] arr = suite.getProjectDirectory().getChildren();
         List subobj = new ArrayList (Arrays.asList(arr));
