@@ -60,6 +60,9 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 // XXX wait for NetBeans API
 //import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -326,11 +329,30 @@ public class JsfProjectUtils {
         Project project = FileOwnerQuery.getOwner(webPage);
         if (project == null)
             return null;
+
         FileObject webFolder = getDocumentRoot(project);
         if (webFolder == null)
             return null;
+
         String newStartPage = FileUtil.getRelativePath(webFolder, webPage);
         putProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, newStartPage);
+
+        // Adjust the path to the startpage based on JSF parameters
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            try {
+                FileObject dd = wm.getDeploymentDescriptor();
+                WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+                if (ddRoot != null) {
+                    WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
+                    wfl.setWelcomeFile(new String[] { "faces/" + newStartPage });
+                    ddRoot.write(dd);
+                }
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+
         return newStartPage;
     }
     
@@ -1309,7 +1331,7 @@ public class JsfProjectUtils {
     }
     
     public static boolean isDesigntimeLib(String name) {
-	return JsfProjectLibrary.isDesigntimeLib(name);
+        return JsfProjectLibrary.isDesigntimeLib(name);
     }
 
     /** Reports whether the given name is a valid Java file name.
