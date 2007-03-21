@@ -701,8 +701,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             if (resultItems.size() > 0) {
                 if (cnt < PRESCAN) {
                     for (CompletionItem item : resultItems) {
-                        if (cnt < PRESCAN && !filter.accept(item))
+                        if (cnt < PRESCAN && !filter.accept(item)) {
+                            sortedResultsSize--;
                             continue;
+                        }
                         sortedResultItems.add(item);
                         cnt++;
                     }
@@ -721,7 +723,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         final String displayTitle = title;
         final int displayAnchorOffset = anchorOffset;
         final int queryType = qType;
-        final boolean noSuggestions = sortedResultsSize == 0;
+        final boolean noSuggestions = sortedResultsSize <= 0;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
                 int caretOffset = getActiveComponent().getSelectionStart();
