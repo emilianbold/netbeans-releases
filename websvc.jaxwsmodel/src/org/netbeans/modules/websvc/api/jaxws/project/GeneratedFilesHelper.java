@@ -41,8 +41,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+//import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+//import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.jaxwsmodel.project.UserQuestionHandler;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -415,7 +415,7 @@ public final class GeneratedFilesHelper {
     }
     
     private boolean isJAXWS21(){
-
+        /*
         Map properties = h.getStandardPropertyEvaluator().getProperties();
         String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
         if (serverInstance != null) {    
@@ -434,6 +434,8 @@ public final class GeneratedFilesHelper {
             }
         }
         return false;
+        */
+        return true;
     }
     
     /**
