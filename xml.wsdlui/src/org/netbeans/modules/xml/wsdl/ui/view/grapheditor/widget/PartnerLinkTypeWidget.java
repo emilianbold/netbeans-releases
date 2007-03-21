@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
@@ -27,21 +26,19 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
 import java.util.ListIterator;
+
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.border.EmptyBorder;
+
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
-import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.Utils;
@@ -70,9 +67,6 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
 
     private static final Image IMAGE = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png");
 
-    private static final Border HEADER_BORDER = new GradientFillBorder(0, 0, 4, 8,
-            null, WidgetConstants.PARTNERLINKTYPE_GRADIENT_TOP_COLOR, WidgetConstants.PARTNERLINKTYPE_GRADIENT_BOTTOM_COLOR);
-    
     public PartnerLinkTypeWidget(Scene scene, PartnerLinkType partnerLinkType, Lookup lookup) {
         super(scene, partnerLinkType, lookup);
         //mSizeRect = scene.getBounds();
@@ -82,7 +76,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     }
 
     private void init() {
-        setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLUE.darker()));
+        setBorder(WidgetConstants.OUTER_BORDER);
         setLayout(LayoutFactory.createVerticalLayout());
         Widget actionsWidget = createActionsWidget();
         mHeaderWidget = new HeaderWidget(getScene(), expander);
@@ -90,7 +84,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         addChild(mHeaderWidget);
 
         mLabelWidget = createLabelWidget();
-        mHeaderWidget.setBorder(HEADER_BORDER);
+        mHeaderWidget.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
         mHeaderWidget.addChild(mLabelWidget);
         
         
@@ -196,16 +190,6 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     private Widget createActionsWidget() {
         Widget actionsHolderWidget = new Widget(getScene());
         actionsHolderWidget.setLayout(LayoutFactory.createHorizontalLayout(SerialAlignment.JUSTIFY, 8));
-/*        ButtonWidget removeButton = new ButtonWidget(getScene(), "LBL_CollaborationsWidget_RemovePartnerLinkType");
-        removeButton.setActionListener(new ActionListener() {
-        
-            public void actionPerformed(ActionEvent e) {
-                deleteComponent();
-            }
-        
-        });
-        
-        actionsHolderWidget.addChild(removeButton);*/
         
         expander = new ExpanderWidget(getScene(), this,
                 ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT));
@@ -215,7 +199,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     }
     
     
-    @Override
+    /*@Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
         
@@ -230,7 +214,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
                 collaborationsWidget.childPartnerLinkTypeUnSelected(this);
             }
         }
-    }
+    }*/
     
     private CollaborationsWidget getCollaborationWidget() {
         for (Widget w = this; w != null; w = w.getParentWidget()) {

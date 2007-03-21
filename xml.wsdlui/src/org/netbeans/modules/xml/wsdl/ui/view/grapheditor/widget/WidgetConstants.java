@@ -21,6 +21,11 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Color;
 
+import javax.swing.BorderFactory;
+import javax.swing.border.Border;
+
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBorder;
+
 /**
  * Defines constants to be used throughout the widget classes.
  *
@@ -36,13 +41,19 @@ public interface WidgetConstants {
     
     public Color INPUT_OUTPUT_ARROW_COLOR = new Color(0x3244A0);
 
-    public Color SELECTION_COLOR = Color.BLUE;
+    public Color SELECTION_COLOR = new Color(0xff6600);
 
-    public Color PARTNERLINKTYPE_GRADIENT_TOP_COLOR = new Color(0xADCFEF);
+    public Color GRADIENT_TOP_COLOR = new Color(0xADCFEF);
     
-    public Color PARTNERLINKTYPE_GRADIENT_BOTTOM_COLOR = Color.WHITE;
+    public Color GRADIENT_BOTTOM_COLOR = Color.WHITE;
     
     public Color DISABLED_GRAY = new Color(0xDDDDDD);
+    
+    public Border OUTER_BORDER = BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK);
+    
+    public org.netbeans.api.visual.border.Border GRADIENT_BLUE_WHITE_BORDER = new GradientFillBorder(0, 0, 4, 8,
+            null, WidgetConstants.GRADIENT_TOP_COLOR, WidgetConstants.GRADIENT_BOTTOM_COLOR);
+
     
     
 }

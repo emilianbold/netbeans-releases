@@ -29,9 +29,6 @@ import java.util.Collection;
 
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Service;
-import org.netbeans.modules.xml.wsdl.ui.cookies.AddChildWSDLElementCookie;
-import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ServiceNewType;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
@@ -51,7 +48,6 @@ public class ServiceFolderNode extends FolderNode {
         this.setDisplayName(NbBundle.
                     getMessage(ServiceFolderNode.class, 
                                "SERVICE_FOLDER_NODE_NAME"));
-        getLookupContents().add(new AddChildWSDLElementCookie(element));
         this.addNodeListener(new WSDLNodeListener(this));
     }
 

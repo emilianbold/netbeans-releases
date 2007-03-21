@@ -24,9 +24,6 @@ import java.util.Collection;
 
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.ui.cookies.AddChildWSDLElementCookie;
-import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.PortTypeNewType;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -48,7 +45,6 @@ public class PortTypeFolderNode extends FolderNode {
         mDef = element;
         this.setDisplayName(NbBundle.getMessage(MessageFolderNode.class, 
         "PORTTYPE_FOLDER_NODE_NAME"));
-        getLookupContents().add(new AddChildWSDLElementCookie(element));
         this.addNodeListener(new WSDLNodeListener(this));
         BADGE_ICON= Utilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/port_type_badge.png");

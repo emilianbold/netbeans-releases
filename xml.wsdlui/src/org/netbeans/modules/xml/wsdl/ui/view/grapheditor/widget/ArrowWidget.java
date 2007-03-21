@@ -41,7 +41,7 @@ public class ArrowWidget extends Widget {
     private int _height = 10;
     private int _x = 0;
     private int _y = 0;
-    private int _thickness = 1;
+    private int _thickness = 2;
     private Color _color = WidgetConstants.INPUT_OUTPUT_ARROW_COLOR;
     private boolean mToEast;
     private ParameterType _type;

@@ -19,27 +19,31 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
-import org.openide.cookies.SaveCookie;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 
 public class EmbeddedSchemaNode extends FilterNode {
 
     private WSDLSchema component;
     
-    public EmbeddedSchemaNode(Node node, WSDLSchema schema, Lookup lookup) {
-        super(node, new EmbeddedSchemaChildren(node, lookup), lookup);
+    public EmbeddedSchemaNode(Node node, WSDLSchema schema, InstanceContent content, List objList) {
+        super(node, new EmbeddedSchemaChildren(node, objList), new ProxyLookup(new Lookup[] {new AbstractLookup(content), node.getLookup()}));
         component = schema;
+        if (objList != null) {
+            for (Object obj : objList) {
+                content.add(obj);
+            }
+        }
     }
 
     @Override
@@ -50,8 +54,7 @@ public class EmbeddedSchemaNode extends FilterNode {
 
     @Override
     public void destroy() throws IOException {
-        SchemaComponentNode scn = (SchemaComponentNode) getOriginal().
-                getCookie(SchemaComponentNode.class);
+        SchemaComponentNode scn = getOriginal().getCookie(SchemaComponentNode.class);
         if (scn != null) {
             // Let the schema node do its cleanup.
             scn.destroy();
@@ -69,21 +72,27 @@ public class EmbeddedSchemaNode extends FilterNode {
     
     static class EmbeddedSchemaChildren extends FilterNode.Children {
         
-        private Lookup parentLookup;
+        private List objList;
         
-        public EmbeddedSchemaChildren(Node or, Lookup lookup) {
+        public EmbeddedSchemaChildren(Node or, List objList) {
             super(or);
-            parentLookup = lookup;
+            this.objList = objList;
         }
         
         @Override
-        protected Node[] createNodes(Node n) {
-            Node[] mynodes = super.createNodes(n);
-            List<Node> list = new ArrayList<Node>();
-            for (Node node : mynodes) {
-                list.add(new FilterNode(node, new EmbeddedSchemaChildren(node, parentLookup), parentLookup));
+        protected Node copyNode(Node origNode) {
+            InstanceContent content = new InstanceContent();
+            Node node =  new FilterNode(origNode, new EmbeddedSchemaChildren(origNode, objList), new ProxyLookup(new Lookup[] {new AbstractLookup(content), origNode.getLookup()}));
+            if (objList != null) {
+                for (Object obj : objList) {
+                    content.add(obj);
+                }
             }
-            return list.toArray(new Node[list.size()]);
+            return node;
+            
         }
+        
+        
+        
     }
 }

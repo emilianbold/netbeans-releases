@@ -23,7 +23,6 @@ import java.awt.Rectangle;
 
 import javax.swing.BorderFactory;
 
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
@@ -31,7 +30,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.OperationSceneLayer;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.PartnerLinkTypeContentLayout;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -76,7 +74,7 @@ public class PartnerLinkTypeContentWidget extends Widget {
     private void refreshRoles() {
         removeChildren();
         Scene scene = getScene();
-        setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.BLUE.darker()), BorderFactory.createEmptyBorder(10, 14, 0, 14)));
+        setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(2, 0, 0, 0, Color.LIGHT_GRAY), BorderFactory.createEmptyBorder(10, 14, 0, 14)));
         
         setLayout(new PartnerLinkTypeContentLayout(75));
         
@@ -122,15 +120,7 @@ public class PartnerLinkTypeContentWidget extends Widget {
         
         mOperationSceneLayer = new OperationSceneLayer(scene, this);
         addChild(mOperationSceneLayer);
-        
-        LabelWidget roleLabel = new LabelWidget(scene, NbBundle.getMessage(PartnerLinkTypeContentWidget.class, "LBL_Roles"));
-        roleLabel.setForeground(Color.GRAY);
-        
-        LabelWidget portTypesLabel = new LabelWidget(scene, NbBundle.getMessage(PartnerLinkTypeContentWidget.class, "LBL_PortTypes"));
-        portTypesLabel.setForeground(Color.GRAY);
-        
-        addChild(roleLabel);
-        addChild(portTypesLabel);
+
     }
     
     public RoleWidget getLeftRoleWidget() {

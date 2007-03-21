@@ -24,7 +24,6 @@ import java.util.Collection;
 
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
-import org.netbeans.modules.xml.wsdl.ui.cookies.AddChildWSDLElementCookie;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ImportWSDLNewType;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
@@ -44,7 +43,6 @@ public class ImportFolderNode extends FolderNode {
         mDef = element;
         this.setDisplayName(NbBundle.getMessage(ImportFolderNode.class, 
         "IMPORT_FOLDER_NODE_NAME"));
-        getLookupContents().add(new AddChildWSDLElementCookie(element));
         this.addNodeListener(new WSDLNodeListener(this));
     }
     

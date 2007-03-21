@@ -57,7 +57,7 @@ public class TypesNode extends WSDLElementNode {
     
     @Override
     public Image getIcon(int type) {
-        Image folderIcon = FolderNode.FolderIcon.getClosedIcon();
+        Image folderIcon = FolderNode.FolderIcon.getIcon(type);
         if (ICON != null) {
             return Utilities.mergeImages(folderIcon, ICON, 8, 8);
         }
@@ -67,7 +67,7 @@ public class TypesNode extends WSDLElementNode {
     
     @Override
     public Image getOpenedIcon(int type) {
-        Image folderIcon = FolderNode.FolderIcon.getOpenedIcon();
+        Image folderIcon = FolderNode.FolderIcon.getOpenedIcon(type);
         if (ICON != null) {
             return Utilities.mergeImages(folderIcon, ICON, 8, 8);
         }

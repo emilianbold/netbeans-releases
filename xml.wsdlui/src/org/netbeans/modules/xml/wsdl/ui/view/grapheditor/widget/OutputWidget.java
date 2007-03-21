@@ -30,7 +30,6 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 import java.awt.Color;
 
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.ArrowWidget.ParameterType;
 import org.openide.util.Lookup;
@@ -51,7 +50,7 @@ public class OutputWidget extends OperationParameterWidget {
      */
     public OutputWidget(Scene scene, Output output, Lookup lookup) {
         super(scene, output, lookup);
-        DirectionCookie dc = (DirectionCookie) lookup.lookup(DirectionCookie.class);
+        DirectionCookie dc = lookup.lookup(DirectionCookie.class);
         boolean rightSided = dc == null ? false : dc.isRightSided();
         ArrowWidget widget = new ArrowWidget(scene, !rightSided, ParameterType.OUTPUT);
         if (isImported()) widget.setColor(Color.GRAY);

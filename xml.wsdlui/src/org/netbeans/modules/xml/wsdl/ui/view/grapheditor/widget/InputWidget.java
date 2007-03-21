@@ -50,7 +50,7 @@ public class InputWidget extends OperationParameterWidget {
      */
     public InputWidget(Scene scene, Input input, Lookup lookup) {
         super(scene, input, lookup);
-        DirectionCookie dc = (DirectionCookie) lookup.lookup(DirectionCookie.class);
+        DirectionCookie dc = lookup.lookup(DirectionCookie.class);
         boolean rightSided = dc == null ? false : dc.isRightSided();
         ArrowWidget widget = new ArrowWidget(scene, rightSided, ParameterType.INPUT);
         if (isImported()) widget.setColor(Color.GRAY);

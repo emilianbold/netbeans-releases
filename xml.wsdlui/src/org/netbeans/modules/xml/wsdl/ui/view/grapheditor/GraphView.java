@@ -21,6 +21,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
@@ -102,6 +103,11 @@ public class GraphView extends JPanel  {
         contentWidget.setLayout(LayoutFactory.createVerticalLayout(
                 SerialAlignment.JUSTIFY, 16));
         contentWidget.addChild(collaborationsWidget);
+        Widget lineWidget = new Widget(scene);
+        lineWidget.setMinimumSize(new Dimension(0, 3));
+        lineWidget.setBackground(Color.LIGHT_GRAY);
+        lineWidget.setOpaque(true);
+        contentWidget.addChild(lineWidget);
         contentWidget.addChild(messagesWidget);
 
         mMainLayer = new LayerWidget(scene);

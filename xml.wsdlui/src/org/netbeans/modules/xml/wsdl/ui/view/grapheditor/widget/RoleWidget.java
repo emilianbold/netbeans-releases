@@ -83,12 +83,11 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
 
     private void init() {
         setLayout(new RoleWidgetLayout(10));
-        
+        setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         setOpaque(true);
         updateContent();
         if (getWSDLComponent() != null)
             getActions().addAction(((PartnerScene)getScene()).getDnDAction());
-        //setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
     }
     
     private String getName() {
@@ -242,8 +241,6 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
             }
 
         }, null));
-        mLabelWidget.getActions().addAction(HoverActionProvider.getDefault(
-                getScene()).getHoverAction());
         WidgetFactory factory = WidgetFactory.getInstance();
         PortType portType = getPortType();
         if (portType != null) {

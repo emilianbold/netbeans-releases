@@ -23,9 +23,6 @@ import java.util.Collection;
 
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.ui.cookies.AddChildWSDLElementCookie;
-import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.MessageNewType;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -49,7 +46,6 @@ public class MessageFolderNode extends FolderNode {
         mDef = element;
         this.setDisplayName(NbBundle.getMessage(MessageFolderNode.class, 
                    "MESSAGE_FOLDER_NODE_NAME"));
-        getLookupContents().add(new AddChildWSDLElementCookie(element));
         this.addNodeListener(new WSDLNodeListener(this));
     }
 

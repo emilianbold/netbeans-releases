@@ -78,7 +78,6 @@ public class MessagesWidget extends Widget implements
     private Widget headerWidget;
     private ExpanderWidget expanderWidget;
     private ButtonWidget addMessageButton;
-    private ButtonWidget removeMessageButton;
     private Widget buttons;
 
     private Widget contentWidget;
@@ -107,11 +106,6 @@ public class MessagesWidget extends Widget implements
                 "LBL_MessagesWidget_AddMessage")); // NOI18N
         addMessageButton.setActionListener(this);
         
-        removeMessageButton = new ButtonWidget(scene, NbBundle.getMessage(
-                MessagesWidget.class,
-                "LBL_MessagesWidget_RemoveMessage")); // NOI18N
-        removeMessageButton.setActionListener(this);
-        
         boolean expanded = ExpanderWidget.isExpanded(this, true);
         expanderWidget = new ExpanderWidget(scene, this, expanded);
 
@@ -119,7 +113,6 @@ public class MessagesWidget extends Widget implements
         buttons.setLayout(LayoutFactory.createHorizontalLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         buttons.addChild(addMessageButton);
-        buttons.addChild(removeMessageButton);
         buttons.addChild(expanderWidget);
         
         headerWidget = new HeaderWidget(scene, expanderWidget);
@@ -171,7 +164,6 @@ public class MessagesWidget extends Widget implements
             }
         }
         
-        updateButtonsState();
     }
     
     
@@ -207,40 +199,8 @@ public class MessagesWidget extends Widget implements
             if (message != null) {
                 ActionHelper.selectNode(message);
             }
-        } else if (event.getSource() == removeMessageButton) {
-            for (MessageWidget messageWidget : getMessageWidgets()) {
-                if (messageWidget.getState().isSelected()) {
-                    Message message = messageWidget.getWSDLComponent();
-                    try {
-                        if (model.startTransaction()) {
-                            model.getDefinitions().removeMessage(message);
-                        }
-                    } finally {
-                        model.endTransaction();
-                    }
-                    break;
-                }
-            }
         }
     }
-    
-    
-    public void updateButtonsState() {
-        boolean enabled = false;
-        
-        if (contentWidget != null && contentWidget.getChildren() != null) {
-            for (Widget w : contentWidget.getChildren()) {
-                if (w instanceof MessageWidget) {
-                    enabled |= w.getState().isSelected();
-                }
-            }
-        }
-        
-        if (enabled != removeMessageButton.isButtonEnabled()) {
-            removeMessageButton.setButtonEnabled(enabled);
-        }
-    }
-    
     
     public void collapseWidget(ExpanderWidget expander) {
         if (contentWidget.getParentWidget() != null)
@@ -411,8 +371,6 @@ public class MessagesWidget extends Widget implements
         MessageWidget[] messageWidgets = getMessageWidgets();
         
         if (messageWidgets == null) return -1;
-        
-        int index = 0;
         
         if (messageHitPoint.getParentWidget() != null) {
             if (messageHitPoint.isHitAt(messageHitPoint.convertSceneToLocal(scenePoint))) {

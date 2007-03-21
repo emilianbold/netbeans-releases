@@ -21,7 +21,6 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
-import java.beans.BeanInfo;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -33,7 +32,7 @@ import javax.swing.Action;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
-import org.netbeans.modules.xml.wsdl.ui.cookies.SaveCookieDelegate;
+import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
@@ -93,7 +92,7 @@ public abstract class FolderNode extends AbstractNode
             contents.add(dobj);
         }
         
-        contents.add(new SaveCookieDelegate(dobj));
+        contents.add(new DataObjectCookieDelegate(dobj));
         
         referenceSet = new HashSet<Component>();
         highlights = new LinkedList<Highlight>();
@@ -114,7 +113,7 @@ public abstract class FolderNode extends AbstractNode
 
     @Override
     public Image getIcon(int type) {
-        Image folderIcon = FolderIcon.getClosedIcon();
+        Image folderIcon = FolderIcon.getIcon(type);
         if (BADGE_ICON != null) {
             return Utilities.mergeImages(folderIcon, BADGE_ICON, 8, 8);
         }
@@ -123,8 +122,7 @@ public abstract class FolderNode extends AbstractNode
     
     @Override
     public Image getOpenedIcon(int type) {
-       
-        Image folderIcon = FolderIcon.getOpenedIcon();
+        Image folderIcon = FolderIcon.getOpenedIcon(type);
         if (BADGE_ICON != null) {
             return Utilities.mergeImages(folderIcon, BADGE_ICON, 8, 8);
         }
@@ -177,7 +175,7 @@ public abstract class FolderNode extends AbstractNode
     
     
     @Override
-    protected void createPasteTypes(Transferable transferable, List list) {
+    protected void createPasteTypes(Transferable transferable, List<PasteType> list) {
         // Make sure this node is still valid.
         if (mElement != null && mElement.getModel() != null && isEditable()) {
             PasteType type = ComponentPasteType.getPasteType(
@@ -285,35 +283,26 @@ public abstract class FolderNode extends AbstractNode
         private FolderIcon() {
         }
         
-        public static Image getOpenedIcon() {
+        public static Image getOpenedIcon(int type) {
             if (OPENED_FOLDER_ICON.get() == null) {
-                Image image = getSystemFolderImage(true);
-                OPENED_FOLDER_ICON.compareAndSet(null,image);
+                Image image = getSystemFolderImage(true, type);
+                OPENED_FOLDER_ICON.compareAndSet(null, image);
             }
             return OPENED_FOLDER_ICON.get();
         }
         
-        public static Image getClosedIcon() {
+        public static Image getIcon(int type) {
             if (CLOSED_FOLDER_ICON.get() == null) {
-                Image image = getSystemFolderImage(false);
-                CLOSED_FOLDER_ICON.compareAndSet(null,image);
+                Image image = getSystemFolderImage(false, type);
+                CLOSED_FOLDER_ICON.compareAndSet(null, image);
             }
             return CLOSED_FOLDER_ICON.get();
         }
         
-        private static Image getSystemFolderImage(boolean isOpened) {
+        private static Image getSystemFolderImage(boolean isOpened, int type) {
                 Node n = DataFolder.findFolder(Repository.getDefault()
                                     .getDefaultFileSystem().getRoot()).getNodeDelegate();
-                return isOpened ? n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : 
-                    n.getIcon(BeanInfo.ICON_COLOR_16x16);
-        }
-        
-        public static Image getIcon(int type) {
-            return getSystemFolderImage(false);
-        }
-
-        public static Image getOpenedIcon(int type) {
-            return getSystemFolderImage(true);
+                return isOpened ? n.getOpenedIcon(type) : n.getIcon(type);
         }
     }
 }

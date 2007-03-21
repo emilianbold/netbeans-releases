@@ -63,13 +63,13 @@ public class BuiltInTypeFolderNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
-        Image icon = FolderNode.FolderIcon.getClosedIcon();
+        Image icon = FolderNode.FolderIcon.getIcon(type);
         return Utilities.mergeImages(icon, ICON, 8, 8);
     }
     
     @Override
     public Image getOpenedIcon(int type) {
-        Image icon = FolderNode.FolderIcon.getOpenedIcon();
+        Image icon = FolderNode.FolderIcon.getOpenedIcon(type);
         return Utilities.mergeImages(icon, ICON, 8, 8);
     }
     

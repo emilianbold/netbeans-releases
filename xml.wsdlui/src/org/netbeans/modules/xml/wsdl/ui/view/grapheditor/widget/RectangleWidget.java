@@ -22,7 +22,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
@@ -38,7 +37,7 @@ public class RectangleWidget extends Widget {
     private int _height = 67;
     private int _x = 0;
     private int _y = 0;
-    private int _thickness = 1;
+    private int _thickness = 2;
     private Color _color = new Color(0x3244A0);
     
     public RectangleWidget(Scene scene) {

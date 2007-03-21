@@ -34,44 +34,23 @@ public class PartnerLinkTypeContentLayout implements Layout {
     }
     
     public void justify(Widget widget) {
-        List<Widget> children = widget.getChildren();
-        
-        if (children.size() < 5) return;
-        
-        Rectangle parentBounds = widget.getClientArea();
-        
-        int midPoint = parentBounds.width / 2;
-        Widget roleLabel = children.get(3);
-        Widget portTypeLabel = children.get(4);
-        int rolesX = midPoint - roleLabel.getBounds().width / 2;
-        int rolesY = 10 - parentBounds.y;
-
-        int portTypesX = midPoint - portTypeLabel.getBounds().width / 2;
-        int portTypesY = 40 - parentBounds.y;
-        
-        roleLabel.resolveBounds(new Point(rolesX, rolesY), null);
-        portTypeLabel.resolveBounds(new Point(portTypesX, portTypesY), null);
         
     }
 
     public void layout(Widget widget) {
         List<Widget> children = widget.getChildren();
         
-        if (children.size() < 5) return;
+        if (children.size() < 3) return;
         
         Widget firstRole = children.get(0);
         Widget secondRole = children.get(1);
         Widget operationLayer = children.get(2);
-        Widget roleLabel = children.get(3);
-        Widget portTypeLabel = children.get(4);
         
         
         Rectangle bounds1 = firstRole.getPreferredBounds();
         Rectangle bounds2 = secondRole.getPreferredBounds();
         Rectangle bounds3 = operationLayer.getPreferredBounds();
         
-        roleLabel.resolveBounds(null, roleLabel.getPreferredBounds());
-        portTypeLabel.resolveBounds(null, portTypeLabel.getPreferredBounds());
         
         int width = Math.max(bounds1.width, bounds2.width);
         int height = Math.max(bounds1.height, bounds2.height);
@@ -85,7 +64,6 @@ public class PartnerLinkTypeContentLayout implements Layout {
         Rectangle roleBounds = new Rectangle(width, realHeight);
         firstRole.resolveBounds(new Point(), roleBounds);
         secondRole.resolveBounds(new Point(totalWidth - width, 0), roleBounds);
-//        bounds3.height = roleBounds.height - mGap;
         operationLayer.resolveBounds(new Point(width / 2 + 1, mGap), bounds3);
     }
 

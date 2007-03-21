@@ -51,7 +51,7 @@ public class FaultWidget extends OperationParameterWidget {
      */
     public FaultWidget(Scene scene, Fault fault, Lookup lookup, boolean reversed) {
         super(scene, fault, lookup);
-        DirectionCookie dc = (DirectionCookie) lookup.lookup(DirectionCookie.class);
+        DirectionCookie dc = lookup.lookup(DirectionCookie.class);
         boolean rightSided = dc == null ? false : dc.isRightSided();
         boolean direction = reversed ? rightSided : !rightSided;
         ArrowWidget widget = new ArrowWidget(scene, direction, ParameterType.FAULT);

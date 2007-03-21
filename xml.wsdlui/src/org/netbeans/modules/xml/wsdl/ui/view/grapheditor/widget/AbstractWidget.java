@@ -27,13 +27,16 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
+import java.awt.BasicStroke;
 import java.awt.EventQueue;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +51,8 @@ import javax.swing.SwingUtilities;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
+import org.netbeans.api.visual.border.Border;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -91,6 +96,8 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
     private ComponentListener weakComponentListener;
     /** store the WSDLModel representing the wsdl being edited **/
     private WSDLModel model;
+    
+    private Border currentBorder;
     
     
     /**
@@ -263,7 +270,16 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
                 Node node = getNode();
                 tc.setActivatedNodes(new Node[] { node });
             }
-            
+            if (currentBorder == null) {
+                currentBorder = getBorder();
+                Insets insets = currentBorder.getInsets();
+                setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right));
+            }
+        } else {
+            if (currentBorder != null) {
+                setBorder(currentBorder);
+            }
+            currentBorder = null;
         }
         repaint();
     }
@@ -282,8 +298,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
             weakComponentListener = null;
         }
         if (component != null) {
-            weakComponentListener = (ComponentListener) WeakListeners.create(
-                    ComponentListener.class, this, model);
+            weakComponentListener = WeakListeners.create(ComponentListener.class, this, model);
             model.addComponentListener(weakComponentListener);
         }
     }
@@ -311,15 +326,19 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
                     .KEY_STROKE_CONTROL);
             Paint oldPaint = g2.getPaint();
             
+            Stroke oldStroke = g2.getStroke();
+            
+            g2.setStroke(new BasicStroke(2));
+            
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
                     RenderingHints.VALUE_STROKE_PURE);
-
+            
             g2.setPaint(WidgetConstants.SELECTION_COLOR);
             
             g2.draw(createSelectionShape());
 
             g2.setPaint(oldPaint);
-            
+            g2.setStroke(oldStroke);
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
                     oldStrokeControl);
         }

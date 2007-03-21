@@ -31,12 +31,11 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
-import org.netbeans.modules.xml.wsdl.ui.cookies.SaveCookieDelegate;
+import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
 import org.netbeans.modules.xml.wsdl.ui.view.ImportWSDLCustomizer;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
@@ -48,6 +47,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -118,14 +118,14 @@ public class WSDLImportNode extends ImportNode {
                 try {
                     // Create a lookup with save cookie of parent wsdl, so that save can be called on imported wsdl's nodes
                     DataObject dobj = ActionHelper.getDataObject(mWsdlConstruct.getModel());
-                    InstanceContent content = new InstanceContent();
-                    content.add(new SaveCookieDelegate(dobj));
-                    Lookup parentLookup = new AbstractLookup(content);
+                    List list = new ArrayList();
+                    list.add(new DataObjectCookieDelegate(dobj));
                     
-                    DataObject dataObj = DataObject.find((FileObject) document.getModelSource().getLookup().lookup(FileObject.class));
+                    
+                    DataObject dataObj = DataObject.find(document.getModelSource().getLookup().lookup(FileObject.class));
                     if(dataObj != null && dataObj instanceof WSDLDataObject) {
                         DefinitionsNode node = new DefinitionsNode(definitions);
-                        FilterNode filterNode = new ReadOnlyNode(node, parentLookup);
+                        FilterNode filterNode = new ReadOnlyNode(node, new InstanceContent(), list);
                         return new Node[] {filterNode};
                     }
                 } catch(Exception ex) {
@@ -159,9 +159,13 @@ public class WSDLImportNode extends ImportNode {
      
      public static class ReadOnlyNode extends FilterNode {
          
-         public ReadOnlyNode(Node original, Lookup lookup) {
-             super(original, new ReadOnlyChildren(original, lookup), lookup);
-             
+         public ReadOnlyNode(Node original, InstanceContent content, List objList) {
+             super(original, new ReadOnlyChildren(original, objList), new ProxyLookup(new Lookup[] {new AbstractLookup(content), original.getLookup()}));
+             if (objList != null) {
+                 for (Object obj : objList) {
+                     content.add(obj);
+                 }
+             }
          }
          
          @Override
@@ -215,17 +219,17 @@ public class WSDLImportNode extends ImportNode {
      
      public static class ReadOnlyChildren extends FilterNode.Children {
         
-         Lookup lookup;
+         private List objList;
+
+         public ReadOnlyChildren(Node node, List objList) {
+             super(node);
+             this.objList = objList;
+         }
          
-        public ReadOnlyChildren(Node node, Lookup lookup) {
-            super(node);
-            this.lookup = lookup;
-        }
-        
-        @Override
-        protected Node[] createNodes(Node n) {
-             return new Node[] {new ReadOnlyNode(n, lookup)};
-        }
+         @Override
+         protected Node copyNode(Node node) {
+             return new ReadOnlyNode(node, new InstanceContent(), objList);
+         }
     } 
     
     public static class ReadOnlyProperty extends Node.Property {

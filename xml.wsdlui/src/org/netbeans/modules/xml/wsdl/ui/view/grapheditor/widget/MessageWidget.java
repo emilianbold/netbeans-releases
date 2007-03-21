@@ -58,12 +58,10 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.action.TextFieldInplaceEditorProvider;
-import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -73,7 +71,6 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
@@ -130,7 +127,7 @@ public class MessageWidget extends AbstractWidget<Message>
         buttons.addChild(addPartButton);
         buttons.addChild(removePartButton);
         
-        setBorder(MAIN_BORDER);
+        setBorder(WidgetConstants.OUTER_BORDER);
         setOpaque(true);
         setLayout(LayoutFactory.createVerticalLayout());
         
@@ -140,21 +137,6 @@ public class MessageWidget extends AbstractWidget<Message>
         }
         getActions().addAction(((PartnerScene) scene).getDnDAction());
     }
-    
-
-    @Override
-    protected void notifyStateChanged(ObjectState previousState, 
-            ObjectState state) 
-    {
-        super.notifyStateChanged(previousState, state);
-
-        MessagesWidget messagesWidget = getMessagesWidget();
-
-        if (messagesWidget != null) {
-            messagesWidget.updateButtonsState();
-        }
-    }
-    
     
     private MessagesWidget getMessagesWidget() {
         for (Widget widget = this; widget != null; 
@@ -251,8 +233,6 @@ public class MessageWidget extends AbstractWidget<Message>
     
     
     private PartHitPointPosition getPartHitPointPosition(Point scenePoint) {
-        Point messagePoint = convertSceneToLocal(scenePoint);
-        
         if (!hasParts()) {
             return new PartHitPointPosition(0, 0);
         }
@@ -336,8 +316,8 @@ public class MessageWidget extends AbstractWidget<Message>
         return (count == 1) ? "(1 part)" : ("(" + count + " parts)"); // NOI18N
     }
 
-    private void showHitPoint(Point scenePoint, Object draggedObject) {
-        this.draggedObject = draggedObject;
+    private void showHitPoint(Point scenePoint, Object draggedObj) {
+        this.draggedObject = draggedObj;
         
         PartHitPointPosition newPosition = getPartHitPointPosition(scenePoint);
         PartHitPointPosition oldPosition = partHitPointPosition;
@@ -412,7 +392,7 @@ public class MessageWidget extends AbstractWidget<Message>
         
         result.addChild(expanderWidget);
         result.setLayout(new LeftRightLayout(32));
-        result.setBorder(HEADER_BORDER);
+        result.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
         
         return result;
     }
@@ -478,6 +458,7 @@ public class MessageWidget extends AbstractWidget<Message>
         return contentWidget.getParentWidget() == null;
     }
 
+    @Override
     protected Shape createSelectionShape() {
         Rectangle rect = getBounds();
         return new Rectangle2D.Double(rect.x + 2, rect.y + 2, rect.width - 4, 
@@ -485,6 +466,7 @@ public class MessageWidget extends AbstractWidget<Message>
     }    
     
     
+    @Override
     public void updateContent() {
         removeContent();
         createContent();
@@ -544,8 +526,6 @@ public class MessageWidget extends AbstractWidget<Message>
         if (position.column == 0) {
             try {
                 if (model.startTransaction()) {
-                    Part[] parts = message.getParts().toArray(new Part[0]);
-
                     Part newPart = model.getFactory().createPart();
                     newPart.setName(MessagesUtils.createNewPartName(message));
                     if (sc instanceof GlobalType) {
@@ -595,20 +575,14 @@ public class MessageWidget extends AbstractWidget<Message>
         return comp != null ? comp.getName() : this;
     }
 
-    private static final Border HEADER_BORDER = new GradientFillBorder(0, 0, 4, 8,
-            null, new Color(0xF2B6AF), new Color(0xFDECE2));
-
     private static final Border BUTTONS_BORDER = new FilledBorder(
-            new Insets(1, 0, 0, 0), new Insets(4, 8, 4, 8),
-            new Color(0x95301F), Color.WHITE);
+            new Insets(2, 0, 0, 0), new Insets(4, 8, 4, 8),
+            Color.LIGHT_GRAY, Color.WHITE);
     
     
-    private static final Border MAIN_BORDER = new FilledBorder(1, 1, 0, 0, 
-            new Color(0x95301F), Color.WHITE);
-
     private static final Border TABLE_BORDER = new FilledBorder(
-            new Insets(1, 0, 0, 0), new Insets(0, 0, 0, 0),
-            new Color(0x95301F), new Color(0x999999));
+            new Insets(2, 0, 0, 0), new Insets(0, 0, 0, 0),
+            Color.LIGHT_GRAY, new Color(0x999999));
 
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/message.png"); // NOI18N
@@ -616,6 +590,7 @@ public class MessageWidget extends AbstractWidget<Message>
     public static final Border HEADER_CELL_BORDER = new FilledBorder(0, 0, 1, 8, null, 
             new Color(0xEEEEEE));
 
+    @Override
     protected void paintChildren() {
         super.paintChildren();
         

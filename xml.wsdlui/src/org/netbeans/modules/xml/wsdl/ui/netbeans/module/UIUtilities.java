@@ -82,8 +82,7 @@ public class UIUtilities {
         if (path.get(0) != sc.getModel().getDefinitions()) {
             return Collections.emptyList();
         }
-        WSDLElementNode rootSCN = (WSDLElementNode) root.getCookie(
-                WSDLElementNode.class);
+        WSDLElementNode rootSCN = root.getCookie(WSDLElementNode.class);
         if (rootSCN == null || !rootSCN.isSameAsMyWSDLElement(path.get(0))) {
             return Collections.emptyList();
         }
@@ -99,8 +98,7 @@ public class UIUtilities {
                 return selectionPath;
             }
             for (Node n : children) {
-                WSDLElementNode node = (WSDLElementNode) n.getCookie(
-                        WSDLElementNode.class);
+                WSDLElementNode node = n.getCookie(WSDLElementNode.class);
                 if (node != null) {
                     WSDLComponent scomp = node.getWSDLComponent();
                     int idx = path.indexOf(scomp);
@@ -114,13 +112,12 @@ public class UIUtilities {
             }
             if (subPath == null) {
                 for (Node n : children) {
-                    FolderNode cNode = (FolderNode) n.getCookie(FolderNode.class);
+                    FolderNode cNode = n.getCookie(FolderNode.class);
                     if (cNode != null && cNode.getChildType().isInstance(comp)) {
                         Node[] nChildren = n.getChildren().getNodes();
                         if (nChildren != null && nChildren.length > 0) {
                             for (Node nChild : nChildren) {
-                                WSDLElementNode node = (WSDLElementNode) nChild.
-                                        getCookie(WSDLElementNode.class);
+                                WSDLElementNode node = nChild.getCookie(WSDLElementNode.class);
                                 if (node != null) {
                                     WSDLComponent scomp = node.getWSDLComponent();
                                     int idx = path.indexOf(scomp);
@@ -197,7 +194,7 @@ public class UIUtilities {
             return Collections.emptyList();
         }
         
-        WSDLElementNode rootNode = (WSDLElementNode) root.getCookie(WSDLElementNode.class);
+        WSDLElementNode rootNode = root.getCookie(WSDLElementNode.class);
         if (rootNode == null || rootNode != wsdlPathTillTypes.get(0)) {
             return Collections.emptyList();
         }
@@ -208,13 +205,16 @@ public class UIUtilities {
         Node schemaRootNode = null;
         if (schemaNodes != null) {
             for (Node schemaNode : schemaNodes) {
-                SchemaComponentNode schemaCNode = (SchemaComponentNode) schemaNode.getCookie(SchemaComponentNode.class);
-                if (schemaCNode.getReference().get().equals(wsdlSchema.getSchemaModel().getSchema())) {
+                SchemaComponentNode schemaCNode = schemaNode.getCookie(SchemaComponentNode.class);
+                if (schemaCNode != null && schemaCNode.getReference().get().equals(wsdlSchema.getSchemaModel().getSchema())) {
                     schemaRootNode = schemaNode;//pass the filter node, not the schemacomponentnode for the schema. fix for IZ 84466
                     break;
                 }
             }
         }
+        
+        if (schemaRootNode == null) return Collections.emptyList();
+        
         
         ArrayList<Node> selectionPath = new ArrayList<Node>();
         selectionPath.add(schemaRootNode);
@@ -223,7 +223,6 @@ public class UIUtilities {
         Node parentNode = schemaRootNode;
         for(int i = 0; i < path.size(); i++)
         {
-            SchemaComponent comp = path.get(i);
             List<Node> subPath = null;
             Node[] children = parentNode.getChildren().getNodes();
             if (children == null || children.length < 0)
@@ -234,7 +233,7 @@ public class UIUtilities {
             {
                 for (Node n : children)
                 {
-                    CategoryNode cNode = (CategoryNode) n.getCookie(CategoryNode.class);
+                    CategoryNode cNode = n.getCookie(CategoryNode.class);
                     if (cNode != null && cNode.getChildType()==categoryType)
                     {
                         Node[] nChildren = n.getChildren().getNodes();
@@ -242,8 +241,7 @@ public class UIUtilities {
                         {
                             for (Node nChild : nChildren)
                             {
-                                SchemaComponentNode node = (SchemaComponentNode) nChild.
-                                        getCookie(SchemaComponentNode.class);
+                                SchemaComponentNode node = nChild.getCookie(SchemaComponentNode.class);
                                 if (node != null)
                                 {
                                     SchemaComponent scomp = node.getReference().get();
@@ -270,8 +268,7 @@ public class UIUtilities {
             {
                 for (Node n : children)
                 {
-                    SchemaComponentNode node = (SchemaComponentNode) n.getCookie(
-                            SchemaComponentNode.class);
+                    SchemaComponentNode node = n.getCookie(SchemaComponentNode.class);
                     if (node != null)
                     {
                         SchemaComponent scomp = node.getReference().get();
@@ -307,8 +304,7 @@ public class UIUtilities {
 //				WSDLModelFactory.getDefault().getPrimitiveTypesModel();
         boolean externalRef = /*!primitive&&*/sc.getModel()!=currentModel;
         for (Node n:children) {
-            WSDLElementNode node =(WSDLElementNode)n.
-                    getCookie(WSDLElementNode.class);
+            WSDLElementNode node = n.getCookie(WSDLElementNode.class);
             WSDLComponent scomp = node==null?null:node.getWSDLComponent();
             if (scomp == sc) {
                 return n;
@@ -349,13 +345,11 @@ public class UIUtilities {
     }
 
     private static WSDLElementNode findWSDLComponentNode(Node node) {
-        WSDLElementNode scn =(WSDLElementNode)node
-                .getCookie(WSDLElementNode.class);
+        WSDLElementNode scn = node.getCookie(WSDLElementNode.class);
         if(scn!=null) return scn;
         Node parent = node;
         while((parent=parent.getParentNode())!=null) {
-            scn = (WSDLElementNode)parent
-                    .getCookie(WSDLElementNode.class);
+            scn = parent.getCookie(WSDLElementNode.class);
             if(scn!=null) return scn;
         }
         return null;
@@ -450,8 +444,8 @@ public class UIUtilities {
      * @param shouldShowSource whether should jump to source editor
      */
     public static void annotateSourceView(WSDLDataObject dobj, DocumentComponent wsdlComp, String errorMessage, boolean shouldShowSource) {
-        LineCookie lc = (LineCookie) dobj.getCookie(LineCookie.class);
-        EditCookie ec = (EditCookie) dobj.getCookie(EditCookie.class);
+        LineCookie lc = dobj.getCookie(LineCookie.class);
+        EditCookie ec = dobj.getCookie(EditCookie.class);
         if (lc == null || ec == null) {
             return;
         }
@@ -481,7 +475,7 @@ public class UIUtilities {
         assert modelSource != null;
         Lookup lookup = modelSource.getLookup();
         
-        StyledDocument document = (StyledDocument)lookup.lookup(StyledDocument.class);
+        StyledDocument document = lookup.lookup(StyledDocument.class);
         if (document == null) {
             return -1;
         }

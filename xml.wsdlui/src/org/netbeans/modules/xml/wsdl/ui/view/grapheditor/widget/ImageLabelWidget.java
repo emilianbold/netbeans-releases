@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
+
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.ImageWidget;
@@ -64,22 +65,45 @@ public class ImageLabelWidget extends Widget {
                 SerialAlignment.CENTER, hgap));
         
         Font font = scene.getDefaultFont();
+        Font labelFont = font.deriveFont(Font.BOLD);
         
         Widget imageWidget = new ImageWidget(scene, image);
         
-        Widget textWidget = new LabelWidget(scene, text);
-        textWidget.setFont(font);
+        textWidget = new LabelWidget(scene, text);
+        textWidget.setFont(labelFont);
         
         addChild(imageWidget);
         addChild(textWidget);
         
         if (comment != null) {
-            Widget commentWidget = new LabelWidget(scene, comment);
+            commentWidget = new LabelWidget(scene, comment);
             commentWidget.setFont(font);
             commentWidget.setForeground(COMMENT_COLOR);
             addChild(commentWidget);
         }
     }
+    
+    public String getLabel() {
+        return textWidget.getLabel();
+    }
+    
+    public void setLabel(String label) {
+        textWidget.setLabel(label);
+    }
+    public String getComment() {
+        if (commentWidget != null)
+            return commentWidget.getLabel();
+        return null;
+    }
+    
+    public void setComment(String comment) {
+        if (commentWidget != null)
+            commentWidget.setLabel(comment);
+    }
+    
+    
+    private LabelWidget textWidget;
+    private LabelWidget commentWidget;
     
     public static final Color COMMENT_COLOR = new Color(0x666666);
     public static final int DEFAULT_GAP = 4;

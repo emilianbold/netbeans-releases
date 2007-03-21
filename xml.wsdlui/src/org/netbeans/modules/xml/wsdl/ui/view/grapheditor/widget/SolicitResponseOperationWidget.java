@@ -81,6 +81,7 @@ public class SolicitResponseOperationWidget
         addChild(horizontalWidget);
     }
 
+    @Override
     protected Widget getVerticalWidget() {
         return verticalWidget;
     }

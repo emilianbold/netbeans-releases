@@ -69,7 +69,6 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.ButtonBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ExtensibilityElementsFolderNode;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.ErrorManager;
@@ -87,10 +86,9 @@ public class CollaborationsWidget extends Widget
     private Image IMAGE = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/grapheditor/palette/resources/partnerlinkTypesFolder.png");
     public static final Border MAIN_BORDER = new FilledBorder(1, 1, 8, 8, new Color(0x888888), Color.WHITE);
     private static final int GAP = 10;
-    private Widget mLabelWidget;
+    private ImageLabelWidget mLabelWidget;
     private Widget mHeaderWidget;
     private ButtonWidget createButtonWidget;
-    private ButtonWidget removeButtonWidget;
     private ExpanderWidget expanderWidget;
     private PartnerLinkTypeHitPointWidget partnerLinkTypeHitPoint; 
     private Object draggedObject = null;
@@ -211,25 +209,6 @@ public class CollaborationsWidget extends Widget
         });
         actionWidget.addChild(addButtonWidget);
 
-        // Remove partnerLinkType button.
-        removeButtonWidget = new ButtonWidget(scene,
-                NbBundle.getMessage(CollaborationsWidget.class,
-                "LBL_CollaborationsWidget_RemovePartnerLinkType"));
-        removeButtonWidget.setActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // Create a copy of the list to avoid comodification.
-                List<Widget> children = new ArrayList<Widget>(
-                        mCollaborationContentWidget.getChildren());
-                for (Widget child : children) {
-                    if (child instanceof PartnerLinkTypeWidget && child.getState().isSelected()) {
-                        ((PartnerLinkTypeWidget) child).deleteComponent();
-                    }
-                }
-            }
-        });
-        removeButtonWidget.setButtonEnabled(false);
-        actionWidget.addChild(removeButtonWidget);
-        
         // Expand button.
         actionWidget.addChild(expanderWidget);
         return actionWidget;
@@ -259,13 +238,12 @@ public class CollaborationsWidget extends Widget
     }
 
     public void updateContent() {
-        mHeaderWidget.removeChild(mLabelWidget);
+        mLabelWidget.setComment("(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
         mCollaborationContentWidget.removeChildren();
-        createContent();
     }
 
     private void createContent() {
-        mLabelWidget = new ImageLabelWidget(getScene(), IMAGE, "PartnerLinkTypes", 
+        mLabelWidget = new ImageLabelWidget(getScene(), IMAGE, NbBundle.getMessage(CollaborationsWidget.class, "LBL_CollaborationsWidget_PartnerLinkTypes"), 
                 "(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
         mHeaderWidget.addChild(0, mLabelWidget);
         
@@ -286,7 +264,6 @@ public class CollaborationsWidget extends Widget
         }
 
         // Disable/hide buttons based on current widget availability.
-        removeButtonWidget.setButtonEnabled(false);
         Collection<PortType> ports = getUnusedPortTypes();
         createButtonWidget.setVisible(ports.size() > 0);
     }
@@ -305,31 +282,6 @@ public class CollaborationsWidget extends Widget
         }
     }
     
-    public void childPartnerLinkTypeSelected(PartnerLinkTypeWidget partnerLinkTypeWidget) {
-        updateButtonState();
-    }
-    
-    
-    public void childPartnerLinkTypeUnSelected(PartnerLinkTypeWidget partnerLinkTypeWidget) {
-        updateButtonState();
-    }
-    
-    private void updateButtonState() {
-        boolean enabled = false;
-        List<Widget> children = mCollaborationContentWidget.getChildren();
-        if (children != null) {
-            for (Widget w : children) {
-                if (w instanceof PartnerLinkTypeWidget) {
-                    enabled |= w.getState().isSelected();
-                }
-            }
-        }
-        
-        if (enabled != removeButtonWidget.isButtonEnabled()) {
-            removeButtonWidget.setButtonEnabled(enabled);
-        }
-    }
-
     public void dragExit() {
         hideHitPoint();
     }

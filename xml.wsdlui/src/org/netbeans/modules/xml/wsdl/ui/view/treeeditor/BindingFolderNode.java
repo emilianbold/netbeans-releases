@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.ui.cookies.AddChildWSDLElementCookie;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingNewType;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -53,7 +52,6 @@ public class BindingFolderNode extends FolderNode {
         this.setDisplayName(NbBundle.
                     getMessage(BindingFolderNode.class, 
                                "BINDING_FOLDER_NODE_NAME"));
-        getLookupContents().add(new AddChildWSDLElementCookie(element));
         this.addNodeListener(new WSDLNodeListener(this));
         BADGE_ICON  = Utilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/binding_badge.png");

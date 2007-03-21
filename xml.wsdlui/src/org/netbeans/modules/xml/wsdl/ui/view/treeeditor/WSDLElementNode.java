@@ -35,8 +35,10 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.Action;
 import javax.xml.namespace.QName;
+
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -46,8 +48,7 @@ import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.commands.CommonAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.OtherAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.XMLAttributePropertyAdapter;
-import org.netbeans.modules.xml.wsdl.ui.cookies.RemoveWSDLElementCookie;
-import org.netbeans.modules.xml.wsdl.ui.cookies.SaveCookieDelegate;
+import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLAttributeCookie;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLElementCookie;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
@@ -190,16 +191,14 @@ public abstract class WSDLElementNode extends AbstractNode
         if (dobj != null) {
             contents.add(dobj);
         }
-        contents.add(new SaveCookieDelegate(dobj));
-        contents.add(new RemoveWSDLElementCookie(mElement));
+        contents.add(new DataObjectCookieDelegate(dobj));
         contents.add(element);
         
         wsdlmodel = element.getModel();
         
         weakModelListener = WeakListeners.propertyChange(this, wsdlmodel);
         wsdlmodel.addPropertyChangeListener(weakModelListener);
-        weakComponentListener = (ComponentListener) WeakListeners.create(
-                ComponentListener.class, this, wsdlmodel);
+        weakComponentListener = WeakListeners.create(ComponentListener.class, this, wsdlmodel);
         wsdlmodel.addComponentListener(weakComponentListener);
         addNodeListener(new WSDLNodeListener(this));
         mSheet = new Sheet();
@@ -296,7 +295,7 @@ public abstract class WSDLElementNode extends AbstractNode
     }
 
     @Override
-    protected void createPasteTypes(Transferable transferable, List list) {
+    protected void createPasteTypes(Transferable transferable, List<PasteType> list) {
         // Make sure this node is still valid.
         if (mElement != null && mElement.getModel() != null && isEditable()) {
             PasteType type = ComponentPasteType.getPasteType(

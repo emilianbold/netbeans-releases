@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -53,7 +54,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.common.Constants;
-import org.netbeans.modules.xml.wsdl.ui.cookies.SaveCookieDelegate;
+import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
 import org.netbeans.modules.xml.xam.Component;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
@@ -184,11 +185,11 @@ public class NodesFactory {
         SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
                 model, Lookup.EMPTY);
         Node node = factory.createRootNode();
-        //To enable save when schema nodes are selected, get the save cookie.
-        InstanceContent content = new InstanceContent();
-        content.add(new SaveCookieDelegate(ActionHelper.getDataObject(component)));
-        Lookup lookup = new AbstractLookup(content);
-        Node schemaRootNode = new EmbeddedSchemaNode(node, component, lookup);
+        //To enable save, when schema nodes are selected, get the save cookie.
+        List list = new ArrayList();
+        list.add(new DataObjectCookieDelegate(ActionHelper.getDataObject(component)));
+        
+        Node schemaRootNode = new EmbeddedSchemaNode(node, component, new InstanceContent(), list);
         return schemaRootNode;
     }
     

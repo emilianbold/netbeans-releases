@@ -71,7 +71,6 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.util.GeomUtil;
-import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Input;
@@ -128,8 +127,8 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
      */
     public PortTypeWidget(Scene scene, PortType portType, Lookup lookup) {
         super(scene, portType, lookup);
-        mPLTContentWidget = (PartnerLinkTypeContentWidget) getLookup().lookup(PartnerLinkTypeContentWidget.class);
-        mRole = (Role) getLookup().lookup(Role.class);
+        mPLTContentWidget = getLookup().lookup(PartnerLinkTypeContentWidget.class);
+        mRole = getLookup().lookup(Role.class);
         if (mRole != null) {
             PartnerLinkType plt = (PartnerLinkType) mRole.getParent();
             boolean rightSided = mRole == plt.getRole1();
@@ -147,10 +146,11 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         setLayout(LayoutFactory.createVerticalLayout());
         
         mHotspot = new RectangleWidget(getScene(), 12, 70);
-        mHotspot.setThickness(2);
+        mHotspot.setThickness(4);
         mHotspot.setColor(WidgetConstants.HIT_POINT_BORDER);
         
         nameHolderWidget = new Widget(getScene());
+        //nameHolderWidget.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
         nameHolderWidget.setBackground(new Color(217, 244, 218));
         nameHolderWidget.setLayout(mFillLayout);
         nameHolderWidget.setMinimumSize(new Dimension(225, 25));
@@ -165,12 +165,16 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
             // Indicates PortType reference is no longer in model.
             pt = null;
         }
+        
+        Font boldFont = getScene().getFont().deriveFont(Font.BOLD);
         //if port type cannot be found, then it may be the default value added for required attributes.
         if (ptRef != null && pt == null && 
                 !ptRef.getRefString().equals(NbBundle.getMessage(ExtensibilityElementCreatorVisitor.class, "REQUIRED_PROPERTY_DEFAULT_VALUE"))) {
             mNameWidget = new CenteredLabelWidget(getScene(), ptRef.getRefString(),
                     new Color(217, 244, 218));
-            mNameWidget.setFont(UIManager.getFont("Label.font").deriveFont(Font.ITALIC));
+            Font italicizedBoldFont = boldFont.deriveFont(Font.ITALIC);
+            mNameWidget.setFont(italicizedBoldFont);
+            mNameWidget.setToolTipText(NbBundle.getMessage(PortTypeWidget.class, "PortTypeWidget.NonReferenceablePortType.TT"));
         } else {
             String name = getName();
             Color color = new Color(217, 244, 218); 
@@ -185,6 +189,15 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                 }
             }
             mNameWidget = new CenteredLabelWidget(getScene(), name, color);
+            mNameWidget.setFont(boldFont);
+            
+            if (mRole == null) {
+                mNameWidget.setToolTipText(NbBundle.getMessage(PortTypeWidget.class, "PortTypeWidget.UnConfiguredRole.TT"));
+            } else if (pt == null) {
+                mNameWidget.setToolTipText(NbBundle.getMessage(PortTypeWidget.class, "PortTypeWidget.UnConfiguredPortType.TT"));
+            } else {
+                mNameWidget.setToolTipText(null);
+            }
         }
 
         mNameWidget.setBorder(greenBorder);
@@ -413,8 +426,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     /* returning -1 doesnt show the hotspot*/
     public int getEffectiveOperationCount() {
         int count = 0;
-        DirectionCookie dc = (DirectionCookie) getLookup().lookup(
-                DirectionCookie.class);
+        DirectionCookie dc = getLookup().lookup(DirectionCookie.class);
         if (dc != null && dc.isLeftSided()) {
             PartnerLinkType plt = (PartnerLinkType) mRole.getParent();
             if (plt != null) {

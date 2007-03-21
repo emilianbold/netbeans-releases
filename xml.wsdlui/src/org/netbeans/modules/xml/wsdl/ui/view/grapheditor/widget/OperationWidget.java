@@ -54,8 +54,8 @@ public abstract class OperationWidget<T extends Operation>
         mOperationConstruct = operation;
         mOperationNameLabelWidget = new LabelWidget(getScene());
         mOperationNameLabelWidget.setLabel(mOperationConstruct.getName());
+        mOperationNameLabelWidget.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
         mOperationNameLabelWidget.setAlignment(Alignment.CENTER);
-        mOperationNameLabelWidget.setFont(getScene().getDefaultFont().deriveFont(Font.BOLD));
         mOperationNameLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
             
             public void setText(Widget widget, String text) {
@@ -79,6 +79,7 @@ public abstract class OperationWidget<T extends Operation>
         mOperationRectangleWidget = new RectangleWidget(getScene(), 10, 67);
         
         if (isImported()) mOperationRectangleWidget.setColor(Color.GRAY);
+        //setBorder(BorderFactory.createLineBorder(2, Color.BLUE));
     }
     
     /**
@@ -88,7 +89,7 @@ public abstract class OperationWidget<T extends Operation>
      */
     public boolean isRightSided() {
         Lookup lookup = getLookup();
-        DirectionCookie dc = (DirectionCookie) lookup.lookup(DirectionCookie.class);
+        DirectionCookie dc = lookup.lookup(DirectionCookie.class);
         return dc == null ? false : dc.isRightSided();
     }
     
@@ -117,7 +118,7 @@ public abstract class OperationWidget<T extends Operation>
         return mOperationConstruct;
     }
     
-    protected LabelWidget getLabel() {
+    protected Widget getLabel() {
         return mOperationNameLabelWidget;
     }
     
