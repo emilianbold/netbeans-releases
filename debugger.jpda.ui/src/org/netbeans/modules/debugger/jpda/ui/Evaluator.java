@@ -29,6 +29,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -397,6 +398,15 @@ public class Evaluator extends javax.swing.JPanel {
                 public void focusLost(FocusEvent e) {
                 }
             });
+            editor.addPropertyChangeListener("keymap", new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (!(evt.getNewValue() instanceof FilteredKeymap)) {
+                        // We have to do that lazily, because the property change
+                        // is fired *before* the keymap is actually changed!
+                        RequestProcessor.getDefault().post(new KeymapUpdater(), 100);
+                    }
+                }
+            });
         }
         
         public void addActionListener(java.awt.event.ActionListener actionListener) {
@@ -444,6 +454,14 @@ public class Evaluator extends javax.swing.JPanel {
         public void selectAll() {
             editor.selectAll();
             editor.requestFocus();
+        }
+        
+        private class KeymapUpdater implements Runnable {
+            
+            public void run() {
+                editor.setKeymap(new FilteredKeymap(editor.getKeymap()));
+            }
+            
         }
 
     }
