@@ -54,21 +54,21 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
     }
     
     public void testApplicationBean() {
-        beanName = "Application Bean"; //NOI18N
+        beanName = "ApplicationBean1.java"; //NOI18N
         beanFileName = "ApplicationBean1.java";
         setJavaEditorCaretFilteringOn();
         doMeasurement();
     }
     
     public void testRequestBean() {
-        beanName = "Request Bean"; //NOI18N
+        beanName = "RequestBean1.java"; //NOI18N
         beanFileName = "RequestBean1.java";
         setJavaEditorCaretFilteringOn();
         doMeasurement();
     }
     
     public void testSessionBean() {
-        beanName = "Session Bean"; //NOI18N
+        beanName = "SessionBean1.java"; //NOI18N
         beanFileName = "SessionBean1.java";
         setJavaEditorCaretFilteringOn();
         doMeasurement();
