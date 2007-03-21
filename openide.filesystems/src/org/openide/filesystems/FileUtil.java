@@ -536,7 +536,7 @@ public final class FileUtil extends Object {
     static URL fileToURL(File file) throws MalformedURLException {
         URL retVal = null;
 
-        if (canBeCanonicalizedOnWindows(file)) {
+        if (!Utilities.isWindows() || canBeCanonicalizedOnWindows(file)) {
             retVal = file.toURI().toURL();
         } else {
             retVal = new URL("file:/" + file.getAbsolutePath()); //NOI18N
