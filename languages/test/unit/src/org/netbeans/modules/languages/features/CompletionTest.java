@@ -15,23 +15,17 @@ import java.util.List;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JEditorPane;
-import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ParserManager;
-import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.support.CompletionSupport;
 import org.netbeans.modules.languages.*;
 import junit.framework.TestCase;
-import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Selector;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
-import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
 import org.netbeans.modules.languages.parser.Pattern;
-import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 
@@ -89,20 +83,20 @@ public class CompletionTest extends TestCase {
         LanguagesManager.getDefault ().addLanguage (l);
         
         String text = 
-            "if (jedna) {" +
-            "    dvje" +
-            "    while (tri) {" +
-            "        pet" +
-            "        sest" +
-            "    }" +
-            "    if (sedum) {osum}" +
+            "if (jedna) {\n" +
+            "    dvje\n" +
+            "    while (tri) {\n" +
+            "        pet\n" +
+            "        sest\n" +
+            "    }\n" +
+            "    if (sedum) {osum}\n" +
             "}";
         
         JEditorPane editor = new JEditorPane ();
         editor.getDocument ().putProperty ("mimeType", l.getMimeType ());
         editor.getDocument ().putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (l.getMimeType ()).language ());
         editor.setText (text);
-        editor.setCaretPosition (25);
+        editor.setCaretPosition (27);
         CompletionProviderImpl cc = new CompletionProviderImpl ();
         CompletionTask ct = cc.createTask (0, editor);
         List<CompletionItem> list = cc.query (editor);
