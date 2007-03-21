@@ -23,15 +23,15 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="splitPane" alignment="0" pref="980" max="32767" attributes="2"/>
+                  <Component id="splitPane" alignment="0" pref="670" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="filterLabel" min="-2" pref="28" max="-2" attributes="0"/>
+                      <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="filterTextField" pref="853" max="32767" attributes="0"/>
+                      <Component id="filterTextField" pref="545" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="caseSensitiveFilterCheckBox" min="-2" pref="87" max="-2" attributes="0"/>
+                      <Component id="caseSensitiveFilterCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="signatureEditorPane" alignment="0" pref="980" max="32767" attributes="1"/>
+                  <Component id="signatureEditorPane" alignment="0" pref="670" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="filtersLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -56,7 +56,7 @@
                       <Component id="showPrivateToggleButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="showStaticToggleButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="725" max="32767" attributes="0"/>
+                      <EmptySpace pref="426" max="32767" attributes="0"/>
                       <Component id="closeButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -69,12 +69,12 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="caseSensitiveFilterCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="filterLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="caseSensitiveFilterCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="filterTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="splitPane" pref="329" max="32767" attributes="0"/>
+              <Component id="splitPane" pref="330" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="signatureEditorPane" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>

@@ -51,7 +51,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -588,15 +587,14 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 855, Short.MAX_VALUE)
+                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 670, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filterLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 720, Short.MAX_VALUE)
+                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(caseSensitiveFilterCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 95, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 855, Short.MAX_VALUE)
+                        .add(caseSensitiveFilterCheckBox))
+                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 670, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filtersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -609,7 +607,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                         .add(showInnerToggleButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(expandAllButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 690, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 500, Short.MAX_VALUE)
                         .add(closeButton)))
                 .addContainerGap())
         );
@@ -622,7 +620,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     .add(caseSensitiveFilterCheckBox)
                     .add(filterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

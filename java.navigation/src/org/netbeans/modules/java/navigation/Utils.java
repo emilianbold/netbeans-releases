@@ -112,13 +112,6 @@ class Utils {
 
             formatTypeParameters(typeElement.getTypeParameters(), stringBuilder);
 
-            if (!forSignature) {
-                if (modifiers.size() > 0) {
-                    stringBuilder.append(" : ");
-                    stringBuilder.append(toString(modifiers));
-                }
-            }
-
             break;
 
         case CONSTRUCTOR:
@@ -144,12 +137,6 @@ class Utils {
                 stringBuilder.append(" throws "); // NOI18N
                 formatTypeMirrors(thrownTypesMirrors, stringBuilder);
             }
-            if (!forSignature) {
-                if (modifiers.size() > 0) {
-                    stringBuilder.append(":");
-                    stringBuilder.append(toString(modifiers));
-                }
-            }
 
             break;
 
@@ -174,8 +161,6 @@ class Utils {
                     }
                 }
 
-
-
                 formatTypeMirror(returnTypeMirror, stringBuilder);
             }
 
@@ -197,13 +182,6 @@ class Utils {
 
             if (!forSignature) {
                 stringBuilder.append(":");
-
-                if (modifiers.size() > 0) {
-                    stringBuilder.append(toString(modifiers));
-                    if (modifiers.size() > 0) {
-                        stringBuilder.append(" ");
-                    }
-                }
 
                 formatTypeMirror(returnTypeMirror, stringBuilder);
 
@@ -269,13 +247,6 @@ class Utils {
 
             if (!forSignature) {
                 stringBuilder.append(":");
-                if (modifiers.size() > 0) {
-                    stringBuilder.append(toString(modifiers));
-                }
-
-                if (stringBuilder.length() > 0) {
-                    stringBuilder.append(" ");
-                }
 
                 formatTypeMirror(fieldElement.asType(), stringBuilder);
 
@@ -290,11 +261,6 @@ class Utils {
 
         case ENUM_CONSTANT:
             stringBuilder.append(element.toString());
-
-            if (modifiers.size() > 0) {
-                stringBuilder.append(":");
-                stringBuilder.append(toString(modifiers));
-            }
 
             if (JavaMembersAndHierarchyOptions.isShowInherited()) {
                 stringBuilder.append(" [");
