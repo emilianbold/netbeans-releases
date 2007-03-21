@@ -35,9 +35,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <file name="org-netbeans-modules-uml-integration-ide-actions-CreateDiagramFromSelectedElementsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.CreateDiagramFromSelectedElementsAction"/>
             </file>
-            <file name="org-netbeans-modules-uml-integration-ide-actions-ReverseEngineerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.ReverseEngineerAction"/>
-            </file>
             <file name="org-netbeans-modules-uml-integration-ide-actions-NewDiagramAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.NewDiagramAction"/>
             </file>
