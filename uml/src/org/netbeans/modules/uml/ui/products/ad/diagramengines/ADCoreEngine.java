@@ -80,7 +80,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRang
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IValueSpecification;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.MetaLayerRelationFactory;
@@ -105,7 +104,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
@@ -2655,7 +2653,7 @@ public class ADCoreEngine extends DiagramEngine
 		if (hideMenu != null) {
 			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_UNHIDE_CHILDREN_ONE_LEVEL"), "MBK_NODE_UNHIDE_CHILDREN_ONE_LEVEL"));  //$NON-NLS-2$
 			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_UNHIDE_CHILDREN_ALL_LEVELS"), "MBK_NODE_UNHIDE_CHILDREN_ALL_LEVELS"));  //$NON-NLS-2$
-			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_UNHIDE_CHILDREN_N_LEVELS"), "MBK_NODE_UNHIDE_CHILDREN_N_LEVELS"));  //$NON-NLS-2$
+			//hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_UNHIDE_CHILDREN_N_LEVELS"), "MBK_NODE_UNHIDE_CHILDREN_N_LEVELS"));  //$NON-NLS-2$
 
 			manager.add(hideMenu);
 		}
@@ -2677,7 +2675,7 @@ public class ADCoreEngine extends DiagramEngine
 		if (hideMenu != null) {
 			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_UNHIDE_PARENTS_ONE_LEVEL"), "MBK_NODE_UNHIDE_PARENTS_ONE_LEVEL"));  //$NON-NLS-2$
 			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_UNHIDE_PARENTS_ALL_LEVELS"), "MBK_NODE_UNHIDE_PARENTS_ALL_LEVELS"));  //$NON-NLS-2$
-			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_UNHIDE_PARENTS_N_LEVELS"), "MBK_NODE_UNHIDE_PARENTS_N_LEVELS"));  //$NON-NLS-2$
+			//hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_UNHIDE_PARENTS_N_LEVELS"), "MBK_NODE_UNHIDE_PARENTS_N_LEVELS"));  //$NON-NLS-2$
 
 			manager.add(hideMenu);
 		}
@@ -2712,7 +2710,7 @@ public class ADCoreEngine extends DiagramEngine
 		if (hideMenu != null) {
 			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_FOLD_CHILDREN_ONE_LEVEL"), "MBK_NODE_FOLD_CHILDREN_ONE_LEVEL"));  //$NON-NLS-2$
 			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_FOLD_CHILDREN_ALL_LEVELS"), "MBK_NODE_FOLD_CHILDREN_ALL_LEVELS"));  //$NON-NLS-2$
-			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_FOLD_CHILDREN_N_LEVELS"), "MBK_NODE_FOLD_CHILDREN_N_LEVELS"));  //$NON-NLS-2$
+			//hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_FOLD_CHILDREN_N_LEVELS"), "MBK_NODE_FOLD_CHILDREN_N_LEVELS"));  //$NON-NLS-2$
 
 			manager.add(hideMenu);
 		}
@@ -2729,7 +2727,7 @@ public class ADCoreEngine extends DiagramEngine
 		if (hideMenu != null) {
 			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_FOLD_PARENTS_ONE_LEVEL"), "MBK_NODE_FOLD_PARENTS_ONE_LEVEL"));  //$NON-NLS-2$
 			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_FOLD_PARENTS_ALL_LEVELS"), "MBK_NODE_FOLD_PARENTS_ALL_LEVELS"));  //$NON-NLS-2$
-			hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_FOLD_PARENTS_N_LEVELS"), "MBK_NODE_FOLD_PARENTS_N_LEVELS"));  //$NON-NLS-2$
+			//hideMenu.add(createMenuAction(loadString("IDS_POPUP_NODE_FOLD_PARENTS_N_LEVELS"), "MBK_NODE_FOLD_PARENTS_N_LEVELS"));  //$NON-NLS-2$
 
 			manager.add(hideMenu);
 		}
