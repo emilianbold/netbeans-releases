@@ -22,7 +22,6 @@ package org.netbeans.modules.project.ui;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -153,7 +152,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         if ( WizardDescriptor.PREVIOUS_OPTION.equals( ((WizardDescriptor)settings).getValue() ) ) {
             return;
         }
-        if( isValid() ) {
+        if( !((WizardDescriptor) settings).getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid() ) {
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }
