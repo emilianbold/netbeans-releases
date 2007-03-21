@@ -100,7 +100,7 @@ is the proper place.
         </description>
         <class package="org.netbeans.api.queries" name="FileEncodingQuery"/>
         <class package="org.netbeans.spi.queries" name="FileEncodingQueryImplementation"/>
-        <issue number="83343"/>
+        <issue number="42638"/>
         </change>
         <change id="fileinfo-NonRecursiveFolder">
             <api name="general"/>
