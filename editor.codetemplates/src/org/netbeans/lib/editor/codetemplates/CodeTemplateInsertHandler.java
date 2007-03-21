@@ -482,7 +482,7 @@ implements DocumentListener, KeyListener {
             release();
             e.consume();
         } else if (KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0).equals(KeyStroke.getKeyStrokeForEvent(e))) {
-            if (getActiveMaster() == null) {
+            if (getActiveMaster() == null || !isManagedInsert(component.getCaretPosition())) {
                 checkNotifyParameterUpdate();
                 release();
             }
