@@ -32,6 +32,8 @@ import org.w3c.dom.Node;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -51,8 +53,11 @@ public class MidpSetterPresenterDeserializer extends PresenterDeserializer {
             return null;
         String name = XMLUtils.getAttributeValue (node, NAME_ATTR);
         String parametersString = XMLUtils.getAttributeValue (node, PARAMETERS_ATTR);
-        String[] parameters = parametersString.split (",", -1);
-        return new MidpPropertyPresenterFactory (name, parameters);
+        StringTokenizer tokenizer = new StringTokenizer (parametersString, ",");
+        ArrayList<String> parameters = new ArrayList<String> ();
+        while (tokenizer.hasMoreTokens ())
+            parameters.add (tokenizer.nextToken ());
+        return new MidpPropertyPresenterFactory (name, parameters.toArray (new String[parameters.size ()]));
     }
 
     private static class MidpPropertyPresenterFactory extends PresenterFactory {
