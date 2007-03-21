@@ -74,6 +74,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     private void selectionChanged(PropertyChangeEvent evt) {
         Node[] newSelection = ((Node[]) evt.getNewValue());
         if(newSelection == null || newSelection.length == 0) {                
+            showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_NoVersion"));
             return;
         }
 

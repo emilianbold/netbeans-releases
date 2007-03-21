@@ -176,29 +176,33 @@ public class LocalHistoryFileView implements PropertyChangeListener {
             
             Node[] oldSelection = getExplorerManager().getSelectedNodes();
             tablePanel.getExplorerManager().setRootContext(root);
-                        
-            if(toSelect > -1) {
-                Node node = getNode(toSelect);
-                if(node != null) {
-                    oldSelection = new Node[] { node };
-                }                
-            }             
-            
-            if (oldSelection != null && oldSelection.length > 0) {                        
-                Node[] newSelection = getEqualNodes(root, oldSelection);                        
-                if(newSelection.length > 0) {
-                    selectNodes(newSelection);
+
+            if(root.getChildren().getNodesCount() > 0) {                
+                if(toSelect > -1) {
+                    Node node = getNode(toSelect);
+                    if(node != null) {
+                        oldSelection = new Node[] { node };
+                    }                
+                }             
+
+                if (oldSelection != null && oldSelection.length > 0) {                        
+                    Node[] newSelection = getEqualNodes(root, oldSelection);                        
+                    if(newSelection.length > 0) {
+                        selectNodes(newSelection);
+                    } else {
+                        if(oldExploredContext != null) {
+                            Node[] newExploredContext = getEqualNodes(root, new Node[] { oldExploredContext });                           
+                            if(newExploredContext.length > 0) {
+                                selectFirstNeighborNode(newExploredContext[0], oldSelection[0]);                                    
+                            }                                
+                        }                       
+                    }
                 } else {
-                    if(oldExploredContext != null) {
-                        Node[] newExploredContext = getEqualNodes(root, new Node[] { oldExploredContext });                           
-                        if(newExploredContext.length > 0) {
-                            selectFirstNeighborNode(newExploredContext[0], oldSelection[0]);                                    
-                        }                                
-                    }                       
+                    selectFirstNode(root);
                 }
             } else {
-                selectFirstNode(root);
-            }
+                selectNodes(new Node[]{});
+            }   
             tablePanel.revalidate();
             tablePanel.repaint();
         }
