@@ -372,9 +372,11 @@
                 <dirname 
                     property="current.download.${i}.dir" 
                     file="${current.download}"/>
-			
+		<set 
+                    property="current.download.dir"
+                    source="current.download.${i}.dir"/>
                 <mkdir 
-                    dir="${current.download.${i}.dir}"/>
+                    dir="${current.download.dir}"/>
 
                 <get 
                     src="${current.uri}" 
