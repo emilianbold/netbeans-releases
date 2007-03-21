@@ -369,17 +369,15 @@
             
             <!-- if the data needs to be packaged -->
             <if property="do.package.data" value="true">
-                <echo message="data would be packaged"/>
-		<echo message="downloading file to ${current.download}"/>
-                <echo message="download dir before dirname is ${current.download.dir}"/>
                 <dirname 
-                    property="current.download.dir" 
+                    property="current.download.${i}.dir" 
                     file="${current.download}"/>
-		<echo message="download dir after  dirname is ${current.download.dir}"/>
-
+                <set 
+                      property="current.download.dir"
+                      value="current.download.${i}.dir"/>
+			
                 <mkdir 
                     dir="${current.download.dir}"/>
-		<echo message="Downloading data ... "/>
                 <get 
                     src="${current.uri}" 
                     dest="${current.download}"
@@ -441,7 +439,6 @@
             
             <!-- if the data does not need to be packaged -->
             <if property="do.package.data" value="false">
-                <echo message="use already packaged data"/>
                 <copy 
                     file="${current.packaged.data.file}" 
                     tofile="${current.file}"/>                              
