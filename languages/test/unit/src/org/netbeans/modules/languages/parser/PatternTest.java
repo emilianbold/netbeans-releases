@@ -101,6 +101,7 @@ public class PatternTest extends TestCase {
         testReadToken ("-'abc'", "abaabbbabcd", true, "d");
         testReadToken ("-'abc'", "abaabcbbabcd", true, "bbabcd");
         testReadToken ("-'abc'", "abaabacbbabacd", false, "abaabacbbabacd");
+        testReadToken ("'\\u0041'['\\u0030'-'\\u0039']*", "A12001ax", true, "ax");
         //testReadToken ("'\"' ( [^ '\"' '\n' '\r'] | ('\\' ['r' 'n' 't' '\\' '\'' '\"']) )* '\"'", "\\\\", true, "");
     }
     

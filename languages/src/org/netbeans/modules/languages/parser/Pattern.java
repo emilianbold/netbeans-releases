@@ -100,11 +100,10 @@ public class Pattern {
                     input.read ();
                     if (last != null) pattern = pattern.append (last);
                     last = Pattern.create ();
-                    StringBuilder sb = new StringBuilder ();
                     ch = input.next ();
                     while (ch != '"' && ch != '\'') {
                         if (ch == 0)
-                            throw new ParseException (sb.toString ());
+                            throw new ParseException ();
                         if (ch == '\\') {
                             input.read ();
                             switch (input.next ()) {
@@ -113,42 +112,50 @@ public class Pattern {
                                     last = last.append (new Pattern (
                                         new Character ('\\')
                                     ));
-                                    sb.append ('\\');
                                     break;
                                 case 'n':
                                     input.read ();
                                     last = last.append (new Pattern (
                                         new Character ('\n')
                                     ));
-                                    sb.append ('\n');
                                     break;
                                 case 'r':
                                     input.read ();
                                     last = last.append (new Pattern (
                                         new Character ('\r')
                                     ));
-                                    sb.append ('\r');
                                     break;
                                 case 't':
                                     input.read ();
                                     last = last.append (new Pattern (
                                         new Character ('\t')
                                     ));
-                                    sb.append ('\t');
                                     break;
                                 case '"':
                                     input.read ();
                                     last = last.append (new Pattern (
                                         new Character ('"')
                                     ));
-                                    sb.append ('"');
                                     break;
                                 case '\'':
                                     input.read ();
                                     last = last.append (new Pattern (
                                         new Character ('\'')
                                     ));
-                                    sb.append ('\'');
+                                    break;
+                                case 'u':
+                                    input.read ();
+                                    int ch1 = 0;
+                                    for (int i = 16*16*16; i >= 1; i/=16) {
+                                        int ii = input.next () - '0';
+                                        if (ii < 0 | ii > 15)
+                                            throw new ParseException ("Wrong character after \\u:" + input.toString ());
+                                        ch1 += ii * i;
+                                        input.read ();
+                                    }
+                                    last = last.append (new Pattern (
+                                        new Character ((char) ch1)
+                                    ));
                                     break;
                                 default:
                                     throw new ParseException ("Unknown character after \\:" + input.toString ());
@@ -156,7 +163,6 @@ public class Pattern {
                         } else {
                             Character charr = new Character (input.read ());
                             last = last.append (new Pattern (charr));
-                            sb.append (charr.charValue ());
                         }
                         ch = input.next ();
                     }
@@ -256,6 +262,16 @@ public class Pattern {
                                             break;
                                         case '"':
                                             l = '"';
+                                            break;
+                                        case 'u':
+                                            l = 0;
+                                            for (int i = 16*16*16; i >= 1; i/=16) {
+                                                input.read ();
+                                                int ii = input.next () - '0';
+                                                if (ii < 0 | ii > 15)
+                                                    throw new ParseException ("Wrong character after \\u:" + input.toString ());
+                                                l += ii * i;
+                                            }
                                             break;
                                         default:
                                             throw new ParseException (input.toString ());
