@@ -249,13 +249,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         
         ActionListener menuListener = new PopupListener();
         
-        JMenuItem fileItem = new JMenuItem( FILE_POPUP_NAME, (Icon)getValue( Action.SMALL_ICON ) );
-        fileItem.addActionListener( menuListener );
-        fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
-        menuItem.add( fileItem );
-                
         List lruList = OpenProjectList.getDefault().getTemplatesLRU( project );
-        boolean first = true;
+        boolean itemAdded = false;
         for( Iterator it = lruList.iterator(); it.hasNext(); ) {
             DataObject template = (DataObject)it.next();
             
@@ -265,12 +260,16 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
                 new ImageIcon( delegate.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
             item.addActionListener( menuListener );
             item.putClientProperty( TEMPLATE_PROPERTY, template );        
-            if ( first ) {
-                menuItem.add( new Separator() );
-                first = false;
-            }
             menuItem.add( item );
+            itemAdded = true;
         }
+        if (itemAdded) {
+            menuItem.add( new Separator() );
+        }
+        JMenuItem fileItem = new JMenuItem( FILE_POPUP_NAME, (Icon)getValue( Action.SMALL_ICON ) );
+        fileItem.addActionListener( menuListener );
+        fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
+        menuItem.add( fileItem );
     }
     
     
