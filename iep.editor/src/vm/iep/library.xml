@@ -230,22 +230,22 @@ type CDATA #REQUIRED
     <!-- Correlation and Filter -->
     <component_type_group name="Operator" icon="" title="IEP.Operator.title" description="IEP.Operator.description">
         <!-- stream project and filter -->
-        <component_type name="StreamProjectAndFilter" icon="streamProjectAndFilterx16.png" title="IEP.Operator.StreamProjectAndFilter.title" description="IEP.Operator.StreamProjectAndFilter.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="StreamProjectionAndFilter" icon="StreamProjectionAndFilterx16.png" title="IEP.Operator.StreamProjectionAndFilter.title" description="IEP.Operator.StreamProjectionAndFilter.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
-                <property name="type" default="i18n.IEP.Operator.StreamProjectAndFilter.title"/>
+                <property name="type" default="i18n.IEP.Operator.StreamProjectionAndFilter.title"/>
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
                 <property name="staticInputMaxCount" default="1000000"/>
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="correlationAndFilter"/>
             </property_group>
-            <property transient="false" category="IEP.Category.operator" name="fromColumnList" title="IEP.Operator.StreamProjectAndFilter.fromColumnList.title" description="IEP.Operator.StreamProjectAndFilter.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
-            <property transient="false" category="IEP.Category.operator" name="toColumnList" title="IEP.Operator.StreamProjectAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
-            <property transient="false" category="IEP.Category.operator" name="fromClause" title="IEP.Operator.StreamProjectAndFilter.fromClause.title" description="IEP.Operator.StreamProjectAndFilter.fromClause.description" required="true" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
-            <property transient="false" category="IEP.Category.operator" name="whereClause" title="IEP.Operator.StreamProjectAndFilter.whereClause.title" description="IEP.Operator.StreamProjectAndFilter.whereClause.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
-            <code type="xml" file="vm/iep/operator/streamProjectAndFilter.xml"/>
+            <property transient="false" category="IEP.Category.operator" name="fromColumnList" title="IEP.Operator.StreamProjectionAndFilter.fromColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="toColumnList" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="fromClause" title="IEP.Operator.StreamProjectionAndFilter.fromClause.title" description="IEP.Operator.StreamProjectionAndFilter.fromClause.description" required="true" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="whereClause" title="IEP.Operator.StreamProjectionAndFilter.whereClause.title" description="IEP.Operator.StreamProjectionAndFilter.whereClause.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/StreamProjectionAndFilter.xml"/>
         </component_type>
         <!-- tuple serial correlation -->
         <component_type name="TupleSerialCorrelation" icon="tupleSerialCorrelationx16.png" title="IEP.Operator.TupleSerialCorrelation.title" description="IEP.Operator.TupleSerialCorrelation.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">

@@ -35,7 +35,7 @@ public interface SharedConstants {
     
     public static final String OP_TABLE_OUTPUT = "TableOutput";
     
-    public static final String OP_STREAM_PROJECT_AND_FILTER = "StreamProjectAndFilter";
+    public static final String OP_STREAM_PROJECTION_AND_FILTER = "StreamProjectionAndFilter";
     
     public static final String OP_TUPLE_SERIAL_CORRELATION = "TupleSerialCorrelation";
 

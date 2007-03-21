@@ -52,7 +52,7 @@
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
 
             <file name="RelationMap.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/correlationAndFilter/RelationMap.xml" />
-            <file name="StreamProjectAndFilter.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/correlationAndFilter/StreamProjectAndFilter.xml" />
+            <file name="StreamProjectionAndFilter.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/correlationAndFilter/StreamProjectionAndFilter.xml" />
             <file name="TupleSerialCorrelation.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/correlationAndFilter/TupleSerialCorrelation.xml" />
         </folder>
 

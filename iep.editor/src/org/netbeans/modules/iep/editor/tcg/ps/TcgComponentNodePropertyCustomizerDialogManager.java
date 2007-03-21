@@ -64,10 +64,9 @@ public class TcgComponentNodePropertyCustomizerDialogManager {
         editor.attachCustomizerState(mCustomizerState);
         mCustomizer = editor.getCustomEditor();
         
-        String propEditorStr = NbBundle.getMessage(TcgComponentNodePropertyCustomizerDialogManager.class,
+        mTitle = NbBundle.getMessage(TcgComponentNodePropertyCustomizerDialogManager.class,
                 "TcgComponentNodePropertyCustomizerDialogManager.Property_Editor_Title",
                 node.getTypeDisplayName());
-        mTitle = node.getTypeDisplayName() + " - " + propEditorStr;
         
         mActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
