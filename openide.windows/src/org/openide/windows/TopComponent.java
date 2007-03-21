@@ -886,7 +886,12 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
 
             // If necessary create context aware instance.
             if (action instanceof ContextAwareAction) {
-                action = ((ContextAwareAction) action).createContextAwareInstance(getLookup());
+                Action delegate = ((ContextAwareAction) action).createContextAwareInstance(getLookup());
+                if( delegate.isEnabled() || getActivatedNodes() != null )
+                    action = delegate;
+                //else 
+                //  use the global instance which might be enabled if it can survive focus changes
+                
             } else if (SwingUtilities.getWindowAncestor(e.getComponent()) instanceof java.awt.Dialog) {
                 // #30303 For 'old type' actions check the transmodal flag,
                 // if invoked in dialog. See ShorcutAndMenuKeyEventProcessor in core.
