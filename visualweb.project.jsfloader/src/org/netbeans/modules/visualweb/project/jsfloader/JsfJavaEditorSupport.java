@@ -43,6 +43,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 
@@ -52,9 +53,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.loaders.*;
-import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -71,11 +70,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
 // <multiview>
@@ -623,7 +620,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     private static class JavaDesc implements MultiViewDescription, Serializable {
         
         private static final long serialVersionUID =-3126744316624172415L;
-        
+
         private JsfJavaDataObject jsfJavaDataObject;
         
         
@@ -681,6 +678,12 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     private static class JavaEditorTopComponent extends CloneableEditor
             implements MultiViewElement, CloneableEditorSupport.Pane {
         private static final long serialVersionUID =-3126744316624172415L;
+        private static final NavigatorLookupHint NAVIGATOR_HINT =
+                new NavigatorLookupHint() {
+            public String getContentType() {
+                return "text/x-java"; // NOI18N
+            }
+        };
         
         private transient JComponent toolbar;
         
@@ -695,17 +698,25 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         
         JavaEditorTopComponent(CloneableEditorSupport ces) {
             super(ces);
-            initializePalette();
-            
+            initialize();
         }
         
         public void readExternal (ObjectInput in)
         throws IOException, ClassNotFoundException {
             //required to do this to make sure cloneableEditorSupport is deserialized.
             super.readExternal(in);
-            initializePalette();            
+            initialize();
         }
         
+        private void initialize() {
+            DataObject jsfJavaDataObject = ((JsfJavaEditorSupport)cloneableEditorSupport()).getDataObject();
+            if(jsfJavaDataObject != null) {
+                setActivatedNodes(new Node[] {jsfJavaDataObject.getNodeDelegate()});
+            }
+            
+            initializePalette();
+        }
+
         // XXX PaletteController
         private void initializePalette() {
             
@@ -896,18 +907,16 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
             if (lookup == null) {
                 Lookup superLookup = super.getLookup();
                 if (javaPaletteController == null) {
-                    lookup = new ProxyLookup(new Lookup[] {superLookup});
+                    lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.singleton(NAVIGATOR_HINT)});
                 } else {
                     DataObject dObj = ((JsfJavaEditorSupport)cloneableEditorSupport()).getDataObject();
-                    lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.singleton(javaPaletteController), Lookups.singleton(dObj)});
+                    lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(NAVIGATOR_HINT, javaPaletteController)});
                 }
                 lookupWRef = new WeakReference(lookup);
             }
-            
             return lookup;
         }
     }
-    
     
 // XXX This is a bit strange class? What is a reason of that?
     /** Implementation of CloseOperationHandler for multiview. Ensures both form
