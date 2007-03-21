@@ -554,20 +554,11 @@ public class ProviderUtil {
             // must create the file using AtomicAction, see #72058
             persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() {
-                    FileLock lock = null;
                     try {
-                        // need to create with a different extension and then rename due to issue 95675
-                        // should be removed when that issue gets resolved
                         dd[0] = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
-                                "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence", "xml-jpa"); //NOI18N
-                        lock = dd[0].lock();
-                        dd[0].rename(lock, "persistence", "xml"); //NO18N
+                                "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence"); //NOI18N
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ex);
-                    } finally{
-                        if (lock != null){
-                            lock.releaseLock();
-                        }
                     }
                 }
             });
