@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
@@ -56,6 +57,7 @@ public class BuildZipDistributionTest extends TestBase {
     }
     
     private SuiteProject suite;
+    private Logger LOG;
     
     public BuildZipDistributionTest(String name) {
         super(name);
@@ -69,6 +71,8 @@ public class BuildZipDistributionTest extends TestBase {
     
     protected void setUp() throws Exception {
         clearWorkDir();
+
+        LOG = Logger.getLogger("test." + getName());
         
         super.setUp();
 
@@ -79,6 +83,8 @@ public class BuildZipDistributionTest extends TestBase {
         
         SuiteProjectTest.openSuite(suite);
         proj.open();
+        
+        LOG.info("Workdir " + getWorkDirPath());
     }
     
     public void testBuildTheZipAppWhenAppNamePropIsNotSet() throws Exception {
