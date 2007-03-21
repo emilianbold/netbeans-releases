@@ -43,7 +43,7 @@ public class FileObjectArchive implements Archive {
     
     public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, JavaFileFilterImplementation filter) throws IOException {
         FileObject folder = root.getFileObject(folderName);        
-        if (folder == null || entry == null || !entry.includes(folder)) {
+        if (folder == null || !(entry == null || entry.includes(folder))) {
             return Collections.<JavaFileObject>emptySet();
         }
         FileObject[] children = folder.getChildren();
