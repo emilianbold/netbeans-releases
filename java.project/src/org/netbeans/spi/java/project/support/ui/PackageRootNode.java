@@ -48,6 +48,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.NodeNotFoundException;
@@ -313,7 +314,14 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     // Private methods ---------------------------------------------------------
     
     private Node getDataFolderNodeDelegate() {
-        return getLookup().lookup(DataFolder.class).getNodeDelegate();
+        Node retVal;
+        DataFolder df = getLookup().lookup(DataFolder.class);
+        if (df.isValid()) {
+            retVal = df.getNodeDelegate();
+        } else {
+            retVal = new AbstractNode(Children.LEAF);
+        }
+        return retVal;
     }
     
     private Image computeIcon( boolean opened, int type ) {
