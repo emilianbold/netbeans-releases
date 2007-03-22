@@ -688,7 +688,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 final String templateId;
                 switch (junitVer) {
                     case JUNIT3:
-                        templateId = "PROP_emptyTestClassTemplate";     //NOI18N
+                        templateId = "PROP_junit3_emptyTestClassTemplate";//NOI18N
                         break;
                     case JUNIT4:
                         templateId = "PROP_junit4_emptyTestClassTemplate";//NOI18N
@@ -720,7 +720,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 final String templateId;
                 switch (junitVer) {
                     case JUNIT3:
-                        templateId = "PROP_testClassTemplate";          //NOI18N
+                        templateId = "PROP_junit3_testClassTemplate";   //NOI18N
                         break;
                     case JUNIT4:
                         templateId = "PROP_junit4_testClassTemplate";   //NOI18N
@@ -766,7 +766,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                     final String suiteTemplateId;
                     switch (junitVer) {
                         case JUNIT3:
-                            suiteTemplateId = "PROP_testSuiteTemplate";         //NOI18N
+                            suiteTemplateId = "PROP_junit3_testSuiteTemplate";  //NOI18N
                             break;
                         case JUNIT4:
                             suiteTemplateId = "PROP_junit4_testSuiteTemplate";  //NOI18N
@@ -1484,8 +1484,21 @@ public final class DefaultPlugin extends JUnitPlugin {
         List<String> testClassNames = TestUtil.getJavaFileNames(targetFolder,
                                                                 testClassPath);
         
+        final String templateId;
+        switch (junitVer) {
+            case JUNIT3:
+                templateId = "PROP_junit3_testClassTemplate";           //NOI18N
+                break;
+            case JUNIT4:
+                templateId = "PROP_junit4_testClassTemplate";           //NOI18N
+                break;
+            default:
+                assert false;
+                templateId = null;
+                break;
+        }
         final DataObject doSuiteTempl
-                = loadTestTemplate("PROP_testSuiteTemplate");           //NOI18N
+                = loadTestTemplate(templateId);
         if (doSuiteTempl == null) {
             return null;
         }
