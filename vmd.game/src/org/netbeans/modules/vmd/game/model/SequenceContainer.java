@@ -115,8 +115,15 @@ public interface SequenceContainer extends Editable {
 		
 		private int frameWidth;
 		private int frameHeight;
+		boolean zeroBasedIndex;
 		
-		public SequenceContainerImpl(SequenceContainer aggregator, EventListenerList ll, PropertyChangeSupport pcs, ImageResource imageResource, int frameWidth, int frameHeight) {
+		public SequenceContainerImpl(SequenceContainer aggregator, 
+				EventListenerList ll, 
+				PropertyChangeSupport pcs, 
+				ImageResource imageResource, 
+				int frameWidth, 
+				int frameHeight,
+				boolean zeroBasedIndex) {
 			this.aggregator = aggregator;
 			this.listenerList = (ll == null ? new EventListenerList(): ll);
 			this.propertyChangeSupport = (pcs == null ? new PropertyChangeSupport(aggregator) : pcs);
@@ -124,6 +131,7 @@ public interface SequenceContainer extends Editable {
 			this.imageResource = imageResource;
 			this.frameWidth = frameWidth;
 			this.frameHeight = frameHeight;
+			this.zeroBasedIndex = zeroBasedIndex;
 		}
 		
 		public GlobalRepository getGameDesign() {
@@ -175,7 +183,7 @@ public interface SequenceContainer extends Editable {
 		
 		//------SequenceContainer-------
 		public Sequence createSequence(String name, int numberFrames, int frameWidth, int frameHeight) {
-			Sequence sequence = this.imageResource.createSequence(name, numberFrames, frameWidth, frameHeight);
+			Sequence sequence = this.imageResource.createSequence(name, numberFrames, frameWidth, frameHeight, zeroBasedIndex);
 			this.append(sequence);
 			return sequence;
 		}
@@ -306,7 +314,7 @@ public interface SequenceContainer extends Editable {
 		}
 		
 		public ImageResourceInfo getImageResourceInfo() {
-			return new ImageResourceInfo(this.imageResource, this.frameWidth, this.frameHeight);
+			return new ImageResourceInfo(this.imageResource, this.frameWidth, this.frameHeight, this.zeroBasedIndex);
 		}
 		
 		public JComponent getNavigator() {

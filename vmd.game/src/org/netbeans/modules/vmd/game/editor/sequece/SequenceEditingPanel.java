@@ -100,7 +100,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 	
 	private int outlineWidth;
 	private int outlineHeight;
-		
+	
 	private boolean centerVertically;
 	private boolean centerHorizontally;
 	
@@ -685,7 +685,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 			int insertIndex = afterFrameIndex;
 			while ((indexBefore += incr) != indexAfter) {
 				ImageResource imgRes = seq.getImageResource();
-				StaticTile tile = (StaticTile) imgRes.getTile(indexBefore, frameWidth, frameHeight);
+				StaticTile tile = (StaticTile) imgRes.getTile(indexBefore, frameWidth, frameHeight, seq.isZeroBasedIndex());
 				seq.insertFrame(tile, insertIndex);
 				if (DEBUG) System.out.println("insert tile: " + tile.getIndex() + " at index " + insertIndex + " at Column " + SequenceEditingPanel.this.getColumnForFrame(insertIndex));
 				SequenceEditingPanel.this.selection.setSelected(insertIndex, true);

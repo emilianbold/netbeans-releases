@@ -59,25 +59,27 @@ public class Sequence implements Previewable, Editable {
 	private String name;
 	
 	private ImageResource imageResource;
+	private boolean zeroBasedIndex;
 	
 	private int frameWidth;
 	private int frameHeight;
 	private int frameMs;
 	private ArrayList<StaticTile> frames;
 	
-    Sequence(String name, ImageResource imageResource, int frameWidth, int frameHeight) {
-		this(name, imageResource, 1, frameWidth, frameHeight);
+    Sequence(String name, ImageResource imageResource, int frameWidth, int frameHeight, boolean zeroBasedIndex) {
+		this(name, imageResource, 1, frameWidth, frameHeight, zeroBasedIndex);
     }
 	
-	Sequence(String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
+	Sequence(String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight, boolean zeroBasedIndex) {
 		this.name = name;
 		this.imageResource = imageResource;
 		this.frameWidth = frameWidth;
 		this.frameHeight = frameHeight;
+		this.zeroBasedIndex = zeroBasedIndex;
 		
 		this.frames = new ArrayList();
 		for (int i = 0; i < numberFrames; i++) {
-			this.frames.add((StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight));
+			this.frames.add((StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight, this.zeroBasedIndex));
 		}
 		this.frameMs = DEFAULT_SHOWTIME_MS;
 	}
@@ -88,6 +90,7 @@ public class Sequence implements Previewable, Editable {
 		this.frameHeight = sequence.getFrameHeight();
 		this.frameWidth = sequence.getFrameWidth();
 		this.frameMs = sequence.frameMs;
+		this.zeroBasedIndex = sequence.zeroBasedIndex;
 		
 		this.frames = new ArrayList();
 		this.frames.addAll(sequence.getFrames());
@@ -95,6 +98,10 @@ public class Sequence implements Previewable, Editable {
 
 	public GlobalRepository getGameDesign() {
 		return this.imageResource.getGameDesign();
+	}
+	
+	public boolean isZeroBasedIndex() {
+		return this.zeroBasedIndex;
 	}
 	
 	public void setName(String name) {
@@ -108,7 +115,7 @@ public class Sequence implements Previewable, Editable {
 	
 	public void addFrame(StaticTile frame) {
 		if (frame == null)
-			frame = (StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight);
+			frame = (StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight, this.zeroBasedIndex);
 		this.frames.add(frame);
 		int index = this.frames.indexOf(frame);
 		this.fireFrameAdded(frame, index);
@@ -116,7 +123,7 @@ public class Sequence implements Previewable, Editable {
 	
 	public void insertFrame(StaticTile frame, int index) {
 		if (frame == null)
-			frame = (StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight);
+			frame = (StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight, this.zeroBasedIndex);
 		this.frames.add(index, frame);
 		this.fireFrameAdded(frame, index);
 	}
@@ -145,7 +152,7 @@ public class Sequence implements Previewable, Editable {
 
 	public void setFrame(StaticTile frame, int index) {
 		if (frame == null) {
-			frame = (StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight);
+			frame = (StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight, this.zeroBasedIndex);
 		}
 		this.frames.ensureCapacity(index + 1);
 		this.frames.set(index, frame);
@@ -228,7 +235,7 @@ public class Sequence implements Previewable, Editable {
 	}
 	
 	public ImageResourceInfo getImageResourceInfo() {
-		return new ImageResourceInfo(this.imageResource, this.frameWidth, this.frameHeight);
+		return new ImageResourceInfo(this.imageResource, this.frameWidth, this.frameHeight, this.zeroBasedIndex);
 	}
 
 	public JComponent getNavigator() {
@@ -314,10 +321,4 @@ public class Sequence implements Previewable, Editable {
 			d.setVisible(true);
 		}
 	}
-	//----------------CodeGenerator----------------
-	
-    public Collection getCodeGenerators() {
-		return new HashSet();
-    }
-
 }

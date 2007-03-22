@@ -385,12 +385,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		int[]  frames = (int[]) sequenceDC.readProperty(SequenceCD.PROPERTY_FRAMES).getPrimitiveValue();
 		int frameWidth = (Integer) sequenceDC.readProperty(SequenceCD.PROPERTY_FRAME_WIDTH).getPrimitiveValue();
 		int frameHeight = (Integer) sequenceDC.readProperty(SequenceCD.PROPERTY_FRAME_HEIGHT).getPrimitiveValue();
+		boolean zeroBasedIndex = (Boolean) sequenceDC.readProperty(SequenceCD.PROPERTY_ZERO_BASED_INDEX).getPrimitiveValue();
 		
-		sequence = imgRes.createSequence(name, frames.length, frameWidth, frameHeight);
+		sequence = imgRes.createSequence(name, frames.length, frameWidth, frameHeight, zeroBasedIndex);
 		sequence.setFrameMs(frameMs);
 
 		for (int i = 0; i < frames.length; i++) {
-			sequence.setFrame((StaticTile) imgRes.getTile(frames[i], frameWidth, frameHeight), i);
+			sequence.setFrame((StaticTile) imgRes.getTile(frames[i], frameWidth, frameHeight, zeroBasedIndex), i);
 		}
 		return sequence;
 	}
@@ -717,7 +718,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		dcSequence.writeProperty(SequenceCD.PROPERTY_FRAME_MS, MidpTypes.createIntegerValue(sequence.getFrameMs()));
 		dcSequence.writeProperty(SequenceCD.PROPERTY_FRAME_WIDTH, MidpTypes.createIntegerValue(sequence.getFrameWidth()));
 		dcSequence.writeProperty(SequenceCD.PROPERTY_FRAME_HEIGHT, MidpTypes.createIntegerValue(sequence.getFrameHeight()));
-		
+		dcSequence.writeProperty(SequenceCD.PROPERTY_ZERO_BASED_INDEX, MidpTypes.createBooleanValue(sequence.isZeroBasedIndex()));
 		return dcSequence;
 	}
 	

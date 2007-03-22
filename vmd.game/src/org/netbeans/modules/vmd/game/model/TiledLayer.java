@@ -66,6 +66,10 @@ public class TiledLayer extends Layer {
 		}
 	}
 	
+	public ImageResourceInfo getImageResourceInfo() {
+		return new ImageResourceInfo(this.getImageResource(), this.getTileWidth(), this.getTileHeight(), false);
+	}
+	
 	
 	public void addTiledLayerListener(TiledLayerListener l) {
 		this.listenerList.add(TiledLayerListener.class, l);
@@ -103,10 +107,10 @@ public class TiledLayer extends Layer {
 	
 	public Tile getTileAt(int rowIndex, int columnIndex) {
 		if (rowIndex < 0 || rowIndex >= this.getRowCount() || columnIndex < 0 || columnIndex >= this.getColumnCount())
-			return this.getImageResource().getTile(Tile.EMPTY_TILE_INDEX, this.getTileWidth(), this.getTileHeight());
+			return this.getImageResource().getTile(Tile.EMPTY_TILE_INDEX, this.getTileWidth(), this.getTileHeight(), false);
 		Tile tile = null;
 		int tileIndex = this.grid[rowIndex][columnIndex];
-		tile = this.getImageResource().getTile(tileIndex, this.getTileWidth(), this.getTileHeight());
+		tile = this.getImageResource().getTile(tileIndex, this.getTileWidth(), this.getTileHeight(), false);
 		return tile;
 	}
 	
@@ -137,7 +141,7 @@ public class TiledLayer extends Layer {
 		HashSet set = new HashSet();
 		for (int i = 0; i < this.grid.length; i++ ) {
 			for (int j = 0; j < this.grid[i].length; j++) {
-				Tile tile = this.getImageResource().getTile(this.grid[i][j], this.getTileWidth(), this.getTileHeight());
+				Tile tile = this.getImageResource().getTile(this.grid[i][j], this.getTileWidth(), this.getTileHeight(), false);
 				if (tile instanceof AnimatedTile) {
 					set.add(tile);
 				}
@@ -427,7 +431,7 @@ public class TiledLayer extends Layer {
 		
 		for (int r = minRow; r < this.getRowCount() && r < maxRow; r++) {
 			for (int c = minCol; c < this.getColumnCount() && c < maxCol; c++) {
-				this.getImageResource().paint(this.grid[r][c], g, c*tileWidth, r*tileHeight,tileWidth, tileHeight);
+				this.getImageResource().paint(this.grid[r][c], g, c*tileWidth, r*tileHeight,tileWidth, tileHeight, false);
 			}
 		}
 	}

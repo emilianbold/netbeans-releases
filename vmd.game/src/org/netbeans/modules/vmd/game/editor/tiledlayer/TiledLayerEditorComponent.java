@@ -1052,7 +1052,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					ImageResource imgRes = TiledLayerEditorComponent.this.tiledLayer.getImageResource();
 					Tile newTile = imgRes.getTile(tiles.get(0).getIndex(),
 							TiledLayerEditorComponent.this.tiledLayer.getTileWidth(),
-							TiledLayerEditorComponent.this.tiledLayer.getTileHeight()
+							TiledLayerEditorComponent.this.tiledLayer.getTileHeight(),
+							false
 							);
 					Position cell = TiledLayerEditorComponent.this.getCellAtPoint(dropPoint);
 					if (TiledLayerEditorComponent.this.cellsSelected.contains(cell)) {

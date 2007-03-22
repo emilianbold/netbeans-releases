@@ -77,10 +77,6 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 		this.propertyChangeSupport.firePropertyChange(PROPERTY_LAYER_NAME, oldName, name);
 	}
 	
-	public ImageResourceInfo getImageResourceInfo() {
-		return new ImageResourceInfo(this.imageResource, this.cellWidth, this.cellHeight);
-	}
-	
 	public ImageResource getImageResource() {
 		return this.imageResource;
 	}

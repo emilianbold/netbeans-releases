@@ -329,25 +329,25 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		URL imageURL = SequenceEditingPanel.class.getResource("../../view/main/res/color_tiles.png");
 		ImageResource imgRes = gameDesign.getImageResource(imageURL, "Path");
 		
-		Sequence s1 = imgRes.createSequence("seq1", 5, 20, 20);
-		s1.setFrame((StaticTile) imgRes.getTile(1, 20, 20), 0);
-		s1.setFrame((StaticTile) imgRes.getTile(2, 20, 20), 1);
-		s1.setFrame((StaticTile) imgRes.getTile(3, 20, 20), 2);
+		Sequence s1 = imgRes.createSequence("seq1", 5, 20, 20, true);
+		s1.setFrame((StaticTile) imgRes.getTile(1, 20, 20, true), 0);
+		s1.setFrame((StaticTile) imgRes.getTile(2, 20, 20, true), 1);
+		s1.setFrame((StaticTile) imgRes.getTile(3, 20, 20, true), 2);
 		
-		Sequence s2 = imgRes.createSequence("seq2", 5, 20, 20);
-		s2.setFrame((StaticTile) imgRes.getTile(1, 20, 20), 0);
-		s2.setFrame((StaticTile) imgRes.getTile(2, 20, 20), 1);
-		s2.setFrame((StaticTile) imgRes.getTile(3, 20, 20), 2);
+		Sequence s2 = imgRes.createSequence("seq2", 5, 20, 20, true);
+		s2.setFrame((StaticTile) imgRes.getTile(1, 20, 20, true), 0);
+		s2.setFrame((StaticTile) imgRes.getTile(2, 20, 20, true), 1);
+		s2.setFrame((StaticTile) imgRes.getTile(3, 20, 20, true), 2);
 		
-		Sequence s3 = imgRes.createSequence("seq3", 3, 20, 20);
-		s3.setFrame((StaticTile) imgRes.getTile(4, 20, 20), 0);
-		s3.setFrame((StaticTile) imgRes.getTile(5, 20, 20), 1);
-		s3.setFrame((StaticTile) imgRes.getTile(6, 20, 20), 2);
+		Sequence s3 = imgRes.createSequence("seq3", 3, 20, 20, true);
+		s3.setFrame((StaticTile) imgRes.getTile(4, 20, 20, true), 0);
+		s3.setFrame((StaticTile) imgRes.getTile(5, 20, 20, true), 1);
+		s3.setFrame((StaticTile) imgRes.getTile(6, 20, 20, true), 2);
 		
-		Sequence s4 = imgRes.createSequence("seq4", 3, 20, 20);
-		s4.setFrame((StaticTile) imgRes.getTile(2, 20, 20), 0);
-		s4.setFrame((StaticTile) imgRes.getTile(3, 20, 20), 1);
-		s4.setFrame((StaticTile) imgRes.getTile(4, 20, 20), 2);
+		Sequence s4 = imgRes.createSequence("seq4", 3, 20, 20, true);
+		s4.setFrame((StaticTile) imgRes.getTile(2, 20, 20, true), 0);
+		s4.setFrame((StaticTile) imgRes.getTile(3, 20, 20, true), 1);
+		s4.setFrame((StaticTile) imgRes.getTile(4, 20, 20, true), 2);
 		
 		AnimatedTile at = imgRes.createAnimatedTile("AT1", s1);
 		at.append(s2);

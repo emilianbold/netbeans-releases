@@ -31,6 +31,7 @@ public class SequenceCD extends ComponentDescriptor {
 	public static final String PROPERTY_FRAMES = "sequncecd.prop.frames"; // NOI18N
 	public static final String PROPERTY_FRAME_WIDTH = "sequncecd.prop.frame.width"; // NOI18N
 	public static final String PROPERTY_FRAME_HEIGHT = "sequncecd.prop.frame.height"; // NOI18N
+	public static final String PROPERTY_ZERO_BASED_INDEX = "sequncecd.prop.zero.based.index"; // NOI18N
 	
 	
 	public TypeDescriptor getTypeDescriptor() {
@@ -50,6 +51,8 @@ public class SequenceCD extends ComponentDescriptor {
 			new PropertyDescriptor(PROPERTY_FRAME_WIDTH, MidpTypes.TYPEID_INT,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER),
 			new PropertyDescriptor(PROPERTY_FRAME_HEIGHT, MidpTypes.TYPEID_INT,
+				PropertyValue.createNull(), false, false, Versionable.FOREVER),
+			new PropertyDescriptor(PROPERTY_ZERO_BASED_INDEX, MidpTypes.TYPEID_BOOLEAN,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER)
 		);
 	}

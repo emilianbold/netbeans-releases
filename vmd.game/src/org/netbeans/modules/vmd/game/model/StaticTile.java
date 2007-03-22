@@ -25,9 +25,11 @@ import org.netbeans.modules.vmd.game.preview.StaticTilePreview;
 
 public class StaticTile extends Tile {
 
+	private boolean zeroBasedIndex; 
 
-	StaticTile(ImageResource imageResource, int index, int cellWidth, int cellHeight) {
+	StaticTile(ImageResource imageResource, int index, int cellWidth, int cellHeight, boolean zeroBasedIndex) {
 		super(imageResource, index, cellWidth, cellHeight);
+		this.zeroBasedIndex = zeroBasedIndex;
 	}
 
 	public JComponent getPreview() {
@@ -35,11 +37,11 @@ public class StaticTile extends Tile {
 	}
 
     public void paint(Graphics2D g, int x, int y) {
-		this.getImageResource().paint(this.getIndex(), g, x, y, getWidth(), getHeight());
+		this.getImageResource().paint(this.getIndex(), g, x, y, getWidth(), getHeight(), this.zeroBasedIndex);
     }
 	
     public void paint(Graphics2D g, int x, int y, int scaledWidth, int scaledHeight) {
-		this.getImageResource().paint(this.getIndex(), g, x, y, getWidth(), getHeight(), scaledWidth, scaledHeight);
+		this.getImageResource().paint(this.getIndex(), g, x, y, getWidth(), getHeight(), scaledWidth, scaledHeight, this.zeroBasedIndex);
     }
 
 }

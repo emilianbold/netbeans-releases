@@ -35,11 +35,13 @@ public interface Editable {
 		private ImageResource imgRes;
 		private int tileWidth;
 		private int tileHeight;
+		private boolean zeroBasedIndex;
 
-		public ImageResourceInfo(ImageResource imgRes, int tileWidth, int tileHeight) {
+		public ImageResourceInfo(ImageResource imgRes, int tileWidth, int tileHeight, boolean zeroBasedIndex) {
 			this.imgRes = imgRes;
 			this.tileWidth = tileWidth;
 			this.tileHeight = tileHeight;
+			this.zeroBasedIndex = zeroBasedIndex;
 		}
 		
 		public ImageResource getImageResource() {
@@ -51,5 +53,9 @@ public interface Editable {
 		public int getTileHeight() {
 			return this.tileHeight;
 		}
+		public boolean isZeroBasedIndex() {
+			return this.zeroBasedIndex;
+		}
+		
 	}
 }

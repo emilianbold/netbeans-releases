@@ -47,11 +47,12 @@ public class ResourceImageEditor extends javax.swing.JPanel {
 		ImageResource imageResource = imageResourceInfo.getImageResource();
 		int tileWidth = imageResourceInfo.getTileWidth();
 		int tileHeight = imageResourceInfo.getTileHeight();
+		boolean zeroBasedIndex = imageResourceInfo.isZeroBasedIndex();
 		
 		this.textFieldImage.setText(imageResource.getRelativeResourcePath());
 		this.textFieldNumTiles.setText(Integer.toString(imageResource.getStaticTileCount(tileWidth, tileHeight)));
 		this.textFieldSize.setText(tileWidth  + "x" + tileHeight);
-		this.resourceComponent.setImageResource(imageResource, tileWidth, tileHeight);
+		this.resourceComponent.setImageResource(imageResource, tileWidth, tileHeight, zeroBasedIndex);
 	}
 
 	/** This method is called from within the constructor to

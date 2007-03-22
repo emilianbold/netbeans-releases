@@ -51,14 +51,14 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	
 	AnimatedTile(String name, ImageResource imageResource, int index, Sequence sequence, int width, int height) {
 		super(imageResource, index, width, height);
-		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource, width, height);
+		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource, width, height, false);
 		this.name = name;
 		this.setDefaultSequence(sequence);
 	}
 	
 	AnimatedTile(String name, ImageResource imageResource, int index, int width, int height) {
 		super(imageResource, index, width, height);
-		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource, width, height);
+		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource, width, height, false);
 		this.name = name;
 		String seqName = this.getNextSequenceName(this.name + "seq");
 		Sequence sequence = this.createSequence(seqName, 1, width, height);
@@ -158,7 +158,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	}
 
     public ImageResourceInfo getImageResourceInfo() {
-    	return new ImageResourceInfo(this.getImageResource(), this.getWidth(), this.getHeight());
+    	return new ImageResourceInfo(this.getImageResource(), this.getWidth(), this.getHeight(), false);
     }
 	
 	public List getActions() {

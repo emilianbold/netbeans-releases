@@ -71,8 +71,8 @@ class ResourceImageList extends JList {
 		DragGestureRecognizer dgr = dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY, new DGL());
 	}
 	
-	public void setImageResource(ImageResource imageResource, int tileWidth, int tileHeight) {
-		((ResourceImageListModel) this.getModel()).update(imageResource, tileWidth, tileHeight);
+	public void setImageResource(ImageResource imageResource, int tileWidth, int tileHeight, boolean zeroBasedIndex) {
+		((ResourceImageListModel) this.getModel()).update(imageResource, tileWidth, tileHeight, zeroBasedIndex);
 	}
 	
 	private class DGL extends DragSourceAdapter implements DragGestureListener {
@@ -114,8 +114,6 @@ class ResourceImageList extends JList {
 	private class ResourceImageListSelectionListener implements ListSelectionListener {
 		public void valueChanged(ListSelectionEvent e) {
 			if (DEBUG) System.out.println("GridTableSelectionListener.valueChanged()");
-//	        if (e.getValueIsAdjusting())
-//	            return;
 			int index = ResourceImageList.this.getSelectedIndex();
 	        this.handleTileSelection(index);
 		}

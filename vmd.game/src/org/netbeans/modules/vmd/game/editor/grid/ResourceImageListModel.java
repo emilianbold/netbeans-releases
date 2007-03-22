@@ -31,20 +31,22 @@ public class ResourceImageListModel extends AbstractListModel {
 	private ImageResource imgResource;
 	private int tileWidth;
 	private int tileHeight;
+	private boolean zeroBasedIndex;
 
-	public void update(ImageResource imgResource, int tileWidth, int tileHeight) {
+	public void update(ImageResource imgResource, int tileWidth, int tileHeight, boolean zeroBasedIndex) {
 		this.imgResource = imgResource;
 		this.tileWidth = tileWidth;
 		this.tileHeight = tileHeight;
+		this.zeroBasedIndex = zeroBasedIndex;
 		this.fireContentsChanged(this, 0, this.getSize() -1);
 	}
 	
     public int getSize() {
-		return this.imgResource.getStaticTileCount(this.tileWidth, this.tileHeight) + 1;
+		return this.imgResource.getStaticTileCount(this.tileWidth, this.tileHeight) + (zeroBasedIndex ? 0 : 1);
     }
 
     public Object getElementAt(int index) {
-		return this.imgResource.getTile(index, this.tileWidth, this.tileHeight);
+		return this.imgResource.getTile(index, this.tileWidth, this.tileHeight, this.zeroBasedIndex);
     }
 	
 }

@@ -49,7 +49,7 @@ public class Sprite extends Layer implements SequenceContainer {
 	 */
 	Sprite(GlobalRepository gameDesign, String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
 		super(gameDesign, name, imageResource, frameWidth, frameHeight);
-		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource, frameWidth, frameHeight);
+		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource, frameWidth, frameHeight, true);
 		String seqName = this.getNextSequenceName(name + "seq");
 		Sequence defaultSequence = this.createSequence(seqName, numberFrames, frameWidth, frameHeight);
 		this.setDefaultSequence(defaultSequence);
@@ -57,8 +57,12 @@ public class Sprite extends Layer implements SequenceContainer {
     
 	Sprite(GlobalRepository gameDesign, String name, ImageResource imageResource, Sequence defaultSequence) {
 		super(gameDesign, name, imageResource, defaultSequence.getFrameWidth(), defaultSequence.getFrameHeight());
-		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource, defaultSequence.getFrameWidth(), defaultSequence.getFrameHeight());
+		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource, defaultSequence.getFrameWidth(), defaultSequence.getFrameHeight(), true);
 		this.setDefaultSequence(defaultSequence);
+	}
+	
+	public ImageResourceInfo getImageResourceInfo() {
+		return new ImageResourceInfo(this.getImageResource(), this.getTileWidth(), this.getTileHeight(), true);
 	}
 	
 	public String getNextSequenceName(String prefix) {
