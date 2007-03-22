@@ -18,10 +18,10 @@
  */
 package org.openide.explorer.propertysheet;
 
+import java.awt.BorderLayout;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import org.openide.util.Utilities;
-
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -32,7 +32,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.accessibility.AccessibleRole;
-
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -41,6 +40,7 @@ import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.openide.util.NbBundle;
@@ -56,6 +56,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
     private JTextArea jta;
     private JLabel lbl;
     private JButton btn;
+    private JToolBar toolbar;
     private JScrollPane jsc;
 
     /** Creates a new instance of SplitLowerComponent */
@@ -95,16 +96,17 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
             jta.setFont(f);
         }
 
-        btn = new JButton();
+        Image help = Utilities.loadImage("org/openide/resources/propertysheet/propertySheetHelp.png", true); //NOI18N
+
+        btn = new JButton(new ImageIcon(help));
         btn.addActionListener(this);
-
-        Image help = Utilities.loadImage("org/openide/resources/propertysheet/propertySheetHelp.gif", true); //NOI18N
-
-        ImageIcon helpIcon = new ImageIcon(help); //NOI18N
-        btn.setIcon(helpIcon);
-        btn.setPreferredSize(new Dimension(helpIcon.getIconWidth(), helpIcon.getIconHeight()));
-        btn.setBorder(BorderFactory.createEmptyBorder());
-        btn.setBorderPainted(false);
+        
+        toolbar = new JToolBar ();
+        toolbar.setRollover (true);
+        toolbar.setFloatable (false);
+        toolbar.setLayout (new BorderLayout (0, 0));
+        toolbar.setBorder (BorderFactory.createEmptyBorder());
+        toolbar.add (btn);
         btn.setFocusable(false);
 
         lbl = new JLabel("Label"); //NOI18N
@@ -113,7 +115,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
 
         add(jsc);
         add(lbl);
-        add(btn);
+        add(toolbar);
         jta.addMouseListener(this);
         jsc.addMouseListener(this);
         lbl.addMouseListener(this);
@@ -123,13 +125,13 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
 
     public void doLayout() {
         Insets ins = getInsets();
-        Dimension bttn = btn.getMinimumSize();
+        Dimension bttn = toolbar.getPreferredSize();
         Dimension lbll = lbl.getPreferredSize();
 
         int height = Math.max(bttn.height, lbll.height);
         int right = getWidth() - (ins.right + bttn.width);
 
-        btn.setBounds(right, ins.top, bttn.width, height);
+        toolbar.setBounds(right, ins.top, bttn.width, height);
 
         lbl.setBounds(ins.left, ins.top, right, height);
 
