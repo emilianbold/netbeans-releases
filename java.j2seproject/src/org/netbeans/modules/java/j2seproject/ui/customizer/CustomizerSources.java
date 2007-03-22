@@ -27,6 +27,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.IllegalCharsetNameException;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -106,7 +108,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }                                    
         });
         enableSourceLevel ();
-        this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(J2SEProjectProperties.PROJECT_ENCODING);
+        this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(J2SEProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
             this.originalEncoding = FileEncodingQuery.getDefaultEncoding().name();
         }
@@ -132,7 +134,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             else {
                 encName = originalEncoding;
             }
-            this.uiProperties.putAdditionalProperty(J2SEProjectProperties.PROJECT_ENCODING, encName);
+            this.uiProperties.putAdditionalProperty(J2SEProjectProperties.SOURCE_ENCODING, encName);
     }
 
     public HelpCtx getHelpCtx() {
@@ -166,9 +168,17 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 //Create artificial Charset to keep the original value
                 //May happen when the project was set up on the platform
                 //which supports more encodings
-                defEnc = new UnknownCharset (originalEncoding);
-                addElement(defEnc);
-            }            
+                try {
+                    defEnc = new UnknownCharset (originalEncoding);
+                    addElement(defEnc);
+                } catch (IllegalCharsetNameException e) {
+                    //The source.encoding property is completely broken
+                    Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + originalEncoding);
+                }
+            }
+            if (defEnc == null) {
+                defEnc = FileEncodingQuery.getDefaultEncoding();
+            }
             setSelectedItem(defEnc);
         }
     }

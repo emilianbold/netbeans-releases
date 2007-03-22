@@ -271,7 +271,7 @@ public class J2SEProjectGenerator {
         ep.setProperty(J2SEProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         Charset enc = FileEncodingQuery.getDefaultEncoding();
-        ep.setProperty(J2SEProjectProperties.PROJECT_ENCODING, enc.name());
+        ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, enc.name());
         if (manifestFile != null) {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }

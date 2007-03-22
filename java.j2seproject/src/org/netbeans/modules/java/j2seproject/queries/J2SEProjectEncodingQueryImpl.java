@@ -22,6 +22,7 @@ package org.netbeans.modules.java.j2seproject.queries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -52,10 +53,14 @@ public class J2SEProjectEncodingQueryImpl extends FileEncodingQueryImplementatio
                 return cache;
             }
         }
-        String enc = eval.getProperty(J2SEProjectProperties.PROJECT_ENCODING);
+        String enc = eval.getProperty(J2SEProjectProperties.SOURCE_ENCODING);
         synchronized (this) {
             if (cache == null) {
-                cache = enc == null ? FileEncodingQuery.getDefaultEncoding() : Charset.forName(enc);
+                try {
+                    cache = enc == null ? FileEncodingQuery.getDefaultEncoding() : Charset.forName(enc);
+                } catch (IllegalCharsetNameException exception) {
+                    return null;
+                }
             }
             return cache;
         }
@@ -63,7 +68,7 @@ public class J2SEProjectEncodingQueryImpl extends FileEncodingQueryImplementatio
    
     public void propertyChange(PropertyChangeEvent event) {        
         String propName = event.getPropertyName();
-        if (propName == null || propName.equals(J2SEProjectProperties.PROJECT_ENCODING)) {
+        if (propName == null || propName.equals(J2SEProjectProperties.SOURCE_ENCODING)) {
             synchronized (this) {
                 cache = null;
             }

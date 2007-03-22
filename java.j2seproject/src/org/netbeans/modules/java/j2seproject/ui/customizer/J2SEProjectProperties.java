@@ -109,7 +109,7 @@ public class J2SEProjectProperties {
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
     public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
-    public static final String PROJECT_ENCODING="project.encoding"; // NOI18N
+    public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.11 */
     public static final String INCLUDES = "includes"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.11 */
@@ -456,7 +456,7 @@ public class J2SEProjectProperties {
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
         
-        String value = additionalProperties.get(PROJECT_ENCODING);
+        String value = additionalProperties.get(SOURCE_ENCODING);
         if (value != null) {
             try {
                 FileEncodingQuery.setDefaultEncoding(Charset.forName(value));
