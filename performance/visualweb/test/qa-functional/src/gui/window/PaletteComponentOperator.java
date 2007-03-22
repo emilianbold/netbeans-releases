@@ -35,9 +35,12 @@ import org.netbeans.jemmy.operators.JListOperator;
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class PaletteComponentOperator extends TopComponentOperator {
+    
+    private final static String paletteName = "Palette"; // NOI18N
     /** Creates a new instance of PaletteComponentOperator */
     public PaletteComponentOperator() {
-        super(waitTopComponent(null,null,0,new PaletteTopComponentChooser()));
+        //super(waitTopComponent(null,null,0,new PaletteTopComponentChooser()));
+        super(paletteName);
     }
     
     /** invokes default palette
