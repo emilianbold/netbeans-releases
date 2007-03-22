@@ -72,7 +72,7 @@ public class SyncUpdateTest extends NbTestCase {
                 propertyChangeCalled = true;
             }
         });
-        model = Util.loadRegistryModel("faces-config-05.xml");
+        Util.setDocumentContentTo(model,"faces-config-05.xml");
         
         assertTrue(propertyChangeCalled);
     }
