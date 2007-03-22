@@ -358,40 +358,33 @@ public class CasualDiff {
         localPointer = diffList2(oldT.implementing, newT.implementing, insertHint, estimator);
         insertHint = endPos(oldT) - 1;
 
-        if (oldT.defs.isEmpty()) {
+        if (filterHidden(oldT.defs).isEmpty()) {
             // if there is nothing in class declaration, use position
             // before the closing curly.
-            // TODO (#pf): optimize new lines, this will look ugly. --
-            // do before the last new line character before the closing curly.
             insertHint = endPos(oldT) - 1;
         } else {
-            // XXX hack: be careful, syntetic constructor in head has the
-            // same position as class declaration too - go to the next feature.
-            // do not be upset to me for the next line, I will replace it
-            // with some better and final solution soon, hopefully :-).
-            JCTree t = oldT.defs.head.pos == oldT.pos ? oldT.defs.tail.head : oldT.defs.head;
-            if (t != null) insertHint = t.getStartPosition();
+            insertHint = filterHidden(oldT.defs).get(0).getStartPosition();
         }
+        tokenSequence.move(insertHint);
+        tokenSequence.moveNext();
+        insertHint = TokenUtilities.moveBackToToken(tokenSequence, insertHint, JavaTokenId.LBRACE) + 1;
         } else {
             insertHint = TokenUtilities.moveFwdToToken(tokenSequence, getOldPos(oldT), JavaTokenId.LBRACE);
             tokenSequence.moveNext();
             insertHint = tokenSequence.offset();
         }
         int old = printer.indent();
-        VeryPretty mujPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
-        mujPrinter.reset(old);
-        mujPrinter.indent();
-        mujPrinter.enclClassName = newT.getSimpleName();
+        VeryPretty inPrint = new VeryPretty(context, JavaFormatOptions.getDefault());
+        inPrint.reset(old);
+        inPrint.indent();
+        inPrint.enclClassName = newT.getSimpleName();
         PositionEstimator est = EstimatorFactory.members(filterHidden(oldT.defs), filterHidden(newT.defs), workingCopy);
-        int[] pos = diffList(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.DEFAULT, mujPrinter);
-        if (localPointer < pos[0])
-            copyTo(localPointer, pos[0]);
-        printer.print(mujPrinter.toString());
-        if (pos[1] != -1)
-            copyTo(pos[1], bounds[1]);
-        else
+        if (localPointer < insertHint)
+            copyTo(localPointer, insertHint);
+        localPointer = diffListImports(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.MEMBER, inPrint);
+        printer.print(inPrint.toString());
+        if (localPointer != -1)
             copyTo(localPointer, bounds[1]);
-        //pointer = bounds[1];
         oldParent = opar;
         newParent = npar;
         // the reference is no longer needed.
@@ -583,7 +576,7 @@ public class CasualDiff {
         if (newT.stats.head != null && newT.stats.head.pos == oldT.pos) {
             newT.stats = newT.stats.tail;
         }
-        PositionEstimator est = EstimatorFactory.members(((BlockTree) oldT).getStatements(), ((BlockTree) newT).getStatements(), workingCopy); 
+        PositionEstimator est = EstimatorFactory.deprecated(((BlockTree) oldT).getStatements(), ((BlockTree) newT).getStatements(), workingCopy); 
         int[] pos = diffList(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.DEFAULT, bodyPrinter); // hint after open brace
         if (localPointer < pos[0]) {
             copyTo(localPointer, pos[0]);
@@ -689,7 +682,7 @@ public class CasualDiff {
         localPointer = diffTree(oldT.selector, newT.selector, selectorBounds);
         
         int castListHint = oldT.cases.size() > 0 ? oldT.cases.head.pos : Query.NOPOS;
-        PositionEstimator est = EstimatorFactory.members(oldT.getCases(), newT.getCases(), workingCopy);
+        PositionEstimator est = EstimatorFactory.deprecated(oldT.getCases(), newT.getCases(), workingCopy);
         copyTo(localPointer, castListHint);
         int[] pos = diffList(oldT.cases, newT.cases, castListHint, est, Measure.DEFAULT, printer);
         
@@ -705,7 +698,7 @@ public class CasualDiff {
             localPointer = diffTree(oldT.pat, newT.pat, patBounds);
         }
         int pos = oldT.stats.head.pos;
-        PositionEstimator est = EstimatorFactory.members(oldT.getStatements(), newT.getStatements(), workingCopy);
+        PositionEstimator est = EstimatorFactory.deprecated(oldT.getStatements(), newT.getStatements(), workingCopy);
         VeryPretty localPrinter = new VeryPretty(context, JavaFormatOptions.getDefault());
         int[] stmtPos = diffList(oldT.stats, newT.stats, pos, est, Measure.DEFAULT, localPrinter);
         if (localPointer < stmtPos[0]) copyTo(localPointer, stmtPos[0]);
@@ -737,7 +730,7 @@ public class CasualDiff {
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
         int pos = oldT.catchers.head != null ? getOldPos(oldT.catchers.head) : oldT.body.endpos + 1;
         VeryPretty locPrint = new VeryPretty(context);
-        PositionEstimator est = EstimatorFactory.members(((TryTree) oldT).getCatches(), ((TryTree) newT).getCatches(), workingCopy);
+        PositionEstimator est = EstimatorFactory.deprecated(((TryTree) oldT).getCatches(), ((TryTree) newT).getCatches(), workingCopy);
         int[] retPos = diffList(oldT.catchers, newT.catchers, pos, est, Measure.DEFAULT, locPrint);
         if (localPointer < retPos[0]) {
             copyTo(localPointer, retPos[0]);
@@ -1886,7 +1879,7 @@ public class CasualDiff {
         return ret;
     }
     
-    private List filterHidden(List<JCTree> list) {
+    private List<JCTree> filterHidden(List<JCTree> list) {
         List<JCTree> result = new ArrayList<JCTree>(); // todo (#pf): capacity?
         for (JCTree tree : list) {
             if (Kind.METHOD == tree.getKind()) {
@@ -1934,7 +1927,7 @@ public class CasualDiff {
             // such a situation needs special handling. It is difficult to
             // obtain a correct position.
             StringBuilder aHead = new StringBuilder(), aTail = new StringBuilder();
-            int pos = estimator.prepare(0, aHead, aTail);
+            int pos = estimator.prepare(localPointer, aHead, aTail);
             copyTo(localPointer, pos, printer);
             printer.print(aHead.toString());
             for (JCTree item : newList) {
@@ -1962,6 +1955,16 @@ public class CasualDiff {
         for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
             switch (item.operation) {
+                case MODIFY: {
+                    int[] bounds = estimator.getPositions(i);
+                    copyTo(localPointer, bounds[0], printer);
+                    VeryPretty oldPrinter = this.printer;
+                    this.printer = printer;
+                    localPointer = diffTree(oldList.get(i), item.element, bounds);
+                    this.printer = oldPrinter;
+                    ++i;
+                    break;
+                }
                 case INSERT: {
                     int pos = estimator.getInsertPos(i);
                     // estimator couldn't compute the position - probably
@@ -2012,12 +2015,12 @@ public class CasualDiff {
                             break;
                         }
                         printer.print(head);
-                        int old = printer.indent();
+    //                    int old = printer.indent();
                         printer.enclClassName = printer.enclClassName;
                         if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
                         printer.print(item.element);
                         if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
-                        printer.undent(old);
+//                        printer.undent(old);
                     }
                     break;
                 }

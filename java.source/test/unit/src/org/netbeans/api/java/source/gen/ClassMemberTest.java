@@ -63,7 +63,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         suite.addTest(new ClassMemberTest("testAddInnerInterface"));
         suite.addTest(new ClassMemberTest("testAddInnerAnnotationType"));
         suite.addTest(new ClassMemberTest("testAddInnerEnum"));
-        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit1"));
+//        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit1"));
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit2"));
         return suite;
     }
@@ -71,7 +71,8 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
     public void testAddAtIndex0() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
             "    \n" +
             "    public void taragui() {\n" +
@@ -80,13 +81,13 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
-            "    \n" +
-            "    \n" +
+            "\n" +
             "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" + 
             "    }\n" +
-            "\n" +
+            "    \n" +
             "    public void taragui() {\n" +
             "    }\n" +
             "    \n" +
@@ -135,10 +136,10 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
-            "    \n" +
+            "\n" +
             "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
             "    }\n" +
-            "\n" +
+            "    \n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
@@ -227,10 +228,10 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "    \n" +
             "    String prefix;\n" +
-            "    \n" +
+            "\n" +
             "    public Test(boolean prefix) {\n" +
             "    }\n" +
-            "\n" +
+            "    \n" +
             "    public void method() {\n" +
             "    }\n" +
             "    \n" +
@@ -296,9 +297,8 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         String golden =
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
+            "    String prefix;\n" +
             "    \n" +
-            "        String prefix;\n" +
-            "\n" +
             "    int i = 0;\n" +
             "    \n" +
             "    public Test() {\n" +
@@ -567,7 +567,8 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
     public void testAddAfterEmptyInit1() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
             "    static enum Enumerace {\n" +
             "        A, B\n" +
@@ -575,11 +576,13 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
             "    static enum Enumerace {\n" +
             "        A, B\n" +
-            "    };\n\n" +
+            "    };\n" +
+            "\n" +
             "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
             "    }\n" +
             "}\n";

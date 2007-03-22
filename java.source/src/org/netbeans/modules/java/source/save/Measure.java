@@ -22,6 +22,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.tree.JCTree;
 
 import static com.sun.source.tree.Tree.Kind;
 
@@ -108,22 +109,15 @@ class Measure {
     // MemberMeasure
     private static final class MemberMeasure extends Measure {
         int getDistance(Object first, Object second) {
-            Tree t1 = (Tree) first;
-            Tree t2 = (Tree) second;
-            
-            switch (t1.getKind()) {
-                case METHOD:
-                    return METHOD.getDistance(first, second);
-                    
-                case VARIABLE:
-                    return FIELD.getDistance(first, second);
-                    
-                // todo (#pf): missing implementation of other kinds of
-                // measure!
-                    
-                default:
-                    return DEFAULT.getDistance(first, second);
+            int distance = DEFAULT.getDistance(first, second);
+            if (distance == INFINITE_DISTANCE) {
+                JCTree t1 = (JCTree) first;
+                JCTree t2 = (JCTree) second;
+                if (t1.getKind() == t2.getKind() && t1.pos == t2.pos) {
+                    return 500;
+                }
             }
+            return distance;
         }
     }
     
