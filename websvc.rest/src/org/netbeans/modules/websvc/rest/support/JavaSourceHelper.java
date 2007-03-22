@@ -28,7 +28,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
@@ -93,7 +92,7 @@ public class JavaSourceHelper {
         final boolean[] isBoolean = new boolean[1];
         
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller)
                         throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -119,8 +118,6 @@ public class JavaSourceHelper {
                         }
                     }
                 }
-                
-                public void cancel() {}
             }, true);
         } catch (IOException ex) {
             
@@ -138,13 +135,11 @@ public class JavaSourceHelper {
         final String[] className = new String[1];
         
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     ClassTree tree = getTopLevelClassTree(controller);
                     className[0] = tree.getSimpleName().toString();
                 }
-                
-                public void cancel() {}
             }, true);
         } catch (IOException ex) {
             
@@ -157,14 +152,12 @@ public class JavaSourceHelper {
         final String[] packageName = new String[1];
         
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     ExpressionTree packageTree = controller.getCompilationUnit().getPackageName();
                     
                     packageName[0] = packageTree.toString();
                 }
-                
-                public void cancel() {}
             }, true);
         } catch (IOException ex) {
             
@@ -177,7 +170,7 @@ public class JavaSourceHelper {
         final String[] fieldName = new String[1];
         
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     TypeElement classElement = getTopLevelClassElement(controller);
                     List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
@@ -193,8 +186,6 @@ public class JavaSourceHelper {
                         }
                     }
                 }
-                
-                public void cancel() {}
             }, true);
         } catch (IOException ex) {
             
