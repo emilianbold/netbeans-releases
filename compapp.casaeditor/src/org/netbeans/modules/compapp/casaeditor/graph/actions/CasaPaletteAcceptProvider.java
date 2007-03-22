@@ -37,8 +37,6 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExternal;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.JBIServiceUnitTransferObject;
@@ -46,12 +44,12 @@ import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItem;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.datatransfer.MultiTransferObject;
 
 /**
@@ -118,10 +116,10 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
                 CasaPaletteItem selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
                 if (selNode != null) {
-                    retState = isAcceptableFromPalette(widget, point, selNode);
+                    retState = isAcceptableFromPalette(point, selNode);
                 }
             } else {
-                retState = isAcceptableFromOther(widget, point, transferable);
+                retState = isAcceptableFromOther(point, transferable, false);
             }
         } catch (UnsupportedFlavorException ex) {
             ex.printStackTrace();
@@ -148,7 +146,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     }
     // JBIMGR
     
-    private ConnectorState isAcceptableFromPalette(Widget widget, Point point, CasaPaletteItem selNode) {
+    private ConnectorState isAcceptableFromPalette(Point point, CasaPaletteItem selNode) {
         CasaRegionWidget region = getApplicableRegion(selNode);
         ConnectorState retState = ConnectorState.REJECT;
         if (
@@ -159,54 +157,59 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return retState;
     }
     
-    private ConnectorState isAcceptableFromOther(Widget widget, Point point, Transferable transferable)
+    private ConnectorState isAcceptableFromOther(Point point, Transferable transferable, boolean bIgnoreRegionCheck) 
     throws Exception {
-        ConnectorState retState = ConnectorState.REJECT;
-        DataFlavor[] dfs = transferable.getTransferDataFlavors();
         CasaRegionWidget region = getScene().getEngineRegion();
-        if (region.getBounds().contains(region.convertSceneToLocal(point))) {
-            if (dfs.length > 0) {
+        ConnectorState curState = ConnectorState.REJECT;
+        if (bIgnoreRegionCheck || region.getBounds().contains(region.convertSceneToLocal(point))) {
+            for(Object dfo : getTransferableObjects(transferable)) {
+                curState = ConnectorState.REJECT;
+                if (dfo instanceof Node) {
+                    DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
+                    Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
+                    if (getJbiProjectType(p) != null) {
+                        String pname = p.getProjectDirectory().getName();
+                        // todo: 01/24/07 needs to check for duplicates...
+                        if (!mModel.existingServiceUnit(pname)) {
+                            curState = ConnectorState.ACCEPT;
+                        } 
+                    } 
+                }
+                if(curState == ConnectorState.REJECT) {
+                    break;
+                }
+            }
+        }
+        return curState;
+    }
+    
+    /* Receive all transferable objects */
+    private List getTransferableObjects(Transferable transferable) {
+        List retList = new ArrayList();
+        DataFlavor[] dfs = transferable.getTransferDataFlavors();
+        if (dfs.length > 0) {
+            try {
                 if(dfs[0].getRepresentationClass().equals(MultiTransferObject.class)){
                     MultiTransferObject mto = (MultiTransferObject)transferable.getTransferData(dfs[0]);
-                    DataFlavor[] df = mto.getTransferDataFlavors(0);
-                    if(df.length > 0) {
-                        for(int i = 0; i < mto.getCount(); i++) {
-                            retState = isAcceptableFromOtherObject(mto.getTransferData(i, df[0]));
-                            if(retState == ConnectorState.REJECT) {
-                                break;
+                    if(mto.getCount() > 0) {
+                        DataFlavor[] df = mto.getTransferDataFlavors(0);
+                        if(df.length > 0) {
+                            for(int i = 0; i < mto.getCount(); i++) {
+                                retList.add(mto.getTransferData(i, df[0]));
                             }
                         }
                     }
                 } else {
-                    retState = isAcceptableFromOtherObject(transferable.getTransferData(dfs[0]));
+                    retList.add(transferable.getTransferData(dfs[0]));
                 }
+            } catch (UnsupportedFlavorException ex) {
+                ex.printStackTrace();
+            }  catch(Exception ex) {
+                ex.printStackTrace();
             }
         }
-        return retState;
+        return retList;
     }
-    
-    private ConnectorState isAcceptableFromOtherObject(Object dfo) {
-        ConnectorState retState = ConnectorState.REJECT;
-        if (dfo instanceof Node) {
-            try {
-                DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
-                Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
-                if (getJbiProjectType(p) != null) {
-                    String pname = p.getProjectDirectory().getName();
-                    // todo: 01/24/07 needs to check for duplicates...
-                    if (mModel.existingServiceUnit(pname)) {
-                        retState = ConnectorState.REJECT;
-                    } else {
-                        retState = ConnectorState.ACCEPT;
-                    }
-                }
-            } catch (Exception ex) { // bad data objects..
-                ex.printStackTrace(System.err);
-            }
-        }
-        return retState;
-    }
-
     
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
@@ -233,10 +236,10 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 CasaPaletteItem selNode =
                         (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
                 if (selNode != null) {
-                    acceptFromPalette(widget, point, selNode);
+                    acceptFromPalette(point, selNode);
                 }
             } else {
-                acceptFromOther(widget, point, transferable);
+                acceptFromOther(point, transferable);
             }
         } catch (Throwable t) {
             // Catch all exceptions, including those from the model.
@@ -245,7 +248,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         }
     }
     
-    private void acceptFromPalette(Widget widget, Point point, CasaPaletteItem selNode) {
+    private void acceptFromPalette(Point point, CasaPaletteItem selNode) {
         switch(selNode.getCategory()) {
             case WSDL_BINDINGS :
                 point = getScene().getBindingRegion().convertSceneToLocal(point);
@@ -271,32 +274,16 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         }
     }
     
-    private void acceptFromOther(Widget widget, Point point, Transferable transferable)
+    private void acceptFromOther(Point point, Transferable transferable)
     throws Exception {
-        // check for SU project node
-        DataFlavor[] dfs = transferable.getTransferDataFlavors();
-        if (dfs.length > 0) {
-            if(dfs[0].getRepresentationClass().equals(MultiTransferObject.class)){
-                MultiTransferObject mto = (MultiTransferObject)transferable.getTransferData(dfs[0]);
-                DataFlavor[] df = mto.getTransferDataFlavors(0);
-                if(df.length > 0) {
-                    for(int i = 0; i < mto.getCount(); i++) {
-                        acceptFromOtherObject(mto.getTransferData(i, df[0]), point);
-                    }
-                }
-            } else {
-                acceptFromOtherObject(transferable.getTransferData(dfs[0]), point);
+        for(Object dfo : getTransferableObjects(transferable)) {
+            if (dfo instanceof Node) {
+                DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
+                Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
+                String type = getJbiProjectType(p);
+                point = getScene().getEngineRegion().convertSceneToLocal(point);
+                mModel.addInternalJBIModule(p, type, point.x, point.y);
             }
-        }
-    }
-    
-    private void acceptFromOtherObject(Object dfo, Point point) throws Exception {
-        if (dfo instanceof Node) {
-            DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
-            Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
-            String type = getJbiProjectType(p);
-            point = getScene().getEngineRegion().convertSceneToLocal(point);
-            mModel.addInternalJBIModule(p, type, point.x, point.y);
         }
     }
 
@@ -338,18 +325,30 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     public void acceptStarted(Transferable transferable) {
         super.acceptStarted(transferable);
-        CasaPaletteItem selNode = getCasaPaletteItem(transferable);
-        CasaRegionWidget region = getApplicableRegion(selNode);
-        if (region != null) {    //Region can take the drop -- highlight it!
-            highlightRegion(region);
-        } else {    // Its WSDL Points and hence highlight external SUs
-            // Sanity check...
-            if(selNode != null) {
-                if(selNode.getCategory() == CasaPalette.CASA_CATEGORY_TYPE.END_POINTS) {
-                    highlightExtSUs(true);
+        CasaRegionWidget region = null;
+        if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
+            CasaPaletteItem selNode = getCasaPaletteItem(transferable);
+            region = getApplicableRegion(selNode);
+            if(region == null) {
+                if(selNode != null) {
+                    if(selNode.getCategory() == CasaPalette.CASA_CATEGORY_TYPE.END_POINTS) {
+                        highlightExtSUs(true);
+                    }
                 }
             }
-        }
+       } else {
+            try {
+                if (isAcceptableFromOther(null, transferable, true) == ConnectorState.ACCEPT) {
+                    region = getScene().getEngineRegion();
+                }
+            }
+            catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+       }
+       if(region != null) {
+            highlightRegion(region); 
+       }
     }
     
     public void acceptFinished() {
@@ -403,9 +402,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 default:
                     break;
             }
-        } else {
-            region = getScene().getEngineRegion();
-        }
+        } 
         return region;
     }
     
