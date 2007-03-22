@@ -46,7 +46,7 @@ public class ExtendedConnectAction extends ConnectAction {
         if (macLocking)
             return State.createLocked (widget, this);
         if ((event.getModifiers () & MouseEvent.CTRL_MASK) != 0) {
-            if (Utilities.isMac ())
+            if ((Utilities.getOperatingSystem () & Utilities.OS_MAC) != 0)
                 macLocking = true;
             return super.mousePressed(widget,event);
         }
