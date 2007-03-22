@@ -238,6 +238,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/util</project>
                 <project>../extbrowser</project>
                 <project>../form</project>
+                <project>../graph/lib</project>
                 <project>../html</project>
                 <project>../html/editor</project>
                 <project>../html/editor/lib</project>
