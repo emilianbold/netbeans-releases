@@ -99,21 +99,6 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable){
         ConnectorState retState = ConnectorState.REJECT;
         try {
-            /*
-            // JBIMGR
-            try { 
-                Object transferData = transferable.getTransferData(genericDataFlavor); 
-                if (transferData instanceof List &&
-                        ((List)transferData).size() == 3 &&
-                        ((List)transferData).get(0) instanceof String &&
-                        ((List)transferData).get(0).equals("JBIMGR_SU_TRANSFER")) {
-                    return isAcceptableFromJBIManager(widget, point, transferData);
-                }
-            } catch (Exception e) {
-                ;
-            }
-            // JBIMGR
-            */
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
                 CasaPaletteItem selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
                 if (selNode != null) {
@@ -194,7 +179,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
             }
         }
         if(region != null) {
-            if(bIgnoreRegionCheck) {    //HighLight region!
+            if(curState == ConnectorState.ACCEPT && bIgnoreRegionCheck) {    //HighLight region!
                 highlightRegion(region);
             } else {
                 if (!(curState == ConnectorState.ACCEPT && region.getBounds().contains(region.convertSceneToLocal(point)))) {
@@ -245,23 +230,6 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
-            /*
-            // JBIMGR
-            Object data = transferable.getTransferData(genericDataFlavor);
-            if (data instanceof List &&
-                    ((List)data).size() == 3 &&
-                    ((List)data).get(0) instanceof String &&
-                    ((List)data).get(0).equals("JBIMGR_SU_TRANSFER")) {
-                
-                JBIServiceUnitTransferObject suTransfer =
-                        new JBIServiceUnitTransferObject(
-                        (String) ((List)data).get(1),
-                        (String) ((List)data).get(2));
-                acceptFromJBIManager(widget, point, suTransfer);
-                return;
-            }
-            // JBIMGR
-            */
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
                 
                 CasaPaletteItem selNode =
@@ -341,26 +309,6 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         }
     }
 
-        /*
-    // JBIMGR
-    private void acceptFromJBIManager(Widget widget, Point point,
-            final JBIServiceUnitTransferObject suTransfer) throws Exception {
-        
-        point = getScene().getExternalRegion().convertSceneToLocal(point);
-        
-        String suName = suTransfer.getServiceUnitName();
-        final CasaServiceEngineServiceUnit seSU = 
-                mModel.addServiceEngineServiceUnit(
-                suName, "", false, false, point.x, point.y); // NOI18N // FIXME
-               
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {  
-                mModel.addEndpointsToServiceEngineServiceUnit(suTransfer, seSU);    
-            }
-        });
-    }
-    // JBIMGR
-    */
     // todo: 02/15/07 fix the problem created by bpel project changes...
     private Project getProjectFromDataObject(DataObject obj) throws Exception {
         if (obj == null) {
