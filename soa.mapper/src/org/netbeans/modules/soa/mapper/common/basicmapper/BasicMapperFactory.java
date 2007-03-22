@@ -49,7 +49,7 @@ public abstract class BasicMapperFactory {
      * System.getProperty("com.stc.editor.mapper.class") return null.
      */
     public static final String DEFAULT_PALETTE_CLASS_NAME =
-        "org.netbeans.modules.mapper.common.palette.PaletteManager";
+        "org.netbeans.modules.soa.mapper.common.palette.PaletteManager";
 
     /**
      * Instantiate and return a IBasicMapper instance with the system class
@@ -81,7 +81,7 @@ public abstract class BasicMapperFactory {
         throws MapperException {
 
         String mapperClassName =
-            (String) System.getProperty("org.netbeans.modules.mapper.class");
+            (String) System.getProperty("org.netbeans.modules.soa.mapper.class");
 
         if (mapperClassName == null) {
             mapperClassName = DEFAULT_MAPPER_CLASS_NAME;
@@ -146,7 +146,7 @@ public abstract class BasicMapperFactory {
         }
 
         String pManagerClassName =
-            (String) System.getProperty("org.netbeans.modules.mapper.palette.class");
+            (String) System.getProperty("org.netbeans.modules.soa.mapper.palette.class");
 
         if (pManagerClassName == null) {
             pManagerClassName = DEFAULT_PALETTE_CLASS_NAME;

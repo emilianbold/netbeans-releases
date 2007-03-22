@@ -68,7 +68,7 @@ public class XPathLiteralEditor implements ILiteralEditor {
     }
 
     /**
-     * @see org.netbeans.modules.mapper.common.basicmapper.literal
+     * @see org.netbeans.modules.soa.mapper.common.basicmapper.literal
      * *      .ILiteralEditor#show()
      */
     public void show() {
@@ -96,7 +96,7 @@ public class XPathLiteralEditor implements ILiteralEditor {
     }
 
     /**
-     * @see org.netbeans.modules.mapper.common.basicmapper.literal
+     * @see org.netbeans.modules.soa.mapper.common.basicmapper.literal
      * *      .ILiteralEditor#getUpdateListener()
      */
     public ILiteralUpdater getUpdateListener() {
@@ -111,7 +111,7 @@ public class XPathLiteralEditor implements ILiteralEditor {
         // set the expression
         mBasicMapper.updateFieldLiteral( new IBasicMapperLiteralUpdateEventInfo(){
             /**
-             * @see org.netbeans.modules.mapper.common.basicmapper
+             * @see org.netbeans.modules.soa.mapper.common.basicmapper
              * *  .IBasicMapperLiteralUpdateEventInfo#getLiteralUpdater()
              */
             public ILiteralUpdater getLiteralUpdater()
@@ -120,7 +120,7 @@ public class XPathLiteralEditor implements ILiteralEditor {
             }
 
             /**
-             * @see org.netbeans.modules.mapper.common.basicmapper
+             * @see org.netbeans.modules.soa.mapper.common.basicmapper
              * *  .IBasicMapperLiteralUpdateEventInfo#getMethoidNode()
              */
             public IMethoidNode getMethoidNode()
@@ -129,7 +129,7 @@ public class XPathLiteralEditor implements ILiteralEditor {
             }
 
             /**
-             * @see org.netbeans.modules.mapper.common.basicmapper
+             * @see org.netbeans.modules.soa.mapper.common.basicmapper
              * *  .IBasicMapperLiteralUpdateEventInfo#getFieldNode()
              */
             public IFieldNode getFieldNode()
@@ -138,7 +138,7 @@ public class XPathLiteralEditor implements ILiteralEditor {
             }
 
             /**
-             * @see org.netbeans.modules.mapper.common.basicmapper
+             * @see org.netbeans.modules.soa.mapper.common.basicmapper
              * *  .IBasicMapperLiteralUpdateEventInfo#getNewValue()
              */
             public String getNewValue()
@@ -147,7 +147,7 @@ public class XPathLiteralEditor implements ILiteralEditor {
             }
 
             /**
-             * @see org.netbeans.modules.mapper.common.basicmapper
+             * @see org.netbeans.modules.soa.mapper.common.basicmapper
              * *  .IBasicMapperLiteralUpdateEventInfo#isLiteralMethoid()
              */
             public boolean isLiteralMethoid()
