@@ -56,17 +56,7 @@ public class EditorBookmarksModule extends ModuleInstall {
     private List lastOpenProjects;
 
     public void restored () {
-        synchronized (Settings.class) {
-            SettingsUtil.updateListSetting(BaseKit.class,
-                    SettingsNames.CUSTOM_ACTION_LIST,
-                    new Object[] { BookmarksKitInstallAction.INSTANCE }
-            );
-            SettingsUtil.updateListSetting(BaseKit.class,
-                    SettingsNames.KIT_INSTALL_ACTION_NAME_LIST,
-                    new Object[] { BookmarksKitInstallAction.INSTANCE.getValue(Action.NAME) }
-            );
-            Settings.addInitializer(new BookmarksSettingsInitializer());
-        }
+        Settings.addInitializer(new BookmarksSettingsInitializer());
         
         // Start listening on project closing
         openProjectsListener = new PropertyChangeListener() {
@@ -134,11 +124,6 @@ public class EditorBookmarksModule extends ModuleInstall {
     private void finish() {
         // Stop listening on projects closing
         OpenProjects.getDefault().removePropertyChangeListener(openProjectsListener);
-        
-        synchronized (Settings.class) {
-            List l = SettingsUtil.getClonedList(BaseKit.class,
-                    SettingsNames.CUSTOM_ACTION_LIST);
-        }
         
         Settings.removeInitializer(BookmarksSettingsInitializer.NAME);
         Settings.reset();
