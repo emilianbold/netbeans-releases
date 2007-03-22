@@ -65,6 +65,7 @@ implements Executor, PropertyChangeListener {
         
     private StepRequest stepRequest;
     private String position;
+    private int depth;
     private ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
     private SingleThreadedStepWatch stepWatch;
@@ -123,6 +124,7 @@ implements Executor, PropertyChangeListener {
             position = t.getClassName () + '.' +
                        t.getMethodName () + ':' +
                        t.getLineNumber (null);
+            depth = t.getStackDepth();
             logger.fine("JDI Request (action step into): " + stepRequest);
             if (stepRequest == null) return ;
             try {
@@ -227,7 +229,8 @@ implements Executor, PropertyChangeListener {
                 String stopPosition = t.getClassName () + '.' +
                                       t.getMethodName () + ':' +
                                       t.getLineNumber (null);
-                if (position.equals(stopPosition)) {
+                int stopDepth = t.getStackDepth();
+                if (position.equals(stopPosition) && depth == stopDepth) {
                     // We are where we started!
                     stop = false;
                     resumeThread = setStepRequest (StepRequest.STEP_INTO);
