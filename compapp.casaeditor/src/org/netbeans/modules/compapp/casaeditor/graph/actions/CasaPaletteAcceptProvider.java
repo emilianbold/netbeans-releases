@@ -51,6 +51,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
+import org.openide.util.datatransfer.MultiTransferObject;
 
 /**
  *
@@ -154,33 +155,52 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     private ConnectorState isAcceptableFromOther(Widget widget, Point point, Transferable transferable)
     throws Exception {
-        
+        ConnectorState retState = ConnectorState.REJECT;
         DataFlavor[] dfs = transferable.getTransferDataFlavors();
         CasaRegionWidget region = getScene().getEngineRegion();
         if (region.getBounds().contains(region.convertSceneToLocal(point))) {
             if (dfs.length > 0) {
-                Object dfo = transferable.getTransferData(dfs[0]);
-                if (dfo instanceof Node) {
-                    try {
-                        DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
-                        Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
-                        if (getJbiProjectType(p) != null) {
-                            String pname = p.getProjectDirectory().getName();
-                            // todo: 01/24/07 needs to check for duplicates...
-                            if (mModel.existingServiceUnit(pname)) {
-                                return ConnectorState.REJECT;
-                            } else {
-                                return ConnectorState.ACCEPT;
+                if(dfs[0].getRepresentationClass().equals(MultiTransferObject.class)){
+                    MultiTransferObject mto = (MultiTransferObject)transferable.getTransferData(dfs[0]);
+                    DataFlavor[] df = mto.getTransferDataFlavors(0);
+                    if(df.length > 0) {
+                        for(int i = 0; i < mto.getCount(); i++) {
+                            retState = isAcceptableFromOtherObject(mto.getTransferData(i, df[0]));
+                            if(retState == ConnectorState.REJECT) {
+                                break;
                             }
                         }
-                    } catch (Exception ex) { // bad data objects..
-                        ex.printStackTrace(System.err);
                     }
+                } else {
+                    retState = isAcceptableFromOtherObject(transferable.getTransferData(dfs[0]));
                 }
             }
         }
-        return ConnectorState.REJECT;
+        return retState;
     }
+    
+    private ConnectorState isAcceptableFromOtherObject(Object dfo) {
+        ConnectorState retState = ConnectorState.REJECT;
+        if (dfo instanceof Node) {
+            try {
+                DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
+                Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
+                if (getJbiProjectType(p) != null) {
+                    String pname = p.getProjectDirectory().getName();
+                    // todo: 01/24/07 needs to check for duplicates...
+                    if (mModel.existingServiceUnit(pname)) {
+                        retState = ConnectorState.REJECT;
+                    } else {
+                        retState = ConnectorState.ACCEPT;
+                    }
+                }
+            } catch (Exception ex) { // bad data objects..
+                ex.printStackTrace(System.err);
+            }
+        }
+        return retState;
+    }
+
     
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
@@ -250,17 +270,30 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         // check for SU project node
         DataFlavor[] dfs = transferable.getTransferDataFlavors();
         if (dfs.length > 0) {
-            Object dfo = transferable.getTransferData(dfs[0]);
-            if (dfo instanceof Node) {
-                DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
-                Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
-                String type = getJbiProjectType(p);
-                point = getScene().getEngineRegion().convertSceneToLocal(point);
-                mModel.addInternalJBIModule(p, type, point.x, point.y);
+            if(dfs[0].getRepresentationClass().equals(MultiTransferObject.class)){
+                MultiTransferObject mto = (MultiTransferObject)transferable.getTransferData(dfs[0]);
+                DataFlavor[] df = mto.getTransferDataFlavors(0);
+                if(df.length > 0) {
+                    for(int i = 0; i < mto.getCount(); i++) {
+                        acceptFromOtherObject(mto.getTransferData(i, df[0]), point);
+                    }
+                }
+            } else {
+                acceptFromOtherObject(transferable.getTransferData(dfs[0]), point);
             }
         }
     }
     
+    private void acceptFromOtherObject(Object dfo, Point point) throws Exception {
+        if (dfo instanceof Node) {
+            DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
+            Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
+            String type = getJbiProjectType(p);
+            point = getScene().getEngineRegion().convertSceneToLocal(point);
+            mModel.addInternalJBIModule(p, type, point.x, point.y);
+        }
+    }
+
     // JBIMGR
     private void acceptFromJBIManager(Widget widget, Point point,
             //String suName, String descriptor) throws Exception {

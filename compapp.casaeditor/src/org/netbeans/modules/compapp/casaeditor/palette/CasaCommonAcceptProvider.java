@@ -29,6 +29,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.general.IconNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.openide.nodes.Node;
+import org.openide.util.datatransfer.MultiTransferObject;
 
 /**
  *
@@ -81,20 +82,20 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
         if((mIconImage == null) || (mScene.getDragLayer().getChildren().size() < 1)) {
             try {
                 if (t != null) {
-                    for (DataFlavor flavor : t.getTransferDataFlavors()) {
-                        Class repClass = flavor.getRepresentationClass();
-                        Object data = t.getTransferData(flavor);
-                        if (Node.class.isAssignableFrom(repClass)) {
-                            Node node = (Node) data;
-                            mIconLable = "    " + node.getName();   // NOI18N
-                            mIconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
-                            // DnD from palette
-                            IconNodeWidget iconNodeWidget = new IconNodeWidget(mScene);
-                            iconNodeWidget.setOpaque(false);
-                            if(mScene.getDragLayer().getChildren().size() < 1) {
-                                mScene.getDragLayer().addChild(iconNodeWidget);
+                    DataFlavor[] dfs = t.getTransferDataFlavors();
+                    if (dfs.length > 0) {
+                        if(dfs[0].getRepresentationClass().equals(MultiTransferObject.class)){
+                            MultiTransferObject mto = (MultiTransferObject)t.getTransferData(dfs[0]);
+                            DataFlavor[] df = mto.getTransferDataFlavors(0);
+                            if(df.length > 0) {
+                                for(int i = 0; i < mto.getCount(); i++) {
+                                    if(extractIcon(df[0].getRepresentationClass(), mto.getTransferData(i, df[0]))) {
+                                        break;
+                                    }
+                                }
                             }
-                            break;
+                        } else {
+                            extractIcon(dfs[0].getRepresentationClass(), t.getTransferData(dfs[0]));
                         }
                     }
                 }
@@ -103,4 +104,22 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
             }
         }
     }
+    
+    public boolean extractIcon(Class repClass, Object data) {
+        boolean bExtracted = false;
+        if (Node.class.isAssignableFrom(repClass)) {
+            Node node = (Node) data;
+            mIconLable = "    " + node.getName();   // NOI18N
+            mIconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
+            // DnD from palette
+            IconNodeWidget iconNodeWidget = new IconNodeWidget(mScene);
+            iconNodeWidget.setOpaque(false);
+            if(mScene.getDragLayer().getChildren().size() < 1) {
+                mScene.getDragLayer().addChild(iconNodeWidget);
+            }
+            bExtracted = true;
+        }
+        return bExtracted;
+    }
+
 }

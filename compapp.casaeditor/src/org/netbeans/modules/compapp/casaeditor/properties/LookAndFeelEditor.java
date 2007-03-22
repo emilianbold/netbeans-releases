@@ -33,7 +33,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyEditorSupport;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.nodes.LookAndFeelNode;
@@ -54,8 +53,8 @@ public class LookAndFeelEditor extends PropertyEditorSupport {
     private String mPropertyName;
     private boolean mIsChangesApplied;
     
-    private Map originalColors;
-    private Map originalFonts;
+    private LinkedHashMap<String, Color> originalColors;
+    private LinkedHashMap<String, Font> originalFonts;
 
     
     public enum Option { None, Declared, Other };
