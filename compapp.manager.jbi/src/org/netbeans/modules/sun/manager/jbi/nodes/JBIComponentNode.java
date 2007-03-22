@@ -94,6 +94,16 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             e.printStackTrace();
         }
         
+        try {
+            Sheet.Set sheetSet = createSheetSet("Loggers", // NOI18N
+                    "LBL_LOGGERS_PROPERTIES", // NOI18N
+                    "DSC_LOGGERS_PROPERTIES", // NOI18N
+                    getLoggerProperties());
+            sheet.put(sheetSet);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         return sheet;
     }
         
@@ -103,9 +113,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     }
     
     /**
-     * Return the SheetProperties to be displayed for this JBIComponent.
+     * Return the identification properties to be displayed for this JBIComponent.
      *
-     * @return A java.util.Map containing all JBIComponent properties.
+     * @return A java.util.Map containing all identification properties.
      */
     private Map<Attribute, MBeanAttributeInfo> getIdentificationProperties() 
     throws Exception {
@@ -113,6 +123,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         return getIdentificationProperties(controller, true);
     }
     
+    /**
+     * Return the configuration properties to be displayed for this JBIComponent.
+     *
+     * @return A java.util.Map containing all configuration properties.
+     */
     private Map<Attribute, MBeanAttributeInfo> getConfigurationProperties() 
     throws Exception {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
@@ -120,6 +135,16 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         String name = getName();
         return controller.getJBIComponentConfigProperties(
                 containerType, name, true);
+    }   
+    /**
+     * Return the logger properties to be displayed for this JBIComponent.
+     *
+     * @return A java.util.Map containing all logger properties.
+     */
+    private Map<Attribute, MBeanAttributeInfo> getLoggerProperties() 
+    throws Exception {
+        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+        return controller.getJBIComponentLoggerProperties(getName(), true);
     }   
     
     /**
@@ -148,6 +173,29 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             updatePropertySheet();
             
             return new Attribute(attrName, newValue);
+        } catch (Exception e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+        
+        return null;
+    }
+    
+    public Attribute setLoggerSheetProperty(String attrName, Object value) {
+        
+        try {
+            AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+            controller.setJBIComponentLoggerProperty(getName(), attrName, value);
+        
+            
+//            // Get the new value
+//            Object newValue = controller.getJBIComponentConfigPropertyValue(
+//                    containerType, getName(), attrName);
+            
+            updatePropertySheet();
+            
+            return new Attribute(attrName, value);
         } catch (Exception e) {
             NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
                     NotifyDescriptor.ERROR_MESSAGE);

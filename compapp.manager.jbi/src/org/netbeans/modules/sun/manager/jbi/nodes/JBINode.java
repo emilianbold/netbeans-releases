@@ -50,14 +50,6 @@ public class JBINode extends AppserverJBIMgmtContainerNode {
     /** Creates a new instance of JBINode */
     public JBINode(final AppserverJBIMgmtController controller) {        
         super(controller, NodeTypes.JBI);
-        
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-////                String serverDisplayName = getParentNode().getName(); 
-////                controller.setServerInstanceDisplayName(serverDisplayName);
-//                controller.setJBINode(JBINode.this);
-//            }
-//        });
     }
     
     /**
@@ -96,20 +88,20 @@ public class JBINode extends AppserverJBIMgmtContainerNode {
         return Utils.getIntrospectedPropertyMap(frameworkService, true);
     }
   
-    // FIXME
     public Attribute setSheetProperty(String attrName, Object value) {        
-        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
-        controller.setJBIFrameworkServiceDefaultLogProperty((String)value);
-        
-        // Get the new value
-        Object newValue = getDefaultLogPropertyValue();
-        return new Attribute(attrName, newValue);
+//        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+//        controller.setJBIFrameworkServiceDefaultLogProperty((String)value);
+//        
+//        // Get the new value
+//        Object newValue = getDefaultLogPropertyValue();
+//        return new Attribute(attrName, newValue);
+        return null;
     }
        
-    private String getDefaultLogPropertyValue() {
-        JBIFrameworkService frameworkService = getJBIFrameworkService();
-        return frameworkService.getDefaultLogPropertyValue();
-    }
+//    private String getDefaultLogPropertyValue() {
+//        JBIFrameworkService frameworkService = getJBIFrameworkService();
+//        return frameworkService.getDefaultLogPropertyValue();
+//    }
         
     private JBIFrameworkService getJBIFrameworkService() {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();

@@ -165,6 +165,8 @@ public interface GenericConstants {
     public static final String GET_COMPONENT_INSTALLATION_DESCRIPTOR_NAME = "getComponentInstallationDescriptor"; // NOI18N
     public static final String GET_SHARED_LIBRARY_INSTALLATION_DESCRIPTOR_NAME = "getSharedLibraryInstallationDescriptor"; // NOI18N
     public static final String GET_SERVICE_UNIT_DEPLOYMENT_DESCRIPTOR_NAME = "getServiceUnitDeploymentDescriptor"; // NOI18N
+    public static final String GET_COMPONENT_LOGGER_LEVELS_NAME = "getComponentLoggerLevels"; // NOI18N
+    public static final String SET_COMPONENT_LOGGER_LEVEL_NAME = "setComponentLoggerLevel"; // NOI18N
 
     public static final String DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME = "deployServiceAssembly"; // NOI18N
     public static final String INSTALL_COMPONENT_OPERATION_NAME = "installComponent"; // NOI18N

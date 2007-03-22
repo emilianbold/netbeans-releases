@@ -21,6 +21,7 @@ package org.netbeans.modules.sun.manager.jbi.editors;
 
 import java.awt.Component;
 import java.beans.PropertyEditorSupport;
+import java.util.logging.Level;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
 /**
@@ -32,15 +33,16 @@ public class JBILogLevelEditor extends PropertyEditorSupport implements Enhanced
 
     public String curr_Sel;
     public String[] choices = {
-        "FINEST", // NOI18N
-                "FINER", // NOI18N
-                "FINE", // NOI18N
-                "INFO", // NOI18N
-                "WARNING", // NOI18N
-                "SEVERE", // NOI18N
-                "OFF", // NOI18N
+        Level.FINEST.getLocalizedName(), 
+        Level.FINER.getLocalizedName(), 
+        Level.FINE.getLocalizedName(), 
+        Level.CONFIG.getLocalizedName(), 
+        Level.INFO.getLocalizedName(), 
+        Level.WARNING.getLocalizedName(), 
+        Level.SEVERE.getLocalizedName(), 
+        Level.OFF.getLocalizedName()
     };
-    
+            
     public JBILogLevelEditor() {
         curr_Sel = null;
     }
@@ -56,8 +58,11 @@ public class JBILogLevelEditor extends PropertyEditorSupport implements Enhanced
             curr_Sel = string;
         this.firePropertyChange();
     }
-    
+        
     public void setValue(Object val) {
+        if (val instanceof Level) {
+            val = ((Level) val).getLocalizedName();
+        }
         if (! (val instanceof String)) {
             throw new IllegalArgumentException();
         }
@@ -67,7 +72,7 @@ public class JBILogLevelEditor extends PropertyEditorSupport implements Enhanced
     }
     
     public Object getValue() {
-        return curr_Sel;
+        return curr_Sel == null ? null : Level.parse(curr_Sel);
     }
     
     public String getJavaInitializationString() {

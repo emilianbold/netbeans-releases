@@ -91,7 +91,7 @@ public class JBIFrameworkService implements Serializable {
      */
     public static final String JBI_CONFIG_OBJECTNAME = "com.sun.appserv:name=JBIFramework,type=lifecycle-module,category=config"; // NOI18N
 
-    public static final String JBI_LOG_DEFAULT_PROPERTY_NAME = "com.sun.jbi.defaultLogLevel"; // NOI18N
+//    public static final String JBI_LOG_DEFAULT_PROPERTY_NAME = "com.sun.jbi.defaultLogLevel"; // NOI18N
 
     public static final String LOG_LEVEL_INFO_KEY = "INFO"; // NOI18N
     public static final String LOG_LEVEL_FINEST_KEY = "FINEST"; // NOI18N
@@ -301,16 +301,8 @@ public class JBIFrameworkService implements Serializable {
     public MBeanServerConnection getServerConnection() {
         return this.serverConnection;
     }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param serverConnection The serverConnection to set.
-     */
-//    public void setServerConnection(MBeanServerConnection serverConnection) {
-//        this.serverConnection = serverConnection;
-//    }
     
+    /*
     public String getDefaultLogPropertyValue() {
         String operationName = JBIFrameworkService.JBI_GETPROPERTYVALUE_OPERATION_NAME;
         ObjectName objectName = null;
@@ -343,7 +335,7 @@ public class JBIFrameworkService implements Serializable {
 
         return resultObject;
     }
-
+     
     public void setDefaultLogPropertyValue(String logLevelString) {
         String operationName = JBIFrameworkService.JBI_SETPROPERTY_OPERATION_NAME;
         ObjectName objectName = null;
@@ -376,6 +368,7 @@ public class JBIFrameworkService implements Serializable {
             e.printStackTrace();
         }        
     }
+    */
     
     /**
      * @return Returns the className.
@@ -385,25 +378,11 @@ public class JBIFrameworkService implements Serializable {
     }
 
     /**
-     * @param className The className to set.
-     */
-//    public void setClassName(String className) {
-//        this.className = className;
-//    }
-
-    /**
      * @return Returns the classpath.
      */
     public String getClasspath() {
         return this.classpath;
     }
-
-    /**
-     * @param classpath The classpath to set.
-     */
-//    public void setClasspath(String classpath) {
-//        this.classpath = classpath;
-//    }
 
     /**
      * @return Returns the description.
@@ -413,13 +392,6 @@ public class JBIFrameworkService implements Serializable {
     }
 
     /**
-     * @param description The description to set.
-     */
-//    public void setDescription(String description) {
-//        this.description = description;
-//    }
-
-    /**
      * @return Returns the enabled.
      */
     public boolean isEnabled() {
@@ -427,25 +399,11 @@ public class JBIFrameworkService implements Serializable {
     }
 
     /**
-     * @param enabled The enabled to set.
-     */
-//    public void setEnabled(boolean enabled) {
-//        this.enabled = enabled;
-//    }
-
-    /**
      * @return Returns the failureFatal.
      */
     public boolean isFailureFatal() {
         return this.failureFatal;
     }
-
-    /**
-     * @param failureFatal The failureFatal to set.
-     */
-//    public void setFailureFatal(boolean failureFatal) {
-//        this.failureFatal = failureFatal;
-//    }
 
     /**
      * @return Returns the loadOrder.
@@ -533,8 +491,10 @@ public class JBIFrameworkService implements Serializable {
                 System.out.println("**** JBI Framework is NOT Enabled ****"); // NOI18N
             }
 
+            /*
             String level = service.getDefaultLogPropertyValue();
             service.setDefaultLogPropertyValue(LOG_SEVERE_INFO_KEY);
+            */
         }       
     }
     
