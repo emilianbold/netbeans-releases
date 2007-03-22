@@ -24,6 +24,10 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.websvc.swdp</code-name-base>
             <module-dependencies/>
             <class-path-extension>
+                <runtime-relative-path>ext/swdp/restbeans-api.jar</runtime-relative-path>
+                <binary-origin>../external/swdp/restbeans-api.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/swdp/restbeans-impl.jar</runtime-relative-path>
                 <binary-origin>../external/swdp/restbeans-impl.jar</binary-origin>
             </class-path-extension>

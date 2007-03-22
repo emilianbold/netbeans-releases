@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/swdp/restbeans-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/swdp/restbeans-impl.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/activation.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/jsr250-api.jar!/</resource>
