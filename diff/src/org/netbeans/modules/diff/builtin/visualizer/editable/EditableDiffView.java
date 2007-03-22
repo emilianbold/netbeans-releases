@@ -196,6 +196,14 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
                         jEditorPane1.getEditorPane().setText(NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_NoContent")); // NOI18N
                     }
 
+                    int bgRGB = jEditorPane2.getEditorPane().getBackground().getRGB() & 0xFFFFFF;
+                    if (jEditorPane2.getEditorPane().isEditable() && bgRGB == 0xFFFFFF) {
+                        jEditorPane1.getEditorPane().setBackground(COLOR_READONLY_BG);
+                    }
+                    if (bgRGB == 0) {
+                        colorLines   = Color.WHITE;
+                    }
+                    
                     Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
                     if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
 
@@ -877,9 +885,6 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         jSplitPane1.putClientProperty(UndoRedo.class, editorUndoRedo);
         jEditorPane2.getEditorPane().setDocument(doc);
         jEditorPane2.getEditorPane().setEditable(editableCookie != null);
-        if (jEditorPane2.getEditorPane().isEditable()) {
-            jEditorPane1.getEditorPane().setBackground(COLOR_READONLY_BG);
-        }
         if (doc instanceof NbDocument.CustomEditor) {
             Component c = ((NbDocument.CustomEditor)doc).createEditor(jEditorPane2.getEditorPane());
             if (c instanceof JComponent) {
