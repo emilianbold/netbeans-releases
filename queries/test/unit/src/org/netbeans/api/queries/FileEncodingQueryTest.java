@@ -60,27 +60,29 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 /**
  *
  * @author Tomas Zezula
  */
 public class FileEncodingQueryTest extends NbTestCase {
+    static {
+        // confuse the system a bit, if your system runs with UTF-8 default locale...
+        //System.setProperty("file.encoding", "cp1252");
+    }
     
     private final String expectedEncoding;
     private final File file;
-    private final Method testMethod;
     
     public FileEncodingQueryTest (final String name, final File file, final String expectedEncoding) {
         super (name);
         this.file = file;
         this.expectedEncoding = expectedEncoding;
-        this.testMethod = null;
     }
     
-    public FileEncodingQueryTest (final Method testMethod) {
-        super (testMethod.getName());
-        this.testMethod = testMethod;
+    public FileEncodingQueryTest (final String testMethod) {
+        super (testMethod);
         this.file = null;
         this.expectedEncoding = null;
     }
@@ -115,20 +117,16 @@ public class FileEncodingQueryTest extends NbTestCase {
                 suite.addTest(new FileEncodingQueryTest(FileEncodingQueryTest.class.getSimpleName()+" "+c.getName(),c,encoding));
             }
         }
-        Method testMethod = FileEncodingQueryTest.class.getDeclaredMethod("testPartialRead");
-        if (testMethod != null) {
-            testMethod.setAccessible(true);
-            suite.addTest (new FileEncodingQueryTest(testMethod));
-        }
+        suite.addTestSuite(FileEncodingQueryTest.class);
         return suite;
     }
     
     @Override
     protected void runTest() throws Throwable {
-        if (testMethod != null) {
-            testMethod.invoke(this);
-        }
-        else {
+        if (file == null && expectedEncoding == null) {
+            super.runTest();
+            return;
+        } else {
             final Listener listener = new Listener ();
             Logger.getLogger(FileEncodingQuery.class.getName()).setLevel(Level.FINEST);
             Logger.getLogger(FileEncodingQuery.class.getName()).addHandler(listener);
@@ -181,6 +179,12 @@ public class FileEncodingQueryTest extends NbTestCase {
         out.close();
         assertEquals(testString, new String(outbs.toByteArray()));
         
+    }
+    
+    public void testDefaultEncodingOnSFSIsUTF8() throws IOException {
+        FileObject fo = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "some.file");
+        Charset enc = FileEncodingQuery.getEncoding(fo);
+        assertEquals("UTF-8", enc.toString());
     }
     
     private void performTest(File templ, String expectedEncoding) throws Exception {

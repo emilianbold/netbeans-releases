@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.script.Bindings;
@@ -33,6 +34,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
@@ -65,11 +67,13 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
         
         String nameUniq = FileUtil.findFreeFileName(f, name, template.getExt());
         FileObject output = FileUtil.createData(f, nameUniq + '.' + template.getExt());
-
+        Charset targetEnc = FileEncodingQuery.getEncoding(output);
+        Charset sourceEnc = FileEncodingQuery.getEncoding(template);
+        
         Writer w = null;
         Reader is = null;
         try {
-            w = new OutputStreamWriter(output.getOutputStream());
+            w = new OutputStreamWriter(output.getOutputStream(), targetEnc);
             
             IndentEngine format = IndentEngine.find(template.getMIMEType());
             if (format != null) {
@@ -83,7 +87,7 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
             //eng.getContext().setBindings(bind, ScriptContext.ENGINE_SCOPE);
             eng.getContext().setAttribute(FileObject.class.getName(), template, ScriptContext.ENGINE_SCOPE);
             eng.getContext().setAttribute(ScriptEngine.FILENAME, template.getNameExt(), ScriptContext.ENGINE_SCOPE);
-            is = new InputStreamReader(template.getInputStream());
+            is = new InputStreamReader(template.getInputStream(), sourceEnc);
             eng.eval(is);
         }catch (ScriptException ex) {
             IOException io = new IOException(ex.getMessage());

@@ -33,6 +33,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.queries.UnknownEncoding;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
@@ -71,7 +72,15 @@ public class FileEncodingQuery {
                 delegates.add(encoding);
             }
         }
-        delegates.add(Charset.defaultCharset());
+        try {
+            if (file.getFileSystem().isDefault()) {            
+                delegates.add(Charset.forName(UTF_8));
+            } else {
+                delegates.add(Charset.defaultCharset());
+            }
+        } catch (FileStateInvalidException ex) {
+            delegates.add(Charset.defaultCharset());
+        }
         return new ProxyCharset (delegates);
     }   
     

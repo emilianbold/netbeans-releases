@@ -21,19 +21,27 @@
 package org.netbeans.modules.templates;
 
 import java.awt.Dialog;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import javax.swing.JDialog;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
@@ -43,12 +51,17 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jaroslav Tulach
  */
 public class SCFTHandlerTest extends NbTestCase {
+    static {
+        // confuse the system a bit, if your system runs with UTF-8 default locale...
+        //System.setProperty("file.encoding", "cp1252");
+    }
     
     public SCFTHandlerTest(String testName) {
         super(testName);
@@ -59,7 +72,7 @@ public class SCFTHandlerTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        MockServices.setServices(DD.class, Pool.class);
+        MockServices.setServices(DD.class, Pool.class, FEQI.class);
     }
 
     protected void tearDown() throws Exception {
@@ -161,6 +174,54 @@ public class SCFTHandlerTest extends NbTestCase {
         assertEquals("Fully read", arr.length, len);
         return new String(arr);
     }
+
+    private static String readChars(FileObject fo, Charset set) throws IOException {
+        CharBuffer arr = CharBuffer.allocate((int)fo.getSize() * 2);
+        BufferedReader r = new BufferedReader(new InputStreamReader(fo.getInputStream(), set));
+        while (r.read(arr) != -1) {
+            // again
+        }
+        r.close();
+        
+        arr.flip();
+        return arr.toString();
+    }
+
+     public void testUTF8() throws Exception {
+         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+         FileObject xmldir = FileUtil.createFolder(root, "xml");
+         FileObject xml = FileUtil.createData(xmldir, "class.txt");
+         OutputStream os = xml.getOutputStream();
+         FileUtil.copy(getClass().getResourceAsStream("utf8.xml"), os);
+         xml.setAttribute("javax.script.ScriptEngine", "freemarker");
+         os.close();
+         
+         DataObject obj = DataObject.find(xml);
+         
+         
+         FileObject target = FileUtil.createFolder(FileUtil.createMemoryFileSystem().getRoot(), "dir");
+         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(target, "target"));
+         
+         
+         
+         Charset set = Charset.forName("iso-8859-2");
+         FEQI.fs = target.getFileSystem();
+         FEQI.result = set;
+         
+         
+         Map<String,String> parameters = Collections.singletonMap("title", "Nazdar");
+         DataObject n = obj.createFromTemplate(folder, "complex", parameters);
+         
+         assertEquals("Created in right place", folder, n.getFolder());
+         assertEquals("Created with right name", "complex.txt", n.getName());
+         
+         
+         String read = readChars(n.getPrimaryFile(), set);
+         
+         String exp = readChars(xml, Charset.forName("utf-8"));
+         assertEquals(exp, read);
+         
+     }
     
     public static final class DD extends DialogDisplayer {
         public Object notify(NotifyDescriptor descriptor) {
@@ -187,6 +248,22 @@ public class SCFTHandlerTest extends NbTestCase {
                 }
             };
              */
+        }
+    }
+
+    public static final class FEQI extends FileEncodingQueryImplementation {
+        public static FileSystem fs;
+        public static Charset result;
+    
+        public Charset getEncoding(FileObject f) {
+            try {
+                if (f.getFileSystem() == fs) {
+                    return result;
+                }
+                return null;
+            } catch (FileStateInvalidException ex) {
+                return null;
+            }
         }
     }
     

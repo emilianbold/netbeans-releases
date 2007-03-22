@@ -81,6 +81,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+      <change id="FileEncodingQueryOnDefaultFS">
+        <api name="general"/>
+        <summary>Default Encoding of System File System is always UTF-8</summary>
+        <version major="1" minor="10"/>
+        <date day="28" month="3" year="2007"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible">
+        </compatibility>
+        <description>
+          <p>
+          Whenever someone queries for encoding of a file object on default
+          file system (e.g. the one that is provided by layers), it will get
+          UTF-8 as the default encoding and not the system one. As a result
+          all resources on layers should be in UTF-8 encoding.
+          </p>
+        </description>
+        <class package="org.netbeans.api.queries" name="FileEncodingQuery"/>
+        <issue number="94676"/>
+      </change>
       <change id="FileEncodingQuery">
         <api name="general"/>
         <summary>Added support for obtaining encoding of files</summary>
