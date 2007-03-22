@@ -63,6 +63,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         suite.addTest(new ClassMemberTest("testAddInnerInterface"));
         suite.addTest(new ClassMemberTest("testAddInnerAnnotationType"));
         suite.addTest(new ClassMemberTest("testAddInnerEnum"));
+        suite.addTest(new ClassMemberTest("testAddMethodAndModifyConstr"));
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit1"));
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit2"));
         return suite;
@@ -780,6 +781,66 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                         Collections.<Tree>emptyList()
                 );
                 workingCopy.rewrite(topLevel, make.addClassMember(topLevel, innerIntfc));
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * 
+     */
+    public void testAddMethodAndModifyConstr() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    public Test() {\n" +
+            "        // TODO: Make it!\n" +
+            "        int i = 0;\n" +
+            "    }\n" +
+            "\n" +
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
+            "    }\n" +
+            "    \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree constr = (MethodTree) classTree.getMembers().get(0);
+//                ModifiersTree parMods = make.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
+                // create parameters
+//                VariableTree par1 = make.Variable(parMods, "a", make.PrimitiveType(TypeKind.INT), null);
+//                VariableTree par2 = make.Variable(parMods, "b", make.PrimitiveType(TypeKind.INT), null);
+//                MethodTree constrCopy = make.addMethodParameter(constr, par1);
+//                constrCopy = make.addMethodParameter(constrCopy, par2);
+                BlockTree newBody = make.createMethodBody(constr, "{ // TODO: Make it!\nint i = 0; }");
+                workingCopy.rewrite(constr.getBody(), newBody);
+                ClassTree copy = make.insertClassMember(classTree, 1, m(make));
+                workingCopy.rewrite(classTree, copy);
             }
             
             public void cancel() {
