@@ -75,6 +75,8 @@ public class WorkingCopy extends CompilationController {
     }
 
     private synchronized void init() throws ReattributionException {
+        if (changes != null) //already initialized
+            return;
         final CompilationUnitTree tree = getCompilationUnit();
         if (tree != null) {
             Context context = getContext();
