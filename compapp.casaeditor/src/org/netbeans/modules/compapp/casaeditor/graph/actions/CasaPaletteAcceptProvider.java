@@ -115,23 +115,6 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return retState;
     }
     
-    // JBIMGR
-    private ConnectorState isAcceptableFromJBIManager(Widget widget, Point point,
-            Object transferData) {
-        ConnectorState retState = ConnectorState.REJECT;
-        CasaRegionWidget extRegion = getScene().getExternalRegion();
-        if (extRegion.getBounds().contains(extRegion.convertSceneToLocal(point))) {
-            String projName /*suName*/ = (String) ((List) transferData).get(1); // FIXME: 
-            if (mModel.existingServiceUnit(projName)) { // FIXME: existingExternalServiceUnit?
-                retState = ConnectorState.REJECT;
-            } else {
-                retState = ConnectorState.ACCEPT;
-            }
-        }
-        return retState;
-    }
-    // JBIMGR
-    
     private ConnectorState isAcceptableFromPalette(Point point, CasaPaletteItem selNode) {
         CasaRegionWidget region = getApplicableRegion(selNode);
         ConnectorState retState = ConnectorState.REJECT;
@@ -178,12 +161,14 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 break;
             }
         }
-        if(region != null) {
-            if(curState == ConnectorState.ACCEPT && bIgnoreRegionCheck) {    //HighLight region!
-                highlightRegion(region);
-            } else {
-                if (!(curState == ConnectorState.ACCEPT && region.getBounds().contains(region.convertSceneToLocal(point)))) {
+        if(curState == ConnectorState.ACCEPT) { //Check further whether its droppable region and visual feedback needed
+            if(region != null) {
+                if(bIgnoreRegionCheck) {    //HighLight region!
+                    highlightRegion(region);
+                } else {
+                    if (!region.getBounds().contains(region.convertSceneToLocal(point))) {  //Check for region bounds
                         curState = ConnectorState.REJECT;
+                    }
                 } 
             }
         }
@@ -202,12 +187,10 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                         DataFlavor[] df = mto.getTransferDataFlavors(0);
                         if(df.length > 0) {
                             for(int i = 0; i < mto.getCount(); i++) {
-                                //retList.add(mto.getTransferData(i, df[0]));
-                                //retList.add(mto.getTransferData(i, genericDataFlavor));
                                 if (transferable.isDataFlavorSupported(genericDataFlavor)) {
                                     retList.add(mto.getTransferData(i, genericDataFlavor));
                                 } else {
-                                    retList.add(mto.getTransferData(i, dfs[0]));
+                                    retList.add(mto.getTransferData(i, df[0]));
                                 }
                             }
                         }
@@ -343,21 +326,11 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
        } else {
             try {
                isAcceptableFromOther(null, transferable, true);    //Also highlights the region
-               /*
-                if (isAcceptableFromOther(null, transferable, true) == ConnectorState.ACCEPT) {
-                    region = getScene().getEngineRegion();
-                }
-                */
             }
             catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
        }
-        /*
-       if(region != null) {
-            highlightRegion(region); 
-       }
-         */
     }
     
     public void acceptFinished() {

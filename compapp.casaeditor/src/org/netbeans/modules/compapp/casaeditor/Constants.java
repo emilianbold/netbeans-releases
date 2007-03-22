@@ -28,6 +28,7 @@ public interface Constants {
     String SQUARE_BRACKET_CLOSE = "]";      // NOI18N
     String SQUARE_BRACKET_OPEN = "]";      // NOI18N
     String PERIOD = ".";            // NOI18N
+    String STRING_EXTENSION = "...";    // NOI18N
 
     int TOOLTIP_INITIAL_DELAY = 0;
 }

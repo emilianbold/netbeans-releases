@@ -27,6 +27,7 @@ import java.beans.BeanInfo;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.general.IconNodeWidget;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.openide.nodes.Node;
 import org.openide.util.datatransfer.MultiTransferObject;
@@ -40,7 +41,6 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
     private CasaModelGraphScene mScene;
     private Image mIconImage = null;
     private String mIconLable;
-    
     
     public CasaCommonAcceptProvider(CasaModelGraphScene scene) {
         mScene = scene;
@@ -89,13 +89,13 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
                             DataFlavor[] df = mto.getTransferDataFlavors(0);
                             if(df.length > 0) {
                                 for(int i = 0; i < mto.getCount(); i++) {
-                                    if(extractIcon(df[0].getRepresentationClass(), mto.getTransferData(i, df[0]))) {
+                                    if(extractIcon(df[0].getRepresentationClass(), mto.getTransferData(i, df[0]), true)) {
                                         break;
                                     }
                                 }
                             }
                         } else {
-                            extractIcon(dfs[0].getRepresentationClass(), t.getTransferData(dfs[0]));
+                            extractIcon(dfs[0].getRepresentationClass(), t.getTransferData(dfs[0]),false);
                         }
                     }
                 }
@@ -105,11 +105,14 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
         }
     }
     
-    public boolean extractIcon(Class repClass, Object data) {
+    public boolean extractIcon(Class repClass, Object data, boolean bMultipleObjects) {
         boolean bExtracted = false;
         if (Node.class.isAssignableFrom(repClass)) {
             Node node = (Node) data;
             mIconLable = "    " + node.getName();   // NOI18N
+            if(bMultipleObjects) {
+                mIconLable += Constants.STRING_EXTENSION;
+            }
             mIconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
             // DnD from palette
             IconNodeWidget iconNodeWidget = new IconNodeWidget(mScene);
@@ -121,5 +124,4 @@ public class CasaCommonAcceptProvider implements CasaAcceptProvider {
         }
         return bExtracted;
     }
-
 }
