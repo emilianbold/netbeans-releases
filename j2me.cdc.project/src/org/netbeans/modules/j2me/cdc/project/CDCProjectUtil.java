@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2me.cdc.project;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,9 +29,12 @@ import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
@@ -45,6 +49,7 @@ import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.modules.j2me.cdc.platform.CDCDevice;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Miscellaneous utilities for the cdcproject module.
@@ -92,23 +97,38 @@ public class CDCProjectUtil {
         final String specialXletFqn = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_XLET)  : null;
         final String specialAppletFqn = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_APPLET)  : null;
         
-        ClassPath boot = ClassPath.getClassPath (root, ClassPath.BOOT);  //Single compilation unit
-        ClassPath rtm2  = ClassPath.getClassPath (root, ClassPath.EXECUTE);  //Single compilation unit'
-        ClassPath rtm1 = ClassPath.getClassPath (root, ClassPath.COMPILE);
-        ClassPath rtm  = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[] { rtm1, rtm2 } );
-        ClassPath clp = ClassPath.getClassPath (root, ClassPath.SOURCE);        
+        final ClassPath boot = ClassPath.getClassPath (root, ClassPath.BOOT);  //Single compilation unit
+        final ClassPath rtm2 = ClassPath.getClassPath (root, ClassPath.EXECUTE);  //Single compilation unit'
+        final ClassPath rtm1 = ClassPath.getClassPath (root, ClassPath.COMPILE);
+        final ClassPath rtm  = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[] { rtm1, rtm2 } );
         
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot, rtm, clp);
+        /* Here is the trick to include not build dependent projects */
+        ArrayList<ClassPath> srcRoots=new ArrayList<ClassPath>();
+        srcRoots.add(ClassPath.getClassPath (root, ClassPath.SOURCE));
+        for (Entry e: rtm2.entries())
+        {
+            Result res=null;
+            try {
+                res=SourceForBinaryQuery.findSourceRoots(e.getURL());
+            } catch(Exception ex) {}
+            FileObject[] roots=res.getRoots();
+            for ( FileObject r : roots)
+                srcRoots.add(ClassPath.getClassPath(r,ClassPath.SOURCE));
+        }
+        
+        final ClassPath src = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(srcRoots.toArray(new ClassPath[srcRoots.size()]));                
+         
+        final ClasspathInfo cpInfo = ClasspathInfo.create(boot, rtm, src);
+        
         JavaSource js = JavaSource.create(cpInfo);
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
 
                 HashSet<SearchKind> sk=new HashSet<SearchKind>();
                 HashSet<SearchScope> ss=new HashSet<SearchScope>();
-                ClassIndex index;
                 CompilationController control; 
                 
-                Collection<ElementHandle<TypeElement>> addChildren(Collection<ElementHandle<TypeElement>> elems)
+                Collection<ElementHandle<TypeElement>> addChildren(ClassIndex index,Collection<ElementHandle<TypeElement>> elems)
                 {
                     Collection<ElementHandle<TypeElement>> elcl=new ArrayList<ElementHandle<TypeElement>>();
                     for (ElementHandle<TypeElement> elem : elems )
@@ -116,7 +136,7 @@ public class CDCProjectUtil {
                         Collection<ElementHandle<TypeElement>> newEl=index.getElements(elem, sk, ss);
                         if (newEl.size()!=0)
                         {                            
-                            elcl.addAll(addChildren(newEl));
+                            elcl.addAll(addChildren(index,newEl));
                         }
                         elcl.add(elem);
                     }
@@ -148,9 +168,9 @@ public class CDCProjectUtil {
                         // no main classes
                         return;
                     }
-                    
-                    index=control.getClasspathInfo().getClassIndex();
-                    arr.addAll(addChildren(exec));
+                    ClasspathInfo newInfo = ClasspathInfo.create(rtm1, rtm1, src);
+                    ClassIndex index=newInfo.getClassIndex();
+                    arr.addAll(addChildren(index,exec));
                     arr.removeAll(exec);
                     
                     for (ElementHandle<TypeElement> res : arr ){
