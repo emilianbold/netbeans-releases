@@ -147,12 +147,17 @@ public class ChangeCVSRootAction extends AbstractAction {
         for (File file : ctx.getRootFiles()) {
             try {
                 String root = CvsRootRewriter.getCvsRoot(file);
-                sb.append(root);
-                sb.append(", ");  // NOI18N
+                if (root != null) {
+                    sb.append(root);
+                    sb.append(", ");  // NOI18N
+                }
             } catch (IOException e) {
                 Logger.getLogger(ChangeCVSRootAction.class.getName()).log(Level.WARNING, "", e);  // NOI18N
                 // ignore for now
             }
+        }
+        if (sb.length() == 0) {
+            return NbBundle.getMessage(ChangeCVSRootAction.class, "MSG_CvsRootForm_NoCurrentRoot");
         }
         sb.delete(sb.length() - 2, sb.length());
         return sb.toString();

@@ -125,7 +125,8 @@ class ChangeCVSRootPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-        String root = newRootCombo.getSelectedItem().toString();
+        Object item = newRootCombo.getSelectedItem();
+        String root = item == null ? "" : item.toString();
         root = RootWizard.editCvsRoot(root);
         if (root != null) {
             newRootCombo.setSelectedItem(root);
