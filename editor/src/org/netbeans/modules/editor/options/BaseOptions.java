@@ -591,9 +591,6 @@ public class BaseOptions extends OptionSupport {
         loadDefaultAbbreviations();
         loadSettings(AbbrevsMIMEProcessor.class);
         Map settingsMap = (Map)super.getSettingValue(SettingsNames.ABBREV_MAP);
-        if (settingsMap == null){
-            org.netbeans.editor.Utilities.annotateLoggable(new NullPointerException("settingsMap is null for kit:"+getKitClass())); //NOI18N
-        }
         Map ret = (settingsMap == null) ? new HashMap() : new HashMap(settingsMap);
         return ret;
     }
@@ -1025,9 +1022,6 @@ public class BaseOptions extends OptionSupport {
     
     private Map getColoringMap_old() {
         Map settingsMap = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
-        if (settingsMap == null){
-            org.netbeans.editor.Utilities.annotateLoggable(new NullPointerException("settingsMap is null for kit:"+getKitClass())); //NOI18N
-        }
         Map cm = (settingsMap == null) ? new HashMap() : new HashMap(settingsMap);
         cm.put(null, getKitClass().getName() ); // add kit class
         return cm;
@@ -1207,9 +1201,6 @@ public class BaseOptions extends OptionSupport {
         loadDefaultMacros();
         loadSettings(MacrosMIMEProcessor.class);
         Map settingsMap = (Map)super.getSettingValue(SettingsNames.MACRO_MAP);
-        if (settingsMap == null){
-            org.netbeans.editor.Utilities.annotateLoggable(new NullPointerException("settingsMap is null for kit:"+getKitClass())); //NOI18N
-        }
         Map ret = (settingsMap == null) ? new HashMap() : new HashMap(settingsMap);
         ret.put(null, getKBList());
         return ret;

@@ -538,7 +538,7 @@ public class NbEditorKit extends ExtKit {
     }
 
     /** Switch visibility of line numbers in editor */
-    public class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
+    public static class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
 
         
         public NbToggleLineNumbersAction() {

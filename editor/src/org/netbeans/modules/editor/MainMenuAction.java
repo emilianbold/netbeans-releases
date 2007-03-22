@@ -44,6 +44,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -172,30 +173,30 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     protected void setMenu(){
         ActionMap am = getContextActionMap();
         Action action = null;
-        JMenuItem presenter = getMenuPresenter();
-        if (am!=null){
+        if (am != null) {
             action = am.get(getActionName());
-            if (action == null){
-                action = getGlobalKitAction();
-            }
-            Action presenterAction = presenter.getAction();
-            if (presenterAction == null){
-                if (action != null){
-                    presenter.setAction(action);
-                    presenter.setToolTipText(null); /* bugfix #62872 */ 
-                    menuInitialized = false;
-                }
-            }else{
-                if ((action!=null && !action.equals(presenterAction))){
-                    presenter.setAction(action);
-                    presenter.setToolTipText(null); /* bugfix #62872 */
-                    menuInitialized = false;
-                }else if (action == null){
-                    presenter.setEnabled(false);
-                }
-            }
         }
 
+        if (action == null){
+            action = getGlobalKitAction();
+        }
+        
+        JMenuItem presenter = getMenuPresenter();
+        Action presenterAction = presenter.getAction();
+        if (presenterAction == null){
+            if (action != null){
+                presenter.setAction(action);
+                presenter.setToolTipText(null); /* bugfix #62872 */ 
+                menuInitialized = false;
+            }
+        }else{
+            if ((action!=null && !action.equals(presenterAction))){
+                presenter.setAction(action);
+                presenter.setToolTipText(null); /* bugfix #62872 */
+                menuInitialized = false;
+            }
+        }
+        
         if (!menuInitialized){
             Mnemonics.setLocalizedText(presenter, getMenuItemText());
             menuInitialized = true;
@@ -244,35 +245,24 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     public static class ShowToolBarAction extends MainMenuAction{
 
         private static JCheckBoxMenuItem SHOW_TOOLBAR_MENU;
-            
+        private Action delegate = null;
+        
         public ShowToolBarAction(){
             super(false, null);
             SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText());
             setMenu();
         }
 
-        /*
-        protected Action getGlobalKitAction(){
-            BaseKit kit = BaseKit.getKit(NbEditorKit.class);
-            return (kit!=null) ? kit.getActionByName(getActionName()) : null;
-        }
-         */
-        
         protected void setMenu(){
             super.setMenu();
-            SHOW_TOOLBAR_MENU.setState(isToolbarVisible());
+            boolean visible = AllOptionsFolder.getDefault().isToolbarVisible();
+            SHOW_TOOLBAR_MENU.setState(visible);
         }
         
         public JMenuItem getMenuPresenter() {
             return SHOW_TOOLBAR_MENU;
         }
 
-        private static boolean isToolbarVisible(){
-            BaseKit kit = getKit();
-            if (kit==null) return false;
-            return getSettingBoolean(kit, BaseOptions.TOOLBAR_VISIBLE_PROP);
-        }
-        
         protected String getMenuItemText(){
             return NbBundle.getBundle(MainMenuAction.class).getString(
                 "show_editor_toolbar_main_menu_view_item"); //NOI18N
@@ -282,12 +272,19 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             return ExtKit.toggleToolbarAction;
         }        
         
+        protected Action getGlobalKitAction() {
+            if (delegate == null) {
+                delegate = new NbEditorKit.ToggleToolbarAction();
+            }
+            return delegate;
+        }
     }
     
     
     public static class ShowLineNumbersAction extends MainMenuAction{
 
         private JCheckBoxMenuItem SHOW_LINE_MENU;
+        private Action delegate = null;
         
         public ShowLineNumbersAction(){
             super(false, null);
@@ -297,7 +294,8 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         
         protected void setMenu(){
             super.setMenu();
-            SHOW_LINE_MENU.setState(isLineNumbersVisible());
+            boolean visible = AllOptionsFolder.getDefault().getLineNumberVisible();
+            SHOW_LINE_MENU.setState(visible);
         }
         
         protected String getMenuItemText(){
@@ -313,16 +311,16 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             return SHOW_LINE_MENU;
         }
         
-        private static boolean isLineNumbersVisible(){
-            BaseKit kit = getKit();
-            if (kit==null) return false;
-            return getSettingBoolean(kit, SettingsNames.LINE_NUMBER_VISIBLE);
-        }
-        
         protected String getActionName() {
             return ExtKit.toggleLineNumbersAction;
         }
         
+        protected Action getGlobalKitAction() {
+            if (delegate == null) {
+                delegate = new NbEditorKit.NbToggleLineNumbersAction();
+            }
+            return delegate;
+        }
     }
     
     
