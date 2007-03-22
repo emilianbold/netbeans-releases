@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
 import org.openide.ErrorManager;
 
 /**
@@ -97,7 +98,7 @@ public class VisualSQLEditorMetaDataImpl implements VisualSQLEditorMetaData {
     {
         try {
 	    if ( dsName.startsWith(contextSuffix)) dsName = dsName.substring(contextSuffix.length()) ;
-	    dataSourceInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(dsName) ;
+            dataSourceInfo = DesignTimeDataSourceHelper.getDsInfo(dsName);
 
 	    // TODO:  add listeners to dataSourceInfo for DatabaseMetaDataHelper changes.
 	    dataSourceInfo.addConnectionListener(listener) ;

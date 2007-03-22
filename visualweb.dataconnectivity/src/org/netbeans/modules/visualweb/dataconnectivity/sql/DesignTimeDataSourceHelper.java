@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -41,6 +40,8 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.xml.sax.Attributes;
@@ -545,5 +546,12 @@ public class DesignTimeDataSourceHelper {
             return true;
         else
             return false;
+    }
+    
+    public static DataSourceInfo getDsInfo(String dsName) {
+        ProjectDataSourceManager projectDataSourceManager  = new ProjectDataSourceManager(CurrentProject.getInstance().getProject());
+        RequestedJdbcResource jdbcResource = projectDataSourceManager.getDataSourceWithName(dsName);
+        
+        return new DataSourceInfo(dsName, jdbcResource.getDriverClassName(), jdbcResource.getUrl(), null, jdbcResource.getUsername(), jdbcResource.getPassword());
     }
 }
