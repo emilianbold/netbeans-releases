@@ -16,6 +16,7 @@ package org.netbeans.modules.vmd.midp.screen;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceOrderingController;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
+import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
 import org.openide.util.Utilities;
 
 /**
@@ -37,7 +38,13 @@ public class ScreenResourceCategoryDescriptorSupport {
             "Resources available in the design",
             100,
             ScreenResourceOrderingController.getDefaultOrdering()
-        );
+    );
     
-    
+    public static ScreenResourceCategoryDescriptor ITEMS = new ScreenResourceCategoryDescriptor (
+            "Items",
+            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/resource_16.png"),
+            "Items assigned to the screen",
+            -100,
+            ScreenResourceOrderingController.getArrayOrdering(FormCD.PROP_ITEMS)
+    );
 }

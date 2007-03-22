@@ -28,6 +28,7 @@ public class DisplayableResourceCategoriesPresenter extends ScreenResourceCatego
     private static final ArrayList<ScreenResourceCategoryDescriptor> CATEGORIES = new ArrayList<ScreenResourceCategoryDescriptor>();
     static {
         CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.ASSIGNED_COMMANDS);
+        CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.ITEMS);
         CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.OTHER_DESIGN_RESOURCES);
     }
     
