@@ -88,9 +88,7 @@ class LuceneIndex extends Index {
     /** Creates a new instance of LuceneIndex */
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
-        this.directory = FSDirectory.getDirectory(refCacheRoot, false);
-        String lockId = this.directory.getLockID();  //Old lock file
-        this.directory.clearLock(lockId);
+        this.directory = FSDirectory.getDirectory(refCacheRoot, new NBLockFactory ());
     }
 
     @SuppressWarnings("unchecked") // NOI18N, unchecked - lucene has source 1.4
@@ -614,13 +612,17 @@ class LuceneIndex extends Index {
     }
     
     public synchronized void close () throws IOException {
-        if (this.reader != null) {
-            this.reader.close();
-            this.reader = null;
-        }
-        if (this.writer != null) {
-            this.writer.close();
-            this.writer = null;
+        try {
+            if (this.reader != null) {
+                this.reader.close();
+                this.reader = null;
+            }
+            if (this.writer != null) {
+                this.writer.close();
+                this.writer = null;
+            }
+        } finally {
+           this.directory.close();
         }
     }
     

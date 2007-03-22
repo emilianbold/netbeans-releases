@@ -185,11 +185,24 @@ public abstract class Index {
         return result;
     }
     
+    
+    
+    /**
+     *  Returns non cached netbeans user dir.
+     *  For performance reasons the returned {@link File} is not normalized.
+     *  Client is responsible to call {@link FileUtil.normalizeFile}
+     *  before using the returned value.
+     *  @return netbeans user dir.
+     */
+    static File getNbUserDir () {
+        final String nbUserProp = System.getProperty(NB_USER_DIR);        
+        assert nbUserProp != null;
+        return new File (nbUserProp);
+    }
+    
     private static synchronized File getCacheFolder () {
         if (cacheFolder == null) {
-            final String nbUserProp = System.getProperty(NB_USER_DIR);        
-            assert nbUserProp != null;
-            final File nbUserDir = new File (nbUserProp);        
+            final File nbUserDir = getNbUserDir();
             cacheFolder = FileUtil.normalizeFile(new File (nbUserDir, INDEX_DIR));
             if (!cacheFolder.exists()) {
                 boolean created = cacheFolder.mkdirs();                
