@@ -384,8 +384,8 @@ public final class InternalHandle {
     /**
      *public because of tests.
      */
-    public int getPercentageDone() {
-        return (int)((long)currentUnit * 100 / (long)totalUnits); 
+    public double getPercentageDone() {
+        return ((double)currentUnit * 100 / (double)totalUnits); 
     }
 
     public long getTimeStampStarted() {

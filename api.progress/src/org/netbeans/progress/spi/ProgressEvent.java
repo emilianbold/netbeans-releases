@@ -35,7 +35,7 @@ public final class ProgressEvent {
 
      private InternalHandle source;
      private long estimatedCompletion;
-     private int percentageDone;
+     private double percentageDone;
      private int workunitsDone;
      private String message;
      private int type;
@@ -68,14 +68,14 @@ public final class ProgressEvent {
      * @param percentage completed work percentage
      * @param estimate estimate of completion in seconds
      */
-    public ProgressEvent(InternalHandle src, String msg, int units, int percentage, long estimate, boolean isWatched) {
+    public ProgressEvent(InternalHandle src, String msg, int units, double percentage, long estimate, boolean isWatched) {
         this(src, TYPE_PROGRESS, isWatched);
         workunitsDone = units;
         percentageDone = percentage;
         estimatedCompletion = estimate;
         message = msg;
     }
-    public ProgressEvent(InternalHandle src, String msg, int units, int percentage, long estimate, boolean isWatched, String displayName) {
+    public ProgressEvent(InternalHandle src, String msg, int units, double percentage, long estimate, boolean isWatched, String displayName) {
         this(src, msg, units, percentage, estimate, isWatched);
         this.displayName = displayName;
     }
@@ -88,7 +88,7 @@ public final class ProgressEvent {
         return estimatedCompletion;
     }
 
-    public int getPercentageDone() {
+    public double getPercentageDone() {
         return percentageDone;
     }
 

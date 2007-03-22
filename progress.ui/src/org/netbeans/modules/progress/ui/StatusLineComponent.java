@@ -318,12 +318,17 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         return "" + minutes + (seconds < 10 ? ":0" : ":") + seconds;
     }
     
-    static String getBarString(int percentage, long estimatedCompletion) {
+    static String getBarString(double percentage, long estimatedCompletion) {
         if (estimatedCompletion != -1) {
             return formatEstimate(estimatedCompletion);
         }
         if (percentage != -1) {
-            return "" + percentage + "%";
+            if (percentage < 1 || percentage > 99) {
+                int x = (int)(percentage * 100);
+                int y = (int)percentage;
+                return "" + y + "." + (x - y * 100) + "%";
+            } 
+            return "" + (int)percentage + "%";
         }
         return "";
     }

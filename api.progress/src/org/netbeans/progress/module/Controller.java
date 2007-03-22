@@ -132,13 +132,13 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     }    
     
     public void progress(InternalHandle handle, String msg, 
-                  int units, int percentage, long estimate) {
+                  int units, double percentage, long estimate) {
         ProgressEvent event = new ProgressEvent(handle, msg, units, percentage, estimate, isWatched(handle));
         postEvent(event);
     }
     
     public ProgressEvent snapshot(InternalHandle handle, String msg, 
-                  int units, int percentage, long estimate) {
+                  int units, double percentage, long estimate) {
         if (handle.isInSleepMode()) {
             return new ProgressEvent(handle, ProgressEvent.TYPE_SILENT, isWatched(handle), msg);
         }
@@ -158,7 +158,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         runImmediately(evnts);
     }
     
-    public void displayNameChange(InternalHandle handle, int units, int percentage, long estimate, String display) {
+    public void displayNameChange(InternalHandle handle, int units, double percentage, long estimate, String display) {
         Collection<ProgressEvent> evnts = new ArrayList<ProgressEvent>();
         evnts.add(new ProgressEvent(handle, null, units, percentage, estimate, isWatched(handle), display));
         runImmediately(evnts);
