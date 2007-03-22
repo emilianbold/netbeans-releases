@@ -449,7 +449,7 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
             
             try {
                 KeyTool.main(as);
-            } catch (SecurityException se) { /*catch System.exit */
+            } catch (Exception se) { /*catch System.exit */
                 return null;
             }
             refresh();
