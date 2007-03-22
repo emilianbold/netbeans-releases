@@ -24,11 +24,9 @@ import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import java.awt.Dialog;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,21 +43,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import javax.swing.text.BadLocationException;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
 /**
@@ -128,6 +116,11 @@ public class ComputeImports {
                 
                 classes.add(te);
             }
+            Collections.sort(classes, new Comparator<TypeElement>() {
+                public int compare(TypeElement te1, TypeElement te2) {
+                    return (te1 == te2) ? 0 : te1.getQualifiedName().toString().compareTo(te2.getQualifiedName().toString());
+                }
+            });
             
             candidates.put(unresolved, new ArrayList(classes));
             notFilteredCandidates.put(unresolved, classes);

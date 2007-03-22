@@ -31,6 +31,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.editor.java.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -83,10 +84,16 @@ public class JavaFixAllImports {
                         if (!unfilteredVars.isEmpty()) {
                             variants[index] = new String[unfilteredVars.size()];
 
-                            int i = 0;
+                            int i = -1;
+                            int minImportanceLevel = Integer.MAX_VALUE;
 
                             for (TypeElement e : filteredVars) {
-                                variants[index][i++] = e.getQualifiedName().toString();
+                                variants[index][++i] = e.getQualifiedName().toString();
+                                int level = Utilities.getImportanceLevel(variants[index][i]);
+                                if (level < minImportanceLevel) {
+                                    defaults[index] = variants[index][i];
+                                    minImportanceLevel = level;
+                                }
                                 fqn2TE.put(e.getQualifiedName().toString(), e);
                             }
 
@@ -97,16 +104,20 @@ public class JavaFixAllImports {
                                 String fqn = e.getQualifiedName().toString();
                                 String dn = "<html><font color='#808080'><s>" + fqn;
                                 
-                                variants[index][i++] = dn;
+                                variants[index][++i] = dn;
+                                int level = Utilities.getImportanceLevel(fqn);
+                                if (level < minImportanceLevel) {
+                                    defaults[index] = variants[index][i];
+                                    minImportanceLevel = level;
+                                }
                                 fqn2TE.put(fqn, e);
                                 displayName2FQN.put(dn, fqn);
                             }
                         } else {
                             variants[index] = new String[1];
                             variants[index][0] = "<html><font color='#FF0000'>&lt;cannot be resolved&gt;";
+                            defaults[index] = variants[index][0];
                         }
-
-                        defaults[index] = variants[index][0];
 
                         index++;
                     }
