@@ -854,9 +854,12 @@ public final class ClassPath {
                 }
             }
             if (ClassPathImplementation.PROP_RESOURCES.equals(prop)) {
-                for (PathResourceImplementation pri : impl.getResources()) {
-                    pri.removePropertyChangeListener(pListener);
-                    pri.addPropertyChangeListener(pListener);
+                final List<? extends PathResourceImplementation> resources = impl.getResources();
+                if (resources != null) {
+                    for (PathResourceImplementation pri : resources) {
+                        pri.removePropertyChangeListener(pListener);
+                        pri.addPropertyChangeListener(pListener);
+                    }
                 }
             }
         }
