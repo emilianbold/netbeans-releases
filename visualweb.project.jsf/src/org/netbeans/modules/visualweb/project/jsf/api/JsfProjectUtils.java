@@ -1110,7 +1110,11 @@ public class JsfProjectUtils {
         ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) lookup.lookup(ProjectClassPathExtender.class);
         if (cpExtender != null) {
             for (int i = 0; i < libraries.length; i++) {
-                cpExtender.addLibrary(libraries[i]);
+                try {
+                    cpExtender.addLibrary(libraries[i]);
+                } catch (IOException e) {
+                    // Should continue to add the rest libraries, many exceptions happened in NetBeans codes are not fatal.
+                }
             }
             return true;
         }
