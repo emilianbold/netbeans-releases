@@ -32,8 +32,10 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.util.Util;
+import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -161,6 +163,10 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                     boolean cellHasFocus) {
                     if (value instanceof GlobalElement) {
                         GlobalElement el = (GlobalElement)value;
+                        String text = "{"+el.getModel().getEffectiveNamespace(el)+"}:"+el.getName(); //NOI18N
+                        setText(text);
+                    } else if (value instanceof GlobalType) {
+                        GlobalType el = (GlobalType)value;
                         String text = "{"+el.getModel().getEffectiveNamespace(el)+"}:"+el.getName(); //NOI18N
                         setText(text);
                     } else if (value instanceof String) {
@@ -306,8 +312,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
 
 
     private void populateWithElements(String selectedItem) {
-        parmCombo.addItem("<no params>");populateWithPrimitives(parmCombo);
-        returnCombo.addItem("void");populateWithPrimitives(returnCombo);
+        parmCombo.addItem("<no params>");
+        returnCombo.addItem("void");
         faultCombo.addItem("<no exceptions>");
         Import importedSchema = map.get(selectedItem);
         if (importedSchema!=null) {
@@ -316,14 +322,29 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                 SchemaModel schemaModel = importedSchema.resolveReferencedModel();
                 Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
                 for(GlobalElement element : elements){
-                    String elementName = element.getName();
+                    //String elementName = element.getName();
                     parmCombo.addItem(element);
                     returnCombo.addItem(element);
                     faultCombo.addItem(element);
                 }
+                Collection<? extends GlobalType> complexTypes = schemaModel.getSchema().getComplexTypes();
+                for(GlobalType type : complexTypes){
+                    //String elementName = type.getName();
+                    parmCombo.addItem(type);
+                    returnCombo.addItem(type);
+                    faultCombo.addItem(type);
+                }
+                Collection<? extends GlobalType> simpleTypes = schemaModel.getSchema().getSimpleTypes();
+                for(GlobalType type : simpleTypes){
+                    //String elementName = type.getName();
+                    parmCombo.addItem(type);
+                    returnCombo.addItem(type);
+                    faultCombo.addItem(type);
+                }
             } catch (CatalogModelException ex) {
                 ex.printStackTrace();
             }
+            
         } else {
             Schema schema = map1.get(selectedItem);
             if (schema!=null) {
@@ -334,8 +355,24 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                     returnCombo.addItem(element);
                     faultCombo.addItem(element);
                 }
+                Collection<? extends GlobalType> complexTypes = schema.getComplexTypes();
+                for(GlobalType type : complexTypes){
+                    //String elementName = type.getName();
+                    parmCombo.addItem(type);
+                    returnCombo.addItem(type);
+                    faultCombo.addItem(type);
+                }
+                Collection<? extends GlobalType> simpleTypes = schema.getSimpleTypes();
+                for(GlobalType type : simpleTypes){
+                    //String elementName = type.getName();
+                    parmCombo.addItem(type);
+                    returnCombo.addItem(type);
+                    faultCombo.addItem(type);
+                }
             }
         }
+        populateWithPrimitives(parmCombo);
+        populateWithPrimitives(returnCombo);
     }
 
     private void populateWithPrimitives(javax.swing.JComboBox combo) {
