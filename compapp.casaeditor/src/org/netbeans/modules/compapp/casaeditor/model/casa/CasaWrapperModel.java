@@ -68,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -738,39 +739,58 @@ public class CasaWrapperModel extends CasaModelImpl {
      *      service unit.
      * </UL>
      */
-    public boolean canConnect(CasaEndpointRef endpoint1,
-            CasaEndpointRef endpoint2) {
+    public boolean canConnect(final CasaEndpointRef endpoint1,
+            final CasaEndpointRef endpoint2) {
+        String unConnectableReason = getUnConnectableReason(endpoint1, endpoint2);
+        return unConnectableReason == null;
+    }
+    
+    /**
+     * Gets the reason why two given endpoints are not connectable.
+     *
+     * @return  a description why two endpoints are not connectable; null if
+     *          the two endpoints are connectable.
+     */
+    public String getUnConnectableReason(final CasaEndpointRef endpoint1,
+            final CasaEndpointRef endpoint2) {
         
         if (endpoint1 instanceof CasaConsumes &&
                 endpoint2 instanceof CasaConsumes) {
-            return false;
+            return NbBundle.getMessage(this.getClass(), 
+                    "MSG_CANNOT_CONNECT_TWO_CONSUMES"); // NOI18N            
         }
                 
         if (endpoint1 instanceof CasaProvides &&
                 endpoint2 instanceof CasaProvides) {
-            return false;
+            return NbBundle.getMessage(this.getClass(), 
+                    "MSG_CANNOT_CONNECT_TWO_PROVIDES"); // NOI18N            
         }
         
         CasaEndpointRef consumes = (endpoint1 instanceof CasaConsumes) ?
             endpoint1 : endpoint2;
         
         if (getConnections(consumes, false).size() > 0) {
-            return false;
+            return NbBundle.getMessage(this.getClass(), 
+                    "MSG_CANNOT_CONNECT_TWO_PROVIDES_WITH_ONE_CONSUMES"); // NOI18N            
         }
         
         if (isBindingComponentCasaEndpoint(endpoint1) &&
                 isBindingComponentCasaEndpoint(endpoint2)) {
-            return false;
+            return NbBundle.getMessage(this.getClass(), 
+                    "MSG_CANNOT_CONNECT_BC_TO_BC"); // NOI18N            
         }
         
         if (isEndpointDefined(endpoint1) && isEndpointDefined(endpoint2)) {
             QName consumesInterfaceQName = endpoint1.getInterfaceQName();
             QName providesInterfaceQName = endpoint2.getInterfaceQName();
-            return consumesInterfaceQName.equals(providesInterfaceQName);
+            if (!consumesInterfaceQName.equals(providesInterfaceQName)) {
+                return NbBundle.getMessage(this.getClass(), 
+                        "MSG_CANNOT_CONNECT_INCOMPATIBLE_ENDPOINTS"); // NOI18N
+            }
         }
         
         // Do we allow both endpoints to be undefined?
-        return true;
+        return null;
     }
     
     private boolean isEndpointDefined(CasaEndpointRef endpointRef) {
