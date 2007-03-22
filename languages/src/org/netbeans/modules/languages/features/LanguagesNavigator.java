@@ -258,9 +258,9 @@ public class LanguagesNavigator implements NavigatorPanel {
             return null;
         }
         if (navigator == null) return null;
-        Line line = lineSet.getCurrent (
-            NbDocument.findLineNumber (doc, item.getOffset ())
-        );
+        Line line = lineSet != null ? 
+            lineSet.getCurrent (NbDocument.findLineNumber (doc, item.getOffset ())) 
+            : null;
         int column = NbDocument.findLineColumn (doc, item.getOffset ());
         int start = item.getOffset ();
         int end = item.getEndOffset ();
@@ -383,7 +383,7 @@ public class LanguagesNavigator implements NavigatorPanel {
     
     // innerclasses ............................................................
     
-    private static class Model implements TreeModel {
+    static class Model implements TreeModel {
         
         private NbEditorDocument    doc;
         private ASTNode             root;
