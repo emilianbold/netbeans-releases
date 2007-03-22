@@ -510,16 +510,24 @@ public abstract class CLIHandler extends Object {
                 
                 Task parael = new RequestProcessor("Secure CLI Port").post(new Runnable() { // NOI18N
                     public void run() {
+                        SecureRandom random = null;
+                        enterState(95, block);
                         try {
-                            SecureRandom.getInstance("SHA1PRNG").nextBytes(arr); // NOI18N
+                            random = SecureRandom.getInstance("SHA1PRNG"); // NOI18N
                         } catch (NoSuchAlgorithmException e) {
                             // #36966: IBM JDK doesn't have it.
                             try {
-                                SecureRandom.getInstance("IBMSecureRandom").nextBytes(arr); // NOI18N
+                                random = SecureRandom.getInstance("IBMSecureRandom"); // NOI18N
                             } catch (NoSuchAlgorithmException e2) {
                                 // OK, disable server...
                                 server.stopServer();
                             }
+                        }
+                        
+                        enterState(96, block);
+                        
+                        if (random != null) {
+                            random.nextBytes(arr);
                         }
                         
                         enterState(97, block);

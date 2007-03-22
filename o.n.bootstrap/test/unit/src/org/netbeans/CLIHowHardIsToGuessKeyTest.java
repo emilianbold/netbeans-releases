@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.fakepkg.FakeHandler;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.RequestProcessor;
@@ -36,6 +37,7 @@ import org.openide.util.RequestProcessor;
  */
 public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
     private static Object LOCK = new Object();
+    private Logger LOG;
     
     public CLIHowHardIsToGuessKeyTest(String testName) {
         super(testName);
@@ -48,6 +50,9 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         clearWorkDir();
+        
+        LOG = Logger.getLogger("test." + getName());
+        
         System.setProperty("netbeans.mainclass", "org.netbeans.CLIHowHardIsToGuessKeyTest");
         System.setProperty("netbeans.user", getWorkDirPath());
 //        System.setProperty("org.netbeans.CLIHandler", "-1");
@@ -97,7 +102,9 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
         
         File lock = new File(getWorkDir(), "lock");
         assertTrue("Lock is created", lock.canRead());
+        LOG.info("lock file exists" + lock);
         for (int i = 0; i < 50; i++) {
+            LOG.info("testing its size: " + lock.length());
             if (lock.length() >= 14) {
                 break;
             }
