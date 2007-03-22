@@ -524,6 +524,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return simpleName;
         }
 
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;
+        }
+    
         public CompletionTask createDocumentationTask() {
             return JavaCompletionProvider.createDocTask(elementHandle);
         }
