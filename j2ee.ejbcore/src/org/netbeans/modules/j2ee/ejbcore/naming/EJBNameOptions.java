@@ -62,6 +62,8 @@ public final class EJBNameOptions extends AdvancedOption {
     private static final String ENTITY_EJBNAME_SUFFIX = "entityEjbNameSuffix"; // NOI18N
     private static final String ENTITY_DISPLAYNAME_PREFIX = "entityDisplayNamePrefix"; // NOI18N
     private static final String ENTITY_DISPLAYNAME_SUFFIX = "entityDisplayNameSuffix"; // NOI18N
+    private static final String ENTITY_PKCLASS_PREFIX = "entityPkClassPrefix"; // NOI18N
+    private static final String ENTITY_PKCLASS_SUFFIX = "entityPkClassSuffix"; // NOI18N
     
     private static final String MESSAGEDRIVEN_EJBCLASS_PREFIX = "messageDrivenEjbClassPrefix"; // NOI18N
     private static final String MESSAGEDRIVEN_EJBCLASS_SUFFIX = "messageDrivenEjbClassSuffix"; // NOI18N
@@ -172,6 +174,12 @@ public final class EJBNameOptions extends AdvancedOption {
     
     public String getEntityDisplayNameSuffix() { return prefs().get(ENTITY_DISPLAYNAME_SUFFIX, "EB"); } // NOI18N
     public void setEntityDisplayNameSuffix(String suffix) { prefs().put(ENTITY_DISPLAYNAME_SUFFIX, suffix); }
+    
+    public String getEntityPkClassPrefix() { return prefs().get(ENTITY_PKCLASS_PREFIX, ""); } // NOI18N
+    public void setEntityPkClassPrefix(String prefix) { prefs().put(ENTITY_PKCLASS_PREFIX, prefix); }
+    
+    public String getEntityPkClassSuffix() { return prefs().get(ENTITY_PKCLASS_SUFFIX, "PK"); } // NOI18N
+    public void setEntityPkClassSuffix(String suffix) { prefs().put(ENTITY_PKCLASS_SUFFIX, suffix); }
     
     // MessageDriven
     

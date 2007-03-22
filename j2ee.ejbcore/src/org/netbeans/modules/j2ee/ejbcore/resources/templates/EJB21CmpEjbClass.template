@@ -77,9 +77,11 @@ public abstract class ${name} implements EntityBean {
 
     // </editor-fold>
     
+    <#if !primaryKeyName??>
     public abstract ${primaryKey} getKey();
 
     public abstract void setKey(${primaryKey} key);
+    </#if>
     
     public ${primaryKey} ejbCreate(${primaryKey} key)  throws CreateException {
         if (key == null) {
@@ -87,11 +89,13 @@ public abstract class ${name} implements EntityBean {
         }
         
         // TODO add additional validation code, throw CreateException if data is not valid
+        <#if !primaryKeyName??>
         setKey(key);
-        
+        </#if>
+
         return null;
     }
-    
+
     public void ejbPostCreate(${primaryKey} key) {
         // TODO populate relationships here if appropriate
     }

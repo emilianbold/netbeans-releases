@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
@@ -38,7 +36,6 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
-import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
@@ -51,7 +48,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.action.CmFieldGenerator;
 import org.netbeans.modules.j2ee.ejbcore.action.FinderMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityGenerator;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.netbeans.modules.j2ee.ejbcore.spi.ProjectPropertiesSupport;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation;
@@ -67,17 +63,17 @@ import org.openide.util.NbBundle;
 public class CmpFromDbGenerator {
     
     private static final String FINDER_EXCEPTION_CLASS = "javax.ejb.FinderException"; //NOI18N
-    private static final List PRIMITIVE_CLASS_NAMES = Arrays.asList(
-            "boolean", "byte", "char", "short", "int", "long", "float", "double"); //NOI18N
     
     private final Project project;
     private final FileObject ddFileObject;
-    private final EjbJar dd;
-    
+    private final EjbJar ejbJar;
+    private final EJBNameOptions ejbnames;
+
     public CmpFromDbGenerator(Project project, FileObject ddFileObject) throws IOException {
         this.project = project;
         this.ddFileObject = ddFileObject;
-        this.dd = DDProvider.getDefault().getDDRoot(ddFileObject);
+        this.ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject);
+        this.ejbnames = new EJBNameOptions();
     }
     
     public void generateBeans(RelatedCMPHelper helper, FileObject dbschemaFile, ProgressNotifier progressNotifier) throws IOException {
@@ -86,19 +82,18 @@ public class CmpFromDbGenerator {
         J2eeModuleProvider pwm = project.getLookup().lookup(J2eeModuleProvider.class);
         pwm.getConfigSupport().ensureConfigurationReady();
         
-        if (dd.getEnterpriseBeans()==null) {
-            EnterpriseBeans eBeans = dd.newEnterpriseBeans();
-            dd.setEnterpriseBeans(eBeans);
+        if (ejbJar.getEnterpriseBeans()==null) {
+            EnterpriseBeans eBeans = ejbJar.newEnterpriseBeans();
+            ejbJar.setEnterpriseBeans(eBeans);
         }
         
-        int max = 2 * helper.getBeans().length + 4;
         int entityClassIndex = 0;
+        int max = 2 * helper.getBeans().length + 4;
         progressNotifier.switchToDeterminate(max);
         OriginalCMPMapping[] mappings = new OriginalCMPMapping[helper.getBeans().length];
-        
+
         for (EntityClass entityClass : helper.getBeans()) {
-            progressNotifier.progress(NbBundle.getMessage(CmpGenerator.class, "TXT_GeneratingClasses", entityClass.getClassName()));
-            entityClassIndex++;
+            progressNotifier.progress(NbBundle.getMessage(CmpFromDbGenerator.class, "TXT_GeneratingClasses", entityClass.getClassName()));
             String pkClassName = null;
             List<EntityMember> primaryKeys = new ArrayList<EntityMember>();
             for (EntityMember entityMember : entityClass.getFields()) {
@@ -108,7 +103,8 @@ public class CmpFromDbGenerator {
                 }
             }
             if (primaryKeys.size() > 1) {
-                String pkFieldName = entityClass.getPkFieldName();
+                String pkFieldName = ejbnames.getEntityPkClassPrefix() + entityClass.getClassName() + ejbnames.getEntityPkClassSuffix();
+                entityClass.setPkFieldName(pkFieldName);
                 pkClassName = Character.toUpperCase(pkFieldName.charAt(0)) + pkFieldName.substring(1);
                 GenerationUtils.createClass(
                         "Templates/J2EE/EJB21/CmpPrimaryKey.java",
@@ -117,60 +113,77 @@ public class CmpFromDbGenerator {
                         null,
                         Collections.singletonMap("seq", "")
                         );
+            } else if (primaryKeys.size() == 1) {
+                entityClass.setPkFieldName(primaryKeys.get(0).getMemberName());
             }
             String wizardTargetName = entityClass.getClassName();
+            
             EntityGenerator generator = EntityGenerator.create(
                     wizardTargetName,
                     entityClass.getPackageFileObject(),
                     false,
                     true,
                     true,
-                    pkClassName
+                    pkClassName,
+                    entityClass.getPkFieldName()
                     );
             FileObject ejbClassFileObject = generator.generate();
             
+            String packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(entityClass.getPackageFileObject()) + ".";
+
             progressNotifier.progress(2*entityClassIndex+3);
-            EJBNameOptions ejbnames = new EJBNameOptions();
-            String ejbClassName = ejbnames.getEntityEjbClassPrefix() + wizardTargetName + ejbnames.getEntityEjbClassSuffix();
-            Entity e = findEntity(ejbClassFileObject, ejbClassName);
-            FinderMethodGenerator finderGenerator = FinderMethodGenerator.create(e, ejbClassFileObject, ddFileObject);
+            String ejbClassName = packageNameWithDot + ejbnames.getEntityEjbClassPrefix() + wizardTargetName + ejbnames.getEntityEjbClassSuffix();
+            Entity entity = findEntityForEjbClass(ejbClassName);
+            FinderMethodGenerator finderGenerator = FinderMethodGenerator.create(entity, ejbClassFileObject, ddFileObject);
             //            if (helper.isGenerateFinderMethods()) { // is it possible to have CMP with finder method in impl class?
-            progressNotifier.progress(NbBundle.getMessage(CmpGenerator.class, "TXT_GeneratingFinderMethods", wizardTargetName));
-            addFinderMethods(finderGenerator, e, entityClass.getPackageFileObject(), entityClass, helper.isCmpFieldsInInterface());
+            progressNotifier.progress(NbBundle.getMessage(CmpFromDbGenerator.class, "TXT_GeneratingFinderMethods", wizardTargetName));
+            addFinderMethods(finderGenerator, entity, entityClass.getPackageFileObject(), entityClass, helper.isCmpFieldsInInterface());
             //            }
             
-            addCmpFields(e, entityClass);
-            addRelationshipFields(e, entityClass);
-            populateEntity(entityClass, e, wizardTargetName);
+            addCmpFields(entity, entityClass);
+            populateEntity(entityClass, entity, wizardTargetName);
             
             DatabaseConnection dbconn = helper.getDatabaseConnection();
             if(dbconn != null) {
-                e.setDescription(dbconn.getName());
+                entity.setDescription(dbconn.getName());
             }
-            progressNotifier.progress(NbBundle.getMessage(CmpGenerator.class, "TXT_PersistingOriginalMapping", entityClass.getClassName()));
-            mappings[entityClassIndex] = new CMPMapping(e.getEjbName(), entityClass.getCMPMapping(), dbschemaFile);
+            progressNotifier.progress(NbBundle.getMessage(CmpFromDbGenerator.class, "TXT_PersistingOriginalMapping", entityClass.getClassName()));
+            mappings[entityClassIndex] = new CMPMapping(entity.getEjbName(), entityClass.getCMPMapping(), dbschemaFile);
             progressNotifier.progress(2*entityClassIndex+4);
+            entityClassIndex++;
         }
         
-        progressNotifier.progress(NbBundle.getMessage(CmpGenerator.class, "TXT_GeneratingRelationships"));
-        EntityRelation[] relation = helper.getRelations();
-        if (dd.getSingleRelationships() == null && relation.length > 0) {
-            dd.setRelationships(dd.newRelationships());
+        progressNotifier.progress(NbBundle.getMessage(CmpFromDbGenerator.class, "TXT_GeneratingRelationships"));
+        // again going through all entities, it must be done after all classes are generated,
+        // because we will resolve the type of relationship fields
+        for (EntityClass entityClass : helper.getBeans()) {
+            String packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(entityClass.getPackageFileObject()) + ".";
+            String wizardTargetName = entityClass.getClassName();
+            String ejbClassName = packageNameWithDot + ejbnames.getEntityEjbClassPrefix() + wizardTargetName + ejbnames.getEntityEjbClassSuffix();
+            Entity entity = findEntityForEjbClass(ejbClassName);
+            addRelationshipFields(entity, entityClass);
         }
-        Relationships rels = dd.getSingleRelationships();
+        EntityRelation[] relation = helper.getRelations();
+        if (ejbJar.getSingleRelationships() == null && relation.length > 0) {
+            ejbJar.setRelationships(ejbJar.newRelationships());
+        }
+        Relationships rels = ejbJar.getSingleRelationships();
         for (int i = 0; i < relation.length; i++) {
             EjbRelation ejbRel = rels.newEjbRelation();
             populateRelation(ejbRel, relation[i]);
             rels.addEjbRelation(ejbRel);
         }
         progressNotifier.progress(max - 1);
-        progressNotifier.progress(NbBundle.getMessage(CmpGenerator.class, "TXT_SavingDeploymentDescriptor"));
-        
-        //push mapping information
-        if (pwm != null) {
-            pwm.getConfigSupport().setCMPMappingInfo(mappings);
-        }
-        dd.write(ddFileObject);
+        progressNotifier.progress(NbBundle.getMessage(CmpFromDbGenerator.class, "TXT_SavingDeploymentDescriptor"));
+
+        //TODO: RETOUCHE throwing java.lang.NoClassDefFoundError: org/netbeans/modules/j2ee/dd/api/ejb/DDProvider
+        // at com.sun.jdo.modules.persistence.mapping.ejb.EJBDevelopmentInfoHelper.getBundleDescriptor(EJBDevelopmentInfoHelper.java:87)
+//        //push mapping information
+//        if (pwm != null) {
+//            pwm.getConfigSupport().setCMPMappingInfo(mappings);
+//        }
+        //TODO: RETOUCHE need to write to ejb-jar.xml here?
+        ejbJar.write(ddFileObject);
         if (pwm != null) {
             for (EntityClass entityClass : helper.getBeans()) {
                 if (helper.getTableSource().getType() == TableSource.Type.DATA_SOURCE) {
@@ -181,17 +194,16 @@ public class CmpFromDbGenerator {
         progressNotifier.progress(max);
     }
     
-    private void addFinderMethods(FinderMethodGenerator generator, Entity e, FileObject pkg, EntityClass genData, boolean generateLocal) throws IOException {
-        FileObject ejbClassFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(e.getEjbClass()), "java"); // NOI18N
-        assert ejbClassFO != null: "interface class "+ e.getLocalHome() + " not found in " + pkg;
+    private void addFinderMethods(FinderMethodGenerator generator, Entity entity, FileObject pkg, EntityClass genData, boolean generateLocal) throws IOException {
+        FileObject ejbClassFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(entity.getEjbClass()), "java"); // NOI18N
+        assert ejbClassFO != null: "interface class "+ entity.getLocalHome() + " not found in " + pkg;
         
-        Iterator<EntityMember> it = genData.getFields().iterator();
-        while (it.hasNext()) {
-            EntityMember em = (EntityMember) it.next();
-            String type = em.getMemberType();
-            if (em.supportsFinder()) { // TODO consider not generating for primary key
-                String methodName = "findBy" + EntityMember.makeClassName(em.getMemberName()); // NOI18N
-                MethodModel.Variable parameter = MethodModel.Variable.create(em.getMemberType(), em.getMemberName());
+        Iterator<EntityMember> iterator = genData.getFields().iterator();
+        while (iterator.hasNext()) {
+            EntityMember entityMember = (EntityMember) iterator.next();
+            if (entityMember.supportsFinder()) { // TODO consider not generating for primary key
+                String methodName = "findBy" + EntityMember.makeClassName(entityMember.getMemberName()); // NOI18N
+                MethodModel.Variable parameter = MethodModel.Variable.create(entityMember.getMemberType(), entityMember.getMemberName());
                 MethodModel methodModel = MethodModel.create(
                         methodName,
                         "java.util.Collection",
@@ -205,9 +217,9 @@ public class CmpFromDbGenerator {
                         "FROM {1} AS {0} " + // abstract schema name
                         "WHERE {0}.{2} = ?1", // cmp field
                         new Object[] {
-                    Character.toLowerCase(e.getAbstractSchemaName().charAt(0)) + "",
-                    e.getAbstractSchemaName(),
-                    em.getMemberName()
+                    Character.toLowerCase(entity.getAbstractSchemaName().charAt(0)) + "",
+                    entity.getAbstractSchemaName(),
+                    entityMember.getMemberName()
                 }
                 );
                 generator.generate(methodModel, generateLocal, false, false, ejbql);
@@ -216,32 +228,16 @@ public class CmpFromDbGenerator {
         
     }
     
-//    /**
-//     * Determine if <code>className</code> is of a primitive type or not.
-//     * @return true if <code>className</code> is of a primitive type
-//     */
-//    private static boolean isPrimitive(String className) {
-//        return PRIMITIVE_CLASS_NAMES.contains(className);
-//    }
-    
-    private void populateEntity(EntityClass bean, Entity e, String wizardTargetName) {
+    private void populateEntity(EntityClass bean, Entity entity, String wizardTargetName) {
         if (bean.isUsePkField()) {
-            e.setPrimkeyField(bean.getPkFieldName());
+            entity.setPrimkeyField(bean.getPkFieldName());
         }
-        e.setAbstractSchemaName(wizardTargetName);
-        
-        Iterator it = bean.getFields().iterator();
-        while (it.hasNext()) {
-            EntityMember m = (EntityMember) it.next();
-            CmpField f = e.newCmpField();
-            f.setFieldName(m.getMemberName());
-            e.addCmpField(f);
-        }
+        entity.setAbstractSchemaName(wizardTargetName);
     }
     
-    private void populateRelation(EjbRelation ejbR, EntityRelation r) {
-        RelationshipRole roleA = r.getRoleA();
-        RelationshipRole roleB = r.getRoleB();
+    private void populateRelation(EjbRelation ejbR, EntityRelation entityRelation) {
+        RelationshipRole roleA = entityRelation.getRoleA();
+        RelationshipRole roleB = entityRelation.getRoleB();
         
         EjbRelationshipRole ejbRoleA = ejbR.newEjbRelationshipRole();
         EjbRelationshipRole ejbRoleB = ejbR.newEjbRelationshipRole();
@@ -249,27 +245,27 @@ public class CmpFromDbGenerator {
         populateRole(ejbRoleA, roleA);
         populateRole(ejbRoleB, roleB);
         
-        ejbR.setEjbRelationName(r.getRelationName());
+        ejbR.setEjbRelationName(entityRelation.getRelationName());
         ejbR.setEjbRelationshipRole(ejbRoleA);
         ejbR.setEjbRelationshipRole2(ejbRoleB);
     }
     
-    private static void populateRole(EjbRelationshipRole ejbR, RelationshipRole role) {
+    private void populateRole(EjbRelationshipRole ejbR, RelationshipRole role) {
         ejbR.setCascadeDelete(role.isCascade());
         RelationshipRoleSource source = ejbR.newRelationshipRoleSource();
-        source.setEjbName(role.getEntityName());
+        source.setEjbName(ejbnames.getEntityEjbNamePrefix() + role.getEntityName() + ejbnames.getEntityEjbNameSuffix());
         ejbR.setRelationshipRoleSource(source);
-        CmrField f = ejbR.newCmrField();
-        f.setCmrFieldName(role.getFieldName());
+        CmrField cmrField = ejbR.newCmrField();
+        cmrField.setCmrFieldName(role.getFieldName());
         if (role.isMany()) {
             ejbR.setMultiplicity(ejbR.MULTIPLICITY_MANY);
         } else {
             ejbR.setMultiplicity(ejbR.MULTIPLICITY_ONE);
         }
         if (role.isToMany()) {
-            f.setCmrFieldType(java.util.Collection.class.getName());
+            cmrField.setCmrFieldType(java.util.Collection.class.getName());
         }
-        ejbR.setCmrField(f);
+        ejbR.setCmrField(cmrField);
         ejbR.setEjbRelationshipRoleName(role.getEntityName());
     }
     
@@ -277,12 +273,13 @@ public class CmpFromDbGenerator {
         if (role.isToMany()) {
             return java.util.Collection.class.getName();
         } else {
-            RelationshipRole rA = role.getParent().getRoleA();
-            RelationshipRole rB = role.getParent().getRoleB();
-            RelationshipRole otherRole = role.equals(rA) ? rB : rA;
+            RelationshipRole roleA = role.getParent().getRoleA();
+            RelationshipRole roleB = role.getParent().getRoleB();
+            RelationshipRole otherRole = role.equals(roleA) ? roleB : roleA;
             EJBNameOptions ejbNames = new EJBNameOptions();
-            String ejbClassName = ejbNames.getEntityEjbClassPrefix() + otherRole.getEntityName() + ejbNames.getEntityEjbClassSuffix();
-            Entity entity = (Entity) dd.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, ejbClassName);
+            String ejbClassName = pkg + "." + ejbNames.getEntityEjbClassPrefix() + otherRole.getEntityName() + ejbNames.getEntityEjbClassSuffix();
+            
+            Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, ejbClassName);
             return entity.getLocal();
         }
     }
@@ -296,9 +293,9 @@ public class CmpFromDbGenerator {
         if (org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project).length == 0) {
             return;
         }
-        ProjectPropertiesSupport ps = project.getLookup().lookup(ProjectPropertiesSupport.class);
-        if (ps != null) {
-            ps.disableSunCmpMappingExclusion();
+        ProjectPropertiesSupport projectPropertiesSupport = project.getLookup().lookup(ProjectPropertiesSupport.class);
+        if (projectPropertiesSupport != null) {
+            projectPropertiesSupport.disableSunCmpMappingExclusion();
         }
     }
     
@@ -306,11 +303,10 @@ public class CmpFromDbGenerator {
         EJBNameOptions ejbNames = new EJBNameOptions();
         String className = ejbNames.getEntityEjbClassPrefix() + entityClass.getClassName() + ejbNames.getEntityEjbClassSuffix();
         FileObject ejbClassFO = entityClass.getPackageFileObject().getFileObject(EjbGenerationUtil.getBaseName(className), "java"); // NOI18N
-        EntityMethodController emc = (EntityMethodController) EntityMethodController.createFromClass(ejbClassFO, className);
+        CmFieldGenerator generator = CmFieldGenerator.create(entity, ejbClassFO, ddFileObject);
         for (EntityMember m : entityClass.getFields()) {
-            emc.addField(
+            generator.addCmpField(
                     MethodModel.Variable.create(m.getMemberType(), m.getMemberName()),
-                    ddFileObject,
                     true,
                     true,
                     false,
@@ -327,21 +323,17 @@ public class CmpFromDbGenerator {
         FileObject ejbClassFO = entityClass.getPackageFileObject().getFileObject(EjbGenerationUtil.getBaseName(entity.getEjbClass()), "java"); // NOI18N
         CmFieldGenerator generator = CmFieldGenerator.create(entity, ejbClassFO, ddFileObject);
         for (RelationshipRole role : entityClass.getRoles()) {
-            String rv = getCmrFieldType(role, entityClass.getPackage());
-            MethodModel.Variable field = MethodModel.Variable.create(rv, role.getFieldName());
+            String cmrFieldType = getCmrFieldType(role, entityClass.getPackage());
+            MethodModel.Variable field = MethodModel.Variable.create(cmrFieldType, role.getFieldName());
             generator.addFieldToClass(field, true, true, false, false);
         }
     }
     
-    private static Entity findEntity(FileObject fileObject, String className) throws IOException {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
-        if (ejbModule != null) {
-            EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
-            if (ejbJar != null) {
-                EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-                if (enterpriseBeans != null) {
-                    return (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, className);
-                }
+    private Entity findEntityForEjbClass(String className) throws IOException {
+        if (ejbJar != null) {
+            EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+            if (enterpriseBeans != null) {
+                return (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, className);
             }
         }
         return null;

@@ -18,6 +18,8 @@ import javax.ejb.EJBObject;
  */
 public interface ${name} extends EJBObject {
 
+    <#if !primaryKeyName??>
     ${primaryKey} getKey() throws RemoteException;
+    </#if>
     
 }

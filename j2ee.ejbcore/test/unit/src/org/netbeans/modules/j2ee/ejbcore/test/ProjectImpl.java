@@ -29,6 +29,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
@@ -38,6 +39,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.VersionListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,7 +59,8 @@ public final class ProjectImpl implements Project {
         lookup = Lookups.fixed(
                 new J2eeModuleProviderImpl(moduleVersion),
                 new SourcesImpl(),
-                new EnterpriseReferenceContainerImpl()
+                new EnterpriseReferenceContainerImpl(),
+                new EjbJarsInProjectImpl()
                 );
     }
     
@@ -124,7 +127,7 @@ public final class ProjectImpl implements Project {
     private static class J2eeModuleProviderImpl extends J2eeModuleProvider {
         
         private final String moduleVersion;
-
+        
         public J2eeModuleProviderImpl(String moduleVersion) {
             this.moduleVersion = moduleVersion;
         }
@@ -205,38 +208,50 @@ public final class ProjectImpl implements Project {
     }
     
     private static class EnterpriseReferenceContainerImpl implements EnterpriseReferenceContainer {
-    
+        
+        public EnterpriseReferenceContainerImpl() {}
+        
         public String addEjbReference(EjbRef ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {            throw new UnsupportedOperationException("Not supported yet.");
         }
-
+        
         public String addEjbLocalReference(EjbLocalRef localRef, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
+        
         public String getServiceLocatorName() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
+        
         public void setServiceLocatorName(String serviceLocator) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
+        
         public String addDestinationRef(MessageDestinationRef ref, FileObject referencingFile, String referencingClass) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
+        
         public MessageDestinationRef createDestinationRef(String className) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
+        
         public String addResourceRef(ResourceRef ref, FileObject referencingFile, String referencingClass) throws IOException {
             return "testJndiName";
         }
-
+        
         public ResourceRef createResourceRef(String className) throws IOException {
             ResourceRef resourceRef = new org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0.ResourceRef();
             return resourceRef;
         }
-}
+    }
+    
+    private class EjbJarsInProjectImpl implements EjbJarsInProject {
+        
+        public EjbJarsInProjectImpl() {}
+        
+        public EjbJar[] getEjbJars() {
+            return new EjbJar[] { EjbJar.getEjbJar(projectDirectory) };
+        }
+    
+    }
     
 }

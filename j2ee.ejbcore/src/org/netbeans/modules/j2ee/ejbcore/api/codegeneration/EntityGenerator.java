@@ -77,19 +77,21 @@ public class EntityGenerator {
     private final String packageNameWithDot;
     
     private final Map<String, String> templateParameters;
+    private final String primaryKeyName;
 
     public static EntityGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
-            boolean isCMP, String primaryKeyClassName) {
-        return new EntityGenerator(wizardTargetName, pkg, hasRemote, hasLocal, isCMP, primaryKeyClassName);
+            boolean isCMP, String primaryKeyClassName, String primaryKeyName) {
+        return new EntityGenerator(wizardTargetName, pkg, hasRemote, hasLocal, isCMP, primaryKeyClassName, primaryKeyName);
     }
     
     private EntityGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
-            boolean isCMP, String primaryKeyClassName) {
+            boolean isCMP, String primaryKeyClassName, String primaryKeyName) {
         this.pkg = pkg;
         this.hasRemote = hasRemote;
         this.hasLocal = hasLocal;
         this.isCMP = isCMP;
         this.primaryKeyClassName = primaryKeyClassName;
+        this.primaryKeyName = primaryKeyName;
         this.wizardTargetName = wizardTargetName;
         this.ejbNameOptions = new EJBNameOptions();
         this.ejbName = ejbNameOptions.getEntityEjbNamePrefix() + wizardTargetName + ejbNameOptions.getEntityEjbNameSuffix();
@@ -105,6 +107,7 @@ public class EntityGenerator {
         // fill all possible template parameters
         this.templateParameters.put("package", packageName);
         this.templateParameters.put("primaryKey", primaryKeyClassName);
+        this.templateParameters.put("primaryKeyName", primaryKeyName);
         this.templateParameters.put("localInterface", packageNameWithDot + localName);
         this.templateParameters.put("remoteInterface", packageNameWithDot + remoteName);
     }
@@ -181,10 +184,14 @@ public class EntityGenerator {
         if (isCMP) {
             entity.setPersistenceType(Entity.PERSISTENCE_TYPE_CONTAINER);
             entity.setAbstractSchemaName(wizardTargetName);
-            CmpField cmpField = entity.newCmpField();
-            cmpField.setFieldName("key");
-            entity.addCmpField(cmpField);
-            entity.setPrimkeyField("key");
+            if (primaryKeyName == null) {
+                CmpField cmpField = entity.newCmpField();
+                cmpField.setFieldName("key");
+                entity.addCmpField(cmpField);
+                entity.setPrimkeyField("key");
+            } else {
+                entity.setPrimkeyField(primaryKeyName);
+            }
         } else {
             entity.setPersistenceType(Entity.PERSISTENCE_TYPE_BEAN);
         }

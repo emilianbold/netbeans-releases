@@ -259,6 +259,7 @@ public final class EntityMethodController extends AbstractMethodController {
         parent.write(ddFileObject);
     }
 
+    @Deprecated
     public void addField(MethodModel.Variable field, FileObject ddFile, boolean localGetter, boolean localSetter,
         boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
         String beanClass = getBeanClass();

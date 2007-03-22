@@ -26,8 +26,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -59,13 +62,17 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
     
     public void addCmpField(MethodModel.Variable field, boolean localGetter, boolean localSetter, 
             boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
-        addFieldToClass(field, localGetter, localSetter, remoteGetter, remoteSetter);
         Entity entity = (Entity) ejb;
-        CmpField cmpField = entity.newCmpField();
-        cmpField.setFieldName(field.getName());
-        cmpField.setDescription(description);
-        entity.addCmpField(cmpField);
-        saveXml();
+        if (!containsField(ejbClassFileObject, entity.getEjbClass(), field)) {
+            addFieldToClass(field, localGetter, localSetter, remoteGetter, remoteSetter);
+        }
+        if (!containsField(entity, field)) {
+            CmpField cmpField = entity.newCmpField();
+            cmpField.setFieldName(field.getName());
+            cmpField.setDescription(description);
+            entity.addCmpField(cmpField);
+            saveXml();
+        }
     }
     
     public void addFieldToClass(final MethodModel.Variable variable,  final boolean localGetter, final boolean localSetter, 
@@ -74,7 +81,7 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
         // ejb class
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFileObject);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
+            public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(ejb.getEjbClass());
                 MethodTree getterTree = createGetter(workingCopy, variable);
@@ -91,7 +98,7 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
             FileObject localFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getLocal());
             javaSource = JavaSource.forFileObject(localFileObject);
             javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy workingCopy) throws Exception {
+                public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = workingCopy.getElements().getTypeElement(ejb.getLocal());
                     ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
@@ -114,7 +121,7 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
             FileObject remoteFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getRemote());
             javaSource = JavaSource.forFileObject(remoteFileObject);
             javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy workingCopy) throws Exception {
+                public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = workingCopy.getElements().getTypeElement(ejb.getRemote());
                     ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
@@ -132,6 +139,40 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
             }).commit();
         }
         
+    }
+    
+    /**
+     * Returns true if typeElement contains method with name <code>get&lt;fieldName&gt;</code>
+     */
+    private static boolean containsField(FileObject fileObject, final String className, final MethodModel.Variable field) throws IOException {
+        final boolean[] result = new boolean[] { false };
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                String getterName = "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                    if (method.getSimpleName().contentEquals(getterName)) {
+                        result[0] = true;
+                        return;
+                    }
+                }
+            }
+        }, true);
+        return result[0];
+    }
+    
+    /**
+     * Returns true if entity contains CMP field with name of the field
+     */
+    private static boolean containsField(Entity entity, final MethodModel.Variable field) {
+        for (CmpField cmpField : entity.getCmpField()) {
+            if (cmpField.getFieldName().equals(field.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private static MethodTree createGetter(WorkingCopy workingCopy, MethodModel.Variable field) {

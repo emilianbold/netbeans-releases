@@ -49,7 +49,7 @@ public class EntityGeneratorTest extends TestBase {
 
         // CMP Entity EJB in Java EE 1.4
         
-        EntityGenerator entityGenerator = EntityGenerator.create("TestCmp", packageFileObject, true, true, true, "java.lang.Long");
+        EntityGenerator entityGenerator = EntityGenerator.create("TestCmp", packageFileObject, true, true, true, "java.lang.Long", null);
         entityGenerator.generate();
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
@@ -98,7 +98,7 @@ public class EntityGeneratorTest extends TestBase {
 
         // BMP Entity EJB in Java EE 1.4
         
-        entityGenerator = EntityGenerator.create("TestBmp", packageFileObject, false, true, false, "java.lang.Long");
+        entityGenerator = EntityGenerator.create("TestBmp", packageFileObject, false, true, false, "java.lang.Long", null);
         entityGenerator.generate();
         entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_NAME, "TestBmpBean");
 

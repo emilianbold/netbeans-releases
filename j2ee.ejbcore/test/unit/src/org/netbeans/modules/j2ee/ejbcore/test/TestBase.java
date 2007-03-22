@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.ejbcore.test;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -129,12 +130,14 @@ public class TestBase extends NbTestCase {
     
     protected static class TestModule {
         
+        private final FileObject projectDir;
         private final String javaeeLevel;
         private final FileObject deploymentDescriptor;
         private final FileObject[] sources;
         private final ProjectImpl project;
         
         public TestModule(FileObject projectDir, String javaeeLevel) {
+            this.projectDir = projectDir;
             this.javaeeLevel = javaeeLevel;
             this.deploymentDescriptor = projectDir.getFileObject("src/conf/ejb-jar.xml");
             this.sources = new FileObject[] {projectDir.getFileObject("src/java")};
@@ -144,6 +147,8 @@ public class TestBase extends NbTestCase {
      
         public FileObject getDeploymentDescriptor() { return deploymentDescriptor; }
         public FileObject[] getSources() { return sources; }
+        public Project getProject() { return project; }
+        public FileObject getConfigFilesFolder() { return projectDir.getFileObject("src/conf"); }
         
     }
     

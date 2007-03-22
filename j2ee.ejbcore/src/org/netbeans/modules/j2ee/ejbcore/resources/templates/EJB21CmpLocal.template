@@ -17,6 +17,8 @@ import javax.ejb.EJBLocalObject;
  */
 public interface ${name} extends EJBLocalObject {
 
+    <#if !primaryKeyName??>
     ${primaryKey} getKey();
+    </#if>
 
 }

@@ -82,7 +82,8 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
                 ejbPanel.hasRemote(), 
                 ejbPanel.hasLocal(), 
                 isCMP, 
-                ejbPanel.getPrimaryKeyClassName()
+                ejbPanel.getPrimaryKeyClassName(),
+                null
                 );
         FileObject result = null;
         try {
