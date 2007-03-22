@@ -41,6 +41,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.model.casa.JBIServiceUnitTransferObject;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItem;
@@ -136,7 +137,12 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         ConnectorState retState = ConnectorState.REJECT;
         CasaRegionWidget extRegion = getScene().getExternalRegion();
         if (extRegion.getBounds().contains(extRegion.convertSceneToLocal(point))) {
-            retState = ConnectorState.ACCEPT;
+            String projName /*suName*/ = (String) ((List) transferData).get(1); // FIXME: 
+            if (mModel.existingServiceUnit(projName)) { // FIXME: existingExternalServiceUnit?
+                retState = ConnectorState.REJECT;
+            } else {
+                retState = ConnectorState.ACCEPT;
+            }
         }
         return retState;
     }
@@ -253,11 +259,11 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 if        (CasaPalette.CASA_PALETTE_ITEM_TYPE.INT_SU == selNode.getPaletteItemType()) {
                     // add an internal SU to the model
                     point = getScene().getEngineRegion().convertSceneToLocal(point);
-                    mModel.addUnknownEngineServiceUnit(true, point.x, point.y);
+                    mModel.addServiceEngineServiceUnit(true, point.x, point.y);
                 } else if (CasaPalette.CASA_PALETTE_ITEM_TYPE.EXT_SU == selNode.getPaletteItemType()) {
                     // add an external SU to the model
                     point = getScene().getExternalRegion().convertSceneToLocal(point);
-                    mModel.addUnknownEngineServiceUnit(false, point.x, point.y);
+                    mModel.addServiceEngineServiceUnit(false, point.x, point.y);
                 }
                 break;
             default:
@@ -296,61 +302,18 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
 
     // JBIMGR
     private void acceptFromJBIManager(Widget widget, Point point,
-            //String suName, String descriptor) throws Exception {
             final JBIServiceUnitTransferObject suTransfer) throws Exception {
         
         point = getScene().getExternalRegion().convertSceneToLocal(point);
-        final CasaServiceEngineServiceUnit seSU =
-                mModel.addUnknownEngineServiceUnit(false, point.x, point.y);
-        final Model model = seSU.getModel();
+        
         String suName = suTransfer.getServiceUnitName();
-        
-        model.startTransaction();
-        try {
-            seSU.setName(suName);
-            seSU.setUnitName(suName);
-        } finally {
-            if (model.isIntransaction()) {
-                model.endTransaction();
-            }
-        }
-        
+        final CasaServiceEngineServiceUnit seSU = 
+                mModel.addServiceEngineServiceUnit(
+                suName, "", false, false, point.x, point.y); // NOI18N // FIXME
+               
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {                
-                List<JBIServiceUnitTransferObject.Endpoint> pList = suTransfer.getProvidesEndpoints();
-                for (JBIServiceUnitTransferObject.Endpoint p : pList) {
-                    CasaEndpointRef endpointRef =
-                            mModel.addEndpointToExternalServiceUnit(seSU, false);
-                    CasaEndpoint endpoint = endpointRef.getEndpoint().get();
-                    
-                    model.startTransaction();
-                    try {
-                        endpoint.setInterfaceQName(p.getInterfaceQName());
-                        endpoint.setServiceQName(p.getServiceQName());
-                        endpoint.setEndpointName(p.getEndpointName());
-                    } finally {
-                        if (model.isIntransaction()) {
-                            model.endTransaction();
-                        }
-                    }
-                }
-                List<JBIServiceUnitTransferObject.Endpoint> cList = suTransfer.getConsumesEndpoints();
-                for (JBIServiceUnitTransferObject.Endpoint c : cList) {
-                    CasaEndpointRef endpointRef =
-                            mModel.addEndpointToExternalServiceUnit(seSU, false);
-                    CasaEndpoint endpoint = endpointRef.getEndpoint().get();
-                    
-                    model.startTransaction();
-                    try {
-                        endpoint.setInterfaceQName(c.getInterfaceQName());
-                        endpoint.setServiceQName(c.getServiceQName());
-                        endpoint.setEndpointName(c.getEndpointName());
-                    } finally {
-                        if (model.isIntransaction()) {
-                            model.endTransaction();
-                        }
-                    }
-                }
+            public void run() {  
+                mModel.addEndpointsToServiceEngineServiceUnit(suTransfer, seSU);    
             }
         });
     }

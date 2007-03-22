@@ -909,13 +909,13 @@ public class CasaWrapperModel extends CasaModelImpl {
      * Adds an internal or external unknown service engine service unit
      * (from the palette).
      */
-    public CasaServiceEngineServiceUnit addUnknownEngineServiceUnit(
+    public CasaServiceEngineServiceUnit addServiceEngineServiceUnit(
             boolean internal, int x, int y) {
-        String projName = getUniqueUnknownEngineServiceUnitName();
-        return addEngineServiceUnit(projName, "", internal, true, x, y); // NOI18N
+        String projName = getUniqueUnknownServiceEngineServiceUnitName();
+        return addServiceEngineServiceUnit(projName, "", internal, true, x, y); // NOI18N
     }
     
-    private String getUniqueUnknownEngineServiceUnitName() {
+    private String getUniqueUnknownServiceEngineServiceUnitName() {
         List<String> existingUnknownNames = new ArrayList<String>();
         
         for (CasaServiceEngineServiceUnit seSU : getServiceEngineServiceUnits()) {
@@ -927,7 +927,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         return getUniqueName(existingUnknownNames, "Unknown"); // NOI18N
     }
     
-    private CasaServiceEngineServiceUnit addEngineServiceUnit(String projName,
+    public CasaServiceEngineServiceUnit addServiceEngineServiceUnit(String projName,
             String compName, boolean internal, boolean unknown,
             int x, int y) {
         
@@ -1516,7 +1516,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         // Create casa endpoint
         CasaEndpoint endpoint = casaFactory.createCasaEndpoint();
         endpoint.setName(endpointID);
-        endpoint.setEndpointName(endpointName);        
+        endpoint.setEndpointName(endpointName);
         
         // Create casa endpoint reference
         CasaEndpointRef endpointRef = isConsumes ?
@@ -1547,6 +1547,49 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
         
         return endpointRef;
+    }
+    
+    public void addEndpointsToServiceEngineServiceUnit(
+            JBIServiceUnitTransferObject suTransfer,
+            CasaServiceEngineServiceUnit seSU) {
+        
+        Model model = seSU.getModel();
+        List<JBIServiceUnitTransferObject.Endpoint> pList = 
+                suTransfer.getProvidesEndpoints();
+        for (JBIServiceUnitTransferObject.Endpoint p : pList) {
+            CasaEndpointRef endpointRef =
+                    addEndpointToExternalServiceUnit(seSU, false);
+            CasaEndpoint endpoint = endpointRef.getEndpoint().get();
+            
+            model.startTransaction();
+            try {
+                endpoint.setInterfaceQName(p.getInterfaceQName());
+                endpoint.setServiceQName(p.getServiceQName());
+                endpoint.setEndpointName(p.getEndpointName());
+            } finally {
+                if (model.isIntransaction()) {
+                    model.endTransaction();
+                }
+            }
+        }
+        List<JBIServiceUnitTransferObject.Endpoint> cList = 
+                suTransfer.getConsumesEndpoints();
+        for (JBIServiceUnitTransferObject.Endpoint c : cList) {
+            CasaEndpointRef endpointRef =
+                    addEndpointToExternalServiceUnit(seSU, false);
+            CasaEndpoint endpoint = endpointRef.getEndpoint().get();
+            
+            model.startTransaction();
+            try {
+                endpoint.setInterfaceQName(c.getInterfaceQName());
+                endpoint.setServiceQName(c.getServiceQName());
+                endpoint.setEndpointName(c.getEndpointName());
+            } finally {
+                if (model.isIntransaction()) {
+                    model.endTransaction();
+                }
+            }
+        }
     }
     
     /**
@@ -1618,7 +1661,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             mAddProjects.put(projectName, project); // todo: needs to fix duplicate proj names..
         }
         
-        addEngineServiceUnit(projectName, type, // trimVersion(type),
+        addServiceEngineServiceUnit(projectName, type, // trimVersion(type),
                 true,  // is internal SESU
                 false, // is known
                 x, y);
