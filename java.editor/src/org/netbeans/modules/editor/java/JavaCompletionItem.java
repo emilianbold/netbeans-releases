@@ -503,8 +503,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.smartType = smartType;
             this.simpleName = elem.getSimpleName().toString();
             this.typeName = Utilities.getTypeName(type, false).toString();
-            this.enclName = displayPkgName ? Utilities.getElementName(elem.getEnclosingElement(), true).toString() : null;
-            this.sortText = this.simpleName  + "#" + elem.getQualifiedName().toString(); //NOI18N            
+            if (displayPkgName) {
+                this.enclName = Utilities.getElementName(elem.getEnclosingElement(), true).toString();
+                this.sortText = this.simpleName + "#" + Utilities.getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
+            } else {
+                this.enclName = null;
+                this.sortText = this.simpleName;
+            }
         }
         
         public int getSortPriority() {

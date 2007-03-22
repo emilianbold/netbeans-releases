@@ -142,7 +142,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
 
     public CharSequence getSortText() {
         if (sortText == null)
-            sortText = simpleName + "#" + name; //NOI18N
+            sortText = simpleName + "#" + Utilities.getImportanceLevel(name) + "#" + name; //NOI18N
         return sortText;
     }
 

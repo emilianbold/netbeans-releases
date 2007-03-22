@@ -88,6 +88,19 @@ public class Utilities {
         }
     }
 
+    public static int getImportanceLevel(String fqn) {
+        int weight = 50;
+        if (fqn.startsWith("java.lang.") || fqn.startsWith("java.util.")) // NOI18N
+            weight -= 10;
+        else if (fqn.startsWith("org.omg.") || fqn.startsWith("org.apache.")) // NOI18N
+            weight += 10;
+        else if (fqn.startsWith("com.sun.") || fqn.startsWith("com.ibm.") || fqn.startsWith("com.apple.")) // NOI18N
+            weight += 20;
+        else if (fqn.startsWith("sun.") || fqn.startsWith("sunw.") || fqn.startsWith("netscape.")) // NOI18N
+            weight += 30;
+        return weight;
+    }
+    
     public static TreePath getPathElementOfKind(Tree.Kind kind, TreePath path) {
         return getPathElementOfKind(EnumSet.of(kind), path);
     }
