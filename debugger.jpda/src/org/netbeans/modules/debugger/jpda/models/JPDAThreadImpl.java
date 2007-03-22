@@ -28,10 +28,10 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-
 import java.util.List;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -39,9 +39,8 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.ErrorManager;
 
 
 /**
@@ -504,6 +503,9 @@ public final class JPDAThreadImpl implements JPDAThread {
      * @return monitor this thread is waiting on
      */
     public ObjectVariable getContendedMonitor () {
+        if (!threadReference.virtualMachine().canGetCurrentContendedMonitor()) {
+            return null;
+        }
         try {
             ObjectReference or;
             synchronized (this) {
@@ -518,8 +520,7 @@ public final class JPDAThreadImpl implements JPDAThread {
             return new ThisVariable (debugger, or, "");
         } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
-        } catch (UnsupportedOperationException e) {
-            // if JVM deos not support this feature - not a problem
+            ErrorManager.getDefault().notify(e);
         }
         return null;
     }
@@ -530,6 +531,9 @@ public final class JPDAThreadImpl implements JPDAThread {
      * @return monitors owned by this thread
      */
     public ObjectVariable[] getOwnedMonitors () {
+        if (!threadReference.virtualMachine().canGetOwnedMonitorInfo()) {
+            return new ObjectVariable[0];
+        }
         try {
             List l;
             synchronized (this) {
@@ -548,7 +552,7 @@ public final class JPDAThreadImpl implements JPDAThread {
             return vs;
         } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
-        } catch (UnsupportedOperationException e) {
+            ErrorManager.getDefault().notify(e);
         }
         return new ObjectVariable [0];
     }
