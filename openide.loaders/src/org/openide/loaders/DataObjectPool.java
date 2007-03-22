@@ -46,40 +46,16 @@ implements ChangeListener {
 
     /** assignes file objects a unique instance of Item, if it has been created
      */
-    private Map<FileObject,Item> map = new HashMap<FileObject,Item>(512) {
-        public Item put(FileObject obj, Item item) {
-            Item prev = super.put(obj, item);
-            FileObject parent = obj.getParent();
-            if (parent == null) {
-                return prev;
-            }
-            List<Item> arr = children.get(parent);
-            if (arr == null) {
-                arr = new ArrayList<Item>(parent.getChildren().length);
-            }
-            arr.add(item);
-            return prev;
+    private Map<FileObject,Item> map = new DoubleHashMap();
+    /** just for testing purposes
+     */
+    static final void fastCache(boolean fast) {
+        if (fast) {
+            POOL.children = null;
+        } else {
+            POOL.children = new HashMap<FileObject, List<Item>>();
         }
-        public Item remove(Object obj) {
-            Item prev = super.remove(obj);
-            if (! (obj instanceof FileObject)) {
-                return prev;
-            }
-            
-            FileObject parent = ((FileObject)obj).getParent();
-            if (parent == null) {
-                return prev;
-            }
-            List<Item> arr = children.get(parent);
-            if (arr != null) {
-                arr.remove(obj);
-                if (arr.isEmpty()) {
-                    children.remove(parent);
-                }
-            }
-            return prev;
-        }
-    };
+    }
     /** map that assigns to each folder list of Items created for its children */
     private Map<FileObject,List<Item>> children = new HashMap<FileObject, List<Item>>();
     
@@ -1239,4 +1215,50 @@ implements ChangeListener {
         }
         
     } // end of Validator
+    private final class DoubleHashMap extends HashMap<FileObject,Item> {
+        public DoubleHashMap() {
+            super(512);
+        }
+        
+        public Item put(FileObject obj, Item item) {
+            Item prev = super.put(obj, item);
+            if (children == null) {
+                return prev;
+            }
+            
+            FileObject parent = obj.getParent();
+            if (parent == null) {
+                return prev;
+            }
+            List<Item> arr = children.get(parent);
+            if (arr == null) {
+                arr = new ArrayList<Item>();
+            }
+            arr.add(item);
+            return prev;
+        }
+        public Item remove(Object obj) {
+            Item prev = super.remove(obj);
+            if (! (obj instanceof FileObject)) {
+                return prev;
+            }
+            if (children == null) {
+                return prev;
+            }
+            
+            FileObject parent = ((FileObject)obj).getParent();
+            if (parent == null) {
+                return prev;
+            }
+            List<Item> arr = children.get(parent);
+            if (arr != null) {
+                arr.remove(obj);
+                if (arr.isEmpty()) {
+                    children.remove(parent);
+                }
+            }
+            return prev;
+        }
+    } // end of DoubleHashMap
+
 }
