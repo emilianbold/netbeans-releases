@@ -51,7 +51,7 @@ public class CasaPalette {
         UN_KNOWN
     }
     
-    public static final DataFlavor CasaPaletteDataFlavor = new DataFlavor( Object.class, "CasaPaletteData" ) {  // NOI18N
+    public static final DataFlavor CasaPaletteDataFlavor = new DataFlavor( CasaPaletteItem.class, "CasaPaletteData" ) {  // NOI18N
     };
     
     private static PaletteController msPaletteController = null;
