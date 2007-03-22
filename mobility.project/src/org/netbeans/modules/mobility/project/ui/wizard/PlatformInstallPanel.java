@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.openide.ErrorManager;
 import org.openide.filesystems.Repository;
@@ -175,8 +177,8 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         }
     }
     
-    public static boolean isPlatformInstalled() {
-        return J2MEProjectGenerator.findPlatform(null) != null;
+    public static boolean isPlatformInstalled(String platformType) {
+        return JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, null)).length != 0;
     }
     
     public static class WizardPanel implements TemplateWizard.FinishablePanel, ActionListener {
@@ -185,6 +187,12 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         TemplateWizard wizard;
         Collection<ChangeListener> listeners = new ArrayList<ChangeListener>();
         boolean valid = false;
+        final String platformType;
+        
+        public WizardPanel(String platType)
+        {
+            platformType=platType;
+        }
         
         public void addChangeListener(final javax.swing.event.ChangeListener changeListener) {
             listeners.add(changeListener);
@@ -217,7 +225,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         }
         
         public boolean isValid() {
-            final boolean valid = PlatformInstallPanel.isPlatformInstalled();
+            final boolean valid = PlatformInstallPanel.isPlatformInstalled(platformType);
             if (! valid)
                 showError(NbBundle.getMessage(PlatformInstallPanel.class, "ERR_Platform_NoPlatform")); // NOI18N
             else

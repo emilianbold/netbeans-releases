@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -96,9 +97,9 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         Object create = Templates.getTemplate(templateWizard).getAttribute("application"); // NOI18N
         if (!(create instanceof Boolean))
             create = Boolean.FALSE;
-        platformInstall =  PlatformInstallPanel.isPlatformInstalled() ^ true;
+        platformInstall =  PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
         if (platformInstall)
-            platformPanel = new PlatformInstallPanel.WizardPanel();
+            platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
         projectPanel = new ProjectPanel.WizardPanel(((Boolean) create).booleanValue(), ((Boolean) create).booleanValue());
         psPanel = new PlatformSelectionPanel();
         csPanel = new ConfigurationsSelectionPanel();

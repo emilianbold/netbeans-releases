@@ -105,7 +105,7 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
                 new PanelConfigurePlatform(),
                 new PanelConfigureProject( this.type )} :
             new WizardDescriptor.Panel[] {
-                new PlatformInstallPanel.WizardPanel(),
+                new PlatformInstallPanel.WizardPanel(CDCPlatform.PLATFORM_CDC),
                 new PanelConfigurePlatform(),
                 new PanelConfigureProject( this.type )
             };

@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -89,9 +90,9 @@ public class SampleProjectIterator implements TemplateWizard.Iterator {
     }
     
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
-        platformInstall = PlatformInstallPanel.isPlatformInstalled() ^ true;
+        platformInstall = PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
         if (platformInstall)
-            platformPanel = new PlatformInstallPanel.WizardPanel();
+            platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
         projectPanel = new ProjectPanel.WizardPanel(false, true);
         psPanel = new PlatformSelectionPanel();
         String configuration = null;
