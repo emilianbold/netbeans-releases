@@ -68,7 +68,7 @@ public class HtmlPrintContainer implements PrintContainer {
     private static final String ESC_GT = "&gt;";        //NOI18N
     private static final String ESC_AMP = "&amp;";      //NOI18N
     private static final String ESC_QUOT = "&quot;";    //NOI18N
-    private static final String ESC_APOS = "&apos;";    //NOI18N
+    private static final String ESC_APOS = "&#39;"; // IZ #74203 "&apos;";    //NOI18N
     private static final char   ZERO    = '0';          //NOI18N
     private static final char   DOT = '.';              //NOI18N
     private static final String STYLE_PREFIX = "ST";    //NOI18N
@@ -299,11 +299,11 @@ public class HtmlPrintContainer implements PrintContainer {
     }
 
     private class Styles {
-        private Map descs;
+        private Map<StyleDescriptor, String> descs;
         private int sequence;
 
         public Styles () {
-            this.descs = new HashMap();
+            this.descs = new HashMap<StyleDescriptor, String>();
         }
 
         private boolean coloringEquals(Coloring coloring, Font f, Color fc, Color bc){
@@ -321,7 +321,7 @@ public class HtmlPrintContainer implements PrintContainer {
         public final String getStyleId (Font f, Color fc, Color bc) {
             if (!fc.equals(getDefaultColor()) || !bc.equals(getDefaultBackgroundColor()) || !f.equals(getDefaultFont())) {
                 StyleDescriptor sd = new StyleDescriptor (f, fc, bc);
-                String id = (String) this.descs.get (sd);
+                String id = this.descs.get(sd);
                 if (id == null) {
                     java.util.Set keySet = syntaxColoring.keySet();
                     Iterator iter = keySet.iterator();
@@ -348,9 +348,9 @@ public class HtmlPrintContainer implements PrintContainer {
 
         public final String toExternalForm () {
             StringBuffer result = new StringBuffer();
-            for (Iterator it = descs.keySet().iterator(); it.hasNext();) {
-                result.append (((StyleDescriptor)it.next()).toExternalForm());
-                result.append (EOL);
+            for(StyleDescriptor sd : descs.keySet()) {
+                result.append(sd.toExternalForm());
+                result.append(EOL);
             }
             return result.toString();
         }
