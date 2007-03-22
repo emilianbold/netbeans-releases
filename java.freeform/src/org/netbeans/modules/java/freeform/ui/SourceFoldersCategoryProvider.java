@@ -53,7 +53,7 @@ public class SourceFoldersCategoryProvider implements ProjectCustomizer.Composit
         assert project != null;
         if (LookupProviderImpl.isMyProject(aux)) {
             Category cat = ProjectCustomizer.Category.create("SourceFolders", //NOI18N
-                    NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Sources"), null, null);
+                    NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Sources"), null);
             final ProjectModel pm = ProjectModel.createModel(Util.getProjectLocation(acc.getHelper(), acc.getEvaluator()), 
                     FileUtil.toFile(project.getProjectDirectory()), acc.getEvaluator(), acc.getHelper());
             InstanceContent ic = context.lookup(InstanceContent.class);
