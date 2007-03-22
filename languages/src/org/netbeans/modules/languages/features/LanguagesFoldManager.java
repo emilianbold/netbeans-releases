@@ -85,7 +85,9 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
         if (d instanceof NbEditorDocument) {
             this.doc = d;
             this.operation = operation;
-            ParserManagerImpl.get (doc).addASTEvaluator (this);
+            ParserManagerImpl parserManager = (ParserManagerImpl)ParserManagerImpl.get(doc);
+            parserManager.addASTEvaluator (this);
+            parserManager.forceEvaluation(this);
         }
     }
     

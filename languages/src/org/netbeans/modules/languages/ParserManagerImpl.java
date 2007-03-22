@@ -99,6 +99,15 @@ public class ParserManagerImpl extends ParserManager {
         evaluators.remove (e);
     }
     
+    public synchronized void forceEvaluation (ASTEvaluator e) {
+        if (state != State.ERROR && state != State.OK) {
+            return;
+        }
+        
+        e.beforeEvaluation (state, ast);
+        evaluate (state, ast, ast, new ArrayList<ASTItem> ());
+        e.afterEvaluation (state, ast);
+    }
     
     // private methods .........................................................
     
