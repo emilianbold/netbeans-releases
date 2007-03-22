@@ -29,7 +29,8 @@ Microsystems, Inc. All Rights Reserved.
         <zip basedir="demos" excludes="CVS" destfile="${examples}/demos.zip"/>
         <zip basedir="demos2" excludes="CVS" destfile="${examples}/demos2.zip"/>
         <zip basedir="games" excludes="CVS" destfile="${examples}/games.zip"/>
-        <zip basedir="games2" excludes="CVS" destfile="${examples}/games2.zip"/>
+        <zip basedir="games2" excludes="CVS" destfile="${examples}/games2.zip"/>        
+		<zip basedir="GameBuilderDemo" excludes="CVS" destfile="${examples}/GameBuilderDemo.zip"/>
         <zip basedir="mmademo" excludes="CVS" destfile="${examples}/mmademo.zip"/>
         <zip basedir="NetworkDemo" excludes="CVS" destfile="${examples}/NetworkDemo.zip"/>
         <zip basedir="photoalbum" excludes="CVS" destfile="${examples}/photoalbum.zip"/>

@@ -135,7 +135,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
-                        <attr boolvalue="true" name="VariousGames.zip/UIWidgetExample.zip"/>
+                        <attr boolvalue="true" name="VariousGames.zip/GameBuilderDemo.zip"/>
                         <file name="UIWidgetExample.zip" url="UIDemo2.zip">
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/UIDemo2.html"/>
@@ -145,7 +145,17 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
-                        <attr boolvalue="true" name="UIWidgetExample.zip/NetworkingExample.zip"/>
+                        <attr boolvalue="true" name="GameBuilderDemo.zip/UIWidgetExample.zip"/>
+                        <file name="GameBuilderDemo.zip" url="GameBuilderDemo.zip">
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/GameBuilderDemo.html"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
+                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
+                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
+                        </file>
+						<attr boolvalue="true" name="UIWidgetExample.zip/NetworkingExample.zip"/>
                         <file name="NetworkingExample.zip" url="NetworkDemo.zip">
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/NetworkDemo.html"/>
