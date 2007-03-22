@@ -81,9 +81,12 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
      * @param operation fold hierarchy operation dedicated to the fold manager.
      */
     public void init (FoldOperation operation) {
-        this.doc = operation.getHierarchy ().getComponent ().getDocument ();
-        this.operation = operation;
-        ParserManagerImpl.get (doc).addASTEvaluator (this);
+        Document d = operation.getHierarchy ().getComponent ().getDocument ();
+        if (d instanceof NbEditorDocument) {
+            this.doc = d;
+            this.operation = operation;
+            ParserManagerImpl.get (doc).addASTEvaluator (this);
+        }
     }
     
     /**
