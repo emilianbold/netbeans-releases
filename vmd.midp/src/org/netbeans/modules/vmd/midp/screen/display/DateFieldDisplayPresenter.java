@@ -19,24 +19,23 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import javax.swing.BorderFactory;
+import java.util.Date;
 import javax.swing.JLabel;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
-import org.netbeans.modules.vmd.midp.components.items.ItemCD;
-import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
+import org.netbeans.modules.vmd.midp.components.items.DateFieldCD;
 
 /**
  *
  * @author Anton Chechel
  * @version 1.0
  */
-public class StringItemDisplayPresenter extends ItemDisplayPresenter {
+public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
     
     private JLabel label;
-    
-    public StringItemDisplayPresenter() {
+
+    public DateFieldDisplayPresenter() {
         label = new JLabel();
         setContentComponent(label);
     }
@@ -44,11 +43,11 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
-        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
-        int appearanceMode = MidpTypes.getInteger(getComponent().readProperty(StringItemCD.PROP_APPEARANCE_MODE));
-        if (appearanceMode == ItemCD.VALUE_BUTTON) {
-            label.setBorder(BorderFactory.createRaisedBevelBorder());
+        PropertyValue pv = getComponent().readProperty(DateFieldCD.PROP_DATE);
+        String text = "<date>"; // NOI18N
+        if (pv.getKind() == PropertyValue.Kind.VALUE) { // not user code
+            text = new Date(MidpTypes.getLong(pv)).toString(); // TODO use formatter
         }
-        label.setText(appearanceMode == ItemCD.VALUE_HYPERLINK ? ScreenSupport.wrapLinkWithHtml(text) : ScreenSupport.wrapWithHtml(text));
+        label.setText(text);
     }
 }

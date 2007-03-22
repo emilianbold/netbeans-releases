@@ -130,7 +130,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
             ActiveDocumentSupport.getDefault().getActiveDocument().getTransactionManager().readAccess(new Runnable() {
                 public void run() {
                     PropertyValue pv = dateField.readProperty(DateFieldCD.PROP_INPUT_MODE);
-                    if (pv.getKind() != PropertyValue.Kind.USERCODE)  {
+                    if (pv.getKind() == PropertyValue.Kind.VALUE)  {
                         inputMode = MidpTypes.getInteger(pv);
                     }
                 }

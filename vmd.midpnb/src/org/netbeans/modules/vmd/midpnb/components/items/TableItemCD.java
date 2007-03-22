@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.components.items;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
@@ -44,6 +45,9 @@ import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midpnb.screen.display.TableItemDisplayPresenter;
 
 /**
  *
@@ -55,12 +59,12 @@ public class TableItemCD extends ComponentDescriptor {
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/table_16.png"; // NOI18N
 
-    private static final String PROP_TITLE = "title"; //NOI18N
-    private static final String PROP_MODEL = "model"; //NOI18N
-    private static final String PROP_BORDERS  = "borders"; //NOI18N
-    private static final String PROP_HEADERS_FONT = "headersFont"; //NOI18N
-    private static final String PROP_VALUES_FONT = "valuesFont"; //NOI18N
-    private static final String PROP_TITLE_FONT = "titleFont"; //NOI18N
+    public static final String PROP_TITLE = "title"; //NOI18N
+    public static final String PROP_MODEL = "model"; //NOI18N
+    public static final String PROP_BORDERS  = "borders"; //NOI18N
+    public static final String PROP_HEADERS_FONT = "headersFont"; //NOI18N
+    public static final String PROP_VALUES_FONT = "valuesFont"; //NOI18N
+    public static final String PROP_TITLE_FONT = "titleFont"; //NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -89,6 +93,11 @@ public class TableItemCD extends ComponentDescriptor {
         );
     }
     
+//    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+//        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+//        super.gatherPresenters (presenters);
+//    }
+
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -121,7 +130,9 @@ public class TableItemCD extends ComponentDescriptor {
             createSetterPresenter (),
             MidpCodePresenterSupport.createAddImportPresenter (),
             // delete
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_MODEL)
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_MODEL)//,
+            // screen
+            //new TableItemDisplayPresenter()
         );
     }
     

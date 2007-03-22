@@ -119,10 +119,6 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         return canWrite;
     }
     
-    public String getCustomEditorTitle() {
-        return getLabelName();
-    }
-    
     private String getLabelName() {
         if (typeID.equals(MethodPointCD.TYPEID)) {
             return "Method Name";

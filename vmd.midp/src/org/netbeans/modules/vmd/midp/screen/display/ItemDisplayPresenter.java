@@ -73,11 +73,18 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     protected final void setContentComponent(JComponent contentComponent) {
-        if (this.contentComponent != null)
+        panel.setVisible(false);
+        if (this.contentComponent != null) {
             panel.remove(this.contentComponent);
+        }
         this.contentComponent = contentComponent;
-        if (contentComponent != null)
+        if (contentComponent != null) {
             panel.add(contentComponent, BorderLayout.CENTER);
+        }
+        panel.setVisible(true);
+        panel.invalidate();
+        panel.validate();
+        panel.repaint();
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
