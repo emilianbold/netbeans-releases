@@ -74,6 +74,7 @@ public class CompletionProviderImpl implements CompletionProvider {
         ListResult r = new ListResult ();
         CompletionTaskImpl task = new CompletionTaskImpl (component);
         task.compute (r);
+        r.waitFinished ();
         return r.getList ();
     }
     
@@ -232,11 +233,8 @@ public class CompletionProviderImpl implements CompletionProvider {
                     Language language = LanguagesManager.getDefault ().
                         getLanguage (item.getMimeType ());
                     Feature feature = language.getFeature (COMPLETION, path.subPath (i));
-                    if (feature != null) {
-                        boolean recursive = feature.getBoolean ("recursive", false);
-                        if ((i != path.size () - 1) && !recursive) break;
+                    if (feature != null)
                         addTags (feature, start, SyntaxContext.create (doc, path.subPath (i)), resultSet);
-                    }
                 } catch (ParseException ex) {
                 }
             }
@@ -333,19 +331,35 @@ public class CompletionProviderImpl implements CompletionProvider {
         }
         
         public void finish () {
+            resultSet.finish ();
         }
     }
     
     private static class ListResult implements Result {
         private List<CompletionItem> result = new ArrayList<CompletionItem> ();
+        private boolean finished = false;
+        private Object LOCK = new Object ();
         
         public void addItem (CompletionItem item) {
             result.add (item);
         }
         
         public void finish () {
+            finished = true;
+            synchronized (LOCK) {
+                LOCK.notify ();
+            }
         }
         
+        void waitFinished () {
+            if (finished) return;
+            synchronized (LOCK) {
+                try {
+                    LOCK.wait ();
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
         public List<CompletionItem> getList () {
             return result;
         }
