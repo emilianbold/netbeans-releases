@@ -235,7 +235,6 @@ public class CompletionContextImpl extends CompletionContext {
 
                 default:
                     completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-                    pathFromRoot = getPathFromRoot(element);
                     break;
             }
         } catch (Exception ex) {
@@ -472,7 +471,7 @@ public class CompletionContextImpl extends CompletionContext {
     private SyntaxElement element;
     private StartTag docRoot;
     private char lastTypedChar;
-    private CompletionType completionType;
+    private CompletionType completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
     private List<QName> pathFromRoot;
     private String schemaLocation;
     private String noNamespaceSchemaLocation;
