@@ -21,6 +21,11 @@ package org.netbeans.modules.subversion.client;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
@@ -44,6 +49,7 @@ import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -63,8 +69,10 @@ public class SvnClientExceptionHandler {
     
     private final ISVNClientAdapter adapter;
     private final SvnClient client;
-    private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private final int handledExceptions;
+    
+    private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
+    private static final String CHARSET_NAME = "ASCII7";                        // NOI18N    
     
     private class CertificateFailure {
         int mask;
@@ -169,35 +177,17 @@ public class SvnClientExceptionHandler {
             return true;
         }
 
-        // otherwise try  to retrieve the certificate from the server ...
-        TrustManager[] trust = new TrustManager[] {
-            new X509TrustManager() {
-                public X509Certificate[] getAcceptedIssuers() { return null; }
-                public void checkClientTrusted(X509Certificate[] certs, String authType) { }
-                public void checkServerTrusted(X509Certificate[] certs, String authType) { }
-            }
-        };
-
-        SSLContext context = null;
+        // otherwise try to retrieve the certificate from the server ...                                             
+        SSLSocket socket;
         try {
-            context = SSLContext.getInstance("SSL"); // NOI18N
-            context.init(null, trust, null);
-        } catch (NoSuchAlgorithmException ex) {
-            ErrorManager.getDefault().notify(ex);
+            socket = getSSLSocket(url.getProtocol(), hostString, url.getPort());
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
             return false;
-        } catch (KeyManagementException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return false;                    
         }
-
-        SSLSocketFactory factory = context.getSocketFactory();                                         
-        SSLSocket socket = null;
-        try {
-            socket = (SSLSocket) factory.createSocket(hostString, url.getPort());
-            socket.startHandshake();
-        } catch (IOException ex) {
-            throw ex;
-        }        
+        if(socket == null) {
+            return false;
+        }
 
         X509Certificate cert = null;
         java.security.cert.Certificate[] serverCerts = null;
@@ -210,7 +200,7 @@ public class SvnClientExceptionHandler {
         for (int i = 0; i < serverCerts.length; i++) {                        
             Diagnostics.println("Cert[" + i + "] type - " + serverCerts[i].getType());      // NOI18N
             if(serverCerts[i] instanceof X509Certificate) {                                
-                cert = (X509Certificate) serverCerts[i];                    
+                cert = (X509Certificate) serverCerts[i];
                 Diagnostics.println("Cert[" + i + "] - notAfter " + cert.getNotAfter());    // NOI18N
                 Diagnostics.println("Cert[" + i + "] - notBefore " + cert.getNotBefore());  // NOI18N
                 try {
@@ -257,6 +247,98 @@ public class SvnClientExceptionHandler {
         return true;                
     }
 
+    private SSLSocket getSSLSocket(String protocol, String host, int port) throws Exception {
+        TrustManager[] trust = new TrustManager[] {
+            new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() { return null; }
+                public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+                public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+            }
+        };
+       
+        ProxySettings proxySettings = new ProxySettings();
+        String proxyHost = "";
+        int proxyPort = -1;                       
+        if(protocol.startsWith("https")) {
+            proxyHost = proxySettings.getHttpsHost();
+            proxyPort = proxySettings.getHttpsPort();
+        }            
+        if(proxyHost.equals("")) {
+            proxyHost = proxySettings.getHttpHost();
+            proxyPort = proxySettings.getHttpPort();
+        }
+        
+        // now this is the messy part ...
+        Socket proxySocket = new Socket(java.net.Proxy.NO_PROXY);
+        if(!proxySettings.isDirect()) {                                           
+            proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
+            connectProxy(proxySocket, host, port, proxyHost, proxyPort);        
+        } else {
+            proxySocket.connect(new InetSocketAddress(host, port));
+        }
+                        
+        SSLContext context = SSLContext.getInstance("SSL");                     // NOI18N
+        context.init(null, trust, null);        
+        SSLSocketFactory factory = context.getSocketFactory();                                         
+        SSLSocket socket = (SSLSocket) factory.createSocket(proxySocket, host, port, true);
+        socket.startHandshake();
+        return socket;
+    }
+    
+    private void connectProxy(Socket proxy, String host, int port, String proxyHost, int proxyPort) throws IOException {
+      
+      String connectString = "CONNECT "+ host + ":" + port + " HTTP/1.0\r\n" + "Connection: Keep-Alive\r\n\r\n"; // NOI18N
+        
+      byte connectBytes[];
+      try {
+         connectBytes = connectString.getBytes(CHARSET_NAME);
+      } catch (UnsupportedEncodingException ignored) {
+         connectBytes = connectString.getBytes();
+      }
+      
+      OutputStream out = proxy.getOutputStream();
+      out.write(connectBytes);
+      out.flush();
+
+      byte reply[] = new byte[200];
+      int replyLen = 0;
+      int newlinesSeen = 0;
+      boolean headerDone = false;
+      InputStream in = proxy.getInputStream();
+      
+      while (newlinesSeen < 2) {
+         byte b = (byte) in.read();
+         if (b < 0) {
+            throw new IOException("Unexpected EOF from proxy");                 // NOI18N
+         }
+         if (b == '\n') {
+            headerDone = true;
+            ++newlinesSeen;
+         } else if (b != '\r') {
+            newlinesSeen = 0;
+            if (!headerDone && replyLen < reply.length) {
+               reply[replyLen++] = b;
+            }
+         }
+      }
+
+      String ret = "";                                                          // NOI18N
+      try {
+        ret = new String(reply, 0, replyLen, CHARSET_NAME);
+      } catch (UnsupportedEncodingException ignored) {
+        ret = new String(reply, 0, replyLen);
+      }
+        if (!isOKresponse(ret.toLowerCase())) {
+            throw new IOException("Unable to connect through proxy "            // NOI18N
+                                 + proxyHost + ":" + proxyPort                  // NOI18N
+                                 + ".  Proxy returns \"" + ret + "\"");         // NOI18N
+        }
+    }    
+    
+    private boolean isOKresponse(String ret) {
+        return ret.startsWith("http/1.1 200") || ret.startsWith("http/1.0 200");// NOI18N
+    }    
+    
     private void showDialog(DialogDescriptor dialogDescriptor) {
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
