@@ -290,7 +290,7 @@ public class SymbolClassReader extends JavadocClassReader {
             enterMember(c, s);
         }
         
-        c.attributes_field = readAnnotations(r);
+        attachAnnotations(c, r);
         
         typevars = typevars.leave();
     }
@@ -735,10 +735,10 @@ public class SymbolClassReader extends JavadocClassReader {
             s.owner = method;
         }
         
-        method.attributes_field = readAnnotations(r);
+        attachAnnotations(method, r);
 
         if ((read = r.read()) != ';') {
-            method.defaultValue = readAnnotationValue(methodType.getReturnType(), r, read);
+            annotate.later(new AnnotationDefaultCompleter(method, readAnnotationValue(r, read)));
         }
         
         typevars = typevars.leave();
@@ -765,7 +765,7 @@ public class SymbolClassReader extends JavadocClassReader {
         
         field.setData(constantValue);
         
-        field.attributes_field = readAnnotations(r);
+        attachAnnotations(field, r);
         
         int read = r.read();
         
@@ -843,8 +843,16 @@ public class SymbolClassReader extends JavadocClassReader {
         return result;
     }
     
-    private List<Compound> readAnnotations(Reader r) throws IOException {
-        List<Compound> attributes = List.nil();
+    private void attachAnnotations(Symbol sym, Reader r) throws IOException {
+        List<CompoundAnnotationProxy> annotations = readAnnotations(r);
+        
+        if (!annotations.isEmpty()) {
+            annotate.later(new AnnotationCompleter(sym, annotations));
+        }
+    }
+    
+    private List<CompoundAnnotationProxy> readAnnotations(Reader r) throws IOException {
+        List<CompoundAnnotationProxy> attributes = List.nil();
         int read;
         
         while ((read = r.read()) != ';') {
@@ -854,35 +862,21 @@ public class SymbolClassReader extends JavadocClassReader {
         return attributes.reverse();
     }
     
-    private Compound readAnnotation(Reader r, int read) throws IOException {
+    private CompoundAnnotationProxy readAnnotation(Reader r, int read) throws IOException {
         Type annotationType = readType(r, read);
         
-        annotationType.complete(); //well, we may need to do this lazy...
-        
-        List<Pair<MethodSymbol, Attribute>> values = List.nil();
+        ListBuffer<Pair<Name,Attribute>> values = new ListBuffer<Pair<Name,Attribute>>();
         
         while ((read = r.read()) != ';') {
             assert read == 'N';
             
-            String attributeName = readPlainName(r);
-            MethodSymbol ms = null;
+            Name attributeName = readPlainNameIntoTable(r);
             
-            for (Symbol m : ((ClassType) annotationType).asElement().getEnclosedElements()) {
-                if (m.getKind() == ElementKind.METHOD && attributeName.equals(m.getSimpleName().toString())) {
-                    ms = (MethodSymbol) m;
-                    break;
-                }
-            }
-            
-            if (ms == null) {
-                throw new IllegalStateException("invalid sig file: " + ((ClassSymbol) currentOwner).classfile + ", cannot find annotation attribute \"" + attributeName + " in " + ((TypeElement) ((ClassType) annotationType).asElement()).getQualifiedName());
-            }
-            
-            Attribute a = readAnnotationValue(ms.getReturnType(), r, r.read());
-            values = values.prepend(new Pair<MethodSymbol, Attribute>(ms, a));
+            Attribute a = readAnnotationValue(r, r.read());
+            values = values.append(new Pair<Name, Attribute>(attributeName, a));
         }
         
-        return new Compound(annotationType, values.reverse());
+        return new CompoundAnnotationProxy(annotationType, values.toList());
     }
     
     private Attribute readEnum(Reader r) throws IOException {
@@ -904,7 +898,7 @@ public class SymbolClassReader extends JavadocClassReader {
         }
     }
     
-    private Attribute readAnnotationValue(Type expectedType, Reader r, int read) throws IOException {
+    private Attribute readAnnotationValue(Reader r, int read) throws IOException {
         switch (read) {
             case 'Z': return new Attribute.Constant(syms.booleanType, Boolean.parseBoolean(readPlainName(r)) ? Integer.valueOf(1) : Integer.valueOf(0));
             case 'B': return new Attribute.Constant(syms.byteType, Integer.parseInt(readPlainName(r)));
@@ -915,16 +909,16 @@ public class SymbolClassReader extends JavadocClassReader {
             case 'F': return new Attribute.Constant(syms.floatType, Float.parseFloat(readPlainName(r)));
             case 'D': return new Attribute.Constant(syms.doubleType, Double.parseDouble(readPlainName(r)));
             case 'L': return new Attribute.Constant(syms.stringType, readEscapedString(r));
-            case 'O': return readEnum(r);
+            case 'O': return new EnumAttributeProxy(readType(r, r.read()), readNameIntoTable(r));
             case 'P': return readAnnotation(r, r.read());
             case '[': 
-                java.util.List<Attribute> items = new ArrayList<Attribute>();
+                ListBuffer<Attribute> items = new ListBuffer<Attribute>();
                 
                 while ((read = r.read()) != ';') {
-                    items.add(readAnnotationValue(expectedType, r, read));
+                    items.append(readAnnotationValue(r, read));
                 }
                 
-                return new Attribute.Array(((ArrayType) expectedType).getComponentType(), (Attribute[]) items.toArray(new Attribute[0]));
+                return new ArrayAttributeProxy(items.toList());
             case 'Y':
                 return new Attribute.Class(types, readType(r, r.read()));
         }

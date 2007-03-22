@@ -55,6 +55,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.SimpleAnnotationValueVisitor6;
 import junit.framework.TestSuite;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -90,7 +91,9 @@ public class SymbolDumperTest extends NbTestCase {
 //        
 //        return result;
 //    }
-
+       
+    private FileObject sourceRoot;
+    
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         
@@ -99,10 +102,10 @@ public class SymbolDumperTest extends NbTestCase {
         
         assertNotNull(workFO);
         
-        FileObject sourceRoot = workFO.createFolder("src");
+        sourceRoot = workFO.createFolder("src");
+        
         FileObject buildRoot  = workFO.createFolder("build");
         FileObject cache = workFO.createFolder("cache");
-        FileObject packageRoot = sourceRoot.createFolder("sourceutils");
         
         //FIXME:
         File jarWithAnnotations = new File(getDataDir(), "Annotations.jar");
@@ -686,6 +689,41 @@ public class SymbolDumperTest extends NbTestCase {
     
     public void testReadWriteRecursiveAnnotation() throws Exception {
         performReadWrite("package test; @test(\"test\")public @interface test {public String value();\n}");
+    }
+    
+    public void testReadWriteAnnotationWithDefault() throws Exception {
+        performReadWrite("package test; import annotations.ArrayOfStringArgAnnotation; public @interface test {ArrayOfStringArgAnnotation value() default @ArrayOfStringArgAnnotation(\"test@;;\\\\\");\n}",new Validator() {
+            public void validate(CompilationInfo info, Element t) {
+                assertTrue(t.getKind() == ElementKind.ANNOTATION_TYPE);
+                
+                ExecutableElement method = ElementFilter.methodsIn(t.getEnclosedElements()).get(0);
+                
+                AnnotationValue value = method.getDefaultValue();
+                final boolean[] found = new boolean[1];
+                
+                value.accept(new SimpleAnnotationValueVisitor6() {
+                    public @Override Object visitAnnotation(AnnotationMirror a, Object p) {
+                        if ("annotations.ArrayOfStringArgAnnotation".equals(((TypeElement) a.getAnnotationType().asElement()).getQualifiedName().toString())) {
+                            found[0] = true;
+                            AnnotationValue v = findValue(a, "value");
+                            Object proposedValue = v.getValue();
+                            
+                            List proposed = new ArrayList();
+                            
+                            for (AnnotationValue value : (Collection<AnnotationValue>) proposedValue) {
+                                proposed.add(value.getValue());
+                            }
+                            
+                            assertEquals(Arrays.asList(new String[] {"test@;;\\"}), proposed);
+                        }
+                        
+                        return null;
+                    }
+                }, null);
+                
+                assertTrue(found[0]);
+            }
+        });
     }
     
     public void testReadWriteEnum1() throws Exception {
@@ -1301,7 +1339,61 @@ public class SymbolDumperTest extends NbTestCase {
         }
         
     }
-  
+
+    public void testLazyAnnotationsAddition() throws Exception {
+        performLazyAnnotationsAdditionTest("package test; public @interface annotation {String value();}", "package test; public class usage {public @annotation(\"test\") void test() {}}", "package test; public class verifier {usage u; private void test() {u.hashCode();}}");
+    }
+    
+    protected void performLazyAnnotationsAdditionTest(String annotationText, String usageText, String verifierText) throws Exception {
+        clearWorkDir();
+        
+        FileObject pack = FileUtil.createFolder(sourceRoot, "test");
+        FileObject annotation = pack.createData("annotation.java");
+        FileObject usage = pack.createData("usage.java");
+        FileObject verifier = pack.createData("verifier.java");
+        
+        writeIntoFile(annotation, annotationText);
+        writeIntoFile(usage, usageText);
+        writeIntoFile(verifier, verifierText);
+        
+        JavaSource js = JavaSource.forFileObject(usage);
+        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+        CompilationUnitTree unit = info.getCompilationUnit();
+        assertTrue(info.getDiagnostics().toString(), info.getDiagnostics().isEmpty());
+        
+        Tree main = unit.getTypeDecls().iterator().next();
+        TypeElement type = (TypeElement) info.getTrees().getElement(new TreePath(new TreePath(unit), main));
+        
+        final Map<String, String> signatures = dumpIncludingInnerClasses(info, type);
+        
+        System.err.println("sig=" + signatures);
+        
+        ClasspathInfo cpInfo = ClasspathInfo.create(verifier);
+        JavaSource js2 = JavaSource.create(cpInfo, verifier);
+        
+        js2.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+            public void run(CompilationController parameter) throws Exception {
+                JavacTaskImpl task = (JavacTaskImpl) SourceUtilsTestUtil.getJavacTaskFor(parameter);
+                Context context = task.getContext();
+                SymbolClassReader reader = (SymbolClassReader) ClassReader.instance(context);
+                
+                PackageSymbol pack = reader.enterPackage(Name.Table.instance(context).fromString("test"));
+                
+                assertNotNull(pack);
+                
+                pack.complete();
+                
+                for (Map.Entry<String, String> entry : signatures.entrySet()) {
+                    reader.includeClassFile(pack, FileObjects.memoryFileObject(entry.getValue(), entry.getKey() + ".sig"));
+                }
+                
+                parameter.toPhase(Phase.RESOLVED);
+            }
+        },true);
+    }
+    
     //XXX: test for writing and reading java.lang.Object:
 //    public void testJavaLangObject() throws Exception {
 //        FileSystem fs = FileUtil.createMemoryFileSystem();
