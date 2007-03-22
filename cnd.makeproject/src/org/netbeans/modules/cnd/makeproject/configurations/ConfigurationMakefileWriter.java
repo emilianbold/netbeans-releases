@@ -299,7 +299,7 @@ public class ConfigurationMakefileWriter {
             String comment = null;
 	    String additionalDep = null;
             for (int i = 0; i < items.length; i++) {
-                ItemConfiguration itemConfiguration = (ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+                ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
                 if (itemConfiguration.getExcluded().getValue())
                     continue;
                 file = escapeDriveLetter(IpeUtils.escapeSpaces(items[i].getPath())); // FIXUP: cygdrive hard-coded...
@@ -406,7 +406,7 @@ public class ConfigurationMakefileWriter {
             // Also clean output from custom tool
             Item[] items = projectDescriptor.getProjectItems();
             for (int i = 0; i < items.length; i++) {
-                ItemConfiguration itemConfiguration = (ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+                ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
                 if (itemConfiguration.getExcluded().getValue())
                     continue;
                 if (itemConfiguration.getTool() == Tool.CustomTool && itemConfiguration.getCustomToolConfiguration().getModified()) {
@@ -460,7 +460,7 @@ public class ConfigurationMakefileWriter {
         String linkObjects = ""; // NOI18N
         if (conf.isCompileConfiguration()) {
             for (int x = 0; x < items.length; x++) {
-                ItemConfiguration itemConfiguration = (ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[x].getPath()));
+                ItemConfiguration itemConfiguration = items[x].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[x].getPath()));
                 String commandLine = ""; // NOI18N
                 if (itemConfiguration.getExcluded().getValue())
                     continue;

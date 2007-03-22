@@ -91,7 +91,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private CsmVariable _getDeclaration() {
         if (TraceFlags.USE_REPOSITORY) {
             CsmVariable declaration = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
-            assert declaration != null || this.declarationUID == null;
+            assert declaration != null || this.declarationUID == null : "null object for UID " + declarationUID;
             return declaration;
         } else {
             return this.declaration;
@@ -126,7 +126,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	else {
 	    String[] cnn = classOrNspNames;
 	    CsmNamespaceDefinition nsd = findNamespaceDefinition();
-	    StringBuffer sb = new StringBuffer();
+	    StringBuilder sb = new StringBuilder();
 	    if( nsd != null ) {
 		sb.append(nsd.getQualifiedName());
 	    }

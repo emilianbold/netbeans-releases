@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Stack;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
@@ -48,26 +49,29 @@ public class APTRestorePreprocStateWalker extends APTParseFileWalker {
         assert (stopDirective != null);
     }
     
-    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, APTPreprocState preprocState, int mode, APTInclude apt) {
-        if (!inclStack.empty()) {
-            // need to continue restoring
-            FileImpl csmFile = inclFileOwner.getFile(new File(inclPath));
-            assert csmFile != null;
-            APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
-            if (aptLight != null) {
-                // one more interation
-                APTWalker walker = new APTRestorePreprocStateWalker(aptLight, csmFile, preprocState, inclStack, interestedFile);
-                walker.visit();
+    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, APTPreprocState preprocState, int mode, APTInclude apt) throws IOException {
+        try {
+            if (!inclStack.empty()) {
+                // need to continue restoring
+                FileImpl csmFile = inclFileOwner.getFile(new File(inclPath));
+                assert csmFile != null;
+                APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
+                if (aptLight != null) {
+                    // one more interation
+                    APTWalker walker = new APTRestorePreprocStateWalker(aptLight, csmFile, preprocState, inclStack, interestedFile);
+                    walker.visit();
+                }
             }
-        }
-        // in fact, we know, that the first correct inclusion has priority,
-        // may be check for inclPath and interestedFile correspondence only?
-        if (apt.getToken().getLine() == stopDirective.getIncludeDirectiveLine() ||
-                inclPath.equals(interestedFile)) {
-            // we restored everything. Time to stop
-            super.stop();
-        } else {
-            getIncludeHandler().popInclude(); 
+        } finally {
+            // in fact, we know, that the first correct inclusion has priority,
+            // may be check for inclPath and interestedFile correspondence only?
+            if (apt.getToken().getLine() == stopDirective.getIncludeDirectiveLine() ||
+                    inclPath.equals(interestedFile)) {
+                // we restored everything. Time to stop
+                super.stop();
+            } else {
+                getIncludeHandler().popInclude(); 
+            }
         }
         return null;
     }    

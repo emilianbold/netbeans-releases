@@ -9,7 +9,6 @@
       <itemPath>disk.cc</itemPath>
       <itemPath>memory.cc</itemPath>
       <itemPath>module.cc</itemPath>
-      <itemPath>namelist.cc</itemPath>
       <itemPath>quote.cc</itemPath>
       <itemPath>system.cc</itemPath>
     </logicalFolder>
@@ -21,7 +20,6 @@
       <itemPath>disk.h</itemPath>
       <itemPath>memory.h</itemPath>
       <itemPath>module.h</itemPath>
-      <itemPath>namelist.h</itemPath>
       <itemPath>system.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -72,11 +70,6 @@
         <ccCompilerTool>
         </ccCompilerTool>
       </item>
-      <item path="namelist.cc">
-        <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
-      </item>
       <item path="customer.cc">
         <itemTool>1</itemTool>
         <ccCompilerTool>
@@ -105,9 +98,6 @@
         <itemTool>3</itemTool>
       </item>
       <item path="system.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="namelist.h">
         <itemTool>3</itemTool>
       </item>
       <item path="customer.h">
@@ -150,11 +140,6 @@
         <ccCompilerTool>
         </ccCompilerTool>
       </item>
-      <item path="namelist.cc">
-        <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
-      </item>
       <item path="customer.cc">
         <itemTool>1</itemTool>
         <ccCompilerTool>
@@ -183,9 +168,6 @@
         <itemTool>3</itemTool>
       </item>
       <item path="system.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="namelist.h">
         <itemTool>3</itemTool>
       </item>
       <item path="customer.h">

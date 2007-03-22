@@ -472,6 +472,8 @@ public class OutputWindowWriter extends Writer {
     private static final Pattern SUN_ERROR_SCANNER_CPP_WARNING = Pattern.compile("^\"(.*)\", line ([0-9]+): Warning:"); // NOI18N
     private static final Pattern SUN_ERROR_SCANNER_C_ERROR = Pattern.compile("^\"(.*)\", line ([0-9]+):"); // NOI18N
     private static final Pattern SUN_ERROR_SCANNER_C_WARNING = Pattern.compile("^\"(.*)\", line ([0-9]+): warning:"); // NOI18N
+    private static final Pattern SUN_ERROR_SCANNER_FORTRAN_ERROR = Pattern.compile("^\"(.*)\", Line = ([0-9]+),"); // NOI18N
+    private static final Pattern SUN_ERROR_SCANNER_FORTRAN_WARNING = Pattern.compile("^\"(.*)\", Line = ([0-9]+), Column = ([0-9]+): WARNING:"); // NOI18N
     private static final Pattern SUN_DIRECTORY_ENTER = Pattern.compile("\\(([^)]*)\\)[^:]*:"); // NOI18N
 
     private static final class SUNErrorParser implements ErrorParser {
@@ -490,14 +492,16 @@ public class OutputWindowWriter extends Writer {
             if (    m.pattern() == SUN_ERROR_SCANNER_CPP_ERROR
                  || m.pattern() == SUN_ERROR_SCANNER_CPP_WARNING
                  || m.pattern() == SUN_ERROR_SCANNER_C_ERROR
-                 || m.pattern() == SUN_ERROR_SCANNER_C_WARNING) {
+                 || m.pattern() == SUN_ERROR_SCANNER_C_WARNING
+                 || m.pattern() == SUN_ERROR_SCANNER_FORTRAN_ERROR
+                 || m.pattern() == SUN_ERROR_SCANNER_FORTRAN_WARNING) {
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
                     //FileObject fo = relativeTo.getFileObject(file);
                     FileObject fo = resolveRelativePath(relativeTo, file);
                     
-                    boolean important = m.pattern() == SUN_ERROR_SCANNER_CPP_ERROR || m.pattern() == SUN_ERROR_SCANNER_C_ERROR;
+                    boolean important = m.pattern() == SUN_ERROR_SCANNER_CPP_ERROR || m.pattern() == SUN_ERROR_SCANNER_C_ERROR || m.pattern() == SUN_ERROR_SCANNER_FORTRAN_ERROR;
                     
                     if (fo != null) {
                         delegate.println(line, new OutputListenerImpl(fo, lineNumber.intValue() - 1), important);
@@ -517,6 +521,8 @@ public class OutputWindowWriter extends Writer {
             return new Pattern[] {
                 SUN_ERROR_SCANNER_CPP_ERROR,
                 SUN_ERROR_SCANNER_CPP_WARNING,
+                SUN_ERROR_SCANNER_FORTRAN_WARNING,
+                SUN_ERROR_SCANNER_FORTRAN_ERROR,
                 SUN_ERROR_SCANNER_C_WARNING,
                 SUN_ERROR_SCANNER_C_ERROR/*keep this one at the end of the error patterns, the order is important*/,
                 SUN_DIRECTORY_ENTER

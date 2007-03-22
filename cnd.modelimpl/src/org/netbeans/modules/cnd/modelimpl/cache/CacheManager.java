@@ -28,6 +28,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheManagerImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * manager of cached files
@@ -48,6 +49,9 @@ public final class CacheManager implements CsmModelListener {
      * instance of manager
      */
     public static CacheManager getInstance() {
+        if (!TraceFlags.USE_AST_CACHE) {
+            assert false : "the flag TraceFlags.USE_AST_CACHE is turned OFF, it's impossible to use CacheManager";
+        }
         return singleton;
     }
     

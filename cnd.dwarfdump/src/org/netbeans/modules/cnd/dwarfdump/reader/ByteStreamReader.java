@@ -23,7 +23,6 @@ import java.io.ByteArrayInputStream;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import java.io.DataInput;
 import java.io.DataInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -262,7 +261,7 @@ public class ByteStreamReader implements DataInput {
     }
     
     public String readString() throws IOException {
-        StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
         byte b = -1;
         
         while (b != 0) {

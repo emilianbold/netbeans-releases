@@ -19,8 +19,9 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 
 public class OptionsConfiguration {
@@ -70,15 +71,15 @@ public class OptionsConfiguration {
     }
 
     public String[] getValues() {
-	Vector values = new Vector();
+	List values = new ArrayList();
 	StringTokenizer st = new StringTokenizer(getValue());
 	while (st.hasMoreTokens()) {
 	    values.add(st.nextToken());
 	}
 	return (String[])values.toArray(new String[values.size()]);
     }
-    public Vector getValuesAsVector() {
-	Vector values = new Vector();
+    public List getValuesAsList() {
+	List values = new ArrayList();
 	StringTokenizer st = new StringTokenizer(getValue());
 	while (st.hasMoreTokens()) {
 	    values.add(st.nextToken());

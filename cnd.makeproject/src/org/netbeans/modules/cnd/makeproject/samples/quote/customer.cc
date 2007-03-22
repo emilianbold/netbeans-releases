@@ -19,66 +19,21 @@
 
 #include "customer.h"
 
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-using namespace std;
+Customer::Customer(const string initName, int initDiscount) :
+    name(initName),
+    discount(initDiscount) {
+}    
 
-Customer::Customer() {
-    int sz=80;
-    customerName = new char[sz];
-    strcpy(customerName, "unknown");
-    discountCode=0; //default discount code is "0"
+int Customer::GetDiscount() const {
+    return discount;
 }
 
-Customer::Customer(char* name) {
-    int sz=strlen(name) + 1;
-    customerName = new char[sz];
-    strcpy(customerName, name);
-    discountCode=0; //default discount code is "0"
+string Customer::GetName() const {
+    return name;
 }
 
-Customer::Customer(char* name, int discount) {
-    int sz=strlen(name) + 1;
-    customerName = new char[sz];
-    strcpy(customerName, name);
-    discountCode=discount;
+ostream& operator <<(ostream& output, const Customer& customer) {
+    output << customer.name << " has discount " << customer.discount << '%';
+    return output;
 }
 
-Customer::Customer(const Customer& obj) //copy constructor
-{
-    int sz=strlen(obj.customerName) + 1;
-    customerName= new char[sz];
-    strcpy(customerName, obj.customerName);
-    discountCode = obj.discountCode;
-}
-
-Customer& Customer::operator=(Customer &obj) //overload assignment ("=") operator
-{
-    int sz=strlen(obj.customerName) + 1;
-    customerName= new char[sz];
-    strcpy(customerName, obj.customerName);
-    discountCode = obj.discountCode;
-    return *this;
-}
-
-Customer::~Customer() {
-    delete [] customerName;
-    
-}
-
-char* Customer::GetCustomerName() {
-    return customerName;
-}
-
-int Customer::GetDiscountCode() {
-    return discountCode;
-}
-
-void Customer::DisplayCustomer() {
-    cout<<"** Customer details **"<<endl;
-    cout<<"Customer name: "<<customerName<<endl;
-    cout<<"Customer discount code: "<<discountCode<<endl<<endl;
-}
-
-// end of customer.cc

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import javax.swing.event.ChangeEvent;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
@@ -27,25 +28,29 @@ import  org.netbeans.modules.cnd.api.model.*;
  * @author Vladimir Kvasihn
  */
 public class GlobalFuncNode extends ObjectNode {
-
+    
     public GlobalFuncNode(CsmFunction fun) {
         super(fun, Children.LEAF);
+        init(fun);
+    }
+    
+    private void init(CsmFunction fun){
         String text = CVUtil.getSignature(fun);
         setName(text);
         setDisplayName(text);
         setShortDescription(text);
     }
-
-    protected void objectChanged() {
-	if( getObject() instanceof CsmFunction ) {
-	    String text = CVUtil.getSignature((CsmFunction) getObject());
-	    setName(text);
-	    setDisplayName(text);
-	    setShortDescription(text);
-	}
-    }
-
-    protected int getWeight() {
-        return FUNCTION_WEIGHT;
+    
+    public void stateChanged(ChangeEvent e) {
+        Object o = e.getSource();
+        if (o instanceof CsmFunction){
+            CsmFunction cls = (CsmFunction)o;
+            setObject(cls);
+            init(cls);
+            fireIconChange();
+            fireOpenedIconChange();
+        } else if (o != null) {
+            System.err.println("Expected CsmFunction. Actually event contains "+o.toString());
+        }
     }
 }

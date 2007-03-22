@@ -61,6 +61,9 @@ public class ShellRunAction extends NodeAction {
     }
 
     protected void performAction(Node[] activatedNodes) {
+        // Save everything first
+        LifecycleManager.getDefault().saveAll();
+        
         for (int i = 0; i < activatedNodes.length; i++)
             performAction(activatedNodes[i]);
     }
@@ -69,13 +72,10 @@ public class ShellRunAction extends NodeAction {
 	return HelpCtx.DEFAULT_HELP; // FIXUP ???
     }
 
-    protected void performAction(Node node) {
+    public void performAction(Node node) {
 	ShellExecSupport bes = (ShellExecSupport) node.getCookie(ShellExecSupport.class);
         DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        
-        // Save everything first
-        LifecycleManager.getDefault().saveAll();
         
         File shellFile = FileUtil.toFile(fileObject);
         // Build directory
@@ -95,7 +95,7 @@ public class ShellRunAction extends NodeAction {
             ;; // FIXUP
         }
         // Tab Name
-        String tabName = "run"; // NOI18N
+        String tabName = getString("RUN_LABEL", node.getName());
         
 	String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
@@ -141,6 +141,10 @@ public class ShellRunAction extends NodeAction {
         
     protected final static String getString(String key) {
         return NbBundle.getBundle(ShellRunAction.class).getString(key);
+    }
+    
+    protected final static String getString(String key, String a1) {
+        return NbBundle.getMessage(ShellRunAction.class, key, a1);
     }
 
     protected boolean asynchronous() {

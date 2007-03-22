@@ -32,7 +32,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 public class CsmTracer {
 
     private final int step = 4;
-    private StringBuffer indentBuffer = new StringBuffer();
+    private StringBuilder indentBuffer = new StringBuilder();
     private boolean deep = true;
     private boolean testUniqueName = false;
     private PrintStream printStream;
@@ -99,7 +99,7 @@ public class CsmTracer {
         if( expr == null ) {
             return "null"; // NOI18N
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("text='"); // NOI18N
         sb.append(expr.getText());
         sb.append("'"); // NOI18N
@@ -111,7 +111,7 @@ public class CsmTracer {
 //    }
     
     public static String toString(CsmInheritance inh) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         
         sb.append("CLASS="); // NOI18N
         CsmClassifier cls = inh.getCsmClassifier();
@@ -131,7 +131,7 @@ public class CsmTracer {
         if( condition == null ) {
             return "null"; // NOI18N
         }
-        StringBuffer sb = new StringBuffer(condition.getKind().toString());
+        StringBuilder sb = new StringBuilder(condition.getKind().toString());
         sb.append(' ');
         if( condition.getKind() == CsmCondition.Kind.EXPRESSION  ) {
             sb.append(toString(condition.getExpression()));
@@ -143,7 +143,7 @@ public class CsmTracer {
     }
     
     public static String toString(CsmType type) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if( type == null ) {
             sb.append("null"); // NOI18N
         } else {
@@ -175,7 +175,7 @@ public class CsmTracer {
         if( var == null ) {
             return "null"; // NOI18N
         }
-        StringBuffer sb = new StringBuffer(var.getName());
+        StringBuilder sb = new StringBuilder(var.getName());
         sb.append(getOffsetString(var));
         sb.append(" type: " + toString(var.getType())); // NOI18N
         sb.append(" init: " + toString(var.getInitialValue())); // NOI18N
@@ -422,7 +422,7 @@ public class CsmTracer {
     }    
     
     private static String getSortKey(CsmDeclaration declaration) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if( declaration instanceof CsmOffsetable ) {
             sb.append(((CsmOffsetable) declaration).getContainingFile().getAbsolutePath());
             int start = ((CsmOffsetable) declaration).getStartOffset();
@@ -494,7 +494,7 @@ public class CsmTracer {
 
     
     public void dumpModel(CsmField field) {
-        StringBuffer sb = new StringBuffer("FIELD "); // NOI18N
+        StringBuilder sb = new StringBuilder("FIELD "); // NOI18N
         sb.append(field.getVisibility().toString());
         if( field.isStatic() ) {
             sb.append(" static "); // NOI18N
@@ -647,7 +647,7 @@ public class CsmTracer {
             } else if ( member.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) { // inline function
                 dumpModel((CsmFunctionDefinition) member);
             } else {
-                StringBuffer sb = new StringBuffer(member.getKind().toString());
+                StringBuilder sb = new StringBuilder(member.getKind().toString());
                 sb.append(' ');
                 sb.append(member.getVisibility().toString());
                 if( member.isStatic() ) {
@@ -670,7 +670,7 @@ public class CsmTracer {
         indent();
         for( Iterator iter = enumeration.getEnumerators().iterator(); iter.hasNext(); ) {
             CsmEnumerator enumerator = (CsmEnumerator) iter.next();
-            StringBuffer sb = new StringBuffer(enumerator.getName());
+            StringBuilder sb = new StringBuilder(enumerator.getName());
             if( enumerator.getExplicitValue() != null ) {
                 sb.append(' ');
                 sb.append(enumerator.getExplicitValue().getText() + getOffsetString(enumerator));
@@ -696,7 +696,7 @@ public class CsmTracer {
         dumpFilesCollection(e.getChangedFiles(), "Changed files"); // NOI18N
         dumpDeclarationsCollection(e.getNewDeclarations(), "New declarations"); // NOI18N
         dumpDeclarationsCollection(e.getRemovedDeclarations(), "Removed declarations"); // NOI18N
-        dumpDeclarationsCollection(e.getChangedDeclarations(), "Changed declarations"); // NOI18N
+        dumpDeclarationsCollection(e.getChangedDeclarations().keySet(), "Changed declarations"); // NOI18N
         dumpNamespacesCollection(e.getNewNamespaces(), "New namespaces"); // NOI18N
         dumpNamespacesCollection(e.getRemovedNamespaces(), "Removed namespaces"); // NOI18N
         print("");

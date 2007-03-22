@@ -214,7 +214,7 @@ public class DiscoveryProjectGenerator {
             }
         }
         Vector vector = new Vector(set);
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for(Map.Entry<String,String> entry : config.getUserMacros(false).entrySet()){
             buf.append(entry.getKey());
             if (entry.getValue()!=null) {
@@ -235,7 +235,7 @@ public class DiscoveryProjectGenerator {
             }
         }
         Vector vector = new Vector(set);
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for(Map.Entry<String,String> entry : config.getUserMacros(false).entrySet()){
             buf.append(entry.getKey());
             if (entry.getValue()!=null) {
@@ -252,7 +252,7 @@ public class DiscoveryProjectGenerator {
         Set<String> set = new HashSet<String>();
         reConsolidate(set, config);
         Vector vector = new Vector(set);
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for(Map.Entry<String,String> entry : config.getUserMacros(false).entrySet()){
             buf.append(entry.getKey());
             if (entry.getValue()!=null) {

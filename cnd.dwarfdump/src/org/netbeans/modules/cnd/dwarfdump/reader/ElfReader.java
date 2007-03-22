@@ -20,8 +20,6 @@
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.cnd.dwarfdump.FileMagic;
 import org.netbeans.modules.cnd.dwarfdump.Magic;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
@@ -31,7 +29,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
 import org.netbeans.modules.cnd.dwarfdump.elf.ProgramHeaderTable;
 import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -186,7 +183,7 @@ public class ElfReader extends ByteStreamReader {
     }
     
     private String getName(byte[] stringtable, int offset){
-        StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
         for (int i = offset; i < stringtable.length; i++) {
             if (stringtable[i] == 0) {
                 break;

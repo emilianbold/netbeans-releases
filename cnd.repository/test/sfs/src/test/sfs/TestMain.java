@@ -21,6 +21,8 @@ package test.sfs;
 
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.cnd.repository.testbench.sfs.BaseTest;
+import org.netbeans.modules.cnd.repository.testbench.sfs.TestLongHashMap;
 import org.netbeans.modules.cnd.repository.testbench.sfs.TestDataInputOutput;
 import org.netbeans.modules.cnd.repository.testbench.sfs.TestSingleFileStorage;
 
@@ -36,12 +38,19 @@ public class TestMain {
     
     private void run(String[] args) {
 	
-	boolean testDataIO = false;
-	
+	BaseTest test = new TestSingleFileStorage();
 	List<String> params = new ArrayList<String>();
+	boolean wait = false;
+	
 	for (int i = 0; i < args.length; i++) {
 	    if( "-s".equals(args[i]) ) { // NOI18N
-		testDataIO = true;
+		 test = new TestDataInputOutput();
+	    }
+	    else if( "-m".equals(args[i]) ) { // NOI18N
+		test = new TestLongHashMap();
+	    }
+	    else if( "-w".equals(args[i]) ) { // NOI18N
+		wait = true;
 	    }
 	    else {
 		params.add(args[i]);
@@ -49,15 +58,17 @@ public class TestMain {
 	}
 	
 	try {
-	    if( testDataIO ) {
-		new TestDataInputOutput().test();
-	    }
-	    else {
-		new TestSingleFileStorage().test(params);
-	    }
+	    test.test(params);
 	}
 	catch( Exception e ) {
 	    e.printStackTrace(System.err);
+	}
+	if( wait ) {
+	    System.out.printf("Press any key to continue\n");
+	    try {
+		System.in.read();
+	    } catch (IOException ex) {
+	    }
 	}
     }    
 }

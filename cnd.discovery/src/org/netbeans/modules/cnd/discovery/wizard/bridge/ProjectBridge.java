@@ -103,7 +103,7 @@ public class ProjectBridge {
     
     public Object getAuxObject(Item item){
         MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
-        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         return itemConfiguration;
     }
     
@@ -111,7 +111,7 @@ public class ProjectBridge {
         if (pao instanceof ItemConfiguration) {
             ItemConfiguration conf = (ItemConfiguration)pao;
             MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
-            ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+            ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
             itemConfiguration.setCCCompilerConfiguration(conf.getCCCompilerConfiguration());
             itemConfiguration.setCCompilerConfiguration(conf.getCCompilerConfiguration());
             itemConfiguration.setCustomToolConfiguration(conf.getCustomToolConfiguration());
@@ -271,7 +271,7 @@ public class ProjectBridge {
     
     public void setExclude(Item item, boolean exclude){
         MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
-        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null) {
             return;
         }
@@ -283,7 +283,7 @@ public class ProjectBridge {
     
     public void setupFile(String compilepath, Vector includes, boolean inheriteIncludes, String macros, boolean inheriteMacros, Item item) {
         MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
-        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
         }

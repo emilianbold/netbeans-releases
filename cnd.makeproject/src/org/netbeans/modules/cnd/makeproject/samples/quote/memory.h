@@ -17,25 +17,21 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-#if !defined MEMORY_H
+#ifndef MEMORY_H
 #define MEMORY_H
 #include "module.h"
 
-enum tMemory{tstandard=1, tfast, tultra}; //type
-enum tMB{t1=1, t2, t4}; //category ... represents number of gegabytes on memory board
-
-class Memory:public Module {
-    public:
-        Memory();
-        Memory(int type, int size);
-        Memory(int type, int size , int units);
-        
-//copy constructor derived unchanged from base class
-//destructor derived unchanged from base class
-        
-        void ComputeSupportMetric();
-        
-}
-; //note that ";" is required at end of class definition header file
+class Memory : public Module {
+public:
+    enum MemoryType { STANDARD,  FAST,  ULTRA }; 
+    enum MemoryCategory { SMALL,  MEDIUM,  BIG }; 
+    
+    Memory(int type = STANDARD, int size = MEDIUM , int units = 1);
+    virtual const char* GetType() const;
+    virtual const char* GetCategory() const;
+    
+protected:    
+    void ComputeSupportMetric();
+};
 
 #endif // MEMORY_H

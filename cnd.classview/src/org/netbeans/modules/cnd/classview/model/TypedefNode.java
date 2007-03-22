@@ -19,13 +19,8 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.classview.Diagnostic;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
-import java.awt.Image;
-import java.util.*;
+import javax.swing.event.ChangeEvent;
 import org.openide.nodes.*;
-import org.openide.util.Utilities;
 
 import  org.netbeans.modules.cnd.api.model.*;
 
@@ -36,6 +31,10 @@ public class TypedefNode extends ObjectNode {
 
     public TypedefNode(CsmTypedef typedef) {
 	super(typedef, Children.LEAF);
+        init(typedef);
+    }
+    
+    private void init(CsmTypedef typedef){
         String shortName = typedef.getName();
         String longName = typedef.getQualifiedName();
         setName(shortName);
@@ -43,8 +42,16 @@ public class TypedefNode extends ObjectNode {
         setShortDescription(longName);
     }
 
-    protected int getWeight() {
-        return CLASSIFIER_WEIGHT;
+    public void stateChanged(ChangeEvent e) {
+        Object o = e.getSource();
+        if (o instanceof CsmTypedef){
+            CsmTypedef cls = (CsmTypedef)o;
+            setObject(cls);
+            init(cls);
+            fireIconChange();
+            fireOpenedIconChange();
+        } else if (o != null) {
+            System.err.println("Expected CsmMember. Actually event contains "+o.toString());
+        }
     }
-    
 }

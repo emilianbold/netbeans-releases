@@ -142,7 +142,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
 
     public String getText() {
 //        if( text == null ) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if( isConst() ) {
                 sb.append("const "); // NOI18N
             }
@@ -168,14 +168,14 @@ public class TypeImpl extends OffsetableBase implements CsmType {
             return classifier == null ? "" : classifier.getName();
         }
         else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             addText(sb, AstRenderer.getFirstSiblingSkipQualifiers(node));
             return TextCache.getString(sb.toString());
 //            return sb.toString();
         }
     }
     
-    private static void addText(StringBuffer sb, AST ast) {
+    private static void addText(StringBuilder sb, AST ast) {
         if( ! (ast instanceof FakeAST) ) {
             if( sb.length() > 0 ) {
                 sb.append(' ');
@@ -255,7 +255,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
                         //assert namePart.getType() == CPPTokenTypes.SCOPE;
                         if( templateDepth == 0 && namePart.getType() != CPPTokenTypes.SCOPE ) {
                             if (TraceFlags.DEBUG) {
-                                StringBuffer tokenText = new StringBuffer();
+                                StringBuilder tokenText = new StringBuilder();
                                 tokenText.append('[').append(namePart.getText());
                                 if (namePart.getNumberOfChildren() == 0) {
                                     tokenText.append(", line=").append(namePart.getLine()); // NOI18N
@@ -384,7 +384,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     private CsmClassifier _getClassifier() {
         if (TraceFlags.USE_REPOSITORY) {
             CsmClassifier classifier = UIDCsmConverter.UIDtoDeclaration(classifierUID);
-            assert (classifier != null || classifierUID == null);
+            // can be null if cached one was removed 
             return classifier;
         } else {
             return this.classifierOLD;

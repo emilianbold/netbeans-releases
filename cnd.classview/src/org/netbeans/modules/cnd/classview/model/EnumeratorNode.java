@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.classview.model;
 
 import java.awt.Image;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.*;
 
@@ -29,38 +30,39 @@ import  org.netbeans.modules.cnd.api.model.*;
 /**
  * @author Vladimir Kvasihn
  */
-public class EnumeratorNode extends BaseNode {
-
-    private static Image image = null;    
+public class EnumeratorNode extends ObjectNode {
+    
+    private static Image image = null;
     
     public EnumeratorNode(CsmEnumerator enumerator) {
-	super(Children.LEAF);
+        super(enumerator, Children.LEAF);
+        init(enumerator);
+    }
+    
+    private void init(CsmEnumerator enumerator){
         String name = enumerator.getName();
         setName(name);
         setDisplayName(name);
         setShortDescription(name);
         if( image == null ) {
-	    image = CsmImageLoader.getImage(enumerator);
-	}
-    }
-
-    public Image getIcon(int param) {
-	return image;
-    }
-
-    /** Implements AbstractCsmNode.getData() */
-    public CsmObject getCsmObject() {
-	return null;
+            image = CsmImageLoader.getImage(enumerator);
+        }
     }
     
-    public void dismiss() {
-        setDismissed();
-        //enumerator = null;
-        super.dismiss();
+    public Image getIcon(int param) {
+        return image;
     }
-
-    protected int getWeight() {
-        return OTHER_WEIGHT;
+    
+    public void stateChanged(ChangeEvent e) {
+        Object o = e.getSource();
+        if (o instanceof CsmEnumerator){
+            CsmEnumerator cls = (CsmEnumerator)o;
+            setObject(cls);
+            init(cls);
+            //fireIconChange();
+            //fireOpenedIconChange();
+        } else if (o != null) {
+            System.err.println("Expected CsmEnumerator. Actually event contains "+o.toString());
+        }
     }
 }
-

@@ -20,33 +20,41 @@
 package org.netbeans.modules.cnd.repository.testbench.sfs;
 
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.*;
-import org.netbeans.modules.cnd.repository.sfs.*;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
  * Test object to store in a SingleFileStorage
  * @author Vladimir Kvashin
  */
-public class TestObject implements SingleFileStorage.Reader, SingleFileStorage.Writer {
+public class TestObject implements Persistent {
     
-    public String key;
+    public Key key;
     public String[] sData;
     public int iData;
     public long lData;
+
+    public TestObject(DataInput in) throws IOException {
+	read(in);
+    }
     
     public TestObject(String key, String... data) {
-	this.key = key;
+	this.key = doKey(key);
 	this.sData = data;
     }
     
-    String getKey() {
+    Key getKey() {
 	return key;
     }
+    
+    private Key doKey(final String key) {
+	return new TestKey(key);
+    }
+    
 
     public void write(DataOutput out) throws IOException {
-	out.writeUTF(key);
+	out.writeUTF(key.getAt(0));
 	if( sData == null ) {
 	    out.writeInt(-1);
 	}
@@ -60,8 +68,8 @@ public class TestObject implements SingleFileStorage.Reader, SingleFileStorage.W
 	out.writeLong(lData);
     }
     
-    public void read(DataInput in) throws IOException {
-	key = in.readUTF();
+    private Persistent read(DataInput in) throws IOException {
+	key = doKey( in.readUTF() );
 	int cnt = in.readInt();
 	if( cnt == -1 ) {
 	    sData = null;
@@ -74,10 +82,13 @@ public class TestObject implements SingleFileStorage.Reader, SingleFileStorage.W
 	}
 	iData = in.readInt();
 	lData = in.readLong();
+        return this;
     }
     
     public String toString() {
-	StringBuilder sb = new StringBuilder("key="); // NOI18N
+	StringBuilder sb = new StringBuilder("TestOBject @"); // NOI18N
+	sb.append(hashCode());
+	sb.append(" key=");
 	sb.append(key);
 	sb.append(" sData="); // NOI18N
 	if( sData == null ) {
@@ -117,7 +128,7 @@ public class TestObject implements SingleFileStorage.Reader, SingleFileStorage.W
 	    return false;
 	}
 	TestObject other = (TestObject) obj;
-	return	equals(this.key, other.key) &&
+	return	equals(this.key.getAt(0), other.key.getAt(0)) &&
 		equals(this.sData, other.sData) &&
 		this.lData == other.lData &&
 		this.iData == other.iData;
@@ -152,5 +163,9 @@ public class TestObject implements SingleFileStorage.Reader, SingleFileStorage.W
 	    }
 	    return true;
 	}
+    }
+
+    public boolean canWrite(Persistent obj) {
+        return true;
     }
 }

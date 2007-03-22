@@ -215,6 +215,22 @@ final class MakeProject implements Project, AntProjectListener {
             "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile",     // NOI18N
             "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile",     // NOI18N
 	};
+        
+        private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[] { 
+            "Templates/cFiles/main.c",                                      // NOI18N
+            "Templates/cFiles/file.c",                                      // NOI18N
+            "Templates/cFiles/file.h",                                      // NOI18N
+            "Templates/cppFiles/main.cc",                                   // NOI18N
+            "Templates/cppFiles/file.cc",                                   // NOI18N
+            "Templates/cppFiles/file.h",                                    // NOI18N
+            "Templates/fortranFiles/fortranEmptyFile.f90",                  // NOI18N
+            "Templates/fortranFiles/fortranFixedFormatFile.f",              // NOI18N
+            "Templates/fortranFiles/fortranFreeFormatFile.f90",             // NOI18N
+            "Templates/MakeTemplates/ComplexMakefile",			    // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile",    // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile",     // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile",     // NOI18N
+	};
 
 	public String[] getRecommendedTypes() {
             if (CppSettings.getDefault().isFortranEnabled())
@@ -224,7 +240,10 @@ final class MakeProject implements Project, AntProjectListener {
 	}
         
         public String[] getPrivilegedTemplates() {
-            return PRIVILEGED_NAMES;
+            if (CppSettings.getDefault().isFortranEnabled())
+                return PRIVILEGED_NAMES_FORTRAN;
+            else
+                return PRIVILEGED_NAMES;
         }
     }
     

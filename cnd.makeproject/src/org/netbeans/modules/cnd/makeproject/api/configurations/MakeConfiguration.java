@@ -339,7 +339,7 @@ public class MakeConfiguration extends Configuration {
     public boolean hasCPPFiles(MakeConfigurationDescriptor configurationDescriptor) {
         Item[] items = configurationDescriptor.getProjectItems();
         for (int x = 0; x < items.length; x++) {
-            ItemConfiguration itemConfiguration = (ItemConfiguration)getAuxObject(ItemConfiguration.getId(items[x].getPath()));
+            ItemConfiguration itemConfiguration = items[x].getItemConfiguration(this);//ItemConfiguration)getAuxObject(ItemConfiguration.getId(items[x].getPath()));
             if (itemConfiguration.getExcluded().getValue())
                 continue;
             if (itemConfiguration.getTool() == Tool.CCCompiler) {
@@ -352,7 +352,7 @@ public class MakeConfiguration extends Configuration {
     public boolean hasFortranFiles(MakeConfigurationDescriptor configurationDescriptor) {
         Item[] items = configurationDescriptor.getProjectItems();
         for (int x = 0; x < items.length; x++) {
-            ItemConfiguration itemConfiguration = (ItemConfiguration)getAuxObject(ItemConfiguration.getId(items[x].getPath()));
+            ItemConfiguration itemConfiguration = items[x].getItemConfiguration(this);//(ItemConfiguration)getAuxObject(ItemConfiguration.getId(items[x].getPath()));
             if (itemConfiguration.getExcluded().getValue())
                 continue;
             if (itemConfiguration.getTool() == Tool.FortranCompiler) {

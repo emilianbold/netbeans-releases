@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import javax.imageio.stream.FileImageInputStream;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
@@ -399,7 +398,7 @@ public class Resolver3 implements Resolver {
             }
         }
         else if( nameTokens.length > 1 ) {
-            StringBuffer sb = new StringBuffer(nameTokens[0]);
+            StringBuilder sb = new StringBuilder(nameTokens[0]);
             for (int i = 1; i < nameTokens.length; i++) {
                 sb.append("::"); // NOI18N
                 sb.append(nameTokens[i]);
@@ -431,7 +430,7 @@ public class Resolver3 implements Resolver {
                     if( first != null ) {
                         if( first instanceof CsmNamespace ) {
                             NamespaceImpl ns = (NamespaceImpl) first;
-                            sb = new StringBuffer(ns.getQualifiedName());
+                            sb = new StringBuilder(ns.getQualifiedName());
                             for (int i = 1; i < nameTokens.length; i++) {
                                 sb.append("::"); // NOI18N
                                 sb.append(nameTokens[i]);

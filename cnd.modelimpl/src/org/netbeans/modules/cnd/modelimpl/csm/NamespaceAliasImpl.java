@@ -53,7 +53,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         while( token != null && token.getType() != CPPTokenTypes.ASSIGNEQUAL ) {
             token = token.getNextSibling();
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if( token == null ) {
             if( FileImpl.reportErrors ) {
                 int ln = ast.getLine();
@@ -100,7 +100,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     private CsmNamespace _getReferencedNamespace() {
         if (TraceFlags.USE_REPOSITORY) {
             CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
-            assert referencedNamespace != null || referencedNamespaceUID == null;
+            // can be null if namespace was removed 
             return referencedNamespace;
         } else {
             return this.referencedNamespaceOLD;

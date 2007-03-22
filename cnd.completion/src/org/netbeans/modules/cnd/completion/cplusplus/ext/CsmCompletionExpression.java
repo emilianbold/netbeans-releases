@@ -20,8 +20,6 @@
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.util.ArrayList;
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorDebug;
 import org.netbeans.editor.TokenID;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
@@ -425,7 +423,7 @@ public class CsmCompletionExpression {
         }
     }
 
-    private static void appendSpaces(StringBuffer sb, int spaceCount) {
+    private static void appendSpaces(StringBuilder sb, int spaceCount) {
         while (--spaceCount >= 0) {
             sb.append(' '); //NOI18N
         }
@@ -495,7 +493,7 @@ public class CsmCompletionExpression {
     }
 
     public String toString(int indent) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         appendSpaces(sb, indent);
         sb.append("expID=" + getIDName(expID)); // NOI18N
 

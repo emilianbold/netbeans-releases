@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.classview.model;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.classview.NameCache;
 import org.openide.nodes.*;
 
 /**
@@ -30,9 +31,9 @@ import org.openide.nodes.*;
  */
 public class CVUtil {
     private static final boolean showParamNames = getBoolean("cnd.classview.show-param-names", true); // NOI18N
-
+    
     public static String getSignature(CsmFunction fun) {
-        StringBuffer sb = new StringBuffer(fun.getName());
+        StringBuilder sb = new StringBuilder(fun.getName());
         sb.append('(');
         boolean addComma = false;
         for( Iterator iter = fun.getParameters().iterator(); iter.hasNext(); ) {
@@ -50,7 +51,7 @@ public class CVUtil {
             } else if (par.isVarArgs()){
                 sb.append("..."); // NOI18N
             }
-            if (showParamNames) {
+            if (showParamNames && !par.isVarArgs()) {
                 String name = par.getName();
                 if (name != null && name.length() >0) {
                     sb.append(' ');
@@ -60,9 +61,27 @@ public class CVUtil {
         }
         
         sb.append(')');
-        return sb.toString();
+        if (CsmKindUtilities.isMethod(fun) && fun instanceof CsmMethod){
+            if( ((CsmMethod) fun).isConst() ) {
+                sb.append(" const");
+            }
+        }
+        return NameCache.getString(sb.toString());
     }
-    
+        
+    public static String getNamesapceDisplayName(CsmNamespace ns){
+        String displayName = ns.getName();
+        if (displayName.length() == 0) {
+            displayName = ns.getQualifiedName();
+            int scope = displayName.lastIndexOf("::"); // NOI18N
+            if (scope != -1) {
+                displayName = displayName.substring(scope + 2);
+            }
+            displayName = displayName.replace('<', ' ').replace('>', ' '); // NOI18N
+        }
+        return  NameCache.getString(displayName);
+    }
+
     public static Node createLoadingRoot() {
         Children.Array children = new Children.SortedArray();
         children.add(new Node[] { createLoadingNode() });
@@ -74,182 +93,12 @@ public class CVUtil {
         BaseNode node = new LoadingNode();
         return node;
     }
-
+    
     private static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
         if( text != null ) {
             result = Boolean.parseBoolean(text);
         }
         return result;
-    } 
-    
-    public static final class ClassViewComparator implements Comparator {
-        public ClassViewComparator() {
-        }
-        
-        public int compare(Object o1, Object o2) {
-            if (o1 == o2) {
-                return 0;
-            }
-            if( (o1 instanceof BaseNode) || o2 instanceof BaseNode) {
-                if( ! ( o2 instanceof BaseNode ) ) {
-                    return -1;
-                } else if( ! ( o1 instanceof BaseNode ) ) {
-                    return +1;
-                }
-                int w1 = ((BaseNode)o1).getWeight();
-                int w2 = ((BaseNode)o2).getWeight();
-                if (w1!=w2){
-                    return w1-w2;
-                }
-            }
-             return compareName(o1, o2);
-        }
-        
-        private int compareName(Object o1, Object o2){
-            if( (o1 instanceof Node) && (o2 instanceof Node) ) {
-                return ((Node) o1).getDisplayName().compareTo(((Node) o2).getDisplayName());
-            }
-            return 0;
-        }
-    }
-    
-    public static class FillingDone {
-        boolean isFillingDone = false;
-        public void setFillingDone(){
-            isFillingDone = true;
-        }
-        public boolean isFillingDone(){
-            return isFillingDone;
-        }
-    }
-    
-    public static class LazyNamespaceSorteddArray extends Children.SortedArray {
-        private String id;
-        private FillingDone inited;
-        private CsmProject project;
-        
-        public LazyNamespaceSorteddArray(CsmNamespace obj, FillingDone init){
-            project = obj.getProject();
-            id = obj.getQualifiedName();
-            inited = init;
-        }
-        
-        protected Collection initCollection() {
-            return init();
-        }
-        
-        private Collection init(){
-            synchronized (inited){
-                inited.setFillingDone();
-                CsmNamespace ns = lookup(id);
-                List res = initNamespace(ns);
-                Collections.sort(res);
-                //if (ns != null) {
-                //    System.out.println("Inited "+ns.getName()+" contains "+res.size()+" elements");
-                //}
-                return res;
-            }
-        }
-        
-        private CsmNamespace lookup(String key){
-            return  project.findNamespace(key);
-        }
-        
-        private List initNamespace(CsmNamespace namespace){
-            List res = new LinkedList();
-            if (namespace != null){
-                for( Iterator/*<CsmNamespace>*/ iter = namespace.getNestedNamespaces().iterator(); iter.hasNext(); ) {
-                    res.add(new NamespaceNode( (CsmNamespace) iter.next()));
-                }
-                Collection/*<CsmDeclaration>*/ decl = namespace.getDeclarations();
-                if (decl != null) {
-                    for( Iterator/*<CsmDeclaration>*/ iter = decl.iterator(); iter.hasNext(); ) {
-                        CsmDeclaration d = (CsmDeclaration) iter.next();
-                        ObjectNode declNode = NodeUtil.createNode(d);
-                        if( declNode != null ) {
-                            res.add(declNode);
-                        }
-                    }
-                }
-            }
-            return res;
-        }
-    }
-    
-    
-    public static class LazyClassifierSortedArray extends Children.SortedArray {
-        private CsmProject project;
-        private FillingDone inited;
-        private String id;
-        private CsmCompoundClassifier unnamedClassifier;
-        
-        public LazyClassifierSortedArray(CsmCompoundClassifier obj, FillingDone init){
-            id = obj.getQualifiedName();
-            project = obj.getContainingFile().getProject();
-            inited = init;
-            if (obj.getName().length()==0){
-                unnamedClassifier = obj;
-            }
-        }
-        
-        protected Collection initCollection() {
-            return init();
-        }
-        
-        private Collection init(){
-            synchronized (inited){
-                inited.setFillingDone();
-                List res = null;
-                CsmClassifier cls = lookup(id);
-                if (CsmKindUtilities.isClass(cls)){
-                    res = initClass((CsmClass)cls);
-                } else if (CsmKindUtilities.isEnum(cls)){
-                    res = initEnum((CsmEnum)cls);
-                } else {
-                    return new ArrayList();
-                }
-                Collections.sort(res);
-                //if (cls != null) {
-                //    System.out.println("Inited "+cls.getName()+" contains "+res.size()+" elements");
-                //}
-                return res;
-            }
-        }
-        
-        private CsmClassifier lookup(String key){
-            CsmClassifier res = project.findClassifier(key);
-            if (res == null) {
-                res = unnamedClassifier;
-            }
-            return res;
-        }
-        
-        private List initClass(CsmClass cls){
-            List nodes = new LinkedList();
-            for( Iterator/*<CsmClass>*/ iter = cls.getMembers().iterator(); iter.hasNext(); ) {
-                CsmMember member = (CsmMember) iter.next();
-                ObjectNode declNode = null;
-                if( CsmKindUtilities.isClass(member) ) {
-                    declNode = new ClassNode((CsmClass) member);
-                } else if( CsmKindUtilities.isEnum(member) ) {
-                    declNode = new EnumNode((CsmEnum) member);
-                } else {
-                    declNode = new MemberNode(member);
-                }
-                if( declNode != null ) {
-                    nodes.add(declNode);
-                }
-            }
-            return nodes;
-        }
-        
-        private List initEnum(CsmEnum en){
-            List nodes = new LinkedList();
-            for (Iterator iter = en.getEnumerators().iterator(); iter.hasNext();) {
-                nodes.add(new EnumeratorNode((CsmEnumerator) iter.next()));
-            }
-            return nodes;
-        }
     }
 }

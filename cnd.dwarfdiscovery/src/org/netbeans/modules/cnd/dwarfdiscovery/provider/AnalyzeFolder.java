@@ -47,7 +47,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     public AnalyzeFolder() {
         clean();
     }
-
+    
     public void clean() {
         myProperties.clear();
         myProperties.put(FOLDER_KEY, new ProviderProperty(){
@@ -113,61 +113,73 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         }
         return false;
     }
-
+    
     public List<Configuration> analyze(ProjectProxy project) {
+        isStoped = false;
+        List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
-        Configuration conf = new Configuration(){
-            private List<SourceFileProperties> myFileProperties;
-            private List<String> myIncludedFiles;
-            public List<ProjectProperties> getProjectConfiguration() {
-                return divideByLanguage(getSourcesConfiguration());
-            }
-            
-            public List<Configuration> getDependencies() {
-                return null;
-            }
-            
-            public List<SourceFileProperties> getSourcesConfiguration() {
-                if (myFileProperties == null){
-                    Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
-                    if (set.size() > 0) {
-                        myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]));
-                    } else {
-                        myFileProperties = new ArrayList<SourceFileProperties>();
-                    }
+        if (!isStoped){
+            Configuration conf = new Configuration(){
+                private List<SourceFileProperties> myFileProperties;
+                private List<String> myIncludedFiles;
+                public List<ProjectProperties> getProjectConfiguration() {
+                    return divideByLanguage(getSourcesConfiguration());
                 }
-                return myFileProperties;
-            }
-            
-            public List<String> getIncludedFiles(){
-                if (myIncludedFiles == null) {
-                    HashSet<String> set = new HashSet<String>();
-                    for(SourceFileProperties source : getSourcesConfiguration()){
-                        set.addAll( ((DwarfSource)source).getIncludedFiles() );
-                        set.add(source.getItemPath());
-                    }
-                    HashSet<String> unique = new HashSet<String>();
-                    for(String path : set){
-                        File file = new File(path);
-                        if (file.exists()) {
-                            unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                
+                public List<Configuration> getDependencies() {
+                    return null;
+                }
+                
+                public List<SourceFileProperties> getSourcesConfiguration() {
+                    if (myFileProperties == null){
+                        Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
+                        if (set.size() > 0) {
+                            myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]));
+                        } else {
+                            myFileProperties = new ArrayList<SourceFileProperties>();
                         }
                     }
-                    myIncludedFiles = new ArrayList<String>(unique);
+                    return myFileProperties;
                 }
-                return myIncludedFiles;
-            }
-        };
-        List<Configuration> confs = new ArrayList<Configuration>();
-        confs.add(conf);
+                
+                public List<String> getIncludedFiles(){
+                    if (myIncludedFiles == null) {
+                        HashSet<String> set = new HashSet<String>();
+                        for(SourceFileProperties source : getSourcesConfiguration()){
+                            if (isStoped) {
+                                break;
+                            }
+                            set.addAll( ((DwarfSource)source).getIncludedFiles() );
+                            set.add(source.getItemPath());
+                        }
+                        HashSet<String> unique = new HashSet<String>();
+                        for(String path : set){
+                            if (isStoped) {
+                                break;
+                            }
+                            File file = new File(path);
+                            if (file.exists()) {
+                                unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                            }
+                        }
+                        myIncludedFiles = new ArrayList<String>(unique);
+                    }
+                    return myIncludedFiles;
+                }
+            };
+            confs.add(conf);
+        }
         return confs;
     }
     
-    private static Set<String> getObjectFiles(String root){
+    private Set<String> getObjectFiles(String root){
         HashSet<String> set = new HashSet<String>();
         gatherSubFolders(new File(root), set);
         HashSet<String> map = new HashSet<String>();
         for (Iterator it = set.iterator(); it.hasNext();){
+            if (isStoped) {
+                break;
+            }
             File d = new File((String)it.next());
             if (d.isDirectory()){
                 File[] ff = d.listFiles();
@@ -188,7 +200,10 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         return map;
     }
     
-    private static void gatherSubFolders(File d, HashSet<String> set){
+    private void gatherSubFolders(File d, HashSet<String> set){
+        if (isStoped) {
+            return;
+        }
         if (d.isDirectory()){
             String path = d.getAbsolutePath();
             if (Utilities.isWindows()) {

@@ -91,7 +91,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
         if (doc == null || target == null || offset < 0 || offset > doc.getLength()) {
             return false;
         }
-        jumpToken = TokenUtilities.getToken(doc, offset);
+        jumpToken = getToken(doc, offset);
         if (!isValidToken(jumpToken)) {
             return false;
         }

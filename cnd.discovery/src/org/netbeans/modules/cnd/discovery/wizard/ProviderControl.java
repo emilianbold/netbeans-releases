@@ -155,7 +155,7 @@ public class ProviderControl {
     private void initArray(){
         Object val = property.getValue();
         if (val instanceof String[]){
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             for(String s : (String[])val){
                 if (buf.length()>0){
                     buf.append(';');

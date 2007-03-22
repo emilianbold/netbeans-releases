@@ -19,18 +19,14 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import java.util.Comparator;
 import java.util.Enumeration;
-import org.netbeans.modules.cnd.classview.SmartChangeEvent;
 import org.openide.nodes.*;
 import org.netbeans.modules.cnd.modelutil.*;
 
 /**
  * @author Vladimir Kvasihn
  */
-public abstract class BaseNode extends AbstractCsmNode implements Comparable {
-
-    private boolean dismissed = false;
+public abstract class BaseNode extends AbstractCsmNode {
 
     public BaseNode() {
         super(Children.LEAF);
@@ -40,33 +36,6 @@ public abstract class BaseNode extends AbstractCsmNode implements Comparable {
         super(children);
     }
 
-    public boolean update(SmartChangeEvent e) {
-        if (!isDismissed()) {
-            for( Enumeration children = getChildren().nodes(); children.hasMoreElements(); ) {
-                Node child = (Node) children.nextElement();
-                if( child instanceof BaseNode ) {
-                    ((BaseNode) child).update(e);
-                }
-            }
-        }
-        return false;
-    }
-    
-    private static Comparator ourComparator = new CVUtil.ClassViewComparator();
-
-    protected static int LOADING_WEIGHT = 0;
-    protected static int NAMESPACE_WEIGHT = 1;
-    protected static int CLASSIFIER_WEIGHT = 2;
-    protected static int VARIABLE_WEIGHT = 3;
-    protected static int FUNCTION_WEIGHT = 4;
-    protected static int OTHER_WEIGHT = 5;
-    
-    protected abstract int getWeight();
-    
-    public int compareTo(Object o) {
-        return ourComparator.compare(this,o);
-    }
-    
     protected interface Callback {
         void call(BaseNode node);
     }
@@ -81,24 +50,6 @@ public abstract class BaseNode extends AbstractCsmNode implements Comparable {
             Node child = (Node) children.nextElement();
             if( child instanceof BaseNode ) {
                 ((BaseNode) child).traverse(callback);
-            }
-        }
-    }
-    
-    protected boolean isDismissed(){
-        return dismissed;
-    }
-
-    protected boolean setDismissed(){
-        return dismissed = true;
-    }
-
-    public void dismiss() {
-        setDismissed();
-        for( Enumeration children = getChildren().nodes(); children.hasMoreElements(); ) {
-            Node child = (Node) children.nextElement();
-            if( child instanceof BaseNode ) {
-                ((BaseNode) child).dismiss();
             }
         }
     }

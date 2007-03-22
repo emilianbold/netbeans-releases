@@ -66,6 +66,7 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
             listeners.add(l);
         }
     }
+    
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -83,6 +84,7 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
     }
 
     public void stateChanged(ChangeEvent e) {
+      	fireChangeEvent();
     }
     
     // You can use a settings object to keep track of state. Normally the

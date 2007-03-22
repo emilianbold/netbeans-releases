@@ -632,7 +632,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * IMPORTANT: have to be in sync with draw() method
          */
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             if (drawTypeAsPrefix) {
                 buf.append(typeName);
                 buf.append(' ');
@@ -740,7 +740,7 @@ public abstract class CsmPaintComponent extends JPanel {
             if (prmList == null || prmList.size()==0){
                 return "";
             }
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append('('); // NOI18N
             for (Iterator it = prmList.iterator(); it.hasNext();) {
                 buf.append((String)it.next());
@@ -757,7 +757,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * IMPORTANT: have to be in sync with draw() method
          */
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             //macro name
             buf.append(getName());
             //macro params
@@ -868,7 +868,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * IMPORTANT: have to be in sync with draw() method
          */
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             //constructor name
             buf.append(getName());
             //constructor params
@@ -879,7 +879,7 @@ public abstract class CsmPaintComponent extends JPanel {
         }    
         
         protected String toStringParameter(ParamStr prm) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             //type
             buf.append(prm.getSimpleTypeName());
             //name
@@ -892,7 +892,7 @@ public abstract class CsmPaintComponent extends JPanel {
         }
         
         protected String toStringParameterList(List prmList) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append('('); // NOI18N
             for (Iterator it = prmList.iterator(); it.hasNext();) {
                 buf.append(toStringParameter((ParamStr)it.next()));
@@ -905,7 +905,7 @@ public abstract class CsmPaintComponent extends JPanel {
         }
         
         protected String toStringExceptions(List exc) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             if (exc.size() > 0) {
                 buf.append(THROWS);
                 for (Iterator it = exc.iterator(); it.hasNext();) {
@@ -985,7 +985,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * IMPORTANT: have to be in sync with draw() method
          */
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             if (drawTypeAsPrefix) {
                 //return type
                 buf.append(getTypeName());                
@@ -997,7 +997,7 @@ public abstract class CsmPaintComponent extends JPanel {
             buf.append(toStringParameterList(getParamList()));
             //method exceptions
 //            buf.append(toStringExceptions(getExceptionList()));
-            if (drawTypeAsPrefix) {
+            if (!drawTypeAsPrefix) {
                 //return type
                 buf.append(' '); // NOI18N
                 buf.append(getTypeName());                

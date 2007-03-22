@@ -54,18 +54,18 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     private final String name;
     private final CsmType type;
     
-    // only one of containerOLD/containerUID must be used (based on USE_REPOSITORY)
-    private final CsmObject containerOLD;
+    // only one of containerRef/containerUID must be used (based on USE_REPOSITORY)
+    private final CsmIdentifiable containerRef;
     private final CsmUID<CsmIdentifiable> containerUID;
             
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
         super(ast, file);
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable)container);
             assert (containerUID != null || container == null);
-            this.containerOLD = null;
+            this.containerRef = null;
         } else {
-            this.containerOLD = container;
+            this.containerRef = (CsmIdentifiable)container;
             this.containerUID = null;
         }        
         if (type == null) {
@@ -184,12 +184,12 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     }
 
     private CsmObject _getContainer() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             CsmObject container = (CsmObject) UIDCsmConverter.UIDToIdentifiable(this.containerUID);
-            assert (container != null || containerUID == null);
+            assert (container != null || containerUID == null) : "null object for UID " + containerUID;
             return container;
         } else {
-            return containerOLD;
+            return (CsmObject)containerRef;
         }
     }
     
@@ -202,8 +202,19 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         output.writeUTF(this.name);
         assert this.type != null;
         PersistentUtils.writeType(this.type, output);
-        assert this.containerUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(this.containerUID, output);
+
+        // prepare uid to write
+        CsmUID<CsmIdentifiable> writeContainerUID;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            writeContainerUID = this.containerUID;
+        } else {
+            // save reference
+            assert this.containerRef != null;
+            writeContainerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable)this.containerRef);        
+        }
+        // not null
+        assert writeContainerUID != null;
+        UIDObjectFactory.getDefaultFactory().writeUID(writeContainerUID, output);        
     }  
     
     public TypedefImpl(DataInput input) throws IOException {
@@ -212,10 +223,23 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         assert this.name != null;
         this.type = PersistentUtils.readType(input);
         assert this.type != null;
-        this.containerUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        assert this.containerUID != null;
+        
+        CsmUID<CsmIdentifiable> readContainerUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        // not null UID
+        assert readContainerUID != null;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            this.containerUID = readContainerUID;
+            
+            this.containerRef = null;
+        } else {
+            // restore reference
+            this.containerRef = UIDCsmConverter.UIDToIdentifiable(readContainerUID);
+            assert this.containerRef != null || readContainerUID == null : "no object for UID " + readContainerUID;
+            
+            this.containerUID = null;
+        } 
         
         assert TraceFlags.USE_REPOSITORY;
-        this.containerOLD = null;
+        
     }       
 }

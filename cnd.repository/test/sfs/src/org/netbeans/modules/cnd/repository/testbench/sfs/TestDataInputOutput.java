@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.repository.testbench.sfs;
 
 import java.io.*;
 import java.nio.*;
+import java.util.List;
 import org.netbeans.modules.cnd.repository.sfs.BufferDataInput;
 import org.netbeans.modules.cnd.repository.sfs.BufferDataOutput;
 
@@ -28,7 +29,7 @@ import org.netbeans.modules.cnd.repository.sfs.BufferDataOutput;
  * Testing BufferDataInput and BufferDataOutput.
  * @author Vladimir Kvashin
  */
-public class TestDataInputOutput {
+public class TestDataInputOutput extends BaseTest {
     	    
     private static final boolean VERBOSE = false;
 	    
@@ -37,7 +38,7 @@ public class TestDataInputOutput {
     private DataOutput out;
     private DataInput in;
 	
-    public void test() throws IOException {
+    public void test(List<String> params ) throws IOException {
 	ByteBuffer buffer = ByteBuffer.allocate(1024*1024);
 	readBuffer = buffer.slice();
 	writeBuffer = buffer.slice();

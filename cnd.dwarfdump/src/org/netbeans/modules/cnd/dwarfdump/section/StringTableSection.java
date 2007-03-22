@@ -47,7 +47,7 @@ public class StringTableSection extends ElfSection {
     }
     
     public String getString(long offset) {
-        StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
         
         for (int i = (int)offset; i < stringtable.length; i++) {
             if (stringtable[i] == 0) {

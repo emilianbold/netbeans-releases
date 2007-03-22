@@ -18,55 +18,44 @@
  */
 
 //Implementation of System class: collection of modules
+
 #include "system.h"
 #include <iostream>
-using namespace std;
+#include <assert.h>
 
-System::System() {
-    supportMetric=0;
+System::System() :
+    supportMetric(0) {
 }
 
-System::System(const System& obj) {
+void System::AddModule(Module* module) {
+    moduleList.push_back(module);
+    supportMetric += module->GetSupportMetric();
 }
 
-System& System::operator=(System& obj) {
-    return *this;
+Module& System::GetModule(int i) const {
+    assert(i >= 0 && (unsigned)i < moduleList.size());
+    
+    return (*moduleList[i]);
 }
 
-System::~System() {
-    moduleList.clear();
-}
-
-void System::AddModule(Module* m) {
-    moduleList.push_back(m);
-    supportMetric +=(*m).GetSupportMetric();
-}
-
-Module* System::GetModule(int i) {
-    if (i >= 0 && i < (int)moduleList.size())
-        return moduleList[i];
-    else
-        return (Module*)0;
-}
-
-int System::GetModuleCount() {
+int System::GetModuleCount() const {
     return moduleList.size();
 }
 
-int System::GetSupportMetric() {
+int System::GetSupportMetric() const {
     return supportMetric;
 };
 
-void System::DisplayList() {
-    Module* m;
-    int sz=moduleList.size();
-    cout<<"System consists of "<<sz<<" module(s)"<<endl;
+ostream& operator <<(ostream& output, const System& system) {
+    int size = system.GetModuleCount();
     
-    for (int i=0; i<sz; i++) {
-        m=moduleList[i];
-        (*m).DisplayModule();
+    output << "System consists of " << size << " module(s):" << endl << endl;
+    
+    for (int i = 0; i < size; i++) {
+        output << system.GetModule(i) << endl;
     }
     
+    return output;
 }
 
 // end system.cc

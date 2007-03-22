@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -125,7 +125,7 @@ public class ModelSupport implements PropertyChangeListener {
                         addProject(projects[i]);
                     }
                 }
-
+                
                 Set toClose = new HashSet();
                 for( Iterator iter = openedProjects.iterator(); iter.hasNext(); ) {
                     Object o = iter.next();
@@ -133,7 +133,7 @@ public class ModelSupport implements PropertyChangeListener {
                         toClose.add(o);
                     }
                 }
-
+                
                 for( Iterator iter = toClose.iterator(); iter.hasNext(); ) {
                     removeProject((Project) iter.next());
                 }
@@ -145,36 +145,56 @@ public class ModelSupport implements PropertyChangeListener {
         public void fileAdded(NativeFileItem fileItem) {
             onProjectItemAdded(fileItem);
         }
-
+        
         public void filesAdded(List<NativeFileItem> fileItems) {
-            for(NativeFileItem item : fileItems){
-                onProjectItemAdded(item);
+            for (List<NativeFileItem> list : divideByProjects(fileItems)){
+                onProjectItemAdded(list);
             }
         }
-
+        
         public void fileRemoved(NativeFileItem fileItem) {
             onProjectItemRemoved(fileItem);
         }
-
+        
         public void filesRemoved(List<NativeFileItem> fileItems) {
-            for(NativeFileItem item : fileItems){
-                onProjectItemRemoved(item);
+            for (List<NativeFileItem> list : divideByProjects(fileItems)){
+                for(NativeFileItem item : list){
+                    onProjectItemRemoved(item);
+                }
             }
         }
-
+        
         public void filePropertiesChanged(NativeFileItem fileItem) {
             onProjectItemChanged(fileItem);
         }
-
+        
         public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
-            for(NativeFileItem item : fileItems){
-                onProjectItemChanged(item);
+            for (List<NativeFileItem> list : divideByProjects(fileItems)){
+                onProjectItemChanged(list);
             }
         }
-
+        
         public void filesPropertiesChanged() {
+            for(NativeProject project : getNativeProjects()){
+                filesPropertiesChanged(project.getAllSourceFiles());
+            }
         }
         
+        private Collection<List<NativeFileItem>> divideByProjects(List<NativeFileItem> fileItems){
+            Map<NativeProject,List<NativeFileItem>> res = new HashMap<NativeProject,List<NativeFileItem>>();
+            for(NativeFileItem item : fileItems){
+                NativeProject nativeProject = item.getNativeProject();
+                if (nativeProject != null){
+                    List<NativeFileItem> list = res.get(nativeProject);
+                    if (list == null){
+                        list =new ArrayList<NativeFileItem>();
+                        res.put(nativeProject,list);
+                    }
+                    list.add(item);
+                }
+            }
+            return res.values();
+        }
     };
     
     protected void onProjectItemAdded(final NativeFileItem item) {
@@ -185,6 +205,26 @@ public class ModelSupport implements PropertyChangeListener {
             }
         } catch( Exception e ) {
             e.printStackTrace(System.err);
+        }
+    }
+    
+    protected void onProjectItemAdded(final List<NativeFileItem> items) {
+        if (items.size()>0){
+            try {
+                final ProjectBase project = getProject(items.get(0), true);
+                if( project != null ) {
+                    try {
+                        ParserQueue.instance().onStartAddingProjectFiles(project);
+                        for(NativeFileItem item : items) {
+                            project.onFileAdded(item);
+                        }
+                    } finally{
+                        ParserQueue.instance().onEndAddingProjectFiles(project);
+                    }
+                }
+            } catch( Exception e ) {
+                e.printStackTrace(System.err);
+            }
         }
     }
     
@@ -203,7 +243,11 @@ public class ModelSupport implements PropertyChangeListener {
     
     protected void onProjectItemChanged(final NativeFileItem item) {
         // invalidate cache for this file
-        CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
+        if (TraceFlags.USE_AST_CACHE) {
+            CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
+        } else {
+            // do not need to invalidate APT, it is preprocessor neutral
+        }
         try {
             final ProjectBase project = getProject(item, false);
             if( project != null ) {
@@ -215,7 +259,37 @@ public class ModelSupport implements PropertyChangeListener {
             e.printStackTrace(System.err);
         }
     }
-
+    
+    protected void onProjectItemChanged(final List<NativeFileItem> items) {
+        if (items.size()>0){
+            try {
+                final ProjectBase project = getProject(items.get(0), true);
+                if( project != null ) {
+                    try {
+                        ParserQueue.instance().onStartAddingProjectFiles(project);
+                        for(NativeFileItem item : items) {
+                            // TODO: FIX me. This code doesn't work when item include paths are changed!
+                            // onFilePropertyChanged method shouldn't add item at the beginning.
+                            if (TraceFlags.USE_AST_CACHE) {
+                                CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
+                            } else {
+                                // do not need to invalidate APT, it is preprocessor neutral
+                            }
+                            project.onFilePropertyChanged(item);
+                            // This is right working code.
+                            //project.onFileRemoved(item);
+                            //project.onFileAdded(item);
+                        }
+                    } finally{
+                        ParserQueue.instance().onEndAddingProjectFiles(project);
+                    }
+                }
+            } catch( Exception e ) {
+                e.printStackTrace(System.err);
+            }
+        }
+    }
+    
 //    // FIXUP: used only in old project api
 //    private ProjectBase getProject(File file) {
 //	FileObject fo = FileUtil.toFileObject(file);
@@ -234,7 +308,7 @@ public class ModelSupport implements PropertyChangeListener {
         ProjectBase csmProject = null;
         try {
             NativeProject nativeProject = nativeFile.getNativeProject();
-            if (nativeProject == null) {                
+            if (nativeProject == null) {
                 // TODO: temporary use old approach with query
                 FileObject fo = FileUtil.toFileObject(nativeFile.getFile());
                 Project platformProject = FileOwnerQuery.getOwner(fo);
@@ -242,7 +316,7 @@ public class ModelSupport implements PropertyChangeListener {
             }
             if (nativeProject != null) {
                 csmProject = createIfNeeded ? (ProjectBase) model.getProject(nativeProject) :
-                                              (ProjectBase) model.findProject(nativeProject);
+                    (ProjectBase) model.findProject(nativeProject);
             }
         } catch(NullPointerException ex) {
             ex.printStackTrace();
@@ -250,7 +324,7 @@ public class ModelSupport implements PropertyChangeListener {
         return csmProject;
     }
     
-    private void trace(NativeFileItem nativeFile) {
+    public void trace(NativeFileItem nativeFile) {
         try {
             Diagnostic.trace("  native file item" + nativeFile.getFile().getAbsolutePath()); // NOI18N
             Diagnostic.trace("    user includes: " + nativeFile.getUserIncludePaths()); // NOI18N
@@ -261,31 +335,19 @@ public class ModelSupport implements PropertyChangeListener {
             ex.printStackTrace(System.err);
         }
     }
-    
-    private void visitNativeFileItems(List/*<NativeFileItem>*/ items, FileVisitor visitor, boolean isSourceFile) throws FileVisitor.StopException {
-        for (Iterator it = items.iterator(); it.hasNext();) {
-            NativeFileItem elem = (NativeFileItem) it.next();
-            File file = elem.getFile();
-            assert (file != null) : "native file item must have valid File object";
-            if( TraceFlags.DEBUG ) {
-                trace(elem);
-            }
-            visitor.visit(elem, isSourceFile);
+
+    public synchronized void registerProjectListeners(ProjectBase csmProjectImpl, Object platformProject) {
+        NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
+        if( nativeProject != null ) {
+            // The following code removed. It's a project responsibility to call this method only once.
+            //	// TODO: fix the problem of registering the same listener twice
+            //	// now just remove then add to prevent double instance
+            //	nativeProject.removeProjectItemsListener(projectItemListener);
+            nativeProject.addProjectItemsListener(projectItemListener);
         }
     }
     
-    public synchronized void registerProjectListeners(ProjectBase csmProjectImpl, Object platformProject) {
-	NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
-	if( nativeProject != null ) {
-	    // The following code removed. It's a project responsibility to call this method only once.
-	    //	// TODO: fix the problem of registering the same listener twice
-	    //	// now just remove then add to prevent double instance
-	    //	nativeProject.removeProjectItemsListener(projectItemListener);
-	    nativeProject.addProjectItemsListener(projectItemListener);
-	}
-    }
-    
-    private void dumpNativeProject(NativeProject nativeProject) {
+    public void dumpNativeProject(NativeProject nativeProject) {
         List/*<NativeFileItem>*/ headers = nativeProject.getAllHeaderFiles();
         System.err.println("\n\n\nDumping project " + nativeProject.getProjectDisplayName());
         System.err.println("\nSystem include paths");
@@ -313,47 +375,17 @@ public class ModelSupport implements PropertyChangeListener {
         System.err.println("End of project dump\n\n\n");
     }
     
-    public void visitProjectFiles(ProjectBase csmProjectImpl, Object platformProject, FileVisitor visitor) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("ModelSupport.visitProjectFiles for " + csmProjectImpl.getName()); // NOI18N
+    public NativeProject getNativeProject(Object platformProject) {
         NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
         if (platformProject instanceof Project ) {
             Project project = (Project) platformProject;
             nativeProject = (NativeProject)project.getLookup().lookup(NativeProject.class);
-        }
-        if( nativeProject != null ) {
-            try {
-                if( TraceFlags.DEBUG ) Diagnostic.trace("Using new NativeProject API"); // NOI18N
-                // first of all visit sources, then headers
-		
-		if( TraceFlags.TIMING ) System.err.println("Getting files from project system");
-		long time = System.currentTimeMillis();
-		
-                List/*<NativeFileItem>*/ sources = nativeProject.getAllSourceFiles();
-                List/*<NativeFileItem>*/ headers = nativeProject.getAllHeaderFiles();
-		
-		
-                if( TraceFlags.TIMING ) {
-		    time = System.currentTimeMillis() - time;
-		    System.err.println("Got files from project system. Time = " + time);
-                    System.err.println("FILES COUNT:\nSource files:\t" + sources.size() + "\nHeader files:\t" + headers.size() + "\nTotal files:\t" + (sources.size() + headers.size()));
-                }
-                if(TraceFlags.DUMP_PROJECT_ON_OPEN ) {
-                    dumpNativeProject(nativeProject);
-                }
-                visitNativeFileItems(sources, visitor, true);
-                visitNativeFileItems(headers, visitor, false);
-               
-                // in fact if visitor used for parsing => visitor will parse all included files
-                // recursively starting from current source file
-                // so, when we visit headers, they should not be reparsed if already were parsed
-                
-            } catch( FileVisitor.StopException e ) {
-            }
-        }
+        }    
+	return nativeProject;
     }
     
     private String toString(Project project) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         ProjectInformation  pi = ProjectUtils.getInformation(project);
         if( pi != null ) {
             sb.append(" Name=" + pi.getName()); // NOI18N
@@ -392,6 +424,7 @@ public class ModelSupport implements PropertyChangeListener {
             }
         }
     }
+
     
     private void removeProject(Project project) {
         if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project)); // NOI18N
@@ -411,12 +444,21 @@ public class ModelSupport implements PropertyChangeListener {
                 nativeProjects.add(nativeProject);
             }
         }
-	return nativeProjects;
+        return nativeProjects;
     }
     
     /** gets a key, which uniquely identifies the project */
     public String getProjectKey(CsmProject project) {
         Object o = project.getPlatformProject();
+        assert o != null;
+        String key = getProjectObjectKey(o);
+        if (key == null) {
+            key = project.getName();
+        }
+        return key;
+    }
+    
+    public String getProjectObjectKey(Object o) {
         if( o instanceof Project ) {
             Project p = (Project) o;
             return p.getProjectDirectory().getPath();
@@ -425,10 +467,9 @@ public class ModelSupport implements PropertyChangeListener {
         } else if( o instanceof File ) {
             return ((File) o).getAbsolutePath();
         } else {
-            return project.getName();
+            return null;
         }
-    }
-    
+    }    
     
     public FileBuffer getFileBuffer(File file) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
@@ -450,24 +491,24 @@ public class ModelSupport implements PropertyChangeListener {
         }
         return new FileBufferFile(file);
     }
-
+    
     public void onMemoryLow(LowMemoryEvent event, boolean fatal) {
-	LowMemoryAlerter alerter = (LowMemoryAlerter) Lookup.getDefault().lookup(LowMemoryAlerter.class);
-	if( alerter != null ) {
-	    alerter.alert(event, fatal);
-	}
+        LowMemoryAlerter alerter = (LowMemoryAlerter) Lookup.getDefault().lookup(LowMemoryAlerter.class);
+        if( alerter != null ) {
+            alerter.alert(event, fatal);
+        }
     }
-
+    
     private static class BufAndProj {
         public BufAndProj(FileBuffer buffer, ProjectBase project, NativeFileItem nativeFile) {
             this.buffer = buffer;
             this.project = project;
-	    this.nativeFile = nativeFile;
+            this.nativeFile = nativeFile;
         }
         public FileBuffer buffer;
         public ProjectBase project;
-	public NativeFileItem nativeFile;
-    }    
+        public NativeFileItem nativeFile;
+    }
     
     private class FileChangeListener implements ChangeListener {
         

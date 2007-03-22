@@ -80,7 +80,7 @@ public class UIDCsmConverter {
         return uid == null ? null : uid.getObject();
     } 
     
-    public static CsmScope UIDToScope(CsmUID<CsmScope> uid) {
+    public static CsmScope UIDtoScope(CsmUID<CsmScope> uid) {
         return uid == null ? null : uid.getObject();
     }
     

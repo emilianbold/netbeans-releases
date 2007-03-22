@@ -17,50 +17,63 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-//Implementation of CPU module class
+// Implementation of CPU module class
 
 #include "cpu.h"
-//Error logic needs to be added for SetDescription() and SetVendor() since these can return non-zero
 
-Cpu::Cpu() {
-    SetDescription((char*)"CPU");
-    SetVendor((char*)"generic"); //Placeholder for future functionality
-    SetType(tmid);
-    SetCategory(tOpteron); //Default architecture type in example
-    SetUnits(1); //Default CPU board has single processor
-    ComputeSupportMetric();
+Cpu::Cpu(int type /*= MEDIUM */, int architecture /*= OPTERON */, int units /*= 1*/) :
+    Module("CPU", "generic", type, architecture, units) {
+        ComputeSupportMetric();
 }
+    
+/*
+ * Heuristic for CPU module complexity is based on number of CPUs and
+ * target use ("category"). CPU architecture ("type") is not considered in
+ * heuristic
+ */
 
-Cpu::Cpu(int ty, int cat) {
-    SetDescription((char*)"CPU");
-    SetVendor((char*)"generic"); //Placeholder for future functionality
-    SetType(ty);
-    SetCategory(cat);
-    SetUnits(1); //Default CPU board has single processor
-    ComputeSupportMetric();
-}
+void Cpu::ComputeSupportMetric() {
+    int metric = 100 * GetUnits();
 
-Cpu::Cpu(int ty, int cat, int un) {
-    SetDescription((char*)"CPU");
-    SetVendor((char*)"generic"); //Placeholder for future functionality
-    SetType(ty);
-    SetCategory(cat);
-    SetUnits(un);
-    ComputeSupportMetric();
-}
+    switch (GetTypeID()) {
+        case MEDIUM:
+            metric += 100;
+            break;
 
-void Cpu::ComputeSupportMetric() //base class defines this function as "pure virtual"
-{
-//heuristic for CPU module complexity is based on number of CPU processors and target use ("category")
-//CPU architecture ("type") is not considered in heuristic
-    int metric;
-    metric=100*GetUnits();
-    switch (GetType()) {
-        case tmid: metric += 100; break;
-        case thigh: metric += 400; break;
-        default: break;
+        case HIGH:
+            metric += 400;
+            break;
     }
+
     SetSupportMetric(metric);
+}
+
+const char* Cpu::GetType() const {
+    switch (GetTypeID()) {
+        case MEDIUM:
+            return "Middle Class CPU";
+
+        case HIGH:
+            return "High Class CPU";
+
+        default:
+            return "Undefined";
+    }
+}
+
+const char* Cpu::GetCategory() const {
+    switch (GetCategoryID()) {
+        case OPTERON:
+            return "AMD Opteron Processor";
+
+        case INTEL:
+            return "Intel Processor";
+
+        case SPARC:
+            return "SUN Sparc Processor";
+
+        default: return "Undefined";
+    }
 }
 
 // end cpu.cc

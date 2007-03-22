@@ -25,7 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
+import java.util.ArrayList;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
@@ -55,17 +55,21 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.ExtensionList;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
-    private String path;
-    private String sortName;
+    private final String path;
+    private final String sortName;
     private Folder folder;
     private File file = null;
+    private String id = null;
     
     public Item(String path) {
         this.path = path;
-        sortName = IpeUtils.getBaseName(path).toLowerCase();
+        String sortName = IpeUtils.getBaseName(path).toLowerCase();
         int i = sortName.lastIndexOf("."); // NOI18N
-        if (i > 0)
-            sortName = sortName.substring(0, i);
+        if (i > 0) {
+            this.sortName = sortName.substring(0, i);
+        } else {
+            this.sortName = sortName;
+        }
         folder = null;
     }
     
@@ -203,6 +207,18 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return file;
     }
     
+    public String getId() {
+        if (id == null) {
+            id = "i-" + getPath(); // NOI18N
+        }
+        return id;
+    }
+    
+    public ItemConfiguration getItemConfiguration(Configuration configuration) {
+        ItemConfiguration itemConfiguration = (ItemConfiguration)configuration.getAuxObject(getId());
+        return itemConfiguration;
+    }
+    
     public FileObject getFileObject() {
         File file = getCanonicalFile();
         FileObject fo = null;
@@ -273,9 +289,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public List getSystemIncludePaths() {
-        Vector vec = new Vector();
+        List vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
             return vec;
         Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
@@ -290,9 +306,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public List getUserIncludePaths() {
-        Vector vec = new Vector();
+        List vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
             return vec;
         Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
@@ -301,7 +317,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
-            Vector vec2 = new Vector();
+            List vec2 = new ArrayList();
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
             CCCCompilerConfiguration master = (CCCCompilerConfiguration)cccCompilerConfiguration.getMaster();
             while (master != null && cccCompilerConfiguration.getInheritIncludes().getValue()) {
@@ -322,9 +338,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public List getSystemMacroDefinitions() {
-        Vector vec = new Vector();
+        List vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
             return vec;
         Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
@@ -339,9 +355,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public List getUserMacroDefinitions() {
-        Vector vec = new Vector();
+        List vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
             return vec;
         Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
@@ -353,13 +369,13 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
             CCCCompilerConfiguration master = (CCCCompilerConfiguration)cccCompilerConfiguration.getMaster();
             while (master != null && cccCompilerConfiguration.getInheritPreprocessor().getValue()) {
-                vec.addAll(master.getPreprocessorConfiguration().getValuesAsVector());
+                vec.addAll(master.getPreprocessorConfiguration().getValuesAsList());
                 if (master.getInheritPreprocessor().getValue())
                     master = (CCCCompilerConfiguration)master.getMaster();
                 else
                     master = null;
             }
-            vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsVector());
+            vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsList());
         }
         return vec;
     }
@@ -382,7 +398,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         ItemConfiguration itemConfiguration = null;
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null)
-            itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+            itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
             
         if (itemConfiguration != null)
             tool = itemConfiguration.getTool();

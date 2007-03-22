@@ -84,7 +84,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     
     /** returns list of tokens */
     public String getText() {
-        StringBuffer retValue = new StringBuffer("TOKENS{"); // NOI18N
+        StringBuilder retValue = new StringBuilder("TOKENS{"); // NOI18N
         try {
             TokenStream ts = getTokenStream();
             for (Token token = ts.nextToken(); !APTUtils.isEOF(token);) {

@@ -112,7 +112,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
 
         public String toString() {
-            StringBuffer retValue = new StringBuffer();
+            StringBuilder retValue = new StringBuilder();
             retValue.append("FileState\n"); // NOI18N
             retValue.append("Snapshot\n"); // NOI18N
             retValue.append(super.toString());
@@ -185,7 +185,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     }*/
 
     public String toString() {
-        StringBuffer retValue = new StringBuffer();
+        StringBuilder retValue = new StringBuilder();
         retValue.append("Own Map:\n"); // NOI18N
         retValue.append(super.toString());
         retValue.append("System Map:\n"); // NOI18N

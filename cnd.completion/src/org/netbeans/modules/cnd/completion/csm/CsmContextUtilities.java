@@ -89,15 +89,15 @@ public class CsmContextUtilities {
     private static final int FILE_LIB_LOCAL_MACROS = 2;
     private static final int PROJECT_MACROS = 3;
     private static final int LIB_MACROS = 4;
-    public static List/*<CsmMacro*/ findFileMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List/*<CsmMacro*/ findFileLocalMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findMacros(context, strPrefix, match, caseSensitive, FILE_LOCAL_MACROS);
     }
 
-    public static List/*<CsmMacro*/ findFileProjectMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List/*<CsmMacro*/ findFileIncludedProjectMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findMacros(context, strPrefix, match, caseSensitive, FILE_PROJECT_LOCAL_MACROS);
     }
 
-    public static List/*<CsmMacro*/ findFileLibMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+    public static List/*<CsmMacro*/ findFileIncludedLibMacros(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findMacros(context, strPrefix, match, caseSensitive, FILE_LIB_LOCAL_MACROS);
     }
 
@@ -121,19 +121,19 @@ public class CsmContextUtilities {
                 CsmFile file = (CsmFile)scope;
                 switch (kind) {
                     case FILE_LOCAL_MACROS:
-                        getFileMacros(file, res, new HashSet(), strPrefix, match, caseSensitive);
+                        getFileLocalMacros(file, res, new HashSet(), strPrefix, match, caseSensitive);
                         break;
                     case FILE_PROJECT_LOCAL_MACROS:
-                        gatherProjectIncludeMacros(file, res, false, strPrefix, match, caseSensitive);
+                        gatherProjectIncludedMacros(file, res, false, strPrefix, match, caseSensitive);
                         break;
                     case FILE_LIB_LOCAL_MACROS:
-                        gatherLibIncludeMacros(file, res, false, strPrefix, match, caseSensitive);
+                        gatherLibIncludedMacros(file, res, false, strPrefix, match, caseSensitive);
                         break;
                     case PROJECT_MACROS:
-                        gatherProjectIncludeMacros(file, res, true, strPrefix, match, caseSensitive);
+                        gatherProjectIncludedMacros(file, res, true, strPrefix, match, caseSensitive);
                         break;
                     case LIB_MACROS:
-                        gatherLibIncludeMacros(file, res, true, strPrefix, match, caseSensitive);
+                        gatherLibIncludedMacros(file, res, true, strPrefix, match, caseSensitive);
                         break;
                 }
             }
@@ -141,7 +141,7 @@ public class CsmContextUtilities {
         return res;
     }
     
-    private static void getFileMacros(CsmFile file, List res, Set alredyInList, String strPrefix, boolean match, boolean caseSensitive){
+    private static void getFileLocalMacros(CsmFile file, List res, Set alredyInList, String strPrefix, boolean match, boolean caseSensitive){
         for (Iterator itFile = file.getMacros().iterator(); itFile.hasNext();) {
             CsmMacro macro = (CsmMacro) itFile.next();
             //if (macro.getStartOffset() > offsetInScope) {
@@ -155,19 +155,19 @@ public class CsmContextUtilities {
         }
     }
 
-    private static void gatherProjectIncludeMacros(CsmFile file, List res, boolean all, String strPrefix,  boolean match, boolean caseSensitive) {
+    private static void gatherProjectIncludedMacros(CsmFile file, List res, boolean all, String strPrefix,  boolean match, boolean caseSensitive) {
         CsmProject prj = file.getProject();
         if (!all) {
             gatherIncludeMacros(file, prj, true, new HashSet(), new HashSet(), res, strPrefix, match, caseSensitive);
         } else {
             Set alredyInList = new HashSet();
             for(Iterator i = prj.getHeaderFiles().iterator(); i.hasNext();){
-                getFileMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
+                getFileLocalMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
             }
         }
     }
 
-    private static void gatherLibIncludeMacros(CsmFile file, List res, boolean all, String strPrefix, boolean match, boolean caseSensitive) {
+    private static void gatherLibIncludedMacros(CsmFile file, List res, boolean all, String strPrefix, boolean match, boolean caseSensitive) {
         CsmProject prj = file.getProject();
         if (!all) {
             gatherIncludeMacros(file, prj, false, new HashSet(), new HashSet(), res, strPrefix, match, caseSensitive);
@@ -176,7 +176,7 @@ public class CsmContextUtilities {
             for(Iterator p = prj.getLibraries().iterator(); p.hasNext();){
                 CsmProject lib = (CsmProject)p.next();
                 for(Iterator i = lib.getHeaderFiles().iterator(); i.hasNext();){
-                    getFileMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
+                    getFileLocalMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
                 }
             }
             
@@ -195,12 +195,12 @@ public class CsmContextUtilities {
             if( incFile != null ) {
                 if (own) {
                     if (incFile.getProject() == prj) {
-                        getFileMacros(incFile, res, alredyInList, strPrefix, match, caseSensitive);
+                        getFileLocalMacros(incFile, res, alredyInList, strPrefix, match, caseSensitive);
                         gatherIncludeMacros(incFile, prj, own, visitedFiles, alredyInList, res, strPrefix, match, caseSensitive);
                     }
                 } else {
                     if (incFile.getProject() != prj) {
-                        getFileMacros(incFile, res, alredyInList, strPrefix, match, caseSensitive);
+                        getFileLocalMacros(incFile, res, alredyInList, strPrefix, match, caseSensitive);
                     }
                     gatherIncludeMacros(incFile, prj, own, visitedFiles, alredyInList, res, strPrefix, match, caseSensitive);
                 }

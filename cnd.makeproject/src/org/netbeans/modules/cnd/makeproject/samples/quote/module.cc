@@ -20,123 +20,101 @@
 
 #include <iostream>
 #include <cstdlib>
-#include <cstring>
-using namespace std;
-
 #include "module.h"
 
-const int sz = 80; //built-in assumption that strings are 79 characters (+1 for ending null)
-
-
 Module::Module() {
-    description = new char[sz];
-    vendor = new char[sz]; //this anticipates future functionality
-    strcpy(description, "undefined");
-    strcpy(vendor, "undefined"); //this anticipates future functionality
+    SetDescription("undefined");
+    SetVendor("undefined");
 }
 
-Module::Module(const Module& obj) //copy constructor
-{
-    description = new char[sz];
-    vendor = new char[sz];
-    
-    strcpy(description, obj.description);
-    strcpy(vendor, obj.vendor);
-    type = obj.type;
-    category = obj.category;
-    units = obj.units;
-    supportMetric = obj.supportMetric;
+Module::Module(const char* _description, const char* _vendor, int _type, int _category, int _units) {
+    SetDescription(_description);
+    SetVendor(_vendor);
+    SetType(_type);
+    SetCategory(_category);
+    SetUnits(_units);
 }
 
-Module& Module::operator=(Module& obj) {
-    description = new char[sz];
-    vendor = new char[sz];
-    
-    strcpy(description, obj.description);
-    strcpy(vendor, obj.vendor);
-    type = obj.type;
-    category = obj.category;
-    units = obj.units;
-    supportMetric = obj.supportMetric;
+//copy constructor
+Module::Module(const Module& obj) {
+    SetDescription(obj.GetDescription());
+    SetVendor(obj.GetVendor());
+    SetType(obj.type);
+    SetUnits(obj.units);
+    SetSupportMetric(obj.GetSupportMetric());
+}
+
+Module& Module::operator= (const Module& obj) {
+    SetDescription(obj.GetDescription());
+    SetVendor(obj.GetVendor());
+    SetType(obj.type);
+    SetUnits(obj.units);
+    SetSupportMetric(obj.GetSupportMetric());
     
     return *this;
 }
 
-
 Module::~Module() {
-    delete [] description;
-    delete [] vendor; //anticipates future functionality
 }
 
-int Module::SetDescription(char* d) {
-    description = new char[sz];
-    if ((int)(strlen(d) + 1) > sz) {
-        strcpy(description, "error");
-        return 1; //error code ... description string too long
-    }
-    strcpy(description, d);
-    return 0; //normal exit
+void Module::SetDescription(const char* new_description) {
+    description = new_description;
 }
 
-char* Module::GetDescription() {
-    return description;
+const char* Module::GetDescription() const {
+    return description.c_str();
 }
 
-int Module::SetVendor(char* v) {
-    vendor = new char[sz];
-    if ((int)(strlen(v) + 1) > sz) {
-        strcpy(vendor, "error");
-        return 1; //error code ... vendor field too long
-    }
-    strcpy(vendor, v);
-    return 0; //normal exit
+void Module::SetVendor(const char* new_vendor) {
+    vendor = new_vendor;
 }
 
-char* Module::GetVendor() {
-    return vendor;
+const char* Module::GetVendor() const {
+    return vendor.c_str();
 }
 
-void Module::SetType(int t) {
-    type=t;
+void Module::SetType(int new_type) {
+    type = new_type;
 }
 
-int Module::GetType() {
+int Module::GetTypeID() const {
     return type;
 }
 
-void Module::SetCategory(int c) {
-    category=c;
+void Module::SetCategory(int new_category) {
+    category = new_category;
 }
 
-int Module::GetCategory() {
+int Module::GetCategoryID() const {
     return category;
 }
 
-void Module::SetUnits(int u) {
-    units=u;
+void Module::SetUnits(int new_units) {
+    units = new_units;
 }
 
-int Module::GetUnits() {
+int Module::GetUnits() const {
     return units;
 }
 
-int Module::GetSupportMetric() {
+void Module::SetSupportMetric(int new_metric) {
+    supportMetric = new_metric;
+}
+
+int Module::GetSupportMetric() const {
     return supportMetric;
 }
 
-void Module::SetSupportMetric(int m) {
-    supportMetric=m;
+ostream& operator <<(ostream& output, const Module& module) {
+    
+    output << "** " << module.GetDescription() << " module data **" << endl;
+    output << "Module type: " << module.GetType() << endl;
+    output << "Module category: " << module.GetCategory() << endl;
+    output << "Number of sub-modules: " << module.GetUnits() << endl;
+    output << "Module support metric: " << module.GetSupportMetric() << endl;
+    
+    return output;
 }
-
-void Module::DisplayModule() {
-    cout<<"** "<<description<<" module data **"<<endl;
-    cout<<"Module type: "<<type<<endl;
-    cout<<"Module category: "<<category<<endl;
-    cout<<"Number of sub-modules: "<<units<<endl;
-    cout<<"Module support metric: "<<supportMetric<<endl;
-    cout<<endl;
-}
-
-
-//end module.cc
+ 
+// end module.cc
 

@@ -101,7 +101,7 @@ public abstract class MakeBaseAction extends NodeAction {
         // Arguments
         String arguments = "-f " + makefile.getName() + " " + target; // NOI18N
         // Tab Name
-        String tabName = "make"; // NOI18N
+        String tabName = getString("MAKE_LABEL", node.getName());
         if (target != null && target.length() > 0)
             tabName += " " + target; // NOI18N
         
@@ -123,5 +123,8 @@ public abstract class MakeBaseAction extends NodeAction {
     
     protected final static String getString(String key) {
         return NbBundle.getBundle(MakeBaseAction.class).getString(key);
+    }
+    protected final static String getString(String key, String a1) {
+        return NbBundle.getMessage(MakeBaseAction.class, key, a1);
     }
 }

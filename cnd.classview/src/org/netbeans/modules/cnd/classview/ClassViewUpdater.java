@@ -20,47 +20,48 @@
 package org.netbeans.modules.cnd.classview;
 
 import java.util.*;
-import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  * Deals with class view model updates
  * @author vk155633
  */
-public class ClassViewUpdater implements Runnable {
+public class ClassViewUpdater extends Thread {
     
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.updater-events"); // NOI18N
-   
+    
     private static class BlockingQueue {
         
         private LinkedList data = new LinkedList();
         
         private Object lock = new Object();
         
-        public CsmChangeEvent get() throws InterruptedException {
+        public SmartChangeEvent get() throws InterruptedException {
             synchronized( lock ) {
                 while( data.isEmpty() ) {
                     lock.wait();
                 }
-                return (CsmChangeEvent) data.removeFirst();
+                return (SmartChangeEvent) data.removeFirst();
             }
         }
-
-        public void add(CsmChangeEvent event) {
+        
+        public void add(SmartChangeEvent event) {
             synchronized( lock ) {
                 data.add(event);
                 lock.notify();
             }
         }
-
-        public CsmChangeEvent peek() throws InterruptedException {
+        
+        public SmartChangeEvent peek() throws InterruptedException {
             synchronized( lock ) {
                 while( data.isEmpty() ) {
                     lock.wait();
                 }
-                return (CsmChangeEvent) data.peek();
+                return (SmartChangeEvent) data.peek();
             }
         }
-
+        
         public boolean isEmpty() throws InterruptedException {
             synchronized( lock ) {
                 return data.isEmpty();
@@ -70,18 +71,24 @@ public class ClassViewUpdater implements Runnable {
     
     private ClassViewModel model;
     private BlockingQueue queue;
+    private boolean isStoped = false;
     
     public ClassViewUpdater(ClassViewModel model) {
+        super("Class View Updater");
         this.model = model;
         queue = new BlockingQueue();
     }
-
-    private boolean isSkiped(CsmChangeEvent e){
+    
+    public void setStop(){
+        isStoped = true;
+    }
+    
+    private boolean isSkiped(SmartChangeEvent e){
         if (model.isShowLibs()){
             return false;
         }
         if (e.getChangedProjects().size()==1){
-            CsmProject project = (CsmProject)e.getChangedProjects().iterator().next();
+            CsmProject project = (CsmProject)e.getChangedProjects().keySet().iterator().next();
             if (model.isLibProject(project)){
                 return true;
             }
@@ -89,7 +96,7 @@ public class ClassViewUpdater implements Runnable {
         return false;
     }
     
-    /** 
+    /**
      * delay before class view update.
      */
     private static final int MINIMAL_DELAY = 500;
@@ -98,7 +105,7 @@ public class ClassViewUpdater implements Runnable {
      * delay before checking queue in batch mode.
      */
     private static final int BATCH_MODE_DELAY = 1000;
-
+    
     /**
      * stop collect events when batch contains:
      */
@@ -118,18 +125,26 @@ public class ClassViewUpdater implements Runnable {
         long start = 0;
         try {
             while( true ) {
-                CsmChangeEvent e = queue.get();
-                if (isSkiped(e)){
+                if (isStoped) {
+                    return;
+                }
+                SmartChangeEvent compose = queue.get();
+                if (isSkiped(compose)){
                     continue;
                 }
                 if (queue.isEmpty()) {
                     Thread.sleep(MINIMAL_DELAY);
                 }
                 int doWait = 0;
-                SmartChangeEvent compose = new SmartChangeEvent(e);
                 while(true){
+                    if (isStoped) {
+                        return;
+                    }
                     while(!queue.isEmpty()){
-                        e = queue.peek();
+                        if (isStoped) {
+                            return;
+                        }
+                        SmartChangeEvent e = queue.peek();
                         if (!isSkiped(e)){
                             if (!compose.addChangeEvent(e)){
                                 break;
@@ -148,26 +163,35 @@ public class ClassViewUpdater implements Runnable {
                     break;
                 }
                 if (traceEvents) start = System.nanoTime();
+                if (isStoped) {
+                    return;
+                }
                 model.update(compose);
                 if (traceEvents) {
                     long end = System.nanoTime();
                     long time = (end-start)/1000000;
                     System.out.println("Compose change event contains "+compose.getCount()+ // NOI18N
-                                       " events and Nd"+compose.getNewDeclarations().size()+ // NOI18N
-                                       ", Rd"+compose.getRemovedDeclarations().size()+ // NOI18N
-                                       ", Ud"+compose.getChangedDeclarations().size()+ // NOI18N
-                                       ", Nn"+compose.getNewNamespaces().size()+ // NOI18N
-                                       ", Rn"+compose.getRemovedNamespaces().size()+ // NOI18N
-                                       " declarations. Time = "+((float)(time)/1000.)); // NOI18N
+                            " events. Time = "+((float)(time)/1000.)); // NOI18N
+                    for(Map.Entry<CsmProject, SmartChangeEvent.Storage> entry : compose.getChangedProjects().entrySet()){
+                        System.out.println("    Project "+entry.getKey().getName()+ // NOI18N
+                                " Nd="+entry.getValue().getNewDeclarations().size()+ // NOI18N
+                                ", Rd="+entry.getValue().getRemovedDeclarations().size()+ // NOI18N
+                                ", Ud="+entry.getValue().getChangedDeclarations().size()+ // NOI18N
+                                ", Nn="+entry.getValue().getNewNamespaces().size()+ // NOI18N
+                                ", Rn="+entry.getValue().getRemovedNamespaces().size()); // NOI18N
+                    }
                 }
             }
         } catch( InterruptedException e ) {
             return;
+        } finally {
+            model = null;
+            queue = null;
         }
     }
     
     public void scheduleUpdate(CsmChangeEvent e) {
         //model.update(e);
-        queue.add(e);
+        queue.add(new SmartChangeEvent(e));
     }
 }

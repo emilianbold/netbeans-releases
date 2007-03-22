@@ -237,7 +237,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     
     public List/*<CsmMember>*/ getMembers() {
         if (TraceFlags.USE_REPOSITORY) {
-            List<CsmMember> out = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmMember>>(members));
+            List<CsmMember> out = UIDCsmConverter.UIDsToDeclarations(members);
             return out;
         } else {
             return membersOLD;

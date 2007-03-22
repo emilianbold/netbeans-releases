@@ -20,8 +20,6 @@
 package org.netbeans.modules.cnd.completion.csm;
 
 import org.netbeans.modules.cnd.completion.csm.CsmContext.CsmContextEntry;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -122,7 +120,7 @@ public class CsmContext {
      * @return  a string representation of the object.
      */
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("context for offset ").append(offset); //NOI18N
         if (isEmpty()) {
             buf.append(" empty"); //NOI18N
@@ -175,7 +173,7 @@ public class CsmContext {
          * @return  a string representation of the object.
          */
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append("["); //NOI18N
             if (isWholeScope()) {
                 buf.append("whole scope"); //NOI18N

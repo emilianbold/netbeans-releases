@@ -25,7 +25,7 @@ import java.util.Collection;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject> {
+public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQualifiedNamedElement {
 
     CsmNamespace getGlobalNamespace();
     
@@ -35,8 +35,6 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject> {
      */
     void waitParse();
     
-    String getName();
-
     /** Gets an object, which represents correspondent IDE project */
     Object getPlatformProject();
 

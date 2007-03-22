@@ -24,7 +24,6 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,7 +32,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenProcessor;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.Syntax;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
@@ -88,7 +86,7 @@ public class CsmIncludeProcessor implements TokenProcessor {
 
     private boolean eotReached;
 
-    private StringBuffer exp = new StringBuffer();
+    private StringBuilder exp = new StringBuilder();
 
     /** Whether the star was found at the end of package expression */
     private boolean star;

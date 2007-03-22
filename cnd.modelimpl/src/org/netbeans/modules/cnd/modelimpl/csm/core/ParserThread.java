@@ -28,11 +28,16 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  * @author vk155633
  */
 public class ParserThread implements Runnable {
+    private boolean stopped = false;
+
+    public void stop() {
+        this.stopped = true;
+    }
     
     public void run() {
 	if( TraceFlags.TRACE_PARSER_QUEUE ) trace("started"); // NOI18N
         ParserQueue queue = ParserQueue.instance();
-        while( true ) {
+        while( !stopped ) {
             if( TraceFlags.TRACE_PARSER_QUEUE ) trace("polling queue"); // NOI18N
             try {
                 ParserQueue.Entry entry = queue.poll();
@@ -71,7 +76,7 @@ public class ParserThread implements Runnable {
                 break;
             }
         }
-	if( TraceFlags.TRACE_PARSER_QUEUE ) trace("finished"); // NOI18N
+	if( TraceFlags.TRACE_PARSER_QUEUE ) trace(stopped ? "stopped" : "finished"); // NOI18N
     }
     
     private void trace(String text) {

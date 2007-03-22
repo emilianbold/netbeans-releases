@@ -438,7 +438,7 @@ public class MakeActionProvider implements ActionProvider {
                     Item item = getNoteItem(node); // NOI18N
                     if (item == null)
                         return;
-                    ItemConfiguration itemConfiguration = (ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
+                    ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
                     if (itemConfiguration == null)
                         return;
                     if (itemConfiguration.getExcluded().getValue())
@@ -569,7 +569,7 @@ public class MakeActionProvider implements ActionProvider {
                 Item item = getNoteItem(node);
                 if (item == null)
                     return false;
-                ItemConfiguration itemConfiguration = (ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
+                ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
                 if (itemConfiguration == null)
                     return false;
                 if (itemConfiguration.getExcluded().getValue())

@@ -32,22 +32,29 @@ public class Stats {
     public static int debugReadFromFile = 0;
     public static int debugNotFound = 0;
     public static int debugGotFromHardCache = 0;
+    public static int nullDataTriggered = 0;
+    
     public static final boolean isDebug = getBoolean("cnd.repository.use.dev", false); //NOI18N
     public static final boolean verbosePut = getBoolean("cnd.repository.verbose.put", false); //NOI18N
     public static final boolean validatePut = getBoolean("cnd.repository.validate.put", false); //NOI18N
     public static final boolean validateKeys = getBoolean("cnd.repository.validate.keys", false); //NOI18N
     public static final boolean rememberKeys = getBoolean("cnd.repository.remember.keys", false); //NOI18N
+    public static final boolean useNullWorkaround = getBoolean("cnd.repository.workaround.nulldata", true); //NOI18N
     
     public static final boolean useHardCache = getBoolean("cnd.repository.use.hardcache", false); //NOI18N
+    public static final boolean useHardRefRepository = getBoolean("cnd.repository.hardrefs", false); //NOI18N
     public static final boolean queueTiming = getBoolean("cnd.repository.queue.timing", false); //NOI18N
     public static final boolean queueTrace = getBoolean("cnd.repository.queue.trace", false); //NOI18N
-    public static final boolean useThreading = getBoolean("cnd.repository.threading", false); //NOI18N
+    public static final boolean useThreading = getBoolean("cnd.repository.threading", true); //NOI18N
     
-    public static final boolean writeToASingleFile = getBoolean("cnd.repository.1file", false); //NOI18N
+    public static final boolean writeToASingleFile = getBoolean("cnd.repository.1file", true); //NOI18N
 
     public static final int fileStatisticsLevel = getInteger("cnd.repository.file.stat", 0); //NOI18N
     public static final boolean dumoFileOnExit = getBoolean("cnd.repository.dump.on.exit", false); //NOI18N
-    public static final int sleepOnEmptyWriteQueue = getInteger("cnd.repository.write.queue.sleep", 0); //NOI18N
+    public static final int sleepOnEmptyWriteQueue = getInteger("cnd.repository.write.queue.sleep", 1000); //NOI18N
+    
+    public static final int fileRWAccess = getInteger("cnd.repository.rw", 0); //NOI18N
+    public static final int bufSize = getInteger("cnd.repository.bufsize", -1); //NOI18N
             
     public static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
@@ -80,10 +87,13 @@ public class Stats {
     }
     
     public static void report(int hard, int soft) {
-        report("; in Hard cache: " + hard + "; in Soft cache ~"+soft); // NOI18N
+        report("; in Hard cache: " + hard + "; in Soft cache <"+soft); // NOI18N
     }
     
     public static void log(String st) {
+        if (useNullWorkaround) {
+            st += "; NULL: " + nullDataTriggered; //NOI18N
+        }
         if (isDebug) System.err.println("DEBUG [Repository] " + st); //NOI18N
     }
     

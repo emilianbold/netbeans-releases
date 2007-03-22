@@ -34,19 +34,19 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * @author Vladimir Kvashin
  */
 public abstract class OffsetableBase implements CsmOffsetable, CsmObject {
-    // only one of fileOLD/fileUID must be used (based on USE_REPOSITORY)
-    private final CsmFile fileOLD;
+    // only one of fileRef/fileUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    private final CsmFile fileRef;
     private final CsmUID<CsmFile> fileUID;
     
     private final LineColOffsPositionImpl startPosition;
     private final LineColOffsPositionImpl endPosition;
 
     protected OffsetableBase(AST ast, CsmFile file) {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.fileUID = UIDCsmConverter.fileToUID(file);
-            this.fileOLD = null;// to prevent error with "final"
+            this.fileRef = null;// to prevent error with "final"
         } else {
-            this.fileOLD = file;
+            this.fileRef = file;
             this.fileUID = null;// to prevent error with "final"
         }
         //this.ast = ast;
@@ -71,11 +71,11 @@ public abstract class OffsetableBase implements CsmOffsetable, CsmObject {
     }
     
     protected OffsetableBase(CsmFile file, CsmOffsetable.Position start, CsmOffsetable.Position end) {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.fileUID = UIDCsmConverter.fileToUID(file);
-            this.fileOLD = null;// to prevent error with "final"
+            this.fileRef = null;// to prevent error with "final"
         } else {
-            this.fileOLD = file;
+            this.fileRef = file;
             this.fileUID = null;// to prevent error with "final"
         }        
         this.startPosition = new LineColOffsPositionImpl(start);
@@ -139,27 +139,50 @@ public abstract class OffsetableBase implements CsmOffsetable, CsmObject {
     }
 
     private CsmFile _getFile() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             CsmFile file = UIDCsmConverter.UIDtoFile(fileUID);
-            assert file != null;
+            assert file != null : "no object for UID " + fileUID;
             return file;
         } else {
-            return fileOLD;
+            return fileRef;
         }
     }
 
     protected void write(DataOutput output) throws IOException {
-        UIDObjectFactory.getDefaultFactory().writeUID(fileUID, output);
         startPosition.toStream(output);
         endPosition.toStream(output);
+        CsmUID<CsmFile> writeFileUID;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            writeFileUID = this.fileUID;
+        } else {
+            // save reference
+            assert this.fileRef != null;
+            writeFileUID = UIDCsmConverter.fileToUID(this.fileRef);
+        }        
+        // not null UID
+        assert writeFileUID != null;
+        UIDObjectFactory.getDefaultFactory().writeUID(writeFileUID, output);
     }
     
     protected OffsetableBase(DataInput input) throws IOException {
-        fileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         startPosition = new LineColOffsPositionImpl(input);
         endPosition = new LineColOffsPositionImpl(input);
 
+        CsmUID<CsmFile> readFileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        // not null UID
+        assert readFileUID != null;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            this.fileUID = readFileUID;
+            
+            this.fileRef = null;
+        } else {
+            // restore reference
+            this.fileRef = UIDCsmConverter.UIDtoFile(readFileUID);
+            assert this.fileRef != null || readFileUID == null : "no object for UID " + readFileUID;
+            
+            this.fileUID = null;
+        }
+        
         assert TraceFlags.USE_REPOSITORY;
-        this.fileOLD = null;// to prevent error with "final"
     }
 }

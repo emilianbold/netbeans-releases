@@ -25,8 +25,6 @@ import antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 import org.netbeans.modules.cnd.modelimpl.csm.*;
@@ -39,7 +37,7 @@ public class AstRenderer {
 
     private FileImpl file;
 
-    //private StringBuffer currName
+    //private StringBuilder currName
     
     public AstRenderer(FileImpl fileImpl) {
         this.file = fileImpl;
@@ -482,7 +480,7 @@ public class AstRenderer {
     public static String getQualifiedName(AST qid) {
         if( qid != null && qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
             if ( qid.getFirstChild() != null ) {
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 for( AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling() ) {
                     // TODO: update this assert it should accept names like: allocator<char, typename A>
 //                    if( ! ( namePart.getType() == CPPTokenTypes.ID || namePart.getType() == CPPTokenTypes.SCOPE ||
@@ -524,7 +522,7 @@ public class AstRenderer {
                     else {
                         //assert namePart.getType() == CPPTokenTypes.SCOPE;
                         if( templateDepth == 0 && namePart.getType() != CPPTokenTypes.SCOPE ) {
-                            StringBuffer tokenText = new StringBuffer();
+                            StringBuilder tokenText = new StringBuilder();
                             tokenText.append('[').append(namePart.getText());
                             if (namePart.getNumberOfChildren() == 0) {
                                 tokenText.append(", line=").append(namePart.getLine()); // NOI18N

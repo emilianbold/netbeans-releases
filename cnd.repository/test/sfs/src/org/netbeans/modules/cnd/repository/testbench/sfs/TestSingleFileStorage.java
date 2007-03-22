@@ -21,15 +21,15 @@ package org.netbeans.modules.cnd.repository.testbench.sfs;
 
 import java.io.*;
 import java.util.*;
-import java.nio.*;
 import org.netbeans.modules.cnd.repository.sfs.*;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class TestSingleFileStorage {
+public class TestSingleFileStorage extends BaseTest {
     
     private File storageFile;
     private SingleFileStorage sfs;
@@ -44,9 +44,8 @@ public class TestSingleFileStorage {
 	args = processOptions(args);
 	
 	storageFile = new File("/tmp/sfs.dat"); // NOI18N
-	System.out.printf("Testing SingleFileStorage. Storage file: %s RWAccess: %d\n", storageFile.getAbsolutePath(), Stats.fileRWAccess); // NOI18N
+	System.out.printf("Testing SingleFileStorage. Storage file: %s RWAccess: %d\n", storageFile.getAbsolutePath(), -1 /*Stats.fileRWAccess*/); // NOI18N
 	sfs = new SingleFileStorage(storageFile);
-	sfs.collectStatistics(Stats.fileStatisticsLevel);
 	
 	simpleTest1();
 	simpleTest2();
@@ -96,7 +95,9 @@ public class TestSingleFileStorage {
     private void simpleTest1() throws IOException {
 	TestObject orig = new TestObject("TestObject1", "1", "22", "333"); // NOI18N
 	testWriteAndReadImmediately(orig);
+	testRead(orig);
 	testWriteAndReadImmediately(orig);
+	testRead(orig);
     }
     
     private void simpleTest2() throws IOException {
@@ -208,13 +209,18 @@ public class TestSingleFileStorage {
     }
     
     private void testGet(TestObject orig) throws IOException {
-	TestObject read = get(orig.key);
+	TestObject read = get(orig.getKey());
 	assertEqual(orig, read);
     }
     
     private void testWriteAndReadImmediately(TestObject orig) throws IOException {
 	put(orig);
-	TestObject read = get(orig.key);
+	TestObject read = get(orig.getKey());
+	assertEqual(orig, read);
+    }
+    
+    private void testRead(TestObject orig) throws IOException {
+	TestObject read = get(orig.getKey());
 	assertEqual(orig, read);
     }
     
@@ -232,10 +238,9 @@ public class TestSingleFileStorage {
 	sfs.put(obj.key, obj);
     }
     
-    private TestObject get(String key) throws IOException {
+    private TestObject get(Key key) throws IOException {
 	if( verbose ) System.out.printf("Getting %s\n", key); // NOI18N
-	TestObject result = new TestObject("");
-	sfs.get(key, result);
+	TestObject result = (TestObject)sfs.get(key);
 	if( verbose ) System.out.printf("    got %s\n", result.toString()); // NOI18N
 	return result;
     }

@@ -17,23 +17,25 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-#if !defined CUSTOMER_H
-#define CUSTOMER_H
+#ifndef _customer_H
+#define	_customer_H
+
+#include <iostream>
+
+using namespace std;
 
 class Customer {
+    public:
+        Customer(const string initName, int initDiscount);
+        string GetName() const;
+        int GetDiscount() const;
+        
     private:
-        char* customerName;
-        int discountCode;
-        public:
-            Customer();
-            Customer(char* name);
-            Customer(char*name, int discount);
-            Customer(const Customer& obj); //copy constructor
-            Customer& operator=(Customer& obj); //overload assignment ("=") operator
-            virtual ~Customer();
-            char* GetCustomerName();
-            int GetDiscountCode();
-            void DisplayCustomer();
-}
-;//note that ";" is required at end of class definition header file
-#endif //CUSTOMER.H
+        string name;
+        int discount;
+
+        friend ostream& operator<< (ostream&, const Customer&);
+};
+
+#endif	/* _customer_H */
+

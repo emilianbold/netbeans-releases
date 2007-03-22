@@ -30,10 +30,11 @@ public interface TraceFlags {
     
     public static final boolean TRACE_PARSER_QUEUE_DETAILS = Boolean.getBoolean("cnd.parser.queue.trace.details");
     public static final boolean TRACE_PARSER_QUEUE = TRACE_PARSER_QUEUE_DETAILS || Boolean.getBoolean("cnd.parser.queue.trace");
-    
+    public static final boolean TRACE_CLOSE_PROJECT = DebugUtils.getBoolean("cnd.trace.close.project", false);
     public static final boolean TIMING_PARSE_PER_FILE_DEEP = Boolean.getBoolean("cnd.modelimpl.timing.per.file.deep");
     public static final boolean TIMING_PARSE_PER_FILE_FLAT = Boolean.getBoolean("cnd.modelimpl.timing.per.file.flat");
     public static final boolean TIMING = Boolean.getBoolean("cnd.modelimpl.timing");
+    public static final int     SUSPEND_PARSE_TIME = Integer.getInteger("cnd.modelimpl.sleep", 0);
     public static final boolean REPORT_PARSING_ERRORS = Boolean.getBoolean("parser.report.errors");
     public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast");
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false);
@@ -52,7 +53,7 @@ public interface TraceFlags {
      */ 
     public static final boolean CACHE_AST = DebugUtils.getBoolean("cnd.cache.ast", false);
     public static final boolean TRACE_CACHE = DebugUtils.getBoolean("cnd.trace.cache", false);
-    public static final boolean USE_AST_CACHE = DebugUtils.getBoolean("cnd.use.ast.cache", true);
+    public static final boolean USE_AST_CACHE = DebugUtils.getBoolean("cnd.use.ast.cache", false);
     public static final boolean CACHE_SKIP_APT_VISIT = DebugUtils.getBoolean("cnd.cache.skip.apt.visit", false);
 
     public static final boolean CACHE_SKIP_SAVE = DebugUtils.getBoolean("cnd.cache.skip.save", true);
@@ -68,7 +69,8 @@ public interface TraceFlags {
     
     public static final boolean DEBUG = Boolean.getBoolean("org.netbeans.modules.cnd.modelimpl.trace")  || Boolean.getBoolean("cnd.modelimpl.trace");
     
-    public static final boolean USE_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.use.repository", false);
+    public static final boolean USE_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.use.repository", true);
+    public static final boolean USE_UID_TO_CONTAINER = USE_REPOSITORY && DebugUtils.getBoolean("cnd.modelimpl.use.uid.container", false);
 
     public static final boolean CLEAN_MACROS_AFTER_PARSE = DebugUtils.getBoolean("cnd.clean.macros.after.parse", true);
     
@@ -77,4 +79,6 @@ public interface TraceFlags {
 
     public static final boolean CHECK_DECLARATIONS = DebugUtils.getBoolean("cnd.modelimpl.check.decl", false);
 
+    public static final boolean TRACE_REGISTRATION = DebugUtils.getBoolean("cnd.modelimpl.trace.registration", false);
+    public static final boolean TRACE_DISPOSE = DebugUtils.getBoolean("cnd.modelimpl.trace.dispose", false);
 }

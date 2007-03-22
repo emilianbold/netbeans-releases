@@ -70,8 +70,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private FileBuffer fileBuffer;
     
-    // only one of project/projectUID must be used 
-    private final ProjectBase projectOLD;
+    // only one of project/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)  
+    private final ProjectBase projectRef;
     private final CsmUID<CsmProject> projectUID;
 
     /** 
@@ -108,11 +108,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocState preprocState) {
         setBuffer(fileBuffer);
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
-            this.projectOLD = null;
+            this.projectRef = null;
         } else {
-            this.projectOLD = project;
+            this.projectRef = project;
             this.projectUID = null;
         }
         this.preprocState = preprocState;
@@ -126,12 +126,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private ProjectBase _getProject() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             ProjectBase prj = (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
-            assert (prj != null || projectUID == null);
+            assert (prj != null || projectUID == null) : "empty project for UID " + projectUID;
             return prj;
         } else {
-            return this.projectOLD;
+            return this.projectRef;
         }     
     }
     
@@ -220,7 +220,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         synchronized (changeStateLock) {
             state = STATE_MODIFIED;
             if (invalidateCache) {
-                CacheManager.getInstance().invalidate(this);
+                if (TraceFlags.USE_AST_CACHE) {
+                    CacheManager.getInstance().invalidate(this);
+                } else {
+                    APTDriver.getInstance().invalidateAPT(this.getBuffer());
+                }
             }
         }
     }
@@ -311,8 +315,19 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             List<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
             for (int i = 0; i < arr.size(); i++) {
                 //Object o = iter.next();
+                if (TraceFlags.TRACE_DISPOSE) {
+                    System.err.println("remove from file: " + arr.get(i));
+                }
                 if( arr.get(i)  instanceof Disposable ) {
-                    ((Disposable) arr.get(i)).dispose();
+                    Disposable decl = ((Disposable) arr.get(i));
+                    if (TraceFlags.TRACE_DISPOSE) {
+                        System.err.println("disposing from file with UID " + arr.get(i).getUID());
+                    }
+                    decl.dispose();
+                } else {
+                    if (TraceFlags.TRACE_DISPOSE) {
+                        System.err.println("non disposable decl with UID " + arr.get(i).getUID());
+                    }
                 }
             }            
             RepositoryUtils.remove(uids);
@@ -329,7 +344,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             for (int i = 0; i < arr.length; i++) {
                 //Object o = iter.next();
                 if( arr[i]  instanceof Disposable ) {
-                    ((Disposable) arr[i]).dispose();
+                    Disposable decl = ((Disposable) arr[i]);
+                    if (TraceFlags.TRACE_DISPOSE) {
+                        System.err.println("disposing from file " + decl);
+                    }
+                    decl.dispose();
+                } else {
+                    if (TraceFlags.TRACE_DISPOSE) {
+                        System.err.println("non disposable declaration " + arr[i]);
+                    }
                 }
             }
         }
@@ -448,11 +471,19 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         AST ast = null;
         APTFile aptLight = null;
         APTFile aptFull = null;
-        FileCache cacheWithAST = CacheManager.getInstance().findCacheWithAST(this, preprocState);
-        assert (cacheWithAST != null);
-        ast  = cacheWithAST.getAST(preprocState);
-        aptLight = cacheWithAST.getAPTLight();
-        aptFull = cacheWithAST.getAPT();        
+        if (TraceFlags.USE_AST_CACHE) {
+            FileCache cacheWithAST = CacheManager.getInstance().findCacheWithAST(this, preprocState);
+            assert (cacheWithAST != null);
+            ast  = cacheWithAST.getAST(preprocState);
+            aptLight = cacheWithAST.getAPTLight();
+            aptFull = cacheWithAST.getAPT();        
+        } else {
+            try {
+                aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
         if (ast != null) {
             if (TraceFlags.TRACE_CACHE) {
                 System.err.println("CACHE: parsing using AST and APTLight for " + getAbsolutePath());
@@ -497,11 +528,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             ast = parser.getAST();            
             // save all in cache
             if (state != STATE_MODIFIED) {
-                if (getBuffer().isFileBased() && !TraceFlags.CACHE_SKIP_SAVE) {
-                    CacheManager.getInstance().saveCache(this, new FileCacheImpl(aptLight, aptFull, ast));
-                } else {
-                    if (TraceFlags.TRACE_CACHE) {
-                        System.err.println("CACHE: not save cache for document based file " + getAbsolutePath());
+                if (TraceFlags.USE_AST_CACHE) {
+                    if (getBuffer().isFileBased() && !TraceFlags.CACHE_SKIP_SAVE) {
+                        CacheManager.getInstance().saveCache(this, new FileCacheImpl(aptLight, aptFull, ast));
+                    } else {
+                        if (TraceFlags.TRACE_CACHE) {
+                            System.err.println("CACHE: not save cache for document based file " + getAbsolutePath());
+                        }
                     }
                 }
             } else {
@@ -612,20 +645,31 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public List/*<CsmInclude>*/ getIncludes() {
         if (TraceFlags.USE_REPOSITORY) {
-            List out = UIDCsmConverter.UIDsToIncludes(includes);
+            List out;
+            synchronized (includes) {
+                out = UIDCsmConverter.UIDsToIncludes(includes);
+            }
             return out;
         } else {
-            return new ArrayList(includesOLD);
+            synchronized (includesOLD) {
+                return new ArrayList(includesOLD);
+            }
         }
     }
 
     public List/*<CsmDeclaration>*/ getDeclarations() {
 	fixFakeRegistrations();
         if (TraceFlags.USE_REPOSITORY) {
-            List<CsmOffsetableDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(declarations.values());
+            List<CsmOffsetableDeclaration> decls;
+            synchronized (declarations) {
+                Collection<CsmUID<CsmOffsetableDeclaration>> uids = declarations.values();
+                decls = UIDCsmConverter.UIDsToDeclarations(uids);
+            }
             return decls;
         } else {
-            return new ArrayList(declarationsOLD.values());
+            synchronized (declarationsOLD) {
+                return new ArrayList(declarationsOLD.values());
+            }
         }
     }
     
@@ -641,10 +685,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public List/*<CsmMacro>*/ getMacros() {
         if (TraceFlags.USE_REPOSITORY) {
-            List out = UIDCsmConverter.UIDsToMacros(macros);
+            List out;
+            synchronized (macros) {
+                out = UIDCsmConverter.UIDsToMacros(macros);
+            }
             return out;
         } else {
-            return new ArrayList(macrosOLD);
+            synchronized (macrosOLD) {
+                return new ArrayList(macrosOLD);
+            }
         }
     }
     
@@ -702,7 +751,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public static String getSortKey(CsmDeclaration declaration) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if( declaration instanceof CsmOffsetable ) {
             int start = ((CsmOffsetable) declaration).getStartOffset();
             String s = Integer.toString(start);
@@ -847,29 +896,55 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void write(DataOutput output) throws IOException {
         PersistentUtils.writeBuffer(this.fileBuffer, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.writeUID(this.projectUID, output);
         factory.writeStringToUIDMap(this.declarations, output, true);
         factory.writeUIDCollection(this.includes, output, true);
         factory.writeUIDCollection(this.macros, output, true);
         factory.writeUIDCollection(this.fakeRegistrationUIDs, output, false);
+        output.writeInt(state);
+
+        // prepared uid to write
+        CsmUID<CsmProject> writeProjectUID;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            writeProjectUID = this.projectUID;
+        } else {
+            // save reference
+            assert this.projectRef != null;
+            writeProjectUID = UIDCsmConverter.projectToUID(this.projectRef);
+        }        
+        // not null UID
+        assert writeProjectUID != null;
+        UIDObjectFactory.getDefaultFactory().writeUID(writeProjectUID, output);
     }
     
     public FileImpl(DataInput input) throws IOException {
         this.fileBuffer = PersistentUtils.readBuffer(input);
         
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();        
-        this.projectUID = factory.readUID(input);
-        assert this.projectUID != null;
         factory.readStringToUIDMap(this.declarations, input, null);
         factory.readUIDCollection(this.includes, input);
         factory.readUIDCollection(this.macros, input);
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
+        state = input.readInt();
+
+        CsmUID<CsmProject> readProjectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        // not null UID
+        assert readProjectUID != null;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            this.projectUID = readProjectUID;
+            
+            this.projectRef = null;
+        } else {
+            // restore reference
+            this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(readProjectUID);
+            assert this.projectRef != null || readProjectUID == null : "no object for UID " + readProjectUID;
+            
+            this.projectUID = null;
+        }
         
         assert fileBuffer != null;
         assert fileBuffer.isFileBased();
         fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N        
         
         assert TraceFlags.USE_REPOSITORY;
-        this.projectOLD = null;
     }
 }

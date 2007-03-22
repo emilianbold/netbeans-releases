@@ -50,8 +50,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private final List<CsmUID<CsmParameter>>  parameters;
     private String signature;
     
-    // only one of scopeOLD/scopeAccessor must be used (based on USE_REPOSITORY)
-    private final CsmScope scopeOLD;
+    // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY)
+    private final CsmScope scopeRef;
     private final CsmUID<CsmScope> scopeUID;
 
     private final String[] rawName;
@@ -63,16 +63,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this(ast, file, scope, true);
     }
     
+    private static final boolean CHECK_SCOPE = false;
     protected FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
         super(ast, file);
-
+        assert !CHECK_SCOPE || (scope != null);
         // set scope, do it in constructor to have final fields
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (this.scopeUID != null || scope == null);
-            this.scopeOLD = null;
+            this.scopeRef = null;
         } else {
-            this.scopeOLD = scope;
+            this.scopeRef = scope;
             this.scopeUID = null;
         }
         
@@ -120,7 +121,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 //		    if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
 		    AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
 		    if( operator != null ) {
-			StringBuffer sb = new StringBuffer(operator.getText());
+			StringBuilder sb = new StringBuilder(operator.getText());
 			sb.append(' ');
 			AST next = operator.getNextSibling();
 			if( next != null ) {
@@ -332,7 +333,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         // TODO: this fake implementation for Deimos only!
         // we should resolve parameter types and provide
         // kind of canonical representation here
-        StringBuffer sb = new StringBuffer(getName());
+        StringBuilder sb = new StringBuilder(getName());
         sb.append('(');
         for( Iterator iter = getParameters().iterator(); iter.hasNext(); ) {
             CsmParameter param = (CsmParameter) iter.next();
@@ -358,6 +359,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         if( scope instanceof MutableDeclarationsContainer ) {
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);
         }
+        this.unregisterInProject();
         _disposeParameters();
     }
     
@@ -388,12 +390,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
 
     private CsmScope _getScope() {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmScope out = UIDCsmConverter.UIDToScope(this.scopeUID);
-            assert (out != null || this.scopeUID == null);
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+            CsmScope out = UIDCsmConverter.UIDtoScope(this.scopeUID);
+            assert (out != null || this.scopeUID == null) : "null object for UID " + scopeUID;
             return out;
         } else {
-            return scopeOLD;
+            return scopeRef;
         }
     }
 
@@ -430,9 +432,21 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.parameters, output, false);
-        factory.writeUID(this.scopeUID, output);
         PersistentUtils.writeStrings(this.rawName, output);
         output.writeBoolean(this._const);
+        
+        // prepared uid to write
+        CsmUID<CsmScope> writeScopeUID;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            writeScopeUID = this.scopeUID;
+        } else {
+            // save reference
+            assert !CHECK_SCOPE || this.scopeRef != null;
+            writeScopeUID = UIDCsmConverter.scopeToUID(this.scopeRef);
+        }        
+        // not null UID
+        assert !CHECK_SCOPE || writeScopeUID != null;
+        UIDObjectFactory.getDefaultFactory().writeUID(writeScopeUID, output);    
         
         PersistentUtils.writeUTF(this.signature, output);
     }
@@ -444,13 +458,26 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.parameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
-        this.scopeUID =factory.readUID(input);
         this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
         this._const = input.readBoolean();
         
+        CsmUID<CsmScope> readScopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        // not null UID
+        assert !CHECK_SCOPE || readScopeUID != null;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            this.scopeUID = readScopeUID;
+            
+            this.scopeRef = null;
+        } else {
+            // restore reference
+            this.scopeRef = UIDCsmConverter.UIDtoScope(readScopeUID);
+            assert this.scopeRef != null || readScopeUID == null : "no object for UID " + readScopeUID;
+            
+            this.scopeUID = null;
+        } 
+        
         assert TraceFlags.USE_REPOSITORY;
         parametersOLD = null;
-        this.scopeOLD = null;
         
         this.signature = PersistentUtils.readUTF(input);
         if (this.signature != null) {

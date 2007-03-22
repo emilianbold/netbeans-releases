@@ -35,10 +35,7 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.ArrayList;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.WeakEventListenerList;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.ErrorManager;
@@ -618,7 +615,7 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
             CsmClass cls = ctr.getContainingClass();
             URL url = getDocFileObjects(cls.getQualifiedName(), null);
             if (url != null) {
-                    StringBuffer sb = new StringBuffer("#"); // NOI18N
+                    StringBuilder sb = new StringBuilder("#"); // NOI18N
                     sb.append((obj instanceof CsmMethod) ? ((CsmMethod)ctr).getName() : cls.getName());
                     sb.append('('); //NOI18N
                     CsmParameter[] parms = (CsmParameter[]) ctr.getParameters().toArray(new CsmParameter[0]);

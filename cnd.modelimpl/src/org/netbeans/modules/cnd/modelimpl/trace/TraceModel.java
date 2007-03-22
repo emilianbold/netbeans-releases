@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -135,7 +134,9 @@ public class TraceModel {
 		new TraceModel().test(args);
 		if (TraceFlags.USE_AST_CACHE) {
 			CacheManager.getInstance().close();
-		}
+		} else {
+                    APTDriver.getInstance().close();
+                }
 		//System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
 	}
 	
@@ -702,7 +703,7 @@ public class TraceModel {
 		if( s.length() >= len ) {
 			return s;
 		} else {
-			StringBuffer sb = new StringBuffer(s);
+			StringBuilder sb = new StringBuilder(s);
 			sb.setLength(len);
 			for (int i = s.length(); i < len; i++) {
 				sb.setCharAt(i, ' ');

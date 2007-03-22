@@ -41,7 +41,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -350,7 +350,7 @@ public class CsmUtilities {
     
     protected static String findHeaderFileName(String pathWoExt) {
         for (int i = 0; i < headerExts.length; i++) {
-            String path = new StringBuffer(pathWoExt).append(EXT_SEP).append(headerExts[i]).toString();
+            String path = new StringBuilder(pathWoExt).append(EXT_SEP).append(headerExts[i]).toString();
             File test = new File(path);
             if (test.exists()) {
                 return path;
@@ -361,7 +361,7 @@ public class CsmUtilities {
     
     protected static String findSourceFileName(String pathWoExt) {
         for (int i = 0; i < sourceExts.length; i++) {
-            String path = new StringBuffer(pathWoExt).append(EXT_SEP).append(sourceExts[i]).toString();
+            String path = new StringBuilder(pathWoExt).append(EXT_SEP).append(sourceExts[i]).toString();
             File test = new File(path);
             if (test.exists()) {
                 return path;
@@ -560,7 +560,7 @@ public class CsmUtilities {
     }    
     
 
-    public static List merge(List orig, List newList) {
+    public static Collection merge(Collection orig, Collection newList) {
         orig = orig != null ? orig : new ArrayList();
         if (newList != null && newList.size() > 0) {
             orig.addAll(newList);
@@ -568,8 +568,15 @@ public class CsmUtilities {
         return orig;
     }
     
+    public static boolean removeAll(Collection dest, Collection removeItems) {
+        if (dest != null && removeItems != null) {
+            return dest.removeAll(removeItems);
+        }
+        return false;
+    }
+    
     public static String getCsmName(CsmObject obj) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         if (CsmKindUtilities.isNamedElement(obj)) {
             CsmNamedElement named = (CsmNamedElement)obj;
             buf.append(" [name] ").append(named.getName()); // NOI18N

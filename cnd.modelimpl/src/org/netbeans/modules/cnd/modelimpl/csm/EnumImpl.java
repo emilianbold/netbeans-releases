@@ -64,7 +64,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
 
     public List getEnumerators() {
         if (TraceFlags.USE_REPOSITORY) {
-            List<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmEnumerator>>(enumerators));
+            List<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
             return out;            
         } else {
             return enumeratorsOLD;

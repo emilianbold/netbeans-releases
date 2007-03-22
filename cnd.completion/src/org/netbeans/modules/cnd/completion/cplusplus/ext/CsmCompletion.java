@@ -735,7 +735,7 @@ abstract public class CsmCompletion extends Completion {
         }
 
         public String format(boolean useFullName) {
-            StringBuffer sb = new StringBuffer(useFullName ? getClassifier().getQualifiedName()
+            StringBuilder sb = new StringBuilder(useFullName ? getClassifier().getQualifiedName()
                                                : getClassifier().getName());
             int ad = arrayDepth;
             while (ad > 0) {
@@ -773,7 +773,7 @@ abstract public class CsmCompletion extends Completion {
         }
 
         public String toString() {
-            StringBuffer sb = new StringBuffer(clazz.toString());
+            StringBuilder sb = new StringBuilder(clazz.toString());
             int ad = arrayDepth;
             while (ad > 0) {
                 sb.append("[]"); // NOI18N
@@ -1037,7 +1037,7 @@ abstract public class CsmCompletion extends Completion {
 //        }
 //
 //        String toString(String returnTypeName, String methodName) {
-//            StringBuffer sb = new StringBuffer(Modifier.toString(modifiers));
+//            StringBuilder sb = new StringBuilder(Modifier.toString(modifiers));
 //            sb.append(' '); //NOI18N
 //            sb.append(returnTypeName);
 //            sb.append(methodName);

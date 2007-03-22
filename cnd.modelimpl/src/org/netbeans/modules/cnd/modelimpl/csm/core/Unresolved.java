@@ -22,6 +22,8 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import java.util.Collections;
@@ -39,6 +41,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Container for all unresolved stuff in the project
+ * 
  * @author Vladimir Kvasihn
  */
 public class Unresolved {
@@ -102,16 +105,16 @@ public class Unresolved {
     }
     
     public static class UnresolvedFile implements CsmFile, Persistent, SelfPersistent  {
-        // only one of project/projectUID must be used 
-        private final ProjectBase project;
+        // only one of projectRef/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+        private final ProjectBase projectRef;
         private final CsmUID<CsmProject> projectUID;
     
         private UnresolvedFile(ProjectBase project) {
-            if (TraceFlags.USE_REPOSITORY) {
+            if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
                 this.projectUID = UIDCsmConverter.projectToUID(project);
-                this.project = null;
+                this.projectRef = null;
             } else {
-                this.project = project;
+                this.projectRef = project;
                 this.projectUID = null;
             }            
         }
@@ -125,7 +128,7 @@ public class Unresolved {
             return Collections.EMPTY_LIST;
         }
         public CsmProject getProject() {
-            return _getProject(projectUID, project);
+            return _getProject(projectUID, projectRef);
         }
         public String getName() {
             return "$unresolved file$"; // NOI18N
@@ -163,35 +166,57 @@ public class Unresolved {
         // impl of SelfPersistent
 
         public void write(DataOutput output) throws IOException {
-            UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
+            // prepared uid to write
+            CsmUID<CsmProject> writeUID;
+            if (TraceFlags.USE_UID_TO_CONTAINER) {
+                writeUID = this.projectUID;
+            } else {
+                // save reference
+                assert this.projectRef != null;
+                writeUID = UIDCsmConverter.projectToUID(this.projectRef);
+            }        
+            // not null UID
+            assert writeUID != null;
+            UIDObjectFactory.getDefaultFactory().writeUID(writeUID, output);
         }  
 
         public UnresolvedFile(DataInput input) throws IOException {
-            this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-            assert this.projectUID != null;
-            
+            // read from input
+            CsmUID<CsmProject> readUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+            // not null UID
+            assert readUID != null;
+            if (TraceFlags.USE_UID_TO_CONTAINER) {
+                this.projectUID = readUID;
+
+                this.projectRef = null;
+            } else {
+                // restore reference
+                this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(readUID);
+                assert this.projectRef != null || readUID == null : "no object for UID " + readUID;
+
+                this.projectUID = null;
+            }
             assert TraceFlags.USE_REPOSITORY;
-            this.project = null;
         }          
     };
     
-    // only one of project/projectUID must be used 
-    private final ProjectBase project;
+    // only one of projectRef/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    private final ProjectBase projectRef;
     private final CsmUID<CsmProject> projectUID;
     
     // doesn't need Repository Keys
-    private CsmFile unresolvedFile;
+    private final CsmFile unresolvedFile;
     // doesn't need Repository Keys
-    private NamespaceImpl unresolvedNamespace;
+    private final NamespaceImpl unresolvedNamespace;
     // doesn't need Repository Keys
-    private Map dummiesForUnresolved = new HashMap();
+    private Map<String, Reference<CsmClass>> dummiesForUnresolved = new HashMap<String, Reference<CsmClass>>();
     
     public Unresolved(ProjectBase project) {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
-            this.project = null;
+            this.projectRef = null;
         } else {
-            this.project = project;
+            this.projectRef = project;
             this.projectUID = null;
         }
         unresolvedFile = new UnresolvedFile(project);
@@ -208,12 +233,12 @@ public class Unresolved {
     }
     
     private ProjectBase _getProject() {       
-        return _getProject(this.projectUID, this.project);
+        return _getProject(this.projectUID, this.projectRef);
     }
     
     private static ProjectBase _getProject(CsmUID<CsmProject> projectUID, ProjectBase project) {
         ProjectBase prj = project;
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             assert projectUID != null;
             prj = (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
         }        
@@ -222,16 +247,17 @@ public class Unresolved {
     
     public CsmClass getDummyForUnresolved(String[] nameTokens) {
         String name = getName(nameTokens);
-        CsmClass cls = (CsmClass) dummiesForUnresolved.get(name);
+        Reference<CsmClass> ref = dummiesForUnresolved.get(name);
+        CsmClass cls = ref == null ? null : ref.get();
         if( cls == null ) {
             cls = new UnresolvedClass(name, unresolvedNamespace, unresolvedFile);
-            dummiesForUnresolved.put(name, cls);
+            dummiesForUnresolved.put(name, new SoftReference(cls));
         }
         return cls;
     }
     
     private String getName(String[] nameTokens) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for( int i = 0; i < nameTokens.length; i++ ) {
             if( i > 0 ) {
                 sb.append("::"); // NOI18N

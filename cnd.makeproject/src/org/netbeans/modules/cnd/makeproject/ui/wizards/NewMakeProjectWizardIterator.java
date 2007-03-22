@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -34,7 +35,9 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -43,8 +46,12 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Wizard to create a new Make project.
@@ -67,74 +74,73 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     
     public NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD) {
         this.wizardtype = wizardtype;
-	this.name = name;
-	this.wizardTitle = wizardTitle;
-	this.wizardACSD = wizardACSD;
+        this.name = name;
+        this.wizardTitle = wizardTitle;
+        this.wizardACSD = wizardACSD;
     }
-
+    
     public static NewMakeProjectWizardIterator newApplication() {
-	String name = getString("NativeNewApplicationName"); // NOI18N
-	String wizardTitle = getString("Templates/Project/Native/newApplication.xml"); // NOI18N
-	String wizardACSD = getString("NativeNewLibraryACSD"); // NOI18N
+        String name = getString("NativeNewApplicationName"); // NOI18N
+        String wizardTitle = getString("Templates/Project/Native/newApplication.xml"); // NOI18N
+        String wizardACSD = getString("NativeNewLibraryACSD"); // NOI18N
         return new NewMakeProjectWizardIterator(TYPE_APPLICATION, name, wizardTitle, wizardACSD);
     }
-        
+    
     public static NewMakeProjectWizardIterator newDynamicLibrary() {
-	String name = getString("NativeNewDynamicLibraryName"); // NOI18N
-	String wizardTitle = getString("Templates/Project/Native/newDynamicLibrary.xml"); // NOI18N
-	String wizardACSD = getString("NativeNewDynamicLibraryACSD"); // NOI18N
+        String name = getString("NativeNewDynamicLibraryName"); // NOI18N
+        String wizardTitle = getString("Templates/Project/Native/newDynamicLibrary.xml"); // NOI18N
+        String wizardACSD = getString("NativeNewDynamicLibraryACSD"); // NOI18N
         return new NewMakeProjectWizardIterator(TYPE_DYNAMIC_LIB, name, wizardTitle, wizardACSD);
     }
-
+    
     public static NewMakeProjectWizardIterator newStaticLibrary() {
-	String name = getString("NativeNewStaticLibraryName");
-	String wizardTitle = getString("Templates/Project/Native/newStaticLibrary.xml");
-	String wizardACSD = getString("NativeNewStaticLibraryACSD");
+        String name = getString("NativeNewStaticLibraryName");
+        String wizardTitle = getString("Templates/Project/Native/newStaticLibrary.xml");
+        String wizardACSD = getString("NativeNewStaticLibraryACSD");
         return new NewMakeProjectWizardIterator(TYPE_STATIC_LIB, name, wizardTitle, wizardACSD);
     }
     
     public static NewMakeProjectWizardIterator makefile() {
-	String name = getString("NativeMakefileName"); // NOI18N
-	String wizardTitle = getString("Templates/Project/Native/makefile.xml"); // NOI18N
-	String wizardACSD = getString("NativeMakefileNameACSD"); // NOI18N
+        String name = getString("NativeMakefileName"); // NOI18N
+        String wizardTitle = getString("Templates/Project/Native/makefile.xml"); // NOI18N
+        String wizardACSD = getString("NativeMakefileNameACSD"); // NOI18N
         return new NewMakeProjectWizardIterator(TYPE_MAKEFILE, name, wizardTitle, wizardACSD);
     }
-
-    private WizardDescriptor.Panel[] createPanels (String name) {
-	if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) {
-	    return new WizardDescriptor.Panel[] {
-		    new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true)
-		};
-	}
-	else if (wizardtype == TYPE_MAKEFILE) {
+    
+    private WizardDescriptor.Panel[] createPanels(String name) {
+        if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) {
+            return new WizardDescriptor.Panel[] {
+                new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true)
+            };
+        } else if (wizardtype == TYPE_MAKEFILE) {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
-		    new BuildActionsDescriptorPanel(),
-		    new SourceFoldersDescriptorPanel(),
-		    new ParserConfigurationDescriptorPanel(),
-		    new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false),
-		};
+                new MakefileOrConfigureDescriptorPanel(),
+                new BuildActionsDescriptorPanel(),
+                new SourceFoldersDescriptorPanel(),
+                new ParserConfigurationDescriptorPanel(),
+                new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false),
+            };
             return panels;
-	}
-	else {
-	    return null; // FIXUP
-	}
+        } else {
+            return null; // FIXUP
+        }
     }
     
     private String[] createSteps(WizardDescriptor.Panel[] panels) {
-	String[] steps = new String[panels.length];
-	for (int i = 0; i < panels.length; i++) {
+        String[] steps = new String[panels.length];
+        for (int i = 0; i < panels.length; i++) {
             if (panels[i] instanceof Name) {
                 steps[i] = ((Name)panels[i]).getName();
             } else {
                 steps[i] = panels[i].getComponent().getName();
             }
         }
-	return steps;
+        return steps;
     }
     
     
-    public Set/*<FileObject>*/ instantiate () throws IOException {
-        Set resultSet = new HashSet ();
+    public Set/*<FileObject>*/ instantiate() throws IOException {
+        Set resultSet = new HashSet();
         File dirF = (File)wiz.getProperty("projdir"); // NOI18N
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
@@ -142,13 +148,13 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         String name = (String)wiz.getProperty("name"); // NOI18N
         String makefileName = (String)wiz.getProperty("makefilename"); // NOI18N
         if (wizardtype == TYPE_MAKEFILE) { // thp
-	    MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
+            MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
             String workingDir = (String)wiz.getProperty("buildCommandWorkingDirTextField"); // NOI18N
             String workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
             workingDirRel = FilePathAdaptor.normalize(workingDirRel);
-	    extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
-	    extConf.getMakefileConfiguration().getBuildCommand().setValue((String)wiz.getProperty("buildCommandTextField")); // NOI18N
-	    extConf.getMakefileConfiguration().getCleanCommand().setValue((String)wiz.getProperty("cleanCommandTextField")); // NOI18N
+            extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
+            extConf.getMakefileConfiguration().getBuildCommand().setValue((String)wiz.getProperty("buildCommandTextField")); // NOI18N
+            extConf.getMakefileConfiguration().getCleanCommand().setValue((String)wiz.getProperty("cleanCommandTextField")); // NOI18N
             // Build result
             String buildResult = (String)wiz.getProperty("outputTextField"); // NOI18N
             if (buildResult != null && buildResult.length() > 0) {
@@ -183,21 +189,56 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macrosString);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macrosString);
             }
-            // Add other makefile to important files
-            Iterator importantItemsIterator = null;
-            String makefilePath = (String)wiz.getProperty("makefileNameTextField"); // NOI18N
+            // Add makefile and configure script to important files
+            ArrayList importantItems = new ArrayList();
+            String makefilePath = (String)wiz.getProperty("makefileName"); // NOI18N
+            File makefileFile = new File(makefilePath);
             if (makefilePath != null && makefilePath.length() > 0) {
-            Vector importantItems = null;
-                importantItems = new Vector();
                 makefilePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
                 makefilePath = FilePathAdaptor.normalize(makefilePath);
                 importantItems.add(makefilePath);
-                importantItemsIterator = importantItems.iterator();
             }
+            String configurePath = (String)wiz.getProperty("configureName"); // NOI18N
+            if (configurePath != null && configurePath.length() > 0) {
+                File configureFile = new File(configurePath);
+                configurePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(configurePath));
+                configurePath = FilePathAdaptor.normalize(configurePath);
+                importantItems.add(configurePath);
+                
+                try {
+                    FileObject configureFileObject = FileUtil.toFileObject(configureFile);
+                    DataObject dObj = DataObject.find(configureFileObject);
+                    Node node = dObj.getNodeDelegate();
 
+                    // Add arguments to configure script?
+                    String configureArguments = (String)wiz.getProperty("configureArguments"); // NOI18N
+                    if (configureArguments != null) {
+                        ShellExecSupport ses = (ShellExecSupport)node.getCookie(ShellExecSupport.class);
+                        ses.setArguments(Utilities.parseParameters(configureArguments));
+                    }
+
+                    // Possibly run the configure script
+                    String runConfigure = (String)wiz.getProperty("runConfigure"); // NOI18N
+                    if (runConfigure != null && runConfigure.equals("true")) { // NOI18N
+                        // If no makefile, create empty one so it shows up in Interesting Files
+                        if (!makefileFile.exists())
+                            makefileFile.createNewFile();
+                            
+                        ShellRunAction shellRunAction = new ShellRunAction();
+                        shellRunAction.performAction(node);
+                    }
+                }
+                catch (DataObjectNotFoundException e) {
+                    ;
+                }
+            }
+            Iterator importantItemsIterator = importantItems.iterator();
+            if (!importantItemsIterator.hasNext())
+                importantItemsIterator = null;
+            
             MakeProjectGenerator.createProject(dirF, name, makefileName, new MakeConfiguration[] {extConf}, (Iterator)wiz.getProperty("sourceFolders"), importantItemsIterator); // NOI18N
-	    FileObject dir = FileUtil.toFileObject(dirF);
-	    resultSet.add (dir);
+            FileObject dir = FileUtil.toFileObject(dirF);
+            resultSet.add(dir);
             IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
                 Project p = ProjectManager.getDefault().findProject(dir);
@@ -206,32 +247,31 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 }
                 extension.uninitialize(wiz);
             }
-	}
-        else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) { 
-	    int conftype = -1;
-	    if (wizardtype == TYPE_APPLICATION)
-		conftype = MakeConfiguration.TYPE_APPLICATION;
-	    else if (wizardtype == TYPE_DYNAMIC_LIB)
-		conftype = MakeConfiguration.TYPE_DYNAMIC_LIB;
-	    else if (wizardtype == TYPE_STATIC_LIB)
-		conftype = MakeConfiguration.TYPE_STATIC_LIB;
-	    MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype); // NOI18N
-	    debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
-	    debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
-	    debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
-	    MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype); // NOI18N
-	    release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
-	    release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
-	    release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
-	    MakeConfiguration[] confs = new MakeConfiguration[] {debug, release};
+        } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) {
+            int conftype = -1;
+            if (wizardtype == TYPE_APPLICATION)
+                conftype = MakeConfiguration.TYPE_APPLICATION;
+            else if (wizardtype == TYPE_DYNAMIC_LIB)
+                conftype = MakeConfiguration.TYPE_DYNAMIC_LIB;
+            else if (wizardtype == TYPE_STATIC_LIB)
+                conftype = MakeConfiguration.TYPE_STATIC_LIB;
+            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype); // NOI18N
+            debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
+            debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
+            debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
+            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype); // NOI18N
+            release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
+            release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
+            release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
+            MakeConfiguration[] confs = new MakeConfiguration[] {debug, release};
             MakeProjectGenerator.createProject(dirF, name, makefileName, confs, null, null);
-	    FileObject dir = FileUtil.toFileObject(dirF);
-	    resultSet.add (dir);
-	}
+            FileObject dir = FileUtil.toFileObject(dirF);
+            resultSet.add(dir);
+        }
         return resultSet;
     }
-
-        
+    
+    
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
@@ -271,8 +311,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     }
     
     public String name() {
-        return MessageFormat.format (NbBundle.getMessage(NewMakeProjectWizardIterator.class,"LAB_IteratorName"), // NOI18N
-            new Object[] {new Integer (index + 1), new Integer (panels.length) });                                
+        return MessageFormat.format(NbBundle.getMessage(NewMakeProjectWizardIterator.class,"LAB_IteratorName"), // NOI18N
+                new Object[] {new Integer(index + 1), new Integer(panels.length) });
     }
     
     public boolean hasNext() {
@@ -289,7 +329,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         if (!hasPrevious()) throw new NoSuchElementException();
         index--;
     }
-    public WizardDescriptor.Panel current () {
+    public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
@@ -298,15 +338,15 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     public final void removeChangeListener(ChangeListener l) {}
     
     interface Name {
-	public String getName();
+        public String getName();
     }
-
+    
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
     private static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(NewMakeProjectWizardIterator.class);
-	}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(NewMakeProjectWizardIterator.class);
+        }
+        return bundle.getString(s);
     }
 }

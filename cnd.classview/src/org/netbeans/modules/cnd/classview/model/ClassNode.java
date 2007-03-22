@@ -19,46 +19,39 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import java.util.*;
-import org.openide.nodes.*;
 
+import javax.swing.event.ChangeEvent;
 import  org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.classview.model.CVUtil.FillingDone;
-
+import org.openide.nodes.Children;
 
 /**
  * @author Vladimir Kvasihn
  */
 public class ClassNode extends ClassifierNode {
     
-    public ClassNode(CsmClass cls) {
-        super(cls, new FillingDone());
+    public ClassNode(CsmClass cls, Children.Array key) {
+        super(cls, key);
+        init(cls);
+    }
+    
+    private void init(CsmClass cls){
         String shortName = cls.getName() + (cls.isTemplate() ? "<>" : ""); // NOI18N
         String longName = cls.getQualifiedName() + (cls.isTemplate() ? "<>" : ""); // NOI18N
         setName(shortName);
         setDisplayName(shortName);
         setShortDescription(longName);
     }
-    
-    protected void objectChanged() {
-        final List nodes = new LinkedList();
-        for( Iterator/*<CsmClass>*/ iter = ((CsmClass) getObject()).getMembers().iterator(); iter.hasNext(); ) {
-            CsmMember member = (CsmMember) iter.next();
-            if( CsmKindUtilities.isClass(member) ) {
-                nodes.add(new ClassNode((CsmClass) member));
-            } else if( CsmKindUtilities.isEnum(member) ) {
-                nodes.add(new EnumNode((CsmEnum) member));
-            } else {
-                nodes.add(new MemberNode(member));
-            }
+
+    public void stateChanged(ChangeEvent e) {
+        Object o = e.getSource();
+        if (o instanceof CsmClass){
+            CsmClass cls = (CsmClass)o;
+            setObject(cls);
+            init(cls);
+            fireIconChange();
+            fireOpenedIconChange();
+        } else if (o != null) {
+            System.err.println("Expected CsmClass. Actually event contains "+o.toString());
         }
-        final Children children = getChildren();
-        children.MUTEX.writeAccess(new Runnable(){
-            public void run() {
-                children.remove(getChildren().getNodes());
-                children.add( (Node[]) nodes.toArray(new Node[nodes.size()]) );
-            }
-        });
     }
 }

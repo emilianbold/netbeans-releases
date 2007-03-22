@@ -37,10 +37,15 @@ public final class LibProjectImpl extends ProjectBase {
     public LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, new File(includePathName), includePathName);
         this.includePath = includePathName;
+        
         // RepositoryUtils.put(this);
     }
     
     protected void ensureFilesCreated() {
+    }
+    
+    protected boolean isStableStatus() {
+        return true;
     }
     
     protected void createIfNeed(NativeFileItem file, boolean isSourceFile) {
@@ -81,7 +86,7 @@ public final class LibProjectImpl extends ProjectBase {
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public FileImpl onFileIncluded(String file, APTPreprocState preprocState, int mode) {
+    public FileImpl onFileIncluded(String file, APTPreprocState preprocState, int mode) throws IOException {
         if( ONLY_LEX_SYS_INCLUDES ) {
             return super.onFileIncluded(file, preprocState, GATHERING_MACROS);
         } else {

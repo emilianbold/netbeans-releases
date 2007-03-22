@@ -66,9 +66,11 @@ final class ParsingProgress {
      */
     public void start() {
         synchronized (handle) {
-            started = true;
-            handle.setInitialDelay(INITIAL_DELAY);
-            handle.start();
+            if(!started) {
+                started = true;
+                handle.setInitialDelay(INITIAL_DELAY);
+                handle.start();
+            }
         }
     }
     

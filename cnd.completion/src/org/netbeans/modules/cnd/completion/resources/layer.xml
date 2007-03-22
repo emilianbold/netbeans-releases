@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-c++">
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance"/>
+                    <attr name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance/org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance" boolvalue="true"/>
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
                 </folder>                
                 <folder name="HyperlinkProviders">
@@ -63,6 +64,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-c">
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance"/>
+                    <attr name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance/org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance" boolvalue="true"/>
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
                 </folder>                
                 <folder name="HyperlinkProviders">

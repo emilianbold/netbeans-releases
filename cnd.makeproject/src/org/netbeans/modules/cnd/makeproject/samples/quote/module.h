@@ -20,46 +20,53 @@
 #if !defined MODULE_H
 #define MODULE_H
 
+#include <iostream>
+
+using namespace std;
+
 // Base class
 
 class Module {
-    private:
-        char* description;
-        char* vendor; //this anticipates future functionality
-        int type;
-        int category;
-        int units;
-        int supportMetric; //default value
-        
-        public:
-            Module();
-            virtual ~ Module(); //destructor is virtual since derived classes may have distinct destructor
-            
-            Module(const Module& obj); //copy constructor
-            
-            Module& operator=(Module& obj); //overload of assignment operator "="
-            
-            int SetDescription(char* d); //returns errorcode
-            char* GetDescription();
-            
-            int SetVendor(char* v); // returns errorcode
-            char* GetVendor();
-            
-            void SetType(int t);
-            int GetType();
-            
-            void SetCategory(int c);
-            int GetCategory();
-            
-            void SetUnits(int u);
-            int GetUnits();
-            
-            virtual void ComputeSupportMetric()=0; //metric is defined in derived classes
-            
-            int GetSupportMetric();
-            void SetSupportMetric(int m);
-            
-            void DisplayModule();
-}
-; //note that ";" is required at end of class definition header file
+public:
+    Module();
+    Module(const char* description, const char* vendor, int type, int category, int units);
+    virtual ~Module(); //destructor is virtual since derived classes may have distinct destructor
+
+    Module(const Module& obj); //copy constructor
+    Module& operator= (const Module& obj); //overload of assignment operator "="
+
+    void SetDescription(const char* description);
+    const char* GetDescription() const;
+
+    void SetVendor(const char* v);
+    const char* GetVendor() const;
+
+    void SetType(int type);
+    int GetTypeID() const;
+    virtual const char* GetType() const = 0;
+
+    void SetCategory(int category);
+    int GetCategoryID() const;
+    virtual const char* GetCategory() const = 0;
+
+    void SetUnits(int u);
+    int GetUnits() const;
+
+    void SetSupportMetric(int m);
+    int GetSupportMetric() const;
+
+protected:    
+    virtual void ComputeSupportMetric() = 0; //metric is defined in derived classes
+
+ private:
+    string  description;
+    string  vendor; //this anticipates future functionality
+    int     type;
+    int     category;
+    int     units;
+    int     supportMetric; //default value
+
+friend ostream& operator<< (ostream&, const Module&);
+};
+
 #endif // MODULE_H

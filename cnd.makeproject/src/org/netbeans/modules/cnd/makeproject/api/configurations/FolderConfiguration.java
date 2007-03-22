@@ -105,7 +105,6 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         return folder.getId();
     }
     
-    
     public void assign(ConfigurationAuxObject profileAuxObject) {
         if (!(profileAuxObject instanceof FolderConfiguration)) {
             // FIXUP: exception ????

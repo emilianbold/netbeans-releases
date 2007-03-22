@@ -65,5 +65,9 @@ public class HashMapRepository implements Repository {
     public void shutdown() {
         // do nothing
     }
+
+    public void closeUnit(String unitName) {
+        // do nothing
+    }
     
 }

@@ -458,7 +458,7 @@ public class NbCompletionJavaDoc extends CompletionJavaDoc {
         
         protected String getBoldName(String description, String name){
             if (description.indexOf(name) > -1){
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 sb.append(description.substring(0, description.indexOf(name)));
                 sb.append("<b>"+name+"</b>"); //NOI18N
                 sb.append(description.substring(description.indexOf(name)+name.length()));
@@ -532,7 +532,7 @@ public class NbCompletionJavaDoc extends CompletionJavaDoc {
 //                parent = parent.substring(0, hashIndex);
 //            }
 //            
-//            StringBuffer sb  = new StringBuffer(url);
+//            StringBuilder sb  = new StringBuilder(url);
 //            int htmlIndex = sb.indexOf(".html"); //NOI18N
 //            if (htmlIndex>0){
 //                sb.delete(htmlIndex, sb.length());

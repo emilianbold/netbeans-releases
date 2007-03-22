@@ -105,7 +105,7 @@ public class APTUtils {
     }
     
     public static String toString(TokenStream ts) {
-        StringBuffer retValue = new StringBuffer();
+        StringBuilder retValue = new StringBuilder();
         try {
             for (Token token = ts.nextToken();!isEOF(token);) {
                 assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
@@ -124,7 +124,7 @@ public class APTUtils {
     }
     
     public static String stringize(TokenStream ts) {
-        StringBuffer retValue = new StringBuffer();
+        StringBuilder retValue = new StringBuilder();
         try {
             for (APTToken token = (APTToken)ts.nextToken();!isEOF(token);) {
                 assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
@@ -144,7 +144,7 @@ public class APTUtils {
     }
     
     public static String macros2String(Map/*<getTokenTextKey(token), APTMacro>*/ macros) {
-        StringBuffer retValue = new StringBuffer();
+        StringBuilder retValue = new StringBuilder();
         retValue.append("MACROS (sorted):\n"); // NOI18N
         List macrosSorted = new ArrayList(macros.keySet());
         Collections.sort(macrosSorted);
@@ -159,7 +159,7 @@ public class APTUtils {
     }
     
     public static String includes2String(List/*<String>*/ includePaths) {
-        StringBuffer retValue = new StringBuffer();
+        StringBuilder retValue = new StringBuilder();
         for (Iterator it = includePaths.iterator(); it.hasNext();) {
             String path = (String) it.next();
             retValue.append(path);

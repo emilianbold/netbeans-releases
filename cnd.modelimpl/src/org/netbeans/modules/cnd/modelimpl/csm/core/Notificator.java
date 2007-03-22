@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.PersistentKey;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -119,9 +120,9 @@ public class Notificator {
         }
     }
     
-    public void registerChangedDeclaration(CsmOffsetableDeclaration decl) {
+    public void registerChangedDeclaration(CsmOffsetableDeclaration oldDecl, CsmOffsetableDeclaration newDecl) {
 	synchronized( this ) {
-            getEvent().addChangedDeclaration(decl);
+            getEvent().addChangedDeclaration(oldDecl,newDecl);
         }
     }
 
@@ -148,7 +149,7 @@ public class Notificator {
      * in CsmFile && CsmDeclaration, remove IdMaker and related
      */
     private interface IdMaker {
-	String id(Object o);
+	Object id(Object o);
     }
     
     public void flush() {
@@ -167,18 +168,18 @@ public class Notificator {
 	IdMaker idMaker;
         
 	idMaker = new IdMaker() {
-	    public String id(Object o) {
+	    public Object id(Object o) {
 		return ((CsmFile) o).getAbsolutePath();
 	    }
 	};
-	process(idMaker, ev.getNewFiles(), ev.getRemovedFiles(), ev.getChangedFiles());
+	processFiles(idMaker, ev.getNewFiles(), ev.getRemovedFiles(), ev.getChangedFiles());
         
 	idMaker = new IdMaker() {
-	    public String id(Object o) {
-		return ((CsmDeclaration) o).getUniqueName();
+	    public Object id(Object o) {
+                return PersistentKey.createKey((CsmIdentifiable) o);
 	    }
 	};
-	process(idMaker, ev.getNewDeclarations(), ev.getRemovedDeclarations(), ev.getChangedDeclarations());
+	processDeclarations(idMaker, ev.getNewDeclarations(), ev.getRemovedDeclarations(), ev.getChangedDeclarations());
         
         gatherProjects(ev);
         
@@ -188,14 +189,20 @@ public class Notificator {
     }
     
     private static void gatherProjects(ChangeEventImpl ev) {
-        Collection/*<CsmProject>*/ projects = ev.getChangedProjects();
-        Collection/*CsmFile*/[] files = new Collection/*CsmFile*/[] { ev.getNewFiles(), ev.getChangedFiles(), ev.getRemovedFiles() };
+        Collection<CsmProject> projects = ev.getChangedProjects();
+        Collection/*CsmFile*/[] files = new Collection/*CsmFile*/[] {
+                                            ev.getNewFiles(),
+                                            ev.getChangedFiles(),
+                                            ev.getRemovedFiles() };
         for( int i = 0; i < files.length; i++ ) {
             for( Iterator iter = files[i].iterator(); iter.hasNext(); ) {
                 projects.add(((CsmFile) iter.next()).getProject());
             }
         }
-        Collection/*CsmDeclaration*/[] decls = new Collection/*CsmDeclaration*/[] { ev.getNewDeclarations(), ev.getChangedDeclarations(), ev.getRemovedDeclarations() };
+        Collection/*CsmDeclaration*/[] decls = new Collection/*CsmDeclaration*/[] {
+                                                   ev.getNewDeclarations(), 
+                                                   ev.getChangedDeclarations().values(),
+                                                   ev.getRemovedDeclarations() };
         for( int i = 0; i < decls.length; i++ ) {
             for( Iterator iter = decls[i].iterator(); iter.hasNext(); ) {
                 Object o = iter.next();
@@ -206,7 +213,7 @@ public class Notificator {
         }
     }
     
-    private static void process(IdMaker idMaker, Collection added, Collection removed, Collection changed) {
+    private static void processFiles(IdMaker idMaker, Collection added, Collection removed, Collection changed) {
 	
 	
 	Set idsAdded = new HashSet();
@@ -224,7 +231,7 @@ public class Notificator {
 
         for( Iterator iter = removed.iterator(); iter.hasNext(); ) {
 	    Object o = iter.next();
-	    String id = idMaker.id(o);
+	    Object id = idMaker.id(o);
 	    if( idsAdded.contains(id)) {
 		changed.add(o);
 	    }
@@ -235,7 +242,7 @@ public class Notificator {
 
 	for( Iterator iter = added.iterator(); iter.hasNext(); ) {
 	    Object o = iter.next();
-	    String id = idMaker.id(o);
+	    Object id = idMaker.id(o);
 	    if( ! idsRemoved.contains(id)) {
 		rightAdded.add(o);
 	    }
@@ -248,4 +255,43 @@ public class Notificator {
 	removed.addAll(rightRemoved);
     }
 
+    private static void processDeclarations(IdMaker idMaker, Collection<CsmDeclaration> added,
+            Collection<CsmDeclaration> removed, Map<CsmDeclaration,CsmDeclaration> changed) {
+	
+        Map<Object,CsmDeclaration> idsAdded = new HashMap<Object,CsmDeclaration>();
+	for(CsmDeclaration decl : added) {
+	    idsAdded.put(idMaker.id(decl),decl);
+	}
+	
+	Map<Object,CsmDeclaration> idsRemoved = new HashMap<Object,CsmDeclaration>();
+	for(CsmDeclaration decl : removed) {
+	    idsRemoved.put(idMaker.id(decl),decl);
+	}
+	
+	Set<CsmDeclaration> rightAdded = new HashSet<CsmDeclaration>();
+	Set<CsmDeclaration> rightRemoved = new HashSet<CsmDeclaration>();
+
+	for(CsmDeclaration decl : removed) {
+	    Object id = idMaker.id(decl);
+	    if( idsAdded.containsKey(id)) {
+		changed.put(decl,idsAdded.get(id));
+	    }
+	    else {
+		rightRemoved.add(decl);
+	    }
+	}
+
+	for(CsmDeclaration decl : added) {
+	    Object id = idMaker.id(decl);
+	    if( ! idsRemoved.containsKey(id)) {
+		rightAdded.add(decl);
+	    }
+	}
+	
+	added.clear();
+	added.addAll(rightAdded);
+	
+	removed.clear();
+	removed.addAll(rightRemoved);
+    }
 }

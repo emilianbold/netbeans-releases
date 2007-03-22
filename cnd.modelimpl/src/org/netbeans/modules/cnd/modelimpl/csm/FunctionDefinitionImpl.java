@@ -74,7 +74,7 @@ public class FunctionDefinitionImpl extends FunctionImplEx<CsmFunctionDefinition
     private CsmFunction _getDeclaration() {
         if (TraceFlags.USE_REPOSITORY) {
             CsmFunction decl = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
-            assert decl != null || declarationUID == null;
+            assert decl != null || declarationUID == null : "null object for UID " + declarationUID;
             return decl;
         } else {
             return this.declarationOLD;

@@ -59,7 +59,7 @@ public class DwarfAnalyzer {
                 String lang = ItemProperties.LanguageKind.CPP == proj.getLanguageKind() ? "c++":"c"; // NOI18N
                 System.out.println("Project "+lang); // NOI18N
                 System.out.println("User include paths:"); // NOI18N
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 for (String elem : proj.getUserInludePaths()) {
                     System.out.println(elem);
                     if (elem.startsWith(File.separator)){
@@ -86,7 +86,7 @@ public class DwarfAnalyzer {
     private static void dumpFolder(FolderProperties folder){
         System.out.println("Folder "+folder.getItemPath()); // NOI18N
         System.out.println("User include paths:"); // NOI18N
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (String elem : folder.getUserInludePaths()) {
             System.out.println(elem);
             if (elem.startsWith(File.separator)){

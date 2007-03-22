@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import java.util.*;
 import antlr.collections.AST;
 import java.io.DataInput;
@@ -29,10 +28,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * A class that 
@@ -115,7 +111,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	    qualifiedNameIsFake = true;
 	    String[] cnn = classOrNspNames;
 	    CsmNamespaceDefinition nsd = findNamespaceDefinition();
-	    StringBuffer sb = new StringBuffer();
+	    StringBuilder sb = new StringBuilder();
 	    if( nsd != null ) {
 		sb.append(nsd.getQualifiedName());
 	    }

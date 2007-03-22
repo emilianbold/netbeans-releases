@@ -32,6 +32,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -74,25 +75,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     public ToolsPanel() {
         initComponents();
         
-        fixup(lbDirlist, "DirlistLabel", spDirlist); // NOI18N
-        fixup(btAdd, "AddButton"); // NOI18N
-        fixup(btRemove, "RemoveButton"); // NOI18N
-        fixup(btUp, "UpButton"); // NOI18N
-        fixup(btDown, "DownButton"); // NOI18N
-        
-        fixup(lbCompilerSets, "CompilerSets"); // NOI18N
-        fixup(lbMakeCommand, "MakeCommand"); // NOI18N
-        fixup(btMakeVersion, "MakeVersion"); // NOI18N
-        fixup(lbGdbCommand, "GdbCommand"); // NOI18N
-        fixup(btGdbVersion, "GdbVersion"); // NOI18N
-        fixup(lbCompilerCollection, "CompilerCollection"); // NOI18N
-        fixup(lbCCommand, "CCommand"); // NOI18N
-        fixup(btCVersion, "CVersion"); // NOI18N
-        fixup(lbCppCommand, "CppCommand"); // NOI18N
-        fixup(btCppVersion, "CppVersion"); // NOI18N
-        fixup(lbFortranCommand, "FortranCommand"); // NOI18N
-        fixup(btFortranVersion, "FortranVersion"); // NOI18N
-        
         tfMakeCommand.getDocument().putProperty(Document.TitleProperty, MAKE_NAME);
         tfGdbCommand.getDocument().putProperty(Document.TitleProperty, GDB_NAME);
         tfCCommand.getDocument().putProperty(Document.TitleProperty, C_NAME);
@@ -109,7 +91,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         tfCppCommand.getDocument().addDocumentListener(this);
         tfFortranCommand.getDocument().addDocumentListener(this);
         addDirectory = null;
-        setName("Tools_Tab"); // NOI18N
+        setName("TAB_ToolsTab"); // NOI18N (used as a pattern...)
     }
     
     public void actionPerformed(ActionEvent e) {
@@ -511,7 +493,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         java.awt.GridBagConstraints gridBagConstraints;
 
         lbDirlist = new javax.swing.JLabel();
-        spDirlist = new javax.swing.JScrollPane();
+        spDirlist = new JScrollPane(lstDirlist);
         lstDirlist = new javax.swing.JList();
         lbCompilerSets = new javax.swing.JLabel();
         spCompilerSets = new javax.swing.JScrollPane();
@@ -549,22 +531,24 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         setLayout(new java.awt.GridBagLayout());
 
         setMinimumSize(new java.awt.Dimension(600, 600));
-        lbDirlist.setText("current path:");
+        lbDirlist.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_DirlistLabel").charAt(0));
+        lbDirlist.setLabelFor(spDirlist);
+        lbDirlist.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_DirlistLabel"));
+        lbDirlist.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("HINT_DirListLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 4);
         add(lbDirlist, gridBagConstraints);
+        lbDirlist.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_DirlistLabel"));
+        lbDirlist.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_DirlistLabel"));
 
-        spDirlist.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         spDirlist.setMaximumSize(new java.awt.Dimension(200, 70));
         spDirlist.setMinimumSize(new java.awt.Dimension(100, 70));
         spDirlist.setPreferredSize(new java.awt.Dimension(150, 70));
         lstDirlist.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        lstDirlist.setMaximumSize(new java.awt.Dimension(2000, 70));
-        lstDirlist.setMinimumSize(new java.awt.Dimension(50, 70));
-        lstDirlist.setPreferredSize(new java.awt.Dimension(200, 70));
+        lstDirlist.setAutoscrolls(false);
         spDirlist.setViewportView(lstDirlist);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -577,7 +561,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 6);
         add(spDirlist, gridBagConstraints);
 
-        lbCompilerSets.setText("compiler sets tovValidate:");
+        lbCompilerSets.setLabelFor(spCompilerSets);
+        lbCompilerSets.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_CompilerSets"));
+        lbCompilerSets.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("HINT_CompilerSets"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -585,25 +571,34 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 0, 0);
         add(lbCompilerSets, gridBagConstraints);
+        lbCompilerSets.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_CompilerSets"));
+        lbCompilerSets.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_CompilerSets"));
 
         spCompilerSets.setMaximumSize(new java.awt.Dimension(32767, 50));
         spCompilerSets.setMinimumSize(new java.awt.Dimension(100, 50));
         spCompilerSets.setPreferredSize(new java.awt.Dimension(150, 50));
-        jpCompilerSets.setLayout(new java.awt.GridLayout(0, 1));
+        jpCompilerSets.setLayout(new java.awt.GridBagLayout());
 
-        jpCompilerSets.setMaximumSize(new java.awt.Dimension(32767, 50));
-        jpCompilerSets.setMinimumSize(new java.awt.Dimension(50, 50));
-        jpCompilerSets.setPreferredSize(new java.awt.Dimension(100, 50));
-        jCheckBox1.setText("gnu compilers");
+        jCheckBox1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_CS_GNU_Compilsers"));
         jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox1.setMargin(new java.awt.Insets(0, 4, 0, 0));
-        jpCompilerSets.add(jCheckBox1);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        jpCompilerSets.add(jCheckBox1, gridBagConstraints);
 
-        jCheckBox2.setText("Sun Compilers");
+        jCheckBox2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_CS_SunCompilers"));
         jCheckBox2.setActionCommand("sun compilers");
         jCheckBox2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox2.setMargin(new java.awt.Insets(0, 4, 0, 0));
-        jpCompilerSets.add(jCheckBox2);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        jpCompilerSets.add(jCheckBox2, gridBagConstraints);
 
         spCompilerSets.setViewportView(jpCompilerSets);
 
@@ -615,13 +610,18 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 6);
         add(spCompilerSets, gridBagConstraints);
 
-        lbMakeCommand.setText("make command:");
+        lbMakeCommand.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_MakeCommand").charAt(0));
+        lbMakeCommand.setLabelFor(tfMakeCommand);
+        lbMakeCommand.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_MakeCommand"));
+        lbMakeCommand.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("HINT_MakeCommand"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(lbMakeCommand, gridBagConstraints);
+        lbMakeCommand.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_MakeCommand"));
+        lbMakeCommand.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_MakeCommand"));
 
         tfMakeCommand.setMinimumSize(new java.awt.Dimension(80, 20));
         tfMakeCommand.setPreferredSize(new java.awt.Dimension(80, 20));
@@ -646,22 +646,29 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(tfMakePath, gridBagConstraints);
 
-        btMakeVersion.setText("version...");
-        btMakeVersion.setActionCommand("version...");
+        btMakeVersion.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_MakeVersion").charAt(0));
+        btMakeVersion.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_MakeVersion"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btMakeVersion, gridBagConstraints);
+        btMakeVersion.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_MakeVersion"));
+        btMakeVersion.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_MakeVersion"));
 
-        lbGdbCommand.setText("gdb command:");
+        lbGdbCommand.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_GdbCommand").charAt(0));
+        lbGdbCommand.setLabelFor(tfGdbCommand);
+        lbGdbCommand.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_GdbCommand"));
+        lbGdbCommand.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("HINT_GdbCommand"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(lbGdbCommand, gridBagConstraints);
+        lbGdbCommand.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_GdbCommand"));
+        lbGdbCommand.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_GdbCommand"));
 
         tfGdbCommand.setMinimumSize(new java.awt.Dimension(80, 20));
         tfGdbCommand.setPreferredSize(new java.awt.Dimension(80, 20));
@@ -685,22 +692,29 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(tfGdbPath, gridBagConstraints);
 
-        btGdbVersion.setText("version...");
-        btGdbVersion.setActionCommand("version...");
+        btGdbVersion.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_GdbVersion").charAt(0));
+        btGdbVersion.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_GdbVersion"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btGdbVersion, gridBagConstraints);
+        btGdbVersion.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_GdbVersion"));
+        btGdbVersion.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_GdbVersion"));
 
-        lbCCommand.setText("c command:");
+        lbCCommand.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CCommand").charAt(0));
+        lbCCommand.setLabelFor(tfCCommand);
+        lbCCommand.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_CCommand"));
+        lbCCommand.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("HINT_CCommand"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(lbCCommand, gridBagConstraints);
+        lbCCommand.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_CCommand"));
+        lbCCommand.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_CCommand"));
 
         tfCCommand.setMinimumSize(new java.awt.Dimension(80, 20));
         tfCCommand.setPreferredSize(new java.awt.Dimension(80, 20));
@@ -724,21 +738,29 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(tfCPath, gridBagConstraints);
 
-        btCVersion.setText("version...");
+        btCVersion.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CVersion").charAt(0));
+        btCVersion.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_CVersion"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btCVersion, gridBagConstraints);
+        btCVersion.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_CVersion"));
+        btCVersion.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_CVersion"));
 
-        lbCppCommand.setText("c++ command:");
+        lbCppCommand.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CppCommand").charAt(0));
+        lbCppCommand.setLabelFor(tfCppCommand);
+        lbCppCommand.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_CppCommand"));
+        lbCppCommand.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("HINT_CppCommand"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(lbCppCommand, gridBagConstraints);
+        lbCppCommand.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_CppCommand"));
+        lbCppCommand.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_CppCommand"));
 
         tfCppCommand.setMinimumSize(new java.awt.Dimension(80, 20));
         tfCppCommand.setPreferredSize(new java.awt.Dimension(80, 20));
@@ -762,21 +784,27 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(tfCppPath, gridBagConstraints);
 
-        btCppVersion.setText("version...");
+        btCppVersion.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_CppVersion"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btCppVersion, gridBagConstraints);
+        btCppVersion.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_CppVersion"));
+        btCppVersion.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_CppVersion"));
 
-        lbFortranCommand.setText("fortran command:");
+        lbFortranCommand.setLabelFor(tfFortranCommand);
+        lbFortranCommand.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_FortranCommand"));
+        lbFortranCommand.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("HINT_FortranCommand"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 6, 0);
         add(lbFortranCommand, gridBagConstraints);
+        lbFortranCommand.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_FortranCommand"));
+        lbFortranCommand.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_FortranCommand"));
 
         tfFortranCommand.setMinimumSize(new java.awt.Dimension(80, 20));
         tfFortranCommand.setPreferredSize(new java.awt.Dimension(80, 20));
@@ -800,21 +828,27 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
         add(tfFortranPath, gridBagConstraints);
 
-        btFortranVersion.setText("version...");
+        btFortranVersion.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_FortranVersion"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(btFortranVersion, gridBagConstraints);
+        btFortranVersion.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_FortranVersion"));
+        btFortranVersion.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_FortranVersion"));
 
-        lbCompilerCollection.setText("compiler set:");
+        lbCompilerCollection.setLabelFor(cbCompilerCollection);
+        lbCompilerCollection.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_CompilerCollection"));
+        lbCompilerCollection.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("HINT_CompilerCollection"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(lbCompilerCollection, gridBagConstraints);
+        lbCompilerCollection.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_CompilerCollection"));
+        lbCompilerCollection.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_CompilerCollection"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -826,7 +860,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(cbCompilerCollection, gridBagConstraints);
 
-        btAdd.setText("add...");
+        btAdd.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_AddButton").charAt(0));
+        btAdd.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_AddButton"));
         btAdd.setActionCommand("Add");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -834,8 +869,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 6);
         add(btAdd, gridBagConstraints);
+        btAdd.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_AddButton"));
+        btAdd.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_AddButton"));
 
-        btRemove.setText("remove");
+        btRemove.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_RemoveButton").charAt(0));
+        btRemove.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_RemoveButton"));
         btRemove.setActionCommand("Remove");
         btRemove.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -844,8 +882,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 6);
         add(btRemove, gridBagConstraints);
+        btRemove.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_RemoveButton"));
+        btRemove.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_RemoveButton"));
 
-        btUp.setText("up");
+        btUp.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_UpButton").charAt(0));
+        btUp.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_UpButton"));
         btUp.setActionCommand("Up");
         btUp.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -854,8 +895,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 6);
         add(btUp, gridBagConstraints);
+        btUp.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_UpButton"));
+        btUp.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_UpButton"));
 
-        btDown.setText("down");
+        btDown.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_DownButton").charAt(0));
+        btDown.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_DownButton"));
         btDown.setActionCommand("Down");
         btDown.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -864,6 +908,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 6);
         add(btDown, gridBagConstraints);
+        btDown.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSN_DownButton"));
+        btDown.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("ACSD_DownButton"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

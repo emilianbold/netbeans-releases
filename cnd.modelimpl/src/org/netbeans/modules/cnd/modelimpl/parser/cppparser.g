@@ -294,7 +294,7 @@ tokens {
 	_ds = dsInvalid;	// For DeclSpecifier
 
 	//functionDefinition = 0;
-	qualifierPrefix = new StringBuffer();
+	qualifierPrefix = new StringBuilder();
 	enclosingClass = "";
 	assign_stmt_RHS_found = 0;
 	in_parameter_list = false;
@@ -456,7 +456,7 @@ tokens {
 				// 3 = Parsing function block*/
 
 	protected
-	StringBuffer qualifierPrefix = new StringBuffer();
+	StringBuilder qualifierPrefix = new StringBuilder();
 
 	protected
 	String enclosingClass;
@@ -1477,7 +1477,7 @@ enumerator
 qualified_id returns [String q = ""]
 	{
 	    String so;
-	    StringBuffer qitem = new StringBuffer();
+	    StringBuilder qitem = new StringBuilder();
 	}
 	:
 	so =  scope_override { qitem.append(so); }
@@ -1860,7 +1860,7 @@ ctor_declarator[boolean definition]
 qualified_ctor_id returns [String q = ""]
 	{
 	    String so;
-	    StringBuffer  qitem = new StringBuffer();
+	    StringBuilder  qitem = new StringBuilder();
 	}
 	: 
 	so = scope_override
@@ -1923,7 +1923,7 @@ dtor_declarator[boolean definition]
 
 protected
 dtor_scope_override
-        {String q; StringBuffer  qitem = new StringBuffer();}
+        {String q; StringBuilder  qitem = new StringBuilder();}
         :
         q = scope_override 
         { qitem.append(q); }
@@ -3029,7 +3029,7 @@ ptr_to_member
 // Match the A::B::C:: or nothing
 scope_override returns [String s = ""]
 	{
-	    StringBuffer sitem = new StringBuffer();
+	    StringBuilder sitem = new StringBuilder();
 	}
 	:
 		//{!(qualifiedItemIsOneOf(qiType))}?

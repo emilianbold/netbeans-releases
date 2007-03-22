@@ -18,7 +18,16 @@
  */
 
 package org.netbeans.modules.cnd.completion.csm;
+import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmField;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 
 /**
  * completion resolver for the file
@@ -62,10 +71,19 @@ public interface CompletionResolver {
     
     public static final int RESOLVE_GLOB_ENUMERATORS       = 1 << 12;
 
-    public static final int RESOLVE_FILE_MACROS            = 1 << 13;
-
-    public static final int RESOLVE_GLOB_MACROS            = 1 << 14;
+    public static final int RESOLVE_FILE_LOCAL_MACROS      = 1 << 13;
     
+    public static final int RESOLVE_FILE_PRJ_MACROS        = 1 << 14;
+
+    public static final int RESOLVE_FILE_LIB_MACROS        = 1 << 15;
+
+    public static final int RESOLVE_GLOB_MACROS            = 1 << 16;
+
+    public static final int RESOLVE_LIB_MACROS             = 1 << 17;
+    
+    public static final int RESOLVE_MACROS                 = RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS | RESOLVE_FILE_LIB_MACROS |
+                                                                RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;
+
     public static final int RESOLVE_FUNCTIONS              = RESOLVE_GLOB_FUNCTIONS | RESOLVE_LIB_FUNCTIONS | RESOLVE_CLASS_METHODS;
     /**
      * specify what to resolve by this resolver
@@ -88,5 +106,53 @@ public interface CompletionResolver {
     /**
      * get result of resolving
      */
-    public List/*<CsmObject>*/ getResult();
+    public Result getResult();
+    
+    public interface Result {
+        public Collection<CsmVariable> getLocalVariables();
+
+        public Collection<CsmField> getClassFields();
+
+        public Collection<CsmEnumerator> getClassEnumerators();
+
+        public Collection<CsmMethod> getClassMethods();
+
+        public Collection<CsmClassifier> getProjectClassesifiersEnums();
+
+        public Collection<CsmVariable> getFileLocalVars();
+
+        public Collection<CsmEnumerator> getFileLocalEnumerators();
+
+        public Collection<CsmMacro> getFileLocalMacros();
+
+        public Collection<CsmMacro> getInFileIncludedProjectMacros();
+
+        public Collection<CsmVariable> getGlobalVariables();
+
+        public Collection<CsmEnumerator> getGlobalEnumerators();
+
+        public Collection<CsmMacro> getGlobalProjectMacros();
+
+        public Collection<CsmFunction> getGlobalProjectFunctions();
+
+        public Collection<CsmNamespace> getGlobalProjectNamespaces();
+
+        public Collection<CsmClassifier> getLibClassifiersEnums();
+
+        public Collection<CsmMacro> getInFileIncludedLibMacros();
+
+        public Collection<CsmMacro> getLibMacros();
+
+        public Collection<CsmVariable> getLibVariables();
+
+        public Collection<CsmEnumerator> getLibEnumerators();
+
+        public Collection<CsmFunction> getLibFunctions();
+
+        public Collection<CsmNamespace> getLibNamespaces();
+        
+        public Collection addResulItemsToCol(Collection orig);
+        
+        public int size();
+    }
 }

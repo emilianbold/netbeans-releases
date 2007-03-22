@@ -97,7 +97,7 @@ public class BuiltinTypes {
     
     public static CsmBuiltIn getBuiltIn(AST ast) {
         assert ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         // TODO: take synonims into account!!!
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( sb.length() > 0 ) {

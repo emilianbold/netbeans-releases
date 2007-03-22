@@ -31,7 +31,7 @@ import java.io.ObjectOutputStream;
 public class CacheUtil {
 
     public static String mangleName(String fileName, char filler) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for( int i = 0; i < fileName.length(); i++ ) {
             char c = fileName.charAt(i);
             if( c == '\\' || c == '/' || c == ':' || c == ' ' ) {

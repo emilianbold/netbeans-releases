@@ -1,0 +1,262 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.cnd.classview;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+
+/**
+ *
+ * @author Alexander Simon
+ */
+public class ChildrenUpdater {
+    private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N
+    private Map<CsmProject, Map<PersistentKey, UpdatebleHost>> map =
+            new HashMap<CsmProject, Map<PersistentKey, UpdatebleHost>>();
+    
+    public  ChildrenUpdater() {
+    }
+    
+    public void register(CsmProject project, PersistentKey host, UpdatebleHost children){
+        Map<PersistentKey, UpdatebleHost> p = map.get(project);
+        if (p == null){
+            p = new HashMap<PersistentKey, UpdatebleHost>();
+            map.put(project,p);
+        }
+        p.put(host,children);
+    }
+    
+    public void unregister(){
+        if (traceEvents) {
+            System.out.println("Clean Children Updater"); // NOI18N
+        }
+        map.clear();
+        NameCache.dispose();
+    }
+    
+    public void unregister(CsmProject project){
+        if (traceEvents) {
+            System.out.println("Clean Children Updater on project "+project.getName()); // NOI18N
+        }
+        map.remove(project);
+    }
+    
+    public void unregister(CsmProject project, PersistentKey host){
+        Map<PersistentKey, UpdatebleHost> p = map.get(project);
+        if (p != null){
+            if (traceEvents) {
+                System.out.println("Clean Children Updater on key "+host.toString()); // NOI18N
+            }
+            p.remove(host);
+        }
+    }
+    public void update(SmartChangeEvent e){
+        if (map.size() == 0) {
+            return;
+        }
+        for (Map.Entry<CsmProject,SmartChangeEvent.Storage> entry : e.getChangedProjects().entrySet()){
+            CsmProject project = entry.getKey();
+            if (map.containsKey(project) && project.isValid()) {
+                SmartChangeEvent.Storage storage = entry.getValue();
+                update(project, storage);
+            }
+        }
+    }
+    
+    public void update(CsmProject project, SmartChangeEvent.Storage e){
+        Set<UpdatebleHost> toFlush = new HashSet<UpdatebleHost>();
+        for(CsmNamespace ns : e.getNewNamespaces()){
+            UpdatebleHost keys = findHost(project, ns);
+            if (keys != null){
+                if (keys.newNamespsce(ns)){
+                    toFlush.add(keys);
+                }
+            }
+        }
+        for(CsmNamespace ns : e.getRemovedNamespaces()){
+            UpdatebleHost keys = findHost(project, ns);
+            if (keys != null){
+                if (keys.removeNamespsce(ns)){
+                    toFlush.add(keys);
+                }
+            }
+        }
+        for(CsmDeclaration decl : e.getNewDeclarations()){
+            UpdatebleHost keys = findHost(project, decl);
+            if (keys != null){
+                if (keys.newDeclaration(decl)){
+                    toFlush.add(keys);
+                }
+            }
+        }
+        for(CsmDeclaration decl : e.getRemovedDeclarations()){
+            UpdatebleHost keys = findHost(project, decl);
+            if (keys != null){
+                if (keys.removeDeclaration(decl)){
+                    toFlush.add(keys);
+                }
+            }
+        }
+        List<CsmDeclaration> recursive = new ArrayList<CsmDeclaration>();
+        List<Map.Entry<CsmDeclaration,CsmDeclaration>> change =
+                new ArrayList<Map.Entry<CsmDeclaration,CsmDeclaration>>(packChangedDeclarations(e.getChangedDeclarations()));
+        for(Map.Entry<CsmDeclaration,CsmDeclaration>  decl : change){
+            UpdatebleHost keys = findHost(project, decl.getKey());
+            if (keys != null){
+                if (keys.changeDeclaration(decl.getKey(),decl.getValue())){
+                    toFlush.add(keys);
+                }
+            }
+            keys = findNode(project, decl.getValue());
+            if (keys != null){
+                if (keys.reset(decl.getValue(),recursive)){
+                    toFlush.add(keys);
+                }
+            }
+        }
+        while(recursive.size()>0){
+            List<CsmDeclaration> list = new ArrayList<CsmDeclaration>(recursive);
+            recursive.clear();
+            for(CsmDeclaration decl : list){
+                UpdatebleHost keys = findNode(project, decl);
+                if (keys != null){
+                    if (keys.reset(decl,recursive)){
+                        toFlush.add(keys);
+                    }
+                }
+            }
+        }
+        if (toFlush.size() > 0) {
+            for (UpdatebleHost keys : toFlush){
+                keys.flush();
+            }
+        }
+    }
+    
+    private Collection<Map.Entry<CsmDeclaration,CsmDeclaration>> packChangedDeclarations(Map<CsmDeclaration,CsmDeclaration> changed){
+        Map<PersistentKey,Map.Entry<CsmDeclaration,CsmDeclaration>> packed =
+                new HashMap<PersistentKey,Map.Entry<CsmDeclaration,CsmDeclaration>>();
+        for(Map.Entry<CsmDeclaration,CsmDeclaration>  decl : changed.entrySet()){
+            packed.put(PersistentKey.createKey(decl.getKey()),decl);
+        }
+        return packed.values();
+    }
+    
+    private UpdatebleHost findHost(CsmProject project, CsmNamespace ns){
+        if (!project.isValid()){
+            return null;
+        }
+        Map<PersistentKey, UpdatebleHost> hosts = map.get(project);
+        if (hosts == null){
+            return null;
+        }
+        CsmNamespace parent = ns.getParent();
+        if (parent != null){
+            return hosts.get(PersistentKey.createKey(parent));
+        }
+        return null;
+    }
+    
+    private UpdatebleHost findNode(CsmProject project, CsmDeclaration decl){
+        if (!project.isValid()){
+            return null;
+        }
+        Map<PersistentKey, UpdatebleHost> hosts = map.get(project);
+        if (hosts == null){
+            return null;
+        }
+        if (CsmKindUtilities.isClass(decl)){
+            CsmClass cls = (CsmClass)decl;
+            if (cls.isValid()) {
+                CsmFile file = cls.getContainingFile();
+                if (file != null && file.isValid()) {
+                    return hosts.get(PersistentKey.createKey(cls));
+                }
+            }
+        } else if(CsmKindUtilities.isEnum(decl)){
+            CsmEnum cls = (CsmEnum)decl;
+            if (cls.isValid()) {
+                CsmFile file = cls.getContainingFile();
+                if (file != null && file.isValid()) {
+                    return hosts.get(PersistentKey.createKey(cls));
+                }
+            }
+        }
+        return null;
+    }
+    
+    private UpdatebleHost findHost(CsmProject project, CsmDeclaration decl){
+        if (!project.isValid()){
+            return null;
+        }
+        Map<PersistentKey, UpdatebleHost> hosts = map.get(project);
+        if (hosts == null){
+            return null;
+        }
+        CsmScope scope = decl.getScope();
+        if (CsmKindUtilities.isClass(scope)){
+            CsmClass cls = (CsmClass)scope;
+            if (cls.isValid()) {
+                CsmFile file = cls.getContainingFile();
+                if (file != null && file.isValid()) {
+                    return hosts.get(PersistentKey.createKey(cls));
+                }
+            }
+        } else if(CsmKindUtilities.isEnum(scope)){
+            CsmEnum cls = (CsmEnum)scope;
+            if (cls.isValid()) {
+                CsmFile file = cls.getContainingFile();
+                if (file != null && file.isValid()) {
+                    return hosts.get(PersistentKey.createKey(cls));
+                }
+            }
+        } else if (CsmKindUtilities.isNamespace(scope)){
+            CsmNamespace cls = (CsmNamespace)scope;
+            return hosts.get(PersistentKey.createKey(cls));
+        } else if (CsmKindUtilities.isNamespaceDefinition(scope)){
+            CsmNamespaceDefinition cls = (CsmNamespaceDefinition)scope;
+            CsmFile file = cls.getContainingFile();
+            if (file != null && file.isValid()) {
+                return hosts.get(PersistentKey.createKey(cls.getNamespace()));
+            }
+        } else if (CsmKindUtilities.isFile(scope)){
+            CsmFile cls = (CsmFile)scope;
+            if (cls.isValid()) {
+                return hosts.get(PersistentKey.createKey(project.getGlobalNamespace()));
+            }
+        }
+        return null;
+    }
+}

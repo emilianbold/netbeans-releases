@@ -58,7 +58,7 @@ public class APTDriverImpl {
     public static APTFile findAPT(APTFileBuffer buffer, boolean withTokens) throws IOException {
         File file = buffer.getFile();
         String path = file.getAbsolutePath();
-        APTFile apt = _getAPTFile(path);
+        APTFile apt = _getAPTFile(path, withTokens);
         if (apt == null) {
             APTSyncCreator creator = null;
             synchronized (file2creator) {
@@ -99,7 +99,7 @@ public class APTDriverImpl {
             String path = file.getAbsolutePath();
             // quick exti: check if already was added by another creator
             // during wait
-            APTFile apt = _getAPTFile(path);
+            APTFile apt = _getAPTFile(path, withTokens);
             if (apt == null) {
                 // ok, create new apt
                 
@@ -119,7 +119,13 @@ public class APTDriverImpl {
                                 System.err.println("error on serialization apt for file " + file.getAbsolutePath()); // NOI18N
                             }
                         }
-                        _putAPTFile(path, apt);
+                        _putAPTFile(path, apt, withTokens);
+                        APTFile aptLight = (APTFile) APTBuilder.buildAPTLight(apt);
+                        _putAPTFile(path, aptLight, withTokens);
+                        if (!withTokens) {
+                            // were asked to return apt light
+                            apt = aptLight;
+                        }
                     }
                 } finally {
                     if (stream != null) {
@@ -135,7 +141,11 @@ public class APTDriverImpl {
         }       
     } 
     
-    private static APTFile _getAPTFile(String path) {
+    private static APTFile _getAPTFile(String path, boolean withTokens) {
+        if (withTokens) {
+            // we do not cache full apt
+            return null;
+        }
         APTFile apt;
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
             SoftReference<APTFile> aptRef = (SoftReference)file2apt.get(path);
@@ -146,11 +156,19 @@ public class APTDriverImpl {
         return apt;
     }
     
-    private static void _putAPTFile(String path, APTFile apt) {
+    private static void _putAPTFile(String path, APTFile apt, boolean withTokens) {
+        if (withTokens) {
+            // we do not cache full apt
+            return;
+        }
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
             file2apt.put(path, new SoftReference(apt));
         } else {
             file2apt.put(path, apt);
         }        
+    }
+
+    public static void close() {
+        invalidateAll();
     }
 }

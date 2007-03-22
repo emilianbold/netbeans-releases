@@ -151,11 +151,11 @@ public final class DiscoveryWizardAction extends NodeAction {
                 Item[] items = make.getProjectItems();
                 if (items.length>0){
                     String path =items[0].getPath();
-                    StringBuffer newBase = null;
+                    StringBuilder newBase = null;
                     if (path.startsWith("..")){ // NOI18N
-                        newBase = new StringBuffer(base);
+                        newBase = new StringBuilder(base);
                     } else {
-                        newBase = new StringBuffer();
+                        newBase = new StringBuilder();
                     }
                     StringTokenizer st = new StringTokenizer(path, "/\\"); // NOI18N
                     while(st.hasMoreTokens()){

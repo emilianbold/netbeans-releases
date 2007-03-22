@@ -109,7 +109,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     }
 
     public String toString() {
-        StringBuffer retValue = new StringBuffer();
+        StringBuilder retValue = new StringBuilder();
         retValue.append("#define '"); // NOI18N
         retValue.append(getName());
         if (getParameters() != null) {

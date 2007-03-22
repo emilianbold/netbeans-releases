@@ -199,24 +199,24 @@ public final class CsmProjectContentResolver {
     ////////////////////////////////////////////////////////////////////////////////
     // help methods to resolve macros
     
-    public List getFileMacros(CsmContext context, String strPrefix, boolean match) {
-        List res = CsmContextUtilities.findFileMacros(context, strPrefix, match, isCaseSensitive());
+    public List getFileLocalMacros(CsmContext context, String strPrefix, boolean match) {
+        List res = CsmContextUtilities.findFileLocalMacros(context, strPrefix, match, isCaseSensitive());
         if (res != null && isSortNeeded()) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
     
-    public List getFileProjectMacros(CsmContext context, String strPrefix, boolean match) {
-        List res = CsmContextUtilities.findFileProjectMacros(context, strPrefix, match, isCaseSensitive());
+    public List getFileIncludedProjectMacros(CsmContext context, String strPrefix, boolean match) {
+        List res = CsmContextUtilities.findFileIncludedProjectMacros(context, strPrefix, match, isCaseSensitive());
         if (res != null && isSortNeeded()) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
     
-    public List getFileLibMacros(CsmContext context, String strPrefix, boolean match) {
-        List res = CsmContextUtilities.findFileLibMacros(context, strPrefix, match, isCaseSensitive());
+    public List getFileIncludeLibMacros(CsmContext context, String strPrefix, boolean match) {
+        List res = CsmContextUtilities.findFileIncludedLibMacros(context, strPrefix, match, isCaseSensitive());
         if (res != null && isSortNeeded()) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -397,7 +397,7 @@ public final class CsmProjectContentResolver {
         }
         return res;
     }
-    
+
     public List/*<CsmEnumerator>*/ getNamespaceEnumerators(CsmNamespace ns, String strPrefix, boolean match) {
         boolean sort = isSortNeeded();
         // get all enums and check theirs enumerators
@@ -443,6 +443,31 @@ public final class CsmProjectContentResolver {
         List res = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.VARIABLE, strPrefix, staticOnly, match, inspectParentClasses);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
+        }
+        return res;
+    }
+    
+    public List/*<CsmEnumerator>*/ getEnumerators(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
+        boolean sort = isSortNeeded();
+        // get all enums and check theirs enumerators
+        List enums = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.ENUM, "", false, false, inspectParentClasses);
+        List res = null;
+        if (enums != null) {
+            for (Iterator it = enums.iterator(); it.hasNext();) {
+                CsmEnum elemEnum = (CsmEnum) it.next();
+                for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
+                    CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
+                    if (matchName(elem.getName(), strPrefix, match)) {
+                        if (res == null) {
+                            res = new ArrayList();
+                        }
+                        res.add(elem);
+                    }
+                }
+            }
+            if (sort && res != null) {
+                CsmSortUtilities.sortMembers(res, isCaseSensitive());
+            }
         }
         return res;
     }
@@ -587,6 +612,13 @@ public final class CsmProjectContentResolver {
         // handle all nested namespaces
         for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
             CsmNamespace nestedNs = (CsmNamespace) it.next();
+            // TODO: consider when we add nested namespaces
+//            if (nestedNs.getName().length() != 0) {
+//                if (need namespaces &&
+//                        matchName(nestedNs.getName(), strPrefix, match)) {
+//                    res.add(nestedNs);
+//                }                
+//            }
             res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS));
         }
         return res;
@@ -618,7 +650,7 @@ public final class CsmProjectContentResolver {
     }
     
     private List merge(List orig, List newList) {
-        return CsmUtilities.merge(orig, newList);
+        return (List)CsmUtilities.merge(orig, newList);
     }
     
     private List filterFunctionDefinitions(List funs) {

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.tree;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -57,7 +56,7 @@ public class ConfigurationFactory {
         }
         // remove empty root
         StringTokenizer st = new StringTokenizer(rootFolder,"/\\"); // NOI18N
-        StringBuffer currentName = new StringBuffer();
+        StringBuilder currentName = new StringBuilder();
         while (st.hasMoreTokens()){
             st.nextToken();
             FolderConfigurationImpl r = root.cut();
@@ -72,7 +71,7 @@ public class ConfigurationFactory {
     private static FolderConfigurationImpl addChild(String child, FolderConfigurationImpl folder){
         FolderConfigurationImpl current = folder;
         StringTokenizer st = new StringTokenizer(child,"/\\"); // NOI18N
-        StringBuffer currentName = new StringBuffer();
+        StringBuilder currentName = new StringBuilder();
         boolean first = true;
         while(st.hasMoreTokens()){
             String segment = st.nextToken();

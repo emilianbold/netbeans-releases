@@ -35,10 +35,12 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * implementation of APTBuilder
  * @author Vladimir Voskresensky
  */
-public class APTBuilderImpl {
+public final class APTBuilderImpl {
     
+    private boolean fullAPT; // NOT YET SUPPORTED
     /** Creates a new instance of APTBuilder */
-    public APTBuilderImpl() {
+    public APTBuilderImpl(boolean full) {
+        this.fullAPT = full;
     }
 
     public APTFile buildAPT(String path, TokenStream ts) {

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,37 +19,39 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import java.util.*;
-import org.openide.nodes.*;
+import javax.swing.event.ChangeEvent;
 
 import  org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.classview.model.CVUtil.FillingDone;
+import org.openide.nodes.Children;
 
 /**
  * @author Vladimir Kvasihn
  */
 public class EnumNode extends ClassifierNode {
-
-    public EnumNode(CsmEnum enumeration) {
-        super(enumeration, new FillingDone());
+    
+    public EnumNode(CsmEnum enumeration,Children.Array key) {
+        super(enumeration,key);
+        init(enumeration);
+    }
+    
+    private void init(CsmEnum enumeration){
         String shortName = enumeration.getName();
         String longName = enumeration.getQualifiedName();
         setName(shortName);
         setDisplayName(shortName);
         setShortDescription(longName);
     }
-
-    protected void objectChanged() {
-        final List nodes = new LinkedList();
-	for (Iterator iter = ((CsmEnum) getObject()).getEnumerators().iterator(); iter.hasNext();) {
-	    nodes.add(new EnumeratorNode((CsmEnumerator) iter.next()));
-	}
-        final Children children = getChildren();
-        children.MUTEX.writeAccess(new Runnable(){
-            public void run() {
-                children.remove(getChildren().getNodes());
-                children.add( (Node[]) nodes.toArray(new Node[nodes.size()]) );
-            }
-        });
+    
+    public void stateChanged(ChangeEvent e) {
+        Object o = e.getSource();
+        if (o instanceof CsmEnum){
+            CsmEnum cls = (CsmEnum)o;
+            setObject(cls);
+            init(cls);
+            fireIconChange();
+            fireOpenedIconChange();
+        } else if (o != null) {
+            System.err.println("Expected CsmEnum. Actually event contains "+o.toString());
+        }
     }
 }

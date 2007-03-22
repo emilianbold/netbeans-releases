@@ -119,59 +119,68 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     }
     
     public List<Configuration> analyze(ProjectProxy project) {
-        setCommpilerSettings(project);
-        Configuration conf = new Configuration(){
-            private List<SourceFileProperties> myFileProperties;
-            private List<String> myIncludedFiles;
-            public List<ProjectProperties> getProjectConfiguration() {
-                return divideByLanguage(getSourcesConfiguration());
-            }
-            
-            public List<Configuration> getDependencies() {
-                return null;
-            }
-            
-            public List<SourceFileProperties> getSourcesConfiguration() {
-                if (myFileProperties == null){
-                    String set = (String)getProperty(EXECUTABLE_KEY).getValue();
-                    if (set != null && set.length() > 0) {
-                        String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
-                        if (add == null || add.length==0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set});
-                        } else {
-                            String[] all = new String[add.length+1];
-                            all[0] = set;
-                            for(int i = 0; i < add.length; i++){
-                                all[i+1]=add[i];
-                            }
-                            myFileProperties = getSourceFileProperties(all);
-                        }
-                    }
-                }
-                return myFileProperties;
-            }
-            
-            public List<String> getIncludedFiles(){
-                if (myIncludedFiles == null) {
-                    HashSet<String> set = new HashSet<String>();
-                    for(SourceFileProperties source : getSourcesConfiguration()){
-                        set.addAll( ((DwarfSource)source).getIncludedFiles() );
-                        set.add(source.getItemPath());
-                    }
-                    HashSet<String> unique = new HashSet<String>();
-                    for(String path : set){
-                        File file = new File(path);
-                        if (file.exists()) {
-                            unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
-                        }
-                    }
-                    myIncludedFiles = new ArrayList<String>(unique);
-                }
-                return myIncludedFiles;
-            }
-        };
+        isStoped = false;
         List<Configuration> confs = new ArrayList<Configuration>();
-        confs.add(conf);
+        setCommpilerSettings(project);
+        if (!isStoped){
+            Configuration conf = new Configuration(){
+                private List<SourceFileProperties> myFileProperties;
+                private List<String> myIncludedFiles;
+                public List<ProjectProperties> getProjectConfiguration() {
+                    return divideByLanguage(getSourcesConfiguration());
+                }
+                
+                public List<Configuration> getDependencies() {
+                    return null;
+                }
+                
+                public List<SourceFileProperties> getSourcesConfiguration() {
+                    if (myFileProperties == null){
+                        String set = (String)getProperty(EXECUTABLE_KEY).getValue();
+                        if (set != null && set.length() > 0) {
+                            String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
+                            if (add == null || add.length==0) {
+                                myFileProperties = getSourceFileProperties(new String[]{set});
+                            } else {
+                                String[] all = new String[add.length+1];
+                                all[0] = set;
+                                for(int i = 0; i < add.length; i++){
+                                    all[i+1]=add[i];
+                                }
+                                myFileProperties = getSourceFileProperties(all);
+                            }
+                        }
+                    }
+                    return myFileProperties;
+                }
+                
+                public List<String> getIncludedFiles(){
+                    if (myIncludedFiles == null) {
+                        HashSet<String> set = new HashSet<String>();
+                        for(SourceFileProperties source : getSourcesConfiguration()){
+                            if (isStoped) {
+                                break;
+                            }
+                            set.addAll( ((DwarfSource)source).getIncludedFiles() );
+                            set.add(source.getItemPath());
+                        }
+                        HashSet<String> unique = new HashSet<String>();
+                        for(String path : set){
+                            if (isStoped) {
+                                break;
+                            }
+                            File file = new File(path);
+                            if (file.exists()) {
+                                unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                            }
+                        }
+                        myIncludedFiles = new ArrayList<String>(unique);
+                    }
+                    return myIncludedFiles;
+                }
+            };
+            confs.add(conf);
+        }
         return confs;
     }
     

@@ -74,9 +74,9 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     }
     
     private CsmDeclaration _getReferencedDeclaration() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             CsmDeclaration referencedDeclaration = UIDCsmConverter.UIDtoDeclaration(referencedDeclarationUID);
-            assert referencedDeclaration != null || referencedDeclarationUID == null;
+            // can be null if namespace was removed 
             return referencedDeclaration;
         } else {
             return this.referencedDeclarationOLD;
@@ -84,7 +84,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     }    
 
     private void _setReferencedDeclaration(CsmDeclaration referencedDeclaration) {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
             assert this.referencedDeclarationUID != null || referencedDeclaration == null;
         } else {

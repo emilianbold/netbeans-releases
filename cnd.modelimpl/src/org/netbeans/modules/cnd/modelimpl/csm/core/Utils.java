@@ -52,7 +52,7 @@ public class Utils {
     }
     
     public static String getQualifiedName(String name, CsmNamespace parent) {
-	StringBuffer sb = new StringBuffer(name);
+	StringBuilder sb = new StringBuilder(name);
         if (parent != null) {
             if (!parent.isGlobal()) {
 		sb.insert(0, "::"); // NOI18N
@@ -63,7 +63,7 @@ public class Utils {
     }
       
     public static String getNestedNamespaceQualifiedName(String name, NamespaceImpl parent, boolean createForEmptyNames) {
-	StringBuffer sb = new StringBuffer(name);
+	StringBuilder sb = new StringBuilder(name);
         if (parent != null) {
             if (name.length() == 0 && createForEmptyNames) {
                 sb.append(parent.getNameForUnnamedElement());
@@ -77,7 +77,7 @@ public class Utils {
     }
     
     public static String toString(String[] a) {
-	StringBuffer sb = new StringBuffer("["); // NOI18N
+	StringBuilder sb = new StringBuilder("["); // NOI18N
 	for (int i = 0; i < a.length; i++) {
 	    if( i > 0 ) {
 		sb.append(',');

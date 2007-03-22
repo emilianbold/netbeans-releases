@@ -98,8 +98,6 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel, NewMa
     }
     
     public void readSettings(Object settings) {
-        if (initialized)
-            return;
         wizardDescriptor = (WizardDescriptor)settings;        
         component.read (wizardDescriptor);
         initialized = true;

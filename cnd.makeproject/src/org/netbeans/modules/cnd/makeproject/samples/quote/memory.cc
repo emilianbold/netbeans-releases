@@ -17,53 +17,66 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-//Implementation of storage module class
-
 #include "memory.h"
-//Error logic needs to be added for SetDescription() and SetVendor() since these can return non-zero
 
-Memory::Memory() {
-    SetDescription((char*)"Memory");
-    SetVendor((char*)"generic"); //Placeholder for future functionality
-    SetType(tstandard); //default memory speed is "standard"
-    SetCategory(t1); //default is 1GB sub-module
-    SetUnits(1); //default is "1" memory sub-module
-    ComputeSupportMetric();
-}
-
-Memory::Memory(int ty, int cat) {
-    SetDescription((char*)"Memory");
-    SetVendor((char*)"generic"); //Placeholder for future functionality
-    SetType(ty);
-    SetCategory(cat);
-    SetUnits(1); //default is "1" memory sub-module
-    ComputeSupportMetric();
-}
-
-Memory::Memory(int ty, int cat, int un) {
-    SetDescription((char*)"Memory");
-    SetVendor((char*)"generic"); //Placeholder for future functionality
-    SetType(ty);
-    SetCategory(cat);
-    SetUnits(un);
-    ComputeSupportMetric();
-}
-//
-
-void Memory::ComputeSupportMetric() //base class defines this function as "pure virtual"
-{
-//heuristic for memory module complexity is based on number of memory sub-modules and memory speed
-//size of sub-module is not considered in heuristic
-    int metric;
-    metric=200*GetUnits();
-    switch (GetType()) {
-        case tstandard: break;
-        case tfast: metric += 100; break;
-        case tultra: metric += 200; break;
-        default: break;
+Memory::Memory(int type /*= STANDARD */, int size /*= MEDIUM */, int units /*= 1 */) :
+    Module("Memory", "generic", type, size, units) {
+        ComputeSupportMetric();
     }
-    SetSupportMetric(metric);
     
+/*
+ *  Heuristic for memory module complexity is based on number of memory 
+ *  sub-modules and memory speed. 
+ *
+ *  Size of sub-module is not considered in heuristic.
+ */
+
+void Memory::ComputeSupportMetric() { 
+    
+    int metric = 200 * GetUnits();
+        
+    switch (GetTypeID()) {
+        case FAST: 
+            metric += 100; 
+            break;
+            
+        case ULTRA: 
+            metric += 200;
+            break;
+    }
+        
+    SetSupportMetric(metric);            
+}
+    
+const char* Memory::GetType() const {
+    switch (GetTypeID()) {
+        case STANDARD: 
+            return "Standard Memory";
+            
+        case FAST: 
+            return "Fast Memory";
+            
+        case ULTRA: 
+            return "UltraFast Memory";
+            
+        default: 
+            return "Undefined";
+    }
 }
 
+const char* Memory::GetCategory() const {
+    switch (GetCategoryID()) {
+        case SMALL:
+            return "<= 1 Gb RAM";
+            
+        case MEDIUM: 
+            return "1 - 2 Gb RAM";
+            
+        case BIG: return "4+ Gb RAM";
+        
+        default: 
+            return "Undefined";
+    }
+}
+  
 // end memory.cc

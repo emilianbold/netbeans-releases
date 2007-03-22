@@ -47,7 +47,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
         super(containingFile, inclPos);
         this.name = FileNameCache.getString(name);
         this.system = system;
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.includeFileUID = UIDCsmConverter.fileToUID(includeFile);
             assert (includeFileUID != null || includeFile == null);
             this.includeFileOLD = null;// to prevent error with "final"            
@@ -107,9 +107,9 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     }
 
     private CsmFile _getIncludeFile() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             CsmFile file = UIDCsmConverter.UIDtoFile(includeFileUID);
-            assert (file != null || includeFileUID == null);
+            assert (file != null || includeFileUID == null) : "no object for UID " + includeFileUID;
             return file;
         } else {
             return includeFileOLD;

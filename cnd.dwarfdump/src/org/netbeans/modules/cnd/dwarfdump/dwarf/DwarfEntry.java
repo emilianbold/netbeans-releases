@@ -251,7 +251,7 @@ public class DwarfEntry {
     
     public String getParametersString(boolean withNames) {
         ArrayList<DwarfEntry> params = getParameters();
-        StringBuffer paramStr = new StringBuffer(); // NOI18N
+        StringBuilder paramStr = new StringBuilder(); // NOI18N
         DwarfEntry param = null;
                 
         paramStr.append('(');

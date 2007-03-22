@@ -44,6 +44,7 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 public abstract class BaseDwarfProvider implements DiscoveryProvider {
     
     private static final boolean TRACE_READ_EXCEPTIONS = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.errors"); // NOI18N
+    protected boolean isStoped = false;
     
     public BaseDwarfProvider() {
     }
@@ -54,6 +55,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     
     public boolean canAnalyze(ProjectProxy project) {
         return true;
+    }
+    
+    public void stop() {
+        isStoped = true;
     }
     
     protected List<ProjectProperties> divideByLanguage(List<SourceFileProperties> sources){
@@ -89,7 +94,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         try{
             HashMap<String,SourceFileProperties> map = new HashMap<String,SourceFileProperties>();
             for (String file : objFileName) {
+                if (isStoped) {
+                    break;
+                }
                 for(SourceFileProperties f : getSourceFileProperties(PathCache.getString(file))){
+                    if (isStoped) {
+                        break;
+                    }
                     String name = PathCache.getString(f.getItemPath());
                     if (new File(name).exists()){
                         SourceFileProperties existed = map.get(name);
@@ -160,6 +171,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             List <CompilationUnit> units = dump.getCompilationUnits();
             if (units != null && units.size() > 0) {
                 for (CompilationUnit cu : units) {
+                    if (isStoped) {
+                        break;
+                    }
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
                         if (TRACE_READ_EXCEPTIONS) {
                             System.err.println("Compilation unit has broken name in file "+objFileName);
@@ -211,11 +225,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
         return list;
     }
-
+    
     public CompilerSettings getCommpilerSettings(){
         return myCommpilerSettings;
     }
-
+    
     public void setCommpilerSettings(ProjectProxy project) {
         myCommpilerSettings = new CompilerSettings(project);
     }
@@ -232,7 +246,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             systemMacroDefinitionsCpp = ProjectUtil.getSystemMacroDefinitions(project, true);
             systemMacroDefinitionsC = ProjectUtil.getSystemMacroDefinitions(project,false);
         }
-
+        
         public List<String> getSystemIncludePaths(boolean isCPP) {
             if (isCPP) {
                 return systemIncludePathsCpp;

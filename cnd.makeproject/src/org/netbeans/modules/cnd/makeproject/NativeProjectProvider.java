@@ -94,7 +94,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             return null;
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
         for (int i = 0; i < items.length; i++) {
-            ItemConfiguration itemConfiguration = (ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
             if (itemConfiguration != null && itemConfiguration.isCompilerToolConfiguration() && !itemConfiguration.getExcluded().getValue())
                 list.add(items[i]);
         }
@@ -107,7 +107,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         ExtensionList hlist = HDataLoader.getInstance().getExtensions();
         
         for (int i = 0; i < items.length; i++) {
-            ItemConfiguration itemConfiguration = (ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
             if (itemConfiguration != null){
                 if (!itemConfiguration.getExcluded().getValue()){
                     list.add(items[i]);
@@ -169,7 +169,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         Iterator iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
             NativeFileItem nativeFileIetm = (NativeFileItem)iter.next();
-            ItemConfiguration itemConfiguration = (ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(((Item)nativeFileIetm).getPath()));
+            ItemConfiguration itemConfiguration = ((Item)nativeFileIetm).getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(((Item)nativeFileIetm).getPath()));
             if ((!itemConfiguration.isCompilerToolConfiguration() && !hlist.isRegistered(((Item)nativeFileIetm).getPath())) || itemConfiguration.getExcluded().getValue())
                 continue; // IZ 87407
             actualList.add(nativeFileIetm);
@@ -241,8 +241,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         // Check all items
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
         for (int i = 0; i < items.length; i++) {
-            ItemConfiguration oldItemConf = (ItemConfiguration)oldMConf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-            ItemConfiguration newItemConf = (ItemConfiguration)newMConf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+            ItemConfiguration oldItemConf = items[i].getItemConfiguration(oldMConf); //ItemConfiguration)oldMConf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+            ItemConfiguration newItemConf = items[i].getItemConfiguration(newMConf); //ItemConfiguration)newMConf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
             if (oldItemConf == null || newItemConf == null) {
                 continue;
             }
@@ -296,7 +296,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             ccPreprocessorOption = folderConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
             items = folder.getAllItemsAsArray();
         } else if (item != null) {
-            ItemConfiguration itemConfiguration = (ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(item.getPath()));
+            ItemConfiguration itemConfiguration = item.getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(item.getPath()));
             cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
             ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
@@ -345,7 +345,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         
         // Handle project and file level changes
         for (int i = 0; i < items.length; i++) {
-            ItemConfiguration itemConfiguration = (ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
             if (itemConfiguration.getExcluded().getValue())
                 continue;
             if (itemConfiguration.getTool() != Tool.CCompiler && itemConfiguration.getTool() != Tool.CCCompiler)
@@ -439,7 +439,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         //Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());
         CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
-        vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsVector());
+        vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsList());
         return vec;
     }
 }

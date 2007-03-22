@@ -42,10 +42,6 @@ public class ParserQueue {
         private Entry prev;
         private Entry next;
         
-        //        private Entry(FileImpl file) {
-        //            this(file, file.getPreprocStateState(), false);
-        //        }
-        
         private Entry(FileImpl file, APTPreprocState.State ppStateState) {
             this.file = file;
             this.ppStateState = ppStateState;
@@ -64,7 +60,7 @@ public class ParserQueue {
         }
         
         public String toString(boolean detailed) {
-            StringBuffer retValue = new StringBuffer();
+            StringBuilder retValue = new StringBuilder();
             retValue.append("ParserQueue.Entry " + file.getAbsolutePath()); // NOI18N
             if( detailed ) {
                 retValue.append("\nwith PreprocStateState:\n"+ppStateState); // NOI18N
@@ -201,11 +197,11 @@ public class ParserQueue {
     private Queue queue = new Queue();
     
     private State state;
-    private Object suspendLock = "suspendLock"; // NOI18N
+    private Object suspendLock = new String("suspendLock"); // NOI18N
     
-    // only one of projectData/projectDataOLD must be used (based on USE_REPOSITORY)
-    private Map<ProjectBase, ProjectData> projectDataOLD = new HashMap<ProjectBase, ProjectData>();
-    private Map<CsmUID<CsmProject>, ProjectData> projectData = new HashMap<CsmUID<CsmProject>, ProjectData>();
+    // do not need UIDs for ProjectBase in parsing data collection
+    private Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
+    private Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
     
     private Object lock = new Object();
     
@@ -308,13 +304,13 @@ public class ParserQueue {
     }
     
     public void waitReady() throws InterruptedException {
+	if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waitReady() ...");
         synchronized ( lock ) {
-            while( queue.isEmpty() ) {
-                if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waitReady() ...");
+            while( queue.isEmpty() && state != State.OFF ) {
                 lock.wait();
-                if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waiting finished");
             }
         }
+	if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waiting finished");
     }
     
     public void suspend() {
@@ -415,17 +411,9 @@ public class ParserQueue {
         synchronized ( lock ) {
             state = State.OFF;
             queue.clear();
-            if (TraceFlags.USE_REPOSITORY) {
-                for( Iterator<CsmUID<CsmProject>> it = projectData.keySet().iterator(); it.hasNext(); ) {
-                    ProjectBase prj = null;
-                    prj = (ProjectBase)UIDCsmConverter.UIDtoProject(it.next());
-                    fireProjectParsingFinished( prj );
-                }
-            } else {
-                for( Iterator<ProjectBase> it = projectDataOLD.keySet().iterator(); it.hasNext(); ) {
-                    ProjectBase prj = it.next();
-                    fireProjectParsingFinished( prj );
-                }
+            for( Iterator<ProjectBase> it = projectData.keySet().iterator(); it.hasNext(); ) {
+                ProjectBase prj = it.next();
+                fireProjectParsingFinished( prj );
             }
             lock.notifyAll();
         }
@@ -470,9 +458,13 @@ public class ParserQueue {
     }
     
     public boolean hasFiles(ProjectBase project, FileImpl skipFile) {
+        return hasFiles(project, skipFile, true);
+    }
+
+    private boolean hasFiles(ProjectBase project, FileImpl skipFile, boolean create) {
         synchronized ( lock ) {
-            ProjectData data = getProjectData(project, true);
-            if (data.isEmpty()) {
+            ProjectData data = getProjectData(project, create);
+            if (data == null || data.isEmpty()) {
                 // nothing in queue and nothing in progress => no files
                 return false;
             } else {
@@ -495,31 +487,17 @@ public class ParserQueue {
     }
     
     private ProjectData getProjectData(ProjectBase project, boolean create) {
-        ProjectData data;
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmProject> key = project.getUID();
-            data = projectData.get(key);
-            if( data == null && create) {
-                data = new ProjectData(false);
-                projectData.put(key, data);
-            }
-        } else {
-            ProjectBase key = project;
-            data = projectDataOLD.get(key);
-            if( data == null && create) {
-                data = new ProjectData(false);
-                projectDataOLD.put(key, data);
-            }
+        ProjectBase key = project;
+        ProjectData data = projectData.get(key);
+        if( data == null && create) {
+            data = new ProjectData(false);
+            projectData.put(key, data);
         }
         return data;
     }
     
     private void removeProjectData(ProjectBase project) {
-        if (TraceFlags.USE_REPOSITORY) {
-            projectData.remove(project.getUID());
-        } else {
-            projectDataOLD.remove(project);
-        }
+        projectData.remove(project);
     }
     
     public void addProgressListener(CsmProgressListener listener) {
@@ -603,7 +581,7 @@ public class ParserQueue {
             lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
             if( lastFileInProject ) {
                 removeProjectData(project);
-                idle = TraceFlags.USE_REPOSITORY ? projectData.isEmpty() : projectDataOLD.isEmpty();
+                idle = projectData.isEmpty();
                 // this work only for a single project
                 // but on the other hand in the case of multiple projects such measuring will never work
                 // since project files might be shuffled in queue
@@ -621,16 +599,49 @@ public class ParserQueue {
             if( idle ) {
                 fireIdle();
             }
+            // notify all "wait" empty listeners
+            Object prjWaitEmptyLock;
+            synchronized (projectLocks) {
+                prjWaitEmptyLock = projectLocks.remove(project);
+            }            
+            if (prjWaitEmptyLock != null) {
+                synchronized (prjWaitEmptyLock) {
+                    prjWaitEmptyLock.notifyAll();
+                }
+            }
         }
     }
     
     private int size() {
         int size = 0;
-        Iterator<ProjectData> it = TraceFlags.USE_REPOSITORY ? projectData.values().iterator() : projectDataOLD.values().iterator();
+        Iterator<ProjectData> it = projectData.values().iterator();
         while (it.hasNext()) {
             ProjectData pd = it.next();
             size += pd.size();
         }
         return size;
+    }
+
+    /*package*/ void waitEmpty(ProjectBase project) {
+        if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Waiting Empty Project " + project.getName());
+        while (hasFiles(project, null, false)) {
+            if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Waiting Empty Project 2 " + project.getName());
+            Object prjWaitEmptyLock;
+            synchronized (projectLocks) {
+                prjWaitEmptyLock = projectLocks.get(project);
+                if (prjWaitEmptyLock == null) {
+                    prjWaitEmptyLock = new String(project.getName());
+                    projectLocks.put(project, prjWaitEmptyLock);
+                }
+            }
+            synchronized (prjWaitEmptyLock) {
+                try {
+                    prjWaitEmptyLock.wait();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Finished waiting on Empty Project " + project.getName());
     }
 }

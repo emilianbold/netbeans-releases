@@ -149,7 +149,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         }    
         
         public String toString() {
-            StringBuffer retValue = new StringBuffer();
+            StringBuilder retValue = new StringBuilder();
             retValue.append("<P>"); // NOI18N     
             retValue.append(getName());                       
             return retValue.toString(); 

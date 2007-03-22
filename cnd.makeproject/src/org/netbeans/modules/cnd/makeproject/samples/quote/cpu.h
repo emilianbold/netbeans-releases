@@ -19,20 +19,21 @@
 
 #if !defined CPU_H
 #define CPU_H
+
 #include "module.h"
 
-enum tCpu{tmid=1, thigh}; //type
-enum tArch{tOpteron=1, tIntel, tSparc}; //category
-
-class Cpu:public Module {
+class Cpu : public Module {
     public:
-        Cpu();
-        Cpu(int type, int architecture);
-        Cpu(int type, int architecture, int units);
+        enum CpuType { MEDIUM,  HIGH };
+        enum CpuArch { OPTERON, INTEL, SPARC}; // CPU architecture
         
-// Copy constructor derived unchanged from base class
-// Destructor derived unchanged from base class
+        Cpu(int type = MEDIUM, int architecture = OPTERON, int units = 1);
+        
+        virtual const char* GetType() const;
+        virtual const char* GetCategory() const;
+        
+    protected:
         void ComputeSupportMetric();
-}
-; // note that ";" is required at end of class definition header file
+};
+
 #endif // CPU_H

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -30,18 +30,20 @@ import org.openide.nodes.*;
 import org.openide.util.Utilities;
 
 import  org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.classview.SmartChangeEvent;
-import org.netbeans.modules.cnd.classview.model.CVUtil.FillingDone;
-
 
 /**
  * @author Vladimir Kvasihn
  */
 public class ProjectNode extends NPNode {
+    public static final boolean EXPORT = Boolean.getBoolean("cnd.classview.export"); // NOI18N
     
-    public ProjectNode(final CsmProject project) {
-        super(project.getGlobalNamespace(), new FillingDone());
+    public ProjectNode(final CsmProject project, Children.Array key) {
+        super(key);
         this.project = project;
+        init(project);
+    }
+    
+    private void init(CsmProject project){
         setName(project.getName());
         setDisplayName(project.getName());
     }
@@ -54,18 +56,6 @@ public class ProjectNode extends NPNode {
         return null;
     }
     
-    protected boolean isSubNamspace(CsmNamespace ns) {
-        if (ns != null) {
-            CsmNamespace parent = ns.getParent();
-            if( parent.isGlobal() ) {
-                if( parent == getNamespace() ) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
     public Image getIcon(int param) {
         return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project_explorer/Project.png"); // NOI18N
     }
@@ -74,84 +64,75 @@ public class ProjectNode extends NPNode {
         return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project_explorer/Project_open.png"); // NOI18N
     }
     
-    
     public CsmProject getProject() {
         return project;
     }
     
-    public void addLoadingNode() {
-        if( loadingNodes == null ) {
-            loadingNodes = new Node[] { CVUtil.createLoadingNode() };
-            final Children children = getChildren();
-            children.MUTEX.writeAccess(new Runnable(){
-                public void run() {
-                    children.add( loadingNodes  );
-                }
-            });
-        }
-    }
-
-    public void removeLoadingNode() {
-        if( loadingNodes != null ) {
-            final Children children = getChildren();
-            children.MUTEX.writeAccess(new Runnable(){
-                public void run() {
-                    children.remove(loadingNodes);
-                    loadingNodes = null;
-                }
-            });
-        }
-    }
-    
-    public boolean update(SmartChangeEvent e) {
-	if( !isDismissed()) {
-            CsmProject prj = getProject();
-	    if( prj != null && e.getChangedProjects().contains(prj) ) {
-                if (isInited()){
-                    return super.update(e);
-                }
-	    }
-	}
-        return false;
-    }
-    
-    private Map map;
     public Action getPreferredAction() {
         if( Diagnostic.DEBUG ) {
-            return new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    map = new HashMap();
-                    System.gc();
-                    long time = System.currentTimeMillis();
-                    long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                    Diagnostic.trace("Creating a map."); // NOI18N
-                    traverse(new BaseNode.Callback() {
-                        public void call(BaseNode node) {
-                            map.put(node, node);
-                        }
-                    });
-                    time = System.currentTimeMillis() - time;
-                    System.gc();
-                    mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - mem;
-                    Diagnostic.trace("A map is created. Used time: " + time + " Used Memory: " + mem/1024 + " Kb"); // NOI18N
-                    map = null;
-                }
-            };
-        }
-        else {
+            return new TraverseAction();
+        } else if(EXPORT) {
+            return new ExportAction();
+        } else {
             return super.getPreferredAction();
         }
     }
     
-    public void dismiss() {
-        setDismissed();
-        if (isInited()){
-            super.dismiss();
-        }
-        project = null;
-    }
-    
     private CsmProject project;
     private Node[] loadingNodes = null;
+    
+    private class TraverseAction extends AbstractAction {
+        private Map map;
+        public TraverseAction() {
+            putValue(Action.NAME, "Measure traverse project node time and memory."); //NOI18N
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            map = new HashMap();
+            System.gc();
+            long time = System.currentTimeMillis();
+            long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            String message = "Creating a map."; // NOI18N
+            if (Diagnostic.DEBUG) {
+                Diagnostic.trace(message);
+            } else {
+                System.out.println(message);
+            }
+            traverse(new BaseNode.Callback() {
+                public void call(BaseNode node) {
+                    map.put(node, node);
+                }
+            });
+            time = System.currentTimeMillis() - time;
+            System.gc();
+            mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - mem;
+            message = "A map is created. Used time: " + time + " Used Memory: " + mem/1024 + " Kb"; // NOI18N
+            if (Diagnostic.DEBUG) {
+                Diagnostic.trace(message);
+            } else {
+                System.out.println(message);
+            }
+            map = null;
+        }
+        public String getName() {
+            return (String) getValue(NAME);
+        }
+    }
+    
+    private class ExportAction extends AbstractAction {
+        public ExportAction() {
+            putValue(Action.NAME, "Export project node."); //NOI18N
+        }
 
+        public void actionPerformed(ActionEvent e) {
+            dump(System.out);
+        }
+    }
+
+    public Action[] getActions(boolean context) {
+        if( Diagnostic.DEBUG || EXPORT) {
+            return new Action[] {new TraverseAction(),new ExportAction()};
+        }
+        return new Action[0];
+    }
 }

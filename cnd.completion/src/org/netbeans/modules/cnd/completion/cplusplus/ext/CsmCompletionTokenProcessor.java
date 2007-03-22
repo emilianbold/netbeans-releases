@@ -1808,7 +1808,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 
     public String toString() {
         int cnt = expStack.size();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (stopped) {
             sb.append("Parsing STOPPED by request.\n"); // NOI18N
         }

@@ -109,7 +109,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
                     virtual = true;
                     break;
                 case CPPTokenTypes.ID:
-                    StringBuffer ancNameBuffer = new StringBuffer();
+                    StringBuilder ancNameBuffer = new StringBuilder();
                     int counter = 0;
                     for( ; token != null; token = token.getNextSibling() ) {
                         switch( token.getType() ) {
@@ -143,9 +143,9 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
     
     public CsmClass _getAncestorCache() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             CsmClass ancestorCache = UIDCsmConverter.UIDtoDeclaration(resolvedAncestorClassCacheUID);
-            assert (ancestorCache != null || resolvedAncestorClassCacheUID == null);
+            // can be null if cached one was removed 
             return ancestorCache;            
         } else {
             return resolvedAncestorClassCacheOLD;
@@ -153,7 +153,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
 
     public void _setAncestorCache(CsmClass ancestorCache) {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             resolvedAncestorClassCacheUID = UIDCsmConverter.declarationToUID(ancestorCache);
             assert (resolvedAncestorClassCacheUID != null || ancestorCache == null);
         } else {
@@ -163,9 +163,9 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     
 
     private CsmClassifier _getClassifierCache() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             CsmClassifier classifierCache = UIDCsmConverter.UIDtoDeclaration(classifierCacheUID);
-            assert (classifierCache != null || classifierCacheUID == null);
+            // can be null if cached one was removed 
             return classifierCache;            
         } else {
             return classifierCacheOLD;
@@ -173,7 +173,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
 
     private void _setClassifierCache(CsmClassifier classifierCache) {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             classifierCacheUID = UIDCsmConverter.declarationToUID(classifierCache);
             assert (classifierCacheUID != null || classifierCacheUID == null);
         } else {

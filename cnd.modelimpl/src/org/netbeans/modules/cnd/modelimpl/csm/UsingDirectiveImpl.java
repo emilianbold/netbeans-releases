@@ -77,9 +77,9 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     }
     
     private CsmNamespace _getReferencedNamespace() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
-            assert referencedNamespace != null || referencedNamespaceUID == null;
+            // can be null if namespace was removed 
             return referencedNamespace;
         } else {
             return this.referencedNamespaceOLD;
@@ -87,7 +87,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     }    
 
     private void _setReferencedNamespace(CsmNamespace referencedNamespace) {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
             assert this.referencedNamespaceUID != null || referencedNamespace == null;
         } else {

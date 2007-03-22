@@ -20,48 +20,54 @@
 //Implementation of disk module class
 
 #include "disk.h"
-//Error logic needs to be added for SetDescription() and SetVendor() since these can return non-zero
 
-Disk::Disk() {
-    SetDescription((char*)"Disk storage");
-    SetVendor((char*)"generic"); //Placeholder for future functionality
-    SetType(tsingle); //default architecture is "no redundantcy"
-    SetCategory(t100); //default disk sub-module size is 100GB
-    SetUnits(1); //default number of disk sub-modules is 1
-    ComputeSupportMetric();
+Disk::Disk(int type /*= SINGLE */, int size /*= T100 */, int units /*= 1 */) :
+    Module("Disk storage", "generic", type, size, units) {
+        ComputeSupportMetric();
 }
+    
+/*
+ * Heuristic for disk module complexity is based on number of disk sub-modules 
+ * and architecture. Size of individual disks is not considered in heuristic
+ */
 
-Disk::Disk(int ty, int cat) {
-    SetDescription((char*)"Disk storage");
-    SetVendor((char*)"generic"); //Placeholder for future functionality
-    SetType(ty);
-    SetCategory(cat);
-    SetUnits(1); //default number of disk sub-modules is 1
-    ComputeSupportMetric();
-}
-
-Disk::Disk(int ty, int cat, int un) {
-    SetDescription((char*)"Disk storage");
-    SetVendor((char*)"generic"); //Placeholder for future functionality
-    SetType(ty);
-    SetCategory(cat);
-    SetUnits(un);
-    ComputeSupportMetric();
-}
-//
-
-void Disk::ComputeSupportMetric() //base class defines this function as "pure virtual"
-{
-//heuristic for disk module complexity is based on number of disk sub-modules and architecture
-//size of individual disks is not considered in heuristic
-    int metric;
-    metric=200*GetUnits();
-    switch (GetType()) {
-        case tsingle: break;
-        case traid: metric += 500; break;
-        default: break;
+void Disk::ComputeSupportMetric() { 
+    int metric = 200 * GetUnits();
+     
+    if (GetTypeID() == RAID) {
+        metric += 500;
     }
+        
     SetSupportMetric(metric);
 }
-
+    
+const char* Disk::GetType() const {
+    switch (GetTypeID()) {
+        case SINGLE: 
+            return "Single disk";
+        
+        case RAID: 
+            return "Raid";
+         
+        default: 
+            return "Undefined";
+    }
+}
+    
+const char* Disk::GetCategory() const {
+    switch (GetCategoryID()) {
+        case T100: 
+            return "100 Gb disk";
+        
+        case T200: 
+            return "200 Gb disk";
+        
+        case T500: 
+            return "500 Gb or more";
+            
+        default: 
+            return "Undefined";
+    }
+}
+    
 // end disk.cc

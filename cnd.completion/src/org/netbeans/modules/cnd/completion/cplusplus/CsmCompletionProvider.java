@@ -109,9 +109,11 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (res != null) {
                 queryCaretOffset = caretOffset;
                 queryAnchorOffset = res.getSubstituteOffset();
+                Collection items = res.getData();
+                resultSet.estimateItems(items.size(), -1);
                 resultSet.setTitle(res.getTitle());
                 resultSet.setAnchorOffset(queryAnchorOffset);
-                resultSet.addAllItems(res.getData());
+                resultSet.addAllItems(items);
                 queryResult = res;
             }
             resultSet.finish();
@@ -144,7 +146,9 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (filterPrefix != null && queryResult != null) {
                 resultSet.setTitle(getFilteredTitle(queryResult.getTitle(), filterPrefix));
                 resultSet.setAnchorOffset(queryAnchorOffset);
-                resultSet.addAllItems(getFilteredData(queryResult.getData(), filterPrefix));
+                Collection items = getFilteredData(queryResult.getData(), filterPrefix);
+                resultSet.estimateItems(items.size(), -1);
+                resultSet.addAllItems(items);
             }
 	    resultSet.finish();
         }

@@ -120,7 +120,7 @@ public class AstUtil {
                     else {
                         AST first = token.getFirstChild();
                         if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
-                            StringBuffer sb = new StringBuffer(first.getText());
+                            StringBuilder sb = new StringBuilder(first.getText());
                             sb.append(' ');
                             AST next = first.getNextSibling();
                             if( next != null ) {

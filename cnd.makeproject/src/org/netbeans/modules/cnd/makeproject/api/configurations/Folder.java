@@ -36,15 +36,17 @@ import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 public class Folder {
-    public static final String DEFAULT_FOLDER_NAME = getString("NewFolderName");
+    public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
+    public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
     
     private ConfigurationDescriptor configurationDescriptor;
-    private String name;
+    private final String name;
     private String displayName;
-    private Folder parent = null;
+    private final Folder parent;
     private Vector items = null; // Folder or Item
     private Vector changeListenerList = null;
-    private boolean projectFiles = true;
+    private final boolean projectFiles;
+    private String id = null;
     
     public Folder(ConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
         this.configurationDescriptor = configurationDescriptor;
@@ -52,8 +54,8 @@ public class Folder {
         this.name = name;
         this.displayName = displayName;
         this.projectFiles = projectFiles;
-        items = new Vector();
-        changeListenerList = new Vector();
+        this.items = new Vector();
+        this.changeListenerList = new Vector();
     }
     
     public int size() {
@@ -73,19 +75,16 @@ public class Folder {
     }
     
     public String getPath() {
-        String un = getName(); // NOI18N
+        StringBuilder builder = new StringBuilder(getName()); 
         Folder parent = getParent();
         while (parent != null) {
-            if (parent.getParent() != null)
-                un = parent.getName() + '/' + un;
+            if (parent.getParent() != null) {
+                builder.insert(0, '/'); // NOI18N
+                builder.insert(0, parent.getName());
+            }
             parent = parent.getParent();
-        }
-        return un;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-        configurationDescriptor.setModified();
+        };
+        return builder.toString();
     }
     
     public String getDisplayName() {
@@ -219,7 +218,10 @@ public class Folder {
      * pool of aux objects
      */
     public String getId() {
-        return "folder-" + getPath(); // NOI18N
+        if (id == null) {
+            id = "f-" + getPath(); // NOI18N
+        }
+        return id;
     }
     
     public FolderConfiguration getFolderConfiguration(Configuration configuration) {
@@ -249,13 +251,15 @@ public class Folder {
     }
     
     public Folder addNewFolder(boolean projectFiles) {
-        String name = DEFAULT_FOLDER_NAME;
+        String name;
+        String displayName;
         for (int i = 1;; i++) {
-            name = DEFAULT_FOLDER_NAME + " " + i; // NOI18N
+            name = DEFAULT_FOLDER_NAME + i;
+            displayName = DEFAULT_FOLDER_DISPLAY_NAME + " " + i; // NOI18N
             if (findFolderByName(name) == null)
                 break;
         }
-        return addNewFolder(name, name, projectFiles);
+        return addNewFolder(name, displayName, projectFiles); // NOI18N
     }
     
     public Folder addNewFolder(String name, String displayName, boolean projectFiles) {
@@ -300,7 +304,7 @@ public class Folder {
             // Remove it form all configurations
             Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
             for (int i = 0; i < configurations.length; i++)
-                configurations[i].removeAuxObject(ItemConfiguration.getId(item.getPath()));
+                configurations[i].removeAuxObject(item.getId()/*ItemConfiguration.getId(item.getPath())*/);
         }
         item.removePropertyChangeListener();
         item.setFolder(null);

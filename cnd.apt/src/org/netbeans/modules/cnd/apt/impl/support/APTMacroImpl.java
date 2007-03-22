@@ -92,7 +92,7 @@ public class APTMacroImpl implements APTMacro {
     }       
 
     public String toString() {
-        StringBuffer retValue = new StringBuffer();
+        StringBuilder retValue = new StringBuilder();
         retValue.append(isSystem() ? "<S>":"<U>"); // NOI18N
         retValue.append("#define '"); // NOI18N
         retValue.append(getName());

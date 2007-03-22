@@ -404,8 +404,7 @@ public final class CacheManagerImpl {
 
             // clean all
             loaded = false;
-            fileLocks = null;
-            projectCache = null;
+            projectCache = new WeakHashMap();
             index = new MasterIndex();        
         }
     }

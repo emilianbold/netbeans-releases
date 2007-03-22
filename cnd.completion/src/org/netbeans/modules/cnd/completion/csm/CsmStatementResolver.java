@@ -28,9 +28,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -202,7 +200,7 @@ public class CsmStatementResolver {
 //        if( expr == null ) {
 //            return "null"; //NOI18N
 //        }
-//        StringBuffer sb = new StringBuffer();
+//        StringBuilder sb = new StringBuilder();
 //        sb.append("text='"); //NOI18N
 //        sb.append(expr.getText());
 //        sb.append("'"); //NOI18N
@@ -210,7 +208,7 @@ public class CsmStatementResolver {
 //    }
     
 //    private static String toString(CsmType type) {
-//        StringBuffer sb = new StringBuffer();
+//        StringBuilder sb = new StringBuilder();
 //        if( type == null ) {
 //            sb.append("null"); //NOI18N
 //        }
@@ -230,7 +228,7 @@ public class CsmStatementResolver {
 //        if( condition == null ) {
 //            return "null"; //NOI18N
 //        }
-//        StringBuffer sb = new StringBuffer(condition.getKind().toString());
+//        StringBuilder sb = new StringBuilder(condition.getKind().toString());
 //        sb.append(' '); //NOI18N
 //        if( condition.getKind() == CsmCondition.Kind.EXPRESSION  ) {
 //            sb.append(toString(condition.getExpression()));
@@ -246,7 +244,7 @@ public class CsmStatementResolver {
 //        if( var == null ) {
 //            return "null"; //NOI18N
 //        }
-//        StringBuffer sb = new StringBuffer(var.getName());
+//        StringBuilder sb = new StringBuilder(var.getName());
 //        sb.append(getOffsetString(var));
 //        sb.append(" type: " + toString(var.getType())); //NOI18N
 //        return sb.toString();

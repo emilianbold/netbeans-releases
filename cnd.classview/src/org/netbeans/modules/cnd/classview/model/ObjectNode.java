@@ -19,21 +19,18 @@
 
 package org.netbeans.modules.cnd.classview.model;
 import javax.swing.*;
-import org.netbeans.modules.cnd.classview.Diagnostic;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.classview.PersistentKey;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.classview.SmartChangeEvent;
 import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
 
 /**
  * @author Vladimir Kvasihn
  */
-public abstract class ObjectNode extends BaseNode {
-    private String uniqueName;
-    private CsmProject project;
-    // for unnamed declatarions
-    private CsmOffsetableDeclaration unnamedDeclaration;
+public abstract class ObjectNode extends BaseNode implements ChangeListener {
+    private PersistentKey key;
     
     public ObjectNode(CsmOffsetableDeclaration declaration) {
         this(declaration, Children.LEAF);
@@ -42,106 +39,38 @@ public abstract class ObjectNode extends BaseNode {
     public ObjectNode(CsmOffsetableDeclaration declaration, Children children) {
         super(children);
         setObject(declaration);
-        if( project.findDeclaration(uniqueName) == null ) {
-            if( Diagnostic.DEBUG && declaration.getName().length() > 0 ) {
-                System.err.println(".ctor can't find object by unique name " + uniqueName); // NOI18N
-            }
-        }
-        String name = declaration.getName();
-        setName(name);
-        setDisplayName(name);
-        setShortDescription(name);
     }
-    
+
     /** Implements AbstractCsmNode.getData() */
     public CsmObject getCsmObject() {
         return getObject();
     }
     
     public CsmOffsetableDeclaration getObject() {
-        CsmOffsetableDeclaration object = null;
-        if (!isDismissed()) {
-            CsmProject prj = getDeclarationProject();
-            if (prj != null) {
-                object = (CsmOffsetableDeclaration) prj.findDeclaration(uniqueName);
-                if( object == null ) {
-                    if( Diagnostic.DEBUG) {
-                        System.err.println("Can't find object by unique name " + uniqueName); // NOI18N
-                    }
-                    object =unnamedDeclaration;
-                }
-            }
-        }
-        return object;
-    }
-    
-    protected CsmProject getDeclarationProject(){
-        return project;
-    }
-    
-    protected String getUniqueName(){
-        return uniqueName;
+        return (CsmOffsetableDeclaration) key.getObject();
     }
     
     protected void setObject(CsmOffsetableDeclaration declaration) {
-        uniqueName = declaration.getUniqueName();
-        project = declaration.getContainingFile().getProject();
-        if (declaration.getName().length()==0){
-            unnamedDeclaration = declaration;
-        }
+        key = PersistentKey.createKey(declaration);
     }
     
     public Action getPreferredAction() {
         return createOpenAction();
     }
     
-    protected Action createOpenAction() {
-        return new GoToDeclarationAction(getObject());
+    private Action createOpenAction() {
+        CsmOffsetableDeclaration decl = getObject();
+        if (decl != null) {
+            return new GoToDeclarationAction(decl);
+        }
+        return null;
     }
     
     public Action[] getActions(boolean context) {
-        return new Action[] { createOpenAction() };
-    }
-    
-    protected void objectChanged() {
-    }
-    
-    public boolean update(SmartChangeEvent e) {
-        //super.update(e);
-        if (!isDismissed()) {
-            String uniqueName = getUniqueName();
-            if( e.getChangedUniqueNames().contains(uniqueName) ) {
-                CsmOffsetableDeclaration decl = getObject();
-                if (decl != null){
-                    setObject(decl);
-                    objectChanged();
-                    return true;
-                } else {
-                    final Children children = getParentNode().getChildren();
-                    children.MUTEX.writeAccess(new Runnable(){
-                        public void run() {
-                            children.remove(new Node[] { ObjectNode.this });
-                        }
-                    });
-                }
-            } else if( e.getRemovedUniqueNames().contains(uniqueName) ) {
-                final Children children = getParentNode().getChildren();
-                children.MUTEX.writeAccess(new Runnable(){
-                    public void run() {
-                        children.remove(new Node[] { ObjectNode.this });
-                    }
-                });
-                return true;
-            }
+        Action action = createOpenAction();
+        if (action != null){
+            return new Action[] { action };
         }
-        return false;
+        return new Action[0];
     }
-    
-    public void dismiss() {
-        setDismissed();
-        //declaration = null;
-        super.dismiss();
-        project = null;
-    }
-    
 }

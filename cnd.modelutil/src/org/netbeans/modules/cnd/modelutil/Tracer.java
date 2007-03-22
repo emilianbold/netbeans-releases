@@ -33,7 +33,7 @@ public class Tracer {
     
     private int step = 4;
     private PrintStream pstream;
-    private StringBuffer indentBuffer = new StringBuffer();
+    private StringBuilder indentBuffer = new StringBuilder();
     
     public Tracer() {
 	this(System.err);

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import javax.swing.event.ChangeEvent;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
@@ -27,23 +28,33 @@ import  org.netbeans.modules.cnd.api.model.*;
  * @author Vladimir Kvasihn
  */
 public class GlobalVarNode extends ObjectNode {
-
+    
     public GlobalVarNode(CsmVariable var) {
         super(var, Children.LEAF);
+        init(var);
     }
-
-    private CsmVariable getVariable() {
-        return (CsmVariable) getObject();
-    }
-
-    protected void objectChanged() {
-        String name = getObject().getName();
+    
+    private void init(CsmVariable var){
+        String name = var.getName();
         setName(name);
         setDisplayName(name);
         setShortDescription(name);
     }
-
-    protected int getWeight() {
-        return VARIABLE_WEIGHT;
+    
+    private CsmVariable getVariable() {
+        return (CsmVariable) getObject();
+    }
+    
+    public void stateChanged(ChangeEvent e) {
+        Object o = e.getSource();
+        if (o instanceof CsmVariable){
+            CsmVariable cls = (CsmVariable)o;
+            setObject(cls);
+            init(cls);
+            fireIconChange();
+            fireOpenedIconChange();
+        } else if (o != null) {
+            System.err.println("Expected CsmVariable. Actually event contains "+o.toString());
+        }
     }
 }

@@ -44,8 +44,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private final CsmType type;
     private boolean _static = false;
     
-    // only one of scopeOLD/scopeAccessor must be used (based on USE_REPOSITORY)
-    private CsmScope scopeOLD;
+    // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
     
     private final boolean _extern;
@@ -194,6 +194,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         if( _getScope() instanceof MutableDeclarationsContainer ) {
             ((MutableDeclarationsContainer) _getScope()).removeDeclaration(this);
         }
+        unregisterInProject();
     }
     
     public CsmVariableDefinition getDefinition() {
@@ -203,42 +204,23 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     private CsmScope _getScope() {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmScope scope = UIDCsmConverter.UIDToScope(this.scopeUID);
-            assert (scope != null || scopeUID == null);
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
+            CsmScope scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+            assert (scope != null || scopeUID == null) : "null object for UID " + scopeUID;
             return scope;
         } else {
-            return scopeOLD;
+            return scopeRef;
         }
     }
     
     private void _setScope(CsmScope scope) {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (scopeUID != null || scope == null);
         } else {
-            this.scopeOLD = scope;
+            this.scopeRef = scope;
         }
     }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // impl of RegistarableDeclaration
-    
-    // flag indicated wether declaration was registered in project or not
-    private boolean registered = false;
-    
-    public boolean isRegistered() {
-        return this.registered;
-    }
-
-    public void registered() {
-        this.registered = true;
-    }
-
-    public void unregistered() {
-        this.registered = false;
-        cleanUID();
-    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
@@ -252,6 +234,17 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         UIDObjectFactory.getDefaultFactory().writeUID(scopeUID, output);
         PersistentUtils.writeExpression(initExpr, output);
         PersistentUtils.writeType(type, output);
+        
+        // prepared uid to write
+        CsmUID<CsmScope> writeScopeUID;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            writeScopeUID = this.scopeUID;
+        } else {
+            // save reference
+            writeScopeUID = UIDCsmConverter.scopeToUID(this.scopeRef);
+        }        
+        // could be null UID (i.e. parameter)
+        UIDObjectFactory.getDefaultFactory().writeUID(writeScopeUID, output);        
     }  
     
     public VariableImpl(DataInput input) throws IOException {
@@ -260,8 +253,25 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         assert this.name != null;
         this._static = input.readBoolean();
         this._extern = input.readBoolean();
-        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.initExpr = (ExpressionBase) PersistentUtils.readExpression(input);
         this.type = PersistentUtils.readType(input);
+
+        CsmUID<CsmScope> readScopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        // could be null UID (i.e. parameter)
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            this.scopeUID = readScopeUID;
+            
+            this.scopeRef = null;
+        } else {
+            // restore reference
+            this.scopeRef = UIDCsmConverter.UIDtoScope(readScopeUID);
+            assert this.scopeRef != null || readScopeUID == null : "no object for UID " + readScopeUID;
+            
+            this.scopeUID = null;
+        }        
     }     
+
+    public String toString() {
+        return "" + getKind() + ' ' + name /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
+    }
 }

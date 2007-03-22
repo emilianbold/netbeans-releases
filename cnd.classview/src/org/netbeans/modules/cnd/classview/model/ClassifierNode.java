@@ -20,74 +20,15 @@
 package org.netbeans.modules.cnd.classview.model;
 
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.classview.SmartChangeEvent;
-import org.netbeans.modules.cnd.classview.model.CVUtil.FillingDone;
-import org.netbeans.modules.cnd.classview.model.CVUtil.LazyClassifierSortedArray;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ClassifierNode  extends ObjectNode {
-    private FillingDone inited;
+public abstract class ClassifierNode  extends ObjectNode {
     
-    protected ClassifierNode(CsmCompoundClassifier obj, FillingDone init) {
-        super(obj, new LazyClassifierSortedArray(obj, init));
-        inited = init;
-    }
-    
-    public boolean isInited(){
-        synchronized (inited){
-            return inited.isFillingDone();
-        }
-    }
-
-    protected int getWeight() {
-        return CLASSIFIER_WEIGHT;
-    }
-    
-    public boolean update(SmartChangeEvent e) {
-        if (!isDismissed()) {
-            if (isInited()) {
-                if( super.update(e) ) {
-                    return true;
-                }
-            } else{
-                String uniqueName = getUniqueName();
-                if( e.getChangedUniqueNames().contains(uniqueName) ) {
-                    CsmOffsetableDeclaration decl = getObject();
-                    if (decl != null){
-                        setObject(decl);
-                    } else {
-                        final Children children = getParentNode().getChildren();
-                        children.MUTEX.writeAccess(new Runnable(){
-                            public void run() {
-                                children.remove(new Node[] { ClassifierNode.this });
-                            }
-                        });
-                    }
-                } else if( e.getRemovedUniqueNames().contains(uniqueName) ) {
-                    final Children children = getParentNode().getChildren();
-                    children.MUTEX.writeAccess(new Runnable(){
-                        public void run() {
-                            children.remove(new Node[] { ClassifierNode.this });
-                        }
-                    });
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    public void dismiss() {
-        setDismissed();
-        if (isInited()){
-            super.dismiss();
-        }
+    protected ClassifierNode(CsmCompoundClassifier obj, Children.Array key) {
+        super(obj, key);
     }
 }

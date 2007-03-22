@@ -42,7 +42,4 @@ class LoadingNode extends BaseNode {
     public Image getIcon(int param) {
         return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/waitNode.gif"); // NOI18N
     }
-    protected int getWeight() {
-        return LOADING_WEIGHT;
-    }
 }

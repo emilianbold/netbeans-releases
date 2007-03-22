@@ -44,35 +44,35 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     private final String qualifiedName;
     
-    // only one of namespaceOLD/namespaceUID must be used (based on USE_REPOSITORY)    
-    private final NamespaceImpl namespaceOLD;
+    // only one of namespaceRef/namespaceUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    private final NamespaceImpl namespaceRef;
     private final CsmUID<CsmNamespace> namespaceUID;
     
     private boolean isValid = true;
 
     private boolean _static = false;
     private CsmVisibility visibility = CsmVisibility.PRIVATE;
-    // only one of containingClassOLD/containingClassUID must be used (based on USE_REPOSITORY)  
-    private final CsmClass containingClassOLD;
+    // only one of containingClassRef/containingClassUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    private final CsmClass containingClassRef;
     private final CsmUID<CsmClass> containingClassUID;
     
     public ClassEnumBase(String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass, AST ast) {
         super(ast, file);
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             namespaceUID = UIDCsmConverter.namespaceToUID(namespace);
-            assert (namespaceUID != null || namespace == null);
-            this.namespaceOLD = null;
+            assert (namespaceUID != null || namespace == null)  : "null UID for namespace " + namespace;
+            this.namespaceRef = null;
         } else {
-            this.namespaceOLD = namespace;
+            this.namespaceRef = namespace;
             this.namespaceUID = null;
         }        
         this.name = (name == null) ? "" : name;
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             containingClassUID = UIDCsmConverter.declarationToUID(containingClass);
             assert (containingClassUID != null || containingClass == null);
-            this.containingClassOLD = null;
+            this.containingClassRef = null;
         } else {
-            this.containingClassOLD = containingClass;
+            this.containingClassRef = containingClass;
             this.containingClassUID = null;
         }         
         if( containingClass == null ) {
@@ -150,7 +150,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     }
     
 //    private void setContainingClass(CsmClass cls) {
-//        containingClass = cls;
+//        containingClassRef = cls;
 //        qualifiedName = cls.getQualifiedName() + "::" + getName();
 //    }
     
@@ -171,22 +171,22 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     }
 
     private NamespaceImpl _getNamespaceImpl() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             NamespaceImpl ns = (NamespaceImpl)UIDCsmConverter.UIDtoNamespace(namespaceUID);
-            assert (ns != null || namespaceUID == null);
+            assert (ns != null || namespaceUID == null) : "null object for UID " + namespaceUID ;
             return ns;            
         } else {
-            return namespaceOLD;
+            return namespaceRef;
         }
     }
 
     private CsmClass _getContainingClass() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             CsmClass containingClass = UIDCsmConverter.UIDtoDeclaration(containingClassUID);
-            assert (containingClass != null || containingClassUID == null);
+            assert (containingClass != null || containingClassUID == null) : "null object for UID " + containingClassUID;
             return containingClass;            
         } else {
-            return containingClassOLD;
+            return this.containingClassRef;
         }
     }
 
@@ -201,10 +201,21 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         assert this.qualifiedName != null;
         output.writeUTF(this.qualifiedName);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        //assert this.namespaceUID != null;
-        // could be null for structs defined in method body
-        factory.writeUID(this.namespaceUID, output); 
-        factory.writeUID(this.containingClassUID, output); // could be null
+        CsmUID<CsmNamespace> writeNamespaceUID;
+        CsmUID<CsmClass> writeContainingClassUID;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            // could be null for structs defined in method body
+            writeNamespaceUID = this.namespaceUID;
+            writeContainingClassUID = this.containingClassUID;
+        } else {
+            // save reference
+            writeNamespaceUID = UIDCsmConverter.namespaceToUID(this.namespaceRef);
+            assert writeNamespaceUID != null || this.namespaceRef == null;
+            writeContainingClassUID = UIDCsmConverter.declarationToUID(this.containingClassRef);
+            assert writeContainingClassUID != null || this.containingClassRef == null;
+        }
+        factory.writeUID(writeNamespaceUID, output);
+        factory.writeUID(writeContainingClassUID, output);
         output.writeBoolean(this._static);
         assert this.visibility != null;
         PersistentUtils.writeVisibility(this.visibility, output);
@@ -218,16 +229,31 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
         assert this.qualifiedName != null;
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.namespaceUID = factory.readUID(input);
-        // could be null for structs defined in method body
-        //assert this.namespaceUID != null;
-        this.containingClassUID = factory.readUID(input); // could be null
+        CsmUID<CsmNamespace> readNamespaceUID = factory.readUID(input);
+        CsmUID<CsmClass> readContainingClassUID = factory.readUID(input);
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            // could be null for structs defined in method body
+            this.namespaceUID = readNamespaceUID;
+            // could be null
+            this.containingClassUID = readContainingClassUID;
+
+            this.containingClassRef = null;
+            this.namespaceRef = null;
+        } else {
+            // restore reference
+            this.namespaceRef = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(readNamespaceUID);
+            assert this.namespaceRef != null || readNamespaceUID == null : "no object for UID " + readNamespaceUID;
+
+            this.containingClassRef = UIDCsmConverter.UIDtoDeclaration(readContainingClassUID);
+            assert this.containingClassRef != null || readContainingClassUID == null : "no object for UID " + readContainingClassUID;
+            
+            this.namespaceUID = null;
+            this.containingClassUID = null;
+        }
         this._static = input.readBoolean();
         this.visibility = PersistentUtils.readVisibility(input);
         assert this.visibility != null;
                 
         assert TraceFlags.USE_REPOSITORY;
-        this.containingClassOLD = null;
-        this.namespaceOLD = null;
-	}     
     }
+}

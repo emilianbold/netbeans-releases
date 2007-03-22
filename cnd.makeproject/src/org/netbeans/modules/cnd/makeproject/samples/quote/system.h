@@ -19,26 +19,30 @@
 
 #if !defined SYSTEM_H
 #define SYSTEM_H
+
 #include "module.h"
 #include <vector>
+
 using namespace std;
 
-class System // collection of modules
-{
-    private:
-        vector <Module*> moduleList;
-        int supportMetric;
+// System is a collection of modules
+
+class System {
+public:
+    System();
+    System(const System& obj); //copy constructor
         
-        public:
-            System();
-            System(const System& obj); //copy constructor
-            System& operator=(System& obj); //overload of assignment ("=") operator
-            ~System();
-            void AddModule(Module* m);
-            Module* GetModule(int i);
-            int GetModuleCount();
-            int GetSupportMetric();
-            void DisplayList();
-}
-;// note that ";" is required at end of class definition header file
+    Module& GetModule(int index) const;
+    void AddModule(Module* module);
+        
+    int GetModuleCount() const;
+    int GetSupportMetric() const;
+
+private:
+    vector <Module*> moduleList;
+    int supportMetric;
+
+friend ostream& operator<< (ostream&, const System&);
+};
+
 #endif //SYSTEM_H

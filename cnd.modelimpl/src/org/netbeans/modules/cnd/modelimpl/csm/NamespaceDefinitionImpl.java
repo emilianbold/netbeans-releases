@@ -46,8 +46,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     
     private final String name;
     
-    // only one of namespaceOLD/namespaceUID must be used (based on USE_REPOSITORY)
-    private final NamespaceImpl namespaceOLD;
+    // only one of namespaceRef/namespaceUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    private final NamespaceImpl namespaceRef;
     private final CsmUID<CsmNamespace> namespaceUID;
     
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
@@ -57,12 +57,12 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             namespaceUID = UIDCsmConverter.namespaceToUID(nsImpl);
             assert namespaceUID != null;
-            this.namespaceOLD = null;
+            this.namespaceRef = null;
         } else {
-            this.namespaceOLD = nsImpl;
+            this.namespaceRef = nsImpl;
             this.namespaceUID = null;
         }
         
@@ -77,7 +77,10 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             
     public List/*<CsmDeclaration>*/ getDeclarations() {
         if (TraceFlags.USE_REPOSITORY) {
-            List<CsmDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(declarations);
+            List<CsmDeclaration> decls;
+            synchronized (declarations) {
+                decls = UIDCsmConverter.UIDsToDeclarations(declarations);
+            }
             return decls;
         } else {
             return new ArrayList(declarationsOLD);
@@ -152,12 +155,12 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     }
 
     private NamespaceImpl _getNamespaceImpl() {
-        if (TraceFlags.USE_REPOSITORY) {
+        if (TraceFlags.USE_REPOSITORY && TraceFlags.USE_UID_TO_CONTAINER) {
             NamespaceImpl impl = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(namespaceUID);
-            assert impl != null;
+            assert impl != null || namespaceUID == null : "null object for UID " + namespaceUID;
             return impl;
         } else {
-            return namespaceOLD;
+            return namespaceRef;
         }
     }
     
@@ -168,7 +171,19 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         super.write(output);  
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.declarations, output, true);
-        factory.writeUID(this.namespaceUID, output);
+        
+        CsmUID<CsmNamespace> writeNamespaceUID;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            writeNamespaceUID = this.namespaceUID;
+        } else {
+            // save reference
+            assert this.namespaceRef != null;
+            writeNamespaceUID = UIDCsmConverter.namespaceToUID(this.namespaceRef);        
+        }
+        // not null
+        assert writeNamespaceUID != null;
+        factory.writeUID(writeNamespaceUID, output);
+        
         assert this.name != null;
         output.writeUTF(this.name);
     }  
@@ -177,12 +192,26 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.declarations = factory.readUIDCollection(Collections.synchronizedList(new ArrayList<CsmUID<CsmDeclaration>>()), input);
-        this.namespaceUID = factory.readUID(input);
+        
+        CsmUID<CsmNamespace> readParentUID = factory.readUID(input);
+        // not null UID
+        assert readParentUID != null;
+        if (TraceFlags.USE_UID_TO_CONTAINER) {
+            this.namespaceUID = readParentUID;
+            
+            this.namespaceRef = null;
+        } else {
+            // restore reference
+            this.namespaceRef = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(readParentUID);
+            assert this.namespaceRef != null || readParentUID == null : "no object for UID " + readParentUID;
+            
+            this.namespaceUID = null;
+        }    
+        
         this.name = TextCache.getString(input.readUTF());
         assert this.name != null;
         
         assert TraceFlags.USE_REPOSITORY;
         this.declarationsOLD = null;
-        this.namespaceOLD = null;
     }      
 }

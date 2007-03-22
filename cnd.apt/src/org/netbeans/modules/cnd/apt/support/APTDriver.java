@@ -54,4 +54,8 @@ public final class APTDriver {
     public void invalidateAll() {
         APTDriverImpl.invalidateAll();
     }
+    
+    public void close() {
+        APTDriverImpl.close();
+    }
 }

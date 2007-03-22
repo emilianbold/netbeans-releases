@@ -245,7 +245,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                                     List/*<String>*/ userIncludePaths,
                                     Map/*<String, Integer>*/ recurseIncludes,
                                     Stack/*IncludeInfo*/ inclStack) {
-        StringBuffer retValue = new StringBuffer();
+        StringBuilder retValue = new StringBuilder();
         retValue.append("User includes:\n"); // NOI18N
         retValue.append(APTUtils.includes2String(userIncludePaths));
         retValue.append("\nSys includes:\n"); // NOI18N
@@ -257,7 +257,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
 
     private static String includesStack2String(Stack/*IncludeInfo*/ inclStack) {
-        StringBuffer retValue = new StringBuffer();
+        StringBuilder retValue = new StringBuilder();
         if (inclStack == null) {
             retValue.append("<not from #include>"); // NOI18N
         } else {

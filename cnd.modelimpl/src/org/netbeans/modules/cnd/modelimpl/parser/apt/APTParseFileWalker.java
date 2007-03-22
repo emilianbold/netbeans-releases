@@ -22,12 +22,13 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.apt.impl.support.*;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -224,22 +225,30 @@ public class APTParseFileWalker extends APTWalker {
 
     private void include(String path, APTInclude apt) {
         FileImpl included = null;
+        boolean removedFile = false;
         if (path != null && getIncludeHandler().pushInclude(path, apt.getToken().getLine())) {
             ProjectBase curProject = file.getProjectImpl();
             if (curProject != null) {
                 ProjectBase inclFileOwner = curProject.resolveFileProjectOnInclude(path);
-                included = includeAction(inclFileOwner, path, preprocState, mode, apt);
+                try {
+                    included = includeAction(inclFileOwner, path, preprocState, mode, apt);
+                } catch (FileNotFoundException ex) {
+                    removedFile = true;
+                    APTUtils.LOG.log(Level.SEVERE, "file {0} not found", new Object[] {path});// NOI18N
+                } catch (IOException ex) {
+                    ex.printStackTrace(System.err);
+                }
             } else {
                 APTUtils.LOG.log(Level.SEVERE, "file {0} without project!!!", new Object[] {file});// NOI18N
             }
         }
         
-        if (needMacroAndIncludes()) {
+        if (needMacroAndIncludes() || removedFile) {
             file.addInclude(createInclude(apt, included));
         }
     }
 
-    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, APTPreprocState preprocState, int mode, APTInclude apt) {
+    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, APTPreprocState preprocState, int mode, APTInclude apt) throws IOException {
         try {
             return inclFileOwner.onFileIncluded(inclPath, preprocState, mode);
         } catch (NullPointerException ex) {

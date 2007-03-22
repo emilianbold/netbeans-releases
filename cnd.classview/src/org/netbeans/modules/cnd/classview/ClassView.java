@@ -24,14 +24,17 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.beans.PropertyVetoException;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.swing.plaf.ViewportUI;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.text.*;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -50,7 +53,8 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     /** composited view */
     protected BeanTreeView view;
     
-    private ClassViewModel model = new ClassViewModel();
+    private ClassViewModel model;// = new ClassViewModel();
+    private ViewMouseListener mouseListener = new ViewMouseListener();
     
     private boolean fillingModel = false;
     
@@ -61,14 +65,9 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     private static final boolean TRACE_MODEL_CHANGE_EVENTS = Boolean.getBoolean("cnd.classview.trace.events"); // NOI18N
     
     public ClassView() {
-        
-        view = new BeanTreeView();
-        view.setRootVisible(false);
-        view.setDragSource(true);
         setLayout(new BorderLayout());
-        add(view, BorderLayout.CENTER);
-        
-        this.manager = new ExplorerManager();
+        //init();
+        manager = new ExplorerManager();
         
         ActionMap map = this.getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
@@ -80,34 +79,40 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
 //        associateLookup (ExplorerUtils.createLookup (manager, map));
         
         setupRootContext(createEmptyRoot());
-        addViewListeners();
     }
-
+    
+    private void init(){
+        view = new BeanTreeView();
+        view.setRootVisible(false);
+        view.setDragSource(true);
+        add(view, BorderLayout.CENTER);
+    }
+    
     /* Read accessible context
      * @return - accessible context
      */
     public AccessibleContext getAccessibleContext() {
-	if (accessibleContext == null) {
-	    accessibleContext = new AccessibleJComponent() {
-		public AccessibleRole getAccessibleRole() {
-		    return AccessibleRole.PANEL;
-		}
-		
-		public String getAccessibleName() {
-		    if (accessibleName != null) {
-			return accessibleName;
-		    }
-		    
-		    return getName();
-		}
-		
-		/* Fix for 19344: Null accessible decription of all TopComponents on JDK1.4 */
-		public String getToolTipText() {
-		    return ClassView.this.getToolTipText();
-		}
-	    };
-	}
-
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleJComponent() {
+                public AccessibleRole getAccessibleRole() {
+                    return AccessibleRole.PANEL;
+                }
+                
+                public String getAccessibleName() {
+                    if (accessibleName != null) {
+                        return accessibleName;
+                    }
+                    
+                    return getName();
+                }
+                
+                /* Fix for 19344: Null accessible decription of all TopComponents on JDK1.4 */
+                public String getToolTipText() {
+                    return ClassView.this.getToolTipText();
+                }
+            };
+        }
+        
         return accessibleContext;
     }
     
@@ -115,58 +120,39 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         super.requestFocusInWindow();
         return view.requestFocusInWindow();
     }
-
+    
     // In the SDI, requestFocus is called rather than requestFocusInWindow:
     public void requestFocus() {
         super.requestFocus();
         view.requestFocus();
     }
     
-    
-    
-    
-    private void addViewListeners(Component comp){
-        comp.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent e) {
-                setUserActivity();
-            }
-            public void mouseEntered(MouseEvent e) {
-                setUserActivity();
-            }
-            public void mouseExited(MouseEvent e) {
-                setUserActivity();
-            }
-            public void mousePressed(MouseEvent e) {
-                setUserActivity();
-            }
-            public void mouseReleased(MouseEvent e) {
-                setUserActivity();
-            }
-        });
-        comp.addMouseMotionListener(new MouseMotionListener() {
-            public void mouseDragged(MouseEvent e) {
-                setUserActivity();
-            }
-            public void mouseMoved(MouseEvent e) {
-                setUserActivity();
-            }
-        });
-    }
-    
-    private void addViewListeners(){
+    private void addRemoveViewListeners(boolean add){
         Component[] scroll = view.getComponents();
         if (scroll != null){
             for(int i = 0; i < scroll.length; i++){
                 Component comp = scroll[i];
                 if (comp instanceof JScrollBar) {
-                    addViewListeners(comp);
+                    if (add) {
+                        comp.addMouseListener(mouseListener);
+                        comp.addMouseMotionListener(mouseListener);
+                    } else {
+                        comp.removeMouseListener(mouseListener);
+                        comp.removeMouseMotionListener(mouseListener);
+                    }
                 }
             }
         }
         JViewport port = view.getViewport();
         Component[] comp = port.getComponents();
         if (comp != null && comp.length>0) {
-            addViewListeners(comp[0]);
+            if (add) {
+                comp[0].addMouseListener(mouseListener);
+                comp[0].addMouseMotionListener(mouseListener);
+            } else {
+                comp[0].removeMouseListener(mouseListener);
+                comp[0].removeMouseMotionListener(mouseListener);
+            }
         }
     }
     
@@ -175,7 +161,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
      * delay on user activity.
      */
     private static final int USER_MOUSE_ACTIVITY_DELAY = 2000;
-
+    
     private void setUserActivity(){
         if (userActivity == null) {
             userActivity = new Timer(USER_MOUSE_ACTIVITY_DELAY, new ActionListener() {
@@ -196,7 +182,9 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
             model.setUserActivity(false);
         }
         //System.out.println("Stop user activity");
-        userActivity.stop();
+        if (userActivity != null) {
+            userActivity.stop();
+        }
     }
     
     public void startup() {
@@ -204,18 +192,27 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         if( model != null ) {
             model.dispose();
         }
+        init();
         model = new ClassViewModel();
         addRemoveListeners(true);
+        addRemoveViewListeners(true);
         startFillingModel();
     }
     
     public void shutdown() {
         if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is shutting down"); // NOI18N
         addRemoveListeners(false);
+        addRemoveViewListeners(false);
         if( model != null ) {
             model.dispose();
             model = null;
         }
+        stopViewModify();
+        remove(view);
+        view = null;
+        userActivity =null;
+        mouseListener = null;
+        setupRootContext(createEmptyRoot());
     }
     
     private void addRemoveListeners(boolean add) {
@@ -234,19 +231,17 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     
     public void projectOpened(CsmProject project) {
         if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT OPENED " + project); // NOI18N
-        model.updateProjects();
-        setupRootContext(model.getRoot());
+        if (model != null) {
+            model.openProject(project);
+            setupRootContext(model.getRoot());
+        }
     }
     
     public void projectClosed(CsmProject project) {
         if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT CLOSEED " + project); // NOI18N
-        model.updateProjects();
-        setupRootContext(model.getRoot());
-        // release Class View project nodes when projects are closed
-        if (CsmModelAccessor.getModel().projects().size()==0){
-            model.dispose();
-            model = new ClassViewModel();
-            setupRootContext(createEmptyRoot());
+        if (model != null) {
+            model.closeProject(project);
+            setupRootContext(model.getRoot());
         }
     }
     
@@ -254,7 +249,9 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         if( TRACE_MODEL_CHANGE_EVENTS ) {
             new CsmTracer().dumpModelChangeEvent(e);
         }
-        model.scheduleUpdate(e);
+        if (model != null) {
+            model.scheduleUpdate(e);
+        }
     }
     
     public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
@@ -264,7 +261,6 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
             startup();
         }
     }
-    
     
     private void startFillingModel() {
         
@@ -306,12 +302,17 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         return new AbstractNode(Children.LEAF);
     }
     
-    
     // VK: code is copied from org.netbeans.modules.favorites.Tab class
     /** Exchanges deserialized root context to projects root context
      * to keep the uniquennes. */
     protected void setupRootContext(Node rc) {
         getExplorerManager().setRootContext(rc);
+        try {
+            getExplorerManager().setSelectedNodes(new Node[0]);
+        } catch (PropertyVetoException ex) {
+            ex.printStackTrace();
+        }
+        if( Diagnostic.DEBUG ) Diagnostic.trace(">>> Setup root context "+rc); // NOI18N
         //setIcon(rc.getIcon(BeanInfo.ICON_COLOR_16x16));
         setToolTipText(I18n.getMessage("ClassViewTitle"));	// NOI18N
         setName(I18n.getMessage("ClassViewTooltip"));	// NOI18N
@@ -353,5 +354,36 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         }
         
     };
+    
+    private class ViewMouseListener implements MouseListener, MouseMotionListener{
+        
+        public void mouseClicked(MouseEvent e) {
+            setUserActivity();
+        }
+        
+        public void mouseEntered(MouseEvent e) {
+            setUserActivity();
+        }
+        
+        public void mouseExited(MouseEvent e) {
+            setUserActivity();
+        }
+        
+        public void mousePressed(MouseEvent e) {
+            setUserActivity();
+        }
+        
+        public void mouseReleased(MouseEvent e) {
+            setUserActivity();
+        }
+        
+        public void mouseDragged(MouseEvent e) {
+            setUserActivity();
+        }
+        
+        public void mouseMoved(MouseEvent e) {
+            setUserActivity();
+        }
+    }
     
 }

@@ -109,7 +109,7 @@ public class Diagnostic {
     
     private static final int step = 4;
     
-    private static StringBuffer indentBuffer = new StringBuffer();
+    private static StringBuilder indentBuffer = new StringBuilder();
     
     public static void indent() {
         setupIndentBuffer(indentBuffer.length() + step);
@@ -516,7 +516,7 @@ public class Diagnostic {
             }
 
             public String toString() {
-                StringBuffer retValue = new StringBuffer();
+                StringBuilder retValue = new StringBuilder();
                 
                 retValue.append("===> ").append(include); // NOI18N
                 if (this.isFailedInclude()) {
@@ -664,7 +664,7 @@ public class Diagnostic {
             }
             
             public String toString() {
-                StringBuffer retValue = new StringBuffer();
+                StringBuilder retValue = new StringBuilder();
                 retValue.append("===> [").append(counter).append("] similar "); // NOI18N
                 retValue.append(getSourceName()).append(" error(s) with the first :\n"); // NOI18N
                 retValue.append(indentBuffer.toString()).append(e.toString());

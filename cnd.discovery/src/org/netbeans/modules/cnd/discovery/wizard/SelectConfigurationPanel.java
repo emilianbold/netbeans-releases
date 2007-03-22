@@ -19,16 +19,21 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -46,6 +51,9 @@ import org.netbeans.modules.cnd.discovery.wizard.tree.MacrosListModel;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationNode;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -55,6 +63,8 @@ public final class SelectConfigurationPanel extends JPanel {
     private SelectConfigurationWizard wizard;
     private String oldConsolidation;
     private boolean showResulting;
+    private boolean wasTerminated = false;
+    private boolean isStoped = false;
     
     /** Creates new form DiscoveryVisualPanel2 */
     public SelectConfigurationPanel(SelectConfigurationWizard wizard) {
@@ -275,16 +285,39 @@ public final class SelectConfigurationPanel extends JPanel {
         return NbBundle.getBundle(SelectConfigurationPanel.class).getString(key);
     }
     
-    void read(DiscoveryDescriptor wizardDescriptor) {
+    private Icon getLoadingIcon() {
+        String path = "org/netbeans/modules/cnd/discovery/wizard/resources/waitNode.gif"; // NOI18N
+        Image image = Utilities.loadImage(path);
+        if (image != null) {
+            return new ImageIcon(image);
+        } else {
+            return null;
+        }
+    }
+    
+    void read(final DiscoveryDescriptor wizardDescriptor) {
         String consolidation = wizardDescriptor.getLevel();
         boolean changedConsolidation = false;
         if (!consolidation.equals(oldConsolidation)) {
             oldConsolidation = consolidation;
             changedConsolidation = true;
         }
-        if (wizardDescriptor.isInvokeProvider()) {
-            buildModel(wizardDescriptor);
-            creteTreeModel(wizardDescriptor);
+        if (wizardDescriptor.isInvokeProvider() || wasTerminated) {
+            // clear model
+            wizardDescriptor.setConfigurations(null);
+            ConfigurationTreeModel model = new ConfigurationTreeModel();
+            DefaultMutableTreeNode loading= new DefaultMutableTreeNode(getString("LoadingRootText")); // NOI18N
+            ((DefaultMutableTreeNode)model.getRoot()).add(loading);
+            DefaultTreeCellRenderer renderer= new DefaultTreeCellRenderer();
+            configurationTree.setCellRenderer(renderer);
+            renderer.setLeafIcon(getLoadingIcon());
+            configurationTree.setModel(model);
+            // count configurations in other thread.
+            AnalyzingTask task = new AnalyzingTask(wizardDescriptor);
+            RequestProcessor.getDefault().post(task);
+            //task.start();
+            isStoped = false;
+            wasTerminated = true;
         } else if (changedConsolidation){
             List<ProjectConfiguration> projectConfigurations = wizardDescriptor.getConfigurations();
             if (projectConfigurations != null) {
@@ -319,7 +352,6 @@ public final class SelectConfigurationPanel extends JPanel {
             }
         });
         List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
-        wizardDescriptor.setConfigurations(projectConfigurations);
         List<String> includedFiles = new ArrayList<String>();
         wizardDescriptor.setIncludedFiles(includedFiles);
         for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
@@ -333,6 +365,7 @@ public final class SelectConfigurationPanel extends JPanel {
             }
         }
         wizardDescriptor.setInvokeProvider(false);
+        wizardDescriptor.setConfigurations(projectConfigurations);
     }
     
     private void creteTreeModel(DiscoveryDescriptor wizardDescriptor){
@@ -344,12 +377,20 @@ public final class SelectConfigurationPanel extends JPanel {
                 root.add(new ProjectConfigurationNode((ProjectConfigurationImpl)project));
             }
         }
+        configurationTree.setCellRenderer(new DefaultTreeCellRenderer());
         configurationTree.setModel(model);
     }
     
     void store(DiscoveryDescriptor wizardDescriptor) {
+        DiscoveryProvider provider = wizardDescriptor.getProvider();
+        List<ProjectConfiguration> projectConfigurations = wizardDescriptor.getConfigurations();
+        if (provider != null && wasTerminated){
+            //System.out.println("Stop analyzing");
+            isStoped = true;
+            provider.stop();
+        }
     }
-
+    
     boolean isValid(DiscoveryDescriptor settings) {
         List<ProjectConfiguration> projectConfigurations = settings.getConfigurations();
         if (projectConfigurations == null || projectConfigurations.isEmpty()) {
@@ -357,7 +398,6 @@ public final class SelectConfigurationPanel extends JPanel {
         }
         return projectConfigurations.get(0).getFiles().size()>0;
     }
-
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTree configurationTree;
@@ -394,6 +434,22 @@ public final class SelectConfigurationPanel extends JPanel {
         }
         public Object getElementAt(int i) {
             return null;
+        }
+    }
+    
+    private class AnalyzingTask extends Thread {
+        private DiscoveryDescriptor wizardDescriptor;
+        public AnalyzingTask(DiscoveryDescriptor wizardDescriptor){
+            this.wizardDescriptor = wizardDescriptor;
+        }
+        public void run() {
+            buildModel(wizardDescriptor);
+            creteTreeModel(wizardDescriptor);
+            wizard.stateChanged(null);
+            //System.out.println("End analyzing");
+            if (!isStoped){
+                wasTerminated = false;
+            }
         }
     }
 }

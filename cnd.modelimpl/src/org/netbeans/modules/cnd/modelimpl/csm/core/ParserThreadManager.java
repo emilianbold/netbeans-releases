@@ -35,25 +35,32 @@ public class ParserThreadManager  {
     
     private static final String threadNameBase = "Code Model Parser"; // NOI18N
     private RequestProcessor processor;
-    private Set/*<Thread>*/ threads = Collections.synchronizedSet(new HashSet()/*<Thread>*/);
+    private Set<Wrapper> wrappers = Collections.synchronizedSet(new HashSet<Wrapper>());
     private int currThread = 0;
     
     private class Wrapper implements Runnable {
         
-        private Runnable delegate;
+        private ParserThread delegate;
+        private Thread thread;
         
-        public Wrapper(Runnable delegate) {
+        public Wrapper(ParserThread delegate) {
             this.delegate = delegate;
+        }
+        
+        public void stop() {
+            assert this.delegate != null;
+            this.delegate.stop();
         }
         
         public void run() {
             try {
-                Thread.currentThread().setName(threadNameBase + ' ' + currThread++);
-                threads.add(Thread.currentThread());
+                thread = Thread.currentThread();
+                thread.setName(threadNameBase + ' ' + currThread++);
+                wrappers.add(this);
                 delegate.run();
             }
             finally {
-                threads.remove(Thread.currentThread());
+                wrappers.remove(this);
             }
         }
     }
@@ -77,15 +84,15 @@ public class ParserThreadManager  {
         
 	ParserQueue.instance().startup();
 	
-//        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads",
+//        int threadCount = Integer.getInteger("cnd.modelimpl.parser.wrappers",
 //                Math.max(Runtime.getRuntime().availableProcessors()-1, 1)).intValue();
 
-        // TODO: now we disable multithreading and by default use only one parsing thread.
-        // user must pass explicitly the property to test/use multithreading
-        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", 1).intValue(); // NOI18N
-        if (threadCount < 1) {
-            threadCount = 1;
-        }
+        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads",
+		Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
+
+	threadCount = Math.min(threadCount, 4);
+	threadCount = Math.max(threadCount, 1);
+	
         
         if( ! standalone ) {
             processor = new RequestProcessor(threadNameBase, threadCount);
@@ -105,25 +112,27 @@ public class ParserThreadManager  {
     // package-local
     void shutdown() {
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== ParserThreadManager.shutdown");
+        for (Wrapper wrapper : wrappers) {
+            wrapper.stop();
+        }  
 	ParserQueue.instance().shutdown();
-        for (Iterator it = new ArrayList(threads).iterator(); it.hasNext();) {
-            Thread thread = (Thread) it.next();
-            thread.interrupt();
-        }
     }
     
     public boolean isParserThread() {
         if( isStandalone() ) {
             Thread current = Thread.currentThread();
-	    for (Iterator it = threads.iterator(); it.hasNext();) {
-		if( it.next() == current ) {
-		    return true;
-		}
-	    }
+            for (Wrapper wrapper : wrappers) {
+                if (wrapper.thread == current) {
+                    return true;
+                }
+            }
 	    return false;
-        }
-        else {
+        } else {
             return processor.isRequestProcessorThread();
         }
     }      
+
+    public void waitEmptyProjectQueue(ProjectBase prj) {
+        ParserQueue.instance().waitEmpty(prj);
+    }
 }

@@ -17,24 +17,21 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-#if !defined DISK_H
+#ifndef DISK_H
 #define DISK_H
 #include "module.h"
 
-enum tDisk{tsingle=1 , traid}; //type
-enum tGB{t100=1, t200, t500}; //category represents disk sub-module size in GB
+class Disk : public Module {
+public:
+    enum DiskType { SINGLE,  RAID }; 
+    enum DiskCapacity { T100,  T200, T500 }; // category represents disk sub-module size in GB
 
-
-class Disk:public Module {
-    public:
-        Disk();
-        Disk(int type, int size);
-        Disk(int type, int size, int units);
+    Disk(int type = SINGLE, int size = T100, int units =1);
+    virtual const char* GetType() const;
+    virtual const char* GetCategory() const;
         
-//copy constructor derived unchanged from base class
-//destructor derived unchanged from base class
-        void ComputeSupportMetric();
-}
-; // note that ";" is required at end of class definition header file
+protected:        
+    void ComputeSupportMetric();
+};
 
 #endif // DISK_H

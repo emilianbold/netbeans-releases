@@ -67,7 +67,7 @@ public class KeyUtilities {
         assert obj != null;
         return new OffsetableDeclarationKey(obj);
     }
-
+    
     public static Key createMacroKey(CsmMacro macro) {
         assert macro != null;
         return new MacroKey(macro);
@@ -85,18 +85,11 @@ public class KeyUtilities {
     
     /*package*/ static final class FileKey extends ProjectFileNameBasedKey {
         public FileKey(CsmFile file) {
-            super(getProjectName(file), file.getAbsolutePath());
+            super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
         }
         
         /*package*/ FileKey(DataInput aStream) throws IOException {
             super(aStream);
-        }
-        
-        private static String getProjectName(CsmFile file) {
-            assert (file != null);
-            CsmProject prj= file.getProject();
-            assert (prj != null);
-            return prj == null ? "<No Project Name>" : prj.getName();  // NOI18N
         }
         
         public String toString() {
@@ -106,7 +99,7 @@ public class KeyUtilities {
         public PersistentFactory getPersistentFactory() {
             return CsmObjectFactory.instance();
         }
-
+        
         public int getSecondaryDepth() {
             return 1;
         }
@@ -114,7 +107,7 @@ public class KeyUtilities {
         public int getSecondaryAt(int level) {
             assert level == 0;
             return KeyObjectFactory.KEY_FILE_KEY;
-        }  
+        }
     }
     
     /*package*/ static final class NamespaceKey extends ProjectNameBasedKey {
@@ -126,8 +119,8 @@ public class KeyUtilities {
         
         private static String getProjectName(CsmNamespace ns) {
             CsmProject prj= ns.getProject();
-            assert (prj != null);
-            return prj == null ? "<No Project Name>" : prj.getName();  // NOI18N
+            assert (prj != null) : "no project in namespace";
+            return prj == null ? "<No Project Name>" : prj.getQualifiedName();  // NOI18N
         }
         
         public String toString() {
@@ -156,27 +149,22 @@ public class KeyUtilities {
             super.write(aStream);
             assert fqn != null;
             aStream.writeUTF(fqn);
-        }   
+        }
         
         /*package*/ NamespaceKey(DataInput aStream) throws IOException {
             super(aStream);
             fqn = QualifiedNameCache.getString(aStream.readUTF());
             assert fqn != null;
-        }      
+        }
         
         public int getDepth() {
-            return super.getDepth() + 1;
+            assert super.getDepth() == 0;
+            return 1;
         }
         
         public String getAt(int level) {
-            switch (level) {
-                case 0:
-                    return super.getAt(0);
-                case 1:
-                    return this.fqn;
-                default:
-                    throw new IllegalArgumentException("not supported level" + level); // NOI18N
-            }
+            assert super.getDepth() == 0 && level < getDepth();
+            return this.fqn;
         }
         
         public int getSecondaryDepth() {
@@ -186,12 +174,12 @@ public class KeyUtilities {
         public int getSecondaryAt(int level) {
             assert level == 0;
             return KeyObjectFactory.KEY_NAMESPACE_KEY;
-        }        
+        }
     }
     
     /*package*/ static final class ProjectKey extends ProjectNameBasedKey {
         public ProjectKey(CsmProject project) {
-            super(project.getName());
+            super(project.getQualifiedName());
         }
         
         /*package*/ ProjectKey(DataInput aStream) throws IOException {
@@ -212,11 +200,11 @@ public class KeyUtilities {
         public int getSecondaryDepth() {
             return 1;
         }
-
+        
         public int getSecondaryAt(int level) {
             assert (level == 0);
             return KeyObjectFactory.KEY_PROJECT_KEY;
-        }           
+        }
     }
     
     /*package*/ final static class MacroKey extends OffsetableKey {
@@ -237,7 +225,7 @@ public class KeyUtilities {
         public PersistentFactory getPersistentFactory() {
             return CsmObjectFactory.instance();
         }
-
+        
         public String toString() {
             String retValue;
             
@@ -248,14 +236,14 @@ public class KeyUtilities {
         public int getSecondaryDepth() {
             return super.getSecondaryDepth() + 1;
         }
-
+        
         public int getSecondaryAt(int level) {
             if (level == 0) {
                 return KeyObjectFactory.KEY_MACRO_KEY;
             } else {
                 return super.getSecondaryAt(level - 1);
             }
-        }         
+        }
     }
     
     /*package*/ final static class IncludeKey extends OffsetableKey {
@@ -276,7 +264,7 @@ public class KeyUtilities {
         public PersistentFactory getPersistentFactory() {
             return CsmObjectFactory.instance();
         }
-
+        
         public String toString() {
             String retValue;
             
@@ -287,14 +275,14 @@ public class KeyUtilities {
         public int getSecondaryDepth() {
             return super.getSecondaryDepth() + 1;
         }
-
+        
         public int getSecondaryAt(int level) {
             if (level == 0) {
                 return KeyObjectFactory.KEY_INCLUDE_KEY;
             } else {
                 return super.getSecondaryAt(level - 1);
             }
-        }        
+        }
     }
     
     /*package*/ final static class OffsetableDeclarationKey extends OffsetableKey {
@@ -317,18 +305,18 @@ public class KeyUtilities {
         public PersistentFactory getPersistentFactory() {
             return CsmObjectFactory.instance();
         }
-
+        
         public String toString() {
             String retValue;
             
             retValue = "OffsDeclKey: " + super.toString(); // NOI18N
             return retValue;
         }
-
+        
         public int getSecondaryDepth() {
             return super.getSecondaryDepth() + 1;
         }
-
+        
         public int getSecondaryAt(int level) {
             if (level == 0) {
                 return KeyObjectFactory.KEY_DECLARATION_KEY;
@@ -360,7 +348,7 @@ public class KeyUtilities {
             assert this.kind != null;
             aStream.writeUTF(this.kind);
             assert this.name != null;
-            aStream.writeUTF(this.name);            
+            aStream.writeUTF(this.name);
         }
         
         protected OffsetableKey(DataInput aStream) throws IOException {
@@ -384,7 +372,7 @@ public class KeyUtilities {
             OffsetableKey other = (OffsetableKey)obj;
             return  this.startOffset == other.startOffset &&
                     this.endOffset == other.endOffset &&
-                    this.kind.equals(other.kind) &&                    
+                    this.kind.equals(other.kind) &&
                     this.name.equals(other.name);
         }
         
@@ -392,17 +380,17 @@ public class KeyUtilities {
             int retValue;
             
             retValue = 17*super.hashCode() + name.hashCode();
-            retValue = 17*retValue + kind.hashCode();            
+            retValue = 17*retValue + kind.hashCode();
             retValue = 17*super.hashCode() + startOffset;
             retValue = 17*retValue + endOffset;
             return retValue;
         }
-
+        
         public int compareTo(Object o) {
             if (this == o) {
                 return 0;
             }
-            OffsetableKey other = (OffsetableKey)o; 
+            OffsetableKey other = (OffsetableKey)o;
             assert (this.kind.equals(other.kind));
             assert (this.getFileName().equals(other.getFileName()));
             assert (this.getProjectName().equals(other.getProjectName()));
@@ -420,16 +408,18 @@ public class KeyUtilities {
         }
         
         public String getAt(int level) {
-            switch (level) {
-                case 0:
-                case 1:
-                    return super.getAt(level);
-                case 2:
-                    return this.kind;
-                case 3:
-                    return this.name;
-                default:
-                    throw new IllegalArgumentException("not supported level" + level); // NOI18N
+            int superDepth = super.getDepth();
+            if (level < superDepth) {
+                return super.getAt(level);
+            } else {
+                switch (level - superDepth) {
+                    case 0:
+                        return this.kind;
+                    case 1:
+                        return this.name;
+                    default:
+                        throw new IllegalArgumentException("not supported level" + level); // NOI18N
+                }
             }
         }
         
@@ -444,9 +434,9 @@ public class KeyUtilities {
                 case 1:
                     return this.endOffset;
                 default:
-                    throw new IllegalArgumentException("not supported level" + level); // NOI18N                    
+                    throw new IllegalArgumentException("not supported level" + level); // NOI18N
             }
-        }          
+        }
     }
     
     private abstract static class ProjectFileNameBasedKey extends ProjectNameBasedKey {
@@ -465,20 +455,20 @@ public class KeyUtilities {
             assert (file != null);
             CsmProject prj= file.getProject();
             assert (prj != null);
-            return prj == null ? "<No Project Name>" : prj.getName();  // NOI18N
+            return prj == null ? "<No Project Name>" : prj.getQualifiedName();  // NOI18N
         }
         
         public void write(DataOutput aStream) throws IOException {
             super.write(aStream);
             assert this.fileName != null;
             aStream.writeUTF(fileName);
-        }      
+        }
         
         protected ProjectFileNameBasedKey(DataInput aStream) throws IOException {
             super(aStream);
             this.fileName = FilePathCache.getString(aStream.readUTF());
             assert this.fileName != null;
-        }  
+        }
         
         public int hashCode() {
             int key = super.hashCode();
@@ -500,36 +490,31 @@ public class KeyUtilities {
         }
         
         public int getDepth() {
-            return super.getDepth() + 1;
+            assert super.getDepth() == 0;
+            return 1;
         }
         
         public String getAt(int level) {
-            switch (level) {
-                case 0:
-                    return super.getAt(0);
-                case 1:
-                    return this.fileName;
-                default:
-                    throw new IllegalArgumentException("not supported level" + level); // NOI18N
-            }
-        }       
+            assert super.getDepth() == 0 && level < getDepth();
+            return this.fileName;
+        }
     }
     
     
     private static abstract class ProjectNameBasedKey extends AbstractKey {
-        private final String projectName;
+        private final String projectQualifiedName;
         
         protected ProjectNameBasedKey(String project) {
             assert project != null;
-            this.projectName = project;
+            this.projectQualifiedName = project;
         }
         
         public String toString() {
-            return projectName;
+            return projectQualifiedName;
         }
         
         public int hashCode() {
-            return projectName.hashCode();
+            return projectQualifiedName.hashCode();
         }
         
         public boolean equals(Object obj) {
@@ -538,33 +523,37 @@ public class KeyUtilities {
             }
             ProjectNameBasedKey other = (ProjectNameBasedKey)obj;
             
-            return this.projectName.equals(other.projectName);
+            return this.projectQualifiedName.equals(other.projectQualifiedName);
         }
         
         protected String getProjectName() {
-            return this.projectName;
+            return this.projectQualifiedName;
         }
         
         public void write(DataOutput aStream) throws IOException {
-            assert this.projectName != null;
-            aStream.writeUTF(this.projectName);
+            assert this.projectQualifiedName != null;
+            aStream.writeUTF(this.projectQualifiedName);
         }
         
         protected ProjectNameBasedKey(DataInput aStream) throws IOException {
-            this.projectName = ProjectNameCache.getString(aStream.readUTF());
-            assert this.projectName != null;
-        }  
+            this.projectQualifiedName = ProjectNameCache.getString(aStream.readUTF());
+            assert this.projectQualifiedName != null;
+        }
         
         public int getDepth() {
-            return 1;
+            return 0;
         }
         
         public String getAt(int level) {
-            return this.projectName;
+            throw new UnsupportedOperationException();
+        }
+        
+        public String getUnit() {
+            return this.projectQualifiedName;
         }
     }
     
-    // nave to be public or UID factory does not work
+    // have to be public or UID factory does not work
     private static abstract class AbstractKey implements Key, SelfPersistent {
         /**
          * must be implemented in child
@@ -585,13 +574,15 @@ public class KeyUtilities {
             }
             return true;
         }
-        
-        abstract public int getDepth();
-        
-        abstract public String getAt(int level);
-        
-        abstract public int getSecondaryDepth();
-        
-        abstract public int getSecondaryAt(int level);
-    }  
+
+        public abstract int getSecondaryAt(int level);
+
+        public abstract String getAt(int level);
+
+        public abstract String getUnit();
+
+        public abstract int getSecondaryDepth();
+
+        public abstract int getDepth();
+    }
 }

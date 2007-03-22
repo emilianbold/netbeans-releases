@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
 import java.util.EventObject;
+import java.util.Map;
 
 /**
  * Event for model change notifications
@@ -32,25 +33,21 @@ public abstract class CsmChangeEvent extends EventObject {
         super(source);
     }
 
-    public abstract Collection/*<CsmFile>*/ getNewFiles();
+    public abstract Collection<CsmFile> getNewFiles();
 
-    public abstract Collection/*<CsmFile>*/ getRemovedFiles();
+    public abstract Collection<CsmFile> getRemovedFiles();
 
-    public abstract Collection/*<CsmFile>*/ getChangedFiles();
+    public abstract Collection<CsmFile> getChangedFiles();
 
-    public abstract Collection/*<CsmDeclaration>*/ getNewDeclarations();
+    public abstract Collection<CsmDeclaration> getNewDeclarations();
     
-    public abstract Collection/*<CsmDeclaration>*/ getRemovedDeclarations();
+    public abstract Collection<CsmDeclaration> getRemovedDeclarations();
     
-    public abstract Collection/*<CsmDeclaration>*/ getChangedDeclarations();
+    public abstract Map<CsmDeclaration,CsmDeclaration> getChangedDeclarations();
     
-    public abstract Collection/*<CsmProject>*/ getChangedProjects();
+    public abstract Collection<CsmProject> getChangedProjects();
     
-    public abstract Collection/*<CsmNamespace>*/ getNewNamespaces();
+    public abstract Collection<CsmNamespace> getNewNamespaces();
     
-    public abstract Collection/*<CsmNamespace>*/ getRemovedNamespaces();
-    
-    public abstract void addNewNamespace(CsmNamespace ns);
-    
-    public abstract void addRemovedNamespace(CsmNamespace ns);
+    public abstract Collection<CsmNamespace> getRemovedNamespaces();
 }

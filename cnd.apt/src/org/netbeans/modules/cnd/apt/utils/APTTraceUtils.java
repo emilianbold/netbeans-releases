@@ -35,7 +35,7 @@ public class APTTraceUtils {
  
     /** Print out a child-sibling tree in LISP notation */
     public static String toStringList(APT t) {
-        StringBuffer ts = new StringBuffer();
+        StringBuilder ts = new StringBuilder();
         if (t.getFirstChild() != null) {
             ts.append(" ("); // NOI18N
         }
@@ -53,7 +53,7 @@ public class APTTraceUtils {
     }
 
     public static String toStringTree(APT t) {
-        StringBuffer ts = new StringBuffer();
+        StringBuilder ts = new StringBuilder();
         if (t.getFirstChild() != null) {
             ts.append(" ("); // NOI18N
         }
@@ -105,7 +105,7 @@ public class APTTraceUtils {
     }
 
     private static String xmlNodeText(APT t) {
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
         buf.append(t.getClass().getSimpleName());
         buf.append(" type=\"").append(encode(getTypeName(t))); // NOI18N
         buf.append("\" text=\"").append(encode(t.toString())); // NOI18N
@@ -114,7 +114,7 @@ public class APTTraceUtils {
     
     private static String decode(String text) {
         char c, c1, c2, c3, c4, c5;
-        StringBuffer n = new StringBuffer();
+        StringBuilder n = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
             c = text.charAt(i);
             if (c == '&') {
@@ -157,7 +157,7 @@ public class APTTraceUtils {
 
     private static String encode(String text) {
         char c;
-        StringBuffer n = new StringBuffer();
+        StringBuilder n = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
             c = text.charAt(i);
             switch (c) {

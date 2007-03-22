@@ -52,11 +52,13 @@ import org.openide.util.Utilities;
 public class AnalyzeModel implements DiscoveryProvider {
     private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String MODEL_FOLDER_KEY = "folder"; // NOI18N
+    protected boolean isStoped = false;
+    
     
     public AnalyzeModel() {
         clean();
     }
-
+    
     public void clean() {
         myProperties.clear();
         myProperties.put(MODEL_FOLDER_KEY, new ProviderProperty(){
@@ -101,7 +103,12 @@ public class AnalyzeModel implements DiscoveryProvider {
         return myProperties.get(key);
     }
     
+    public void stop() {
+        isStoped = true;
+    }
+    
     public List<Configuration> analyze(ProjectProxy project) {
+        isStoped = false;
         MyConfiguration conf = new MyConfiguration(project);
         List<Configuration> confs = new ArrayList<Configuration>();
         confs.add(conf);
@@ -114,11 +121,17 @@ public class AnalyzeModel implements DiscoveryProvider {
         ArrayList<String> list = new ArrayList<String>();
         list.add(root);
         for (Iterator<String> it = list.iterator(); it.hasNext();){
+            if (isStoped) {
+                break;
+            }
             File f = new File(it.next());
             gatherSubFolders(f, set);
         }
         HashMap<String,List<String>> map = new HashMap<String,List<String>>();
         for (Iterator it = set.iterator(); it.hasNext();){
+            if (isStoped) {
+                break;
+            }
             File d = new File((String)it.next());
             if (d.isDirectory()){
                 File[] ff = d.listFiles();
@@ -141,7 +154,10 @@ public class AnalyzeModel implements DiscoveryProvider {
         return map;
     }
     
-    private static void gatherSubFolders(File d, HashSet<String> set){
+    private void gatherSubFolders(File d, HashSet<String> set){
+        if (isStoped) {
+            return;
+        }
         if (d.isDirectory()){
             String path = d.getAbsolutePath();
             if (Utilities.isWindows()) {
@@ -163,7 +179,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     private static String i18n(String id) {
         return NbBundle.getMessage(AnalyzeModel.class,id);
     }
-
+    
     public boolean isApplicable(ProjectProxy project) {
         if (project.getProject() instanceof Project){
             Project makeProject = (Project)project.getProject();
@@ -174,7 +190,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         }
         return false;
     }
-
+    
     public boolean canAnalyze(ProjectProxy project) {
         return true;
     }
@@ -230,10 +246,13 @@ public class AnalyzeModel implements DiscoveryProvider {
         }
         
         private List<SourceFileProperties> getSourceFileProperties(String root){
-            Map<String,List<String>> searchBase = search(root);
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
+            Map<String,List<String>> searchBase = search(root);
             Item[] items = makeConfigurationDescriptor.getProjectItems();
             for (int i = 0; i < items.length; i++){
+                if (isStoped) {
+                    break;
+                }
                 Item item = items[i];
                 Language lang = item.getLanguage();
                 if (lang == Language.C || lang == Language.CPP){
@@ -258,6 +277,9 @@ public class AnalyzeModel implements DiscoveryProvider {
                 HashSet<String> unique = new HashSet<String>();
                 Item[] items = makeConfigurationDescriptor.getProjectItems();
                 for (int i = 0; i < items.length; i++){
+                    if (isStoped) {
+                        break;
+                    }
                     Item item = items[i];
                     String path = item.getAbsPath();
                     File file = new File(path);

@@ -54,6 +54,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
     private FortranCompilerConfiguration fortranCompilerConfiguration;
+
+    // cached id of item
+//    private String id;
     
     public ItemConfiguration(Configuration configuration, Item item) {
         // General
@@ -99,9 +102,12 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
     
     public void setItem(Item item) {
-        this.item = item;
-        needSave = true;
-        tool = item.getDefaultTool();
+        if (this.item != item) {
+            this.item = item;
+            this.needSave = true;
+//            this.id = null;
+            this.tool = item.getDefaultTool();
+        }
     }
     
     // General
@@ -191,12 +197,20 @@ public class ItemConfiguration implements ConfigurationAuxObject {
      * Returns an unique id (String) used to retrive this object from the
      * pool of aux objects
      */
-    public String getId() {
-        return getId(getItem().getPath());
-    }
+//    public String getId() {
+//        if (this.id == null) {
+//            this.id = getId(getItem().getPath());
+//        }
+//        assert this.id != null;
+//        return this.id;
+//    }
+//    
+//    static public String getId(String path) {
+//        return "item-" + path; // NOI18N
+//    }
     
-    static public String getId(String path) {
-        return "item-" + path; // NOI18N
+    public String getId() {
+        return item.getId();
     }
     
     public void assign(ConfigurationAuxObject profileAuxObject) {
