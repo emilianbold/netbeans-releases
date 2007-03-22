@@ -20,6 +20,7 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -127,8 +128,13 @@ public final class FileBasedFileSystem extends FileSystem {
     public final void refresh(final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         stopWatch.start();
-        
-        getFactory().refreshAll(expected);
+        try {
+            this.runAtomicAction(new FileSystem.AtomicAction(){
+                public void run() throws IOException {
+                    getFactory().refreshAll(expected);
+                }            
+            });
+        } catch(IOException iex) {/*method refreshAll doesn't throw IOException*/}
         stopWatch.stop();
 	
         // print refresh stats unconditionally in trunk
