@@ -249,7 +249,7 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
                     ep.setProperty(DefaultPropertiesDescriptor.JAVAC_TARGET, classVersion != null ? classVersion : "1.2"); // NOI18N
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 } else {
-                    throw new IllegalArgumentException("No CDC platform installed");//ep.setProperty("platform.active", "default_platform"); // NOI18N
+                    throw new IllegalArgumentException("No CDC platform installed");// NOI18N
                 } 
             }
             });
@@ -264,14 +264,10 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
                     ErrorManager.getDefault().notify(x);
                 }
             }
-            if ( type == TYPE_LIB ) {
-                // resultSet.add( h.getProjectDirectory ().getFileObject ("src") );        //NOI18N 
-                // resultSet.add( h.getProjectDirectory() ); // Only expand the project directory
-            }
-        //}
-        FileObject dir = FileUtil.toFileObject(dirF);
-        if (type == TYPE_APP || type == TYPE_EXT) {
-            createManifest(dir, MANIFEST_FILE);
+            
+            FileObject dir = FileUtil.toFileObject(dirF);
+            if (type == TYPE_APP || type == TYPE_EXT) {
+                createManifest(dir, MANIFEST_FILE);
         }
 
         // Returning FileObject of project diretory. 

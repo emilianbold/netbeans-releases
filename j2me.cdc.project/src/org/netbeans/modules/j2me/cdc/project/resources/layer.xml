@@ -90,7 +90,7 @@
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/emptyProject.html"/>
                 </file>
-<!--
+
         
                 <attr name="emptyCDC.xml/emptyCDClibrary.xml" boolvalue="true"/>
 
@@ -98,9 +98,10 @@
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator.library"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/emptyLibrary.html"/>
                 </file>                
+<!--
                 <attr name="emptyCDClibrary.xml/existingCDC.xml" boolvalue="true"/>
                 <file name="existingCDC.xml">
                     <attr name="template" boolvalue="true"/>
