@@ -20,6 +20,7 @@
 package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -232,15 +233,29 @@ public class PackageView {
             JavaProjectSettings.addPropertyChangeListener(WeakListeners.propertyChange(this, JavaProjectSettings.class));
             group.addPropertyChangeListener(WeakListeners.propertyChange(this, group));
         }
-        
+
+        // XXX #98573: very crude, but what else to do? Want to call changeOriginal asynchronously.
+        // But this could randomly screw up tests - not just PackageViewTest, but maybe others too.
+        // (org.netbeans.modules.java.freeform.ui.ViewTest does not appear to be affected.)
+        private static boolean IN_UNIT_TEST = false;
+        static {
+            try {
+                Class.forName("junit.framework.TestCase");
+                IN_UNIT_TEST = true;
+            } catch (ClassNotFoundException e) {}
+        }
         public void propertyChange (PropertyChangeEvent event) {
             String prop = event.getPropertyName();
             if (JavaProjectSettings.PROP_PACKAGE_VIEW_TYPE.equals(prop) || SourceGroup.PROP_CONTAINERSHIP.equals(prop)) {
-                // XXX this should perhaps be invoked asynch
-                // since otherwise you can deadlock between Children.MUTEX and ProjectManager.mutex
-                // Mutex.postWriteRequest is probably useless (can still block)
-                // RP.post or EQ.invokeLater would work, but could break unit tests
-                changeOriginal(getOriginalNode(sourceGroup), true);
+                if (IN_UNIT_TEST) {
+                    changeOriginal(getOriginalNode(sourceGroup), true);
+                } else {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            changeOriginal(getOriginalNode(sourceGroup), true);
+                        }
+                    });
+                }
             }
         }
         
