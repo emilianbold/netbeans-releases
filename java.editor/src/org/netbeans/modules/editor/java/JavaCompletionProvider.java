@@ -3517,6 +3517,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     ret.add(e);
                 }
             }
+            if (startPos < 0)
+                return ret;
             if (position > startPos) {
                 String text = env.getController().getText().substring(startPos, position).trim();
                 if ("(".equals(text) || ",".equals(text)) //NOI18N
