@@ -240,12 +240,15 @@ public class CollaborationsWidget extends Widget
     public void updateContent() {
         mLabelWidget.setComment("(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
         mCollaborationContentWidget.removeChildren();
+        createContent();
     }
 
     private void createContent() {
-        mLabelWidget = new ImageLabelWidget(getScene(), IMAGE, NbBundle.getMessage(CollaborationsWidget.class, "LBL_CollaborationsWidget_PartnerLinkTypes"), 
-                "(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
-        mHeaderWidget.addChild(0, mLabelWidget);
+        if (mLabelWidget == null) {
+            mLabelWidget = new ImageLabelWidget(getScene(), IMAGE, NbBundle.getMessage(CollaborationsWidget.class, "LBL_CollaborationsWidget_PartnerLinkTypes"), 
+                    "(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
+            mHeaderWidget.addChild(0, mLabelWidget);
+        }
         
         if (stubWidget.getParentWidget() != null) {
             stubWidget.getParentWidget().removeChild(stubWidget);
