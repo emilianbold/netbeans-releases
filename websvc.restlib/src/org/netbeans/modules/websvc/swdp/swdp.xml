@@ -35,5 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jaxb-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/jaxb-impl.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr173_api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/jaxws-tools.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/jaxws-rt.jar!/</resource>
     </volume>  
 </library>
