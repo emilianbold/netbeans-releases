@@ -474,6 +474,7 @@ class J2SEActionProvider implements ActionProvider {
         FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
         FileObject root = getRoot(testSrcPath, files[0]);
         p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        // The following is no longer actually necessary (see #97053), but should be harmless to leave in:
         p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
         return new String[] {"test-single"}; // NOI18N
     }

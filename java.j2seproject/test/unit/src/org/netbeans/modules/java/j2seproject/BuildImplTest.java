@@ -447,8 +447,23 @@ public final class BuildImplTest extends NbTestCase {
         assertNotNull("build/classes/pkg/Source1.class must exist", fo.getFileObject("build/classes/pkg/Source1.class"));
         assertNotNull("build/classes/pkg/Source2.class must exist", fo.getFileObject("build/classes/pkg/Source2.class"));
         assertNotNull("build/test/classes/pkg/Source2Test.class must exist", fo.getFileObject("build/test/classes/pkg/Source2Test.class"));
+        /* No longer true as of #97053:
         assertEquals("Only one test class should be compiled", 1, fo.getFileObject("build/test/classes/pkg").getChildren().length);
+         */
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
+    }
+
+    public void testRunSingleTestWithDep() throws Exception { // #97053
+        AntProjectHelper aph = setupProject(1, false);
+        FileObject root = aph.getProjectDirectory();
+        writeFile(root, "test/pkg/TestUtil.java", "package pkg; class TestUtil {}");
+        writeFile(root, "test/pkg/SomeTest.java", "package pkg; public class SomeTest extends junit.framework.TestCase {public void testX() {new Source0(); new TestUtil();}}");
+        FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
+        Properties p = getProperties();
+        p.setProperty("javac.includes", "pkg/SomeTest.java");
+        p.setProperty("test.includes", "pkg/SomeTest.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"test-single"}, p));
+        assertOutput("Testsuite: pkg.SomeTest");
     }
     
     public void testSubprojects() throws Exception {
@@ -556,6 +571,13 @@ public final class BuildImplTest extends NbTestCase {
             System.out.println(line);
         }
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    }
+
+    private void assertOutput(String line) {
+        if (!output.contains(line)) {
+            dumpOutput();
+            fail("looking for '" + line + "'");
+        }
     }
 
     @SuppressWarnings("deprecation")
