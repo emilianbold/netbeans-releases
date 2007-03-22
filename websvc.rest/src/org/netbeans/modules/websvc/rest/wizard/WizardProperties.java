@@ -23,6 +23,6 @@ public class WizardProperties {
     public static final String CONFIG_FILE = "ConfigFile"; // NOI18N
     public static final String DESCRIPTION = "Description"; // NOI18N
     public static final String SCOPE = "Scope"; // NOI18N
-    public static final String ENTITY_CLASS = "EntityClass"; //NOI18N
+    public static final String ENTITY_CLASSES = "EntityClasses"; //NOI18N
     public static final String REST_CLASSES_PACKAGE = "RESTBean"; //NOI18N
 }

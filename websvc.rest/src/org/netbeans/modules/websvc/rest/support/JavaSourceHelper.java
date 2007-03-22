@@ -30,12 +30,19 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 /**
  *
  * @author PeterLiu
  */
 public class JavaSourceHelper {
+    
+    static final String CLASS_TEMPLATE = "Templates/Classes/Class.java"; // NOI18N
+    static final String INTERFACE_TEMPLATE = "Templates/Classes/Interface.java"; // NOI18N
     
     public static List<JavaSource> getJavaSources(Project project) {
         List<JavaSource> result = new ArrayList<JavaSource>();
@@ -60,7 +67,7 @@ public class JavaSourceHelper {
         
         return result;
     }
-  
+    
     public static List<JavaSource> getEntityClasses(Project project) {
         List<JavaSource> sources = getJavaSources(project);
         List<JavaSource> entityClasses = new ArrayList<JavaSource>();
@@ -147,7 +154,7 @@ public class JavaSourceHelper {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     ExpressionTree packageTree = controller.getCompilationUnit().getPackageName();
-                   
+                    
                     packageName[0] = packageTree.toString();
                 }
                 
@@ -178,5 +185,29 @@ public class JavaSourceHelper {
         }
         
         return null;
+    }
+    
+    public static JavaSource createJavaSource(FileObject targetFolder,
+            String className) {
+        try {
+            FileObject fobj = createDataObjectFromTemplate(CLASS_TEMPLATE, targetFolder, className).getPrimaryFile();
+            return JavaSource.forFileObject(fobj);
+        } catch (IOException ex) {
+            
+        }
+        
+        return null;
+    }
+    
+    private static DataObject createDataObjectFromTemplate(String template, FileObject targetFolder, String targetName) throws IOException {
+        assert template != null;
+        assert targetFolder != null;
+        assert targetName != null && targetName.trim().length() >  0;
+        
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject templateFO = defaultFS.findResource(template);
+        DataObject templateDO = DataObject.find(templateFO);
+        DataFolder dataFolder = DataFolder.findFolder(targetFolder);
+        return templateDO.createFromTemplate(dataFolder, targetName);
     }
 }

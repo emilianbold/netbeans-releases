@@ -371,7 +371,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         ListModel model = listSelected.getModel();
         if (model instanceof EntityListModel) {
             EntityListModel elm = (EntityListModel) model;
-            settings.putProperty(WizardProperties.ENTITY_CLASS, elm.getEntityClasses());
+            settings.putProperty(WizardProperties.ENTITY_CLASSES, elm.getEntityClasses());
         }
     }
     
