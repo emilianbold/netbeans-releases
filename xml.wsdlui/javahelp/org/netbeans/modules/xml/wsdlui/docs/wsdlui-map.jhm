@@ -56,7 +56,6 @@
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.BindingNode" url="wsdl_editor_bindings.html"/>
 	<mapID target="nbdocs_org_netbeans_modules_usersguide_editing_csh_about_source_editor" url="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html"/>
 
-	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.DocumentationNode" url="wsdlui-documentationnode.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLImportNode" url="wsdlui-wsdlimportnode.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.XSDImportNode" url="wsdlui-xsdimportnode.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PartNode" url="wsdlui-partnode.html"/>
