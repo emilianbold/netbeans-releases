@@ -50,7 +50,7 @@ public class CasaPaletteItems extends Index.ArrayChildren {
             addExternalWsdlPoints(childrenNodes);
         }
         if(category.getCasaCategoryType().equals(CasaPalette.CASA_CATEGORY_TYPE.SERVICE_UNITS)) {
-            addServiceUnits(childrenNodes);
+            addServiceUnits(childrenNodes); 
         }
         if(category.getCasaCategoryType().equals(CasaPalette.CASA_CATEGORY_TYPE.END_POINTS)) {
             addInternalEndPoints(childrenNodes);
@@ -96,14 +96,18 @@ public class CasaPaletteItems extends Index.ArrayChildren {
     }
 
     private void addServiceUnits(ArrayList childrenNodes) {
+//Don't add Int. SU / Jbi Module. Add it when its supported.
+        /*
         CasaPaletteItem intsuItem = new CasaPaletteItem();
         intsuItem.setCategoryType(CasaPalette.CASA_CATEGORY_TYPE.SERVICE_UNITS);
         intsuItem.setPaletteItemType(CasaPalette.CASA_PALETTE_ITEM_TYPE.INT_SU);
         intsuItem.setTitle(getMessage("Palette_IntSU_Title"));      // NOI18N
+
         childrenNodes.add( new CasaPaletteItemNode( 
                 intsuItem, 
                 "org/netbeans/modules/compapp/casaeditor/palette/resources/intsu.png",  // NOI18N
                 mLookup) );
+ */
 
         CasaPaletteItem extsuItem = new CasaPaletteItem();
         extsuItem.setCategoryType(CasaPalette.CASA_CATEGORY_TYPE.SERVICE_UNITS);
