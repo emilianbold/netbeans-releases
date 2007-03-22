@@ -22,6 +22,7 @@ package org.netbeans.modules.editor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -114,21 +115,36 @@ public class EditorModule extends ModuleInstall {
         // Autoregistration
             
         // First, initialize JDK's editor kit types registry
-        initAndCheckEditorKitTypeRegistry("text/plain", null);
-        initAndCheckEditorKitTypeRegistry("text/html", HTMLEditorKit.class.getName());
-        initAndCheckEditorKitTypeRegistry("text/rtf", RTFEditorKit.class.getName());
-        initAndCheckEditorKitTypeRegistry("application/rtf", RTFEditorKit.class.getName());
+        initAndCheckEditorKitTypeRegistry("text/plain", null); //NOI18N
+        initAndCheckEditorKitTypeRegistry("text/html", HTMLEditorKit.class.getName()); //NOI18N
+        initAndCheckEditorKitTypeRegistry("text/rtf", RTFEditorKit.class.getName()); //NOI18N
+        initAndCheckEditorKitTypeRegistry("application/rtf", RTFEditorKit.class.getName()); //NOI18N
             
         // Now hook up to the JDK's editor kit registry
+        // XXX: This all should be removed, see IZ #80110
         try {
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
-            // XXX this is illegal! Must use reflection and have a proper fallback.
-            Hashtable kitMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
-            sun.awt.AppContext.getAppContext().put(key, new HackMap(kitMapping));
+
+            Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+            Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
+            Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
+            Method put = appContextClass.getDeclaredMethod("put", Object.class, Object.class); //NOI18N
+            
+            Object appContext = getAppContext.invoke(null);
+            Hashtable kitMapping = (Hashtable) get.invoke(appContext, key);
+            put.invoke(appContext, key, new HackMap(kitMapping));
+
+// REMOVE: we should not depend on sun.* classes
+//            Hashtable kitMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
+//            sun.awt.AppContext.getAppContext().put(key, new HackMap(kitMapping));
         } catch (Throwable t) {
-            t.printStackTrace();
+            if (debug) {
+                LOG.log(Level.WARNING, "Can't hack in to the JEditorPane's registry for kits.", t);
+            } else {
+                LOG.log(Level.WARNING, "Can't hack in to the JEditorPane's registry for kits.");
+            }
         }
             
         // Registration of the editor kits to JEditorPane
