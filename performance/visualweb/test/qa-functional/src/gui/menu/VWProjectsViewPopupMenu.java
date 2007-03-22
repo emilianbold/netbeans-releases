@@ -52,7 +52,8 @@ public class VWProjectsViewPopupMenu extends ProjectsViewPopupMenu {
     }
     
     public void testVWApplicationBeanPopupMenuProjects(){
-        testNode(new Node(getProjectNode("HugeApp"), "Application Bean")); // NOI18N
+        String nodePath = gui.Utilities.SOURCE_PACKAGES+"|"+"hugeapp"+"|"+"ApplicationBean1.java"; // NOI18N
+        testNode(new Node(getProjectNode("HugeApp"), nodePath)); // NOI18N
     }
     
 
