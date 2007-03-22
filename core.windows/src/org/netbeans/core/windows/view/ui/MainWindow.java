@@ -27,6 +27,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.*;
@@ -379,6 +380,7 @@ public final class MainWindow extends JFrame {
         return tp;
     }
 
+    private Rectangle forcedBounds = null;
     /** Packs main window, to set its border */
     private void initializeBounds() {
         Rectangle bounds;
@@ -386,6 +388,11 @@ public final class MainWindow extends JFrame {
             bounds = WindowManagerImpl.getInstance().getMainWindowBoundsJoined();
         } else {
             bounds = WindowManagerImpl.getInstance().getMainWindowBoundsSeparated();
+        }
+        if( null != forcedBounds ) {
+            bounds = new Rectangle( forcedBounds );
+            setPreferredSize( bounds.getSize() );
+            forcedBounds = null;
         }
         
         if(!bounds.isEmpty()) {
@@ -542,7 +549,11 @@ public final class MainWindow extends JFrame {
             restoreBounds = getBounds();
         }
         isFullScreenMode = fullScreenMode;
-        setVisible( false );
+        if( Utilities.isWindows() )
+            setVisible( false );
+        else 
+            WindowManagerImpl.getInstance().setVisible(false);
+        
         dispose();
         setUndecorated( isFullScreenMode );
         setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );
@@ -554,20 +565,31 @@ public final class MainWindow extends JFrame {
                 tc.rebuildMenu();
         }
         getToolbarComponent().setVisible( !isFullScreenMode );
-        final boolean updateBounds = ( !isFullScreenMode && restoreExtendedState != JFrame.MAXIMIZED_BOTH );
-        setVisible( true );
-        SwingUtilities.invokeLater( new Runnable() {
-            public void run() {
-                invalidate();
-                validate();
-                repaint();
-                if( null != activatedTc ) {
-                    activatedTc.requestFocusInWindow();
-                }
-                if( updateBounds )
-                    setBounds( restoreBounds );
+        final boolean updateBounds = ( !isFullScreenMode );//&& restoreExtendedState != JFrame.MAXIMIZED_BOTH );
+                    
+        if( updateBounds || (isFullScreenMode() && !Utilities.isWindows()) ) {
+            if( updateBounds ) {
+                forcedBounds = restoreBounds;
+            } else {
+                GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                forcedBounds = ge.getMaximumWindowBounds();
             }
-        });
+        }
+        if( Utilities.isWindows() ) {
+            setVisible( true );
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    invalidate();
+                    validate();
+                    repaint();
+                    if( updateBounds ) {
+                        setPreferredSize( restoreBounds.getSize() );
+                        setBounds( restoreBounds );
+                    }
+                }
+            });
+        } else
+            WindowManagerImpl.getInstance().setVisible(true);
     }
     
     public boolean isFullScreenMode() {
