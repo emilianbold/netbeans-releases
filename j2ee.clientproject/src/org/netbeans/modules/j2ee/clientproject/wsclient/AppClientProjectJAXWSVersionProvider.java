@@ -14,6 +14,7 @@ import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 /**
@@ -29,23 +30,20 @@ public class AppClientProjectJAXWSVersionProvider implements JAXWSVersionProvide
     }
     
     public String getJAXWSVersion(){
+         File appSvrRoot = null;
         Map properties = h.getStandardPropertyEvaluator().getProperties();
-        String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
-        if (serverInstance != null) {
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-            if (j2eePlatform != null) {
-                File[] roots = j2eePlatform.getPlatformRoots();
-                if(roots.length > 0){
-                    File appSvrRoot = roots[0];
-                    File dtdFile = new File(appSvrRoot, "lib" +
-                            File.separator + "dtds" +
-                            File.separator + "sun-domain_1_3.dtd");
-                    if(dtdFile.exists()){
-                        return JAXWSVersionProvider.JAXWS21;
+        if(properties != null){
+            String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
+            if (serverInstance != null) {
+                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
+                if (j2eePlatform != null) {
+                    File[] roots = j2eePlatform.getPlatformRoots();
+                    if(roots != null && roots.length > 0){
+                        appSvrRoot = roots[0];
                     }
                 }
             }
         }
-        return JAXWSVersionProvider.JAXWS20;
+        return WSUtils.getJAXWSVersion(appSvrRoot);
     }
 }

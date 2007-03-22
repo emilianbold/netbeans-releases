@@ -419,11 +419,13 @@ public final class GeneratedFilesHelper {
     
     private boolean isJAXWS21(){
         Project project = FileOwnerQuery.getOwner(h.getProjectDirectory());
-        JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
-        if(jvp != null && 
-                jvp.getJAXWSVersion().equals(JAXWSVersionProvider.JAXWS21)){
-            return true;
-        }       
+        if(project != null){
+            JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
+            if(jvp != null &&
+                    jvp.getJAXWSVersion().equals(JAXWSVersionProvider.JAXWS21)){
+                return true;
+            }
+        }
         return false;
     }
     

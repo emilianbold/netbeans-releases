@@ -59,7 +59,12 @@ import org.openide.util.NbBundle;
  * @author mkuchtiak
  */
 public class WSUtils {
-
+    
+    private static String SUN_DOMAIN_12_DTD_SUFFIX =
+            "lib" + File.separator + "dtds" + File.separator + "sun-domain_1_2.dtd";
+    private static String SUN_DOMAIN_13_DTD_SUFFIX =
+            "lib" + File.separator + "dtds" + File.separator + "sun-domain_1_3.dtd";
+    
     private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
@@ -69,7 +74,7 @@ public class WSUtils {
      * @return FileObject of the retrieved resource in the local file system
      */
     public static FileObject retrieveResource(FileObject targetFolder, URI source)
-    throws java.net.UnknownHostException, java.net.URISyntaxException, IOException{
+            throws java.net.UnknownHostException, java.net.URISyntaxException, IOException{
         try {
             Retriever retriever = new RetrieverImpl();
             FileObject result = retriever.retrieveResource(targetFolder, source);
@@ -154,6 +159,20 @@ public class WSUtils {
                 }
             }
         });
+    }
+    
+    public static String getJAXWSVersion(File appSvrRoot){
+        if(appSvrRoot == null) return JAXWSVersionProvider.JAXWS20;
+        
+        File dtdFile_12 = new File(appSvrRoot, SUN_DOMAIN_12_DTD_SUFFIX);        
+        File dtdFile_13 = new File(appSvrRoot, SUN_DOMAIN_13_DTD_SUFFIX);
+                        
+        //if there is a sun-domain_1_2.dtd AND there is no sun-domain_1_3.dtd in
+        //the lib/dtds directory, then it is AppServer 9.0 which uses JAXWS 2.0
+        if(dtdFile_12.exists() && !dtdFile_13.exists()){
+            return JAXWSVersionProvider.JAXWS20;
+        }
+        return JAXWSVersionProvider.JAXWS21;
     }
     
     public static void generateSunJaxwsFile(final FileObject targetDir) throws IOException {
@@ -308,7 +327,7 @@ public class WSUtils {
         if ("1.6".equals(javaVersion)) { //NOI18N
             String jaxWsEndorsedDirs = getJaxWsApiDir();
             if (jaxWsEndorsedDirs!=null && !jaxWsEndorsedDirs.equals(oldJaxWsEndorsedDirs))
-            ep.setProperty(ENDORSED_DIR_PROPERTY, jaxWsEndorsedDirs);
+                ep.setProperty(ENDORSED_DIR_PROPERTY, jaxWsEndorsedDirs);
         } else {
             if (oldJaxWsEndorsedDirs!=null) {
                 ep.remove(ENDORSED_DIR_PROPERTY);
