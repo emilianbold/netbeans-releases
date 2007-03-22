@@ -189,7 +189,7 @@ public final class ClassPath {
     private static final Lookup.Result<? extends ClassPathProvider> implementations =
         Lookup.getDefault().lookupResult(ClassPathProvider.class);
 
-    private ClassPathImplementation impl;
+    private final ClassPathImplementation impl;
     private FileObject[] rootsCache;
     /**
      * Associates entry roots with the matching filter, if there is one.
@@ -855,11 +855,13 @@ public final class ClassPath {
             }
             if (ClassPathImplementation.PROP_RESOURCES.equals(prop)) {
                 final List<? extends PathResourceImplementation> resources = impl.getResources();
-                if (resources != null) {
-                    for (PathResourceImplementation pri : resources) {
-                        pri.removePropertyChangeListener(pListener);
-                        pri.addPropertyChangeListener(pListener);
-                    }
+                if (resources == null) {
+                    LOG.warning("ClassPathImplementation.getResources cannot return null; impl class: " + impl.getClass().getName());
+                    return;
+                }
+                for (PathResourceImplementation pri : resources) {
+                    pri.removePropertyChangeListener(pListener);
+                    pri.addPropertyChangeListener(pListener);
                 }
             }
         }
