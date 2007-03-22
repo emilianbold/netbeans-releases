@@ -26,12 +26,16 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import javax.swing.tree.TreePath;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -42,9 +46,11 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.ide.ProjectSupport;
 
 
@@ -247,6 +253,39 @@ public class Utilities {
         waitScanFinished();
     }
     
+    public static void performApplicationServerStartup(RuntimeTabOperator rto) {
+        TreePath path = null;
+       
+        try {
+            path = rto.tree().findPath("Servers|Sun Java System Application Server");
+        } catch (TimeoutExpiredException ex) {
+            throw new Error("Cannot find Application Server Node");
+        }
+        
+        Node asNode = new Node(rto.tree(),path);
+        asNode.select();
+        
+       
+        
+        JPopupMenuOperator popup = asNode.callPopup();
+        if (popup == null) {
+            throw new Error("Cannot get context menu for Application server node ");
+        }
+        boolean startEnabled = popup.showMenuItem("Start").isEnabled();
+        if(startEnabled) { 
+            popup.pushMenuNoBlock("Start");
+        }
+        
+        waitForAppServerStarted();
+    }
+    
+    private static void waitForAppServerStarted() {
+        OutputOperator oot = new OutputOperator();
+                oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
+                OutputTabOperator asot = oot.getOutputTab("Sun Java System Application Server/Glassfish");
+                asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
+        asot.waitText("Application server startup complete");        
+    }    
     /**
      * Wait finished scan - repeatedly
      */
@@ -255,4 +294,5 @@ public class Utilities {
         new QueueTool().waitEmpty(1000);
         ProjectSupport.waitScanFinished();
     }
+    
 }
