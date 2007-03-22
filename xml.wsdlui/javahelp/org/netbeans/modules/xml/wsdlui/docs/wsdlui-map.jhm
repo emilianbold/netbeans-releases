@@ -36,6 +36,7 @@
 	<mapID target="wsdlui_creating" url="wsdl_editor_creating.html"/>
 	<mapID target="wsdlui_creating_existing" url="wsdl_editor_creating_existing.html"/>
 	<mapID target="wsdlui_validation" url="wsdl_editor_validation.html"/>
+	<mapID target="wsdlui_ncname" url="wsdl_editor_ncname.html"/>
 
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLColumnsView" url="wsdl_editor.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLTreeViewMultiViewDesc" url="wsdl_editor_views.html"/>

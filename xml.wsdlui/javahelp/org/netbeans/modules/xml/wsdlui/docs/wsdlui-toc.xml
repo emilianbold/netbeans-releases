@@ -44,6 +44,7 @@
 			<tocitem text="Creating a WSDL File From Scratch" target="wsdlui_creating" />
 			<tocitem text="Creating a WSDL File Based On an Existing WSDL File" target="wsdlui_creating_existing" />
 			<tocitem text="Validating WSDL Files" target="wsdlui_validation" />
+			<tocitem text="NCNAME Data Type" target="wsdlui_ncname" />
 		</tocitem>
 	</tocitem>
 </toc>
