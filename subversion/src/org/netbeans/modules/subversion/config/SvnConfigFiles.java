@@ -23,10 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ProxySelector;
 import java.net.SocketAddress;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,9 +31,12 @@ import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.subversion.util.ProxySettings;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -122,51 +122,48 @@ public class SvnConfigFiles {
      *     
      * @param host the host
      */
-    public void setProxy(String host) {
-     
-        assert host != null && !host.trim().equals(""): "can\'t do anything for a null host";               // NOI18N
-         
-        if(host.startsWith("file:///")) {
-            // a proxy will be needed only for remote repositories
+    public void setProxy(SVNUrl url) {
+                        
+        assert url != null : "can\'t do anything for a null host";               // NOI18N
+                         
+        if(!(url.getProtocol().startsWith("http") ||
+             url.getProtocol().startsWith("https")) ) 
+        {            
+            // a proxy will be needed only for remote http and https repositories
             return;
         }
         
-        ProxySelector ps = ProxySelector.getDefault();
-        List<Proxy> proxies = null;
-        try {
-            proxies = ps.select(new java.net.URI(host));            
-        } catch (URISyntaxException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }        
-                                
-        Proxy proxy = null;
-        for(Proxy p : proxies) {                        
-            if( p.type().equals(Proxy.Type.HTTP) || 
-                p.type().equals(Proxy.Type.DIRECT) ) 
-            {                                
-                proxy = p;                
-                if (proxy.type().equals(Proxy.Type.DIRECT)) {
-                    break;
-                }                   
-            }                                             
-        }                   
+        String host =  SvnUtils.ripUserFromHost(url.getHost());
+        ProxySettings proxySettings = new ProxySettings();
         
         Ini nbServers = new Ini();
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
         Ini.Section svnGlobalSection = svnServers.get(GLOBAL_SECTION);
-        if(proxy.type().equals(Proxy.Type.DIRECT)) {
+        if(proxySettings.isDirect()) {
             // no proxy host means no proxy at all                                                
             if(svnGlobalSection != null) {
                 // if there is a global section than get the no proxy settings                                                                 
                 mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);                
             }
         } else {            
-            // get the proxy 
-            SocketAddress sa = proxy.address();            
-            InetSocketAddress proxyAddress = (InetSocketAddress) sa;
             
-            nbGlobalSection.put("http-proxy-host", proxyAddress.getHostName());                     // NOI18N
-            nbGlobalSection.put("http-proxy-port", Integer.toString(proxyAddress.getPort()));       // NOI18N            
+            String proxyHost = "";
+            int proxyPort = -1;                       
+            if(url.getProtocol().startsWith("https")) {
+                proxyHost = proxySettings.getHttpsHost();
+                proxyPort = proxySettings.getHttpsPort();
+            }            
+            if(proxyHost.equals("")) {
+                proxyHost = proxySettings.getHttpHost();
+                proxyPort = proxySettings.getHttpPort();                
+            }
+            String exceptions = proxySettings.getNotProxyHosts();
+                    
+            nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
+            nbGlobalSection.put("http-proxy-port", Integer.toString(proxyPort));   // NOI18N            
+            if(!exceptions.equals("")) {
+                nbGlobalSection.put("http-proxy-exceptions", exceptions);   // NOI18N
+            }            
             
             // and the authentication
             Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core");  // NOI18N    
