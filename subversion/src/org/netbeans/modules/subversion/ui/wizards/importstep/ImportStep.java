@@ -242,6 +242,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                 }
 
             } finally {
+                Subversion.getInstance().versionedFilesChanged();
                 if(isCanceled()) {
                     valid(org.openide.util.NbBundle.getMessage(ImportStep.class, "MSG_Import_ActionCanceled")); // NOI18N
                 } else if(invalidMsg != null) {

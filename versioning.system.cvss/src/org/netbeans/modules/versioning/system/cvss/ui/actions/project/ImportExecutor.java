@@ -28,11 +28,7 @@ import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.util.NbBundle;
-import org.openide.util.TaskListener;
-import org.openide.util.Task;
 import org.openide.util.actions.SystemAction;
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 
 import java.io.*;
@@ -97,6 +93,7 @@ final class ImportExecutor extends ExecutorSupport implements Runnable {
             copyMetadata();
         }
         Kit.deleteRecursively(checkoutDir);
+        CvsVersioningSystem.getInstance().versionedFilesChanged();
     }
 
     private void copyMetadata() {
