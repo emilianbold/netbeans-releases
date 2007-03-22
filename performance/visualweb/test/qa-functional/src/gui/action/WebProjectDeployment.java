@@ -20,20 +20,15 @@
 package gui.action;
 
 import gui.VWPUtilities;
-import javax.swing.tree.TreePath;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import footprint.VWPFootprintUtilities;
-import javax.swing.JPopupMenu;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 
 /**
  *
@@ -73,47 +68,19 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
         
         RuntimeTabOperator rto = new RuntimeTabOperator().invoke();
         
-        performApplicationServerStartup(rto);
-        waitForAppServerStarted();
+        gui.Utilities.performApplicationServerStartup(rto);
+
         
         new ProjectsTabOperator().invoke();
         VWPFootprintUtilities.buildproject(targetProject);
     }
-    private void performApplicationServerStartup(RuntimeTabOperator rto) {
-        TreePath path = null;
-       
-        try {
-            path = rto.tree().findPath("Servers|Sun Java System Application Server");
-        } catch (TimeoutExpiredException ex) {
-            throw new Error("Cannot find Application Server Node");
-        }
-        
-        Node asNode = new Node(rto.tree(),path);
-        asNode.select();
-        
-       
-        
-        JPopupMenuOperator popup = asNode.callPopup();
-        if (popup == null) {
-            throw new Error("Cannot get context menu for Application server node ");
-        }
-        boolean startEnabled = popup.showMenuItem("Start").isEnabled();
-        if(startEnabled) { 
-            popup.pushMenuNoBlock("Start");
-        }        
-    }
+    
     // Experimental 
     private void waitForAppServerStartedAPI() {
         gui.VWPUtilities.waitForPendingBackgroundTasks(5);
     }
     
-    private void waitForAppServerStarted() {
-        OutputOperator oot = new OutputOperator();
-                oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-                OutputTabOperator asot = oot.getOutputTab("Sun Java System Application Server/Glassfish");
-                asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
-        asot.waitText("Application server startup complete");        
-    }
+
     
     public void prepare() {
         proj = new ProjectsTabOperator().getProjectRootNode(targetProject);
