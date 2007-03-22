@@ -45,6 +45,10 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
 
     @Override
     public boolean canRename(Lookup lookup) {
+        // Disable for M8
+        if (true) {
+            return false;
+        }
         // Get the Node being renamed
         Node node = lookup.lookup(Node.class);
         if (node != null) {
@@ -86,6 +90,10 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
     
     @Override
     public boolean canMove(Lookup lookup) {
+        // Disable for M8
+        if (true) {
+            return false;
+        }
         // Get the Node being renamed
         Node node = lookup.lookup(Node.class);
         if (node != null) {

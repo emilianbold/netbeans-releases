@@ -35,6 +35,10 @@ import org.openide.util.Exceptions;
 public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory {
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        // Disable for M8
+        if (true) {
+            return null;
+        }
         boolean userInvokedRefactoring = isUserInvokedRefactoring(refactoring);
         if (refactoring instanceof RenameRefactoring) {
             RenameRefactoring renameRefactoring = (RenameRefactoring) refactoring;
