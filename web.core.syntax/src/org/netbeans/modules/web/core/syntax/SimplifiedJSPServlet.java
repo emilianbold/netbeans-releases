@@ -41,7 +41,6 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
 /**
@@ -85,9 +84,8 @@ public class SimplifiedJSPServlet {
     
     /** Creates a new instance of ScripletsBodyExtractor */
     public SimplifiedJSPServlet(Document doc) {
-        this.doc = doc;
-        
-        sup = (JspSyntaxSupport)((BaseDocument)doc).getSyntaxSupport();
+        this.doc = doc;        
+        sup = (JspSyntaxSupport) new JSPKit().createSyntaxSupport((BaseDocument) doc);
     }
     
     public void process() throws BadLocationException{
@@ -153,7 +151,7 @@ public class SimplifiedJSPServlet {
         StringBuilder importsBuff = new StringBuilder();
         String imports[] = sup.getImports();
         
-        for (String pckg : sup.getImports()){
+        for (String pckg : imports){
             importsBuff.append("import " + pckg + ";\n"); //NOI18N
         }
         
