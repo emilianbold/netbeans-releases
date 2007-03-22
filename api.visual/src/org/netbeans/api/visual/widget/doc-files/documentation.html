@@ -424,7 +424,20 @@ The <code>ImageWidget</code> represents an image. You can manipulate with the im
 Sometimes you want to listen on a widget move or resize changes. The listener is defined by <code>Widget.Dependency</code> interface. Listener could be (un)registered using <code>Widget.addDependency</code> and <code>Widget.removeDependency</code> methods.
 
 <p>
-The <code>Widget.Dependency.revalidateDependency</code> method is not called directly from <code>Widget.resolveBounds</code> method. Instead it is called indirectly during widget or scene revalidation process (means from <code>Widget.revalidate</code> and <code>Scene.validate</code> method). See <a href="#ValidationProcess">Validation Process</a> and <a href="#Layout">Layout</a> sections for details.
+Note 1: The <code>Widget.Dependency.revalidateDependency</code> method is not called directly from <code>Widget.resolveBounds</code> method. Instead it is called indirectly during widget or scene revalidation process (means from <code>Widget.revalidate</code> and <code>Scene.validate</code> method). See <a href="#ValidationProcess">Validation Process</a> and <a href="#Layout">Layout</a> sections for details.
+
+<p>
+Note 2: <code>Widget.Dependency.revalidateDependency</code> method is called to notify all dependent objects that the widget is scheduled for revalidation and therefore all dependent objects should schedule their revalidation using "dependentWidget.revalidate" method call too.
+<br>
+E.g.: An anchor depends on a widget where it is assigned. When revalidateDependency is called, then the anchor clears its caches and invokes "revalidate" method on all ConnectionWidget (resp. Anchor.Entry).
+<br>
+Therefore no bounds of any widget is valid at the time of the method call. The valid bounds can be obtained only in Layout interface:
+<ul>
+<li>At the time when Layout.layout method is called, initial bounds of all child widgets of the widget (where the layout is assigned) are resolved.
+<li>At the time when Layout.justify method is called, bounds of all parent widgets of the widget (where the layout is assigned) are resolved.
+<li>At the end of validation process, scene bounds are finally calculated.
+</ul>
+If you want to listen on scene boundary changes, the easiest way is to add scene-listener using Scene.addSceneListener and put your code into SceneListener.sceneValidated method.
 
 <a name="ExampleIconNodeWidget">
 <h3>Example: Icon Node Widget</h3>
