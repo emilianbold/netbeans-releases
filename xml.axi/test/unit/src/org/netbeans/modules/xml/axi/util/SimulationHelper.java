@@ -29,8 +29,7 @@ import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.Compositor.CompositorType;
 import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
-import org.netbeans.modules.xml.refactoring.RefactoringManager;
-import org.netbeans.modules.xml.refactoring.RenameRequest;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.Nameable;
@@ -171,11 +170,10 @@ public class SimulationHelper {
             ref = NamedReferenceable.class.cast(comp);
         }
         
-        RenameRequest request  = new RenameRequest((Nameable)ref, name);
-        request.setScopeLocal();
+        
         try {
             SchemaModel sm = model.getSchemaModel();
-            RefactoringManager.getInstance().execute(request, false);
+            SharedUtils.locallyRenameRefactor((Nameable)ref, name);
             model.sync();
         } catch (IOException ex) {
             return false;
