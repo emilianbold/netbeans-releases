@@ -75,7 +75,7 @@ import org.openide.text.NbDocument;
  */
 public class EditableDiffView implements DiffView, NestableDiffView, DocumentListener, AncestorListener, PropertyChangeListener {
 
-    private Stroke boldStroke = new BasicStroke(2);
+    private Stroke boldStroke = new BasicStroke(3);
     
     // === Default Diff Colors ===========================================================
     private Color colorMissing = new Color(255, 160, 180);
