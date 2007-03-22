@@ -30,11 +30,14 @@ import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.util.Util;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -94,9 +97,11 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
             return schemaFiles;
         }
         
-        public GlobalElement getParameterType() {
+        public Object getParameterType() {
             Object paramType = parmCombo.getSelectedItem();
-            return (paramType instanceof GlobalElement?(GlobalElement)paramType:null);
+            if (paramType instanceof String && ((String)paramType).startsWith("xsd:")) {
+                return getPrimitiveType(((String)paramType).substring(4));
+            } else return paramType;
             /*
             List<GlobalElement> list = new ArrayList<GlobalElement>();
             Object[] objs = parmCombo.getSelectedObjects();
@@ -107,14 +112,18 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
             */
         }
         
-        public GlobalElement getReturnType() {
+        public Object getReturnType() {
             Object returnType = returnCombo.getSelectedItem();
-            return (returnType instanceof GlobalElement?(GlobalElement)returnType:null);
+            if (returnType instanceof String && ((String)returnType).startsWith("xsd:")) {
+                return getPrimitiveType(((String)returnType).substring(4));
+            } else return returnType;
         }
         
-        public GlobalElement getFaultType() {
+        public Object getFaultType() {
             Object faultType = faultCombo.getSelectedItem();
-            return (faultType instanceof GlobalElement?(GlobalElement)faultType:null);
+            if (faultType instanceof String && ((String)faultType).startsWith("xsd:")) {
+                return getPrimitiveType(((String)faultType).substring(4));
+            } else return faultType;
         }
         
         private void populate()throws CatalogModelException {
@@ -154,7 +163,7 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                         GlobalElement el = (GlobalElement)value;
                         String text = "{"+el.getModel().getEffectiveNamespace(el)+"}:"+el.getName(); //NOI18N
                         setText(text);
-                    } else if (value instanceof String) { 
+                    } else if (value instanceof String) {
                         setText((String)value);
                     }
                 return this;
@@ -344,6 +353,17 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         combo.addItem("xsd:dateTime");
         combo.addItem("xsd:anyUri");
         combo.addItem("xsd:QName");
+    }
+    
+    private GlobalSimpleType getPrimitiveType(String typeName){
+        SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
+        Collection<GlobalSimpleType> primitives = primitiveModel.getSchema().getSimpleTypes();
+        for(GlobalSimpleType ptype: primitives){
+            if(ptype.getName().equals(typeName)){
+                return ptype;
+            }
+        }
+        return null;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

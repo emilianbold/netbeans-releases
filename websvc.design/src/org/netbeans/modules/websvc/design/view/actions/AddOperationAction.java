@@ -97,9 +97,9 @@ public class AddOperationAction extends AbstractAction {
                         
                         WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
                         String operationName = panel.getOperationName();
-                        GlobalElement parameterType = panel.getParameterType();
-                        GlobalElement returnType = panel.getReturnType();
-                        GlobalElement faultType = panel.getFaultType();
+                        Object parameterType = panel.getParameterType();
+                        Object returnType = panel.getReturnType();
+                        Object faultType = panel.getFaultType();
                         Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
                                 operationName, parameterType, returnType, faultType);
                         generatorHelper.generateJavaArtifacts(service, implementationClass, operationName);
