@@ -72,6 +72,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ImportsTest("testRemoveAfterEmpty"));
 //        suite.addTest(new ImportsTest("testRemoveBeforeEmpty"));
 //        suite.addTest(new ImportsTest("testRenameIdentifier"));
+//        suite.addTest(new ImportsTest("testRenameIdentifier2"));
         return suite;
     }
 
@@ -1072,6 +1073,51 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 ImportTree dovoz = cut.getImports().get(2);
                 MemberSelectTree mst = (MemberSelectTree) dovoz.getQualifiedIdentifier();
                 workingCopy.rewrite(mst, make.setLabel(mst, "Jitko"));
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRenameIdentifier2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "import java.util.List;\n" +
+            "import java.util.ArrayList;\n" +
+            "\n" +
+            "import java.util.Collections; // test\n" +
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "import java.util.List;\n" +
+            "import java.util.ArrayList;\n" +
+            "\n" +
+            "import java.jitko.Collections; // test\n" +
+            "/** test */\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ImportTree dovoz = cut.getImports().get(2);
+                MemberSelectTree mst = (MemberSelectTree) dovoz.getQualifiedIdentifier();
+                mst = (MemberSelectTree) mst.getExpression();
+                workingCopy.rewrite(mst, make.setLabel(mst, "jitko"));
             }
 
             public void cancel() {
