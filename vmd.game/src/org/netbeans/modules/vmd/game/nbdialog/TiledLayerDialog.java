@@ -56,6 +56,7 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -644,6 +645,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 			}
 		}
 		this.listImageFileName.setModel(this.getImageListModel());
+		DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Sample images were imported to project source root.", NotifyDescriptor.INFORMATION_MESSAGE));		
 	}
 	
 	private void handleOKButton() {

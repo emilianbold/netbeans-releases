@@ -25,14 +25,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -58,6 +56,7 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -618,6 +617,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 			}
 		}
 		this.listImageFileName.setModel(this.getImageListModel());
+		DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Sample images were imported to project source root.", NotifyDescriptor.INFORMATION_MESSAGE));		
 	}
 	
 	private void handleOKButton() {
