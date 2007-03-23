@@ -33,6 +33,7 @@ import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffSetupSource;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 import org.netbeans.modules.versioning.util.NoContentPanel;
+import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.api.project.Project;
 
@@ -55,6 +56,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     private final File[]                roots;
     private final SearchCriteriaPanel   criteria;
+
+    private final DelegatingUndoRedo    undoRedo = new DelegatingUndoRedo(); 
     
     private Divider                 divider;
     private RequestProcessor.Task   currentSearchTask;
@@ -185,8 +188,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 } else {
                     resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults")));  // NOI18N
                 }
+                undoRedo.setDiffView(null);
             } else {
                 if (tbSummary.isSelected()) {
+                    undoRedo.setDiffView(null);
                     if (summaryView == null) {
                         summaryView = new SummaryView(this, dispResults);
                     }
@@ -195,6 +200,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                     if (diffView == null) {
                         diffView = new DiffResultsView(this, dispResults);
                     }
+                    undoRedo.setDiffView(diffView.getCurrentDiffComponent());
                     resultsPanel.add(diffView.getComponent());
                 }
             }
@@ -500,6 +506,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     public String getSetupDisplayName() {
         return null;
+    }
+
+    DelegatingUndoRedo getUndoRedo() {
+        return undoRedo;
     }
 
     static class ResultsContainer {

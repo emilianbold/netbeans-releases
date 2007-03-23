@@ -22,6 +22,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.awt.UndoRedo;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffSetupSource;
 
@@ -51,6 +52,10 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
     }
 
+    public UndoRedo getUndoRedo() {
+        return shp.getUndoRedo();
+    }
+    
     public void search() {
         shp.executeSearch();
         shp.setSearchCriteriaVisible(false);

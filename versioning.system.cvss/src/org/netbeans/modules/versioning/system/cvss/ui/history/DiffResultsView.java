@@ -32,6 +32,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Cancellable;
 import org.openide.ErrorManager;
+import org.openide.awt.UndoRedo;
 
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
@@ -308,6 +309,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         }
 
         public void run() {
+            parent.getUndoRedo().setDiffView(null);            
             thread = Thread.currentThread();
             final Diff diff = Diff.getDefault();
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1 == VersionsCache.REVISION_CURRENT ? 
@@ -337,6 +339,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                         final DiffView view = diff.createDiff(s1, s2);
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
+                            parent.getUndoRedo().setDiffView((JComponent) currentDiff.getComponent());
                             setBottomComponent(currentDiff.getComponent());
                             if (currentDiff.getDifferenceCount() > 0) {
                                 currentDifferenceIndex = showLastDifference ? currentDiff.getDifferenceCount() - 1 : 0;
@@ -360,6 +363,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         }
     }
     
+    JComponent getCurrentDiffComponent() {
+        return (JComponent) (currentDiff == null ? null : currentDiff.getComponent());
+    }
+
     public JComponent getComponent() {
         return diffView;
     }
