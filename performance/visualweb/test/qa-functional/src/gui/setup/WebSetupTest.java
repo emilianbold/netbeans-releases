@@ -68,8 +68,8 @@ public class WebSetupTest extends IDESetupTest {
         new CloseAllDocumentsAction().performAPI();
         log("Close All Documents Action completed");
         
-        ProjectSupport.closeProject("VW_Project");
-        log("Project closed");
+//        ProjectSupport.closeProject("VW_Project");
+//        log("Project closed");
         
         ProjectSupport.waitScanFinished();
         log("Scan completed");
