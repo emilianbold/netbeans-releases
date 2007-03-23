@@ -173,6 +173,15 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         
         setSourceTitle(fileLabel1, title1);
         setSourceTitle(fileLabel2, title2);
+
+        // Make sure split pane opens with divider in the center
+        Dimension pf1 = fileLabel1.getPreferredSize();
+        Dimension pf2 = fileLabel2.getPreferredSize();
+        if (pf1.width > pf2.width) {
+            fileLabel2.setPreferredSize(new Dimension(pf1.width, pf2.height));
+        } else {
+            fileLabel1.setPreferredSize(new Dimension(pf2.width, pf1.height));
+        }
         
         final String f1 = mimeType1;
         final String f2 = mimeType2;
@@ -506,52 +515,22 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
     /** This method is called from within the constructor to initialize the form.
      */
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
-
-        jSplitPane1.setDividerSize(4);
-        filePanel1.setLayout(new java.awt.GridBagLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        filePanel1.add(jEditorPane1, gridBagConstraints);
-
+        fileLabel1.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         fileLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         fileLabel1.setLabelFor(jEditorPane1);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        filePanel1.add(fileLabel1, gridBagConstraints);
+        filePanel1.setLayout(new BorderLayout());
+        filePanel1.add(fileLabel1, BorderLayout.PAGE_START);
+        filePanel1.add(jEditorPane1);
 
-        jSplitPane1.setLeftComponent(filePanel1);
-
-        filePanel2.setLayout(new java.awt.GridBagLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        filePanel2.add(jEditorPane2, gridBagConstraints);
-
+        fileLabel2.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         fileLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         fileLabel2.setLabelFor(jEditorPane2);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        filePanel2.add(fileLabel2, gridBagConstraints);
-
-        jSplitPane1.setRightComponent(filePanel2);
+        filePanel2.setLayout(new BorderLayout());
+        filePanel2.add(fileLabel2, BorderLayout.PAGE_START);
+        filePanel2.add(jEditorPane2);
+        
+        jSplitPane1.setLeftComponent(filePanel1);
+        jSplitPane1.setRightComponent(filePanel2);        
     }
 
     // Code for dispatching events from components to event handlers.
