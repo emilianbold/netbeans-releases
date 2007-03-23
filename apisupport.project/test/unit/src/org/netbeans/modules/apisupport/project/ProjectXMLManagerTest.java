@@ -424,7 +424,7 @@ public class ProjectXMLManagerTest extends TestBase {
     
     public void testGetBinaryOrigins() throws Exception {
         ProjectXMLManager xercesPXM = createXercesPXM();
-        assertEquals("number of binary origins", 2, xercesPXM.getBinaryOrigins().length);
+        assertEquals("number of binary origins", 1, xercesPXM.getBinaryOrigins().length);
     }
     
     public void testThatFriendPackagesAreGeneratedInTheRightOrder_61882() throws Exception {

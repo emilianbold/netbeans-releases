@@ -65,7 +65,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         "</html>"
     };
     
-    private static final Map TOKENS_MAP = new HashMap(2);
+    private static final Map<String,String> TOKENS_MAP = new HashMap<String,String>(2);
     
     static {
         TOKENS_MAP.put("some", "a\\ nonsense");
@@ -429,16 +429,16 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         cmf.add(op);
         cmf.run();
         
-        String[] supposedContent = new String[] {
+        String[] supposedContent = {
             "<filesystem>",
-                    "<folder name=\"Actions\">",
-                    "<folder name=\"Tools\">",
-                    "<file name=\"org-example-module1-BeepAction.instance\">",
-                    "<attr name=\"instanceClass\" stringvalue=\"org.example.module1.BeepAction\"/>",
-                    "</file>",
-                    "</folder>",
-                    "</folder>",
-                    "</filesystem>"
+            "<folder name=\"Actions\">",
+            "<folder name=\"Tools\">",
+            "<file name=\"org-example-module1-BeepAction.instance\">",
+            "<attr name=\"instanceClass\" stringvalue=\"org.example.module1.BeepAction\"/>",
+            "</file>",
+            "</folder>",
+            "</folder>",
+            "</filesystem>"
         };
         assertLayerContent(supposedContent, 
                 new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
@@ -486,9 +486,9 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         TestCase.assertEquals("created, modified paths", expectedPath, paths[0]);
     }
     
-    public static void assertRelativePath(String expectedPath, SortedSet paths) {
+    public static void assertRelativePath(String expectedPath, SortedSet<String> paths) {
         String[] s = new String[paths.size()];
-        assertRelativePath(expectedPath, (String[]) paths.toArray(s));
+        assertRelativePath(expectedPath, paths.toArray(s));
     }
     
     public static void assertRelativePaths(String[] expectedPaths, String[] paths) {
@@ -500,8 +500,8 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         OutputStream myTemplateOS = new FileOutputStream(myTemplate);
         PrintWriter pw = new PrintWriter(myTemplateOS);
         try {
-            for (int i = 0; i < content.length; i++) {
-                pw.println(content[i]);
+            for (String line : content) {
+                pw.println(line);
             }
         } finally {
             pw.close();
