@@ -1304,13 +1304,14 @@ public class QueryBuilder extends TopComponent
             Log.getLogger().finest("Error Closing statement: " + se.getLocalizedMessage()); // NOI18N
         }
 
-        try {
-            if ( connection != null ) {
-                connection.close() ;
-            }
-        } catch( SQLException se) {
-            Log.getLogger().finest("Error Closing connection: " + se.getLocalizedMessage()); // NOI18N
-        }
+	// Do not close Connections that are managed by DatabaseConnection
+        // try {
+        //    if ( connection != null ) {
+        //        connection.close() ;
+        //    }
+        // } catch( SQLException se) {
+        //    Log.getLogger().finest("Error Closing connection: " + se.getLocalizedMessage()); // NOI18N
+        // }
         
         showBusyCursor ( false );
         Log.getLogger().finest("Returning from QueryBuilder.executeQuery"); // NOI18N
