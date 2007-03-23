@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
-import org.netbeans.modules.vmd.midp.screen.ItemSRItemPresenter;
+import org.netbeans.modules.vmd.midp.screen.ItemCommandSRItemPresenter;
 
 /**
  *
@@ -190,8 +190,7 @@ public class ItemCD extends ComponentDescriptor {
                 },
                 // screen
                 new ItemDisplayPresenter (),
-                new DisplayableResourceCategoriesPresenter(),
-                new ItemSRItemPresenter()
+                new DisplayableResourceCategoriesPresenter()
         );
     }
 

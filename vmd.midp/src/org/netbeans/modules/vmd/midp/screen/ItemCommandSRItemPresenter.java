@@ -15,34 +15,41 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-package org.netbeans.modules.vmd.midp.screen;
-
-import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
-import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoriesPresenter;
-
-import java.util.ArrayList;
-import java.util.Collection;
-
-/**
- * @author breh
  *
  */
-public class DisplayableResourceCategoriesPresenter extends ScreenResourceCategoriesPresenter {
 
-    private static final ArrayList<ScreenResourceCategoryDescriptor> CATEGORIES = new ArrayList<ScreenResourceCategoryDescriptor>();
+package org.netbeans.modules.vmd.midp.screen;
+
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescriptor;
+import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
+
+/**
+ * @author Karol Harezlak
+ */
+public class ItemCommandSRItemPresenter extends ScreenResourceItemPresenter {
     
-    static {
-        CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.ASSIGNED_COMMANDS);
-        CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.ASSIGNED_ITEM_COMMANDS);
-        CATEGORIES.add(ScreenResourceCategoryDescriptorSupport.OTHER_DESIGN_RESOURCES);
-    }
-    public DisplayableResourceCategoriesPresenter() {
+    public ItemCommandSRItemPresenter() {
     }
     
     @Override
-    public Collection<ScreenResourceCategoryDescriptor> getCategoryDescriptors() {
-        return CATEGORIES;
+    public ScreenResourceCategoryDescriptor getCategoryDescriptor() {
+        return ScreenResourceCategoryDescriptorSupport.ASSIGNED_ITEM_COMMANDS;
     }
-
+    
+    @Override
+    public boolean isActiveFor(DesignComponent component) {
+        DesignComponent thisComponent = getComponent();
+        
+        if (thisComponent == null || component == null)
+            return false;
+        
+        for (DesignComponent c : component.getComponents()) {
+            if (thisComponent.getParentComponent() == c)
+                return true;
+        }
+        
+        return false;
+    }
+    
 }

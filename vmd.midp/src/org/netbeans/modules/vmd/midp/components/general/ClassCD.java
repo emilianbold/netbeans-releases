@@ -90,7 +90,7 @@ public final class ClassCD extends ComponentDescriptor {
             new GoToSourcePresenter () {
                 protected boolean matches (GuardedSection section) {
                     boolean lazyInit = MidpTypes.getBoolean (getComponent ().readProperty (PROP_LAZY_INIT));
-                    return MultiGuardedSection.matches (section, lazyInit ? getComponent().getComponentID() + "-getter" : getComponent ().getDocument ().getRootComponent ().getComponentID () + "-initialize", 1); // NOI18N
+                    return MultiGuardedSection.matches(section, lazyInit ? getComponent().getComponentID() + "-getter" : getComponent ().getDocument ().getRootComponent ().getComponentID () + "-initialize", 1); // NOI18N
                 }
             },
             // properties

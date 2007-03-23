@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowItemCommandPinOrderPresenter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.screen.ItemCommandSRItemPresenter;
 
 /**
  * @author David Kaspar
@@ -90,6 +91,8 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
             GoToSourcePresenter.createForwarder (PROP_COMMAND),
             //properties
             PropertiesPresenterForwarder.createByReference(PROP_COMMAND),
+            //screen
+            new ItemCommandSRItemPresenter(),
             // flow
             new FlowEventSourcePinPresenter() {
             protected DesignComponent getComponentForAttachingPin() {

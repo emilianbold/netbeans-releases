@@ -45,11 +45,11 @@ public class ScreenResourceCategoryDescriptorSupport {
             ScreenResourceOrderingController.getDefaultOrdering()
     );
     
-    public static ScreenResourceCategoryDescriptor ITEMS = new ScreenResourceCategoryDescriptor (
-            "Items",
-            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/resource_16.png"),
-            "Items assigned to the edited displayable",
-            -200,
+    public static ScreenResourceCategoryDescriptor ASSIGNED_ITEM_COMMANDS = new ScreenResourceCategoryDescriptor (
+            "Assigned Item Commands",
+            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"),
+            "Assigned Item Commands",
+            50,
             ScreenResourceOrderingController.getArrayOrdering(FormCD.PROP_ITEMS)
     );
 }
