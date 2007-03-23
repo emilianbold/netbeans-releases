@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
@@ -46,6 +47,7 @@ public class PageFlowController {
     private Collection<FileObject> webFiles;
     
     private HashMap<NavigationCase,NavigationCaseNode> case2Node = new HashMap<NavigationCase,NavigationCaseNode>();
+    private  HashMap<String,PageFlowNode> page2Node = new HashMap<String,PageFlowNode>();
     
     /** Creates a new instance of PageFlowController
      * @param context
@@ -59,6 +61,7 @@ public class PageFlowController {
         webFiles = getAllProjectRelevantFilesObjects();
         
         setupGraph();
+        view.layoutSceneImmediately();
         registerListeners();
         
         
@@ -206,23 +209,27 @@ public class PageFlowController {
      * Should only be called by init();
      *
      **/
-    public void setupGraph(){
+    public boolean setupGraph(){
         assert configModel !=null;
         assert project != null;
         assert webFiles != null;
         
         view.clearGraph();
         
-        if( !configModel.inSync() ){
-            try {
-                configModel.sync();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
+        //        if( !configModel.inSync() ){
+        //            try {
+        //                configModel.sync();
+        //            } catch (IOException ex) {
+        //                ex.printStackTrace();
+        //            }
+        //        }
         
         
         FacesConfig facesConfig = configModel.getRootComponent();
+        
+        if( facesConfig == null ) {
+            return false;
+        }
         
         List<NavigationRule> rules = facesConfig.getNavigationRules();
         String currentScope = PageFlowUtilities.getInstance().getCurrentScope();
@@ -235,7 +242,9 @@ public class PageFlowController {
         createAllEdges(rules);
         //        view.layoutGraph();
         
-        view.validateGraph();
+        view.layoutSceneImmediately();
+        //        view.validate();
+        return true;
         
     }
     
@@ -245,9 +254,17 @@ public class PageFlowController {
             for( NavigationCase navCase : navCases ){
                 NavigationCaseNode node = new NavigationCaseNode(navCase);
                 case2Node.put(navCase, node);
-                view.createEdge(node);
+                
+                createEdge(node);
             }
         }
+    }
+    
+    private void createEdge(NavigationCaseNode caseNode ){
+        String toPage = caseNode.getToViewId();
+        String action = caseNode.getFromAction();
+        String fromPage = caseNode.getFromViewId();
+        view.createEdge(caseNode, page2Node.get(fromPage), page2Node.get(toPage));
     }
     
     
@@ -275,23 +292,23 @@ public class PageFlowController {
         for( FileObject webFile : webFiles ) {
             String webFileName = webFile.getNameExt();
             pages.remove(webFileName);
-            Node node = null;
+            PageFlowNode node = null;
             try {
                 //                                node = (DataNode)(DataObject.find(webFile)).getNodeDelegate();
                 node = new PageFlowNode((DataObject.find(webFile)).getNodeDelegate());
+                view.createNode(node, null, null);
             } catch ( DataObjectNotFoundException ex ) {
                 ex.printStackTrace();
             } catch( ClassCastException cce ){
                 cce.printStackTrace();
             }
-            view.createNode(node, null, null);
         }
         
         //Create any pages that don't actually exist but are defined specified by the config file.
         for( String pageName : pages ){
             Node tmpNode = new AbstractNode(Children.LEAF);
             tmpNode.setName(pageName);
-            Node node = new PageFlowNode(tmpNode);
+            PageFlowNode node = new PageFlowNode(tmpNode);
             //            Node node = new AbstractNode(Children.LEAF);
             //            node.setName(pageName);
             view.createNode(node, null, null);
@@ -324,12 +341,12 @@ public class PageFlowController {
                 
             } else {
                 try {
-                    wrapNode = new PageFlowNode((DataObject.find(file)).getNodeDelegate());
+                    wrapNode = (DataObject.find(file)).getNodeDelegate();
                 } catch(DataObjectNotFoundException donfe ){
                     donfe.printStackTrace();
                 }
             }
-            Node node = new PageFlowNode(wrapNode);
+            PageFlowNode node = new PageFlowNode(wrapNode);
             view.createNode(node, null, null);
         }
     }
@@ -351,9 +368,9 @@ public class PageFlowController {
                 if( myNavCase != null ){
                     NavigationCaseNode node = new NavigationCaseNode(myNavCase);
                     case2Node.put(myNavCase, node);
-                    view.createEdge(node);
+                    createEdge(node);
                 } else {
-//                    NavigationCaseNode node = case2Node.get((NavigationCase)ev.getOldValue());
+                    //                    NavigationCaseNode node = case2Node.get((NavigationCase)ev.getOldValue());
                     NavigationCaseNode node = case2Node.remove((NavigationCase)ev.getOldValue());
                     view.removeEdge(node);
                 }
@@ -361,8 +378,8 @@ public class PageFlowController {
             } else if (ev.getPropertyName() == "navigation-rule" ) {
                 NavigationRule myNavRule = (NavigationRule)ev.getNewValue();
                 //You can actually do nothing.
-            } else if ( ev.getNewValue() == State.VALID ) {
-                setupGraph();
+            } else if ( ev.getNewValue() == State.NOT_SYNCED ) {
+                // Do nothing.
                 //            } else if ( ev.getPropertyName("to-view-id")) {
                 //                String newToView = (String)ev.getNewValue();
                 //                String oldToView = (String)ev.getOldValue();
@@ -375,6 +392,10 @@ public class PageFlowController {
             }else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
                 view.warnUserMalFormedFacesConfig();
                 //                System.out.println("NOT WELL FORMED!!!");
+            } else {
+                if ( !setupGraph() ){
+                    System.out.println("Something is wrong.  Why did setup not work?");
+                }
             }
             //            System.out.println("New Value: " + ev.getNewValue());
             //            System.out.println("Old Value: " + ev.getOldValue());
@@ -422,6 +443,19 @@ public class PageFlowController {
         }
     }
     
+    //
+    //    public boolean isFilenameTaken( String filename ){
+    //
+    //        FileObject parentFolder = project.getProjectDirectory();
+    //        FileObject webFileObject = parentFolder.getFileObject("web");
+    //        FileObject file = webFileObject.getFileObject(filename);
+    //
+    //        if ( file != null )
+    //            return true;
+    //
+    //        return false;
+    //    }
+    
     /**
      * A Filter Node for a given DataNode or non File Node.
      */
@@ -433,15 +467,20 @@ public class PageFlowController {
          */
         public PageFlowNode( Node original ){
             super(original, Children.LEAF);
-            
+            page2Node.put(original.getDisplayName(), this);
         }
         
         @Override
         public void setName(String s) {
-            String oldDisplayName = getDisplayName();
             
-            super.setName(s);
-            renamePageInModel(oldDisplayName, getDisplayName());
+            String oldDisplayName = getDisplayName();
+            try {
+                super.setName(s);
+                renamePageInModel(oldDisplayName, getDisplayName());
+            } catch (IllegalArgumentException iae ) {
+                iae.printStackTrace();
+                //                throw iae;
+            }
         }
         
         /**
@@ -457,6 +496,14 @@ public class PageFlowController {
         public boolean canDestroy() {
             return false;
         }
+        
+        @Override
+        public void destroy() throws IOException {
+            page2Node.remove(this);
+            super.destroy();
+        }
+        
+        
         
         
         

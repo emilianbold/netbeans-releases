@@ -17,8 +17,10 @@ import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -30,16 +32,15 @@ import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.navigation.PageFlowController.PageFlowNode;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.explorer.ExplorerManager;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -54,6 +55,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     private PageFlowScene scene;
     private JSFConfigModel configModel;
     private PageFlowController pfc;
+    
     
     PageFlowView(JSFConfigEditorContext context){
         init();
@@ -178,8 +180,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      *
      */
     public void validateGraph() {
-        scene.layoutScene();
+//        scene.layoutScene();
         scene.validate();
+    }
+    
+    public void layoutSceneImmediately() {
+        scene.layoutSceneImmediately();
     }
     
     
@@ -203,49 +209,48 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         widget.setNodeProperties(IMAGE_LIST, pageName, type, glyphs);
         
-        scene.addPin(pageNode, pageName +"pin");
+        scene.addPin(pageNode, new PinNode(pageNode));
+        
         
         return widget;
     }
     
-    /**
-     * Creates a PageFlowScene pin from a pageNode and pin name String.
-     * In general a pin represents a NavigasbleComponent orginally designed for VWP.
-     * @param pageNode
-     * @param navComp
-     * @return
-     */
-    protected VMDPinWidget createPin( Node pageNode, String navComp) {
-        //        Pin pin = new Pin(page, navComp);
-        VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, navComp);
-        //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
-        //        if( navComp != null ){
-        //            widget.setProperties(navComp, Arrays.asList(navComp.getBufferedIcon()));
-        //        }
-        return widget;
-    }
+//    /**
+//     * Creates a PageFlowScene pin from a pageNode and pin name String.
+//     * In general a pin represents a NavigasbleComponent orginally designed for VWP.
+//     * @param pageNode
+//     * @param navComp
+//     * @return
+//     */
+//    protected VMDPinWidget createPin( Node pageNode, NavigationCaseNode navComp) {
+//        //        Pin pin = new Pin(page, navComp);
+//        VMDPinWidget widget = (VMDPinWidget) scene.addPin(pageNode, navComp);
+//        //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
+//        //        if( navComp != null ){
+//        //            widget.setProperties(navComp, Arrays.asList(navComp.getBufferedIcon()));
+//        //        }
+//        return widget;
+//    }
     
     /**
      * Creates an Edge or Connection in the Graph Scene
      * @param navCaseNode
+     * @param fromPageNode 
+     * @param toPageNode 
      */
-    protected void createEdge( NavigationCaseNode navCaseNode) {
-        
-        
-        String toPage = navCaseNode.getToViewId();
-        //        String caseName = navCaseNode.getFromOuctome();
-        String action = navCaseNode.getFromAction();
-        String fromPage = navCaseNode.getFromViewId();
+    protected void createEdge( NavigationCaseNode navCaseNode, PageFlowNode fromPageNode, PageFlowNode toPageNode  ) {
+      
+
+//        
+//        PageFlowNode fromPageNode = pfc.page2Node.get(fromPage);
+//        PageFlowNode toPageNode = pfc.page2Node.get(toPage);
         
         ConnectionWidget widget = (ConnectionWidget)scene.addEdge(navCaseNode);
         
         
-        
-        //        graphScene.setEdgeSource(navCase, label);
-        
         //I need to remove extension so it matches the DataNode's pins.
-        scene.setEdgeSource(navCaseNode, fromPage+"pin");
-        scene.setEdgeTarget(navCaseNode, toPage+"pin");
+        scene.setEdgeSource(navCaseNode, scene.getDefaultPin( fromPageNode) );
+        scene.setEdgeTarget(navCaseNode, scene.getDefaultPin( toPageNode) );
         
         //        Collection<String> pins = graphScene.getPins();
         //        String targetPin = null;

@@ -10,6 +10,7 @@
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Set;
@@ -18,10 +19,15 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.KeyStroke;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -47,7 +53,7 @@ public class MapActionUtility {
         //        actionMap.put("handleZoomPage", handleZoomPage);
         //        actionMap.put("handleUnZoomPage", handleUnZoomPage);
         //        actionMap.put("handleOpenPage", handleOpenPage);
-        //        actionMap.put("handleNewWebForm", handleNewWebForm);
+        actionMap.put("handleNewWebForm", handleNewWebForm);
         //
         //        actionMap.put("handleLeftArrowKey", handleLeftArrowKey);
         //        actionMap.put("handleRightArrowKey", handleRightArrowKey);
@@ -70,9 +76,9 @@ public class MapActionUtility {
         //        // Esc Key
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0), "handleEscape");
         //
-        //        //Lower Case a
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A,InputEvent.CTRL_MASK), "handleNewWebForm");
-        //
+//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A,InputEvent.CTRL_MASK), "handleNewWebForm");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A,0), "handleNewWebForm");
+        
         //        //Lower Case s,e,z,u
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S,0), "handleLinkStart");
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E,0), "handleLinkEnd");
@@ -118,7 +124,7 @@ public class MapActionUtility {
     
     public static Action handleDeleteKey = new AbstractAction() {
         public void actionPerformed(ActionEvent event) {
-//            System.out.println("Action Event: " + event);
+            //            System.out.println("Action Event: " + event);
             Object obj = event.getSource();
             
             if ( obj instanceof Widget ){
@@ -143,6 +149,34 @@ public class MapActionUtility {
                 
             }
             
+        }
+    };
+    
+    
+    
+    
+    public static Action handleNewWebForm = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            System.out.println("Source: " + e.getSource());
+        }
+        
+        
+        private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18N
+        
+        private void createIndexJSP(FileObject webFolder) throws IOException {
+//            FileOwnerQuery.getOwner(webFolder)                                        
+//            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
+//            FileObject parentFolder = project.getProjectDirectory();
+//            FileObject webFileObject = parentFolder.getFileObject("web");
+            
+            FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
+            
+            if (jspTemplate == null)
+                return; // Don't know the template
+            
+            DataObject mt = DataObject.find(jspTemplate);
+            DataFolder webDf = DataFolder.findFolder(webFolder);
+            mt.createFromTemplate(webDf, "index"); // NOI18N
         }
     };
     
