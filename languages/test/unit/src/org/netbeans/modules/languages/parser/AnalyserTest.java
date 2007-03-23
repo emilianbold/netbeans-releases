@@ -8,18 +8,19 @@
 package org.netbeans.modules.languages.parser;
 
 import junit.framework.TestCase;
+
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTNode;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import org.netbeans.api.languages.TokenInput;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.NBSLanguageReader;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.modules.languages.parser.TokenInputUtils;
 
 
 /**
@@ -50,7 +51,7 @@ public class AnalyserTest extends TestCase {
         })));
         LLSyntaxAnalyser a = l.getAnalyser ();
         //PetraTest.print (Petra.first (r, 5));
-        TokenInput input = TokenInput.create (new ASTToken[] {
+        TokenInput input = TokenInputUtils.create (new ASTToken[] {
             ASTToken.create (mimeType, "identifier", "asd", 0),
             ASTToken.create (mimeType, "identifier", "ss", 0),
             ASTToken.create (mimeType, "operator", "{", 0),
@@ -161,7 +162,7 @@ public class AnalyserTest extends TestCase {
             "source"
         );
         ASTNode n = l.getAnalyser ().read (
-            TokenInput.create (
+            TokenInputUtils.create (
                 "text/test",
                 l.getParser (),
                 input,
@@ -288,7 +289,7 @@ public class AnalyserTest extends TestCase {
             "source"
         );
         ASTNode n = l.getAnalyser ().read (
-            TokenInput.create (
+            TokenInputUtils.create (
                 "text/test",
                 l.getParser (),
                 input,
@@ -324,7 +325,7 @@ public class AnalyserTest extends TestCase {
             "source"
         );
         ASTNode n = l.getAnalyser ().read (
-            TokenInput.create (
+            TokenInputUtils.create (
                 "text/test",
                 l.getParser (),
                 input,

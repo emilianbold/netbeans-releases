@@ -10,7 +10,7 @@
 package org.netbeans.modules.languages.parser;
 
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,6 +21,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.NBSLanguageReader;
+import org.netbeans.modules.languages.parser.TokenInputUtils;
 
 
 /**
@@ -64,7 +65,7 @@ public class NBSTest extends TestCase {
             sb.append (ln).append ('\n');
             ln = br.readLine ();
         }
-        TokenInput ti = TokenInput.create (
+        TokenInput ti = TokenInputUtils.create (
             "text/test",
             l.getParser (), 
             new StringInput (sb.toString (), "NBS.nbs"),

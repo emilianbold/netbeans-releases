@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.languages.features;
 
-import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;

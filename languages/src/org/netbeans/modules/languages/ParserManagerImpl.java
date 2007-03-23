@@ -42,11 +42,12 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.api.languages.TokenInput;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.LanguagesManager.LanguagesManagerListener;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.parser.TokenInputUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
@@ -277,7 +278,7 @@ public class ParserManagerImpl extends ParserManager {
                 ((NbEditorDocument) doc).readLock ();
             TokenHierarchy th = TokenHierarchy.get (doc);
             TokenSequence ts = th.tokenSequence ();
-            return TokenInput.create (getTokens (ts));
+            return TokenInputUtils.create (getTokens (ts));
         } finally {
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readUnlock ();

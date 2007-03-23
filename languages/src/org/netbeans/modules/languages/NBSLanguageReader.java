@@ -25,7 +25,7 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.modules.languages.Feature.Type;
-import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTToken;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,8 +38,8 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.modules.languages.parser.StringInput;
+import org.netbeans.modules.languages.parser.TokenInputUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
@@ -95,7 +95,7 @@ public class NBSLanguageReader {
         try {
             Language language = new Language (mimeType);
             Language nbsLanguage = NBSLanguage.getNBSLanguage ();
-            TokenInput tokenInput = TokenInput.create (
+            TokenInput tokenInput = TokenInputUtils.create (
                 mimeType,
                 nbsLanguage.getParser (), 
                 input, 

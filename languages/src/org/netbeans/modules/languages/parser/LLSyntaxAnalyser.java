@@ -34,10 +34,11 @@ import java.util.StringTokenizer;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.TokenInput;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Language;
@@ -142,7 +143,8 @@ public class LLSyntaxAnalyser {
                         ASTNode nast = (ASTNode) parse.getValue (
                             new Object[] {input, stack}
                         );
-                        node.addItem (nast);
+                        if (nast != null)
+                            node.addItem (nast);
                         //S ystem.out.println(input.getIndex () + ": >>Java " + nt + "&" + evaluator.getValue ());
                     } else {
                         if (node == null || it.hasNext () || !nt.equals (node.nt)) {
@@ -241,7 +243,7 @@ public class LLSyntaxAnalyser {
         List<ASTItem> children = token.getChildren ();
         if (children.isEmpty ())
             return token;
-        TokenInput in = TokenInput.create (children);
+        TokenInput in = TokenInputUtils.create (children);
         Language language = LanguagesManager.getDefault ().
             getLanguage (children.get (0).getMimeType ());
         ASTNode root = language.getAnalyser ().read (in, skipErrors);
@@ -325,6 +327,7 @@ public class LLSyntaxAnalyser {
                 return ((Integer) s.iterator ().next ()).intValue ();
             }
             m = r;
+            i++;
         }
     }
     
@@ -499,6 +502,7 @@ public class LLSyntaxAnalyser {
         }
         
         void addNode (Node n) {
+            if (n == null) throw new NullPointerException ();
             if (children == null) children = new ArrayList<Object> ();
 //            if (((Node) n).offset != getEndOffset ())
 //                throw new IllegalStateException ();
@@ -506,6 +510,7 @@ public class LLSyntaxAnalyser {
         }
         
         void addItem (ASTItem item) {
+            if (item == null) throw new NullPointerException ();
             if (children == null) children = new ArrayList<Object> ();
 //            if (item.getOffset () != getEndOffset ())
 //                throw new IllegalStateException ();
@@ -513,6 +518,7 @@ public class LLSyntaxAnalyser {
         }
         
         void replace (ASTNode n1, Node n2) {
+            if (n1 == null) throw new NullPointerException ();
             int i, k = children.size ();
             for (i = 0; i < k; i++) {
                 Object o = children.get (i);
@@ -561,6 +567,10 @@ public class LLSyntaxAnalyser {
                 l,
                 offset
             );
+        }
+        
+        public String toString () {
+            return "LLSyntaxAnalyser$Node " + nt;
         }
     }
 }
