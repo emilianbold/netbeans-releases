@@ -85,8 +85,13 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
    <!-- default workspaces, frames and their layout defined by core-->
     <folder name="Windows2">
         <folder name="Modes">
+<!--
             <file name="designpattern.wsmode" url="windowmanager/designpattern.wsmode" />
             <folder name="designpattern">
+                <file name="designpattern.wstcref" url="windowmanager/designpattern/designpattern.wstcref" />
+            </folder>
+-->
+            <folder name="explorer">
                 <file name="designpattern.wstcref" url="windowmanager/designpattern/designpattern.wstcref" />
             </folder>
         </folder>

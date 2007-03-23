@@ -47,30 +47,21 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     </folder>
     
    <folder name="Windows2">
-   	<folder name="Modes">
-<!--      
-         <folder name="explorer">
-            <attr name="filesystems.wstcref/UMLDescribe.wstcref" boolvalue="true"/>
-            <attr name="runtime.wstcref/UMLDescribe.wstcref" boolvalue="true"/>
-            <file name="UMLDescribe.wstcref" url="windowmanager/UMLDescribe/UMLDescribe.wstcref"/>
-         </folder>
--->      
-         <file name="documentation.wsmode" url="windowmanager/documentation.wsmode" />
-         <folder name="documentation">
-            <file name="documentation.wstcref" url="windowmanager/documentation/documentation.wstcref"/>
-         </folder>
-      </folder>
-      
-      <folder name="Components">
-         <file name="documentation.settings" url="components/documentation.settings"/>
-      </folder>
-  
-      <folder name="Groups">
-         <file name="modeling-diagrams.wsgrp" url="groups/modeling-diagrams.wsgrp"/>
-         <folder name="modeling-diagrams">
-            <file name="documentation.wstcgrp" url="groups/modeling-diagrams/documentation.wstcgrp"/>
-         </folder>
-      </folder>
-
+        <folder name="Modes">
+            <folder name="properties">
+                <file name="documentation.wstcref" url="windowmanager/documentation/documentation.wstcref"/>
+            </folder>
+        </folder>
+        <folder name="Components">
+            <file name="documentation.settings" url="components/documentation.settings"/>
+        </folder>
+<!--
+        <folder name="Groups">
+            <file name="modeling-diagrams.wsgrp" url="groups/modeling-diagrams.wsgrp"/>
+            <folder name="modeling-diagrams">
+                <file name="documentation.wstcgrp" url="groups/modeling-diagrams/documentation.wstcgrp"/>
+            </folder>
+        </folder>
+-->
    </folder>
 </filesystem>

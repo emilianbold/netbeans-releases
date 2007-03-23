@@ -693,6 +693,15 @@ public class DiagramTopComponent extends TopComponent
                 }
             }
         }
+        else // workaround for #98334
+        {
+            TopComponent tc = WindowManager.getDefault().findTopComponent("documentation");
+            if (tc!=null && !tc.isOpened())
+                tc.open();
+            tc = WindowManager.getDefault().findTopComponent("properties");
+            if (tc!=null && !tc.isOpened())
+                tc.open();
+        }
         
         selectedElements(getDrawingAreaControl().getDiagram(),
                 getDrawingAreaControl().getSelected(), null);
@@ -722,6 +731,12 @@ public class DiagramTopComponent extends TopComponent
             
             else
                 overviewOpen = false;
+        }
+        else // workaround for #98334
+        {
+            TopComponent tc = WindowManager.getDefault().findTopComponent("documentation");
+            if (tc!=null)
+                tc.close();
         }
         
         mControl.selectAll(false);
