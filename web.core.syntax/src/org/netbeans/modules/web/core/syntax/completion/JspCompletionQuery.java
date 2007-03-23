@@ -514,7 +514,8 @@ public class JspCompletionQuery implements CompletionQuery {
             // inside or after an attribute
             String valuePart = tokenPart;
             item = item.getPrevious();
-            while ((item != null) && (item.getTokenID().getNumericID() == JspTagTokenContext.ATTR_VALUE_ID)) {
+            while ((item != null) && (item.getTokenID().getNumericID() == JspTagTokenContext.ATTR_VALUE_ID
+                    || item.getTokenID().getNumericID() == JspTagTokenContext.EOL_ID)) {
                 valuePart = item.getImage() + valuePart;
                 item = item.getPrevious();
             }
