@@ -82,7 +82,7 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     protected final void setContentComponent(JComponent contentComponent) {
-        //panel.setVisible(false);
+        panel.setVisible(false);
         if (this.contentComponent != null) {
             panel.remove(this.contentComponent);
         }
@@ -99,10 +99,10 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
             
             panel.add(contentComponent, constraints);
         }
-//        panel.setVisible(true);
-//        panel.invalidate();
-//        panel.validate();
-//        panel.repaint();
+        panel.setVisible(true);
+        panel.invalidate();
+        panel.validate();
+        panel.repaint();
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
