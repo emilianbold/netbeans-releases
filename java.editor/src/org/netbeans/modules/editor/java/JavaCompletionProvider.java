@@ -413,7 +413,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     CompilationUnitTree root = env.getRoot();
                     SourcePositions sourcePositions = env.getSourcePositions();
                     int startPos = lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset;
-                    List<Tree> argTypes = getArgumentsUpToPos(env, nc.getArguments(), (int)sourcePositions.getEndPosition(root, nc.getIdentifier()), startPos);
+                    int pos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
+                    List<Tree> argTypes = getArgumentsUpToPos(env, nc.getArguments(), pos, startPos);
                     if (argTypes != null) {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         TypeMirror[] types = new TypeMirror[argTypes.size()];
@@ -435,8 +436,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         List<List<String>> params = getMatchingParams(type, controller.getElementUtilities().getMembers(type, acceptor), INIT, types, controller.getTypes());
                         if (params != null)
                             toolTip = new MethodParamsTipPaintComponent(params, types.length, component);
-                        startPos = (int)sourcePositions.getEndPosition(env.getRoot(), nc.getIdentifier());
-                        anchorOffset = controller.getText().indexOf('(', startPos); //NOI18N
+                        if (pos < 0) {
+                            path = path.getParentPath();
+                            pos = (int)sourcePositions.getStartPosition(root, path.getLeaf());
+                        }
+                        anchorOffset = controller.getText().indexOf('(', pos); //NOI18N
                         return;
                     }
                 }
