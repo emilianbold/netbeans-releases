@@ -219,6 +219,9 @@ public final class VisualClassPathItem {
     }
     
     public boolean equals( final Object object ) {
+        //fix for 98455 - obvious case is missing
+        if (this == object)
+            return true;
         
         if ( !( object instanceof VisualClassPathItem ) ) {
             return false;
