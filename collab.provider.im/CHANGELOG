@@ -7,3 +7,9 @@
 1.0.7:	Some JSE fixes integrated
 
 1.0.8:  Reconnect dialog (JSE INF#77326)
+
+1.3:    Prevent log4j warning
+        Prevent CME
+        updated xmpp/service library from nb_openfire_interop branch + compatibility stuff
+        Workaround for openfire MUC interoperability
+        

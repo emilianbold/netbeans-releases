@@ -895,7 +895,7 @@ public class IMConversation extends Object implements Conversation, ConferenceLi
             return ((IMCollabSession) getCollabSession()).convertPrivilegeToAccess(p);
         } catch (CollaborationException ce) {
             //			Debug.out.println(" get exception in getPrivilege");
-            return ConversationPrivilege.NONE;
+            return ConversationPrivilege.WRITE; // XXX - workaround of openfire problem
         }
     }
 

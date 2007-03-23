@@ -27,7 +27,6 @@ import com.sun.collablet.CollabletFactoryManager;
 import com.sun.collablet.ContactGroup;
 import com.sun.collablet.Conversation;
 import com.sun.collablet.ConversationPrivilege;
-import com.sun.collablet.UserInterface;
 
 import org.openide.*;
 import org.openide.util.*;
@@ -466,18 +465,14 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
             //			IMConversation[] conversations=new IMConversation[entries.length];
             List conversations = new ArrayList();
 
+            String[] ret = new String[entries.length];
+            
             for (int i = 0; i < entries.length; i++) {
-                Conference conference = getConferenceService().getPublicConference(entries[i].getEntryId());
-
-                if (conference == null) {
-                    continue;
-                }
-
-                //				conversations[i]=new IMConversation(this,conferences[i]);
-                conversations.add(conference.getDestination());
+//              Conference conference = getConferenceService().getPublicConference(entries[i].getEntryId());
+                ret[i] = entries[i].getEntryId();
             }
 
-            return (String[]) conversations.toArray(new String[conversations.size()]);
+            return ret;
         } catch (CollaborationException ne) {
             Debug.debugNotify(ne);
 
@@ -500,8 +495,7 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
     public void loadSubscribedConversations() throws CollabException {
         try {
             Collection conferences = getPersonalStoreService().getEntries(PersonalStoreEntry.CONFERENCE);
-
-            Iterator it = conferences.iterator();
+            Iterator it = new ArrayList(conferences).iterator();
 
             while (it.hasNext()) {
                 PersonalConference entry = (PersonalConference) it.next();
@@ -1040,13 +1034,13 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
                 //				}
                 //				else
                 //				{
-                CollaborationPrincipal[] users = getPersonalStoreService().searchPrincipals(
-                        PersonalStoreService.SEARCHTYPE_EQUALS, StringUtility.getLocalPartFromAddress(identifier)
-                    );
+//                CollaborationPrincipal[] users = getPersonalStoreService().searchPrincipals(
+//                        PersonalStoreService.SEARCHTYPE_EQUALS, StringUtility.getLocalPartFromAddress(identifier)
+//                    );
 
-                if ((users != null) && (users.length > 0)) {
-                    element = new IMCollabPrincipal(this, users[0]);
-                }
+//                if ((users != null) && (users.length > 0)) {
+//                    element = new IMCollabPrincipal(this, users[0]);
+//                }
 
                 if (element == null) {
                     element = new IMCollabPrincipal(this, getCollaborationSession().createPrincipal(identifier));
@@ -1230,7 +1224,8 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
 
             getCollaborationSession().setActivePrivacyListName(INVISIBLE_TO_ALL);
         } catch (CollaborationException e) {
-            throw new CollabException(e);
+            // swallow it - many servers don't support privacy list
+            // throw new CollabException(e);
         }
     }
 
@@ -1249,7 +1244,8 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
 
             getCollaborationSession().setActivePrivacyListName(VISIBLE_TO_ALL);
         } catch (CollaborationException e) {
-            throw new CollabException(e);
+            // swallow it - many servers don't support privacy list
+            // throw new CollabException(e);
         }
     }
 
@@ -1460,6 +1456,7 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
     public boolean canManagePublicConversation(String name) {
         boolean canManage = false;
 
+        if (!userPrincipal.hasConversationAdminRole()) return false;
         try {
             Conference conf = getConferenceService().getPublicConference(name);
 
@@ -1497,35 +1494,10 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
      *
      */
     public int convertPrivilegeToAccess(int privilege) {
-        int access = ConversationPrivilege.NONE;
-
-        switch (privilege) {
-        //			case (Conference.INVITE):
-        //				access = ConversationPrivilege.INVITE;
-        //				break;
-        case (Conference.LISTEN):
-            access = ConversationPrivilege.READ;
-
-            break;
-
-        case (Conference.PUBLISH):
-            access = ConversationPrivilege.WRITE;
-
-            break;
-
-        case (Conference.NONE):
-            access = ConversationPrivilege.NONE;
-
-            break;
-
-        case (Conference.MANAGE):
-            access = ConversationPrivilege.MANAGE;
-
-            break;
-
-        default:}
-
-        return access;
+        if ((privilege & Conference.MANAGE) != 0) return ConversationPrivilege.MANAGE;
+        if ((privilege & Conference.PUBLISH) != 0) return ConversationPrivilege.WRITE;
+        if ((privilege & Conference.LISTEN) != 0) return ConversationPrivilege.READ;
+        return ConversationPrivilege.NONE;
     }
 
     /** helper method to convert access level defined in ConversationPrivilege
@@ -1533,35 +1505,10 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
      *
      */
     public int convertAccessToPrivilege(int access) {
-        int privilege = Conference.NONE;
-
-        switch (access) {
-        //			case (ConversationPrivilege.INVITE):
-        //				privilege = Conference.INVITE;
-        //				break;
-        case (ConversationPrivilege.READ):
-            privilege = Conference.LISTEN;
-
-            break;
-
-        case (ConversationPrivilege.WRITE):
-            privilege = Conference.PUBLISH;
-
-            break;
-
-        case (ConversationPrivilege.NONE):
-            privilege = Conference.NONE;
-
-            break;
-
-        case (ConversationPrivilege.MANAGE):
-            privilege = Conference.MANAGE;
-
-            break;
-
-        default:}
-
-        return privilege;
+        if (access == ConversationPrivilege.MANAGE) return Conference.MANAGE | Conference.PUBLISH | Conference.LISTEN;
+        if (access == ConversationPrivilege.WRITE) return Conference.PUBLISH | Conference.LISTEN;
+        if (access == ConversationPrivilege.READ) return Conference.LISTEN;
+        return Conference.NONE;
     }
 
     /**
