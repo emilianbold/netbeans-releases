@@ -177,10 +177,10 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         }
     }
     
-    public static final class Attr extends CreateFromTemplateAttributesProvider {
+    public static final class Attr implements CreateFromTemplateAttributesProvider {
         
     
-        protected Map<String, ? extends Object> attributesFor(
+        public Map<String, ? extends Object> attributesFor(
             DataObject template,
             DataFolder target,
             String name

@@ -22,13 +22,24 @@ package org.openide.loaders;
 
 import java.util.Map;
 
-/**
+/** This is an interface for <q>smart templating</q>.
  * Implementations of this class can be registered in the global {@link org.openide.util.Lookup}
  * and allows anyone provide additional parameters to each {@link CreateFromTemplateHandler}s
  * when a template is instantiating.
+ * Read more in the <a href="@TOP@/architecture-summary.html#script">howto document</a>.
  * 
  * @author Jaroslav Tulach
+ * @since 6.3
  */
-public abstract class CreateFromTemplateAttributesProvider {
-    protected abstract Map<String,? extends Object> attributesFor(DataObject template, DataFolder target, String name);
+public interface CreateFromTemplateAttributesProvider {
+    /** Called when a template is about to be instantiated to provide additional
+     * values to the {@link CreateFromTemplateHandler} that will handle the 
+     * template instantiation.
+     * 
+     * @param template the template that is being processed
+     * @param target the destition folder
+     * @param name the name of the object to create
+     * @return map of named objects
+     */
+    public Map<String,? extends Object> attributesFor(DataObject template, DataFolder target, String name);
 }

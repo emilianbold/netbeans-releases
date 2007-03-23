@@ -24,14 +24,33 @@ import java.io.IOException;
 import java.util.Map;
 import org.openide.filesystems.FileObject;
 
-/**
+/** This is an interface for <q>smart templating</q> that allows
+ * any module to intercept calls to {@link DataObject#createFromTemplate} 
+ * and handle them themselves. The NetBeans IDE provides default
+ * implementation that allows use of Freemarker templating engine.
+ * Read more in the <a href="@TOP@/architecture-summary.html#script">howto document</a>.
  *
  * @author Jaroslav Tulach
+ * @since 6.1
  */
 public abstract class CreateFromTemplateHandler {
-    
+    /** Method that allows a handler to reject a file. If all handlers
+     * reject a file, regular processing defined in {@link DataObject#handleCreateFromTemplate}
+     * is going to take place.
+     * 
+     * @param orig the file of the template
+     * @return true if this handler wants to handle the createFromTemplate operation
+     */
     protected abstract boolean accept(FileObject orig);
     
+    /** Handles the creation of new file. 
+     * @param orig the source file 
+     * @param f the folder to create a file in
+     * @param name the name of new file to create in the folder
+     * @param parameters map of additional arguments as specified by registered {@link CreateFromTemplateAttributesProvider}s
+     * @return the newly create file
+     * @throws IOException if something goes wrong with I/O
+     */
     protected abstract FileObject createFromTemplate(
         FileObject orig,
         FileObject f, 
