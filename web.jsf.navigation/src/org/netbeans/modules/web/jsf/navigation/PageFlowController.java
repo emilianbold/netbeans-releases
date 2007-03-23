@@ -1,4 +1,21 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * PageFlowController.java
  *
  * Created on March 1, 2007, 1:12 PM
@@ -18,7 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
@@ -47,7 +63,7 @@ public class PageFlowController {
     private Collection<FileObject> webFiles;
     
     private HashMap<NavigationCase,NavigationCaseNode> case2Node = new HashMap<NavigationCase,NavigationCaseNode>();
-    private  HashMap<String,PageFlowNode> page2Node = new HashMap<String,PageFlowNode>();
+    private  HashMap<String,PageFlowNode> pageName2Node = new HashMap<String,PageFlowNode>();
     
     /** Creates a new instance of PageFlowController
      * @param context
@@ -87,6 +103,7 @@ public class PageFlowController {
             pcl = new FacesModelPropertyChangeListener(view);
             configModel.addPropertyChangeListener(pcl);
         }
+        
     }
     
     public void unregisterListeners() {
@@ -264,7 +281,7 @@ public class PageFlowController {
         String toPage = caseNode.getToViewId();
         String action = caseNode.getFromAction();
         String fromPage = caseNode.getFromViewId();
-        view.createEdge(caseNode, page2Node.get(fromPage), page2Node.get(toPage));
+        view.createEdge(caseNode, pageName2Node.get(fromPage), pageName2Node.get(toPage));
     }
     
     
@@ -407,16 +424,7 @@ public class PageFlowController {
         }
     }
     
-    //    public final class EmptyPageNode extends AbstractNode {
-    //        public EmptyPageNode(Children children) {
-    //            super(children);
-    //        }
-    //        public rename( String name ) {
-    //            this.setDisplayName(name);
-    //            configModel.startTransaction();
-    //
-    //        }
-    //    }
+
     
     
     public void renamePageInModel(String oldDisplayName, String newDisplayName ) {
@@ -443,18 +451,7 @@ public class PageFlowController {
         }
     }
     
-    //
-    //    public boolean isFilenameTaken( String filename ){
-    //
-    //        FileObject parentFolder = project.getProjectDirectory();
-    //        FileObject webFileObject = parentFolder.getFileObject("web");
-    //        FileObject file = webFileObject.getFileObject(filename);
-    //
-    //        if ( file != null )
-    //            return true;
-    //
-    //        return false;
-    //    }
+
     
     /**
      * A Filter Node for a given DataNode or non File Node.
@@ -467,7 +464,7 @@ public class PageFlowController {
          */
         public PageFlowNode( Node original ){
             super(original, Children.LEAF);
-            page2Node.put(original.getDisplayName(), this);
+            pageName2Node.put(original.getDisplayName(), this);
         }
         
         @Override
@@ -476,8 +473,8 @@ public class PageFlowController {
             String oldDisplayName = getDisplayName();
             try {
                 super.setName(s);
-                page2Node.remove(oldDisplayName);
-                page2Node.put(getDisplayName(), this);
+                pageName2Node.remove(oldDisplayName);
+                pageName2Node.put(getDisplayName(), this);
                 renamePageInModel(oldDisplayName, getDisplayName());
             } catch (IllegalArgumentException iae ) {
                 iae.printStackTrace();
@@ -502,7 +499,7 @@ public class PageFlowController {
         
         @Override
         public void destroy() throws IOException {
-            page2Node.remove(this);
+            pageName2Node.remove(getDisplayName());
             super.destroy();
         }
         
