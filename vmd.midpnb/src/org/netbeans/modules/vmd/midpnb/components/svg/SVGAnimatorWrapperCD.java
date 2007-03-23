@@ -47,6 +47,8 @@ import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGAnimatorWrapperDisplayPresenter;
@@ -68,7 +70,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
     public static final String PROP_RESET_ANIMATION_WHEN_STOPPED = "resetAnimationWhenStopped"; //NOI18N
     
     public static final String[] MIDP_NB_SVG_LIBRARY = {"nb_svg_midp_components"}; //NOI18N
-
+    
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -84,7 +86,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
     public void postInitialize(DesignComponent component) {
         component.writeProperty(PROP_START_ANIM_IMMEDEATELY, MidpTypes.createBooleanValue(true));
         component.writeProperty(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.createBooleanValue(true));
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), MIDP_NB_SVG_LIBRARY);
+        MidpProjectSupport.addLibraryToProject(component.getDocument(), MIDP_NB_SVG_LIBRARY);
     }
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
@@ -96,11 +98,11 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 );
     }
     
-    protected void gatherPresenters (ArrayList<Presenter> presenters) {
-        DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
-        super.gatherPresenters (presenters);
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
+        super.gatherPresenters(presenters);
     }
-
+    
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
@@ -130,10 +132,10 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 createSetterPresenter(),
                 MidpCodePresenterSupport.createAddImportPresenter(),
                 new SwitchDisplayableParameterPresenter() {
-                    public String generateSwitchDisplayableParameterCode () {
-                        return CodeReferencePresenter.generateAccessCode (getComponent ()) + ".getSvgCanvas ()"; // NOI18N
-                    }
-                },
+            public String generateSwitchDisplayableParameterCode() {
+                return CodeReferencePresenter.generateAccessCode(getComponent()) + ".getSvgCanvas ()"; // NOI18N
+            }
+        },
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE),
                 // screen
@@ -170,11 +172,10 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                     if (dataFlavor.getMimeType().startsWith("text/uri-list")) { //NOI18N
                         DesignComponent svgAnimWrapper = getComponent();
                         DesignDocument document = svgAnimWrapper.getDocument();
-                        DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
-                        Project project = ProjectUtils.getProject(context);
-
+                        String sourcePath = getSourcePath(document);
                         String path = (String) transferable.getTransferData(dataFlavor);
-                        path = path.trim().replace("file:/" + project.getProjectDirectory().getPath() + "/src", ""); //NOI18N
+                        int position = path.indexOf(sourcePath) + sourcePath.length();
+                        path = path.substring(position);
                         
                         ComponentProducer producer = MidpDocumentSupport.getComponentProducer(SVGImageCD.TYPEID);
                         if (producer != null) {
@@ -201,6 +202,16 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
             }
             return new ComponentProducer.Result();
         }
+        
+        private static String getSourcePath(DesignDocument document) {
+            DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+            String srcPath = null;
+            if (context != null) { // document is loading
+                SourceGroup sourceGroup = ProjectUtils.getSourceGroups(context).get(0); // CLDC project has always only one source root
+                srcPath = sourceGroup.getRootFolder().getPath();
+            }
+            return srcPath;
+        }
     }
-    
 }
+
