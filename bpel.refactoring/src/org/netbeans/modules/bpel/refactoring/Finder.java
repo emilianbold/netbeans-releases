@@ -31,7 +31,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
+//import org.netbeans.modules.xml. refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
@@ -42,80 +42,48 @@ import org.openide.nodes.Node;
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
-class Finder extends Plugin {
+final class Finder extends Plugin {
     
-    public Finder(WhereUsedQuery refactoring) {
-        this.query = refactoring;
-    }
+  Finder(WhereUsedQuery query) {
+    myQuery = query;
+  }
 
-    public void cancelRequest() {
-        
-    }
-    
-    public Problem fastCheckParameters() {
-        return null;
-    }
-    
-    private WhereUsedQuery query;
-    
-    
-    
-    /** Checks pre-conditions of the refactoring and returns problems.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem preCheck() {
-        return null;
-    }
-    
-    /** Checks parameters of the refactoring.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem checkParameters() {
-        Problem problem = null;
-       
-        return problem;
-    }
-    
-    /** Collects refactoring elements for a given refactoring.
-     * @param refactoringElements Collection of refactoring elements - the implementation of this method
-     * should add refactoring elements to this collections. It should make no assumptions about the collection
-     * content.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        Referenceable ref = query.getRefactoringSource().lookup(Referenceable.class);
-        if (ref == null)
-            return null;
-        
-        fireProgressListenerStart(ProgressEvent.START, -1);
-        Component searchRoot = query.getContext().lookup(Component.class);
-        Set<Component> searchRoots = new HashSet<Component>();
-        if(searchRoot == null )
-            searchRoots = getSearchRoots(ref);
-        else {
-            searchRoots.add(searchRoot);
-        }
-           
-        //Set<Component> searchRoots = getSearchRoots(ref);
-        List<Element> elements = null;
-        for (Component root : searchRoots) {
-            elements = find(ref, root);
-                if (elements != null) {
-                    for (Element ug : elements) {
-                        //System.out.println("BPELWhereusedRefactoring::adding element");
-                        refactoringElements.add(query, ug);
-                        fireProgressListenerStep();
-                    }
-                }
-        }
-        
-        //for embedded WSDL, we need to add the usage elements so that they can be refactored
-        XMLRefactoringTransaction transaction = query.getContext().lookup(XMLRefactoringTransaction.class);
-        if(transaction != null)
-            transaction.register(elements);
-        fireProgressListenerStop();
-       
-        
+  public Problem prepare(RefactoringElementsBag refactoringElements) {
+    Referenceable reference = myQuery.getRefactoringSource().lookup(Referenceable.class);
+
+    if (reference == null) {
       return null;
     }
+    Component component = myQuery.getContext().lookup(Component.class);
+    Set<Component> roots = new HashSet<Component>();
+
+    if (component == null) {
+      roots = getRoots(reference);
+    }
+    else {
+      roots.add(component);
+    }
+    List<Element> elements = null;
+
+    for (Component root : roots) {
+      elements = find(reference, root);
+  
+      if (elements != null) {
+        for (Element element : elements) {
+          refactoringElements.add(myQuery, element);
+        }
+      }
+    }
+    return null;
+  }
+
+  public Problem fastCheckParameters() {
+    return null;
+  }
+
+  public Problem checkParameters() {
+    return null;
+  }
+
+  private WhereUsedQuery myQuery;
 }
