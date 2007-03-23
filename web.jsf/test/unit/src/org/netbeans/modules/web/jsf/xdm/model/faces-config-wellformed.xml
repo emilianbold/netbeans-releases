@@ -14,7 +14,4 @@
             <from-outcome>case2</from-outcome>
         </navigation-case>
     </navigation-rule>
-    <navigation-rule>
-        <from-view-id>AnotherRealPage2.jsp</from-view-id>
-        <navigation-
 </faces-config>

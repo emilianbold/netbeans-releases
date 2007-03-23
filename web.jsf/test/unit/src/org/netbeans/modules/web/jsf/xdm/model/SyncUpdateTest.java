@@ -45,18 +45,19 @@ public class SyncUpdateTest extends NbTestCase {
         
         List<NavigationRule> navRules;
         
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-04.xml");
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-05.xml");
         
         navRules = model.getRootComponent().getNavigationRules();
         
-        assertEquals("newafaa", navRules.get(0).getFromViewId());
+        assertEquals("index.jsp", navRules.get(0).getFromViewId());
         
         Document document;
         //An Excpetion should be thrown.
         try {
             Util.setDocumentContentTo(model,"faces-config-notwellformed.xml");
         } catch (IOException ioe ){
-            assertEquals("java.io.IOException: Invalid token '</faces-config' found in document: Please use the text editor to resolve the issues...", ioe.toString());
+            assertEquals("java.io.IOException: Invalid token '<' found in document: Please use the text editor to resolve the issues...", ioe.toString());
+//            System.out.println(ioe);
         }
         
         //An Exception Should be thrown
@@ -72,7 +73,7 @@ public class SyncUpdateTest extends NbTestCase {
                 propertyChangeCalled = true;
             }
         });
-        Util.setDocumentContentTo(model,"faces-config-05.xml");
+        Util.setDocumentContentTo(model,"faces-config-wellformed.xml");
         
         assertTrue(propertyChangeCalled);
     }
