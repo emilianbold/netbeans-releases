@@ -60,7 +60,7 @@ public class WebSetupTest extends IDESetupTest {
 
     public void openWebPackProjects() {
         createTestProject("VisualWebProject");
-        createTestProject("VW_Project");
+        //createTestProject("VW_Project");
         
         ProjectSupport.waitScanFinished();
         log("Scan completed");
