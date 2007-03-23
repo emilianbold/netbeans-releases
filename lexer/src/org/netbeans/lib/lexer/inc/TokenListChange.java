@@ -23,8 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LAState;
-import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
@@ -33,6 +34,9 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * The change is expressed as a list of removed tokens
  * plus the current list and index and number of the tokens
  * added to the current list.
+ * <br/>
+ * Some of the information that needs to be exported into TokenChange
+ * is synced in a tokenChangeInfo that this class manages.
  *
  * @author Miloslav Metelka
  * @version 1.00
@@ -42,7 +46,10 @@ public final class TokenListChange<T extends TokenId> {
     
     private final TokenChangeInfo<T> tokenChangeInfo;
     
-    private List<AbstractToken<T>> addedTokens;
+    /**
+     * The list may store either tokens or branches as well.
+     */
+    private List<Object> addedTokensOrBranches;
 
     private LAState laState;
 
@@ -52,7 +59,7 @@ public final class TokenListChange<T extends TokenId> {
     
     private int addedEndOffset;
     
-    public TokenListChange(TokenList<T> tokenList) {
+    public TokenListChange(MutableTokenList<T> tokenList) {
         tokenChangeInfo = new TokenChangeInfo<T>(tokenList);
     }
     
@@ -60,8 +67,12 @@ public final class TokenListChange<T extends TokenId> {
         return tokenChangeInfo;
     }
     
+    public MutableTokenList<T> tokenList() {
+        return (MutableTokenList<T>)tokenChangeInfo.currentTokenList();
+    }
+    
     public LanguagePath languagePath() {
-        return tokenChangeInfo.currentTokenList().languagePath();
+        return tokenList().languagePath();
     }
 
     public int index() {
@@ -89,20 +100,24 @@ public final class TokenListChange<T extends TokenId> {
     }
 
     public void addToken(AbstractToken<T> token, int lookahead, Object state) {
-        if (addedTokens == null) {
-            addedTokens = new ArrayList<AbstractToken<T>>(2);
+        if (addedTokensOrBranches == null) {
+            addedTokensOrBranches = new ArrayList<Object>(2);
             laState = LAState.empty();
         }
-        addedTokens.add(token);
+        addedTokensOrBranches.add(token);
         laState = laState.add(lookahead, state);
     }
     
-    public List<AbstractToken<T>> addedTokens() {
-        return addedTokens;
+    public List<Object> addedTokensOrBranches() {
+        return addedTokensOrBranches;
+    }
+    
+    public AbstractToken<T> addedToken(int index) {
+        return LexerUtilsConstants.token(addedTokensOrBranches.get(0));
     }
     
     public void syncAddedTokenCount() {
-        tokenChangeInfo.setAddedTokenCount(addedTokens.size());
+        tokenChangeInfo.setAddedTokenCount(addedTokensOrBranches.size());
     }
 
     public void setRemovedTokens(Object[] removedTokensOrBranches) {
@@ -124,6 +139,14 @@ public final class TokenListChange<T extends TokenId> {
     
     public void setAddedEndOffset(int addedEndOffset) {
         this.addedEndOffset = addedEndOffset;
+    }
+    
+    public boolean isBoundsChange() {
+        return tokenChangeInfo.isBoundsChange();
+    }
+    
+    public void markBoundsChange() {
+        tokenChangeInfo.markBoundsChange();
     }
     
     public LAState laState() {

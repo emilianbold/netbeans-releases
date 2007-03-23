@@ -100,13 +100,25 @@ public final class TokenHierarchyEventInfo {
     public void setAffectedStartOffset(int affectedStartOffset) {
         this.affectedStartOffset = affectedStartOffset;
     }
+    
+    public void setMinAffectedStartOffset(int affectedStartOffset) {
+        if (affectedStartOffset < this.affectedStartOffset) {
+            this.affectedStartOffset = affectedStartOffset;
+        }
+    }
 
     public int affectedEndOffset() {
         return affectedEndOffset;
     }
     
     public void setAffectedEndOffset(int affectedEndOffset) {
-        this.affectedEndOffset = affectedEndOffset;
+        this.affectedEndOffset = Math.max(this.affectedEndOffset, affectedEndOffset);
+    }
+
+    public void setMaxAffectedEndOffset(int affectedEndOffset) {
+        if (affectedEndOffset > this.affectedEndOffset) {
+            this.affectedEndOffset = affectedEndOffset;
+        }
     }
 
     public int modificationOffset() {

@@ -262,12 +262,63 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                     }
                 }
             }
+            
             eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
-            eventInfo.setAffectedStartOffset(change.offset());
-            eventInfo.setAffectedEndOffset(change.addedEndOffset());
+
+            // Create nested changes if necessary
+            if (change.isBoundsChange()) {
+                // Use modification boundaries first (for possibly having just
+                // boundar
+                eventInfo.setAffectedStartOffset(eventInfo.modificationOffset());
+                eventInfo.setAffectedEndOffset(eventInfo.modificationOffset()
+                        + Math.max(0, eventInfo.insertedLength() - eventInfo.removedLength()));
+                addNestedChanges(eventInfo, change);
+            } else { // Not bounds-only change
+                eventInfo.setAffectedStartOffset(change.offset());
+                eventInfo.setAffectedEndOffset(change.addedEndOffset());
+            }
             fireTokenHierarchyChanged(
                 LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
         } // not active - no changes fired
+    }
+    
+    /**
+     * Add a nested changes to the original change for the given embedding token list
+     * recursively traversing next linked embedded token lists.
+     * 
+     * @param change non-null change. It must be bounds change.
+     * @param etl non-null embedding token list
+     */
+    private <TX extends TokenId> void addNestedChanges(
+    TokenHierarchyEventInfo eventInfo, TokenListChange<TX> change) {
+        EmbeddedTokenList<? extends TokenId> etl = EmbeddingContainer.getEmbeddingIfExists(
+                change.tokenChangeInfo().removedTokenList().tokenOrEmbeddingContainer(0));
+        if (etl != null) {
+            // All embedded token lists need to be re-routed to a new embedding container
+            // and then updated by the incremental algorithm
+            @SuppressWarnings("unchecked")
+            EmbeddingContainer<TX> newEC = new EmbeddingContainer<TX>(
+                    (AbstractToken<TX>)change.addedTokensOrBranches().get(0));
+            newEC.setFirstEmbedding(etl);
+            change.tokenList().wrapToken(change.index(), newEC);
+            do {
+                etl.setEmbeddingContainer(newEC);
+                @SuppressWarnings("unchecked")
+                TokenListChange<TokenId> nestedChange = new TokenListChange<TokenId>(
+                        (EmbeddedTokenList<TokenId>)etl);
+                @SuppressWarnings("unchecked")
+                EmbeddedTokenList<TokenId> etlT = (EmbeddedTokenList<TokenId>)etl;
+                TokenListUpdater.update(etlT, eventInfo, nestedChange);
+                change.tokenChangeInfo().addEmbeddedChange(nestedChange.tokenChangeInfo());
+                if (nestedChange.isBoundsChange()) { // Attempt to find more nested
+                    addNestedChanges(eventInfo, nestedChange);
+                } else { // Not a bounds change
+                    eventInfo.setMinAffectedStartOffset(nestedChange.offset());
+                    eventInfo.setMaxAffectedEndOffset(nestedChange.addedEndOffset());
+                }
+                etl = etl.nextEmbedding();
+            } while (etl != null);
+        } 
     }
     
     private Language<T> language() {

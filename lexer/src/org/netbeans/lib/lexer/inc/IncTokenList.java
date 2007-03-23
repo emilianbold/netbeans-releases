@@ -264,15 +264,23 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         updateOffsetGapLength(-diffLength);
 
         // Add created tokens.
-        List<AbstractToken<T>> addedTokens = change.addedTokens();
-        if (addedTokens != null) {
-            for (int i = 0; i < addedTokens.size(); i++) {
-                AbstractToken<T> token = addedTokens.get(i);
+        List<Object> addedTokensOrBranches = change.addedTokensOrBranches();
+        if (addedTokensOrBranches != null) {
+            for (Object tokenOrBranch : addedTokensOrBranches) {
+                @SuppressWarnings("unchecked")
+                AbstractToken<T> token = (AbstractToken<T>)tokenOrBranch;
                 updateElementOffsetAdd(token);
             }
-            addAll(index, addedTokens);
+            addAll(index, addedTokensOrBranches);
             laState = laState.addAll(index, change.laState());
             change.syncAddedTokenCount();
+            // Check for bounds change only
+            if (removeTokenCount == 1 && addedTokensOrBranches.size() == 1) {
+                // Compare removed and added token ids
+                TokenId id = LexerUtilsConstants.token(removedTokensOrBranches[0]).id();
+                if (id == change.addedToken(0).id())
+                    change.markBoundsChange();
+            }
         }
     }
     

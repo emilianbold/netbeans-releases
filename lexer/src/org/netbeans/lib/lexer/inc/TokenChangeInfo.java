@@ -19,13 +19,10 @@
 
 package org.netbeans.lib.lexer.inc;
 
-import java.util.List;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.LAState;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
  * Description of the change in a token list.
@@ -54,6 +51,8 @@ public final class TokenChangeInfo<T extends TokenId> {
     private int index;
 
     private int offset;
+    
+    private boolean boundsChange;
 
 
     public TokenChangeInfo(TokenList<T> currentTokenList) {
@@ -106,6 +105,14 @@ public final class TokenChangeInfo<T extends TokenId> {
     
     public TokenList<T> currentTokenList() {
         return currentTokenList;
+    }
+    
+    public boolean isBoundsChange() {
+        return boundsChange;
+    }
+    
+    public void markBoundsChange() {
+        this.boundsChange = true;
     }
     
 }

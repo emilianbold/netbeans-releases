@@ -348,14 +348,6 @@ public final class LexerTestUtilities {
     }
     
     /**
-     * Start to listen for changes in the token hierarchy.
-     */
-    public static void incInit(Document doc) {
-        TestCase.assertNull(doc.getProperty(TokenHierarchyListener.class));
-        doc.putProperty(TokenHierarchyListener.class, TestTokenChangeListener.INSTANCE);
-    }
-
-    /**
      * Get lookahead for the token to which the token sequence is positioned.
      * <br/>
      * The method uses reflection to get reference to tokenList field in token sequence.
@@ -425,12 +417,7 @@ public final class LexerTestUtilities {
     
     public static void initLastTokenHierarchyEventListening(Document doc) {
         TokenHierarchy hi = TokenHierarchy.get(doc);
-        hi.addTokenHierarchyListener(new TokenHierarchyListener() {
-            public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
-                ((Document)evt.tokenHierarchy().mutableInputSource()).putProperty(
-                        TokenHierarchyEvent.class, evt);
-            }
-        });
+        hi.addTokenHierarchyListener(TestTokenChangeListener.INSTANCE);
     }
     
     public static TokenHierarchyEvent getLastTokenHierarchyEvent(Document doc) {

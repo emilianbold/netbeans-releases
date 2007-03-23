@@ -61,7 +61,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      * Embedding container carries info about the token into which this
      * token list is embedded.
      */
-    private final EmbeddingContainer<? extends TokenId> embeddingContainer; // 36 bytes (32-super + 4)
+    private EmbeddingContainer<? extends TokenId> embeddingContainer; // 36 bytes (32-super + 4)
     
     /**
      * Language embedding for this embedded token list.
@@ -324,14 +324,24 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         updateOffsetGapLength(-diffLength);
 
         // Add created tokens.
-        List<AbstractToken<T>> addedTokens = change.addedTokens();
-        if (addedTokens != null) {
-            for (Token token : addedTokens) {
+        // This should be called early when all the members are true tokens
+        List<Object> addedTokensOrBranches = change.addedTokensOrBranches();
+        if (addedTokensOrBranches != null) {
+            for (Object tokenOrBranch : addedTokensOrBranches) {
+                @SuppressWarnings("unchecked")
+                AbstractToken<T> token = (AbstractToken<T>)tokenOrBranch;
                 updateElementOffsetAdd(token);
             }
-            addAll(index, addedTokens);
+            addAll(index, addedTokensOrBranches);
             laState = laState.addAll(index, change.laState());
             change.syncAddedTokenCount();
+            // Check for bounds change only
+            if (removeTokenCount == 1 && addedTokensOrBranches.size() == 1) {
+                // Compare removed and added token ids
+                TokenId id = LexerUtilsConstants.token(removedTokensOrEmbeddingContainers[0]).id();
+                if (id == change.addedToken(0).id())
+                    change.markBoundsChange();
+            }
         }
     }
 
@@ -341,6 +351,10 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
 
     public Set<T> skipTokenIds() {
         return null;
+    }
+    
+    public void setEmbeddingContainer(EmbeddingContainer<? extends TokenId> embeddingContainer) {
+        this.embeddingContainer = embeddingContainer;
     }
 
     public String toString() {

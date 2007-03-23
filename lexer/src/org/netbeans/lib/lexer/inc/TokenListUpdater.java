@@ -88,6 +88,12 @@ public final class TokenListUpdater {
     /**
      * Use incremental algorithm to update the list of tokens
      * after a modification done in the underlying storage.
+     * 
+     * @param tokenList non-null token list that is being updated. It may be top-level list
+     *  or embedded token list.
+     * @param eventInfo non-null event info containing information like modification offset
+     *  and removed/inserted length etc.
+     * @param change non-null change that will incorporate the performed chagnes.
      */
     public static <T extends TokenId> void update(MutableTokenList<T> tokenList,
     TokenHierarchyEventInfo eventInfo, TokenListChange<T> change) {

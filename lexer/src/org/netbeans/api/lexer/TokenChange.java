@@ -152,12 +152,30 @@ public final class TokenChange<T extends TokenId> {
      * Get the token sequence that corresponds to the current state
      * of the token hierarchy.
      * <br/>
+     * The token sequence will be positioned at the {@link #index()}.
+     * <br/>
      * If this is an embedded token change then this method returns
      * the token sequence at the corresponding embedded level.
      */
     public TokenSequence<T> currentTokenSequence() {
-        return new TokenSequence<T>(info.currentTokenList());
+        TokenSequence<T> ts = new TokenSequence<T>(info.currentTokenList());
+        ts.moveIndex(index());
+        return ts;
     }
+    
+    /**
+     * Whether this change only modifies bounds of a single token.
+     * <br/>
+     * This flag is only set if there was a single token removed and a new single token
+     * added with the same token id in terms of this change.
+     * <br/>
+     * For bounds changes the affected offsets of the event will only
+     * cover the modified characters (not the modified tokens boundaries).
+     */
+    public boolean isBoundsChange() {
+        return info.isBoundsChange();
+    }
+    
 
     /**
      * Used by package-private accessor.

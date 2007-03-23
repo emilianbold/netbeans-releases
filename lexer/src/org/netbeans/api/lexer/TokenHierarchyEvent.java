@@ -20,7 +20,6 @@
 package org.netbeans.api.lexer;
 
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
-import org.netbeans.lib.lexer.inc.TokenListChange;
 
 /**
  * Description of the changes made in a token hierarchy.

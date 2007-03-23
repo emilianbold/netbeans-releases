@@ -120,6 +120,19 @@ public final class EmbeddingContainer<T extends TokenId> {
             return null;
         }
     }
+    
+    public static EmbeddedTokenList<? extends TokenId> getEmbeddingIfExists(
+    Object tokenOrEmbeddingContainer) {
+        if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
+            EmbeddingContainer<? extends TokenId> ec
+                    = (EmbeddingContainer<? extends TokenId>)tokenOrEmbeddingContainer;
+            ec.updateOffsets();
+            EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbedding();
+            return etl;
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Create custom embedding.
