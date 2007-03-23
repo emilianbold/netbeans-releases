@@ -89,13 +89,15 @@ public class CurrentProject   {
     private void multiViewChange() {
         Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
         DataObject obj = (DataObject)lookup.lookup(DataObject.class);
-        FileObject fileObject = obj.getPrimaryFile();
-        project = FileOwnerQuery.getOwner(fileObject);
-        
-        ProjectChangeEvent evt = new  ProjectChangeEvent(project);        
-        Iterator iter = listeners.iterator();
-        while(iter.hasNext()) {
-            ((ProjectChangeListener)iter.next()).projectChanged(evt);
+        if (obj != null) {
+            FileObject fileObject = obj.getPrimaryFile();
+            project = FileOwnerQuery.getOwner(fileObject);
+            
+            ProjectChangeEvent evt = new  ProjectChangeEvent(project);
+            Iterator iter = listeners.iterator();
+            while(iter.hasNext()) {
+                ((ProjectChangeListener)iter.next()).projectChanged(evt);
+            }
         }
     }
     
