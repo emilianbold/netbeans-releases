@@ -35,6 +35,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.visual.graph.GraphPinScene;
@@ -93,7 +94,7 @@ public class MapActionUtility {
         //        // Esc Key
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0), "handleEscape");
         //
-//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A,InputEvent.CTRL_MASK), "handleNewWebForm");
+        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A,InputEvent.CTRL_MASK), "handleNewWebForm");
         
         //        //Lower Case s,e,z,u
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S,0), "handleLinkStart");
@@ -177,15 +178,15 @@ public class MapActionUtility {
     
     public static Action handleNewWebForm = new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
-            System.out.println("Source: " + e.getSource());
+            JOptionPane.showMessageDialog(null, "Source: " + e.getSource());
         }
         private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18N
         
         private void createIndexJSP(FileObject webFolder) throws IOException {
-//            FileOwnerQuery.getOwner(webFolder)                                        
-//            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
-//            FileObject parentFolder = project.getProjectDirectory();
-//            FileObject webFileObject = parentFolder.getFileObject("web");
+            //            FileOwnerQuery.getOwner(webFolder)
+            //            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
+            //            FileObject parentFolder = project.getProjectDirectory();
+            //            FileObject webFileObject = parentFolder.getFileObject("web");
             
             FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
             

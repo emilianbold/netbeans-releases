@@ -33,9 +33,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JToolBar;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -169,6 +166,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             if (properties != null && !properties.isOpened()) {
                 properties.open();
             }
+            tc.registerListeners();
         }
         
         public void componentClosed() {
@@ -176,7 +174,6 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
         
         public void componentShowing() {
-            
         }
         
         public void componentHidden() {
@@ -184,7 +181,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
         
         public void componentActivated() {
-            
+            tc.requestFocusInWindow();
         }
         
         public void componentDeactivated() {

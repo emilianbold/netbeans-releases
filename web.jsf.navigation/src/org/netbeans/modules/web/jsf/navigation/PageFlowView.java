@@ -34,10 +34,8 @@ import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -45,7 +43,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
-import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -136,6 +133,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     public void unregstierListeners() {
         if ( pfc != null ) {
             pfc.unregisterListeners();
+        }
+    }
+    
+    public void registerListeners() {
+        if( pfc != null ) {
+            pfc.registerListeners();
         }
     }
     
@@ -399,6 +402,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         super.requestFocusInWindow();
         return view.requestFocusInWindow();
     }
+
     
     public void removeEdge( NavigationCaseNode node ){
         

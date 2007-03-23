@@ -78,7 +78,6 @@ public class PageFlowController {
         
         setupGraph();
         view.layoutSceneImmediately();
-        registerListeners();
         
         
         //        configModel.addComponentListener(new ComponentListener(){
@@ -98,16 +97,18 @@ public class PageFlowController {
     
     PropertyChangeListener pcl;
     
-    private void registerListeners() {
+    public void registerListeners() {
         if( pcl == null ) {
             pcl = new FacesModelPropertyChangeListener(view);
-            configModel.addPropertyChangeListener(pcl);
+            if( configModel != null ) {
+                configModel.addPropertyChangeListener(pcl);
+            }
         }
         
     }
     
     public void unregisterListeners() {
-        if ( pcl != null )
+        if ( pcl != null && configModel != null )
             configModel.removePropertyChangeListener(pcl);
     }
     
