@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.visual.action.RectangularSelectDecorator;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
+import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.*;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaBadgeEditAction;
@@ -69,8 +71,11 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.netbeans.modules.compapp.casaeditor.multiview.CasaGraphMultiViewElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * 
@@ -106,13 +111,15 @@ implements PropertyChangeListener {
     private CustomizableDevolveLayout mEngineAutoLayout;
     private CustomizableDevolveLayout mExternalAutoLayout;
     
+    private CasaDataObject mDataObject;
     private CasaWrapperModel mModel;
     private CasaDesignController mController;
     private CasaNodeFactory mNodeFactory;
     private boolean mIsInternalNodeChange;
     
     
-    public CasaModelGraphScene(CasaWrapperModel model, CasaNodeFactory nodeFactory) {
+    public CasaModelGraphScene(CasaDataObject dataObject, CasaWrapperModel model, CasaNodeFactory nodeFactory) {
+        mDataObject = dataObject;
         mModel = model;
         mNodeFactory = nodeFactory;
         
@@ -460,7 +467,46 @@ implements PropertyChangeListener {
         }
         return null;
     }
-
+    
+    public void updateSelectionAndRequestFocus(final CasaComponent ... modelObjects) {
+        // Select only the given objects, this changes all selected context
+        // to apply to just the parameters and no other objects.
+        // Properties and actions will apply solely to these objects.
+        Set<CasaComponent> objectsToSelect = new HashSet<CasaComponent>();
+        for (CasaComponent modelObject : modelObjects) {
+            objectsToSelect.add(modelObject);
+        }
+        userSelectionSuggested(objectsToSelect, false);
+        
+        try {
+            mIsInternalNodeChange = true;
+            // A scene selection should also cause the graph to have focus.
+            // By default, when items are added piece-meal to the graph,
+            // we want to ensure that all mouse actions are automatically
+            // fully usable - and this requires the graph to have focus.
+            // Otherwise, the user will first need to transfer focus to the graph
+            // explicitly, and then the user will be able to access all mouse
+            // actions (such as creating connections).
+            transferFocusToGraph();
+        } finally {
+            mIsInternalNodeChange = false;
+        }
+    }
+    
+    private void transferFocusToGraph() {
+        Mode editorMode = WindowManager.getDefault().findMode(CasaDataEditorSupport.EDITOR_MODE);
+        for (TopComponent tc : editorMode.getTopComponents()) {
+            DataObject dataObject = tc.getLookup().lookup(DataObject.class);
+            if (dataObject == mDataObject) {
+                tc.requestActive();
+                break;
+            }
+        }
+        if (!getView().hasFocus()) {
+            getView().requestFocusInWindow();
+        }
+    }
+    
     protected void fireSelectionChanged() {
         if (getView() == null || mController == null) {
             return;
@@ -470,18 +516,22 @@ implements PropertyChangeListener {
             return;
         }
         
+        final Set<?> selectedObjects = getSelectedObjects();
+        
         // Allow the current visual operation to continue.
         // Listeners can be informed later.
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 Node activeNode = null;
                 
-                Set<?> selectedObjects = getSelectedObjects();
                 if (selectedObjects.size() < 1) {
                     activeNode = mNodeFactory.createModelNode(mModel);
                 } else {
                     CasaComponent component = (CasaComponent) selectedObjects.iterator().next();
                     activeNode = mNodeFactory.createNodeFor(component);
+                    if (activeNode == null) {
+                        activeNode = mNodeFactory.createModelNode(mModel);
+                    }
                 }
                 
                 // Tie-in to Node selection mechanism. This will cause the
@@ -489,9 +539,12 @@ implements PropertyChangeListener {
                 
                 if (activeNode != null) {
                     Node[] nodes = new Node[] { activeNode };
-                    mIsInternalNodeChange = true;
-                    tc.setActivatedNodes(nodes);
-                    mIsInternalNodeChange = false;
+                    try {
+                        mIsInternalNodeChange = true;
+                        tc.setActivatedNodes(nodes);
+                    } finally {
+                        mIsInternalNodeChange = false;
+                    }
                 }
             }
         });

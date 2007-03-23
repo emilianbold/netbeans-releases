@@ -63,7 +63,7 @@ public class CasaDesignView {
         if (model == null) {
             view = getErrorPane();
         } else {
-            mScene = new CasaModelGraphScene(model, new CasaNodeFactory(mDataObject, model));
+            mScene = new CasaModelGraphScene(mDataObject, model, new CasaNodeFactory(mDataObject, model));
             mDataObject.getEditorSupport().setScene(mScene);
             view = mScene.getViewComponent();
             initializeSceneForDesignView();

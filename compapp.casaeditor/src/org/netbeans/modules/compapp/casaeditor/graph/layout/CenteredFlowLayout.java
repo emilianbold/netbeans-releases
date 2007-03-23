@@ -32,6 +32,11 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 /**
  * Attempts to lay out widgets in a left-to-right fashion, in a snake-like
  * fashion downwards. The widgets in each row are centered.
+ * 
+ * This layout does not attempt to find the shortest connection paths, rather,
+ * it just allows for large blank spaces to be filled. If a need arises to
+ * reduce connection paths (no such need currently identified), then this
+ * layout can be replaced.
  *
  * The layout can attempt to preserve widget locations, and if this flag is set,
  * a widget will only be moved if it is sitting on top of another widget 
