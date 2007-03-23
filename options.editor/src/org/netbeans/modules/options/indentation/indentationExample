@@ -7,6 +7,6 @@ public class JavaExample {
         int param1,
         String param2
     ) {
-        return "String " + '-' + 1.2);
+        return "String " + '-' + 1.2;
     }
 }
