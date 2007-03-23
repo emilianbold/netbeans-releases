@@ -723,7 +723,6 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
                 scrollBarH1.setValue(horizontalScroll1ChangedValue);
             }
         });
-        jSplitPane1.setDividerLocation(0.5);
     }
 
     private void customizeEditor(JEditorPane editor) {
@@ -747,7 +746,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        diffSerial++;   // we need to re-compute decorations, font size changed
+                        diffChanged();
                         initGlobalSizes();
                         jEditorPane1.onUISettingsChanged();
                         getComponent().revalidate();
@@ -760,7 +759,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        diffSerial++;   // we need to re-compute decorations, font size changed
+                        diffChanged();
                         initGlobalSizes();
                         jEditorPane2.onUISettingsChanged();                        
                         getComponent().revalidate();
@@ -769,6 +768,10 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
                 });
             }
         });
+    }
+
+    private synchronized void diffChanged() {
+        diffSerial++;   // we need to re-compute decorations, font size changed
     }
 
     private void setSource1(StreamSource ss) throws IOException {
@@ -964,7 +967,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
             }
             try {
                 diffs = diff.computeDiff(first, second);
-                diffSerial++;
+                diffChanged();
             } catch (IOException e) {
                 diffs = NO_DIFFERENCES;
             }
@@ -974,7 +977,7 @@ public class EditableDiffView implements DiffView, NestableDiffView, DocumentLis
         }
     }
     
-    int getDiffSerial() {
+    synchronized int getDiffSerial() {
         return diffSerial;
     }
 
