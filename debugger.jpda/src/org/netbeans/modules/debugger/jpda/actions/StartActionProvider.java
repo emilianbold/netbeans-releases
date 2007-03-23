@@ -164,7 +164,9 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             );
         Exception exception = null;
         try {
+            debuggerImpl.setAttaching(cookie);
             VirtualMachine virtualMachine = cookie.getVirtualMachine ();
+            debuggerImpl.setAttaching(null);
             virtualMachine.setDebugTraceMode (jdiTrace);
 
             final Object startLock = new Object();

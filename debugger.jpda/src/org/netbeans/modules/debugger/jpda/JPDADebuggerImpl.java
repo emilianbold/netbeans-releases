@@ -54,8 +54,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.debugger.DebuggerEngine;
 
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
@@ -81,8 +81,9 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.JPDAStep;
-import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
+import org.netbeans.api.debugger.jpda.ListeningDICookie;
 
+import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.ThreadsTreeModel;
@@ -95,7 +96,6 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
 
 /**
@@ -124,6 +124,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public final Object                 LOCK = new Object ();
     private final Object                LOCK2 = new Object ();
     private boolean                     starting;
+    private AbstractDICookie            attachingCookie;
     private JavaEngineProvider          javaEngineProvider;
     private Set<String>                 languages;
     private String                      lastStratumn;
@@ -802,6 +803,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
         setState (STATE_STARTING);
     }
     
+    public synchronized void setAttaching(AbstractDICookie cookie) {
+        this.attachingCookie = cookie;
+    }
+    
     public void setRunning (VirtualMachine vm, Operator o) {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Start - JPDADebuggerImpl.setRunning ()");
@@ -953,6 +958,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (getState () == STATE_DISCONNECTED) return;
             Operator o = getOperator();
             if (o != null) o.stop();
+            synchronized (this) {
+                if (attachingCookie != null) {
+                    if (attachingCookie instanceof ListeningDICookie) {
+                        ListeningDICookie listeningCookie = (ListeningDICookie) attachingCookie;
+                        try {
+                            listeningCookie.getListeningConnector().stopListening(listeningCookie.getArgs());
+                        } catch (java.io.IOException ioex) {
+                        } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException icaex) {
+                        } catch (IllegalArgumentException iaex) {
+                        }
+                    }
+                }
+            }
             try {
                 waitRunning(); // First wait till the debugger comes up
             } catch (DebuggerStartException dsex) {

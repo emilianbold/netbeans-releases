@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,10 +36,13 @@ import com.sun.jdi.Bootstrap;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
@@ -302,6 +305,23 @@ public class JPDAStart extends Task implements Runnable {
                             // Was not able to start up
                         }
                     }
+                });
+                getProject().addBuildListener(new BuildListener() {
+                    
+                    public void messageLogged(BuildEvent event) {}
+                    public void taskStarted(BuildEvent event) { }
+                    public void taskFinished(BuildEvent event) {}
+                    public void targetStarted(BuildEvent event) {}
+                    public void targetFinished(BuildEvent event) {}
+                    public void buildStarted(BuildEvent event) {}
+                    public void buildFinished(BuildEvent event) {
+                        try {
+                            flc.stopListening(args);
+                        } catch (java.io.IOException ioex) {
+                        } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException iaex) {
+                        }
+                    }
+                    
                 });
             } catch (java.io.IOException ioex) {
                 lock[1] = ioex;
