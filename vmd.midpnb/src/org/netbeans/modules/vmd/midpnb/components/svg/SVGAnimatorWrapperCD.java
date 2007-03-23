@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGAnimatorWrapperDisplayPresenter;

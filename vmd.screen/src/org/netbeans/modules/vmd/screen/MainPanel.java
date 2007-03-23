@@ -25,14 +25,19 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Collections;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.screen.resource.ResourcePanel;
 import org.netbeans.modules.vmd.screen.device.DevicePanel;
 
 
 /**
- * 
+ *
  * @author David Kaspar
  */
 public class MainPanel extends JPanel {
@@ -40,7 +45,12 @@ public class MainPanel extends JPanel {
     private static final Font LABEL_FONT = new Font("Dialog", Font.PLAIN, 20);
     private static final Color LABEL_COLOR = ResourcePanel.BACKGROUND_COLOR.darker();
     
+    private DevicePanel devicePanel;
+    
     public MainPanel(DevicePanel devicePanel, ResourcePanel resourcePanel) {
+        this.devicePanel = devicePanel;
+        addMouseListener(new SelectionListener());
+        
         setLayout(new GridBagLayout());
         setBackground(ResourcePanel.BACKGROUND_COLOR);
         
@@ -62,7 +72,7 @@ public class MainPanel extends JPanel {
         constraints.gridy = 1;
         constraints.weighty = 1.0;
         add(devicePanel, constraints);
-
+        
         constraints.gridx = 1;
         constraints.gridy = 0;
         constraints.weighty = 0.0;
@@ -72,7 +82,7 @@ public class MainPanel extends JPanel {
         resLabel.setHorizontalAlignment(JLabel.CENTER);
         resLabel.setFont(LABEL_FONT);
         add(resLabel, constraints);
-
+        
         constraints.gridy = 1;
         constraints.insets = new Insets(6, 6, 12, 12);
         constraints.weightx = 1.0;
@@ -80,4 +90,19 @@ public class MainPanel extends JPanel {
         add(resourcePanel, constraints);
     }
     
+    private class SelectionListener extends MouseAdapter implements Runnable {
+        private DesignDocument document;
+        
+        public void mouseClicked(MouseEvent e) {
+            document = devicePanel.getController().getDocument();
+            document.getTransactionManager().writeAccess(this);
+        }
+        
+        public void run() {
+            if (document == null) {
+                return;
+            }
+            document.setSelectedComponents(ScreenViewController.SCREEN_ID, Collections.<DesignComponent>emptySet());
+        }
+    }
 }

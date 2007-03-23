@@ -118,7 +118,7 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
         Dimension size = new Dimension(deviceInfo.getCurrentScreenSize());
         size.height = 60;
         size.width -= 10;
-        panel.setPreferredSize(size);
+        panel.setMinimumSize(size);
         
         panel.repaint();
     }
