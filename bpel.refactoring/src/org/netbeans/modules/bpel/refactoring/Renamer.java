@@ -247,10 +247,13 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
     return null;
   }
 
-  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements) {
-    Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
+  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(
+    List<RefactoringElementImplementation> elements)
+  {
+    Map<Model, Set<RefactoringElementImplementation>> results =
+      new HashMap<Model, Set<RefactoringElementImplementation>>();
   
-    for (RefactoringElementImplementation element : elements) {
+    for(RefactoringElementImplementation element : elements) {
       Model model = (element.getLookup().lookup(Component.class)).getModel();
       Set<RefactoringElementImplementation> components = results.get(model);
 
@@ -260,7 +263,7 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
         results.put(model, components);
       }
       else {
-        elements.add(element);
+        components.add(element);
       }
     }
     return results;
