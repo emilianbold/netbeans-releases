@@ -23,13 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.management.IntrospectionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.modules.derby.DerbyOptions;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -46,42 +46,48 @@ import org.openide.util.NbPreferences;
  * @author Andrei Badea
  */
 public class DerbyOptions {
+
+    private static final Logger LOGGER = Logger.getLogger(DerbyOptions.class.getName());
+
     private static final DerbyOptions INSTANCE = new DerbyOptions();
+
     /**
      * This system property allows setting a default value for the Derby system home directory.
      * Its value will be returned by the {@link getSystemHome} method if the
      * systemHome property is null. See issue 76908.
      */
     public static final String NETBEANS_DERBY_SYSTEM_HOME = "netbeans.derby.system.home"; // NOI18N
-    
+
     static final String PROP_DERBY_LOCATION = "location"; // NOI18N
     static final String PROP_DERBY_SYSTEM_HOME = "systemHome"; // NOI18N
-    
+
     static final String INST_DIR = "db-derby-10.1.1.0"; // NOI18N
-    
+
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     public static final String DRIVER_CLASS_EMBEDDED = "org.apache.derby.jdbc.EmbeddedDriver"; // NOI18N
-    
+
     private static final String DRIVER_PATH_NET = "lib/derbyclient.jar"; // NOI18N
     private static final String DRIVER_PATH_EMBEDDED = "lib/derby.jar"; // NOI18N
-    
-    // XXX these should actually be localized, but we'd have to localize 
+
+    // XXX these should actually be localized, but we'd have to localize
     // DriverListUtil in the db module first
     public static final String DRIVER_DISP_NAME_NET = "Java DB (Network)"; // NOI18N
     public static final String DRIVER_DISP_NAME_EMBEDDED = "Java DB (Embedded)"; // NOI18N
-    
+
     private static final String DRIVER_NAME_NET = "apache_derby_net"; // NOI18N
     private static final String DRIVER_NAME_EMBEDDED = "apache_derby_embedded"; // NOI18N
-    
+
     public static DerbyOptions getDefault() {
         return INSTANCE;
     }
-    
+
     protected final String putProperty(String key, String value, boolean notify) {
         String retval = NbPreferences.forModule(DerbyOptions.class).get(key, null);
         if (value != null) {
+            // LOGGER.log(Level.FINE, "Setting property {0} to {1}", key, value); // NOI18N
             NbPreferences.forModule(DerbyOptions.class).put(key, value);
         } else {
+            // LOGGER.log(Level.FINE, "Removing property {0}", key); // NOI18N
             NbPreferences.forModule(DerbyOptions.class).remove(key);
         }
         return retval;
@@ -89,12 +95,12 @@ public class DerbyOptions {
 
     protected final String getProperty(String key) {
         return NbPreferences.forModule(DerbyOptions.class).get(key, null);
-    }    
-    
+    }
+
     public String displayName() {
         return NbBundle.getMessage(DerbyOptions.class, "LBL_DerbyOptions");
     }
-    
+
     /**
      * Returns the Derby location or an empty string if the Derby location
      * is not set. Never returns null.
@@ -114,13 +120,13 @@ public class DerbyOptions {
     public boolean isLocationNull() {
         return getProperty(PROP_DERBY_LOCATION) == null;
     }
-    
+
     /**
      * Sets the Derby location.
-     * 
+     *
      * @param location the Derby location. A null value is valid and
-     *        will be returned by getLocation() as an empty 
-     *        string (meaning "not set"). An empty string is valid 
+     *        will be returned by getLocation() as an empty
+     *        string (meaning "not set"). An empty string is valid
      *        and has the meaning "set to the default location".
      */
     public void setLocation(String location) {
@@ -139,17 +145,30 @@ public class DerbyOptions {
                 throw e;
             }
         }
-        
+
         synchronized (this) {
             stopDerbyServer();
             if (location != null && location.length() <= 0) {
                 location = getDefaultInstallLocation();
             }
             registerDrivers(location);
+            LOGGER.log(Level.FINE, "Setting location to {0}", location); // NOI18N
             putProperty(PROP_DERBY_LOCATION, location, true);
         }
     }
-    
+
+    public synchronized boolean trySetLocation(String location) {
+        LOGGER.log(Level.FINE, "trySetLocation: Trying to set location to {0}", location); // NOI18N
+        if (getLocation().length() == 0) {
+            setLocation(location);
+            LOGGER.fine("trysetLocation: Succeeded"); // NOI18N
+            return true;
+        } else {
+            LOGGER.fine("trySetLocation: Another location already set"); // NOI18N
+            return false;
+        }
+    }
+
     /**
      * Returns the Derby system home or an emtpy string if the system home
      * is not set. Never returns null.
@@ -164,7 +183,7 @@ public class DerbyOptions {
         }
         return systemHome;
     }
-    
+
     public void setSystemHome(String derbySystemHome) {
         if (derbySystemHome != null && derbySystemHome.length() > 0) {
             File derbySystemHomeFile = new File(derbySystemHome).getAbsoluteFile();
@@ -181,13 +200,13 @@ public class DerbyOptions {
                 throw e;
             }
         }
-        
+
         synchronized (this) {
             stopDerbyServer();
             putProperty(PROP_DERBY_SYSTEM_HOME, derbySystemHome, true);
         }
     }
-    
+
     static String getDefaultInstallLocation() {
         File location = InstalledFileLocator.getDefault().locate(INST_DIR, null, false);
         if (location == null) {
@@ -198,7 +217,7 @@ public class DerbyOptions {
         }
         return location.getAbsolutePath();
     }
-    
+
     private static boolean isDerbyInstallLocation(File location) {
         File libDir = new File(location, "lib"); // NOI18N
         if (!libDir.exists()) {
@@ -210,7 +229,7 @@ public class DerbyOptions {
         }
         return true;
     }
-    
+
     private static void stopDerbyServer() {
         DatabaseConnection[] dbconn = ConnectionManager.getDefault().getConnections();
         for (int i = 0; i < dbconn.length; i++) {
@@ -218,12 +237,12 @@ public class DerbyOptions {
                 ConnectionManager.getDefault().disconnect(dbconn[i]);
             }
         }
-        RegisterDerby.getDefault().stop();        
+        RegisterDerby.getDefault().stop();
     }
-    
+
     private static void registerDrivers(final String newLocation) {
         try {
-            // registering the drivers in an atomic action so the Drivers node 
+            // registering the drivers in an atomic action so the Drivers node
             // is refreshed only once
             Repository.getDefault().getDefaultFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() {
@@ -246,9 +265,9 @@ public class DerbyOptions {
             if (currentLocation == null) {
                 continue;
             }
-            
+
             boolean fromCurrentLocation = true;
-            
+
             for (int j = 0; j < urls.length; j++) {
                 FileObject fo = URLMapper.findFileObject(urls[j]);
                 if (fo != null) {
@@ -263,7 +282,7 @@ public class DerbyOptions {
                 fromCurrentLocation = false;
                 break;
             }
-            
+
             if (fromCurrentLocation) {
                 try {
                     JDBCDriverManager.getDefault().removeDriver(driver);
@@ -272,7 +291,7 @@ public class DerbyOptions {
                 }
             }
         }
-        
+
         // register the new driver if it exists at the new location
         if (newLocation != null && newLocation.length() >= 0) {
             File newDriverFile = new File(newLocation, driverRelativeFile);
@@ -288,8 +307,8 @@ public class DerbyOptions {
             }
         }
     }
-    
+
     private static BeanNode createViewNode() throws java.beans.IntrospectionException {
         return new BeanNode<DerbyOptions>(DerbyOptions.getDefault());
-    }     
+    }
 }

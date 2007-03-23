@@ -20,7 +20,10 @@
 package org.netbeans.modules.derby.spi.support;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.derby.DerbyOptions;
+import org.netbeans.modules.derby.JDKDerbyHelper;
 import org.netbeans.modules.derby.RegisterDerby;
 import org.openide.util.NbBundle;
 
@@ -28,7 +31,9 @@ import org.openide.util.NbBundle;
  *
  * @author Andrei Badea
  */
-public final class DerbySupport {
+public class DerbySupport {
+    
+    private static final Logger LOGGER = Logger.getLogger(DerbySupport.class.getName());
     
     private DerbySupport() {
     }
@@ -41,7 +46,10 @@ public final class DerbySupport {
      * @param location the jars locations. This must be an existing directory.
      */
     public static void setLocation(String location) {
-        DerbyOptions.getDefault().setLocation(location);
+        LOGGER.log(Level.FINE, "setLocation called for {0}", location); // NOI18N
+        String jdkDerbyLocation = JDKDerbyHelper.forDefaultPlatform().findDerbyLocation();
+        String realLocation = (jdkDerbyLocation != null) ? jdkDerbyLocation : location;
+        DerbyOptions.getDefault().trySetLocation(realLocation);
     }
     
     /**
