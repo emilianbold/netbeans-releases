@@ -67,7 +67,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSP Page"));
         suite.addTest(new CreateWebPackFiles("testCreateJSPFragment","Create JSP fragment"));
-        suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS Table"));
+        //suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS Table"));
         return suite;
     }  
     
@@ -97,18 +97,18 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
 	doMeasurement();
     }
     
-    public void testCreateCSSTable(){
-        expectedTime = 1000;
-        WAIT_AFTER_OPEN=5000;
-	docname = "CSSTable"; //NOI18N
-        doccategory = "XML"; //NOI18N
-        doctype = "Cascading Style Sheet"; //NOI18N
-	docfolder = "web" + java.io.File.separatorChar + "resources"; // NOI18N
-	suffix = ".css";
-        index = 1;
-        projectfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N
-	doMeasurement();
-    }
+//    public void testCreateCSSTable(){
+//        expectedTime = 1000;
+//        WAIT_AFTER_OPEN=5000;
+//	docname = "CSSTable"; //NOI18N
+//        doccategory = "XML"; //NOI18N
+//        doctype = "Cascading Style Sheet"; //NOI18N
+//	docfolder = "web" + java.io.File.separatorChar + "resources"; // NOI18N
+//	suffix = ".css";
+//        index = 1;
+//        projectfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N
+//	doMeasurement();
+//    }
     
     public ComponentOperator open(){
         log("::open::");
