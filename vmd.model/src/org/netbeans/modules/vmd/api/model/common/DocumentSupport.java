@@ -50,7 +50,9 @@ public class DocumentSupport {
      */
     public static <T extends Presenter> List<DesignComponent> gatherAllComponentsContainingPresenterClass (DesignDocument document, Class<T> presenterClass) {
         ArrayList<DesignComponent> list = new ArrayList<DesignComponent> ();
-        gatherAllComponentsContainingPresenterClass (list, document.getRootComponent (), presenterClass);
+        DesignComponent rootComponent = document.getRootComponent ();
+        if (rootComponent != null)
+            gatherAllComponentsContainingPresenterClass (list, rootComponent, presenterClass);
         return list;
     }
 
