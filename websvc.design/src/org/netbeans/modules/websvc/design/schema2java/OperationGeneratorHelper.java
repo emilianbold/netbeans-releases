@@ -113,9 +113,6 @@ public class OperationGeneratorHelper {
             wsdlModel.startTransaction();
             //for(int i = 0; i < inputParms.length; i++){
             //assume one parameter for now
-            //TODO: for now, assume user selects schema element
-            //TODO: need to support selection of types (complex, simple, primitive)
-
 
             Types types = wsdlModel.getDefinitions().getTypes();
             Collection<Schema> schemas = types.getSchemas();
@@ -386,17 +383,6 @@ public class OperationGeneratorHelper {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
             }
         }
-    }
-    
-    public static GlobalSimpleType getPrimitiveType(String typeName){
-        SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
-        Collection<GlobalSimpleType> primitives = primitiveModel.getSchema().getSimpleTypes();
-        for(GlobalSimpleType ptype: primitives){
-            if(ptype.getName().equals(typeName)){
-                return ptype;
-            }
-        }
-        return null;
     }
 }
 

@@ -22,7 +22,6 @@ package org.netbeans.modules.websvc.design.view.actions;
 import java.awt.Component;
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +29,7 @@ import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.util.Util;
-import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -41,6 +38,8 @@ import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -56,8 +55,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
     private File wsdlFile;
     private List<URL> schemaFiles;
     private String parameterType, returnType, faultType;
-    private Map<String, Import> map = new HashMap<String, Import>();
-    private Map<String, Schema> map1 = new HashMap<String, Schema>();
+    private Map<String, SchemaInfo> map = new HashMap<String, SchemaInfo>();
+    //private Map<String, Schema> map1 = new HashMap<String, Schema>();
     
     /** Creates new form NewJPanel */
     public AddOperationFromSchemaPanel(File wsdlFile) {
@@ -135,16 +134,17 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
             Collection<Schema> schemas = types.getSchemas();
             for(Schema schema : schemas) {
                 // populate with internal schema
-                Collection<GlobalElement> elements = schema.getElements();
-                if (elements.size()>0) {
-                    schemaCombo.addItem(schema.getTargetNamespace());
-                    map1.put(schema.getTargetNamespace(), schema);
+                //Collection<GlobalElement> elements = schema.getElements();
+                String schemaNamespace = schema.getTargetNamespace();
+                if (schemaNamespace!=null) {
+                    schemaCombo.addItem(schemaNamespace);
+                    map.put(schemaNamespace, new SchemaInfo(model,schema));
                 }
                 // populate with imported schemas
                 Collection<Import> importedSchemas = schema.getImports();
                 for(Import importedSchema : importedSchemas){
                     String schemaLocation = importedSchema.getSchemaLocation();
-                    map.put(schemaLocation, importedSchema);
+                    map.put(schemaLocation, new SchemaInfo(model,importedSchema));
                     schemaCombo.addItem(schemaLocation);
                 }
             }
@@ -163,7 +163,7 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                     boolean cellHasFocus) {
                     if (value instanceof GlobalElement) {
                         GlobalElement el = (GlobalElement)value;
-                        String text = "{"+el.getModel().getEffectiveNamespace(el)+"}:"+el.getName(); //NOI18N
+                        String text = "schema element: {"+el.getModel().getEffectiveNamespace(el)+"}:"+el.getName(); //NOI18N
                         setText(text);
                     } else if (value instanceof GlobalType) {
                         GlobalType el = (GlobalType)value;
@@ -315,64 +315,65 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         parmCombo.addItem("<no params>");
         returnCombo.addItem("void");
         faultCombo.addItem("<no exceptions>");
-        Import importedSchema = map.get(selectedItem);
-        if (importedSchema!=null) {
-            String namespace = importedSchema.getNamespace();
-            try {
-                SchemaModel schemaModel = importedSchema.resolveReferencedModel();
-                Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
-                for(GlobalElement element : elements){
-                    //String elementName = element.getName();
-                    parmCombo.addItem(element);
-                    returnCombo.addItem(element);
-                    faultCombo.addItem(element);
+        SchemaInfo schemaInfo = map.get(selectedItem);
+        if (schemaInfo!=null) {
+            Import importedSchema = schemaInfo.getSchemaImport();
+            if (importedSchema!=null) {
+                String namespace = importedSchema.getNamespace();
+                try {
+                    SchemaModel schemaModel = importedSchema.resolveReferencedModel();
+                    Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
+                    for(GlobalElement element : elements) {
+                        if (!isUsedInOperation(schemaInfo.getWSDLModel(), element)) {
+                            parmCombo.addItem(element);
+                            returnCombo.addItem(element);
+                            faultCombo.addItem(element);
+                        }
+                    }
+                    Collection<? extends GlobalType> complexTypes = schemaModel.getSchema().getComplexTypes();
+                    for(GlobalType type : complexTypes){
+                        parmCombo.addItem(type);
+                        returnCombo.addItem(type);
+                        faultCombo.addItem(type);
+                    }
+                    Collection<? extends GlobalType> simpleTypes = schemaModel.getSchema().getSimpleTypes();
+                    for(GlobalType type : simpleTypes){
+                        parmCombo.addItem(type);
+                        returnCombo.addItem(type);
+                        faultCombo.addItem(type);
+                    }
+                } catch (CatalogModelException ex) {
+                    ex.printStackTrace();
                 }
-                Collection<? extends GlobalType> complexTypes = schemaModel.getSchema().getComplexTypes();
-                for(GlobalType type : complexTypes){
-                    //String elementName = type.getName();
-                    parmCombo.addItem(type);
-                    returnCombo.addItem(type);
-                    faultCombo.addItem(type);
+
+            } else {
+                Schema schema = schemaInfo.getSchema();
+                if (schema!=null) {
+                    Collection<GlobalElement> elements = schema.getElements();
+                    for(GlobalElement element : elements){
+                        if (!isUsedInOperation(schemaInfo.getWSDLModel(), element)) {
+                            parmCombo.addItem(element);
+                            returnCombo.addItem(element);
+                            faultCombo.addItem(element);
+                        }
+                    }
+                    Collection<? extends GlobalType> complexTypes = schema.getComplexTypes();
+                    for(GlobalType type : complexTypes){
+                        parmCombo.addItem(type);
+                        returnCombo.addItem(type);
+                        faultCombo.addItem(type);
+                    }
+                    Collection<? extends GlobalType> simpleTypes = schema.getSimpleTypes();
+                    for(GlobalType type : simpleTypes){
+                        parmCombo.addItem(type);
+                        returnCombo.addItem(type);
+                        faultCombo.addItem(type);
+                    }
                 }
-                Collection<? extends GlobalType> simpleTypes = schemaModel.getSchema().getSimpleTypes();
-                for(GlobalType type : simpleTypes){
-                    //String elementName = type.getName();
-                    parmCombo.addItem(type);
-                    returnCombo.addItem(type);
-                    faultCombo.addItem(type);
-                }
-            } catch (CatalogModelException ex) {
-                ex.printStackTrace();
             }
-            
-        } else {
-            Schema schema = map1.get(selectedItem);
-            if (schema!=null) {
-                Collection<GlobalElement> elements = schema.getElements();
-                for(GlobalElement element : elements){
-                    String elementName = element.getName();
-                    parmCombo.addItem(element);
-                    returnCombo.addItem(element);
-                    faultCombo.addItem(element);
-                }
-                Collection<? extends GlobalType> complexTypes = schema.getComplexTypes();
-                for(GlobalType type : complexTypes){
-                    //String elementName = type.getName();
-                    parmCombo.addItem(type);
-                    returnCombo.addItem(type);
-                    faultCombo.addItem(type);
-                }
-                Collection<? extends GlobalType> simpleTypes = schema.getSimpleTypes();
-                for(GlobalType type : simpleTypes){
-                    //String elementName = type.getName();
-                    parmCombo.addItem(type);
-                    returnCombo.addItem(type);
-                    faultCombo.addItem(type);
-                }
-            }
+            populateWithPrimitives(parmCombo);
+            populateWithPrimitives(returnCombo);            
         }
-        populateWithPrimitives(parmCombo);
-        populateWithPrimitives(returnCombo);
     }
 
     private void populateWithPrimitives(javax.swing.JComboBox combo) {
@@ -401,6 +402,47 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
             }
         }
         return null;
+    }
+    
+    private boolean isUsedInOperation(WSDLModel wsdlModel, GlobalElement element) {
+        Collection<Message> messages = wsdlModel.getDefinitions().getMessages();
+        for (Message message:messages) {
+            Collection<Part> parts = message.getParts();
+            for (Part part:parts) {
+                if (element.equals(part.getElement().get())) {
+                    return true;
+                }
+            } 
+        }
+        return false;
+    }
+    
+    private class SchemaInfo {
+        private WSDLModel wsdlModel;
+        private Schema schema;
+        private Import schemaImport;
+        
+        SchemaInfo(WSDLModel wsdlModel, Schema schema) {
+            this.wsdlModel=wsdlModel;
+            this.schema=schema;
+        }
+        
+        SchemaInfo(WSDLModel wsdlModel, Import schemaImport) {
+            this.wsdlModel=wsdlModel;
+            this.schemaImport=schemaImport;
+        }
+        
+        WSDLModel getWSDLModel() {
+            return wsdlModel;
+        }
+        
+        Schema getSchema() {
+            return schema;
+        }
+        
+        Import getSchemaImport() {
+            return schemaImport;
+        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
