@@ -135,6 +135,12 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         assertEquals("empty", Hand.parameters.get("type"));
         assertEquals("There was no name, just default", null, Hand.parameters.get("name"));
         assertTrue("the argument is there", Hand.parameters.containsKey("name"));
+        Object date = Hand.parameters.get("date");
+        assertNotNull(date);
+        assertEquals(String.class, date.getClass());
+        Object time = Hand.parameters.get("time");
+        assertNotNull(time);
+        assertEquals(String.class, time.getClass());
         try {
             Hand.parameters.put("kuk", "buk");
         } catch (UnsupportedOperationException ex) {
