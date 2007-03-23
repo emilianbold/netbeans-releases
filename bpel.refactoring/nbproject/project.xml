@@ -163,14 +163,6 @@
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.windows</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.12</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>

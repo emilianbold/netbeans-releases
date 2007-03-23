@@ -18,25 +18,16 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-//import org.netbeans.modules.xml. refactoring.XMLRefactoringTransaction;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
-import org.openide.ErrorManager;
-import org.openide.nodes.Node;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -49,7 +40,8 @@ final class Finder extends Plugin {
   }
 
   public Problem prepare(RefactoringElementsBag refactoringElements) {
-    Referenceable reference = myQuery.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference =
+      myQuery.getRefactoringSource().lookup(Referenceable.class);
 
     if (reference == null) {
       return null;

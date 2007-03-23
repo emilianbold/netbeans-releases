@@ -31,9 +31,11 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.xml.refactoring.ErrorItem;
-import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
+//import org.netbeans.modules.xml. refactoring.ErrorItem;
+//import org.netbeans.modules.xml. refactoring.XMLRefactoringPlugin;
+//import org.netbeans.modules.xml. refactoring.spi.RefactoringEngine;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
+
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
@@ -56,93 +58,65 @@ import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.core.BPELDataLoader;
 import org.netbeans.modules.bpel.core.BPELDataObject;
 
-import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.refactoring.WSDLRefactoringEngine;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
+import org.netbeans.modules.refactoring.api.Problem;
 import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
-abstract class Plugin extends ProgressProviderAdapter implements RefactoringPlugin {
+abstract class Plugin implements RefactoringPlugin {
     
-    public List<Element> find(Referenceable target, Component searchRoot){
-        List<Element> usages = new ArrayList<Element>();
-        if (searchRoot == null) {
-            return usages;
-        }
-        if ( !(target instanceof Referenceable)) {
-           return usages;
-        }
-       
-       if (searchRoot instanceof Process) {
-           BpelVisitor visitor = new BpelVisitor(usages, target);
-           ((Process) searchRoot).accept(visitor);
-       } else if (searchRoot instanceof Definitions) {
-           WsdlVisitor visitor = new WsdlVisitor(usages, target);
-           ((Definitions) searchRoot).accept(visitor);
-       }
-     
-       return usages;
-    }
-                    
-         
-     public List<Model> getModels(List<Element> elements){
-         List<Model> models = new ArrayList<Model>();
-         for(Element element : elements) {
-             models.add((element.getLookup().lookup(Component.class)).getModel());
-         }
-         return models;
-     }
-     
-     public Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements){
-        Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
-        for(RefactoringElementImplementation element:elements){
-           Model model = (element.getLookup().lookup(Component.class)).getModel();
-           Set<RefactoringElementImplementation> elementsInModel = results.get(model);
-           if(elementsInModel == null){
-               elementsInModel = new HashSet<RefactoringElementImplementation>();
-               elementsInModel.add(element);
-               results.put(model, elementsInModel);
-           } else
-               elementsInModel.add(element);
-        }
-        return results;
-    }
-     
-     public Set<Component> getSearchRoots(Referenceable target) {
-       Set<Component>  searchRoots = new HashSet<Component>();
-       Set<FileObject> files = SharedUtils.getSearchFiles(target);
+  protected final Set<Component> getRoots(Referenceable target) {
+    Set<FileObject> files = SharedUtils.getSearchFiles(target);
+    Set<Component> roots = new HashSet<Component>();
 
-        for (FileObject file : files) {
-                      
-            try {
-                Component root = getFileRoot(file);
-                searchRoots.add(root);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getMessage());
-            }  
-       }
-        
-        return searchRoots;
-     }
+    for (FileObject file : files) {
+      try {
+        Component root = getFileRoot(file);
+        roots.add(root);
+      }
+      catch (IOException e) {
+        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getMessage());
+      }  
+    }
+    return roots;
+  }
 
-      public boolean isFatal(ErrorItem error){
-        if(error.getLevel() == ErrorItem.Level.FATAL)
-            return true;
-        else
-            return false;
-   } 
+  protected final List<Element> find(Referenceable target, Component root){
+    List<Component> componets = new ArrayList<Component>();
+    List<Element> elements = new ArrayList<Element>();
+
+    if (root == null) {
+      return elements;
+    }
+    if ( !(target instanceof Referenceable)) {
+      return elements;
+    }
+    if (root instanceof Process) {
+      BpelVisitor visitor = new BpelVisitor(componets, target);
+      ((Process) root).accept(visitor);
+    }
+    else if (root instanceof Definitions) {
+      WsdlVisitor visitor = new WsdlVisitor(componets, target);
+      ((Definitions) root).accept(visitor);
+    }
+    for (Component componet : componets) {
+      elements.add(new Element(componet));
+    }
+    return elements;
+  }
 
   private Component getFileRoot(FileObject file) throws IOException {
     Component root = WSDLRefactoringEngine.getWSDLDefinitions(file);
 //out();
-//out("getSearchRoot: " + file);
+//out("getRoot: " + file);
 //out("         root: " + Util.getName(root));
 
     if (root != null) {
@@ -178,4 +152,10 @@ abstract class Plugin extends ProgressProviderAdapter implements RefactoringPlug
     }
     return model.getProcess();
   }
+
+  public Problem preCheck() {
+    return null;
+  }
+
+  public void cancelRequest() {}
 }

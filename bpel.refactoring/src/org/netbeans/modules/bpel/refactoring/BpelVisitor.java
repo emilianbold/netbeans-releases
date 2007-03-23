@@ -56,6 +56,7 @@ import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
 
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
@@ -67,7 +68,7 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  */
 final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
 
-  BpelVisitor(List<Element> usage, Referenceable target) {
+  BpelVisitor(List<Component> usage, Referenceable target) {
     if (target instanceof Named) {
       Named named = (Named) target;
       myXPath = new XPath(usage, named, named.getName());
@@ -84,7 +85,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
     if (ImportHelper.getWsdlModel(_import) == myTarget ||
       ImportHelper.getSchemaModel(_import) == myTarget)
     {
-      myUsage.add(new Element(_import));
+      myUsage.add(_import);
     }
   }
 
@@ -550,7 +551,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
       myUsage
     );
     if (invoke.getCompensationHandler() == myTarget) {
-      myUsage.add(new Element(invoke));
+      myUsage.add(invoke);
     }
   }
 
@@ -558,7 +559,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   public void visit(Scope scope)
   {
     if (scope.getCompensationHandler() == myTarget) {
-      myUsage.add(new Element(scope));
+      myUsage.add(scope);
     }
   }
 
@@ -614,5 +615,5 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
 
   private XPath myXPath;
   private Referenceable myTarget;
-  private List<Element> myUsage;
+  private List<Component> myUsage;
 }

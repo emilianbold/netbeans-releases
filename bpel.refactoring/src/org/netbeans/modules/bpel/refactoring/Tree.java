@@ -28,7 +28,6 @@ import javax.swing.ImageIcon;
 
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-import org.netbeans.modules.refactoring.spi.ui.*;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
@@ -49,31 +48,14 @@ import org.openide.filesystems.FileObject;
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
-public class Tree implements TreeElementFactoryImplementation {
+public final class Tree implements TreeElementFactoryImplementation {
 
-    public TreeElement getTreeElement(Object o) {
-/*
-        TreeElement result = null;
-        if (o instanceof RefactoringElement) {
-System.out.println();
-System.out.println("!!!!!!!: RefactoringElement");
-System.out.println();
-            Component comp = ((RefactoringElement)o).getLookup().lookup(Component.class);
-
-            if (comp != null) {
-                FileObject fo = ((RefactoringElement) o).getParentFile();
-                result = new Element((RefactoringElement) o);
-             } 
-        } 
-        else */
-        if (o instanceof Component) {
-//System.out.println();
-//System.out.println("!!!!!!!: Component " + o);
-//System.out.println();
-            return new Element((Component) o);
-        }
-        return null;
+  public TreeElement getTreeElement(Object object) {
+    if (object instanceof Component) {
+      return new Element((Component) object);
     }
+    return null;
+  }
 
-    public void cleanUp() {}
+  public void cleanUp() {}
 }

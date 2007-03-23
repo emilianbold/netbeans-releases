@@ -72,7 +72,7 @@ import static org.netbeans.modules.print.api.PrintUI.*;
 final class XPath extends AbstractXPathVisitor {
 
   XPath(
-    List<org.netbeans.modules.bpel.refactoring.Element> usage,
+    List<Component> usage,
     Named target,
     String oldName)
   {
@@ -577,7 +577,7 @@ final class XPath extends AbstractXPathVisitor {
 
   private void addItem() {
     if (myUsage != null) {
-      myUsage.add(new org.netbeans.modules.bpel.refactoring.Element(myComponent));
+      myUsage.add(myComponent);
 //out("!! ===== ADD: " + Util.getName(myComponent));
     }
   }
@@ -592,6 +592,6 @@ final class XPath extends AbstractXPathVisitor {
   private List<ComplexType> myVisitedComplexType;
   private XPathVariableReference myVariableReference;
   private NamedComponentReference<GlobalType> myTypeReference;
-  private List<org.netbeans.modules.bpel.refactoring.Element> myUsage;
+  private List<Component> myUsage;
   private static final String INDENT = "  "; // NOI18N
 }

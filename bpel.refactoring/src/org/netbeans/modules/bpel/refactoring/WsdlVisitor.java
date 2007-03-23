@@ -39,8 +39,7 @@ import static org.netbeans.modules.print.api.PrintUI.*;
  */
 final class WsdlVisitor extends ChildVisitor {
 
-  
-  WsdlVisitor(List<Element> usage, Referenceable target) {
+  WsdlVisitor(List<Component> usage, Referenceable target) {
     myUsage = usage;
     myTarget = target;
   }
@@ -130,16 +129,16 @@ final class WsdlVisitor extends ChildVisitor {
       return;
     }
     if (reference.get().equals(part.getParent())) {
-      myUsage.add(new Element(alias));
+      myUsage.add(alias);
      }
   }
 
   private void checkUsages(Component component) {
     if (myTarget.equals(component)) {
-      myUsage.add(new Element(component));
+      myUsage.add(component);
     }
   }
 
-  private List<Element> myUsage;
   private Referenceable myTarget;
+  private List<Component> myUsage;
 }

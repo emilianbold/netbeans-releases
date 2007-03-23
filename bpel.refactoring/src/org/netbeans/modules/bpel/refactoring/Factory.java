@@ -29,19 +29,20 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
-public class Factory implements RefactoringPluginFactory {
+public final class Factory implements RefactoringPluginFactory {
    
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        if (refactoring instanceof WhereUsedQuery) {
-            return new Finder( (WhereUsedQuery)refactoring);
-        } else if (refactoring instanceof RenameRefactoring) {
-            return new Renamer((RenameRefactoring)refactoring);
-        } /*
-        else if(refactoring instanceof SafeDeleteRefactoring) {
-            //return new BpelSafeDeleteRefactoringPlugin( (SafeDeleteRefactoring)refactoring);
-        }   */
-        return null;
+  /**{@inheritDoc}*/
+  public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+    if (refactoring instanceof WhereUsedQuery) {
+      return new Finder((WhereUsedQuery) refactoring);
+    } 
+    if (refactoring instanceof RenameRefactoring) {
+      return new Renamer((RenameRefactoring) refactoring);
     }
-    
+    if (refactoring instanceof SafeDeleteRefactoring) {
+      // do nothing
+      return null;
+    }
+    return null;
+  }
 }
-
