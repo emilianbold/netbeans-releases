@@ -51,6 +51,8 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseNode;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 
 /**
  *
@@ -425,7 +427,7 @@ public class PageFlowController {
         }
     }
     
-
+    
     
     
     public void renamePageInModel(String oldDisplayName, String newDisplayName ) {
@@ -452,7 +454,27 @@ public class PageFlowController {
         }
     }
     
-
+    
+    public void createIndexJSP() throws IOException {
+        //            FileOwnerQuery.getOwner(webFolder)
+        //            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
+        //            FileObject parentFolder = project.getProjectDirectory();
+        //            FileObject webFileObject = parentFolder.getFileObject("web");
+        
+        FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
+        
+        if (jspTemplate == null)
+            return; // Don't know the template
+        
+        FileObject parentFolder = project.getProjectDirectory();
+        FileObject webFileObject = parentFolder.getFileObject("web");
+        
+        DataObject mt = DataObject.find(jspTemplate);
+        DataFolder webDf = DataFolder.findFolder(webFileObject);
+        mt.createFromTemplate(webDf, "index"); // NOI18N
+    }
+    
+    
     
     /**
      * A Filter Node for a given DataNode or non File Node.

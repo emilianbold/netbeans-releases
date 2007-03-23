@@ -42,6 +42,9 @@ import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.web.jsf.navigation.PageFlowController;
+import org.netbeans.modules.web.jsf.navigation.PageFlowView;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -177,26 +180,24 @@ public class MapActionUtility {
     
     
     public static Action handleNewWebForm = new AbstractAction() {
+        PageFlowScene scene;
         public void actionPerformed(ActionEvent e) {
             JOptionPane.showMessageDialog(null, "Source: " + e.getSource());
+            Object obj = e.getSource();
+            if ( obj instanceof PageFlowScene ){
+                try             {
+                    scene = (PageFlowScene) obj;
+                    PageFlowController pfc = scene.getPageFlowView().getPageFlowController();
+                    pfc.createIndexJSP();
+                }
+                catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            }
         }
         private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18N
-        
-        private void createIndexJSP(FileObject webFolder) throws IOException {
-            //            FileOwnerQuery.getOwner(webFolder)
-            //            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
-            //            FileObject parentFolder = project.getProjectDirectory();
-            //            FileObject webFileObject = parentFolder.getFileObject("web");
-            
-            FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
-            
-            if (jspTemplate == null)
-                return; // Don't know the template
-            
-            DataObject mt = DataObject.find(jspTemplate);
-            DataFolder webDf = DataFolder.findFolder(webFolder);
-            mt.createFromTemplate(webDf, "index"); // NOI18N
-        }
+
     };
     
 }
