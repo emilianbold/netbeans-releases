@@ -264,15 +264,37 @@ public class EditorModule extends ModuleInstall {
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
-            HackMap kitMapping = (HackMap)sun.awt.AppContext.getAppContext().get(key);
-            if (kitMapping.getOriginal() != null) {
-                sun.awt.AppContext.getAppContext().put(key, kitMapping.getOriginal());
-            } else {
-                sun.awt.AppContext.getAppContext().remove(key);
-            }
+            
+            Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+            Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
+            Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
+            Method put = appContextClass.getDeclaredMethod("put", Object.class, Object.class); //NOI18N
+            Method remove = appContextClass.getDeclaredMethod("remove", Object.class, Object.class); //NOI18N
+            
+            Object appContext = getAppContext.invoke(null);
+            Hashtable kitMapping = (Hashtable) get.invoke(appContext, key);
 
+            if (kitMapping instanceof HackMap) {
+                if (((HackMap) kitMapping).getOriginal() != null) {
+                    put.invoke(appContext, key, new HackMap(kitMapping));
+                } else {
+                    remove.invoke(appContext, key);
+                }
+            }
+            
+// REMOVE: we should not depend on sun.* classes
+//            HackMap kitMapping = (HackMap)sun.awt.AppContext.getAppContext().get(key);
+//            if (kitMapping.getOriginal() != null) {
+//                sun.awt.AppContext.getAppContext().put(key, kitMapping.getOriginal());
+//            } else {
+//                sun.awt.AppContext.getAppContext().remove(key);
+//            }
         } catch (Throwable t) {
-            t.printStackTrace();
+            if (debug) {
+                LOG.log(Level.WARNING, "Can't release the hack from the JEditorPane's registry for kits.", t);
+            } else {
+                LOG.log(Level.WARNING, "Can't release the hack from the JEditorPane's registry for kits.");
+            }
         }
 
         // #42970 - Possible closing of opened editor top components must happen in AWT thread
@@ -326,12 +348,26 @@ public class EditorModule extends ModuleInstall {
                     Field keyField = JEditorPane.class.getDeclaredField("kitTypeRegistryKey");  // NOI18N
                     keyField.setAccessible(true);
                     Object key = keyField.get(JEditorPane.class);
-                    Hashtable kitTypeMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
+                    
+                    Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+                    Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
+                    Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
+                    Method put = appContextClass.getDeclaredMethod("put", Object.class, Object.class); //NOI18N
+
+                    Object appContext = getAppContext.invoke(null);
+                    Hashtable kitTypeMapping = (Hashtable) get.invoke(appContext, key);
+
                     if (kitTypeMapping != null) {
-                        sun.awt.AppContext.getAppContext().put(key, new DebugHashtable(kitTypeMapping));
+                        put.invoke(appContext, key, new DebugHashtable(kitTypeMapping));
                     }
+                    
+// REMOVE: we should not depend on sun.* classes
+//                    Hashtable kitTypeMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
+//                    if (kitTypeMapping != null) {
+//                        sun.awt.AppContext.getAppContext().put(key, new DebugHashtable(kitTypeMapping));
+//                    }
                 } catch (Throwable t) {
-                    t.printStackTrace();
+                    LOG.log(Level.WARNING, "Can't hack in to the JEditorPane's registry for kit types.", t);
                 }
             }
         }
@@ -341,12 +377,29 @@ public class EditorModule extends ModuleInstall {
                 Field keyField = JEditorPane.class.getDeclaredField("kitTypeRegistryKey");  // NOI18N
                 keyField.setAccessible(true);
                 Object key = keyField.get(JEditorPane.class);
-                Hashtable kitTypeMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
+                
+                Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+                Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
+                Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
+
+                Object appContext = getAppContext.invoke(null);
+                Hashtable kitTypeMapping = (Hashtable) get.invoke(appContext, key);
+
                 if (kitTypeMapping != null) {
-                    return (String)kitTypeMapping.get(type);
+                    return (String) kitTypeMapping.get(type);
                 }
+
+// REMOVE: we should not depend on sun.* classes
+//                Hashtable kitTypeMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
+//                if (kitTypeMapping != null) {
+//                    return (String)kitTypeMapping.get(type);
+//                }
             } catch (Throwable t) {
-                t.printStackTrace();
+                if (debug) {
+                    LOG.log(Level.WARNING, "Can't hack in to the JEditorPane's registry for kit types.", t);
+                } else {
+                    LOG.log(Level.WARNING, "Can't hack in to the JEditorPane's registry for kit types.");
+                }
             }
             
             return null;
