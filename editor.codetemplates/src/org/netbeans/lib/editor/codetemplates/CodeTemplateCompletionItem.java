@@ -37,6 +37,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -227,16 +228,14 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
             ParametrizedTextParser parser = new ParametrizedTextParser(null, codeTemplate.getParametrizedText());
             parser.parse();
             parser.appendHtmlText(htmlText);
-            htmlText.append("</pre>"); // NOI18N
+            htmlText.append("</pre><br>"); // NOI18N
 
             // Append abbreviation
-            htmlText.append("<br>Abbreviation: &nbsp;"); // NOI18N
-            htmlText.append(toHtmlText(codeTemplate.getAbbreviation()));
-            htmlText.append("&nbsp; ["); // NOI18N
-            // Append expansion keystroke
             String mimeType = CodeTemplateApiPackageAccessor.get().getOperation(codeTemplate).getMimeType();
-            htmlText.append(AbbrevSettings.get(mimeType).getExpandKeyStrokeText());
-            htmlText.append(" for expansion]</html>"); // NOI18N
+            htmlText.append(NbBundle.getMessage(CodeTemplateCompletionItem.class, "DOC_ITEM_Abbreviation", //NOI18N
+                toHtmlText(codeTemplate.getAbbreviation()), 
+                AbbrevSettings.get(mimeType).getExpandKeyStrokeText()));
+            
             return htmlText.toString();
         }
         
