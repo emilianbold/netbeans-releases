@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorTableModel;
 
@@ -104,7 +105,9 @@ public class SimpleTableModelCD extends ComponentDescriptor {
             MidpCodePresenterSupport.createAddImportPresenter (),
              // inspector
             InspectorFolderPresenter.create(true),
-            InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical())
+            InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
+             // screen
+            new ResourceSRItemPresenter()
         );
     }
     

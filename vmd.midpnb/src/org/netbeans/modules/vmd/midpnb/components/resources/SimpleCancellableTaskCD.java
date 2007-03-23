@@ -39,10 +39,13 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
+
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
+
 
 /**
  *
@@ -104,9 +107,9 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
             MidpCodePresenterSupport.createAddImportPresenter (),
              // inspector
             InspectorFolderPresenter.create(true),
-            InspectorPositionPresenter.create(new ResourcePC (), FolderPositionControllerFactory.createHierarchical())
-           // InspectorPositionPresenter.create(new CategoryPC ())
-
+            InspectorPositionPresenter.create(new ResourcePC (), FolderPositionControllerFactory.createHierarchical()),
+            // screen
+            new ResourceSRItemPresenter ()
         );
     }
 

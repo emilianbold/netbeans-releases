@@ -40,6 +40,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
+
 
 /**
  *
@@ -57,10 +59,10 @@ public class SVGImageCD extends ComponentDescriptor {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
     
-    public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGAnimatorWrapperCD.MIDP_NB_SVG_LIBRARY);
+    public void postInitialize(DesignComponent component) {
+        MidpProjectSupport.addLibraryToProject(component.getDocument(), SVGAnimatorWrapperCD.MIDP_NB_SVG_LIBRARY);
     }
-
+    
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
     }
@@ -113,7 +115,7 @@ public class SVGImageCD extends ComponentDescriptor {
                     section.switchToEditable(component.getComponentID() + "-@java.io.IOException"); // NOI18N
                     section.getWriter().write("e.printStackTrace ();\n").commit(); // NOI18N
                     section.switchToGuarded();
-                    section.getWriter ().write("}\n"); // NOI18N
+                    section.getWriter().write("}\n"); // NOI18N
                 }
             }
             public List<String> getParameters() {
@@ -131,8 +133,10 @@ public class SVGImageCD extends ComponentDescriptor {
                 MidpCodePresenterSupport.createAddImportPresenter(),
                 // inspector
                 InspectorFolderPresenter.create(true),
-                InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical())
-                );
+                InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
+                // screen
+                new ResourceSRItemPresenter()       
+         );
     }
     
 }

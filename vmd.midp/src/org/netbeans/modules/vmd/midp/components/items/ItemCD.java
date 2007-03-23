@@ -51,6 +51,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.*;
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midp.screen.ItemSRItemPresenter;
 
 /**
@@ -189,6 +190,7 @@ public class ItemCD extends ComponentDescriptor {
                 },
                 // screen
                 new ItemDisplayPresenter (),
+                new DisplayableResourceCategoriesPresenter(),
                 new ItemSRItemPresenter()
         );
     }
@@ -216,7 +218,7 @@ public class ItemCD extends ComponentDescriptor {
 
             source.writeProperty (ItemCommandEventSourceCD.PROP_ITEM, PropertyValue.createComponentReference (item));
             source.writeProperty (ItemCommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference (command));
-
+            
             return new ComponentProducer.Result (item);
         }
 

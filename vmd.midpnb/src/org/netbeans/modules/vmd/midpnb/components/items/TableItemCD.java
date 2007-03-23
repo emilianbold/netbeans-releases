@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.midpnb.components.items;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
@@ -45,9 +44,9 @@ import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.midpnb.screen.display.TableItemDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
+
+
 
 /**
  *
@@ -130,9 +129,10 @@ public class TableItemCD extends ComponentDescriptor {
             createSetterPresenter (),
             MidpCodePresenterSupport.createAddImportPresenter (),
             // delete
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_MODEL)//,
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_MODEL),
             // screen
-            //new TableItemDisplayPresenter()
+            new DisplayableResourceCategoriesPresenter()
+            
         );
     }
     
