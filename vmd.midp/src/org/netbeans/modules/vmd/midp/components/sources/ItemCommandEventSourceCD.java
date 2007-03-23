@@ -18,12 +18,13 @@
  */
 package org.netbeans.modules.vmd.midp.components.sources;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
@@ -32,9 +33,9 @@ import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowItemCommandPinOrderPresenter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
 
 /**
  * @author David Kaspar
@@ -60,7 +61,7 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
         return Arrays.asList(
             new PropertyDescriptor(ItemCommandEventSourceCD.PROP_ITEM, ItemCD.TYPEID, PropertyValue.createNull(), false, false, MidpVersionable.MIDP),
             new PropertyDescriptor(ItemCommandEventSourceCD.PROP_COMMAND, CommandCD.TYPEID, PropertyValue.createNull(), false, false, MidpVersionable.MIDP)
-            );
+        );
     }
     
     public static DesignComponent getItemComponent(DesignComponent itemCommandEventSourceComponent) {
@@ -85,6 +86,8 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
         return Arrays.asList(
             // info
             InfoPresenter.create(EventSourceSupport.createItemCommandEventSourceInfoResolver()),
+            // general
+            GoToSourcePresenter.createForwarder (PROP_COMMAND),
             //properties
             PropertiesPresenterForwarder.createByReference(PROP_COMMAND),
             // flow

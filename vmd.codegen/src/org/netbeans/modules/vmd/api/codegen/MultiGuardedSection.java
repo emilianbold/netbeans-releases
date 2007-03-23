@@ -188,7 +188,7 @@ public final class MultiGuardedSection {
 
     /**
      * Parses the section name.
-     * @param section
+     * @param section the guarded section
      * @return the array of 3 objects: multiGuardedID:String, index:Integer, editableID:String
      */
     static Object[] parsePartOfMultiGuardedSection (GuardedSection section) {
@@ -211,7 +211,12 @@ public final class MultiGuardedSection {
         return result;
     }
 
-    public static GuardedSection findNextPartOfMultiGuardedSectionAfter (StyledDocument document, Object[] info) {
+    public static boolean matches (GuardedSection section, String multiGuardedID, int index) {
+        Object[] objects = parsePartOfMultiGuardedSection (section);
+        return multiGuardedID.equals (objects[0])  &&  index == (Integer) objects[1];
+    }
+
+    static GuardedSection findNextPartOfMultiGuardedSectionAfter (StyledDocument document, Object[] info) {
         GuardedSectionManager instance = GuardedSectionManager.getInstance (document);
         return CodeUtils.findSectionByPrefix (instance.getGuardedSections (), createSectionID ((String) info[0], (Integer) info[1] + 1, null));
     }

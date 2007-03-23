@@ -30,10 +30,14 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowMobileDevicePinOrderPresenter;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.api.editor.guards.GuardedSection;
 
 import javax.swing.text.StyledDocument;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -58,10 +62,21 @@ public final class MobileDeviceStartEventSourceCD extends ComponentDescriptor {
         return mobileDeviceStartEventSourceComponent.getParentComponent ();
     }
 
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, false, false, false);
+        super.gatherPresenters (presenters);
+    }
+
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
             InfoPresenter.createStatic ("MIDlet Started", "Event", MobileDeviceCD.ICON_PATH),
+            // general
+            new GoToSourcePresenter () {
+                protected boolean matches (GuardedSection section) {
+                    return MultiGuardedSection.matches (section, getComponent ().getComponentID () + "-startMIDlet", 0);
+                }
+            },
             // flow
             new FlowEventSourcePinPresenter () {
                 protected DesignComponent getComponentForAttachingPin () {

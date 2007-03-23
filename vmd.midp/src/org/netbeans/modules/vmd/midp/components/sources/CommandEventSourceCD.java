@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.flow.FlowDisplayableCommandPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.screen.CommandEventSourceSRItemPresenter;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,6 +76,8 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
         return Arrays.asList (
             // info
             InfoPresenter.create (EventSourceSupport.createCommandEventSourceInfoResolver ()),
+            // general
+            GoToSourcePresenter.createForwarder (PROP_COMMAND),
             // flow
             new CommandEventSourceFlowPinPresenter (),
             // properties

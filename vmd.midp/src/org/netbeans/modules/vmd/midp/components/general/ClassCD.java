@@ -18,8 +18,11 @@
  */
 package org.netbeans.modules.vmd.midp.components.general;
 
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -81,8 +84,15 @@ public final class ClassCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
-            // general
+            // info
             ClassSupport.createInfoPresenter (),
+            // general
+            new GoToSourcePresenter () {
+                protected boolean matches (GuardedSection section) {
+                    boolean lazyInit = MidpTypes.getBoolean (getComponent ().readProperty (PROP_LAZY_INIT));
+                    return MultiGuardedSection.matches (section, lazyInit ? getComponent().getComponentID() + "-getter" : getComponent ().getDocument ().getRootComponent ().getComponentID () + "-initialize", 1); // NOI18N
+                }
+            },
             // properties
             createPropertiesPresenter(),
             // codegen

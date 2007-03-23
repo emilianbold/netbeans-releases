@@ -19,13 +19,24 @@
 
 package org.netbeans.modules.vmd.midp.actions;
 
-import java.awt.event.ActionEvent;
-
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+
+import javax.swing.*;
+import javax.swing.text.StyledDocument;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 /**
@@ -37,8 +48,56 @@ public final class GoToSourceAction extends SystemAction {
     public static final String DISPLAY_NAME = NbBundle.getMessage(GoToSourceAction.class, "NAME_GoToSourceAction"); //NOI18N
     
     public void actionPerformed(ActionEvent e) {
-        //TODO Repalce it witch real functionality
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Not implemented yet!")); //NOI18N
+        final DesignComponent activeComponent = getActiveComponent ();
+        if (activeComponent == null)
+            return;
+        final CloneableEditorSupport[] editorSupport = new CloneableEditorSupport[1];
+        activeComponent.getDocument ().getTransactionManager ().readAccess (new Runnable() {
+            public void run () {
+                GoToSourcePresenter presenter = activeComponent.getPresenter (GoToSourcePresenter.class);
+                if (presenter == null)
+                    return;
+
+                DataObjectContext context = ProjectUtils.getDataObjectContextForDocument (activeComponent.getDocument ());
+                if (context == null)
+                    return;
+                editorSupport[0] = context.getCloneableEditorSupport ();
+            }
+        });
+
+        if (editorSupport[0] == null)
+            return;
+        editorSupport[0].edit ();
+
+        activeComponent.getDocument ().getTransactionManager ().readAccess (new Runnable() {
+            public void run () {
+                GoToSourcePresenter presenter = activeComponent.getPresenter (GoToSourcePresenter.class);
+                if (presenter == null)
+                    return;
+
+                StyledDocument document;
+                try {
+                    document = editorSupport[0].openDocument ();
+                } catch (IOException e) {
+                    Exceptions.printStackTrace (e);
+                    return;
+                }
+                if (document == null)
+                    return;
+                JEditorPane[] panes = editorSupport[0].getOpenedPanes ();
+                if (panes.length < 1)
+                    return;
+                JEditorPane pane = panes[0];
+
+                Iterable<GuardedSection> iterable = GuardedSectionManager.getInstance (document).getGuardedSections ();
+                for (GuardedSection section : iterable) {
+                    if (presenter.matches (section)) {
+                        pane.setCaretPosition (section.getCaretPosition ().getOffset ());
+                        return;
+                    }
+                }
+            }
+        });
     }
     
     public String getName() {
@@ -49,9 +108,27 @@ public final class GoToSourceAction extends SystemAction {
         return null;
     }
 
-    //TODO Temporary disabled
     public boolean isEnabled() {
-        return false;
+        final DesignComponent activeComponent = getActiveComponent ();
+        if (activeComponent == null)
+            return false;
+        final boolean[] ret = new boolean[] { false };
+        activeComponent.getDocument ().getTransactionManager ().readAccess (new Runnable() {
+            public void run () {
+                ret[0] = activeComponent.getPresenter (GoToSourcePresenter.class) != null;
+            }
+        });
+        return ret[0];
     }
-    
+
+    private DesignComponent getActiveComponent () {
+        Collection<DesignComponent> components = ActiveDocumentSupport.getDefault ().getActiveComponents ();
+        if (components.size () == 1) {
+            Iterator<DesignComponent> iterator = components.iterator ();
+            if (iterator.hasNext ())
+                return iterator.next ();
+        }
+        return null;
+    }
+
 }
