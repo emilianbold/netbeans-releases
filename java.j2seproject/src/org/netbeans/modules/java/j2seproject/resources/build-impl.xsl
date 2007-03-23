@@ -262,14 +262,6 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <depend> <!-- #36033 -->
-                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
-                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
-                            <xsl:attribute name="cache">${build.dir}/depcache</xsl:attribute>
-                            <classpath>
-                                <path path="@{{classpath}}"/>
-                            </classpath>
-                        </depend>
                         <javac>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
                             <xsl:attribute name="sourcepath"/>
@@ -300,6 +292,67 @@ is divided into following sections:
                         </javac>
                     </sequential>
                  </macrodef>
+                <macrodef> <!-- #36033, #85707 -->
+                    <xsl:attribute name="name">depend</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">srcdir</xsl:attribute>
+                        <xsl:attribute name="default">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <depend>
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="cache">${build.dir}/depcache</xsl:attribute>
+                            <xsl:attribute name="includes">${includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                        </depend>
+                    </sequential>
+                </macrodef>
+                <macrodef> <!-- #85707 -->
+                    <xsl:attribute name="name">force-recompile</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <fail unless="javac.includes">Must set javac.includes</fail>
+                        <!-- XXX one little flaw in this weird trick: does not work on folders. -->
+                        <pathconvert>
+                            <xsl:attribute name="property">javac.includes.binary</xsl:attribute>
+                            <xsl:attribute name="pathsep">,</xsl:attribute>
+                            <path>
+                                <filelist>
+                                    <xsl:attribute name="dir">@{destdir}</xsl:attribute>
+                                    <xsl:attribute name="files">${javac.includes}</xsl:attribute>
+                                </filelist>
+                            </path>
+                            <globmapper>
+                                <xsl:attribute name="from">*.java</xsl:attribute>
+                                <xsl:attribute name="to">*.class</xsl:attribute>
+                            </globmapper>
+                        </pathconvert>
+                        <delete>
+                            <files includes="${{javac.includes.binary}}"/>
+                        </delete>
+                    </sequential>
+                </macrodef>
             </target>
 
             <target name="-init-macrodef-junit">
@@ -602,6 +655,7 @@ is divided into following sections:
                     </xsl:attribute>
                 </target>
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
+                    <j2seproject3:depend srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws20.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                     <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws20.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                 </target>
             </xsl:if>
@@ -692,6 +746,7 @@ is divided into following sections:
                     </xsl:attribute>
                 </target>
                 <target name="web-service-client-compile" depends="web-service-client-generate">
+                    <j2seproject3:depend srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                     <j2seproject3:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                 </target>
             </xsl:if>
@@ -709,6 +764,7 @@ is divided into following sections:
             <target name="-do-compile">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if></xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
+                <j2seproject3:depend/>
                 <j2seproject3:javac/>
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -736,6 +792,7 @@ is divided into following sections:
             <target name="-do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+                <j2seproject3:force-recompile/>
                 <j2seproject3:javac includes="${{javac.includes}}" excludes=""/>
             </target>
 
@@ -859,7 +916,7 @@ is divided into following sections:
             </target>
 
             <target name="run-single">
-                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <j2seproject1:java classname="${{run.class}}"/>
             </target>
@@ -911,7 +968,7 @@ is divided into following sections:
 
             <target name="debug-single">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-single,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
             </target>
 
             <target name="-pre-debug-fix">
@@ -1011,6 +1068,15 @@ is divided into following sections:
             <target name="-do-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test</xsl:attribute>
+                <xsl:element name="j2seproject3:depend">
+                    <xsl:attribute name="srcdir">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
+                    <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
+                </xsl:element>
                 <xsl:element name="j2seproject3:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
@@ -1047,6 +1113,9 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+                <xsl:element name="j2seproject3:force-recompile">
+                    <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
+                </xsl:element>
                 <xsl:element name="j2seproject3:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">

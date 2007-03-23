@@ -69,6 +69,7 @@ public final class BuildImplTest extends NbTestCase {
         super.setUp();
         clearWorkDir();
         output.clear();
+        outputPosition = 0;
         outputType.clear();
         String junitJarProp = System.getProperty("test.junit.jar");
         assertNotNull("must set test.junit.jar", junitJarProp);
@@ -182,6 +183,76 @@ public final class BuildImplTest extends NbTestCase {
         assertEquals("Only one class should be compiled", 1, fo.getFileObject("build/classes/pkg").getChildren().length);
         assertNull("build/test folder should not be created", fo.getFileObject("build/test"));
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
+    }
+
+    public void testCompileSingleWithoutDependencyAnalysis() throws Exception { // #85707
+        AntProjectHelper aph = setupProject(0, false);
+        FileObject root = aph.getProjectDirectory();
+        FileObject buildXml = aph.getProjectDirectory().getFileObject("build.xml");
+        Properties p = getProperties();
+        FileObject s1 = writeFile(root, "src/pack/age/Source1.java", "package pack.age; class Source1 {}");
+        // Oddly, "class Source2 {Source1 s;}" does not trigger a dep Source2 -> Source1
+        // ...which is technically correct (contents of Source1 cannot affect Source2's compilability)
+        // but is <depend> really this clever?
+        writeFile(root, "src/pack/age/Source2.java", "package pack.age; class Source2 {{new Source1();}}");
+        p.setProperty("javac.includes", "pack/age/Source1.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
+        File classes = new File(new File(getWorkDir(), "build"), "classes");
+        assertOutput("Compiling 1 source file to " + classes);
+        File classesPackage = new File(new File(classes, "pack"), "age");
+        assertEquals(1, classesPackage.list().length);
+        p.setProperty("javac.includes", "pack/age/Source2.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
+        assertOutput("Compiling 1 source file to " + classes);
+        assertEquals(2, classesPackage.list().length);
+        // Compiling an already-compiled file forces it to be recompiled:
+        p.setProperty("javac.includes", "pack/age/Source1.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
+        assertOutput("Compiling 1 source file to " + classes);
+        assertEquals(2, classesPackage.list().length);
+        // Can compile several at once:
+        p.setProperty("javac.includes", "pack/age/Source1.java,pack/age/Source2.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
+        assertOutput("Compiling 2 source files to " + classes);
+        assertEquals(2, classesPackage.list().length);
+        // But <depend> is not run:
+        long oldTimestamp = s1.lastModified().getTime();
+        Thread.sleep(1500); // try to force new timestamp
+        s1 = writeFile(root, "src/pack/age/Source1.java", "package pack.age; class Source1 {} // modified");
+        assertTrue(s1.lastModified().getTime() > oldTimestamp); // if this fails, try increasing delay above!
+        p.setProperty("javac.includes", "pack/age/Source1.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
+        assertOutput("Compiling 1 source file to " + classes);
+        assertEquals(2, classesPackage.list().length);
+        // Same for tests:
+        FileObject t1 = writeFile(root, "test/pack/age/Test1.java", "package pack.age; class Test1 {}");
+        writeFile(root, "test/pack/age/Test2.java", "package pack.age; class Test2 {{new Test1();}}");
+        p.setProperty("javac.includes", "pack/age/Test1.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test-single"}, p));
+        classes = new File(new File(new File(getWorkDir(), "build"), "test"), "classes");
+        assertOutput("Compiling 1 source file to " + classes);
+        classesPackage = new File(new File(classes, "pack"), "age");
+        assertEquals(1, classesPackage.list().length);
+        p.setProperty("javac.includes", "pack/age/Test2.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test-single"}, p));
+        assertOutput("Compiling 1 source file to " + classes);
+        assertEquals(2, classesPackage.list().length);
+        p.setProperty("javac.includes", "pack/age/Test1.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test-single"}, p));
+        assertOutput("Compiling 1 source file to " + classes);
+        assertEquals(2, classesPackage.list().length);
+        p.setProperty("javac.includes", "pack/age/Test1.java,pack/age/Test2.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test-single"}, p));
+        assertOutput("Compiling 2 source files to " + classes);
+        assertEquals(2, classesPackage.list().length);
+        oldTimestamp = t1.lastModified().getTime();
+        Thread.sleep(1500);
+        t1 = writeFile(root, "src/pack/age/Test1.java", "package pack.age; class Test1 {} // modified");
+        assertTrue(t1.lastModified().getTime() > oldTimestamp);
+        p.setProperty("javac.includes", "pack/age/Test1.java");
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-test-single"}, p));
+        assertOutput("Compiling 1 source file to " + classes);
+        assertEquals(2, classesPackage.list().length);
     }
 
     public void testIncludesExcludes() throws Exception {
@@ -317,13 +388,13 @@ public final class BuildImplTest extends NbTestCase {
         p.setProperty("javac.includes", "pkg/Source2.java");
         p.setProperty("run.class", "pkg.Source2");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"run-single"}, p));
-        assertTrue("compile-single target was not executed", output.contains("compile-single:"));
+        assertTrue("compile target was not executed", output.contains(/*85707*/"compile:"));
         assertTrue("run target was not executed", output.contains("run-single:"));
         assertTrue("main class was not executed", output.contains("Source2 main class executed"));
        
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source2.class must exist", fo.getFileObject("build/classes/pkg/Source2.class"));
-        assertEquals("Only one class should be compiled", 1, fo.getFileObject("build/classes/pkg").getChildren().length);
+        assertEquals("Only one class should be compiled", /*85707*/3, fo.getFileObject("build/classes/pkg").getChildren().length);
         assertNull("build/test folder should not be created", fo.getFileObject("build/test"));
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
     }
@@ -574,10 +645,12 @@ public final class BuildImplTest extends NbTestCase {
     }
 
     private void assertOutput(String line) {
-        if (!output.contains(line)) {
+        int newpos = output.size();
+        if (!output.subList(outputPosition, newpos).contains(line)) {
             dumpOutput();
-            fail("looking for '" + line + "'");
+            fail("looking for '" + line + "' starting at line #" + (outputPosition + 1));
         }
+        outputPosition = newpos;
     }
 
     @SuppressWarnings("deprecation")
@@ -638,6 +711,7 @@ public final class BuildImplTest extends NbTestCase {
     }
     
     private static final List<String> output = new ArrayList<String>();
+    private static int outputPosition;
     private static final List<String> outputType = new ArrayList<String>();
     
     private static final String TYPE_ERR = "err";
