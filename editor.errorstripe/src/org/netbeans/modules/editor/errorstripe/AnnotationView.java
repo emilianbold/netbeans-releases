@@ -33,6 +33,9 @@ import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -68,7 +71,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Lahoda
  */
-public class AnnotationView extends JComponent implements FoldHierarchyListener, MouseListener, MouseMotionListener, DocumentListener, PropertyChangeListener {
+public class AnnotationView extends JComponent implements FoldHierarchyListener, MouseListener, MouseMotionListener, DocumentListener, PropertyChangeListener, Accessible {
     
     /*package private*/ static final ErrorManager ERR = ErrorManager.getDefault().getInstance("org.netbeans.modules.editor.errorstripe.AnnotationView"); // NOI18N
     
@@ -769,4 +772,16 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         fullRepaint();
     }
     
+    public AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleJComponent() {
+                public AccessibleRole getAccessibleRole() {
+                    return AccessibleRole.PANEL;
+                }
+            };
+            accessibleContext.setAccessibleName(NbBundle.getMessage(AnnotationView.class, "ACSN_AnnotationView")); //NOI18N
+            accessibleContext.setAccessibleDescription(NbBundle.getMessage(AnnotationView.class, "ACSD_AnnotationView")); //NOI18N
+        }
+        return accessibleContext;
+    }
 }
