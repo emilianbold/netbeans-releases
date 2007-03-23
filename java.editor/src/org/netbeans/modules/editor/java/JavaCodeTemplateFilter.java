@@ -21,6 +21,7 @@ package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.EnumSet;
 import javax.swing.text.JTextComponent;
@@ -28,9 +29,12 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -48,7 +52,12 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTa
         JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
             try {
-                js.runUserActionTask(this, true);
+                if (SourceUtils.isScanInProgress()) {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
+                    Toolkit.getDefaultToolkit().beep();
+                } else {
+                    js.runUserActionTask(this, true);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

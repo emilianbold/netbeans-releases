@@ -22,6 +22,7 @@ package org.netbeans.modules.editor.java;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
@@ -31,7 +32,9 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.*;
 import org.netbeans.lib.editor.codetemplates.spi.*;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -524,31 +527,35 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             JavaSource js = JavaSource.forDocument(c.getDocument());
             if (js != null) {
                 try {
-                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
-
-                        public void run(final CompilationController controller) throws IOException {
-                            controller.toPhase(JavaSource.Phase.RESOLVED);
-                            cInfo = controller;
-                            final TreeUtilities tu = cInfo.getTreeUtilities();
-                            treePath = tu.pathFor(caretOffset);
-                            scope = tu.scopeFor(caretOffset);
-                            enclClass = scope.getEnclosingClass();
-                            final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
-                            if (enclClass == null) {
-                                CompilationUnitTree cut = treePath.getCompilationUnit();
-                                Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
-                                if (it.hasNext())
-                                    enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
+                    if (SourceUtils.isScanInProgress()) {
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
+                        Toolkit.getDefaultToolkit().beep();                        
+                    } else {
+                        js.runUserActionTask(new CancellableTask<CompilationController>() {
+                            public void cancel() {
                             }
-                            final Trees trees = controller.getTrees();
-                            final SourcePositions sp = trees.getSourcePositions();
-                            final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);;
-                            final ExecutableElement method = scope.getEnclosingMethod();
-                            ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                                public boolean accept(Element e, TypeMirror t) {
-                                    switch (e.getKind()) {
+                            
+                            public void run(final CompilationController controller) throws IOException {
+                                controller.toPhase(JavaSource.Phase.RESOLVED);
+                                cInfo = controller;
+                                final TreeUtilities tu = cInfo.getTreeUtilities();
+                                treePath = tu.pathFor(caretOffset);
+                                scope = tu.scopeFor(caretOffset);
+                                enclClass = scope.getEnclosingClass();
+                                final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
+                                if (enclClass == null) {
+                                    CompilationUnitTree cut = treePath.getCompilationUnit();
+                                    Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
+                                    if (it.hasNext())
+                                        enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
+                                }
+                                final Trees trees = controller.getTrees();
+                                final SourcePositions sp = trees.getSourcePositions();
+                                final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);;
+                                final ExecutableElement method = scope.getEnclosingMethod();
+                                ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                                    public boolean accept(Element e, TypeMirror t) {
+                                        switch (e.getKind()) {
                                         case LOCAL_VARIABLE:
                                             if (isStatic && e.getSimpleName().contentEquals("this") || e.getSimpleName().contentEquals("super")) //NOI18N
                                                 return false;
@@ -561,12 +568,13 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                                 return false;
                                         default:
                                             return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, t);
+                                        }
                                     }
-                                }
-                            };
-                            locals = cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor);
-                        }
-                    },false);
+                                };
+                                locals = cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor);
+                            }
+                        },false);
+                    }
                 } catch(IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
