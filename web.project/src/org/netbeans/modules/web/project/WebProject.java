@@ -45,6 +45,7 @@ import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -631,10 +632,21 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     }
                 });
             } else {
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    WebProject.class.getResource("resources/build-impl.xsl"),
-                    jaxWsFo, false);
+                RequestProcessor.getDefault().post(new Runnable () {
+                    public void run () {
+                        try {
+                            genFilesHelper.refreshBuildScript(org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                                              org.netbeans.modules.web.project.WebProject.class.getResource("resources/build-impl.xsl"),
+                                                              jaxWsFo, false);
+                        }
+                        catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                        catch (IllegalStateException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                }, 2000);
             }
             genFilesHelper.refreshBuildScript(
                 getBuildXmlName (),

@@ -69,6 +69,8 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
 
     private volatile boolean projectDeleted;
 
+    private boolean dontFireChange = false;
+    
     /** Creates a new instance of J2SEProjectClassPathModifier */
     public WebProjectClassPathModifier(final Project project, final UpdateHelper helper, final PropertyEvaluator eval, final ReferenceHelper refHelper) {
         assert project != null;
@@ -84,6 +86,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                                         WebProjectProperties.LIBRARY_SUFFIX, 
                                         WebProjectProperties.ANT_ARTIFACT_PREFIX );
         
+        //#56140
         eval.addPropertyChangeListener(this); //listen for changes of libraries list
         registerLibraryListeners();
     }
@@ -233,6 +236,8 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         assert libraries != null : "Libraries cannot be null";  //NOI18N
         assert classPathProperty != null;
         try {
+            dontFireChange = true;
+            unregisterLibraryListeners();
             return ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction<Boolean>() {
                         public Boolean run() throws IOException {
@@ -272,6 +277,8 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                                 WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
                                 helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                                 ProjectManager.getDefault().saveProject(project);
+                                registerLibraryListeners(props);
+                                dontFireChange = false;
                                 return true;
                             }
                             return false;
@@ -293,12 +300,20 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         return classPathProperty;
     }
     
-    private void registerLibraryListeners () {
-        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+    private void unregisterLibraryListeners() {
         Library libs [] = LibraryManager.getDefault().getLibraries();
         for (int i = 0; i < libs.length; i++) {
             libs [i].removePropertyChangeListener(this);
         }
+    }
+    
+    private void registerLibraryListeners() {
+        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH); //Reread the properties, PathParser changes them
+        registerLibraryListeners(props);
+    }
+    
+    private void registerLibraryListeners(EditableProperties props) {
+        unregisterLibraryListeners();
         HashSet set = new HashSet();
         set.addAll(cs.itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
         set.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
@@ -315,14 +330,20 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         if (projectDeleted) {
             return;
         }
+        
+        if (dontFireChange) {
+            return;
+        }
+        
         if (e.getSource().equals(eval) && (e.getPropertyName().equals(WebProjectProperties.JAVAC_CLASSPATH)
             || e.getPropertyName().equals(WebProjectProperties.WAR_CONTENT_ADDITIONAL))) {
                 EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH); //Reread the properties, PathParser changes them
                 String javacCp = props.getProperty(WebProjectProperties.JAVAC_CLASSPATH);
                 if (javacCp != null) {
-                    registerLibraryListeners();
-		    if (ProjectManager.getDefault().isValid(project))
+                    registerLibraryListeners(props);
+		    if (ProjectManager.getDefault().isValid(project)) {
 			storeLibLocations();
+                    }
                 }
         } else if (e.getPropertyName().equals(Library.PROP_CONTENT)) {
             storeLibLocations();
