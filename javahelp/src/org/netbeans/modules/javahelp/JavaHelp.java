@@ -176,7 +176,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 return null;
             }
         } else {
-            return (Dialog)currentModalDialogs.peek();
+            return currentModalDialogs.peek();
         }
     }
     
