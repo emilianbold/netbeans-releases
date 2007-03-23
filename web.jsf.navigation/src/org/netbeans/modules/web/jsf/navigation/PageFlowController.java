@@ -476,11 +476,14 @@ public class PageFlowController {
             String oldDisplayName = getDisplayName();
             try {
                 super.setName(s);
+                page2Node.remove(oldDisplayName);
+                page2Node.put(getDisplayName(), this);
                 renamePageInModel(oldDisplayName, getDisplayName());
             } catch (IllegalArgumentException iae ) {
                 iae.printStackTrace();
                 //                throw iae;
             }
+            
         }
         
         /**
