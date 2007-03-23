@@ -573,7 +573,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             off.write( "Operation op = Operation.newInstance( _qname_operation_" + operation.getName() + ", _type_" + paramTypeName + ", _type_" + returnTypeName + " );\n" );
                             off.write( "_prepOperation( op );\n");
                             for( ExtensibilityElement exe : bindingOperation.getExtensibilityElements()) {
-                                if( ee instanceof SOAPOperation ) {
+                                if( exe instanceof SOAPOperation ) {
                                     SOAPOperation so = (SOAPOperation) exe;
                                     off.write( "op.setProperty( Operation.SOAPACTION_URI_PROPERTY, \"" );
                                     off.write( so.getSoapActionURI());
