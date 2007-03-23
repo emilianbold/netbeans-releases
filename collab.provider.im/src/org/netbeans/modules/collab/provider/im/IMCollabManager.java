@@ -65,7 +65,14 @@ public class IMCollabManager extends CollabManager {
     static {
         if (System.getProperty(LIB_KEEPALIVE) == null)
 		System.setProperty(LIB_KEEPALIVE, "30");
-		
+             
+        // if the log4j is not explicitely configured, redirect it
+        // to a (nonexistent) file out of the default package.    
+        if (System.getProperty("log4j.configuration") == null) {
+	    System.setProperty("log4j.configuration",
+                "org/netbeans/modules/collab/provider/im/log4j.properties");
+        }
+        
         // temp, to enable IM client log
         if (Debug.isEnabled()) {
             try {
