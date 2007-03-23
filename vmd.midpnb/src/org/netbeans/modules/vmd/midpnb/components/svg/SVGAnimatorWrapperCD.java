@@ -175,7 +175,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                         String sourcePath = getSourcePath(document);
                         String path = (String) transferable.getTransferData(dataFlavor);
                         int position = path.indexOf(sourcePath) + sourcePath.length();
-                        path = path.substring(position);
+                        path = path.substring(position).trim();
                         
                         ComponentProducer producer = MidpDocumentSupport.getComponentProducer(SVGImageCD.TYPEID);
                         if (producer != null) {
