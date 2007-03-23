@@ -94,7 +94,7 @@ public final class ProjectCustomizer {
                                                  ActionListener okOptionListener,
                                                  HelpCtx helpCtx ) {
         CustomizerPane innerPane = createCustomizerPane(categories, componentProvider, preselectedCategory);
-        Dialog dialog = CustomizerDialog.createDialog( okOptionListener, innerPane, helpCtx, categories );
+        Dialog dialog = CustomizerDialog.createDialog( okOptionListener, innerPane, helpCtx, categories, componentProvider);
         return dialog;
     }
 
@@ -371,7 +371,7 @@ public final class ProjectCustomizer {
         
     }
 
-    /*private*/ static class DelegateCategoryProvider implements CategoryComponentProvider, CompositeCategoryProvider {
+    /*private*/ static class DelegateCategoryProvider implements CategoryComponentProvider, CompositeCategoryProvider, Lookup.Provider {
 
         private final Lookup context;
         private final Map<ProjectCustomizer.Category,CompositeCategoryProvider> category2provider;
@@ -483,6 +483,10 @@ public final class ProjectCustomizer {
                 return selfProvider.createComponent(category, context);
             }
             return new JPanel();
+        }
+        //#97998 related
+        public Lookup getLookup() {
+            return context;
         }
     }
 }

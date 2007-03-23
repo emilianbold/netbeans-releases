@@ -26,6 +26,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,11 +34,14 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -60,7 +64,9 @@ public class CustomizerDialog {
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
 
     public static Dialog createDialog( ActionListener okOptionListener, final CustomizerPane innerPane,
-            HelpCtx helpCtx, final ProjectCustomizer.Category[] categories ) {
+            HelpCtx helpCtx, final ProjectCustomizer.Category[] categories, 
+           //#97998 related
+            ProjectCustomizer.CategoryComponentProvider componentProvider ) {
 
         ListeningButton okButton = new ListeningButton(
                 NbBundle.getMessage(CustomizerDialog.class, "LBL_Customizer_Ok_Option"), // NOI18N
@@ -83,7 +89,7 @@ public class CustomizerDialog {
 
 
         // RegisterListener
-        ActionListener optionsListener = new OptionListener( okOptionListener, categories );
+        ActionListener optionsListener = new OptionListener( okOptionListener, categories , componentProvider);
         options[ OPTION_OK ].addActionListener( optionsListener );
         options[ OPTION_CANCEL ].addActionListener( optionsListener );
 
@@ -154,10 +160,16 @@ public class CustomizerDialog {
 
         private ActionListener okOptionListener;
         private ProjectCustomizer.Category[] categories;
+        private Lookup.Provider prov;
 
-        OptionListener( ActionListener okOptionListener, ProjectCustomizer.Category[] categs) {
+        OptionListener( ActionListener okOptionListener, ProjectCustomizer.Category[] categs, 
+                ProjectCustomizer.CategoryComponentProvider componentProvider) {
             this.okOptionListener = okOptionListener;
             categories = categs;
+            //#97998 related
+            if (componentProvider instanceof Lookup.Provider) {
+                prov = (Lookup.Provider)componentProvider;
+            }
         }
         
         public void actionPerformed( final ActionEvent e ) {
@@ -169,6 +181,19 @@ public class CustomizerDialog {
                     public Object run() {
                         okOptionListener.actionPerformed( e ); // XXX maybe create new event
                         actionPerformed(e, categories);
+                        //#97998 related
+                        if (prov != null) {
+                            Project prj = prov.getLookup().lookup(Project.class);
+                            if (ProjectManager.getDefault().isModified(prj)) {
+                                try {
+                                    ProjectManager.getDefault().saveProject(prj);
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (IllegalArgumentException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }
                         return null;
                     }
                 });
