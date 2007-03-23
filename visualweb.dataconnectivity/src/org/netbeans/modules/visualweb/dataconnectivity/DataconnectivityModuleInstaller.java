@@ -161,7 +161,6 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run() {
                 // code to be invoked when system UI is ready
-                System.out.println("*** CurrentProject.getInstance().setup();");
                 CurrentProject.getInstance().setup();
             }
         }  );
