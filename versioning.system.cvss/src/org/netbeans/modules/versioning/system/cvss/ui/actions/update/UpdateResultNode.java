@@ -45,7 +45,8 @@ class UpdateResultNode extends AbstractNode {
     static final String COLUMN_NAME_STATUS      = "status"; // NOI18N
     
     private final MessageFormat conflictFormat = new MessageFormat("<font color=\"#FF0000\">{0}</font>"); // NOI18N
-    private final MessageFormat updatedFormat = new MessageFormat("<font color=\"#0000FF\">{0}</font>"); // NOI18N
+    private final MessageFormat mergedFormat = new MessageFormat("<font color=\"#0000FF\">{0}</font>"); // NOI18N
+    private final MessageFormat removedFormat = new MessageFormat("<font color=\"#999999\">{0}</font>"); // NOI18N
     
     private String statusDisplayName;
     private String htmlDisplayName;
@@ -102,10 +103,13 @@ class UpdateResultNode extends AbstractNode {
             htmlDisplayName = conflictFormat.format(new Object [] { getName() });
             statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Conflict"); // NOI18N
         } else if (isRemoved()) {
-            htmlDisplayName = getName();            
+            htmlDisplayName = removedFormat.format(new Object [] { getName() });            
             statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Removed"); // NOI18N
+        } else if (isMerged()) {
+            htmlDisplayName = mergedFormat.format(new Object [] { getName() });            
+            statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Merged"); // NOI18N
         } else if (isUpdated()) {
-            htmlDisplayName = updatedFormat.format(new Object [] { getName() });            
+            htmlDisplayName = getName();            
             statusDisplayName = NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Updated"); // NOI18N
         } else {
             throw new IllegalStateException("Unhandled update type: " + info.getType()); // NOI18N
@@ -118,9 +122,13 @@ class UpdateResultNode extends AbstractNode {
     }
 
     private boolean isUpdated() {
-        return "UPG".indexOf(info.getType()) != -1; // NOI18N
+        return "UP".indexOf(info.getType()) != -1; // NOI18N
     }
 
+    private boolean isMerged() {
+        return "G".equals(info.getType()); // NOI18N
+    }
+    
     private boolean isRemoved() {
         return DefaultFileInfoContainer.PERTINENT_STATE.equals(info.getType());
     }
