@@ -1,0 +1,192 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>CDC Quick Reference Guide</title>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+<h2>CDC Tasks: Quick Reference</h2>
+<p> This topic describes common tasks you can perform with the NetBeans Mobility 
+  Pack for CDC.</p>
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th scope="col" align="left">To perform this task</th>
+    <th scope="col" align="left">Follow these steps</th>
+  </tr>
+  <tr valign="top"> 
+    <td> Create a project</td>
+    <td> <ol>
+        <li>Choose File &gt; New Project. <br>
+          This opens the New Project wizard.</li>
+        <li>Under Categories, Choose CDC</li>
+        <li> Under Projects, choose the CDC <a href="proj_about.html">template</a> 
+          that best fits the needs of your project.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Configure a project</td>
+    <td><ol>
+        <li>Right click on a project and choose Platforms. </li>
+        <li>Choose a platform from the Java Platform drop-down menu. <br>
+          <strong>Note:</strong> If you change the platform to one using a different 
+          profile, you will lose your GUI builder palette settings. </li>
+        <li>Choose a device from the Device drop-down menu. </li>
+        <li>Choose a profile from the Profile drop-down menu. </li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Run a project</td>
+    <td><ol>
+        <li>Choose Run &gt; Run Main Project (F6) or right click on any project 
+          in the Projects window and choose Run Project.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Debug a project</td>
+    <td><ol>
+        <li>To debug the main project, choose Run &gt; Debug Main Project (F5). 
+        </li>
+        <li>To debug an individual project, right-click the project and choose 
+          Debug Project.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td> Run Samples</td>
+    <td><ol>
+        <li>Choose File &gt; New Project. <br>
+          This opens the New Project wizard.</li>
+        <li>Under Categories, Choose Samples &gt; CDC Then select the folder that 
+          contains the sample project you wish to run . </li>
+        <li>In the Projects window choose the sample project you want to run. 
+        </li>
+        <li>Select the project configuration properties as desired.</li>
+        <li>When the project is loaded, right-click and choose Run Project. </li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Create CDC application interfaces using the GUI builder </td>
+    <td><p>The GUI Builder enables you to create menus and other UI elements by 
+        enabling you to place components where you want them and providing visual 
+        feedback guidelines.</p>
+      <p>The GUI Builder opens when you create a new project for the Personal 
+        and AGUI profiles.</p>
+      <p>To open the GUI builder in an open project: </p>
+      <ol>
+        <li>Right-click on a project and choose New File/Folder. </li>
+        <li>Under Categories, choose CDC. Under File Types, choose AGUI Xlet Form 
+          or Personal Profile Xlet Form.<br>
+          <br>
+          <strong>Note: </strong>The GUI Builder is not available for projects 
+          using the Ricoh (Foundation Profile) Platform Emulator. </li>
+      </ol>
+      <p>&nbsp;</p></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add an emulator platform </td>
+    <td><ol>
+        <li>Download and install the Emulator you want to add. </li>
+        <li>Choose Tools &gt; Java Platform Manager Click the Add Platform button</li>
+        <li>In the Add Platform dialog box select Java Micro Edition CDC Platform 
+          Emulator</li>
+        <li>Select the directory where the platform you want to add was installed. 
+        </li>
+        <li>Add the emulator.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add or remove files from the JAR </td>
+    <td><ol>
+        <li> Right-click the project you want to edit and choose Properties.</li>
+        <li>Select Packaging under Categories. <br>
+          In the Project Properties dialog box you can set the following properties:</li>
+        <ul>
+          <li><strong>JAR File. </strong>The name of the distribution jar file.</li>
+          <li><strong>Exclude from JAR file.</strong> Specifies which files to 
+            exclude from the distribution jar. </li>
+        </ul>
+      </ol></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Manage resources in a project. </td>
+    <td><p>CDC application resources can be located outside of the project JAR, 
+        but must be physically located in the <code><em>&lt;project&gt;</em>/resources</code> 
+        folder. </p>
+      <p>To add resources to a CDC project: </p>
+      <ul>
+        <li>Drag and drop resources in the Projects or Files views. </li>
+        <li>Cut and paste into the Resources folder anywhere in the logical view. 
+        </li>
+      </ul></td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add custom libraries</td>
+    <td><ul>
+        <li>Select Tools &gt; Library Manager.</li>
+        <li>In the Library Manager dialog box click the New Library button.</li>
+        <li> In the New Library window, type a name for the library. </li>
+        <li>For Library Type select CDC Class libraries in the drop-down menu 
+          and click OK. The custom library you created will be in the CDC class 
+          Libraries window.</li>
+        <li>Click on the custom library then click the Classpath tab.</li>
+        <li>Click the Add JAR/Folder button and choose the directory your new 
+          library is located in.</li>
+      </ul></td>
+  </tr>
+  <!-- <tr valign="top">
+    <td>Delete a project.</td>
+    <td><ol><li>In the 
+	<a href="../aboutprojects.html">Project Navigator</a>, 
+	display the <a href="../../ui_elements/project_nav/projectlogical.html">logical view</a> of the project.</li>
+    <li>Right-click the project and choose <a href="delete_project.html">Delete</a>.</li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+    <td> Delete items from a project. </td>
+    <td>
+      <ol>
+        <li>In the <a href="../aboutprojects.html">Project Navigator</a>, display the 
+		<a href="../../ui_elements/project_nav/projectlogical.html">logical view</a> of the project. </li>
+        <li>Right-click the item to delete and choose <a href="add_remove_object.html">Delete</a>. </li>
+    </ol></td>
+  </tr> -->
+  <!--<tr valign="top">
+    <td> Rename a project.</td>
+    <td><ol>
+      <li>In the <a href="../aboutprojects.html">Project Navigator</a>, display the 
+	  <a href="../../ui_elements/project_nav/projectlogical.html">logical view</a> of the project. </li>
+      <li>Right-click the item to rename and choose <a href="rename_project.html">Rename</a>. </li>
+      <li>Enter the new name and click OK.</li>
+    </ol></td>
+  </tr> -->
+</table>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

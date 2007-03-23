@@ -135,4 +135,18 @@ Microsystems, Inc. All Rights Reserved.
 			<tocitem text="Using the Java ME Wireless Toolkit Utilities" target="me.toolkit_using" />
 		</tocitem>
 	</tocitem>
+        <tocitem text="Java ME CDC Development">
+		<tocitem text="Getting Started">
+			<tocitem text="About Java ME CDC Applications" target="cdc.welcome" />
+		</tocitem>
+		<tocitem text="Working with CDC Projects">
+			<tocitem text="About CDC Projects" target="cdc.proj_about" />
+			<tocitem text="Working with CDC Projects" target="cdc.project_working" />
+			<tocitem text="CDC Project Tasks: Quick Reference" target="cdc.project_quickref" />
+		</tocitem>
+		<tocitem text="Working with CDC Emulator Platforms">
+			<tocitem text="About CDC Emulator Platforms" target="cdc.emulator_about" />
+			<tocitem text="Adding CDC Emulator Platforms" target="cdc.emulator_adding" />
+		</tocitem>
+	</tocitem>
 </toc>

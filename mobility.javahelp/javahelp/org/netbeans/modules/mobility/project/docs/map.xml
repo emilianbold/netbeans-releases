@@ -210,4 +210,31 @@ Microsystems, Inc. All Rights Reserved.
 	<mapID target="alertifelseblock" url="images/alertifelseblock.gif"/>
 	<mapID target="wcw-serverscript" url="images/wcw-serverscript.gif"/>
 	<mapID target="includestatement" url="images/includestatement.gif"/>
+        
+        <mapID target="cdc.welcome" url="cdc/getstart/welcome.html"/>
+	<mapID target="cdc.detectPanel" url="cdc/project/csh/proj_platform_manager.html"/>
+	<mapID target="cdc.customizerCompile" url="cdc/project/csh/proj_cdcstand_props_compiling.html"/>
+	<mapID target="cdc.customizerJar" url="cdc/project/csh/proj_cdcstand_props_packaging.html"/>
+	<mapID target="cdc.customizerJavadoc" url="cdc/project/csh/proj_cdcstand_props_documenting.html"/>
+	<mapID target="cdc.customizerLibraries" url="cdc/project/csh/proj_cdcstand_props_libraries.html"/>
+	<mapID target="cdc.customizerRun" url="cdc/project/csh/proj_cdcstand_props_run.html"/>
+	<mapID target="cdc.customizerSources" url="cdc/project/csh/proj_cdcstand_props_sources.html"/>
+	<mapID target="cdc.librariesChooser" url="cdc/pending.html"/>
+	<mapID target="cdc.panelConfigureProject_APP" url="cdc/project/csh/proj_cdc-standapp_wiz.html"/>
+	<mapID target="cdc.panelConfigureProject_LIB" url="cdc/project/csh/proj_cdc-standclasslib_wiz.html"/>
+	<mapID target="cdc.panelConfigureProject_EXT" url="cdc/project/csh/proj_cdcexistsrc_wiz1.html"/>
+	<mapID target="cdc.panelSourceFolders" url="cdc/project/csh/proj_cdcexistsrc_wiz2.html"/>
+	<mapID target="cdc.platformInstallPanel" url="cdc/project/csh/proj_cdcnewproject_installplatform.html"/>
+	<mapID target="cdc.customizerGeneral" url="cdc/project/csh/proj_cdcstand_props_general.html"/>
+	<mapID target="cdc.project_quickref" url="cdc/project/project_quickref.html"/>
+	<mapID target="cdc.project_working" url="cdc/project/project_working.html"/>
+	<mapID target="cdc.proj_about" url="cdc/project/proj_about.html"/>
+	<mapID target="cdc.emulator_about" url="cdc/emulator/emulator_about.html"/>
+	<mapID target="cdc.emulator_adding" url="cdc/emulator/emulator_adding.html"/>
+	<mapID target="cdc.circle1" url="cdc/images/circle1.gif"/>
+	<mapID target="cdc.circle2" url="cdc/images/circle2.gif"/>
+	<mapID target="cdc.circle3" url="cdc/images/circle3.gif"/>
+	<mapID target="cdc.circle4" url="cdc/images/circle4.gif"/>
+	<mapID target="cdc.circle5" url="cdc/images/circle5.gif"/>
+	<mapID target="cdc.circle6" url="cdc/images/circle6.gif"/>
 </map>

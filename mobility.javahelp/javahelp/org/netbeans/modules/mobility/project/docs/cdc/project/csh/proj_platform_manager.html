@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+    <head>
+        <title>Java Platform Manager Dialog Box</title>
+        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Java Platform Manager Dialog Box</h2>
+        <p>The Java Platform Manager is a tool for registering different versions of
+        the Java Development Kit (JDK) and other Java tools that your programs depend
+        on. The  dialog box lists all of your registered JDKs and SDKs
+        in the left pane.  It also lists the JDK that the IDE is running on as the Default
+        Platform.
+        <p>You can open the dialog box by choosing Tools &gt; Java Platform Manager. 
+        <ul class="note"> 
+            <li> You can  set the IDE's default platform by running the IDE with
+            the <tt>--jdkhome</tt> 
+            switch on the command line or by entering the path to the JDK in the <tt>netbeans_j2sdkhome</tt> 
+            property of your <tt><i>INSTALLATION_DIRECTORY</i>/etc/netbeans.conf</tt> 
+            file.</li>
+        </ul>
+
+        <p>Using the Java Platform Manager, you can: 
+        <ul>
+            <li>Register a new JDK. Directories that contain JDKs
+            are marked with an <img src="../../images/platform.gif" width="18" height="16" alt="platform directory">&nbsp;icon
+            in the file chooser. </li>
+            <li>View registered JDK's classpaths.</li>
+            <li>Register source code for a JDK in the Sources tab.</li>
+            <li>Register Javadoc documentation for a JDK in the  Javadoc tab.</li>
+        </ul>
+        <p>Once you have registered a JDK, you can configure a standard project to use
+        that JDK for compilation, execution, and debugging. Go to the project's Project
+        Properties dialog box, select the Libraries node, and choose the appropriate
+        JDK in the Java Platform combo box. 
+        <p><b>Notes:</b>
+        <ul>
+            <li>For CDC projects, you can add emulator and SDK platforms for mobile
+            and PDA devices.  For more information, see
+             <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.org/kb/55/quickstart-mobilitycdc.html">
+                <param name="text" value="<html><u>NetBeans Mobility Pack for CDC Quick Start Guide</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+            .</li>
+        </ul>
+        <hr>
+        <font size=-2><a href="../../credits.html">Legal Notices</a></font> 
+        <table border="0" cellpadding="20">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

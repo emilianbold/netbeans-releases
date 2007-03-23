@@ -36,7 +36,13 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.javahelp.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
                 </file>
-                <attr name="quick-start-mobility.url/using-netbeans.url" boolvalue="true"/>
+                <attr name="quick-start-mobility.url/quick-start-cdc.url" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.javahelp.Bundle"/>
+                <file name="quick-start-cdc.url" url="nbresloc:/org/netbeans/modules/mobility/javahelp/quick-start-cdc.url">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.javahelp.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
+                </file>                
+                <attr name="quick-start-cdc.url/using-netbeans.url" boolvalue="true"/>
             </folder> 
         </folder>
     </folder>

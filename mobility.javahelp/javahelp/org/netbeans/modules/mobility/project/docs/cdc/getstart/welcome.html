@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<HTML>
+<HEAD>
+<TITLE>About Java ME CDC Applications</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</HEAD>
+<BODY>
+
+<h2>About Java ME CDC Applications</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p> A Java<sup></sup> 2, Micro Edition platform (Java ME<sup></sup> Platform), 
+  Connected Device Configuration (CDC) application is an application targeted 
+  for mobile devices such as high end mobile phones, PDAs, and two-way pagers. 
+  Such applications conform to the Connected Device Configuration with a set of 
+  profiles that include the Personal Basis Profile, Personal Profile and AGUI.</p>
+<p>A CDC application typically consists of:
+<ul>
+  <li>A Java Archive (JAR) file. This file contains: 
+    <ul>
+      <li>Java class with a main method, applet, or one or more Xlets.</li>
+      <li>Java classes.</li>
+      <li>Resource files used by the Application (for example, image files). </li>
+      <li>A manifest file describing the JAR contents.</li>
+    </ul>
+  </li>
+  <li>A deployment file: 
+    <ul>
+      <li>For Sony Ericsson phones, a SIS (Symbian Installation System) file with 
+        additional information such as VM and application arguments, application 
+        icon and other resources.</li>
+      <li>For Nokia S80 phones, a JAR file with special attributes included in 
+        the manifest.</li>
+    </ul>
+  </ul>
+  
+<p>In the IDE, CDC applications are managed as mobility projects. Mobility projects 
+  are executed through an emulator platform, which simulates the execution of 
+  the application on a specific mobile device.</p>
+<p>You can use the <a href="nbdocs:/org/netbeans/modules/usersguide/gui/gui_about.html">NetBeans 
+  GUI Builder's</a> drag and drop, GUI environment to design your application. 
+  The IDE also supports <a href="nbdocs:/org/netbeans/modules/usersguide/junit/junit_about.html">JUnit</a> 
+  testing. </p>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://java.sun.com/javame/technology/index.jsp">
+    <param name="text" value="<html><u>Java ME Technology Page</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+  </object></dd>
+  <dd><a href="../emulator/emulator_about.html">About Emulator Platforms</a></dd>
+</dl>
+<hr>
+<p><small><a href="../credits.html">Legal Notices</a></small> </p>
+</body>
+</html>
