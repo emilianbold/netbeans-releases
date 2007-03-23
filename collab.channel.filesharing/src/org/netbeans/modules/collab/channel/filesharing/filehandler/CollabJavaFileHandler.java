@@ -320,6 +320,8 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
             Position end = doc.createPosition(endOffset);
             
             GuardedSectionManager man = GuardedSectionManager.getInstance(doc);
+            if (man == null) return true;
+            
             for (GuardedSection sect : man.getGuardedSections()) {
                 if (sect.contains(begin, true) || sect.contains(end, true)) return false;
                 if (sect.getStartPosition().getOffset() > beginOffset && sect.getStartPosition().getOffset() < endOffset) return false;
@@ -670,7 +672,10 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
 
         StyledDocument docu = getDocument();
         synchronized (docu) {
-            Iterator it = GuardedSectionManager.getInstance(docu).getGuardedSections().iterator();
+            GuardedSectionManager man = GuardedSectionManager.getInstance(docu);
+            if (man == null) return; // no guarded sections
+            
+            Iterator it = man.getGuardedSections().iterator();
 
             while (it.hasNext()) {
                 GuardedSection sect = (GuardedSection)it.next();
