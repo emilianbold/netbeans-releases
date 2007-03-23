@@ -18,14 +18,18 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Referenceable;
 
