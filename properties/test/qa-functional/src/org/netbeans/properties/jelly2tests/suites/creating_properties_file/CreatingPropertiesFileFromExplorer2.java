@@ -72,7 +72,7 @@ public class CreatingPropertiesFileFromExplorer2 extends PropertiesEditorTestCas
          */
         Node node = new Node(new SourcePackagesNode(defaultProjectName),PACKAGE_PATH);
         node.select();
-        node.callPopup().pushMenuNoBlock("New"+menuSeparator+"File/Folder...",menuSeparator);
+        node.callPopup().pushMenuNoBlock("New"+menuSeparator+"Other...",menuSeparator);
         NewFileWizardOperator newWizard = new NewFileWizardOperator();
         newWizard.selectCategory(WIZARD_CATEGORY_FILE);
         newWizard.selectFileType(WIZARD_FILE_TYPE);
@@ -90,7 +90,7 @@ public class CreatingPropertiesFileFromExplorer2 extends PropertiesEditorTestCas
          * in appeared context menu New|Other|Properties File
          */
         node.select();
-        node.callPopup().pushMenuNoBlock("New"+menuSeparator+"File/Folder...",menuSeparator);
+        node.callPopup().pushMenuNoBlock("New"+menuSeparator+"Other...",menuSeparator);
         newWizard = new NewFileWizardOperator();
         newWizard.selectCategory(WIZARD_CATEGORY_FILE);
         newWizard.selectFileType(WIZARD_FILE_TYPE);

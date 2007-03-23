@@ -76,7 +76,7 @@ public class CreatingPropertiesFileFromExplorer1 extends PropertiesEditorTestCas
         Node node = new Node(spn,PACKAGE_PATH);
         
         node.select();
-        node.callPopup().pushMenuNoBlock("New"+menuSeparator+"File/Folder...",menuSeparator);
+        node.callPopup().pushMenuNoBlock("New"+menuSeparator+"Other...",menuSeparator);
         NewFileWizardOperator newWizard = new NewFileWizardOperator();
         newWizard.selectCategory(WIZARD_CATEGORY_FILE);
         newWizard.selectFileType(WIZARD_FILE_TYPE);
