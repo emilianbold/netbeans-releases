@@ -25,10 +25,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -39,6 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -67,31 +66,28 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 public final class ColorModel {
+
+    private static final Logger LOG = Logger.getLogger(ColorModel.class.getName());
     
     /* package */ static final String ALL_LANGUAGES = NbBundle.getMessage(ColorModel.class, "CTL_All_Languages"); //NOI18N
-    private static final String HIGHLIGHTING_LANGUAGE = "Highlighting"; //NOI18N
     private static final String [] EMPTY_MIMEPATH = new String[0];
-    
-    private EditorSettings      editorSettings = EditorSettings.getDefault ();
-    
-    
     
     // schemes .................................................................
     
     public Set /*<String>*/ getProfiles () {
-        return editorSettings.getFontColorProfiles ();
+        return EditorSettings.getDefault().getFontColorProfiles ();
     }
     
     public String getCurrentProfile () {
-        return editorSettings.getCurrentFontColorProfile ();
+        return EditorSettings.getDefault().getCurrentFontColorProfile ();
     }
     
     public boolean isCustomProfile (String profile) {
-        return editorSettings.isCustomFontColorProfile (profile);
+        return EditorSettings.getDefault().isCustomFontColorProfile (profile);
     }
     
     public void setCurrentProfile (String profile) {
-        editorSettings.setCurrentFontColorProfile (profile);
+        EditorSettings.getDefault().setCurrentFontColorProfile (profile);
     }
     
     
@@ -196,7 +192,7 @@ public final class ColorModel {
      * @return Collection of AttributeSets or null
      */
     public Collection /*<Category>*/ getHighlightings (String profile) {
-        Map m = editorSettings.getHighlightings(profile);
+        Map m = EditorSettings.getDefault().getHighlightings(profile);
         if (m == null) {
             return null;
         }
@@ -204,7 +200,7 @@ public final class ColorModel {
     }
     
     public Collection /*<Category>*/ getHighlightingDefaults (String profile) {
-        Collection r = editorSettings.getHighlightingDefaults (profile).values ();
+        Collection r = EditorSettings.getDefault().getHighlightingDefaults (profile).values ();
         if (r == null) return null;
         return hideDummyCategories (r);
     }
@@ -213,7 +209,7 @@ public final class ColorModel {
 	String profile, 
 	Collection /*<Category>*/ highlihgtings
     ) {
-	editorSettings.setHighlightings (
+	EditorSettings.getDefault().setHighlightings (
 	    profile, 
 	    toMap (highlihgtings)
 	);
@@ -226,140 +222,96 @@ public final class ColorModel {
 	return getLanguageToMimeTypeMap ().keySet ();
     }
     
-    public Collection /*<Category>*/ getCategories (
+    public Collection /*<AttributeSet>*/ getCategories (
 	String profile, 
 	String language
     ) {
-        if (language.equals(ALL_LANGUAGES)) {
-            return editorSettings.getFontColorSettings(EMPTY_MIMEPATH).getAllFontColors(profile);
-        }
-        
-        String mimeType = getMimeType (language);
-	FontColorSettingsFactory fcs = EditorSettings.getDefault ().
-            getFontColorSettings (new String[] {mimeType});
-        return fcs.getAllFontColors (profile);
+        String [] mimePath = getMimePath(language);
+        FontColorSettingsFactory fcs = EditorSettings.getDefault().getFontColorSettings(mimePath);
+        return fcs.getAllFontColors(profile);
     }
     
-    public Collection /*<Category>*/ getDefaults (
+    public Collection /*<AttributeSet>*/ getDefaults (
 	String profile, 
 	String language
     ) {
-        if (language.equals(ALL_LANGUAGES)) {
-            return editorSettings.getFontColorSettings(EMPTY_MIMEPATH).getAllFontColorDefaults(profile);
-        }
-        
-        String mimeType = getMimeType (language);
-	FontColorSettingsFactory fcs = EditorSettings.getDefault ().
-            getFontColorSettings (new String[] {mimeType});
-        return fcs.getAllFontColorDefaults (profile);
+        String [] mimePath = getMimePath(language);
+        FontColorSettingsFactory fcs = EditorSettings.getDefault().getFontColorSettings(mimePath);
+        return fcs.getAllFontColorDefaults(profile);
     }
     
     public void setCategories (
         String profile, 
         String language, 
-        Collection categories
+        Collection/*<AttributeSet>*/ categories
     ) {
-        if (language.equals (ALL_LANGUAGES)) {
-            editorSettings.getFontColorSettings(EMPTY_MIMEPATH).setAllFontColors(profile, categories);
-            return;
-        }
-        
-        String mimeType = getMimeType (language);
-        if (mimeType == null) {
-            if (System.getProperty ("org.netbeans.optionsDialog") != null)
-                System.out.println("ColorModelImpl.setCategories - unknown language " + language);
-            return;
-        }
-	FontColorSettingsFactory fcs = EditorSettings.getDefault ().
-            getFontColorSettings (new String[] {mimeType});
-	fcs.setAllFontColors (
-            profile,
-	    categories
-	);
+        String [] mimePath = getMimePath(language);
+        FontColorSettingsFactory fcs = EditorSettings.getDefault().getFontColorSettings(mimePath);
+        fcs.setAllFontColors(profile, categories);
     }
 	
-    public Component getEditorPreviewComponent () {
-        return new Preview (HIGHLIGHTING_LANGUAGE);
-    }
-	
-    public Component getSyntaxColoringPreviewComponent (
-        String      language
-    ) {
-        return new Preview (language);
+    public Component getSyntaxColoringPreviewComponent(String language) {
+        String mimeType = getMimeType(language);
+        return new Preview("test" + hashCode(), mimeType); //NOI18N
     }
 
-    class Preview extends JPanel {
+    final class Preview extends JPanel {
         
         static final String         PROP_CURRENT_ELEMENT = "currentAElement";
-        private JEditorPane         editorPane;
-        private FontColorSettingsFactory   fontColorSettings;
+        
+        private String testProfileName;
+        private String currentMimeType;
+        private JEditorPane editorPane;
+        private FontColorSettingsFactory fontColorSettings;
         
         
-        Preview (
-            final String      language
-        ) {
+        public Preview (String testProfileName, final String mimeType) {
             super (new BorderLayout ());
-//            S ystem.out.println ("getPreviewComponent " + profile + " : " + language);
-//            T hread.dumpStack ();
+            this.testProfileName = testProfileName;
             
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    editorPane = new JEditorPane ();
-                    updateMimeType (language);
-                    if (language == HIGHLIGHTING_LANGUAGE) {
-                        EditorUI editorUI = Utilities.getEditorUI (editorPane);
-                        if (editorUI != null) {
-                            editorUI.setLineNumberEnabled (true);
-                            editorUI.getExtComponent ();
-                            add (editorUI.getExtComponent (), BorderLayout.CENTER);
-                            return;
-                        }
-//                        S ystem.out.println("no text ui " + editorPane);
-                    }
-                    add (editorPane, BorderLayout.CENTER);
+                    editorPane = new JEditorPane();
+                    updateMimeType(mimeType);
+                    add(editorPane, BorderLayout.CENTER);
                 }
             });
             setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
         }
         
-        private String currentLanguage;
-        
-        public void setParameters (
-            final String      language,
+        public void setParameters(
+            String      language,
             final Collection /*<Category>*/ defaults,
             final Collection /*<Category>*/ highlightings,
             final Collection /*<Category>*/ syntaxColorings
         ) {
+            final String mimeType = getMimeType(language);
+            
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    String internalMimeType = null;
-                    if (!language.equals (currentLanguage)) {
-                        updateMimeType (language);
-                        currentLanguage = language;
-                        internalMimeType = languageToInternalMimeType(language, false);
-                        fontColorSettings = EditorSettings.getDefault ().
-                            getFontColorSettings (new String[] {internalMimeType});
+                    if (!mimeType.equals(currentMimeType)) {
+                        updateMimeType(mimeType);
                     }
                     
-                    if (internalMimeType == null) {
-                        internalMimeType = languageToInternalMimeType(language, false);
-                    }
                     if (defaults != null) {
-                        editorSettings.getFontColorSettings(EMPTY_MIMEPATH).setAllFontColors(
-                            "test" + ColorModel.this.hashCode(),
+                        EditorSettings.getDefault().getFontColorSettings(EMPTY_MIMEPATH).setAllFontColors(
+                            testProfileName,
                             defaults
                         );
                     }
-                    if (highlightings != null)
-                        editorSettings.setHighlightings (
-                            "test" + ColorModel.this.hashCode (),
+                    if (highlightings != null) {
+                        EditorSettings.getDefault().setHighlightings (
+                            testProfileName,
                             toMap (highlightings)
                         );
-                    if (syntaxColorings != null)
-                        fontColorSettings.setAllFontColors (
-                            "test" + ColorModel.this.hashCode (),
+                    }
+                    if (syntaxColorings != null && currentMimeType.length() != 0) {
+                        FontColorSettingsFactory fcs = EditorSettings.getDefault().getFontColorSettings(new String[] { currentMimeType });
+                        fcs.setAllFontColors (
+                            testProfileName,
                             syntaxColorings
                         );
+                    }
                 }
             });
         }
@@ -367,9 +319,13 @@ public final class ColorModel {
         /**
          * Sets given mime type to preview and loads proper example text.
          */
-        private void updateMimeType (String language) {
-            String internalMimeType = languageToInternalMimeType(language, true);
-
+        private void updateMimeType(String mimeType) {
+            currentMimeType = mimeType;
+            
+            String [] ret = loadPreviewExample(mimeType);
+            String exampleText = ret[0];
+            String exampleMimeType = ret[1];
+            
             // XXX: There is several hacks in the few lines of code below.
             // First, the 'mimeType' property on a Document is abused for
             // injecting the name of a profile used for previewing changes in
@@ -379,12 +335,14 @@ public final class ColorModel {
             // and there is no way how to listen for those changes. Which means
             // that we have to fire a property change on the JTextComponent containing
             // the Document, so that the layers can get recalculated.
+
+            String hackMimeType = hackMimeType(exampleMimeType);
             
             Document document = editorPane.getDocument ();
-            document.putProperty ("mimeType", internalMimeType);
-            editorPane.setEditorKit (CloneableEditorSupport.getEditorKit(internalMimeType));
+            document.putProperty ("mimeType", hackMimeType);
+            editorPane.setEditorKit (CloneableEditorSupport.getEditorKit(hackMimeType));
             document = editorPane.getDocument ();
-            document.putProperty ("mimeType", internalMimeType);
+            document.putProperty ("mimeType", hackMimeType);
             editorPane.firePropertyChange(null, 0, 1);
             
             editorPane.addCaretListener (new CaretListener () {
@@ -412,73 +370,100 @@ public final class ColorModel {
                     }
                 }
             });
-            editorPane.setEnabled (false);
-            InputStream is = loadPreviewExample (language);
-            if (is == null) {
-                assert true :
-                       "Example for " + language + " language not found.";
-                is = loadPreviewExample ("Java");
-            }
-            BufferedReader r = new BufferedReader (new InputStreamReader (is));
-            StringBuffer sb = new StringBuffer ();
-            try {
-                String line = r.readLine ();
-                while (line != null) {
-                    sb.append (line).append ('\n');
-                    line = r.readLine ();
-                }
-                editorPane.setText (new String (sb));
-            } catch (IOException ex) {
-                ex.printStackTrace ();
-            }
+            editorPane.setEnabled(false);
+            editorPane.setText(exampleText);
         }
         
-        private InputStream loadPreviewExample (String language) {
-            String mimeType = getMimeType (language);
+        private String [] loadPreviewExample(String mimeType) {
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-            FileObject exampleFile = fs.findResource 
-                ("OptionsDialog/PreviewExamples/" + mimeType);
-            try {
-                return exampleFile != null ? 
-                    exampleFile.getInputStream () : null;
-            } catch (FileNotFoundException fnfe) {
-                return null;
+            FileObject exampleFile = null;
+            String exampleMimeType = null;
+            
+            if (mimeType == null || mimeType.length() == 0) {
+                FileObject f = fs.findResource("OptionsDialog/PreviewExamples"); //NOI18N
+                if (f != null && f.isFolder()) {
+                    FileObject [] ff = f.getChildren();
+                    for(int i = 0 ; i < ff.length; i++) {
+                        if (ff[i].isData()) {
+                            exampleFile = ff[i];
+                            break;
+                        }
+                    }
+                }
+                if (exampleFile != null) {
+                    if (exampleFile.getMIMEType().equals("content/unknown")) { //NOI18N
+                        exampleMimeType = "text/x-java"; //NOI18N
+                    } else {
+                        exampleMimeType = exampleFile.getMIMEType();
+                    }
+                }
+            } else {
+                exampleFile = fs.findResource("OptionsDialog/PreviewExamples/" + mimeType); //NOI18N
+                exampleMimeType = mimeType;
             }
+            
+            if (exampleFile != null) {
+                StringBuilder sb = new StringBuilder((int)exampleFile.getSize());
+                
+                try {
+                    InputStreamReader is = new InputStreamReader(exampleFile.getInputStream());
+                    char [] buffer = new char[1024];
+                    int size;
+                    try {
+                        while(0 < (size = is.read(buffer, 0, buffer.length))) {
+                            sb.append(buffer, 0, size);
+                        }
+                    } finally {
+                        is.close();
+                    }
+                } catch (IOException ioe) {
+                    LOG.log(Level.WARNING, "Can't read font & colors preview example", ioe); //NOI18N
+                }
+                
+                return new String [] { sb.toString(), exampleMimeType };
+            } else {
+                return new String [] { "", "text/plain" }; //NOI18N
+            }            
         }
 
-        private String languageToInternalMimeType (String language, boolean encodeTestProfileName) {
-            String mimeType = (
-                language == HIGHLIGHTING_LANGUAGE || 
-                language == ALL_LANGUAGES
-            ) ? 
-                "text/x-java" : //NOI18N      Highlighting & All Languages
-                getMimeType (language);
-            
-            if (encodeTestProfileName) {
-                return "test" + ColorModel.this.hashCode () + "_" + mimeType; //NOI18N
-            } else {
-                return mimeType;
-            }
+        private String hackMimeType(String mimeType) {
+            return testProfileName + "_" + mimeType; //NOI18N
         }
     }
     
     
     // private implementation ..................................................
 
-    private String getMimeType (String language) {
-        return (String) getLanguageToMimeTypeMap ().get (language);
+    private String getMimeType(String language) {
+        if (language.equals(ALL_LANGUAGES)) {
+            return ""; //NOI18N
+        } else {
+            String mimeType = (String) getLanguageToMimeTypeMap().get(language);
+            assert mimeType != null : "Invalid language '" + language + "'"; //NOI18N
+            return mimeType;
+        }
+    }
+    
+    private String [] getMimePath(String language) {
+        if (language.equals(ALL_LANGUAGES)) {
+            return EMPTY_MIMEPATH;
+        } else {
+            String mimeType = (String) getLanguageToMimeTypeMap().get(language);
+            assert mimeType != null : "Invalid language '" + language + "'"; //NOI18N
+            return new String [] { mimeType };
+        }
     }
     
     private Map languageToMimeType;
     private Map getLanguageToMimeTypeMap () {
 	if (languageToMimeType == null) {
 	    languageToMimeType = new HashMap ();
-	    Set mimeTypes = editorSettings.getMimeTypes ();
+	    Set mimeTypes = EditorSettings.getDefault().getMimeTypes ();
 	    Iterator it = mimeTypes.iterator ();
 	    while (it.hasNext ()) {
 		String mimeType = (String) it.next ();
 		languageToMimeType.put (
-		    editorSettings.getLanguageName (mimeType),
+		    EditorSettings.getDefault().getLanguageName (mimeType),
 		    mimeType
 		);
 	    }
