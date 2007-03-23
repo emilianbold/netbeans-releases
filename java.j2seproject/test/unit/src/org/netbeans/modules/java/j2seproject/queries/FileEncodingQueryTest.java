@@ -25,10 +25,12 @@ import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -37,6 +39,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -100,9 +103,15 @@ public class FileEncodingQueryTest extends NbTestCase {
         FileObject xml = sources.createData("b.xml");
         enc = FileEncodingQuery.getEncoding(xml);
         assertEquals(ISO15,enc);
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty("project.encoding", CP1252.name());
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {        
+                EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, CP1252.name());
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                ProjectManager.getDefault().saveProject(prj);
+                return null;
+            }
+        });        
         enc = FileEncodingQuery.getEncoding(java);
         assertEquals(CP1252,enc);
         FileObject standAloneJava = scratch.createData("b.java");
