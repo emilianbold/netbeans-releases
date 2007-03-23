@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -57,6 +57,7 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new MethodTypeParametersTest("testRenameTypePar1"));
 //        suite.addTest(new MethodTypeParametersTest("testRenameTypePar2"));
 //        suite.addTest(new MethodTypeParametersTest("testRenameTypePar3"));
+//        suite.addTest(new MethodTypeParametersTest("testRenameTypePar4"));
         return suite;
     }
     
@@ -579,6 +580,57 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
                     MethodTree method = (MethodTree) clazz.getMembers().get(1);
                     TypeParameterTree tpt = method.getTypeParameters().get(0);
                     workingCopy.rewrite(tpt, make.setLabel(tpt, "Tecko"));
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Reproduces issue #96969.
+     */ 
+    public void testRenameTypePar4() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public <T extends String, E> void taragui(int b) {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public <T extends Retezec, E> void taragui(int b) {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    TypeParameterTree tpt = method.getTypeParameters().get(0);
+                    IdentifierTree ident = (IdentifierTree) tpt.getBounds().get(0);
+                    workingCopy.rewrite(ident, make.Identifier("Retezec"));
                 }
             }
             

@@ -1171,8 +1171,16 @@ public class CasualDiff {
             printer.print(newT.name);
             localPointer += oldT.name.length();
         }
-        // todo: finish parameters!
-        // diffParameterList(oldT.bounds, newT.bounds, -1);
+        if (!listsMatch(oldT.bounds, newT.bounds)) {
+            // todo (#pf): match it for rename only, other matching will be
+            // finished later.
+            PositionEstimator est = EstimatorFactory.implementz(oldT.getBounds(), newT.getBounds(), workingCopy);
+            int pos = oldT.bounds.nonEmpty() ? getOldPos(oldT.bounds.head) : -1;
+            if (pos > -1) {
+                copyTo(localPointer, pos);
+                localPointer = diffList2(oldT.bounds, newT.bounds, pos, est);
+            }
+        }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
