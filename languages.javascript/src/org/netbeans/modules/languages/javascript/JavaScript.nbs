@@ -339,6 +339,12 @@ FOLD:js_comment: {
     collapse_type_action_name:"LBL_CollapseComments";
 }
 
+########### brace matching #####################################################
+
+BRACE "(:)"
+BRACE "{:}"
+BRACE "[:]"
+
 ########### navigator ##########################################################
 
 NAVIGATOR:FunctionDeclaration: {
