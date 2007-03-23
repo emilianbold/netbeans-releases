@@ -27,10 +27,8 @@ Microsystems, Inc. All Rights Reserved.
         <resource>jar:nbinst:///modules/ext/toplink/toplink-essentials.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/toplink/toplink-essentials-agent.jar!/</resource>
     </volume>
-    <!--
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/PENDING.zip!/</resource>
+        <resource>jar:nbinst:///docs/javaee5-doc-api.zip!/</resource>
     </volume>
-    -->
 </library>
