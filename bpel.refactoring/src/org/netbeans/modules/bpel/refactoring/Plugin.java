@@ -20,51 +20,30 @@ package org.netbeans.modules.bpel.refactoring;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-//import org.netbeans.modules.xml. refactoring.ErrorItem;
-//import org.netbeans.modules.xml. refactoring.XMLRefactoringPlugin;
-//import org.netbeans.modules.xml. refactoring.spi.RefactoringEngine;
-import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
-
-import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.Referenceable;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.netbeans.modules.bpel.model.api.Process;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.refactoring.WSDLRefactoringEngine;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Referenceable;
 
 import org.netbeans.modules.bpel.core.BPELDataLoader;
 import org.netbeans.modules.bpel.core.BPELDataObject;
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.Process;
 
-import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.refactoring.WSDLRefactoringEngine;
-
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.Referenceable;
-import org.netbeans.modules.refactoring.api.Problem;
 import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
