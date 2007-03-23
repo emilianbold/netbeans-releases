@@ -270,11 +270,20 @@ public class SvnClientExceptionHandler {
         
         // now this is the messy part ...
         Socket proxySocket = new Socket(java.net.Proxy.NO_PROXY);
-        if(!proxySettings.isDirect()) {                                           
-            proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
-            connectProxy(proxySocket, host, port, proxyHost, proxyPort);        
-        } else {
+        if(proxySettings.isDirect()) {                                           
             proxySocket.connect(new InetSocketAddress(host, port));
+        } else {
+            boolean directWorks = false;
+            try {
+                proxySocket.connect(new InetSocketAddress(host, port));                
+                directWorks = true;                
+            } catch (Exception e) {
+                // do nothing 
+            }            
+            if(!directWorks) {
+                proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
+                connectProxy(proxySocket, host, port, proxyHost, proxyPort);                       
+            }            
         }
                         
         SSLContext context = SSLContext.getInstance("SSL");                     // NOI18N

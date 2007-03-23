@@ -53,16 +53,16 @@ public class ProxySettings {
     };
         
     private void init() {
-        Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core");      // NOI18N    
-        useAuth             = prefs.getBoolean ( USE_PROXY_AUTHENTICATION,       false );           // NOI18N            
-        username            = prefs.get        ( PROXY_AUTHENTICATION_USERNAME,  ""    );           // NOI18N
-        password            = prefs.get        ( PROXY_AUTHENTICATION_PASSWORD,  ""    );           // NOI18N                
-        notProxyHosts       = prefs.get        ( NOT_PROXY_HOSTS,                ""    );           // NOI18N                
-        httpHost            = prefs.get        ( PROXY_HTTP_HOST,                ""    );           // NOI18N                
-        httpPort            = prefs.get        ( PROXY_HTTP_PORT,                ""    );           // NOI18N                
-        httpsHost           = prefs.get        ( PROXY_HTTPS_HOST,               ""    );           // NOI18N                
-        httpsPort           = prefs.get        ( PROXY_HTTPS_PORT,               ""    );           // NOI18N                                
-        proxyType           = prefs.get        ( PROXY_TYPE,                     ""    );           // NOI18N                                        
+        Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core");                          // NOI18N    
+        useAuth             = prefs.getBoolean ( USE_PROXY_AUTHENTICATION,       false );                               // NOI18N            
+        username            = prefs.get        ( PROXY_AUTHENTICATION_USERNAME,  ""    );                               // NOI18N
+        password            = prefs.get        ( PROXY_AUTHENTICATION_PASSWORD,  ""    );                               // NOI18N                
+        notProxyHosts       = prefs.get        ( NOT_PROXY_HOSTS,                ""    ).replace("|", " ,");            // NOI18N                
+        httpHost            = prefs.get        ( PROXY_HTTP_HOST,                ""    );                               // NOI18N                
+        httpPort            = prefs.get        ( PROXY_HTTP_PORT,                ""    );                               // NOI18N                
+        httpsHost           = prefs.get        ( PROXY_HTTPS_HOST,               ""    );                               // NOI18N                
+        httpsPort           = prefs.get        ( PROXY_HTTPS_PORT,               ""    );                               // NOI18N                                
+        proxyType           = prefs.get        ( PROXY_TYPE,                     ""    );                               // NOI18N                                        
     }
     
     public boolean isDirect() {
