@@ -36,6 +36,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
 import org.netbeans.modules.apisupport.project.ui.SuiteOperations;
@@ -84,7 +85,7 @@ public final class SuiteProject implements Project {
         eval = createEvaluator();
         genFilesHelper = new GeneratedFilesHelper(helper);
         Util.err.log("Loading suite project in " + getProjectDirectory());
-        lookup = Lookups.fixed(new Object[] {
+        lookup = Lookups.fixed(
             this, 
             new Info(),
             helper.createAuxiliaryConfiguration(),
@@ -99,7 +100,7 @@ public final class SuiteProject implements Project {
             new SuiteCustomizer(this, helper, eval),
             new PrivilegedTemplatesImpl(),
             new SuiteOperations(this),
-        });
+            new FileEncodingQueryImpl());
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project-suite/Lookup");
     }
     
@@ -154,39 +155,39 @@ public final class SuiteProject implements Project {
     private PropertyEvaluator createEvaluator() {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         File dir = getProjectDirectoryFile();
-        List<PropertyProvider> providers = new ArrayList();
+        List<PropertyProvider> providers = new ArrayList<PropertyProvider>();
         providers.add(helper.getPropertyProvider("nbproject/private/platform-private.properties")); // NOI18N
         providers.add(helper.getPropertyProvider("nbproject/platform.properties")); // NOI18N
-        PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
         providers.add(new Util.UserPropertiesFileProvider(baseEval, dir));
-        baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
         class DestDirProvider extends Util.ComputedPropertyProvider {
             public DestDirProvider(PropertyEvaluator eval) {
                 super(eval);
             }
             protected Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
-                String platformS = (String) inputPropertyValues.get("nbplatform.active"); // NOI18N
+                String platformS = inputPropertyValues.get("nbplatform.active"); // NOI18N
                 if (platformS != null) {
                     return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
                 } else {
-                    return Collections.EMPTY_MAP;
+                    return Collections.emptyMap();
                 }
             }
-            protected Set inputProperties() {
+            protected Set<String> inputProperties() {
                 return Collections.singleton("nbplatform.active"); // NOI18N
             }
         }
         providers.add(new DestDirProvider(baseEval));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-        Map<String,String> fixedProps = new HashMap();
+        Map<String,String> fixedProps = new HashMap<String,String>();
         // synchronize with suite.xml
         fixedProps.put(SuiteProperties.ENABLED_CLUSTERS_PROPERTY, "");
         fixedProps.put(SuiteProperties.DISABLED_CLUSTERS_PROPERTY, "");
         fixedProps.put(SuiteProperties.DISABLED_MODULES_PROPERTY, "");
         fixedProps.put(BrandingSupport.BRANDING_DIR_PROPERTY, "branding"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
-        return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        return PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
     }
     
     private final class Info implements ProjectInformation, AntProjectListener {
@@ -253,8 +254,8 @@ public final class SuiteProject implements Project {
         
         public void projectOpened() {
             // XXX skip this in case nbplatform.active is not defined
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public Void run() {
                     String path = "nbproject/private/platform-private.properties"; // NOI18N
                     EditableProperties ep = helper.getProperties(path);
                     File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N

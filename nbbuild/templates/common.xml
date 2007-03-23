@@ -88,7 +88,8 @@ Microsystems, Inc. All Rights Reserved.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
         </depend>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
+                deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
         </javac>
@@ -135,7 +136,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="cp"/>
         </depend>
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
-               debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}"
+               debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
@@ -359,7 +360,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="test.unit.cp"/>
         </depend>
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
-               debug="true" deprecation="${build.compiler.deprecation}"
+               debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
                <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
                <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
@@ -417,7 +418,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="test.unit.cp"/>
         </depend>
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
-               debug="true" deprecation="${build.compiler.deprecation}"
+               debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
             <classpath refid="test.unit.cp"/>
             <compilerarg line="${javac.compilerargs}"/>

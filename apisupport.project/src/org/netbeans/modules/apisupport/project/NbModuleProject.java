@@ -76,6 +76,7 @@ import org.netbeans.modules.apisupport.project.queries.UnitTestForSourceQueryImp
 import org.netbeans.modules.apisupport.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.AntArtifactProviderImpl;
 import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
+import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.JavadocForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.SourceForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.SubprojectProviderImpl;
@@ -194,7 +195,7 @@ public final class NbModuleProject implements Project {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        lookup = Lookups.fixed(new Object[] {
+        lookup = Lookups.fixed(
             this,
             new Info(),
             helper.createAuxiliaryConfiguration(),
@@ -228,8 +229,7 @@ public final class NbModuleProject implements Project {
             LookupProviderSupport.createSourcesMerger(),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
-
-        });
+            new FileEncodingQueryImpl());
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
     }
     
