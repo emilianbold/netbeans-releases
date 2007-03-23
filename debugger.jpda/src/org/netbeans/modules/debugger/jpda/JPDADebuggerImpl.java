@@ -503,7 +503,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK2) {
             exception = e;
             starting = false;
-            LOCK2.notify ();
+            LOCK2.notifyAll ();
         }
     }
 
@@ -862,7 +862,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         logger.fine("   JPDADebuggerImpl.setRunning () finished, VM resumed.");
         synchronized (LOCK2) {
             starting = false;
-            LOCK2.notify ();
+            LOCK2.notifyAll ();
         }
     }
 
@@ -1011,7 +1011,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             //Notify LOCK2 so that no one is waiting forever
             synchronized (LOCK2) {
                 starting = false;
-                LOCK2.notify ();
+                LOCK2.notifyAll ();
             }
         //}
     }
