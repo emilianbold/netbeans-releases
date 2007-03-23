@@ -491,7 +491,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String simpleName;
         private String typeName;
         private String enclName;
-        private String sortText;
+        private CharSequence sortText;
         private String leftText;
         
         private ClassItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean smartType) {
@@ -505,7 +505,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.typeName = Utilities.getTypeName(type, false).toString();
             if (displayPkgName) {
                 this.enclName = Utilities.getElementName(elem.getEnclosingElement(), true).toString();
-                this.sortText = this.simpleName + "#" + Utilities.getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
+                this.sortText = new ClassSortText(this.simpleName, this.enclName);
             } else {
                 this.enclName = null;
                 this.sortText = this.simpleName;
@@ -2398,6 +2398,36 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.fullTypeName = fullTypeName;
             this.typeName = typeName;
             this.name = name;
+        }
+    }
+    
+    static class ClassSortText implements CharSequence {
+
+        private String name;
+        private String pkgName;
+        private String text;
+        
+        public ClassSortText(String name, String pkgName) {
+            this.name = name + "#"; //NOI18N
+            this.pkgName = pkgName;
+        }
+
+        public int length() {
+            return name.length() + pkgName.length() + 3;
+        }
+
+        public char charAt(int index) {
+            return index < name.length() ? name.charAt(index) : getText().charAt(index);
+        }
+
+        public CharSequence subSequence(int start, int end) {
+            return getText().subSequence(start, end);
+        }
+        
+        private String getText() {
+            if (text == null)
+                text = name + Utilities.getImportanceLevel(pkgName) + "#" + pkgName; //NOI18N
+            return text;
         }
     }
 }

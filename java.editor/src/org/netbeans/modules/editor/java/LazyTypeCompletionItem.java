@@ -56,7 +56,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     private String pkgName;
     private JavaCompletionItem delegate = null;
     private LazyTypeCompletionItem nextItem = null;
-    private String sortText;
+    private CharSequence sortText;
     private int prefWidth = -1;
     
     private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource) {
@@ -68,6 +68,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
         int idx = name.lastIndexOf('.'); //NOI18N
         this.simpleName = idx > -1 ? name.substring(idx + 1) : name;
         this.pkgName = idx > -1 ? name.substring(0, idx) : ""; //NOI18N
+        this.sortText = new ClassSortText(this.simpleName, this.pkgName);
     }
     
     public boolean accept() {
@@ -130,19 +131,11 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
         return null;
     }
 
-    public boolean instantSubstitution(JTextComponent component) {
-        if (delegate != null)
-            return delegate.instantSubstitution(component);
-        return false;
-    }
-
     public int getSortPriority() {
         return 700;
     }
 
     public CharSequence getSortText() {
-        if (sortText == null)
-            sortText = simpleName + "#" + Utilities.getImportanceLevel(name) + "#" + name; //NOI18N
         return sortText;
     }
 
