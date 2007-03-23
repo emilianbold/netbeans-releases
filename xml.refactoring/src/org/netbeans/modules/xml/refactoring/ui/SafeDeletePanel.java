@@ -59,7 +59,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                System.out.println("INIT CALLED");
+//                System.out.println("INIT CALLED");
                 label.setText(MessageFormat.format(NbBundle.getMessage(
                         SafeDeletePanel.class, "LBL_Delete_BOLD"), 
                         new Object[]{target.getName()}));

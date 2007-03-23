@@ -83,17 +83,17 @@ public class RenameRefactoringUI implements org.netbeans.modules.refactoring.spi
     }
     
     /** 
-	 * Creates a new instance of RenameRefactoringUI.
-	 * In addition to whereusedview and namedreferenceable,
-	 * new name and editable flag is also provided.
-	 * It is called from scn.setname and name property.
-	 */
+     * Creates a new instance of RenameRefactoringUI.
+     * In addition to whereusedview and namedreferenceable,
+     * new name and editable flag is also provided.
+     * It is called from scn.setname and name property.
+     */
     public RenameRefactoringUI(WhereUsedView view,
             Nameable ref, String name, boolean editable) {
         this.view = view;
         this.target = ref;
         oldName = name;
-		this.editable = editable;
+        this.editable = editable;
         assert ref instanceof NamedReferenceable;
         query = new WhereUsedQuery(Lookups.singleton((NamedReferenceable) ref));
     }
@@ -134,9 +134,9 @@ public class RenameRefactoringUI implements org.netbeans.modules.refactoring.spi
      * when trying to set its parameters.
      */
     public Problem setParameters() {
-        System.out.println("Rename setParameters:: called");
+//        System.out.println("Rename setParameters:: called");
         newName = panel.getNameValue();
-        System.out.println("thew NEW NAME is " + newName);
+//        System.out.println("thew NEW NAME is " + newName);
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);                                   
         }
