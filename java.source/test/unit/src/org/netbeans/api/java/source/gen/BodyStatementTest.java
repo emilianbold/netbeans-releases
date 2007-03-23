@@ -85,6 +85,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("testRenameInArrInit"));
 //        suite.addTest(new BodyStatementTest("testRenameClazz"));
 //        suite.addTest(new BodyStatementTest("testRenameInCase"));
+//        suite.addTest(new BodyStatementTest("testRenameClazzInNewParameter"));
         return suite;
     }
     
@@ -2116,6 +2117,54 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     * Rename in new in parameter. (Test that issue #98438 is not caused by
+     * generator.)
+     */
+    public void testRenameClazzInNewParameter() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Class o) {\n" +
+            "        method(new Test());\n" +
+            "    }\n" +
+            "}\n");
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class RenamedTest {\n" +
+            "    public Object method(Class o) {\n" +
+            "        method(new RenamedTest());\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                // body rename
+                BlockTree block = method.getBody();
+                ExpressionStatementTree est = (ExpressionStatementTree) block.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                NewClassTree nct = (NewClassTree) mit.getArguments().get(0);
+                workingCopy.rewrite(nct.getIdentifier(), make.Identifier("RenamedTest"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     // methods not used in this test.
     String getGoldenPckg() {
         return "";

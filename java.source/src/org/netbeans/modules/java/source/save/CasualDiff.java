@@ -2591,6 +2591,7 @@ public class CasualDiff {
     
     private boolean matchNewClass(JCNewClass t1, JCNewClass t2) {
         return t1.constructor == t2.constructor && 
+               treesMatch(t1.getIdentifier(), t2.getIdentifier()) &&
                listsMatch(t1.typeargs, t2.typeargs) &&
                listsMatch(t1.args, t2.args) &&
                (t1.varargsElement == t2.varargsElement) &&
