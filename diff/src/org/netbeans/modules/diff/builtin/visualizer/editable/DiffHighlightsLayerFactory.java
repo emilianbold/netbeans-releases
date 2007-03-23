@@ -36,7 +36,7 @@ public class DiffHighlightsLayerFactory implements HighlightsLayerFactory {
         if (master == null) return null;
         
         HighlightsLayer [] layers = new HighlightsLayer[1];
-        layers[0] = HighlightsLayer.create(HIGHLITING_LAYER_ID, ZOrder.TOP_RACK, true, master.getHighlightsContainer());
+        layers[0] = HighlightsLayer.create(HIGHLITING_LAYER_ID, ZOrder.DEFAULT_RACK, true, master.getHighlightsContainer());
         return layers;
     }
 }
