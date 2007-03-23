@@ -595,7 +595,7 @@ class LuceneIndex extends Index {
         if (res && tryOpen) {
             try {
                 getReader();
-            } catch (java.io.FileNotFoundException e) {
+            } catch (java.io.IOException e) {
                 res = false;
                 clear();
             }
