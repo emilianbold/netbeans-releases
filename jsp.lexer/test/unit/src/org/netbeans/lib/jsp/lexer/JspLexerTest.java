@@ -51,10 +51,10 @@ public class JspLexerTest extends NbTestCase {
     private void dumpTokens(CharSequence charSequence) {
         TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-        tokenSequence.moveFirst();
-        do {
+        tokenSequence.moveStart();
+        while (tokenSequence.moveNext()) {
             getRef().println(getTokenInfo(tokenSequence.token(), tokenHierarchy));
-        } while (tokenSequence.moveNext());
+        } 
     }
     
     //test methods -----------
