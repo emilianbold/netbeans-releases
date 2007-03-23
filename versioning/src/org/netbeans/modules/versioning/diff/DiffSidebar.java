@@ -30,7 +30,10 @@ import org.netbeans.api.diff.DiffView;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.versioning.spi.OriginalContent;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.ErrorManager;
+import org.openide.filesystems.*;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
@@ -60,17 +63,21 @@ import java.text.MessageFormat;
  * 
  * @author Maros Sandor
  */
-class DiffSidebar extends JComponent implements DocumentListener, ComponentListener, PropertyChangeListener, FoldHierarchyListener {
+class DiffSidebar extends JComponent implements DocumentListener, ComponentListener, PropertyChangeListener, FoldHierarchyListener, FileChangeListener {
     
     private static final int BAR_WIDTH = 9;
     
     private final JTextComponent  textComponent;
+    /**
+     * We must keep FileObject here because a File may change if the FileObject is renamed.
+     */
+    private final FileObject      fileObject;
 
     private final EditorUI        editorUI;
     private final FoldHierarchy   foldHierarchy;
     private final BaseDocument    document;
     
-    private boolean                 annotated;
+    private boolean                 sidebarVisible;
     private Difference []           currentDiff;
     private DiffMarkProvider        markProvider;
 
@@ -79,7 +86,10 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     private Color colorRemoved =    new Color(255, 160, 180);
     private Color colorBorder =     new Color(102, 102, 102);
     
-    private final OriginalContent originalContent;
+    /**
+     * Can change and also can be null for example if the file is not versioned.
+     */
+    private OriginalContent originalContent;
 
     private int     originalContentSerial;
     private int     originalContentBufferSerial = -1;
@@ -87,9 +97,9 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
     private RequestProcessor.Task   refreshDiffTask;
 
-    public DiffSidebar(JTextComponent target, OriginalContent content) {
+    public DiffSidebar(JTextComponent target, File file) {
         this.textComponent = target;
-        this.originalContent = content;
+        this.fileObject = FileUtil.toFileObject(file);
         this.editorUI = Utilities.getEditorUI(target);
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.document = editorUI.getDocument();
@@ -99,6 +109,13 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
     }
 
+    private void refreshOriginalContent() {
+        File file = FileUtil.toFile(fileObject);
+        VersioningSystem vs = VersioningManager.getInstance().getOwner(file);
+        originalContent = vs == null ? null : vs.getVCSOriginalContent(file);
+        originalContentSerial++;        
+    }
+    
     JTextComponent getTextComponent() {
         return textComponent;
     }
@@ -118,13 +135,13 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         switch (diff.getType()) {
             case Difference.ADD:
                 n = diff.getSecondEnd() - diff.getSecondStart() + 1;
-                return MessageFormat.format(new ChoiceFormat(NbBundle.getMessage(DiffSidebar.class, "TT_LinesAdded")).format(n), n);        
+                return MessageFormat.format(new ChoiceFormat(NbBundle.getMessage(DiffSidebar.class, "TT_LinesAdded")).format(n), n); // NOI18N      
             case Difference.CHANGE:
                 n = diff.getFirstEnd() - diff.getFirstStart() + 1;
-                return MessageFormat.format(new ChoiceFormat(NbBundle.getMessage(DiffSidebar.class, "TT_LinesChanged")).format(n), n);        
+                return MessageFormat.format(new ChoiceFormat(NbBundle.getMessage(DiffSidebar.class, "TT_LinesChanged")).format(n), n); // NOI18N      
             case Difference.DELETE:
                 n = diff.getFirstEnd() - diff.getFirstStart() + 1;
-                return MessageFormat.format(new ChoiceFormat(NbBundle.getMessage(DiffSidebar.class, "TT_LinesDeleted")).format(n), n);        
+                return MessageFormat.format(new ChoiceFormat(NbBundle.getMessage(DiffSidebar.class, "TT_LinesDeleted")).format(n), n); // NOI18N      
             default:
                 throw new IllegalStateException("Unknown difference type: " + diff.getType()); // NOI18N
         }
@@ -170,7 +187,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             DiffView view = Diff.getDefault().createDiff(new SidebarStreamSource(true), new SidebarStreamSource(false));
             JComponent c = (JComponent) view.getComponent();
             DiffTopComponent tc = new DiffTopComponent(c);
-            tc.setName(originalContent.getWorkingCopy().getName() + " [Diff]");
+            tc.setName(originalContent.getWorkingCopy().getName() + " [Diff]"); // NOI18N
             tc.open();
             tc.requestActive();
             view.setCurrentDifference(getDiffIndex(diff));
@@ -265,6 +282,34 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         return "text/plain"; // NOI18N
     }
 
+    public void fileFolderCreated(FileEvent fe) {
+        // should not happen
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        // should not happen
+    }
+
+    public void fileChanged(FileEvent fe) {
+        // not interested
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        // not interested
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                refresh();
+            }
+        });
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        // not interested
+    }
+
     private static class DiffTopComponent extends TopComponent {
         
         private JComponent diffView;
@@ -314,38 +359,57 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         return line;
     }
 
-    public void setSidebarVisible(boolean visible) {
-        if (visible) {
-            showSidebar();
-        } else {
-            hideSidebar();
-        }
+    void refresh() {
+        shutdown();
+        initialize();
+        refreshDiff();
+        revalidate();  // resize the component
     }
-
-    private void showSidebar() {
-        annotated = true;
-
-        document.addDocumentListener(this);
-        textComponent.addComponentListener(this);
-        editorUI.addPropertyChangeListener(this);
-        foldHierarchy.addFoldHierarchyListener(this);
-        originalContent.addPropertyChangeListener(this);
-
+        
+    public void setSidebarVisible(boolean visible) {
+        if (sidebarVisible == visible) return;
+        sidebarVisible = visible;
         refreshDiff();
         revalidate();  // resize the component
     }
 
-    private void hideSidebar() {
-        annotated = false;
+    public void addNotify() {
+        super.addNotify();
+        initialize();
+    }
 
-        originalContent.removePropertyChangeListener(this);
+    public void removeNotify() {
+        shutdown();
+        super.removeNotify();
+    }
+    
+    private void initialize() {
+        assert SwingUtilities.isEventDispatchThread();
+        
+        document.addDocumentListener(this);
+        textComponent.addComponentListener(this);
+        foldHierarchy.addFoldHierarchyListener(this);
+        refreshOriginalContent();
+        if (originalContent != null) {
+            originalContent.addPropertyChangeListener(this);
+        }
+        if (fileObject != null) {
+            fileObject.addFileChangeListener(this);
+        }
+    }
+
+    private void shutdown() {
+        assert SwingUtilities.isEventDispatchThread();
+
+        if (fileObject != null) {
+            fileObject.removeFileChangeListener(this);
+        }
+        if (originalContent != null) {
+            originalContent.removePropertyChangeListener(this);
+        }
         foldHierarchy.removeFoldHierarchyListener(this);
-        editorUI.removePropertyChangeListener(this);
         textComponent.removeComponentListener(this);
         document.removeDocumentListener(this);
-
-        refreshDiff();
-        revalidate();
     }
 
     private Reader getDocumentReader() {
@@ -390,7 +454,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     
     public Dimension getPreferredSize() {
         Dimension dim = textComponent.getSize();
-        dim.width = annotated ? BAR_WIDTH : 0;
+        dim.width = sidebarVisible ? BAR_WIDTH : 0;
         return dim;
     }
     
@@ -531,11 +595,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
     public void propertyChange(PropertyChangeEvent evt) {
         String id = evt.getPropertyName();
-        if (EditorUI.COMPONENT_PROPERTY.equals(id)) {  // NOI18N
-            if (evt.getNewValue() == null){
-                hideSidebar();
-            }
-        } else if (OriginalContent.PROP_CONTENT_CHANGED.equals(id)) {
+        if (OriginalContent.PROP_CONTENT_CHANGED.equals(id)) {
             originalContentSerial++;
             refreshDiff();
         }
@@ -589,7 +649,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         }
 
         private void computeDiff() {
-            if (!annotated) {
+            if (!sidebarVisible) {
                 currentDiff = null;
                 return;
             }
@@ -617,11 +677,14 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
         private void fetchOriginalContent() {
             int serial = originalContentSerial;
-            if (originalContentBuffer != null && originalContentBufferSerial == serial) return;
+            if (originalContent == null || originalContentBuffer != null && originalContentBufferSerial == serial) return;
             originalContentBufferSerial = serial;
 
             Reader r = originalContent.getText();
-            if (r == null) return;
+            if (r == null) {
+                originalContentBuffer = null;
+                return;
+            }
 
             StringWriter w = new StringWriter(2048);
             try {

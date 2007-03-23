@@ -22,6 +22,7 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.LocalHistory;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.diff.DiffSidebarManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -133,6 +134,11 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         return filesystemInterceptor;
     }
 
+    private void refreshDiffSidebars() {
+        // pushing the change ... DiffSidebarManager may as well listen for changes
+        DiffSidebarManager.getInstance().refreshAllSidebars();
+    }
+    
     private synchronized void flushFileOwnerCache() {
         folderOwners.clear();
         localHistoryFolders.clear();
@@ -253,6 +259,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
         } else if (VersioningSystem.PROP_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
             flushFileOwnerCache();
+            refreshDiffSidebars();
         }
     }
 }

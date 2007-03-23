@@ -19,9 +19,6 @@
 package org.netbeans.modules.versioning.diff;
 
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
-import org.netbeans.modules.versioning.spi.OriginalContent;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.modules.versioning.VersioningConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.loaders.DataObject;
@@ -43,13 +40,13 @@ import java.util.prefs.PreferenceChangeEvent;
  * 
  * @author Maros Sandor
  */
-class DiffSidebarManager implements PreferenceChangeListener {
+public class DiffSidebarManager implements PreferenceChangeListener {
 
     static final String SIDEBAR_ENABLED = "diff.sidebarEnabled"; // NOI18N
 
     private static DiffSidebarManager instance;
 
-    static synchronized DiffSidebarManager getInstance() {
+    public static synchronized DiffSidebarManager getInstance() {
         if (instance == null) {
             instance = new DiffSidebarManager();
         }
@@ -68,6 +65,19 @@ class DiffSidebarManager implements PreferenceChangeListener {
         VersioningConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
 
+    public void refreshAllSidebars() {
+        // pushing the change ... we may as well listen for changes in versioning manager
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                synchronized(sideBars) {
+                    for (DiffSidebar bar : sideBars.keySet()) {
+                        bar.refresh();
+                    }
+                }
+            }
+        });
+    }
+        
     /**
      * Creates a new task needed by a diff sidebar to update its structures (compute diff). 
      * 
@@ -101,14 +111,7 @@ class DiffSidebarManager implements PreferenceChangeListener {
                 }
                 if (file == null) return null;
     
-                OriginalContent originalContent = null;
-                VersioningSystem vs = VersioningManager.getInstance().getOwner(file);
-                if (vs != null) {
-                    originalContent = vs.getVCSOriginalContent(file);
-                }
-                if (originalContent == null) return null;
-    
-                sideBar = new DiffSidebar(target, originalContent);
+                sideBar = new DiffSidebar(target, file);
                 sideBars.put(sideBar, null);
                 sideBar.setSidebarVisible(sidebarEnabled);
             }
