@@ -132,9 +132,16 @@ NodeActionsProviderFilter, NodeModelFilter {
                 fixedSize,
                 children.length
             );
-            Object[] fallChildren = new Object [to - from];
-            System.arraycopy (allChildren, from, fallChildren, 0, to - from);
-            return fallChildren;
+            if (from > 0 || to < allChildren.length) {
+                if (to > allChildren.length) {
+                    to = allChildren.length;
+                }
+                Object[] fallChildren = new Object [to - from];
+                System.arraycopy (allChildren, from, fallChildren, 0, to - from);
+                return fallChildren;
+            } else {
+                return allChildren;
+            }
         }
         return original.getChildren (parent, from, to);
     }
