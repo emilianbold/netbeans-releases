@@ -34,8 +34,8 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.DateFieldCD;
@@ -62,6 +62,9 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     private JRadioButton radioButton;
     private int inputMode;
     
+    private DesignDocument document;
+    private DesignComponent component;
+    
     private PropertyEditorDate() {
         super();
         initComponents();
@@ -82,6 +85,12 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorDate.class, "LBL_DATE_STR")); // NOI18N
         customEditor = new CustomEditor();
         radioButton.addActionListener(customEditor);
+    }
+    
+    public void init(DesignComponent component) {
+        super.init(component);
+        this.component = component;
+        document = component.getDocument();
     }
     
     public JComponent getComponent() {
@@ -125,11 +134,10 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
         
-        final DesignComponent dateField = ActiveDocumentSupport.getDefault().getActiveComponents().iterator().next();
-        if (dateField != null) {
-            ActiveDocumentSupport.getDefault().getActiveDocument().getTransactionManager().readAccess(new Runnable() {
+        if (component != null) {
+            document.getTransactionManager().readAccess(new Runnable() {
                 public void run() {
-                    PropertyValue pv = dateField.readProperty(DateFieldCD.PROP_INPUT_MODE);
+                    PropertyValue pv = component.readProperty(DateFieldCD.PROP_INPUT_MODE);
                     if (pv.getKind() == PropertyValue.Kind.VALUE)  {
                         inputMode = MidpTypes.getInteger(pv);
                     }

@@ -55,9 +55,6 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
                 paintGauge(g);
             }
         };
-        Dimension size = panel.getPreferredSize();
-        size.height = PANEL_HEIGHT;
-        panel.setMinimumSize(size);
         panel.setOpaque(false);
         setContentComponent(panel);
     }
@@ -117,6 +114,11 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
         } else if (value > maxValue) {
             value = maxValue;
         }
+        
+        Dimension size = new Dimension(deviceInfo.getCurrentScreenSize());
+        size.height = 60;
+        size.width -= 10;
+        panel.setPreferredSize(size);
         
         panel.repaint();
     }

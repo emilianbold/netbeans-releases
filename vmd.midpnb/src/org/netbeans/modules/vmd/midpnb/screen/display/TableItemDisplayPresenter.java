@@ -161,7 +161,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         
         DesignComponent tableModelComponent = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
         hasModel = tableModelComponent != null;
-
+        
         if (hasModel) {
             PropertyValue columnsProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_COLUMN_NAMES);
             List<PropertyValue> list = columnsProperty.getArray();
@@ -182,11 +182,11 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                 }
             }
         }
-
+        
         Dimension size = new Dimension(deviceInfo.getCurrentScreenSize());
         size.height = 60;
         size.width -= 10;
-        panel.setMinimumSize(size);
+        panel.setPreferredSize(size);
         
         panel.repaint();
     }

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.Box;
@@ -44,7 +43,7 @@ public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
-        getViewPanel().add(panel, BorderLayout.CENTER);
+        setContentComponent(panel);
     }
     
     public Collection<DesignComponent> getChildren() {

@@ -29,7 +29,6 @@ import javax.swing.JScrollPane;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
 import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
@@ -53,6 +52,9 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private JRadioButton radioButton;
     private int dependance;
     
+    private DesignDocument document;
+    private DesignComponent component;
+
     private PropertyEditorString(int dependance) {
         super();
         this.dependance = dependance;
@@ -83,6 +85,12 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorString.class, "LBL_STRING_STR")); // NOI18N
         customEditor = new CustomEditor();
+    }
+    
+    public void init(DesignComponent component) {
+        super.init(component);
+        this.component = component;
+        document = component.getDocument();
     }
     
     public JComponent getComponent() {
@@ -132,8 +140,6 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         final int length = text.length();
         if (length > 0) {
             super.setValue(MidpTypes.createStringValue(text));
-            final DesignComponent component = ActiveDocumentSupport.getDefault().getActiveComponents().iterator().next();
-            DesignDocument document = component.getDocument();
             switch (dependance) {
                 case DEPENDENCE_TEXT_BOX:
                     document.getTransactionManager().writeAccess( new Runnable() {

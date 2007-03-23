@@ -35,7 +35,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
@@ -54,6 +53,9 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
     
     private CustomEditor customEditor;
     private JRadioButton radioButton;
+    
+    private DesignDocument document;
+    private DesignComponent component;
     
     private PropertyEditorGaugeMaxValue() {
         super();
@@ -74,6 +76,12 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         customEditor = new CustomEditor();
     }
     
+    public void init(DesignComponent component) {
+        super.init(component);
+        this.component = component;
+        document = component.getDocument();
+    }
+    
     public JComponent getComponent() {
         return customEditor;
     }
@@ -89,7 +97,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
     public boolean isVerticallyResizable() {
         return false;
     }
-
+    
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -122,7 +130,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             customEditor.setForever(true);
         } else {
             customEditor.unsetForever(true);
-            customEditor.setText(String.valueOf(value.getPrimitiveValue ()));
+            customEditor.setText(String.valueOf(value.getPrimitiveValue()));
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
@@ -132,8 +140,6 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             if (INDEFINITE_TEXT.equals(text) || INDEFINITE_NUM_TEXT.equals(text)) {
                 super.setValue(MidpTypes.createIntegerValue(GaugeCD.VALUE_INDEFINITE));
                 
-                final DesignComponent component = ActiveDocumentSupport.getDefault().getActiveComponents().iterator().next();
-                DesignDocument document = component.getDocument();
                 document.getTransactionManager().writeAccess( new Runnable() {
                     public void run() {
                         component.writeProperty(GaugeCD.PROP_VALUE, MidpTypes.createIntegerValue(GaugeCD.VALUE_CONTINUOUS_IDLE));

@@ -47,13 +47,22 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
                 return Utilities.actionsToPopup(ActionsSupport.createActionsArray(getRelatedComponent()), this);
             }
         };
-        panel.setLayout(new BorderLayout());
+        panel.setLayout(new GridBagLayout());
         panel.setOpaque(false);
         
         label = new JLabel();
         Font bold = label.getFont().deriveFont(Font.BOLD);
         label.setFont(bold);
-        panel.add(label, BorderLayout.NORTH);
+        
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weightx = 1.0;
+        constraints.weighty = 0.0;
+        constraints.insets = new Insets(0, 0, 0, 0);
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridx = GridBagConstraints.REMAINDER;
+        constraints.gridy = GridBagConstraints.RELATIVE;
+        constraints.anchor = GridBagConstraints.NORTH;
+        panel.add(label, constraints);
     }
     
     public boolean isTopLevelDisplay() {
@@ -73,18 +82,27 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     }
     
     protected final void setContentComponent(JComponent contentComponent) {
-        panel.setVisible(false);
+        //panel.setVisible(false);
         if (this.contentComponent != null) {
             panel.remove(this.contentComponent);
         }
         this.contentComponent = contentComponent;
         if (contentComponent != null) {
-            panel.add(contentComponent, BorderLayout.CENTER);
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.weightx = 1.0;
+            constraints.weighty = 1.0;
+            constraints.insets = new Insets(0, 0, 0, 0);
+            constraints.fill = GridBagConstraints.BOTH;
+            constraints.gridx = GridBagConstraints.REMAINDER;
+            constraints.gridy = GridBagConstraints.RELATIVE;
+            constraints.anchor = GridBagConstraints.NORTHEAST;
+            
+            panel.add(contentComponent, constraints);
         }
-        panel.setVisible(true);
-        panel.invalidate();
-        panel.validate();
-        panel.repaint();
+//        panel.setVisible(true);
+//        panel.invalidate();
+//        panel.validate();
+//        panel.repaint();
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
