@@ -210,6 +210,19 @@ public class SyntaxElement {
             return attribs;
         }
         
+        public TagAttribute getAttribute(String name) {
+            return getAttribute(name, true);
+        }
+        
+        public TagAttribute getAttribute(String name, boolean ignoreCase) {
+            for(TagAttribute ta : attribs) {
+                if(ta.getName().equals(name)) {
+                    return ta;
+                }
+            }
+            return null;
+        }
+        
         public String toString() {
             StringBuffer ret = new StringBuffer( super.toString() );
             ret.append( " - {" );   // NOI18N
