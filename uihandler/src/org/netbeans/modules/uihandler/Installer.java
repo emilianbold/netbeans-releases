@@ -62,6 +62,8 @@ import javax.swing.JButton;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.modules.exceptions.ReportPanel;
 import org.netbeans.modules.exceptions.ExceptionsSettings;
@@ -69,6 +71,7 @@ import org.netbeans.modules.uihandler.api.Activated;
 import org.netbeans.modules.uihandler.api.Deactivated;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
@@ -350,7 +353,21 @@ public class Installer extends ModuleInstall {
     }
     
     static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
+        ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Installer.class, "MSG_UploadProgressHandle"));
+        try {
+            return uLogs(h, postURL, id, attrs, recs);
+        } finally {
+            h.finish();
+        }
+    }
+    
+    private static URL uLogs(ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
+        h.start(100 + recs.size());
+        h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
+        
         URLConnection conn = postURL.openConnection();
+        
+        h.progress(50);
         
         conn.setReadTimeout(20000);
         conn.setDoOutput(true);
@@ -358,6 +375,8 @@ public class Installer extends ModuleInstall {
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");
         conn.setRequestProperty("Pragma", "no-cache");
         conn.setRequestProperty("Cache-control", "no-cache");
+
+        h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadSending"), 60);
         
         PrintStream os = new PrintStream(conn.getOutputStream());
         /*
@@ -374,6 +393,8 @@ public class Installer extends ModuleInstall {
             os.println(en.getValue().getBytes());
         }
         
+        h.progress(70);
+        
         os.println("----------konec<>bloku");
         
         if (id == null) {
@@ -387,7 +408,10 @@ public class Installer extends ModuleInstall {
         DataOutputStream data = new DataOutputStream(gzip);
         data.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes("utf-8")); // NOI18N
         data.write("<uigestures version='1.0'>\n".getBytes("utf-8")); // NOI18N
+        
+        int cnt = 80;
         for (LogRecord r : recs) {
+            h.progress(cnt++);
             LogRecords.write(data, r);
         }
         data.write("</uigestures>\n".getBytes("utf-8")); // NOI18N
@@ -396,6 +420,7 @@ public class Installer extends ModuleInstall {
         os.println("----------konec<>bloku--");
         os.close();
         
+        h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadReading"), cnt + 10);
         
         InputStream is = conn.getInputStream();
         StringBuffer redir = new StringBuffer();
@@ -407,12 +432,15 @@ public class Installer extends ModuleInstall {
             redir.append((char)ch);
         }
         is.close();
+
+        h.progress(cnt + 20);
         
         LOG.info("Reply from uploadLogs:");
         LOG.info(redir.toString());
         
         Pattern p = Pattern.compile("<meta\\s*http-equiv=.Refresh.\\s*content.*url=['\"]?([^'\" ]*)\\s*['\"]", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
         Matcher m = p.matcher(redir);
+        
         
         if (m.find()) {
             return new URL(m.group(1));
@@ -655,6 +683,9 @@ public class Installer extends ModuleInstall {
                 nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, null, ex);
+                String txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
+                NotifyDescriptor dd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(dd);
             }
             if (nextURL != null) {
                 clearLogs();
