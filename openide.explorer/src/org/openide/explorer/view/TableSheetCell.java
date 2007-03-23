@@ -377,6 +377,10 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
         //them so no references are held.
         return editor;
     }
+    
+    void updateUI() {
+        headerRenderer = (new JTableHeader()).getDefaultRenderer();
+    }
 
     private static String getString(String key) {
         return NbBundle.getBundle(TableSheetCell.class).getString(key);

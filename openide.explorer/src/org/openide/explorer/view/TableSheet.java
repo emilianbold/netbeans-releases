@@ -44,6 +44,8 @@ class TableSheet extends JScrollPane {
 
     /** model */
     transient private NodeTableModel tableModel;
+    
+    transient private TableSheetCell tableCell;
 
     /** Create table view with default table model.
      */
@@ -146,7 +148,7 @@ class TableSheet extends JScrollPane {
     private void initializeTable() {
         table.setModel(tableModel);
 
-        TableSheetCell tableCell = new TableSheetCell(tableModel);
+        tableCell = new TableSheetCell(tableModel);
         table.setDefaultRenderer(Node.Property.class, tableCell);
         table.setDefaultEditor(Node.Property.class, tableCell);
         table.getTableHeader().setDefaultRenderer(tableCell);
@@ -165,6 +167,13 @@ class TableSheet extends JScrollPane {
 
     private static String getString(String key) {
         return org.openide.util.NbBundle.getBundle(TableSheet.class).getString(key);
+    }
+    
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        if( null != tableCell )
+            tableCell.updateUI();
     }
 
     /** Synchronized table view with other view (TreeView, ListView). Two views (scroll panes)

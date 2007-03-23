@@ -91,6 +91,8 @@ class TreeTable extends JTable implements Runnable {
     boolean inEditorChangeRequest = false;
     int editRow = -1;
     private boolean inRemoveRequest = false;
+    
+    private TableSheetCell tableCell;
 
     public TreeTable(NodeTreeModel treeModel, NodeTableModel tableModel) {
         super();
@@ -115,7 +117,7 @@ class TreeTable extends JTable implements Runnable {
         setDefaultRenderer(TreeTableModelAdapter.class, tree);
 
         // Install property renderer and editor.
-        TableSheetCell tableCell = new TableSheetCell(this.tableModel);
+        tableCell = new TableSheetCell(this.tableModel);
         tableCell.setFlat(true);
         setDefaultRenderer(Property.class, tableCell);
         setDefaultEditor(Property.class, tableCell);
@@ -231,6 +233,10 @@ class TreeTable extends JTable implements Runnable {
 
         if (tree != null) {
             tree.updateUI();
+        }
+        
+        if( null != tableCell ) {
+            tableCell.updateUI();
         }
 
         // Use the tree's default foreground and background colors in the
