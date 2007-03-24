@@ -245,12 +245,12 @@ public class JavaPlatformManagerTest extends NbTestCase {
             return this.id;
         }
 
-        public Collection getInstallFolders() {
-            return Collections.EMPTY_LIST;
+        public Collection<FileObject> getInstallFolders() {
+            return Collections.emptyList();
         }
 
-        public List getJavadocFolders() {
-            return Collections.EMPTY_LIST;
+        public List<URL> getJavadocFolders() {
+            return Collections.emptyList();
         }
 
         public Map getProperties() {

@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
  */
 class SelectorPanel extends javax.swing.JPanel implements ItemListener {
         
-    private Map installersByButtonModels = new IdentityHashMap ();
+    private Map<ButtonModel,GeneralPlatformInstall> installersByButtonModels = new IdentityHashMap<ButtonModel,GeneralPlatformInstall>();
     private ButtonGroup group;
     private SelectorPanel.Panel firer;
     
@@ -64,7 +64,7 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
     
     private void postInitComponents () {
         InstallerRegistry regs = InstallerRegistry.getDefault();
-        List/*<GeneralPlatformInstall>*/ installers =  regs.getAllInstallers();
+        List<GeneralPlatformInstall> installers = regs.getAllInstallers();
         this.group = new ButtonGroup ();        
         JLabel label = new JLabel (NbBundle.getMessage(SelectorPanel.class,"TXT_SelectPlatform"));
         label.setDisplayedMnemonic(NbBundle.getMessage(SelectorPanel.class,"AD_SelectPlatform").charAt(0));        
@@ -78,9 +78,9 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
         c.insets = new Insets (12, 12, 6, 12);
         ((GridBagLayout)this.getLayout()).setConstraints(label,c);
         this.add (label);
-        Iterator/*<GeneralPlatformInstall>*/ it = installers.iterator();
+        Iterator<GeneralPlatformInstall> it = installers.iterator();
         for (int i=0; it.hasNext(); i++) {
-            GeneralPlatformInstall pi = (GeneralPlatformInstall) it.next ();            
+            GeneralPlatformInstall pi = it.next ();            
             JRadioButton button = new JRadioButton (pi.getDisplayName());
             if (i==0) {
                 label.setLabelFor(button);
@@ -132,10 +132,9 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
      */
     boolean selectInstaller (GeneralPlatformInstall install) {
         assert install != null;
-        for (Iterator/*<Map.Entry<ButtonModel, GeneralPlatformInstall>>*/ it = this.installersByButtonModels.entrySet().iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry) it.next();
+        for (Map.Entry<ButtonModel,GeneralPlatformInstall> entry : installersByButtonModels.entrySet()) {
             if (entry.getValue().equals(install)) {
-                ButtonModel model = (ButtonModel) entry.getKey();
+                ButtonModel model = entry.getKey();
                 model.setSelected(true);
                 return true;
             }
@@ -163,7 +162,7 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
     
     public static class Panel implements WizardDescriptor.Panel {
         
-        private List/*<ChangeListener>*/ listeners;
+        private List<ChangeListener> listeners;
         private SelectorPanel component;
         
         public synchronized void removeChangeListener(ChangeListener l) {
@@ -177,7 +176,7 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
         public synchronized void addChangeListener(ChangeListener l) {
             assert l != null;
             if (this.listeners == null) {
-                this.listeners = new ArrayList ();
+                this.listeners = new ArrayList<ChangeListener>();
             }
             this.listeners.add(l);
         }                
@@ -208,7 +207,7 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
             SelectorPanel c = (SelectorPanel) getComponent ();
             ButtonModel bm = c.group.getSelection();
             if (bm != null) {            
-                return (GeneralPlatformInstall) c.installersByButtonModels.get (bm);
+                return c.installersByButtonModels.get(bm);
             }
             return null;
         }
@@ -227,7 +226,7 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
                 if (this.listeners == null) {
                     return;
                 }
-                _listeners = (ChangeListener[]) this.listeners.toArray(new ChangeListener[this.listeners.size()]);
+                _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             ChangeEvent event = new ChangeEvent (this);
             for (int i=0; i<_listeners.length; i++) {

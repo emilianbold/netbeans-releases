@@ -103,12 +103,12 @@ public final class NbPlatform {
      * Get a set of all registered platforms.
      */
     public static synchronized Set<NbPlatform> getPlatforms() {
-        return new HashSet(getPlatformsInternal());
+        return new HashSet<NbPlatform>(getPlatformsInternal());
     }
 
     private static Set<NbPlatform> getPlatformsInternal() {
         if (platforms == null) {
-            platforms = new HashSet();
+            platforms = new HashSet<NbPlatform>();
             Map<String,String> p = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()}).getProperties();
             boolean foundDefault = false;
             Iterator entries = p.entrySet().iterator();
@@ -117,11 +117,11 @@ public final class NbPlatform {
                 String key = (String) entry.getKey();
                 if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_DEST_DIR_SUFFIX)) {
                     String id = key.substring(PLATFORM_PREFIX.length(), key.length() - PLATFORM_DEST_DIR_SUFFIX.length());
-                    String label = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
+                    String label = p.get(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
                     String destdir = (String) entry.getValue();
-                    String harnessdir = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX);
-                    String sources = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_SOURCES_SUFFIX);
-                    String javadoc = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_JAVADOC_SUFFIX);
+                    String harnessdir = p.get(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX);
+                    String sources = p.get(PLATFORM_PREFIX + id + PLATFORM_SOURCES_SUFFIX);
+                    String javadoc = p.get(PLATFORM_PREFIX + id + PLATFORM_JAVADOC_SUFFIX);
                     File destdirF = FileUtil.normalizeFile(new File(destdir));
                     File harness;
                     if (harnessdir != null) {
@@ -328,8 +328,8 @@ public final class NbPlatform {
      */
     public static NbPlatform addPlatform(final String id, final File destdir, final File harness, final String label) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     String plafDestDir = PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX;
                     props.setProperty(plafDestDir, destdir.getAbsolutePath());
@@ -373,8 +373,8 @@ public final class NbPlatform {
     
     public static void removePlatform(final NbPlatform plaf) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     props.remove(PLATFORM_PREFIX + plaf.getID() + PLATFORM_DEST_DIR_SUFFIX);
                     props.remove(PLATFORM_PREFIX + plaf.getID() + PLATFORM_HARNESS_DIR_SUFFIX);
@@ -522,10 +522,10 @@ public final class NbPlatform {
      */
     public void removeSourceRoots(URL[] urlsToRemove) throws IOException {
         maybeUpdateDefaultPlatformSources();
-        Collection newSources = new ArrayList(Arrays.asList(sourceRoots));
+        Collection<URL> newSources = new ArrayList<URL>(Arrays.asList(sourceRoots));
         newSources.removeAll(Arrays.asList(urlsToRemove));
         URL[] sources = new URL[newSources.size()];
-        setSourceRoots((URL[]) newSources.toArray(sources));
+        setSourceRoots(newSources.toArray(sources));
     }
     
     public void moveSourceRootUp(int indexToUp) throws IOException {
@@ -602,10 +602,10 @@ public final class NbPlatform {
      */
     public void removeJavadocRoots(URL[] urlsToRemove) throws IOException {
         maybeUpdateDefaultPlatformJavadoc();
-        Collection newJavadocs = new ArrayList(Arrays.asList(javadocRoots));
+        Collection<URL> newJavadocs = new ArrayList<URL>(Arrays.asList(javadocRoots));
         newJavadocs.removeAll(Arrays.asList(urlsToRemove));
         URL[] javadocs = new URL[newJavadocs.size()];
-        setJavadocRoots((URL[]) newJavadocs.toArray(javadocs));
+        setJavadocRoots(newJavadocs.toArray(javadocs));
     }
     
     public void moveJavadocRootUp(int indexToUp) throws IOException {
@@ -668,8 +668,8 @@ public final class NbPlatform {
     
     private void putGlobalProperty(final String key, final String value) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     if ("".equals(value)) { // NOI18N
                         props.remove(key);
@@ -692,10 +692,8 @@ public final class NbPlatform {
      */
     public File getSourceLocationOfModule(File jar) {
         if (listsForSources == null) {
-            listsForSources = new ArrayList();
-            URL[] sourceRoots = getSourceRoots();
-            for (int i = 0; i < sourceRoots.length; i++) {
-                URL u = sourceRoots[i];
+            listsForSources = new ArrayList<ModuleList>();
+            for (URL u : getSourceRoots()) {
                 if (!u.getProtocol().equals("file")) { // NOI18N
                     continue;
                 }
@@ -713,13 +711,8 @@ public final class NbPlatform {
                 }
             }
         }
-        Iterator it = listsForSources.iterator();
-        while (it.hasNext()) {
-            ModuleList l = (ModuleList) it.next();
-            Set<ModuleEntry> entries = l.getAllEntriesSoft();
-            Iterator it2 = entries.iterator();
-            while (it2.hasNext()) {
-                ModuleEntry entry = (ModuleEntry) it2.next();
+        for (ModuleList l : listsForSources) {
+            for (ModuleEntry entry : l.getAllEntriesSoft()) {
                 // XXX should be more strict (e.g. compare also clusters)
                 if (!entry.getJarLocation().getName().equals(jar.getName())) {
                     continue;
@@ -729,10 +722,7 @@ public final class NbPlatform {
                     return src;
                 }
             }
-            entries = l.getAllEntries();
-            it2 = entries.iterator();
-            while (it2.hasNext()) {
-                ModuleEntry entry = (ModuleEntry) it2.next();
+            for (ModuleEntry entry : l.getAllEntries()) {
                 if (!entry.getJarLocation().getName().equals(jar.getName())) {
                     continue;
                 }
@@ -752,7 +742,7 @@ public final class NbPlatform {
      */
     public ModuleEntry[] getModules() {
         try {
-            SortedSet<ModuleEntry> set = new TreeSet(
+            SortedSet<ModuleEntry> set = new TreeSet<ModuleEntry>(
                     ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntriesSoft());
             ModuleEntry[] entries = new ModuleEntry[set.size()];
             set.toArray(entries);
@@ -981,8 +971,8 @@ public final class NbPlatform {
             return;
         }
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     storeHarnessLocation(id, nbdestdir, harness, props);
                     PropertyUtils.putGlobalProperties(props);

@@ -103,13 +103,13 @@ public final class CreatedModifiedFiles {
         
     }
     
-    private final SortedSet<String> createdPaths = new TreeSet();
-    private final SortedSet<String> modifiedPaths = new TreeSet();
-    private final SortedSet<String> invalidPaths = new TreeSet();
+    private final SortedSet<String> createdPaths = new TreeSet<String>();
+    private final SortedSet<String> modifiedPaths = new TreeSet<String>();
+    private final SortedSet<String> invalidPaths = new TreeSet<String>();
     
     /** {@link Project} this instance manage. */
     private final Project project;
-    private final List<CreatedModifiedFiles.Operation> operations = new ArrayList();
+    private final List<CreatedModifiedFiles.Operation> operations = new ArrayList<CreatedModifiedFiles.Operation>();
     
     // For use from CreatedModifiedFilesFactory.LayerModifications; XXX would be better to have an operation context or similar
     // (so that multiple operations could group pre- and post-actions)
@@ -404,7 +404,7 @@ public final class CreatedModifiedFiles {
                 }
                 f.setAttribute(attrName, attrValue);
             }
-        }, Collections.EMPTY_SET);
+        }, Collections.<String>emptySet());
     }
     
     /**
@@ -423,7 +423,7 @@ public final class CreatedModifiedFiles {
                 FileObject f = FileUtil.createFolder(layer.getRoot(), layerPath);
                 f.setAttribute(precedingItemName + '/' + followingItemName, Boolean.TRUE);
             }
-        }, Collections.EMPTY_SET);
+        }, Collections.<String>emptySet());
     }
     
     /**

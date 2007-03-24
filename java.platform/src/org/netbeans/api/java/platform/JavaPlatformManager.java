@@ -21,12 +21,12 @@ package org.netbeans.api.java.platform;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 import org.netbeans.modules.java.platform.FallbackDefaultJavaPlatform;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.openide.util.Lookup;
@@ -50,12 +50,12 @@ public final class JavaPlatformManager {
 
     private static JavaPlatformManager instance = null;
 
-    private Lookup.Result/*<JavaPlatformProvider>*/ providers;
-    private Collection/*<JavaPlatformProvider>*/ lastProviders = Collections.EMPTY_SET;
+    private Lookup.Result<JavaPlatformProvider> providers;
+    private Collection<? extends JavaPlatformProvider> lastProviders = Collections.emptySet();
     private boolean providersValid = false;
     private PropertyChangeListener pListener;
-    private Collection/*<JavaPlatform>*/ cachedPlatforms;
-    private HashSet/*<PropertyChangeListener>*/ listeners;
+    private Collection<JavaPlatform> cachedPlatforms;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /** Creates a new instance of JavaPlatformManager */
     public JavaPlatformManager() {
@@ -76,9 +76,7 @@ public final class JavaPlatformManager {
      * @return the default platform (never null as of org.netbeans.modules.java.platform/1 1.9)
      */
     public JavaPlatform getDefaultPlatform() {
-        Collection/*<JavaPlatformProvider>*/ instances = this.getProviders ();
-        for (Iterator it = instances.iterator(); it.hasNext();) {
-            JavaPlatformProvider provider = (JavaPlatformProvider) it.next();
+        for (JavaPlatformProvider provider : getProviders()) {
             JavaPlatform defaultPlatform = provider.getDefaultPlatform ();
             if (defaultPlatform!=null) {
                 return defaultPlatform;
@@ -92,17 +90,12 @@ public final class JavaPlatformManager {
      */
     public synchronized JavaPlatform[] getInstalledPlatforms() {
         if (cachedPlatforms == null) {
-            Collection/*<JavaPlatformProvider>*/ instances = this.getProviders();
-            cachedPlatforms = new HashSet ();
-            for (Iterator it = instances.iterator(); it.hasNext(); ) {
-                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
-                JavaPlatform[] platforms = provider.getInstalledPlatforms();
-                for (int i = 0; i < platforms.length; i++) {
-                    cachedPlatforms.add (platforms[i]);
-                }
+            cachedPlatforms = new HashSet<JavaPlatform>();
+            for (JavaPlatformProvider provider : getProviders()) {
+                cachedPlatforms.addAll(Arrays.asList(provider.getInstalledPlatforms()));
             }
         }
-        return (JavaPlatform[]) cachedPlatforms.toArray(new JavaPlatform[cachedPlatforms.size()]);
+        return cachedPlatforms.toArray(new JavaPlatform[cachedPlatforms.size()]);
     }
 
     /**
@@ -117,17 +110,16 @@ public final class JavaPlatformManager {
      * query.
      */
     public JavaPlatform[] getPlatforms (String platformDisplayName, Specification platformSpec) {
-        JavaPlatform[] platforms = getInstalledPlatforms();
-        Collection/*<JavaPlatform>*/ result = new ArrayList ();
-        for (int i = 0; i < platforms.length; i++) {
-            String name = platformDisplayName == null ? null : platforms[i].getDisplayName(); //Don't ask for display name when not needed
-            Specification spec = platformSpec == null ?  null : platforms[i].getSpecification(); //Don't ask for platform spec when not needed
+        Collection<JavaPlatform> result = new ArrayList<JavaPlatform>();
+        for (JavaPlatform platform : getInstalledPlatforms()) {
+            String name = platformDisplayName == null ? null : platform.getDisplayName(); //Don't ask for display name when not needed
+            Specification spec = platformSpec == null ?  null : platform.getSpecification(); //Don't ask for platform spec when not needed
             if ((platformDisplayName==null || name.equalsIgnoreCase(platformDisplayName)) &&
                 (platformSpec == null || compatible (spec, platformSpec))) {
-                result.add(platforms[i]);
+                result.add(platform);
             }
         }
-        return (JavaPlatform[]) result.toArray(new JavaPlatform[result.size()]);
+        return result.toArray(new JavaPlatform[result.size()]);
     }
 
     /**
@@ -135,38 +127,22 @@ public final class JavaPlatformManager {
      * when the platform is added,removed or modified.
      * @param l the listener, can not be null
      */
-    public synchronized void addPropertyChangeListener (PropertyChangeListener l) {
+    public void addPropertyChangeListener (PropertyChangeListener l) {
         assert l != null : "Listener can not be null";  //NOI18N
-        if (this.listeners == null) {
-            this.listeners = new HashSet ();
-        }
-        this.listeners.add (l);
+        pcs.addPropertyChangeListener(l);
     }
 
     /**
      * Removes PropertyChangeListener to the JavaPlatformManager.
      * @param l the listener, can not be null
      */
-    public synchronized void removePropertyChangeListener (PropertyChangeListener l) {
+    public void removePropertyChangeListener (PropertyChangeListener l) {
         assert l != null : "Listener can not be null";  //NOI18N
-        if (this.listeners == null) {
-            return;
-        }
-        this.listeners.remove (l);
+        pcs.removePropertyChangeListener(l);
     }
 
     private void firePropertyChange (String property) {
-        Iterator it;
-        synchronized (this) {
-            if (this.listeners == null) {
-                return;
-            }
-            it = ((Set)this.listeners.clone()).iterator();
-        }
-        PropertyChangeEvent event = new PropertyChangeEvent (this, property, null, null);
-        while (it.hasNext()) {
-            ((PropertyChangeListener)it.next()).propertyChange (event);
-        }
+        pcs.firePropertyChange(property, null, null);
     }
 
     private static boolean compatible (Specification platformSpec, Specification query) {
@@ -185,14 +161,13 @@ public final class JavaPlatformManager {
             return false;
         }
         else {
-            Collection/*<Profile>*/ covered = new HashSet ();
-            for (int i=0; i<query.length; i++) {
-                Profile pattern = query[i];
+            Collection<Profile> covered = new HashSet<Profile>();
+            for (Profile pattern : query) {
                 boolean found = false;
-                for (int j = 0; j< platformProfiles.length; j++) {
-                    if (compatibleProfile(platformProfiles[j],pattern)) {
+                for (Profile p : platformProfiles) {
+                    if (compatibleProfile(p, pattern)) {
                         found = true;
-                        covered.add (platformProfiles[j]);
+                        covered.add(p);
                     }
                 }
                 if (!found) {
@@ -210,10 +185,10 @@ public final class JavaPlatformManager {
                (version == null || version.equals (platformProfile.getVersion())));
     }
 
-    private synchronized Collection/*<JavaPlatformProvider>*/ getProviders () {
+    private synchronized Collection<? extends JavaPlatformProvider> getProviders() {
         if (!this.providersValid) {
             if (this.providers == null) {
-                this.providers = Lookup.getDefault().lookup(new Lookup.Template(JavaPlatformProvider.class));
+                this.providers = Lookup.getDefault().lookupResult(JavaPlatformProvider.class);
                 this.providers.addLookupListener (new LookupListener () {
                     public void resultChanged(LookupEvent ev) {
                         resetCache (true);
@@ -229,17 +204,15 @@ public final class JavaPlatformManager {
                     }
                 };
             }
-            Collection/*<JavaPlatformProvider>*/ instances = this.providers.allInstances();
-            Collection/*<JavaPlatformProvider>*/ toAdd = new HashSet(instances);
+            Collection<? extends JavaPlatformProvider> instances = this.providers.allInstances();
+            Collection<JavaPlatformProvider> toAdd = new HashSet<JavaPlatformProvider>(instances);
             toAdd.removeAll (this.lastProviders);
-            Collection/*<JavaPlatformProvider>*/ toRemove = new HashSet(this.lastProviders);
+            Collection<JavaPlatformProvider> toRemove = new HashSet<JavaPlatformProvider>(this.lastProviders);
             toRemove.removeAll (instances);
-            for (Iterator it = toRemove.iterator(); it.hasNext();) {
-                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
+            for (JavaPlatformProvider provider : toRemove) {
                 provider.removePropertyChangeListener (pListener);
             }
-            for (Iterator it = toAdd.iterator(); it.hasNext();) {
-                JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
+            for (JavaPlatformProvider provider : toAdd) {
                 provider.addPropertyChangeListener (pListener);
             }
             this.lastProviders = instances;

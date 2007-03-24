@@ -28,13 +28,14 @@ import java.util.*;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
 import org.openide.util.Lookup;
 
 public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileChangeListener {
 
     private static final String PLATFORM_STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
 
-    private HashSet listeners;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private FileObject storage;
     private JavaPlatform defaultPlatform;
 
@@ -50,35 +51,34 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     }
 
     public JavaPlatform[] getInstalledPlatforms() {
-        List platforms = new ArrayList ();
+        List<JavaPlatform> platforms = new ArrayList<JavaPlatform>();
         if (storage != null) {
             try {
-                FileObject[] platfomDefinitions = storage.getChildren();
-                for (int i=0; i<platfomDefinitions.length;i++) {
-                    DataObject dobj = DataObject.find (platfomDefinitions[i]);
-                    InstanceCookie ic = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+                for (FileObject platformDefinition : storage.getChildren()) {
+                    DataObject dobj = DataObject.find(platformDefinition);
+                    InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
                     if (ic == null) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,"DefaultPlatformStorage: The file: "+    //NOI18N
-                            platfomDefinitions[i].getNameExt()+" hasn't InstanceCookie");                           //NOI18N
+                            platformDefinition.getNameExt() + " has no InstanceCookie");                           //NOI18N
                         continue;
                     }
                     else  if (ic instanceof InstanceCookie.Of) {
                         if (((InstanceCookie.Of)ic).instanceOf(JavaPlatform.class)) {
-                            platforms.add (ic.instanceCreate());
+                            platforms.add((JavaPlatform) ic.instanceCreate());
                         }
                         else {
                             ErrorManager.getDefault().log(ErrorManager.WARNING,"DefaultPlatformStorage: The file: "+    //NOI18N
-                                platfomDefinitions[i].getNameExt()+" isn't instance of JavaPlatform");                  //NOI18N
+                                platformDefinition.getNameExt() + " is not an instance of JavaPlatform");                  //NOI18N
                         }
                     }
                     else {
                         Object instance = ic.instanceCreate();
                         if (instance instanceof JavaPlatform) {
-                            platforms.add (instance);
+                            platforms.add((JavaPlatform) instance);
                         }
                         else {
                             ErrorManager.getDefault().log(ErrorManager.WARNING,"DefaultPlatformStorage: The file: "+    //NOI18N
-                                platfomDefinitions[i].getNameExt()+" isn't instance of JavaPlatform");                  //NOI18N
+                                platformDefinition.getNameExt() + " is not an instance of JavaPlatform");                  //NOI18N
                         }
                     }
                 }
@@ -89,7 +89,7 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
                 ErrorManager.getDefault().notify (ioe);
             }
         }
-        return (JavaPlatform[])platforms.toArray(new JavaPlatform[platforms.size()]);
+        return platforms.toArray(new JavaPlatform[platforms.size()]);
     }
     
     public JavaPlatform getDefaultPlatform() {
@@ -106,18 +106,12 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     }
     
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        if (this.listeners == null) {
-            this.listeners = new HashSet ();
-        }
-        this.listeners.add (listener);
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
     }
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        if (this.listeners == null) {
-            return;
-        }
-        this.listeners.remove (listener);
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
     }
 
 
@@ -144,17 +138,7 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     }
 
     private void firePropertyChange () {
-        Iterator it = null;
-        synchronized (this) {
-            if (this.listeners == null) {
-                return;
-            }
-            it = ((Set)this.listeners.clone()).iterator();
-        }
-        PropertyChangeEvent event = new PropertyChangeEvent (this, PROP_INSTALLED_PLATFORMS, null, null);
-        while (it.hasNext()) {
-            ((PropertyChangeListener)it.next()).propertyChange(event);
-        }
+        pcs.firePropertyChange(PROP_INSTALLED_PLATFORMS, null, null);
     }       
     
 }

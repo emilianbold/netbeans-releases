@@ -47,7 +47,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     ResourceBundle          bundle = NbBundle.getBundle(PlatformInstallIterator.class);
     LocationChooser.Panel   locationPanel = new LocationChooser.Panel();
     SelectorPanel.Panel     selectorPanel = new SelectorPanel.Panel ();
-    Collection              listeners = new ArrayList();
+    Collection<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     PlatformInstallIterator() {
         selectorPanel.addChangeListener(this);
@@ -68,7 +68,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     }
     
     void updatePanelsList (JComponent[] where) {
-        Collection c = new LinkedList();
+        Collection<String> c = new LinkedList<String>();
         if (this.hasSelectorPanel) {
             c.add (bundle.getString("TXT_SelectPlatformTypeTitle"));
         }
@@ -88,9 +88,9 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         } else {
             c.add(bundle.getString("TITLE_PlatformLocationUnknown")); // NOI18N
         }
-        String[] names = (String[])c.toArray(new String[c.size()]);
-        for (int i=0; i< where.length; i++) {
-            where[i].putClientProperty("WizardPanel_contentData",names); // NOI18N
+        String[] names = c.toArray(new String[c.size()]);
+        for (JComponent comp : where) {
+            comp.putClientProperty("WizardPanel_contentData",names); // NOI18N
         }
     }
     
@@ -147,7 +147,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     
     public void initialize(WizardDescriptor wiz) {
         this.wizard = wiz;
-        List installers = InstallerRegistry.getDefault().getAllInstallers();
+        List<GeneralPlatformInstall> installers = InstallerRegistry.getDefault().getAllInstallers();
         if (installers.size()>1) {
             panelIndex = 0;
             hasSelectorPanel = true;

@@ -224,7 +224,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
     public static class Panel implements WizardDescriptor.Panel {
             
         LocationChooser             component;
-        Collection                  listeners = new ArrayList();
+        Collection<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
 
 
@@ -279,7 +279,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             synchronized (this) {
                 if (listeners.isEmpty())
                     return;
-                ll = (ChangeListener[])listeners.toArray(new ChangeListener[0]);
+                ll = listeners.toArray(new ChangeListener[0]);
             }
             ChangeEvent ev = new ChangeEvent(this);
             for (int i = 0; i < ll.length; i++)

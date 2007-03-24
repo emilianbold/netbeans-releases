@@ -21,6 +21,7 @@ package org.netbeans.api.java.platform;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +61,7 @@ public abstract class JavaPlatform {
      */
     public static final String PROP_SYSTEM_PROPERTIES = "systemProperties";  //NOI18N
 
-    private Map sysproperties = Collections.EMPTY_MAP;
+    private Map<String,String> sysproperties = Collections.emptyMap();
     private PropertyChangeSupport supp;
     
     /** Creates a new instance of JavaPlatform */
@@ -103,12 +104,12 @@ public abstract class JavaPlatform {
      * </p>
      * @return some properties
      */
-    public abstract Map getProperties();
+    public abstract Map<String,String> getProperties();
     
     /** Gets the java platform system properties.
      * @return the java platform system properties
      */
-    public final Map getSystemProperties() {
+    public final Map<String,String> getSystemProperties() {
         return sysproperties;
     }
 
@@ -142,8 +143,9 @@ public abstract class JavaPlatform {
      * Retrieves a collection of {@link FileObject}s of one or more folders
      * where the Platform is installed. Typically it returns one folder, but
      * in some cases there can be more of them.
+     * @return collection of installation folders (should be nonempty unless platform is broken)
      */
-    public abstract Collection getInstallFolders();
+    public abstract Collection<FileObject> getInstallFolders();
 
     /**
      * Gets the platform tool executable.
@@ -163,9 +165,9 @@ public abstract class JavaPlatform {
     /**
      * Returns the locations of the Javadoc for this platform
      * or empty collection if the location is not set or invalid
-     * @return List&lt;URL&gt never returns null
+     * @return (non-null) list of locations
      */
-    public abstract List getJavadocFolders ();
+    public abstract List<URL> getJavadocFolders ();
 
 
     /**
@@ -193,7 +195,7 @@ public abstract class JavaPlatform {
     /** Sets the system properties of java platform.
      * @param sysproperties the java platform system properties
      */
-    protected final void setSystemProperties(Map sysproperties) {
+    protected final void setSystemProperties(Map<String,String> sysproperties) {
         this.sysproperties = Collections.unmodifiableMap(sysproperties);
         firePropertyChange(PROP_SYSTEM_PROPERTIES, null, null); // NOI18N
     }

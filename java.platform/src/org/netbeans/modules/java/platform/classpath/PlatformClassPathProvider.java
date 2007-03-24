@@ -28,6 +28,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
 
 public class PlatformClassPathProvider implements ClassPathProvider {
@@ -85,7 +86,7 @@ public class PlatformClassPathProvider implements ClassPathProvider {
 
     private synchronized ClassPath getEmptyClassPath () {
         if (this.emptyCp == null ) {
-            this.emptyCp = ClassPathSupport.createClassPath(Collections.EMPTY_LIST);
+            this.emptyCp = ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
         }
         return this.emptyCp;
     }

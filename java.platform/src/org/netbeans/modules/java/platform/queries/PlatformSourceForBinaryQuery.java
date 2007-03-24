@@ -51,7 +51,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     private static final String RTJAR_PATH = "/jre/lib/rt.jar!/";       //NOI18N
     private static final String SRC_ZIP = "/src.zip";                    //NOI18N
 
-    private Map/*<URL, SourceForBinaryQuery.Result>*/ cache = new HashMap ();
+    private Map<URL,SourceForBinaryQuery.Result> cache = new HashMap<URL,SourceForBinaryQuery.Result>();
 
     public PlatformSourceForBinaryQuery () {
     }
@@ -62,18 +62,15 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
      * @return FileObject[], never returns null
      */
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) this.cache.get (binaryRoot);
+        SourceForBinaryQuery.Result res = this.cache.get (binaryRoot);
         if (res != null) {
             return res;
         }
         JavaPlatformManager mgr = JavaPlatformManager.getDefault();
-        JavaPlatform[] platforms = mgr.getInstalledPlatforms();
-        for (int i=0; i< platforms.length; i++) {
-            ClassPath cp = platforms[i].getBootstrapLibraries();
-            for (Iterator it = cp.entries().iterator(); it.hasNext();) {
-                ClassPath.Entry entry = (ClassPath.Entry) it.next();
+        for (JavaPlatform platform : mgr.getInstalledPlatforms()) {
+            for (ClassPath.Entry entry : platform.getBootstrapLibraries().entries()) {
                 if (entry.getURL().equals (binaryRoot)) {
-                    res = new Result (platforms[i]);
+                    res = new Result(platform);
                     this.cache.put (binaryRoot, res);
                     return res;
                 }
@@ -101,11 +98,11 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
                         
         private JavaPlatform platform;
-        private ArrayList listeners;
+        private ArrayList<ChangeListener> listeners;
                         
         public Result (JavaPlatform platform) {
             this.platform = platform;
-            this.platform.addPropertyChangeListener ((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,this,this.platform));
+            this.platform.addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, this, platform));
         }
                         
         public FileObject[] getRoots () {       //No need for caching, platforms does.
@@ -116,7 +113,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         public synchronized void addChangeListener (ChangeListener l) {
             assert l != null : "Listener can not be null";  //NOI18N
             if (this.listeners == null) {
-                this.listeners = new ArrayList ();
+                this.listeners = new ArrayList<ChangeListener>();
             }
             this.listeners.add (l);
         }

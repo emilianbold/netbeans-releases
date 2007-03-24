@@ -29,6 +29,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.netbeans.spi.java.platform.PlatformInstall;
+import org.openide.util.NbCollections;
 
 /**
  * Simple helper class, which keeps track of registered PlatformInstallers.
@@ -39,10 +40,10 @@ import org.netbeans.spi.java.platform.PlatformInstall;
 public class InstallerRegistry {
     static final String INSTALLER_REGISTRY_FOLDER = "org-netbeans-api-java/platform/installers"; // NOI18N
     
-    static Reference defaultInstance = new WeakReference(null);
+    static Reference<InstallerRegistry> defaultInstance = new WeakReference<InstallerRegistry>(null);
     
     private Provider provider;
-    private List/*<GeneralPlatformInstall>*/ platformInstalls;      //Used by unit test
+    private List<GeneralPlatformInstall> platformInstalls;      //Used by unit test
     
     InstallerRegistry(FileObject registryResource) {
         assert registryResource != null;
@@ -61,28 +62,28 @@ public class InstallerRegistry {
      * Returns all registered Java platform installers, in the order as
      * they are specified by the module layer(s).
      */
-    public List/*<PlatformInstall>*/  getInstallers () {
+    public List<PlatformInstall> getInstallers () {
         return filter(getAllInstallers(),PlatformInstall.class);
     }
     
-    public List/*<CustomPlatformIntall>*/ getCustomInstallers () {
+    public List<CustomPlatformInstall> getCustomInstallers () {
         return filter(getAllInstallers(),CustomPlatformInstall.class);
     }
     
-    public List/*<GeneralPlatformInstall>*/ getAllInstallers () {
+    public List<GeneralPlatformInstall> getAllInstallers () {
         if (this.platformInstalls != null) {
             //In the unit test
             return platformInstalls;
         }
         else {
-            Object o = Collections.EMPTY_LIST;        
+            List<GeneralPlatformInstall> list = Collections.emptyList();
             try {
                 assert this.provider != null;
-                o = provider.instanceCreate();
+                list = NbCollections.checkedListByCopy((List) provider.instanceCreate(), GeneralPlatformInstall.class, true);
             } catch (IOException ex) {
             } catch (ClassNotFoundException ex) {
             }
-            return (List) o;
+            return list;
         }
     }
     
@@ -92,13 +93,13 @@ public class InstallerRegistry {
      * Creates/acquires an instance of InstallerRegistry
      */
     public static InstallerRegistry getDefault() {
-        Object o = defaultInstance.get();
-        if (o != null)
-            return (InstallerRegistry)o;
-        o = new InstallerRegistry(Repository.getDefault().getDefaultFileSystem().findResource(
+        InstallerRegistry regs = defaultInstance.get();
+        if (regs != null)
+            return regs;
+        regs = new InstallerRegistry(Repository.getDefault().getDefaultFileSystem().findResource(
             INSTALLER_REGISTRY_FOLDER));
-        defaultInstance = new WeakReference(o);
-        return (InstallerRegistry)o;
+        defaultInstance = new WeakReference<InstallerRegistry>(regs);
+        return regs;
     }
     
     
@@ -110,17 +111,16 @@ public class InstallerRegistry {
      */
     static InstallerRegistry prepareForUnitTest (GeneralPlatformInstall[] platformInstalls) {
         InstallerRegistry regs = new InstallerRegistry (platformInstalls);
-        defaultInstance = new WeakReference(regs);
+        defaultInstance = new WeakReference<InstallerRegistry>(regs);
         return regs;
     }
         
     
-    private static List/*<T>*/ filter (List list, Class/*<T>*/ clazz) {
-        List result = new ArrayList (list.size());
-        for (Iterator it = list.iterator(); it.hasNext();) {
-            Object item = it.next();
+    private static <T> List<T> filter(List<?> list, Class<T> clazz) {
+        List<T> result = new ArrayList<T>(list.size());
+        for (Object item : list) {
             if (clazz.isInstance(item)) {
-                result.add (item);
+                result.add(clazz.cast(item));
             }
         }
         return result;
@@ -134,7 +134,7 @@ public class InstallerRegistry {
         
         
         protected Object createInstance(InstanceCookie[] cookies) throws java.io.IOException, ClassNotFoundException {
-            List installers = new ArrayList(cookies.length);
+            List<Object> installers = new ArrayList<Object>(cookies.length);
             for (int i = 0; i < cookies.length; i++) {
                 InstanceCookie cake = cookies[i];
                 Object o = null;

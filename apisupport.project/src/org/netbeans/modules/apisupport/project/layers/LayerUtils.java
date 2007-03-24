@@ -109,7 +109,7 @@ public class LayerUtils {
                     return new URL[] {fo.getURL()};
                 }
             } else if (u.getProtocol().equals("nbresloc")) { // NOI18N
-                List<URL> urls = new ArrayList();
+                List<URL> urls = new ArrayList<URL>();
                 String path = u.getFile();
                 if (path.startsWith("/")) path = path.substring(1); // NOI18N
                 int idx = path.lastIndexOf('/');
@@ -132,12 +132,10 @@ public class LayerUtils {
                     name = nameext.substring(0, idx);
                     ext = nameext.substring(idx);
                 }
-                List suffixes = new ArrayList(computeSubVariants(suffix));
+                List<String> suffixes = new ArrayList<String>(computeSubVariants(suffix));
                 suffixes.add(suffix);
                 Collections.reverse(suffixes);
-                Iterator it = suffixes.iterator();
-                while (it.hasNext()) {
-                    String trysuffix = (String) it.next();
+                for (String trysuffix : suffixes) {
                     String trypath = folder + name + trysuffix + ext;
                     FileObject fo = cp.findResource(trypath);
                     if (fo != null) {
@@ -145,7 +143,7 @@ public class LayerUtils {
                     }
                 }
                 if (!urls.isEmpty()) {
-                    return (URL[]) urls.toArray(new URL[urls.size()]);
+                    return urls.toArray(new URL[urls.size()]);
                 }
             }
         } catch (FileStateInvalidException fsie) {
@@ -162,39 +160,39 @@ public class LayerUtils {
     private static List<String> computeSubVariants(String name) {
         int idx = name.indexOf('_');
         if (idx == -1) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } else {
             String base = name.substring(0, idx);
             String suffix = name.substring(idx);
-            List l = computeSubVariants(base, suffix);
+            List<String> l = computeSubVariants(base, suffix);
             return l.subList(0, l.size() - 1);
         }
     }
     private static List<String> computeSubVariants(String base, String suffix) {
         int idx = suffix.indexOf('_', 1);
         if (idx == -1) {
-            List l = new LinkedList();
+            List<String> l = new LinkedList<String>();
             l.add(base);
             l.add(base + suffix);
             return l;
         } else {
             String remainder = suffix.substring(idx);
-            List l1 = computeSubVariants(base, remainder);
-            List l2 = computeSubVariants(base + suffix.substring(0, idx), remainder);
-            List l = new LinkedList(l1);
+            List<String> l1 = computeSubVariants(base, remainder);
+            List<String> l2 = computeSubVariants(base + suffix.substring(0, idx), remainder);
+            List<String> l = new LinkedList<String>(l1);
             l.addAll(l2);
             return l;
         }
     }
     
     // XXX needs to hold a strong ref only when modified, probably?
-    private static final Map<Project,LayerHandle> layerHandleCache = new WeakHashMap();
+    private static final Map<Project,LayerHandle> layerHandleCache = new WeakHashMap<Project,LayerHandle>();
     
     /**
      * Gets a handle for one project's XML layer.
      */
     public static LayerHandle layerForProject(Project project) {
-        LayerHandle handle = (LayerHandle) layerHandleCache.get(project);
+        LayerHandle handle = layerHandleCache.get(project);
         if (handle == null) {
             handle = new LayerHandle(project);
             layerHandleCache.put(project, handle);
@@ -202,7 +200,7 @@ public class LayerUtils {
         return handle;
     }
 
-    private static final Set<String> XML_LIKE_TYPES = new HashSet();
+    private static final Set<String> XML_LIKE_TYPES = new HashSet<String>();
     static {
         XML_LIKE_TYPES.add(".settings"); // NOI18N
         XML_LIKE_TYPES.add(".wstcref"); // NOI18N
@@ -571,7 +569,7 @@ public class LayerUtils {
                 if (suite == null) {
                     throw new IOException("Could not load suite for " + p); // NOI18N
                 }
-                List<FileSystem> readOnlyLayers = new ArrayList();
+                List<FileSystem> readOnlyLayers = new ArrayList<FileSystem>();
                 Set<? extends Project> modules = SuiteUtils.getSubProjects(suite);
                 Iterator it = modules.iterator();
                 while (it.hasNext()) {
@@ -588,12 +586,12 @@ public class LayerUtils {
                 Set<File> jars = getPlatformJarsForSuiteComponentProject(p, suite);
                 readOnlyLayers.addAll(Arrays.asList(getPlatformLayers(jars)));
                 ClassPath cp = createLayerClasspath(modules, jars);
-                return mergeFilesystems(projectLayer, (FileSystem[]) readOnlyLayers.toArray(new FileSystem[readOnlyLayers.size()]), cp);
+                return mergeFilesystems(projectLayer, readOnlyLayers.toArray(new FileSystem[readOnlyLayers.size()]), cp);
             } else if (type == NbModuleProvider.NETBEANS_ORG) {
                 //it's safe to cast to NbModuleProject here.
                 NbModuleProject nbprj = p.getLookup().lookup(NbModuleProject.class);
                 Set<? extends Project> projects = getProjectsForNetBeansOrgProject(nbprj);
-                List<URL> otherLayerURLs = new ArrayList();
+                List<URL> otherLayerURLs = new ArrayList<URL>();
                 Iterator it = projects.iterator();
                 while (it.hasNext()) {
                     NbModuleProject p2 = (NbModuleProject) it.next();
@@ -618,11 +616,11 @@ public class LayerUtils {
                 }
                 XMLFileSystem xfs = new XMLFileSystem();
                 try {
-                    xfs.setXmlUrls((URL[]) otherLayerURLs.toArray(new URL[otherLayerURLs.size()]));
+                    xfs.setXmlUrls(otherLayerURLs.toArray(new URL[otherLayerURLs.size()]));
                 } catch (PropertyVetoException ex) {
                     assert false : ex;
                 }
-                ClassPath cp = createLayerClasspath(projects, Collections.EMPTY_SET);
+                ClassPath cp = createLayerClasspath(projects, Collections.<File>emptySet());
                 return mergeFilesystems(projectLayer, new FileSystem[] {xfs}, cp);
             } else {
                 throw new AssertionError(type);
@@ -657,7 +655,7 @@ public class LayerUtils {
     
     public static Set<NbModuleProject> getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
         ModuleList list = project.getModuleList();
-        Set<NbModuleProject> projects = new HashSet();
+        Set<NbModuleProject> projects = new HashSet<NbModuleProject>();
         projects.add(project);
         Iterator it = list.getAllEntriesSoft().iterator();
         while (it.hasNext()) {
@@ -682,24 +680,24 @@ public class LayerUtils {
      */
     private static Set<File> getPlatformJars(NbPlatform platform, String[] includedClusters, String[] excludedClusters, String[] excludedModules) {
         if (platform == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
-        Set<String> includedClustersS = (includedClusters != null) ? new HashSet(Arrays.asList(includedClusters)) : Collections.EMPTY_SET;
-        Set<String> excludedClustersS = (excludedClusters != null) ? new HashSet(Arrays.asList(excludedClusters)) : Collections.EMPTY_SET;
-        Set<String> excludedModulesS = (excludedModules != null) ? new HashSet(Arrays.asList(excludedModules)) : Collections.EMPTY_SET;
+        Set<String> includedClustersS = (includedClusters != null) ? new HashSet<String>(Arrays.asList(includedClusters)) : Collections.<String>emptySet();
+        Set<String> excludedClustersS = (excludedClusters != null) ? new HashSet<String>(Arrays.asList(excludedClusters)) : Collections.<String>emptySet();
+        Set<String> excludedModulesS = (excludedModules != null) ? new HashSet<String>(Arrays.asList(excludedModules)) : Collections.<String>emptySet();
         ModuleEntry[] entries = platform.getModules();
-        Set<File> jars = new HashSet(entries.length);
-        for (int i = 0; i < entries.length; i++) {
-            if (!includedClustersS.isEmpty() && !includedClustersS.contains(entries[i].getClusterDirectory().getName())) {
+        Set<File> jars = new HashSet<File>(entries.length);
+        for (ModuleEntry entry : entries) {
+            if (!includedClustersS.isEmpty() && !includedClustersS.contains(entry.getClusterDirectory().getName())) {
                 continue;
             }
-            if (includedClustersS.isEmpty() && excludedClustersS.contains(entries[i].getClusterDirectory().getName())) {
+            if (includedClustersS.isEmpty() && excludedClustersS.contains(entry.getClusterDirectory().getName())) {
                 continue;
             }
-            if (excludedModulesS.contains(entries[i].getCodeNameBase())) {
+            if (excludedModulesS.contains(entry.getCodeNameBase())) {
                 continue;
             }
-            jars.add(entries[i].getJarLocation());
+            jars.add(entry.getJarLocation());
         }
         return jars;
     }
@@ -708,7 +706,7 @@ public class LayerUtils {
      * Constructs a list of filesystems representing the XML layers of the supplied platform module JARs.
      */
     private static FileSystem[] getPlatformLayers(Set<File> platformJars) throws IOException {
-        List<FileSystem> layers = new ArrayList();
+        List<FileSystem> layers = new ArrayList<FileSystem>();
         Iterator it = platformJars.iterator();
         JAR: while (it.hasNext()) {
             File jar = (File) it.next();
@@ -754,7 +752,7 @@ public class LayerUtils {
      * Creates a classpath representing the source roots and platform binary JARs for a project/suite.
      */
     static ClassPath createLayerClasspath(Set<? extends Project> moduleProjects, Set<File> platformJars) throws IOException {
-        List<URL> roots = new ArrayList();
+        List<URL> roots = new ArrayList<URL>();
         for (Project p : moduleProjects) {
             NbModuleProvider mod = p.getLookup().lookup(NbModuleProvider.class);
             FileObject src = mod.getSourceDirectory();

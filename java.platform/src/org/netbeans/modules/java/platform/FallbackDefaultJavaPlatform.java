@@ -36,6 +36,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
+import org.openide.util.NbCollections;
 
 /**
  * Basic impl in case no other providers can be found.
@@ -44,14 +45,14 @@ import org.openide.modules.Dependency;
 public class FallbackDefaultJavaPlatform extends JavaPlatform {
 
     public FallbackDefaultJavaPlatform() {
-        setSystemProperties(System.getProperties());
+        setSystemProperties(NbCollections.checkedMapByFilter(System.getProperties(), String.class, String.class, false));
     }
 
     public String getDisplayName() {
         return System.getProperty("java.vm.vendor") + " " + System.getProperty("java.vm.version"); // NOI18N
     }
 
-    public Map getProperties() {
+    public Map<String,String> getProperties() {
         return Collections.singletonMap("platform.ant.name", "default_platform");
     }
 
@@ -60,7 +61,7 @@ public class FallbackDefaultJavaPlatform extends JavaPlatform {
         if (sbcp == null) {
             return null;
         }
-        List/*<URL>*/ roots = new ArrayList();
+        List<URL> roots = new ArrayList<URL>();
         StringTokenizer tok = new StringTokenizer(sbcp, File.pathSeparator);
         while (tok.hasMoreTokens()) {
             File f = new File(tok.nextToken());
@@ -78,7 +79,7 @@ public class FallbackDefaultJavaPlatform extends JavaPlatform {
             }
             roots.add(u);
         }
-        return ClassPathSupport.createClassPath((URL[]) roots.toArray(new URL[roots.size()]));
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
 
     private static ClassPath sampleClass2CP(Class prototype) {
@@ -105,7 +106,7 @@ public class FallbackDefaultJavaPlatform extends JavaPlatform {
         return new Specification("J2SE", Dependency.JAVA_SPEC); // NOI18N
     }
 
-    public Collection getInstallFolders() {
+    public Collection<FileObject> getInstallFolders() {
         return Collections.singleton(FileUtil.toFileObject(new File(System.getProperty("java.home")))); // NOI18N
     }
 
@@ -117,7 +118,7 @@ public class FallbackDefaultJavaPlatform extends JavaPlatform {
         return ClassPathSupport.createClassPath(new URL[0]);
     }
 
-    public List getJavadocFolders() {
+    public List<URL> getJavadocFolders() {
         return Collections.emptyList();
     }
 

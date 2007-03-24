@@ -34,7 +34,7 @@ class J2SEPlatformNode extends AbstractNode {
     public J2SEPlatformNode (J2SEPlatformImpl platform, DataObject definition) {
         super (Children.LEAF, Lookups.fixed(new Object[] {platform, definition}));
         this.platform = platform;
-        super.setIconBase ("org/netbeans/modules/java/j2seplatform/resources/platform");
+        super.setIconBaseWithExtension("org/netbeans/modules/java/j2seplatform/resources/platform.gif");
     }
 
     public String getDisplayName () {
@@ -90,8 +90,8 @@ class J2SEPlatformNode extends AbstractNode {
         if (this.platform.getInstallFolders().size()==0) {
             return true;
         }
-        for (int i=0; i<PlatformConvertor.IMPORTANT_TOOLS.length; i++) {
-            if (this.platform.findTool(PlatformConvertor.IMPORTANT_TOOLS[i]) == null) {
+        for (String tool : PlatformConvertor.IMPORTANT_TOOLS) {
+            if (platform.findTool(tool) == null) {
                 return true;
             }
         }

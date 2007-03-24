@@ -276,7 +276,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             assert false : "Illegal number of selected nodes";      //NOI18N
             return;
         }
-        DataObject dobj = (DataObject) nodes[0].getLookup().lookup (DataObject.class);
+        DataObject dobj = nodes[0].getLookup().lookup(DataObject.class);
         if (dobj == null) {
             assert false : "Can not find platform definition for node: "+ nodes[0].getDisplayName();      //NOI18N
             return;
@@ -340,14 +340,13 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             return;
         }
         JComponent target = messageArea;
-        JavaPlatform platform = (JavaPlatform) pNode.getLookup().lookup(JavaPlatform.class);
+        JavaPlatform platform = pNode.getLookup().lookup(JavaPlatform.class);
         if (platform != null) {
             this.removeButton.setEnabled (isDefaultPLatform(platform));            
             if (platform.getInstallFolders().size() != 0) {
                 this.platformName.setText(pNode.getDisplayName());
-                Iterator it = platform.getInstallFolders().iterator();
-                if (it.hasNext()) {
-                    File file = FileUtil.toFile ((FileObject)it.next());
+                for (FileObject installFolder : platform.getInstallFolders()) {
+                    File file = FileUtil.toFile(installFolder);
                     if (file != null) {
                         this.platformHome.setText (file.getAbsolutePath());
                     }
@@ -445,26 +444,26 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         
     }
     
-    private static class PlatformCategoriesDescriptor implements Comparable {
+    private static class PlatformCategoriesDescriptor implements Comparable<PlatformCategoriesDescriptor> {
         private final String categoryName;
-        private final List/*<Node>*/ platforms;
+        private final List<Node> platforms;
         private boolean changed = false;
         
         public PlatformCategoriesDescriptor (String categoryName) {
             assert categoryName != null;
             this.categoryName = categoryName;
-            this.platforms = new ArrayList ();
+            this.platforms = new ArrayList<Node>();
         }
         
         public String getName () {
             return this.categoryName;
         }
         
-        public List getPlatform () {                        
+        public List<Node> getPlatform () {                        
             if (changed) {
                 //SortedSet can't be used, there can be platforms with the same
                 //display name
-                Collections.sort(this.platforms, new PlatformNodeComparator());
+                Collections.sort(platforms, new PlatformNodeComparator());
                 changed = false;
             }
             return Collections.unmodifiableList (this.platforms);
@@ -488,21 +487,17 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             return false;
         }
         
-        public int compareTo(Object other) {
-            if (!(other instanceof PlatformCategoriesDescriptor )) {
-                throw new IllegalArgumentException ();
-            }
-            PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) other;
+        public int compareTo(PlatformCategoriesDescriptor desc) {
             return this.categoryName.compareTo (desc.categoryName);
         }
         
     }
     
-    private static class PlatformsChildren extends Children.Keys {
+    private static class PlatformsChildren extends Children.Keys<Node> {
         
-        private List platforms;
+        private final List<Node> platforms;
         
-        public PlatformsChildren (List/*<Node>*/ platforms) {
+        public PlatformsChildren (List<Node> platforms) {
             this.platforms = platforms;
         }
 
@@ -513,11 +508,11 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         protected void removeNotify() {
             super.removeNotify();
-            this.setKeys(new Object[0]);
+            this.setKeys(new Node[0]);
         }
 
-        protected Node[] createNodes(Object key) {
-            return new Node[] {new FilterNode((Node) key, Children.LEAF)};
+        protected Node[] createNodes(Node key) {
+            return new Node[] {new FilterNode(key, Children.LEAF)};
         }
     }
     
@@ -550,7 +545,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         
     }
     
-    private static class PlatformCategoriesChildren extends Children.Keys {
+    private static class PlatformCategoriesChildren extends Children.Keys<PlatformCategoriesDescriptor> {
         
         protected void addNotify () {
             super.addNotify ();
@@ -561,38 +556,24 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             super.removeNotify ();
         }
         
-        protected Node[] createNodes(Object key) {
-            if (key instanceof PlatformCategoriesDescriptor) {
-                PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) key;
-                return new Node[] {
-                    new PlatformCategoryNode (desc)
-                };
-            }
-            else if (key instanceof Node) {
-                return new Node[] {
-                    new FilterNode ((Node)key,Children.LEAF)
-                };
-            }
-            else {
-                return new Node[0];
-            }
+        protected Node[] createNodes(PlatformCategoriesDescriptor key) {
+            return new Node[] {new PlatformCategoryNode(key)};
         }       
         
         private void refreshPlatforms () {
             FileObject storage = Repository.getDefault().getDefaultFileSystem().findResource(STORAGE);
             if (storage != null) {
-                HashMap/*<String,PlatformCategoriesDescriptor>*/ categories = new HashMap ();
-                FileObject[] children = storage.getChildren();
-                for (int i=0; i< children.length; i++) {
+                java.util.Map<String,PlatformCategoriesDescriptor> categories = new HashMap<String,PlatformCategoriesDescriptor>();
+                for (FileObject child : storage.getChildren()) {
                     try {
-                        DataObject dobj = DataObject.find (children[i]);
+                        DataObject dobj = DataObject.find(child);
                         Node node = dobj.getNodeDelegate();
-                        JavaPlatform platform = (JavaPlatform) node.getLookup().lookup(JavaPlatform.class);
+                        JavaPlatform platform = node.getLookup().lookup(JavaPlatform.class);
                         if (platform != null) {
                             String platformType = platform.getSpecification().getName();
                             if (platformType != null) {
                                 platformType = platformType.toUpperCase(Locale.ENGLISH);
-                                PlatformCategoriesDescriptor platforms = (PlatformCategoriesDescriptor) categories.get (platformType);
+                                PlatformCategoriesDescriptor platforms = categories.get(platformType);
                                 if (platforms == null ) {
                                     platforms = new PlatformCategoriesDescriptor (platformType);
                                     categories.put (platformType, platforms);
@@ -610,14 +591,14 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                         ErrorManager.getDefault().notify(e);
                     }
                  }                                    
-                List keys = new ArrayList (categories.values());
+                List<PlatformCategoriesDescriptor> keys = new ArrayList<PlatformsCustomizer.PlatformCategoriesDescriptor>(categories.values());
 //                if (keys.size() == 1) {
 //                    PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) keys.get(0);
 //                    this.setKeys (desc.getPlatform());
 //                }
 //                else {
                     Collections.sort (keys);
-                    this.setKeys(keys);
+                    setKeys(keys);
 //                }
             }
         }
@@ -625,15 +606,10 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     }
     
-    private static class PlatformNodeComparator implements Comparator {
+    private static class PlatformNodeComparator implements Comparator<Node> {
         
-        public int compare (Object o1, Object o2) {
-            if (!(o1 instanceof Node) || !(o2 instanceof Node)) {
-                throw new IllegalArgumentException ();
-            }
-            String dn1 = ((Node)o1).getDisplayName();
-            String dn2 = ((Node)o2).getDisplayName();
-            return dn1.compareTo(dn2);
+        public int compare(Node n1, Node n2) {
+            return n1.getDisplayName().compareTo(n2.getDisplayName());
         }
     }
 
