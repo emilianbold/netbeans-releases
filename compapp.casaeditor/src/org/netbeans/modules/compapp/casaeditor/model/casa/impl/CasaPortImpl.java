@@ -100,13 +100,13 @@ public class CasaPortImpl extends CasaComponentImpl implements CasaPort {
 //        setAttribute(CasaAttribute.BINDINGSTATE.getName(), bindingState);
 //    }
     
-    public String getPortType() {
-        return getAttribute(CasaAttribute.PORTTYPE);
-    }
-    
-    public void setPortType(String portType) {
-        setAttribute(PORTTYPE_PROPERTY, CasaAttribute.PORTTYPE, portType);
-    }
+//    public String getPortType() {
+//        return getAttribute(CasaAttribute.PORTTYPE);
+//    }
+//    
+//    public void setPortType(String portType) {
+//        setAttribute(PORTTYPE_PROPERTY, CasaAttribute.PORTTYPE, portType);
+//    }
     
     public String getBindingType() {
         return getAttribute(CasaAttribute.BINDINGTYPE);

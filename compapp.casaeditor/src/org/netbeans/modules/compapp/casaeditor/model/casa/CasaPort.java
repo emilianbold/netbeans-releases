@@ -35,10 +35,10 @@ public interface CasaPort extends CasaComponent {
     public static final String PROVIDES_PROPERTY = "provides";          // NOI18N
     
     public static final String BINDINGTYPE_PROPERTY = "bindingType";    // NOI18N
-    public static final String PORTTYPE_PROPERTY = "portType";          // NOI18N
-
-    String getPortType();
-    void setPortType(String portType);
+//    public static final String PORTTYPE_PROPERTY = "portType";          // NOI18N
+//
+//    String getPortType();
+//    void setPortType(String portType);
     
     String getBindingType();
     void setBindingType(String bindingType);

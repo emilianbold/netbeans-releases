@@ -107,7 +107,8 @@ public class WSDLEndpointAction extends NodeAction {
         String mName = activatedNodes[0].getDisplayName();
         final WSDLEndpointNode node = ((WSDLEndpointNode) activatedNodes[0]); // .getData(); // CasaPortImpl
         CasaPort cp = (CasaPort) node.getData();
-        String ptn = cp.getPortType();
+        String ptn = ((CasaWrapperModel) cp.getModel()).getCasaPortType(cp).toString();
+//        String ptn = cp.getPortType();
         //port.getConsumes(true).setInterfaceQName(qName);
 
         Node[] ns = node.getChildren().getNodes();

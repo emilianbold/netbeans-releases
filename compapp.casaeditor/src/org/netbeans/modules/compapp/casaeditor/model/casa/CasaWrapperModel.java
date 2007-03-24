@@ -442,7 +442,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         return casaConnection;
     }
     
-    private void populateBindingAndPort(CasaPort casaPort, Port port,
+    private static void populateBindingAndPort(CasaPort casaPort, Port port,
             QName qName, String bType) {
         
         CasaWrapperModel casaWrapperModel = (CasaWrapperModel) casaPort.getModel();
@@ -862,47 +862,60 @@ public class CasaWrapperModel extends CasaModelImpl {
      * Gets the WSDL PortType of a given CasaPort.
      */
     public PortType getCasaPortType(CasaPort casaPort) {
-        String portType = casaPort.getPortType();
-        if ((portType == null) || (portType.length() < 1)) {
+        Port port = getLinkedWSDLPort(casaPort);
+        if (port == null) {
             return null;
+        } else {
+            return port.getBinding().get().getType().get();
         }
-        CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
-        for (CasaLink link : casaPortTypes.getLinks()) {
-            String href = link.getHref();
-            try {
-                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
-                //System.out.println("Got PortType: " + pt.getName());
-                if (portType.equals(
-                        "{" + pt.getModel().getDefinitions().getTargetNamespace() + "}" + pt.getName())) { // NOI18N
-                    return pt;
-                }
-            } catch (Exception ex) {
-                System.out.println("Failed to Fetch: " + href);
-            }
-        }
-        return null;
+//        String portType = casaPort.getPortType();
+//        if ((portType == null) || (portType.length() < 1)) {
+//            return null;
+//        }
+//        CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
+//        for (CasaLink link : casaPortTypes.getLinks()) {
+//            String href = link.getHref();
+//            try {
+//                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
+//                //System.out.println("Got PortType: " + pt.getName());
+//                if (portType.equals(
+//                        "{" + pt.getModel().getDefinitions().getTargetNamespace() + "}" + pt.getName())) { // NOI18N
+//                    return pt;
+//                }
+//            } catch (Exception ex) {
+//                System.out.println("Failed to Fetch: " + href);
+//            }
+//        }
+//        return null;
     }
     
     private String getWSDLLocation(CasaPort casaPort) {
-        String portType = casaPort.getPortType();
-        if ((portType == null) || (portType.length() < 1)) {
+        CasaLink link = casaPort.getLink();
+        if (link == null) {
             return null;
         }
-        CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
-        for (CasaLink link : casaPortTypes.getLinks()) {
-            String href = link.getHref();
-            try {
-                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
-                System.out.println("Got PortType: " + pt.getName());
-                if (portType.equals(
-                        "{" + pt.getModel().getDefinitions().getTargetNamespace() + "}" + pt.getName())) { // NOI18N
-                    return href.substring(0, href.indexOf("#xpointer")); // NOI18N
-                }
-            } catch (Exception ex) {
-                System.out.println("Failed to Fetch: " + href);
-            }
-        }
-        return null;
+        String linkHref = link.getHref();
+        return linkHref.substring(0, linkHref.indexOf("#xpointer")); // NOI18N
+        
+//        String portType = casaPort.getPortType();
+//        if ((portType == null) || (portType.length() < 1)) {
+//            return null;
+//        }
+//        CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
+//        for (CasaLink link : casaPortTypes.getLinks()) {
+//            String href = link.getHref();
+//            try {
+//                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
+//                System.out.println("Got PortType: " + pt.getName());
+//                if (portType.equals(
+//                        "{" + pt.getModel().getDefinitions().getTargetNamespace() + "}" + pt.getName())) { // NOI18N
+//                    return href.substring(0, href.indexOf("#xpointer")); // NOI18N
+//                }
+//            } catch (Exception ex) {
+//                System.out.println("Failed to Fetch: " + href);
+//            }
+//        }
+//        return null;
     }
     
     /**
@@ -1131,7 +1144,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         casaPort.setX(x);
         casaPort.setY(y);
 //        casaPort.setBindingState("unbound");
-        casaPort.setPortType("");
+//        casaPort.setPortType("");
         casaPort.setBindingType(componentType);
         
         // 3. Add casa port link
@@ -2285,15 +2298,15 @@ public class CasaWrapperModel extends CasaModelImpl {
                 // cascade the change in this case.
                 
             } else {
-                startTransaction();
-                try {
-                    //todo: 12/22 temp method to add portType name...
-                    casaPort.setPortType(interfaceQName.toString());
-                } finally {
-                    if (isIntransaction()) {
-                        endTransaction();
-                    }
-                }
+//                startTransaction();
+//                try {
+//                    //todo: 12/22 temp method to add portType name...
+//                    casaPort.setPortType(interfaceQName.toString());
+//                } finally {
+//                    if (isIntransaction()) {
+//                        endTransaction();
+//                    }
+//                }
                  
                 Port port = getLinkedWSDLPort(casaPort);
                 populateBindingAndPort(casaPort, port, interfaceQName,
