@@ -399,7 +399,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public boolean requestFocusInWindow() {
-        super.requestFocusInWindow();
+    super.requestFocusInWindow();
         return view.requestFocusInWindow();
     }
 

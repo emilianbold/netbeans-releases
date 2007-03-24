@@ -454,26 +454,9 @@ public class PageFlowController {
         }
     }
     
-    
-    public void createIndexJSP() throws IOException {
-        //            FileOwnerQuery.getOwner(webFolder)
-        //            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
-        //            FileObject parentFolder = project.getProjectDirectory();
-        //            FileObject webFileObject = parentFolder.getFileObject("web");
-        
-        FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
-        
-        if (jspTemplate == null)
-            return; // Don't know the template
-        
-        FileObject parentFolder = project.getProjectDirectory();
-        FileObject webFileObject = parentFolder.getFileObject("web");
-        
-        DataObject mt = DataObject.find(jspTemplate);
-        DataFolder webDf = DataFolder.findFolder(webFileObject);
-        mt.createFromTemplate(webDf, "index"); // NOI18N
+    public Project getProject() {
+        return project;
     }
-    
     
     
     /**

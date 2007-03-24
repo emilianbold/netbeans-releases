@@ -27,7 +27,6 @@
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Set;
@@ -37,15 +36,14 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.visual.graph.GraphPinScene;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.navigation.PageFlowController;
-import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -74,6 +72,7 @@ public class MapActionUtility {
         //        actionMap.put("handleZoomPage", handleZoomPage);
         //        actionMap.put("handleUnZoomPage", handleUnZoomPage);
         //        actionMap.put("handleOpenPage", handleOpenPage);
+        
         actionMap.put("handleNewWebForm", handleNewWebForm);
         //
         //        actionMap.put("handleLeftArrowKey", handleLeftArrowKey);
@@ -182,22 +181,56 @@ public class MapActionUtility {
     public static Action handleNewWebForm = new AbstractAction() {
         PageFlowScene scene;
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null, "Source: " + e.getSource());
+            //            This would work if we wanted to use the wizard.
+            //            Action newFileAction = CommonProjectActions.newFileAction();
+            
+            
+            //            JOptionPane.showMessageDialog(null, "Source: " + e.getSource());
             Object obj = e.getSource();
             if ( obj instanceof PageFlowScene ){
                 try             {
                     scene = (PageFlowScene) obj;
                     PageFlowController pfc = scene.getPageFlowView().getPageFlowController();
-                    pfc.createIndexJSP();
-                }
-                catch (IOException ex) {
+                    
+                    FileObject parentFolder = pfc.getProject().getProjectDirectory();
+                    FileObject webFileObject = parentFolder.getFileObject("web");
+                    
+                    String name = FileUtil.findFreeFileName(webFileObject, "page", "jsp");
+                    name = JOptionPane.showInputDialog("Select Page Name", name);
+                    
+                    createIndexJSP(webFileObject, name);
+                } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-
+                
             }
         }
+        
+        /**
+         * Creates a JSP in the
+         * @param name
+         * @throws java.io.IOException
+         */
+        public void createIndexJSP(FileObject targetFolder, String name ) throws IOException {
+            //            FileOwnerQuery.getOwner(webFolder)
+            //            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
+            //            FileObject parentFolder = project.getProjectDirectory();
+            //            FileObject webFileObject = parentFolder.getFileObject("web");
+            
+            FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
+            
+            if (jspTemplate == null)
+                return; // Don't know the template
+            
+            
+            DataObject mt = DataObject.find(jspTemplate);
+            DataFolder webDf = DataFolder.findFolder(targetFolder);
+            mt.createFromTemplate(webDf, name); // NOI18N
+        }
+        
+        
         private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18N
-
+        
     };
     
 }
