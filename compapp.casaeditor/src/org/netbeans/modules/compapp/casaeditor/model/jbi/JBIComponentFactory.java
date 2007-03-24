@@ -18,13 +18,6 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.jbi;
 
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaBindings;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoints;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaLink;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPortTypes;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPorts;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServices;
 import org.w3c.dom.Element;
 
 /**

@@ -84,19 +84,19 @@ public class NodeDeleteAction extends NodeAbstractAction {
         public void visit(CasaConsumes consumes) {
             // Ensure the endpoint is not already deleted.
             if (consumes.isInDocumentModel()) {
-                mModel.removeEndpoint(consumes, true);
+                mModel.removeEndpoint(consumes);
             }
         }
         
         public void visit(CasaProvides provides) {
             // Ensure the endpoint is not already deleted.
             if (provides.isInDocumentModel()) {
-                mModel.removeEndpoint(provides, true);
+                mModel.removeEndpoint(provides);
             }
         }
         
         public void visit(CasaPort port) {
-            mModel.removeCasaPort(port, true);
+            mModel.removeCasaPort(port);
         }
         
         public void visit(CasaServiceEngineServiceUnit su) {

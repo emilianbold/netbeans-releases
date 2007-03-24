@@ -431,11 +431,7 @@ implements
     public void saveDocument() throws IOException {
         super.saveDocument();
         
-        getModel().saveRelatedDataObjects();
-
-        // 01/24/07, perform pending add/del SE project actions...
-        getModel().addPendingProjects();
-        getModel().deletePendingProjects();
+        getModel().saveDocument();
         
         syncModel();
         getDataObject().setModified(false);
