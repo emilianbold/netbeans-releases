@@ -241,7 +241,7 @@ public class CasaModelGraphUtilities {
 
         RegionUtilities.stretchScene(scene);
         widget.invokeDependencies();
-
+        
         return widget;
     }
 
@@ -459,5 +459,27 @@ public class CasaModelGraphUtilities {
             toolTip += endPointRef.getEndpointName();
         }
         return toolTip;
+    }
+    
+    /*
+     * Either a region or any widget could be made visible.
+     * Assumption here is all widgets are children of any depth to the region widget.
+     */
+    public static void ensureVisibity(Widget w) {
+        Rectangle visibleRect = w.getBounds();
+        Point p = w.getScene().convertLocalToScene(w.getLocation());
+        if(p.x <= 0) {  //Translate into this widget's region.
+            Point rp = new Point();
+            while(!(w instanceof CasaRegionWidget)) {
+                w = w.getParentWidget();
+            }
+            if(w instanceof CasaRegionWidget) {
+                rp = w.getScene().convertLocalToScene(w.getLocation());
+            }
+            p.x += rp.x;                    //Translate to the region
+        }
+        visibleRect.x = p.x;    
+        visibleRect.y = p.y;
+        w.getScene().getView().scrollRectToVisible(visibleRect);
     }
 }

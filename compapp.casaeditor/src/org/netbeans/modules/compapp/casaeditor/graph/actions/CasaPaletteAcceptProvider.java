@@ -35,6 +35,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExternal;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
@@ -343,7 +344,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     private void highlightRegion(CasaRegionWidget region) {
         region.setHighlighted(true);
-        showRegion(region);
+        CasaModelGraphUtilities.ensureVisibity(region);
     }
     
     private void highlightExtSUs(boolean bValue) {
@@ -353,18 +354,8 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
             }
         }
         if (bValue) {
-            showRegion(getScene().getExternalRegion());
+            CasaModelGraphUtilities.ensureVisibity(getScene().getExternalRegion());
         }
-    }
-    
-    private void showRegion(CasaRegionWidget region) {
-        Rectangle visibleRect = region.getBounds();     //Scroll to visible
-        visibleRect.x += region.getLocation().x;
-        visibleRect.y += region.getLocation().y;
-        visibleRect.width += region.getLocation().x;
-        visibleRect.height += region.getLocation().y;
-        getScene().getViewComponent().scrollRectToVisible(visibleRect);
-        
     }
     
     private CasaRegionWidget getApplicableRegion(CasaPaletteItem selNode) {
