@@ -633,7 +633,15 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
             
             //DesignContext[] contexts = project.getDesignContexts();
             // XXX This is supposed to get the design context except the page bean ones, better name needed?.
-            DesignContext[] contexts = getDesignContexts(designBean.getDesignContext());
+            DesignContext[] contexts;
+            DesignContext designContext = designBean.getDesignContext();
+            if (designContext == null) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                        new IllegalStateException("Design bean returns null design context, designBean=" + designBean)); // NOI18N
+                contexts = new DesignContext[0];
+            } else {
+                contexts = getDesignContexts(designContext);
+            }
 
             List<DesignContext> auxiliaryContexts = new ArrayList<DesignContext>();
 //            for (DesignContext context : contexts) {
