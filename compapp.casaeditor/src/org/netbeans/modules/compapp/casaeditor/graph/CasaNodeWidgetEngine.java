@@ -151,7 +151,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
                         getParentWidget() == null) {
                     return;
                 }
-                
                 Rectangle bounds = mContainerWidget.getClientArea().getBounds();
                 if (!bounds.getSize().equals(mPreviousHolderSize))
                 {
@@ -199,7 +198,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         } else if (hasNodeName) {
             mTitleWidget.setLabel(nodeName);                            // NOI18N
         }
-        
         if (getBounds() != null) {
             readjustBounds();
         }
@@ -220,9 +218,9 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         mContainerWidget.setPreferredBounds(null);
         setPreferredBounds(null);
         mContainerWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
-        mPreviousHolderSize = new Dimension();
         getScene().revalidate();
         getScene().validate();
+        mPreviousHolderSize = new Dimension();
         invokeDependencies();
     }
 
