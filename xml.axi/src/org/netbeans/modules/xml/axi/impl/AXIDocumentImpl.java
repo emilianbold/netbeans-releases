@@ -49,14 +49,22 @@ public final class AXIDocumentImpl extends AXIDocument {
     }
     
     public AXIComponent findChild(SchemaComponent child) {
-        //call getChildren so that the cache gets initialized
-        if(!canVisitChildren()) {
-            getChildren();
+        //first try from cache, if not found, lookup children
+        AXIComponent axiChild = globalChildrenCache.get(child);
+        if(axiChild != null)
+            return axiChild;
+        for(AXIComponent c : getChildren()) {
+            if(c.getPeer() == child) {
+                addToCache(c);
+                return c;
+            }
         }
-        return globalChildrenCache.get(child);
+        return null;        
     }
 
     public void addToCache(AXIComponent child) {
+        if(child.getPeer() == null)
+            return;
         globalChildrenCache.put(child.getPeer(), child);
     }
     

@@ -234,9 +234,6 @@ public final class ElementImpl extends Element {
         this.axiType = newValue;
         firePropertyChangeEvent(PROP_TYPE, oldValue, newValue);
         setTypeSchemaComponent(getSchemaType(newValue));
-        if(newValue instanceof ContentModel) {
-            ((ContentModel)newValue).addListener(this);
-        }
     }
     
     private void setElementAsType(final AXIType newValue) {
