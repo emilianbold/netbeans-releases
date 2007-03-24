@@ -129,6 +129,11 @@ public class LineBoxGroup extends ContainerBox {
         }
 
         allBoxes.add(box, prevBox, nextBox);
+        
+        // XXX #98826 Very suspicoius code leading to the issue.
+        // Wrong parentage, while the boxes in the 'allBoxes' BoxList are not the real chilren,
+        // the real chilidren are kept in the 'boxes' BoxList.
+        // However to comment out the nexst line doesn't work either, a messy impl.
         box.setParent(this);
         box.setPositionedBy(this);
     }

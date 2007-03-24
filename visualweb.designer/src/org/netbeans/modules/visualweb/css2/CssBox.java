@@ -2864,9 +2864,13 @@ public class CssBox {
     /** Get the most recent normal-flow box prior to the current box
      * in the parent's box list */
     protected CssBox getPrevNormalBox() {
-        CssBox parent = getParent();
-
+        ContainerBox parent = getParent();
         if (parent == null) {
+            return null;
+        }
+        
+        // XXX #98826 Workaround of the parentage linkning issue. Incorrect parent assigned.
+        if (!parent.containsChild(this)) {
             return null;
         }
 
@@ -2898,12 +2902,16 @@ public class CssBox {
     /** Get the next normal-flow box after to the current box
      * in the parent's box list */
     protected CssBox getNextNormalBox() {
-        CssBox parent = getParent();
-
+        ContainerBox parent = getParent();
         if (parent == null) {
             return null;
         }
 
+        // XXX #98826 Workaround of the parentage linkning issue. Incorrect parent assigned.
+        if (!parent.containsChild(this)) {
+            return null;
+        }
+        
         int n = parent.getBoxCount();
 
         for (int i = getParentIndex() + 1; i < n; i++) {
@@ -2928,12 +2936,16 @@ public class CssBox {
      * are considered block level for this purpose. Same as getPrevNormalBox
      * except we also include LineBoxes. */
     protected CssBox getPrevNormalBlockBox() {
-        CssBox parent = getParent();
-
+        ContainerBox parent = getParent();
         if (parent == null) {
             return null;
         }
 
+        // XXX #98826 Workaround of the parentage linkning issue. Incorrect parent assigned.
+        if (!parent.containsChild(this)) {
+            return null;
+        }
+        
         for (int i = getParentIndex() - 1; i >= 0; i--) {
             CssBox prev = parent.getBox(i);
 
@@ -2957,9 +2969,13 @@ public class CssBox {
      * are considered block level for this purpose. Same as getNextNormalBox
      * except we also include LineBoxes. */
     protected CssBox getNextNormalBlockBox() {
-        CssBox parent = getParent();
-
+        ContainerBox parent = getParent();
         if (parent == null) {
+            return null;
+        }
+        
+        // XXX #98826 Workaround of the parentage linkning issue. Incorrect parent assigned.
+        if (!parent.containsChild(this)) {
             return null;
         }
 

@@ -219,6 +219,14 @@ public class ContainerBox extends CssBox {
         return boxList.toArray(new CssBox[boxList.size()]);
     }
     
+    boolean containsChild(CssBox cssBox) {
+        if (cssBox == null) {
+            return false;
+        }
+        CssBox[] children = getBoxes();
+        return Arrays.asList(children).contains(cssBox);
+    }
+    
     /**
      * Remove all the children boxes from the box list
      */
