@@ -63,6 +63,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -344,8 +346,10 @@ public class JsfProjectUtils {
                 FileObject dd = wm.getDeploymentDescriptor();
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 if (ddRoot != null) {
+                    String pattern = getFacesURLPattern(ddRoot);
+                    String welcomeFile = (pattern == null) ? newStartPage : getWelcomeFile(pattern, newStartPage);
                     WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
-                    wfl.setWelcomeFile(new String[] { "faces/" + newStartPage });
+                    wfl.setWelcomeFile(new String[] { welcomeFile });
                     ddRoot.write(dd);
                 }
             } catch (IOException e) {
@@ -356,6 +360,56 @@ public class JsfProjectUtils {
         return newStartPage;
     }
     
+    /**
+     * Get the Faces Servlet URL pattern.
+     * @param ddRoot the Web Application
+     * @return If successful, returns the URL pattern, null if unsuccessful.
+     */
+    public static String getFacesURLPattern(WebApp ddRoot) {
+        Servlet[] servlets = ddRoot.getServlet();
+        ServletMapping[] mapping = ddRoot.getServletMapping();
+        if (servlets == null || mapping == null) {
+            return null;
+        }
+
+        for (int i = 0; i < servlets.length; i++) {
+            if (servlets[i].getServletClass().equals("javax.faces.webapp.FacesServlet")) { // NOI18N
+                String servletName = servlets[i].getServletName();
+                for (int j = 0; j < mapping.length; j++) {
+                    if (servletName.equals(mapping[j].getServletName())) {
+                        return mapping[j].getUrlPattern();
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the welcome file based on the URL Pattern and the Page Name.
+     * @param URLPattern the URL Pattern
+     * @param pageName the Page Name
+     * @return If successful, returns the welcome file, "faces/" + pageName if unsuccessful.
+     */
+    public static String getWelcomeFile(String URLPattern, String pageName) {
+        int indWild = URLPattern.indexOf("*"); // NOI18N
+        if (indWild >= 0) {
+            String pPrefix = URLPattern.substring(0, indWild);
+            String pSuffix = URLPattern.substring(indWild + 1);
+
+            if (pPrefix.length() > 0) {
+                while (pPrefix.startsWith("/")) { // NOI18N
+                    pPrefix = pPrefix.substring(1);
+                }
+            }
+
+            return pPrefix + pageName + pSuffix;
+        }
+
+        return "faces/" + pageName;
+    }
+
     /**
      * Sets the start page for the application
      * We need to the ability to specify the actual value for the new start page, since refactoring does not guarantee
