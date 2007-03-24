@@ -91,8 +91,7 @@ public class ElementPanel extends ABEBaseDropPanel{
     private void addElementListener(){
         axiContainer.addPropertyChangeListener(new ModelEventMediator(this, axiContainer){
             public void _propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(Compositor.PROP_COMPOSITOR)){
-                    if(evt.getPropertyName().equals(Compositor.PROP_COMPOSITOR)){
+                if(evt.getPropertyName().equals(Compositor.PROP_COMPOSITOR)) {
                         //a compositor event
                         if((evt.getOldValue() == null) && (evt.getNewValue() != null)){
                             //new Compositor added
@@ -101,8 +100,7 @@ public class ElementPanel extends ABEBaseDropPanel{
                             //old Compositor removed
                             removeCompositor((Compositor) evt.getOldValue());
                         }
-                    }
-                }else if(evt.getPropertyName().equals(
+                } else if(evt.getPropertyName().equals(
                         org.netbeans.modules.xml.axi.Element.PROP_TYPE)){
                     startTag.updateAttributes();
                 }
@@ -233,7 +231,7 @@ public class ElementPanel extends ABEBaseDropPanel{
             return;
         for(Component comp: childCompositorPanel.getComponents()){
             CompositorPanel cp = (CompositorPanel) comp;
-            if(cp.getAXIParent() == compositor){
+            if(cp.getAXIParent().getPeer() == compositor.getPeer()){
                 removeChild(cp);
             }
         }

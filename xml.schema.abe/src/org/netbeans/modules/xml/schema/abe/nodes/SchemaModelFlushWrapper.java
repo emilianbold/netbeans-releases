@@ -20,14 +20,12 @@
 
 package org.netbeans.modules.xml.schema.abe.nodes;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIModel;
-import org.netbeans.modules.xml.axi.AXIType;
+import org.netbeans.modules.xml.axi.Compositor.CompositorType;
 import org.netbeans.modules.xml.schema.abe.InstanceUIContext;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 
@@ -54,12 +52,17 @@ public class SchemaModelFlushWrapper extends Node.Property {
     @Override
     public void setValue(Object object) throws IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
+        boolean transaction = true;
         try {
             context.setUserInducedEventMode(true);
-            model.startTransaction();
+            if(object instanceof CompositorType)
+                transaction = false;
+            if(transaction)
+                model.startTransaction();
             delegate.setValue(object);
         } finally {
-            model.endTransaction();
+            if(transaction)
+                model.endTransaction();
         }
     }
     
