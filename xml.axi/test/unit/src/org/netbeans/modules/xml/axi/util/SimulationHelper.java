@@ -49,17 +49,7 @@ public class SimulationHelper {
     public SimulationHelper(AXIModel model) {
         this.model = model;
     }
-    
-    public Attribute dropAttributeOnElement(Element e, String name) {
-        AXIDocument doc = model.getRoot();
-        model.startTransaction();
-        Attribute a = model.getComponentFactory().createAttribute();
-        a.setName(name);
-        e.addAttribute(a);
-        model.endTransaction();
-        return a;
-    }
-    
+        
     public Element dropGlobalElement(String name) {
         AXIDocument doc = model.getRoot();
         model.startTransaction();
@@ -115,6 +105,15 @@ public class SimulationHelper {
         return c;
     }
     
+    public Attribute dropAttribute(AXIContainer parent, String name) {
+        model.startTransaction();
+        Attribute a = model.getComponentFactory().createAttribute();
+        a.setName(name);
+        parent.addAttribute(a);
+        model.endTransaction();
+        return a;
+    }
+     
     public Element dropElementOnCompositor(Compositor c, String name) {
         model.startTransaction();
         Element e = model.getComponentFactory().createElement();
@@ -131,9 +130,9 @@ public class SimulationHelper {
     }
 
     public void setCompositorType(Compositor c, CompositorType type) {
-        model.startTransaction();
+        //model.startTransaction();
         c.setType(type);
-        model.endTransaction();
+        //model.endTransaction();
     }
     
     private Compositor getCompositor(CompositorType type) {

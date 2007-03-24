@@ -97,9 +97,9 @@ public class SimulationTest extends AbstractSyncTestCase {
         simulateChangeElementsType2();
         simulateChangeElementsType3();
         simulateChangeElementsType4();
-        //simulateChangeCompositor1();
-        //simulateChangeCompositor2();
-        //simulateChangeCompositor3();
+        simulateChangeCompositor1();
+        simulateChangeCompositor2();
+        simulateChangeCompositor3();
         simulateDropOnRussianDoll();
         simulateRenameElementAndCheckReference();
     }
@@ -218,6 +218,32 @@ public class SimulationTest extends AbstractSyncTestCase {
         assert(cp.getChildren().get(0).getOriginal() == e2);
     }
     
+     //drop E1, set the type to some simple type.
+     //Add an element E2 to E1. Verify the results.
+      public void simulateChangeElementsType5() throws Exception {
+          init(Pattern.RUSSIAN_DOLL);
+          //drop a global element E1
+         Element e1 = helper.dropGlobalElement("E1");
+         AXIType type = DatatypeFactory.getDefault().createPrimitive(Datatype.Kind.ANYURI.getName());
+         helper.setElementType(e1, type);
+         assert(helper.inModel(e1));
+         assert(doc.getChildren().size() == 1);
+         assert(model.getSchemaModel().getSchema().getChildren().size() == 1);
+         assert(e1.getType() instanceof Datatype);
+         Attribute a1 = helper.dropAttribute(e1, "a1");
+         assert(helper.inModel(a1));
+         //Compositor c = (Compositor)e1.getChildren().get(0);
+         assert(e1.getChildren().size() == 1);
+         assert(e1.getType() instanceof AnonymousType);        
+         
+         Element e2 = helper.dropElement(e1, "E2");
+         assert(!helper.inModel(a1) && helper.inModel(e2));
+         assert(e1.getChildren().size() == 2);
+         assert(e1.getType() instanceof AnonymousType);
+         Compositor c = (Compositor)e1.getChildren().get(0);
+         assert(c.getChildren().get(0) == e2);
+     }    
+    
     //drop E1, add a sequence to E1, add two children E11, E12 to sequence
     //change the sequence to a choice, verify the result.
     public void simulateChangeCompositor1() throws Exception {
@@ -231,22 +257,15 @@ public class SimulationTest extends AbstractSyncTestCase {
         
         Compositor sequence = helper.dropCompositor(e1, CompositorType.SEQUENCE);
         assert(helper.inModel(sequence));
-        assert(e1.getType() instanceof AnonymousType);
+        assert(e1.getType() == null);
         
         Element e11 = helper.dropElementOnCompositor(sequence, "E11");
         Element e12 = helper.dropElementOnCompositor(sequence, "E12");
         assert(helper.inModel(e11) && helper.inModel(e12));
-        assert(e1.getChildElements().size() == 2);        
-        
+        assert(e1.getChildElements().size() == 2);
         e1.addPropertyChangeListener(pcl);
         helper.setCompositorType(sequence, CompositorType.CHOICE);
-        assert(pcl.getEvents().size() == 2);
-        PropertyChangeEvent evt1 = pcl.getEvents().get(0);
-        PropertyChangeEvent evt2 = pcl.getEvents().get(1);
-        assert(evt1.getPropertyName().equals(Compositor.PROP_COMPOSITOR)
-            && (evt1.getOldValue() == sequence) && (evt1.getNewValue() == null));
-        assert(evt2.getPropertyName().equals(Compositor.PROP_COMPOSITOR)
-            && (evt2.getOldValue() == null) && (evt2.getNewValue() != null));
+        assertEventsAfterSetComposiotorType(pcl);
         assert(!helper.inModel(sequence));
         assert(!helper.inModel(e11) && !helper.inModel(e12));
         assert(e1.getChildElements().size() == 2);
@@ -282,13 +301,7 @@ public class SimulationTest extends AbstractSyncTestCase {
         
         e1.addPropertyChangeListener(pcl);
         helper.setCompositorType(sequence, CompositorType.CHOICE);
-        assert(pcl.getEvents().size() == 2);
-        PropertyChangeEvent evt1 = pcl.getEvents().get(0);
-        PropertyChangeEvent evt2 = pcl.getEvents().get(1);
-        assert(evt1.getPropertyName().equals(Compositor.PROP_COMPOSITOR)
-            && (evt1.getOldValue() == sequence) && (evt1.getNewValue() == null));
-        assert(evt2.getPropertyName().equals(Compositor.PROP_COMPOSITOR)
-            && (evt2.getOldValue() == null) && (evt2.getNewValue() != null));
+        assertEventsAfterSetComposiotorType(pcl);
         assert(!helper.inModel(sequence) && !helper.inModel(e2) && !helper.inModel(choice));
         assert(e1.getChildElements().size() == 2);
     }
@@ -314,7 +327,7 @@ public class SimulationTest extends AbstractSyncTestCase {
         helper.dropElement(e2, "E22");
         Compositor compositor = (Compositor)cm.getChildren().get(0);
         assert(cm.getChildElements().size() == 2);
-                
+
         assert(ge.getChildElements().size() == 0);
         helper.setElementType(ge, cm);
         assert(ge.getChildElements().size() == 2);
@@ -322,12 +335,11 @@ public class SimulationTest extends AbstractSyncTestCase {
         Compositor proxy = (Compositor)ge.getChildren().get(0);
         assert(proxy instanceof CompositorProxy && proxy.getOriginal() == compositor);
         helper.setCompositorType(proxy, CompositorType.CHOICE);
-        assert(!helper.inModel(compositor) && !helper.inModel(proxy));        
+        assert(!helper.inModel(compositor) && !helper.inModel(proxy));
         assert(ge.getChildren().size() == 1);
         assert(cm.getChildren().size() == 1);
         assert(cm.getChildElements().size() == 2);
-        assert(ge.getChildElements().size() == 2);
-        
+        assert(ge.getChildElements().size() == 2);        
         compositor = (Compositor)cm.getChildren().get(0);
         proxy = (Compositor)ge.getChildren().get(0);
         assert(proxy instanceof CompositorProxy && proxy.getOriginal() == compositor);
@@ -337,6 +349,19 @@ public class SimulationTest extends AbstractSyncTestCase {
         assert(cm.getChildren().size() == 1);
         assert(cm.getChildElements().size() == 2);
         assert(ge.getChildElements().size() == 2);
+    }
+    
+    private void assertEventsAfterSetComposiotorType(ModelPCL pcl) {
+        assert(pcl.getEvents().size() == 3);
+        PropertyChangeEvent evt0 = pcl.getEvents().get(0);
+        PropertyChangeEvent evt1 = pcl.getEvents().get(1);
+        PropertyChangeEvent evt2 = pcl.getEvents().get(2);
+        assert(evt0.getPropertyName().equals(Compositor.PROP_COMPOSITOR)
+            && (evt0.getOldValue() != null) && (evt0.getNewValue() == null));
+        assert(evt1.getPropertyName().equals(Compositor.PROP_COMPOSITOR)
+            && (evt1.getOldValue() == null) && (evt1.getNewValue() != null));
+        assert(evt2.getPropertyName().equals(Element.PROP_TYPE)
+            && (evt2.getOldValue() == null) && (evt2.getNewValue() != null));        
     }
     
     public void simulateDropOnRussianDoll() throws IOException {
@@ -360,7 +385,7 @@ public class SimulationTest extends AbstractSyncTestCase {
         assert(e1.getType() instanceof ContentModel && e1.getType() == cm);
         
         //drop an attribute A1 on E1. This should get added to GCT1 instead.
-        Attribute a1 = helper.dropAttributeOnElement(e1, "A1");
+        Attribute a1 = helper.dropAttribute(e1, "A1");
         assert(helper.inModel(a1));
         AttributeProxy aP = (AttributeProxy)e1.getChildren().get(0);
         assert(doc.getChildren().size() == 2);

@@ -199,7 +199,8 @@ public class AXIModelUpdater extends DeepAXITreeVisitor {
                     AXIComponent proxy = model.getComponentFactory().createProxy(aChild);
                     original.addChildAtIndex(proxy, index); //items from other model/file.
                 } else {
-                    original.addChildAtIndex(aChild, index); //same model/file.
+                    if(aChild.getPeer() != null && aChild.getPeer().getModel() != null)
+                        original.addChildAtIndex(aChild, index); //same model/file.
                 }
                 continue;
             }
