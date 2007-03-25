@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import javax.xml.xpath.XPathExpressionException;
 import org.netbeans.api.project.Project;
@@ -1226,7 +1227,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     public void removeCasaPort(final CasaPort casaPort) {
         
         String linkHref = casaPort.getLink().getHref();
-        Port port = getLinkedWSDLPort(casaPort);
+        final Port port = getLinkedWSDLPort(casaPort);
         
         CasaEndpoint endpoint = casaPort.getConsumes() != null ? 
             casaPort.getConsumes().getEndpoint().get() :
@@ -1270,21 +1271,39 @@ public class CasaWrapperModel extends CasaModelImpl {
         // 3. Delete dangling endpoint
         removeDanglingEndpoint(endpoint);
         
-        // 4. Clean up casa.wsdl        
-        Binding binding = port.getBinding().get();
-        Service service = (Service) port.getParent();
-        Definitions definitions = (Definitions) service.getParent();
-        
-        WSDLModel casaWSDLModel = port.getModel();
-        casaWSDLModel.startTransaction();
-        try {
-            definitions.removeService(service);
-            definitions.removeBinding(binding);
-        } finally {
-            if (casaWSDLModel.isIntransaction()) {
-                casaWSDLModel.endTransaction();
+        // 4. Clean up casa.wsdl    
+        // Added invokeLater to fix a IllegalStateException from WSDL UI 
+        // temporarily.
+        // To reproduce the problem:
+        // (1) Use SynchSample
+        // (2) Open CASA editor
+        // (3) Open casa.wsdl (this is the key step)
+        // (4) Drop a WSDL port into CASA 
+        // (5) Make a connection from the WSDL port to BPEL SU's endpoint
+        // (6) Delete the dropped WSDL port 
+        //     => IllegalStateException: Referencing component not part of model
+        //
+        // If we delete the new connection first then delete the WSDL port, 
+        // then everything is OK.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {                
+                Binding binding = port.getBinding().get();
+                Service service = (Service) port.getParent();
+                Definitions definitions = (Definitions) service.getParent();
+                
+                WSDLModel casaWSDLModel = port.getModel();
+                casaWSDLModel.startTransaction();
+                try {
+                    service.removePort(port);
+                    definitions.removeService(service);
+                    definitions.removeBinding(binding);
+                } finally {
+                    if (casaWSDLModel.isIntransaction()) {
+                        casaWSDLModel.endTransaction();
+                    }
+                }
             }
-        }
+        });
         
         // 5. Clear the cached WSDL component reference.
         cachedWSDLComponents.remove(linkHref);
