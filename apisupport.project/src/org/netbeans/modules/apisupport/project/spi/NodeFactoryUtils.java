@@ -40,7 +40,7 @@ public final class NodeFactoryUtils {
      */
     public static Node createLayersNode(Project project) {
         NbModuleProvider prv = project.getLookup().lookup(NbModuleProvider.class);
-        if (prv != null) {
+        if (prv != null && prv.getManifestFile() != null) {
             return ImportantFilesNodeFactory.createLayerNode(project);
         }
         return null;
