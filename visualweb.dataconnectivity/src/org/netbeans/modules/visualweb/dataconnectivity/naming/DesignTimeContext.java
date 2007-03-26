@@ -429,7 +429,7 @@ class DesignTimeContext implements Context {
                                 new Object[] { name.getPrefix(name.size() - 1).toString() }));
                 e.setRemainingName(new CompositeName(name.get(name.size() - 1)));
                 e.setResolvedObj(subCtx);
-//                throw e;
+                throw e;
             }
             return ((Context)subCtx).createSubcontext(name.get(name.size() - 1));
         }
